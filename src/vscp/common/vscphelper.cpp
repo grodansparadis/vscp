@@ -2752,13 +2752,11 @@ vscp_setEventGuidFromString(vscpEvent* pEvent, const std::string& strGUID)
     } else {
         std::deque<std::string> tokens;
         vscp_split(tokens, strGUID, ":");
-        for (int i = 0; i < (int)MIN(16, tokens.size()); i++) {
+        size_t cnt = tokens.size();
+        for (int i = 0; i < (int)MIN(16, cnt); i++) {
             pEvent->GUID[i] =
               (uint8_t)stol(tokens.front().c_str(), nullptr, 16);
             tokens.pop_front();
-            // If no tokens left no use to continue
-            if (tokens.size())
-                break;
         }
     }
 

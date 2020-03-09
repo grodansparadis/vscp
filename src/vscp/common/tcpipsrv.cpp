@@ -1477,6 +1477,7 @@ tcpipClientObj::handleClientSend(void)
     // Get GUID
     std::string strGUID;
     if (!tokens.empty()) {
+        
         strGUID = tokens.front();
         tokens.pop_front();
 

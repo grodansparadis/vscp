@@ -240,7 +240,7 @@ TXWorkerThread::Entry()
                                 m_pCtrlObject->m_ifVSCP.m_port,
                                 m_pCtrlObject->m_ifVSCP.m_strUser,
                                 m_pCtrlObject->m_ifVSCP.m_strPassword)) {
-        //::wxGetApp().logMsg ( _("VSCP TX thread - Unable to connect to
+        syslog( LOG_ERR, ( _("VSCP TX thread - Unable to connect to
         //server."), DAEMON_LOGMSG_CRITICAL );
         m_pCtrlObject->m_errorControl = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pWnd, eventConnectionLost);
@@ -325,7 +325,7 @@ RXWorkerThread::Entry()
                                 m_pCtrlObject->m_ifVSCP.m_port,
                                 m_pCtrlObject->m_ifVSCP.m_strUser,
                                 m_pCtrlObject->m_ifVSCP.m_strPassword)) {
-        //::wxGetApp().logMsg ( _("VSCP Receive thread - Unable to connect to
+        syslog( LOG_ERR, ( _("VSCP Receive thread - Unable to connect to
         //server."), DAEMON_LOGMSG_CRITICAL );
         m_pCtrlObject->m_errorReceive = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pWnd, eventConnectionLost);
@@ -419,8 +419,7 @@ deviceThread::Entry()
 
     // Load dynamic library
     if (!m_wxdll.Load(m_pCtrlObject->m_ifCANAL.m_strPath, wxDL_LAZY)) {
-        //::wxGetApp().logMsg ( _T ( "vscpd: Unable to load dynamic library." ),
-        //DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "vscpd: Unable to load dynamic library." );
         return NULL;
     }
 
@@ -430,8 +429,7 @@ deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalOpen =
                    (LPFNDLL_CANALOPEN)m_wxdll.GetSymbol(_T ( "CanalOpen" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalOpen." ),
-        //DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalOpen." );
         return NULL;
     }
 
@@ -440,8 +438,7 @@ deviceThread::Entry()
         (m_pCtrlObject->m_proc_CanalClose =
            (LPFNDLL_CANALCLOSE)m_wxdll.GetSymbol(_T ( "CanalClose" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalClose." ),
-        //DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalClose." );
         return NULL;
     }
 
@@ -450,8 +447,7 @@ deviceThread::Entry()
         (m_pCtrlObject->m_proc_CanalGetLevel =
            (LPFNDLL_CANALGETLEVEL)m_wxdll.GetSymbol(_T ( "CanalGetLevel" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalGetLevel."
-        //), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalGetLevel.");
         return NULL;
     }
 
@@ -459,8 +455,7 @@ deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalSend =
                    (LPFNDLL_CANALSEND)m_wxdll.GetSymbol(_T ( "CanalSend" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalSend." ),
-        //DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalSend." );
         return NULL;
     }
 
@@ -469,8 +464,7 @@ deviceThread::Entry()
                    (LPFNDLL_CANALDATAAVAILABLE)m_wxdll.GetSymbol(
                      _T ( "CanalDataAvailable" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalDataAvailable." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR,"Unable to get dl entry for CanalDataAvailable.");
         return NULL;
     }
 
@@ -479,8 +473,7 @@ deviceThread::Entry()
         (m_pCtrlObject->m_proc_CanalReceive =
            (LPFNDLL_CANALRECEIVE)m_wxdll.GetSymbol(_T ( "CanalReceive" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalReceive."
-        //), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalReceive.");
         return NULL;
     }
 
@@ -489,8 +482,7 @@ deviceThread::Entry()
                    (LPFNDLL_CANALGETSTATUS)m_wxdll.GetSymbol(
                      _T ( "CanalGetStatus" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetStatus." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for  CanalGetStatus.");
         return NULL;
     }
 
@@ -499,8 +491,8 @@ deviceThread::Entry()
                    (LPFNDLL_CANALGETSTATISTICS)m_wxdll.GetSymbol(
                      _T ( "CanalGetStatistics" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetStatistics." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for
+        CanalGetStatistics.");
         return NULL;
     }
 
@@ -509,8 +501,8 @@ deviceThread::Entry()
                    (LPFNDLL_CANALSETFILTER)m_wxdll.GetSymbol(
                      _T ( "CanalSetFilter" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalSetFilter." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for
+        CanalSetFilter." );
         return NULL;
     }
 
@@ -519,8 +511,7 @@ deviceThread::Entry()
         (m_pCtrlObject->m_proc_CanalSetMask =
            (LPFNDLL_CANALSETMASK)m_wxdll.GetSymbol(_T ( "CanalSetMask" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for CanalSetMask."
-        //), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalSetMask.");
         return NULL;
     }
 
@@ -529,8 +520,7 @@ deviceThread::Entry()
                    (LPFNDLL_CANALGETVERSION)m_wxdll.GetSymbol(
                      _T ( "CanalGetVersion" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetVersion." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalGetVersion.");
         return NULL;
     }
 
@@ -539,8 +529,7 @@ deviceThread::Entry()
                    (LPFNDLL_CANALGETDLLVERSION)m_wxdll.GetSymbol(
                      _T ( "CanalGetDllVersion" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetDllVersion." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Unable to get dl entry for CanalGetDllVersion.");
         return NULL;
     }
 
@@ -549,8 +538,7 @@ deviceThread::Entry()
                    (LPFNDLL_CANALGETVENDORSTRING)m_wxdll.GetSymbol(
                      _T ( "CanalGetVendorString" )))) {
         // Free the library
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetVendorString." ), DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, ( "Unable to get dl entry for CanalGetVendorString.");
         return NULL;
     }
 
@@ -564,10 +552,8 @@ deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalBlockingSend =
                    (LPFNDLL_CANALBLOCKINGSEND)m_wxdll.GetSymbol(
                      _T ( "CanalBlockingSend" )))) {
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalBlockingSend. Probably Generation 1 driver." ),
-        //					              DAEMON_LOGMSG_CRITICAL
-        //);
+        syslog( LOG_ERR, "Unable to get dl entry for
+        CanalBlockingSend. Probably Generation 1 driver." );
         m_pCtrlObject->m_proc_CanalBlockingSend = NULL;
     }
 
@@ -575,10 +561,8 @@ deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalBlockingReceive =
                    (LPFNDLL_CANALBLOCKINGRECEIVE)m_wxdll.GetSymbol(
                      _T ( "CanalBlockingReceive" )))) {
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalBlockingReceive. Probably Generation 1 driver." ),
-        //					                DAEMON_LOGMSG_CRITICAL
-        //);
+        syslog( LOG_ERR, "Unable to get dl entry for
+        CanalBlockingReceive. Probably Generation 1 driver." );
         m_pCtrlObject->m_proc_CanalBlockingReceive = NULL;
     }
 
@@ -586,10 +570,8 @@ deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetdriverInfo =
                    (LPFNDLL_CANALGETDRIVERINFO)m_wxdll.GetSymbol(
                      _T ( "CanalGetDriverInfo" )))) {
-        //::wxGetApp().logMsg ( _T ( "Unable to get dl entry for
-        //CanalGetDriverInfo. Probably Generation 1 driver." ),
-        //					                DAEMON_LOGMSG_CRITICAL
-        //);
+        syslog( LOG_ERR, ( "Unable to get dl entry for
+        CanalGetDriverInfo. Probably Generation 1 driver.");
         m_pCtrlObject->m_proc_CanalGetdriverInfo = NULL;
     }
 
@@ -604,8 +586,7 @@ deviceThread::Entry()
 
     // Check if the driver opened properly
     if (0 == m_pCtrlObject->m_openHandle) {
-        //::wxGetApp().logMsg ( _T ( "Driver failed to open." ),
-        //DAEMON_LOGMSG_CRITICAL );
+        syslog( LOG_ERR, "Driver failed to open.");
         return NULL;
     }
 
@@ -637,16 +618,16 @@ deviceThread::Entry()
                 if (wxTHREAD_NO_ERROR == (err = m_pwriteThread->Create())) {
                     m_pwriteThread->SetPriority(WXTHREAD_MAX_PRIORITY);
                     if (wxTHREAD_NO_ERROR != (err = m_pwriteThread->Run())) {
-                        //::wxGetApp().logMsg ( _("Unable to run device write
-                        //worker thread."), DAEMON_LOGMSG_CRITICAL );
+                        syslog( LOG_ERR,"Unable to run device write
+                        worker thread.");
                     }
                 } else {
-                    //::wxGetApp().logMsg ( _("Unable to create device write
-                    //worker thread."), DAEMON_LOGMSG_CRITICAL );
+                    syslog( LOG_ERR, "Unable to create device write
+                    worker thread.");
                 }
             } else {
-                //::wxGetApp().logMsg ( _("Unable to allocate memory for device
-                //write worker thread."), DAEMON_LOGMSG_CRITICAL );
+                syslog( LOG_ERR, "Unable to allocate memory for device
+                write worker thread.");
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -660,16 +641,16 @@ deviceThread::Entry()
                 if (wxTHREAD_NO_ERROR == (err = m_preceiveThread->Create())) {
                     m_preceiveThread->SetPriority(WXTHREAD_MAX_PRIORITY);
                     if (wxTHREAD_NO_ERROR != (err = m_preceiveThread->Run())) {
-                        //::wxGetApp().logMsg ( _("Unable to run device receive
-                        //worker thread."), DAEMON_LOGMSG_CRITICAL );
+                        syslog( LOG_ERR, "Unable to run device receive
+                        worker thread.");
                     }
                 } else {
-                    //::wxGetApp().logMsg ( _("Unable to create device receive
-                    //worker thread."), DAEMON_LOGMSG_CRITICAL );
+                    syslog( LOG_ERR, "Unable to create device receive
+                    worker thread.");
                 }
             } else {
-                //::wxGetApp().logMsg ( _("Unable to allocate memory for device
-                //receive worker thread."), DAEMON_LOGMSG_CRITICAL );
+                syslog( LOG_ERR, "Unable to allocate memory for device
+                receive worker thread.");
             }
 
             // Just sit and wait until the end
@@ -690,8 +671,8 @@ deviceThread::Entry()
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
-                //                           Receive from device
-                //                           //
+                //                 Receive from device
+                //                          
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
                 if (m_pCtrlObject->m_proc_CanalDataAvailable(

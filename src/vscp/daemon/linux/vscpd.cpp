@@ -108,7 +108,8 @@ getDebugValues(const char* optarg)
     std::string attribute = optarg;
     std::deque<std::string> tokens;
     vscp_split(tokens, attribute, ",");
-    for (size_t idx = 0; idx < MIN(8, tokens.size()); idx++) {
+    size_t cnt = tokens.size();
+    for (size_t idx = 0; idx < MIN(8, cnt); idx++) {
         if (tokens.size()) {
             uint32_t val       = vscp_readStringValue(tokens.front());
             m_gdebugArray[idx] = val;

@@ -1334,7 +1334,9 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
 
     // Save the originating clients id so
     // this client don't get the message back
-    pEvent->obid = pClientItem->m_clientID;
+    if ( 0 == pEvent->obid) {
+        pEvent->obid = pClientItem->m_clientID;
+    }
 
     // Level II events between 512-1023 is recognised by the daemon and
     // sent to the correct interface as Level I events if the interface
