@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= %COMPAT),
                libssl-dev (>=1.0.0),
                libsystemd-dev, 
                libexpat1-dev (>=2.0),
-               uuid-dev,
+               libuuid1,
                libwrap0-dev,
                libz-dev
 Standards-Version: 4.3.0
