@@ -1235,7 +1235,7 @@ restsrv_doOpen(struct mg_connection* conn,
             int n =
               snprintf(wrkbuf,
                        sizeof(wrkbuf),
-                       "1 1 Success vscpsession=%s nEvents=%lu",
+                       "1 1 Success vscpsession=%s nEvents=%zu",
                        pSession->m_sid,
                        pSession->m_pClientItem->m_clientInputQueue.size());
 #endif
@@ -1262,7 +1262,7 @@ restsrv_doOpen(struct mg_connection* conn,
                      sizeof(wrkbuf),
                      "success-code,error-code,message,description,"
                      "vscpsession,nEvents\r\n1,1,Success,Success. 1,1,"
-                     "Success,Success,%s,%lu",
+                     "Success,Success,%s,%zu",
                      pSession->m_sid,
                      pSession->m_pClientItem->m_clientInputQueue.size());
 #endif
@@ -1290,7 +1290,7 @@ restsrv_doOpen(struct mg_connection* conn,
                      sizeof(wrkbuf),
                      "<vscp-rest success = \"true\" code = \"1\" "
                      "message = \"Success.\" description = \"Success.\" "
-                     "><vscpsession>%s</vscpsession><nEvents>%lu"
+                     "><vscpsession>%s</vscpsession><nEvents>%zu"
                      "</nEvents></vscp-rest>",
                      pSession->m_sid,
                      pSession->m_pClientItem->m_clientInputQueue.size());
@@ -1483,7 +1483,7 @@ restsrv_doStatus(struct mg_connection* conn,
 #else
             snprintf(wrkbuf,
                      sizeof(wrkbuf),
-                     "1 1 Success vscpsession=%s nEvents=%lu",
+                     "1 1 Success vscpsession=%s nEvents=%zu",
                      pSession->m_sid,
                      pSession->m_pClientItem->m_clientInputQueue.size());
 #endif
@@ -1505,7 +1505,7 @@ restsrv_doStatus(struct mg_connection* conn,
               wrkbuf,
               sizeof(wrkbuf),
               "success-code,error-code,message,description,vscpsession,"
-              "nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%lu",
+              "nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%zu",
               pSession->m_sid,
               pSession->m_pClientItem->m_clientInputQueue.size());
 #endif
@@ -1528,7 +1528,7 @@ restsrv_doStatus(struct mg_connection* conn,
                      sizeof(wrkbuf),
                      "<vscp-rest success = \"true\" code = \"1\" message = "
                      "\"Success.\" description = \"Success.\" "
-                     "><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></"
+                     "><vscpsession>%s</vscpsession><nEvents>%zu</nEvents></"
                      "vscp-rest>",
                      pSession->m_sid,
                      pSession->m_pClientItem->m_clientInputQueue.size());
@@ -1764,7 +1764,7 @@ restsrv_doReceiveEvent(struct mg_connection* conn,
                             "(unfiltered) %zu will be retrieved\r\n",
 #else
                             "%zd events requested of %zd available "
-                            "(unfiltered) %lu will be retrieved\r\n",
+                            "(unfiltered) %zu will be retrieved\r\n",
 #endif
                             count,
                             pSession->m_pClientItem->m_clientInputQueue.size(),
@@ -1941,7 +1941,7 @@ restsrv_doReceiveEvent(struct mg_connection* conn,
                                        "description = \"Success.\" >");
                     mg_write(conn, wrkbuf, strlen(wrkbuf));
                     sprintf(wrkbuf,
-                            "<info>%zd events requested of %lu available "
+                            "<info>%zd events requested of %zu available "
                             "(unfiltered) %zu will be retrieved</info>",
                             count,
                             cntAvailable,
@@ -1954,7 +1954,7 @@ restsrv_doReceiveEvent(struct mg_connection* conn,
                     mg_write(conn, wrkbuf, strlen(wrkbuf));
 
                     for (unsigned int i = 0;
-                         i < std::min((unsigned long)count, cntAvailable);
+                         i < std::min(count, cntAvailable);
                          i++) {
 
                         vscpEvent* pEvent;
