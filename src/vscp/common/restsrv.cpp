@@ -36,6 +36,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include <arpa/inet.h>
 #include <errno.h>
