@@ -1146,7 +1146,7 @@ extern "C"
      * @return True if the event was created successfully,
      *              false otherwise.
      */
-    bool vscp_newVSCPevent(vscpEvent** ppEvent);
+    bool vscp_newEvent(vscpEvent** ppEvent);
 
     /*!
         Delete a standard VSCP event
