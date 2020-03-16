@@ -706,7 +706,7 @@ CControlObject::automation(CClientItem* pClientItem)
     ex.data[1] = 0; // zone
     ex.data[2] = 0; // subzone
 
-    if (sendEvent(pClientItem, &ex)) {
+    if (!sendEvent(pClientItem, &ex)) {
         syslog(LOG_ERR, "Failed to send Class1 heartbeat");
     }
 
@@ -728,7 +728,7 @@ CControlObject::automation(CClientItem* pClientItem)
            m_strServerName.c_str(),
            std::min((int)strlen(m_strServerName.c_str()), 64));
 
-    if (sendEvent(pClientItem, &ex)) {
+    if (!sendEvent(pClientItem, &ex)) {
         syslog(LOG_ERR, "Failed to send Class2 heartbeat");
     }
 
@@ -755,7 +755,7 @@ CControlObject::automation(CClientItem* pClientItem)
     ex.data[3] = (uint8_t)((time32 >> 8) & 0xff);
     ex.data[4] = (uint8_t)((time32)&0xff); // Time since epoch LSB
 
-    if (sendEvent(pClientItem, &ex)) {
+    if (!sendEvent(pClientItem, &ex)) {
         syslog(LOG_ERR, "Failed to send segment controller heartbeat");
     }
 
@@ -796,7 +796,7 @@ CControlObject::automation(CClientItem* pClientItem)
 
     ex.sizeData = 104;
 
-    if (sendEvent(pClientItem, &ex)) {
+    if (!sendEvent(pClientItem, &ex)) {
         syslog(LOG_ERR, "Failed to send high end server capabilities.");
     }
 
