@@ -113,13 +113,17 @@ AC_ARG_ENABLE(wrap,
    AS_HELP_STRING([--enable-wrap], [Build wrap tcpd support (default enabled)]) )
 
 dnl
-dnl ASAN 
+dnl WRAP 
 dnl
 
 AS_IF([test "x$enable_wrap" != "xno"], [
   CFLAGS+=" -DWITH_WRAP"
   CPPFLAGS+=" -DWITH_WRAP"
 ])
+
+dnl
+dnl ASAN 
+dnl
 
 AC_ARG_ENABLE(asan,
    AS_HELP_STRING([--enable-asan], [--enable-asan to build with AddressSanitizer https://github.com/google/sanitizers/wiki/AddressSanitizer (default disabled]))
