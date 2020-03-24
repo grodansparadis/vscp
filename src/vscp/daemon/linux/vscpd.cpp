@@ -258,7 +258,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
     // Write pid to file
     FILE* pFile;
     pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
-    if (NULL != pFile) {
+    if (NULL == pFile) {
         syslog(LOG_ERR, "%d\n", sid);
         fprintf(pFile, "%d\n", sid);
         fclose(pFile);
