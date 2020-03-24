@@ -196,7 +196,7 @@ echo "***   $NAME_PLUS_VER.tgz created."
 cd $BUILD_FOLDER
 mkdir $NAME_PLUS_VER/
 cd $NAME_PLUS_VER/
-tar -zxvf ../$NAME_PLUS_VER.orig.tar.gz
+tar -zxf ../$NAME_PLUS_VER.orig.tar.gz
 
 echo "***   Making 'debian' folder"
 mkdir debian
