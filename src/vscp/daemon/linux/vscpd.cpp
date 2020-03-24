@@ -263,8 +263,8 @@ init(std::string& strcfgfile, std::string& rootFolder)
         fprintf(stderr, "Writing pid file failed.\n");
     }
     else {
-        syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%d\n", sid);
-        fprintf(pFile, "%d\n", sid);
+        syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%umake\n", sid);
+        fprintf(pFile, "%u\n", sid);
         fclose(pFile);
     }
     
