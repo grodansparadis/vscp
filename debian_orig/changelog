@@ -1,5 +1,6 @@
 vscpd (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; urgency=medium
 
+  * Removed unnecessary logging.
   * Initial release
 
  -- Ake Hedman <akhe@vscp.org>  %DATENOW
