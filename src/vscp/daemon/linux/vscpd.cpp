@@ -267,7 +267,6 @@ init(std::string& strcfgfile, std::string& rootFolder)
         fprintf(pFile, "%u\n", sid);
         fclose(pFile);
     }
-    
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
