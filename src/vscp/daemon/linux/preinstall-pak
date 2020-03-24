@@ -8,7 +8,7 @@ VSCP_PROJ_BASE_DIR="/srv/vscp"
 INSTALL_PROGRAM="/usr/bin/install -c"
 
 # Stop VSCP server (in case of update operation)
-if [ -e /var/run/vscpd/vscpd.pid ]; then
+if [ -e /var/run/vscpd.pid ]; then
    /etc/init.d/vscpd stop
 fi
 

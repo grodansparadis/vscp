@@ -257,13 +257,17 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
     // Write pid to file
     FILE* pFile;
-    pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
+    pFile = fopen("/var/run/vscpd.pid", "w");
     if (NULL == pFile) {
-        syslog(LOG_ERR, "%d\n", sid);
+        syslog(LOG_ERR, "Writing pid file failed.\n");
+        fprintf(stderr, "Writing pid file failed.\n");
+    }
+    else {
+        syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%d\n", sid);
         fprintf(pFile, "%d\n", sid);
         fclose(pFile);
-        return -1;
     }
+    
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
@@ -281,7 +285,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
     if (chdir((const char*)rootFolder.c_str())) {
         syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
         fprintf(stderr, "vscpd: Failed to change dir to rootdir");
-        unlink("/var/run/vscpd/vscpd.pid");
+        unlink("/var/run/vscpd.pid");
         if (-1 == chdir("/var/lib/vscp/vscpd")) {
             syslog(
               LOG_ERR,
@@ -357,7 +361,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
             fprintf(stderr,
                     "Unable to start the vscpd application. Exiting.\n");
             syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
-            unlink("/var/run/vscpd/vscpd.pid");
+            unlink("/var/run/vscpd.pid");
             return FALSE;
         }
 
@@ -385,7 +389,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
     } while (gbRestart);
 
     // Remove the pid file
-    unlink("/var/run/vscp/vscpd/vscpd.pid");
+    unlink("/var/run/vscp/vscpd.pid");
 
     fprintf(stderr, "vscpd: ending...\n");
 
