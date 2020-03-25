@@ -630,7 +630,7 @@ CControlObject::run(void)
             // Save time
             clock_gettime(CLOCK_REALTIME, &old_now);
 
-            if (automation(pClientItem)) {
+            if (!automation(pClientItem)) {
                 syslog(LOG_ERR, "Failed to send automation events!");
             }
         }

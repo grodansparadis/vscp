@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-02-20 23:04:24.501111
+                        Generated: 2020-03-25 16:54:45.929209
 */
  
 #ifndef VSCP_TYPE_H
@@ -324,6 +324,8 @@
 #define VSCP_TYPE_INFORMATION_CONNECT               81  /* Connect */
 #define VSCP_TYPE_INFORMATION_DISCONNECT            82  /* Disconnect */
 #define VSCP_TYPE_INFORMATION_RECONNECT             83  /* Reconnect */
+#define VSCP_TYPE_INFORMATION_ENTER                 84  /* Enter */
+#define VSCP_TYPE_INFORMATION_EXIT                  85  /* Exit */
     
 /*  CLASS1.CONTROL = 30  -  Control */
 #define VSCP_TYPE_CONTROL_GENERAL                   0   /* General event */

@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-02-20 23:04:25.670093
+                        Generated: 2020-03-25 16:54:47.085277
 */
  
 
@@ -274,6 +274,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,81) ] = _("VSCP_TYPE_INFORMATION_CONNECT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,82) ] = _("VSCP_TYPE_INFORMATION_DISCONNECT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,83) ] = _("VSCP_TYPE_INFORMATION_RECONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,84) ] = _("VSCP_TYPE_INFORMATION_ENTER");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,85) ] = _("VSCP_TYPE_INFORMATION_EXIT");
 
 	//  CLASS1.CONTROL = 30  -  Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,0) ] = _("VSCP_TYPE_CONTROL_GENERAL");
@@ -1258,6 +1260,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,81) ] = _("VSCP_TYPE_INFORMATION_CONNECT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,82) ] = _("VSCP_TYPE_INFORMATION_DISCONNECT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,83) ] = _("VSCP_TYPE_INFORMATION_RECONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,84) ] = _("VSCP_TYPE_INFORMATION_ENTER");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,85) ] = _("VSCP_TYPE_INFORMATION_EXIT");
 
 	//  CLASS2.LEVEL1.CONTROL = 542  -  Class2 Level I Control
 	// 	Event types is the same as  CLASS1.CONTROL = 30  -  Control
