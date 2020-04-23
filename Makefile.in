@@ -163,3 +163,10 @@ distclean: clean
 deb:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building deb in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) deb ); done
+
+check:
+
+
+distcheck:
+
+
