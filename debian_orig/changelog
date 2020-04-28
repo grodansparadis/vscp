@@ -1,6 +1,6 @@
 vscpd (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; urgency=medium
 
-  * Removed unnecessary logging.
-  * Initial release
+  * Level I driver translation value now initialized and saved, 
+  * systemd service now have user/group set to vscp
 
  -- Ake Hedman <akhe@vscp.org>  %DATENOW
