@@ -8,6 +8,8 @@ Wants=network-online.target
 ExecStart=/usr/sbin/vscpd -c /etc/vscp/vscpd.conf
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
+User=vscp
+Group=vscp
 
 [Install]
 WantedBy=multi-user.target

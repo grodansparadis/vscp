@@ -10,6 +10,8 @@ NotifyAccess=main
 ExecStart=/usr/sbin/vscpd -s -c /etc/vscp/vscpd.conf
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
+User=vscp
+Group=vscp
 
 [Install]
 WantedBy=multi-user.target
