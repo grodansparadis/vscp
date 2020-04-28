@@ -309,7 +309,8 @@ CDeviceList::addItem(const std::string &strName,
             pDeviceItem->m_strParameter   = strParameter;
             pDeviceItem->m_strPath        = strPath;
             pDeviceItem->m_interface_guid = guid;
-
+            pDeviceItem->m_translation    = translation;
+            
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
