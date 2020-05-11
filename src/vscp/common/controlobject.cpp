@@ -1351,8 +1351,8 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
         cguid destguid;
         destguid.getFromArray(pEvent->pdata);
 
-        destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
-        destguid.setAt(1, 0);
+        destguid.setAt(14, 0); // Interface GUID's have LSB bytes nilled
+        destguid.setAt(15, 0);
 
         if (__VSCP_DEBUG_EXTRA) {
             syslog(LOG_DEBUG,
