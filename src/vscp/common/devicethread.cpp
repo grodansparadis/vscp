@@ -451,7 +451,7 @@ deviceThread(void* pData)
             }
 
             bool bActivity;
-            while (pDevItem->m_bQuit) {
+            while (!pDevItem->m_bQuit) {
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
