@@ -57,6 +57,8 @@
 
 VscpRemoteTcpIf::VscpRemoteTcpIf()
 {
+    m_conn = NULL;
+    
     m_bModeReceiveLoop = false;
     m_responseTimeOut = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
     m_innerResponseTimeout = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT;
