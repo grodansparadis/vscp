@@ -1389,7 +1389,7 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
             if (__VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG,
                        "Test if = "
-                       "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s",
+                       "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:  - %s",
                        pItem->m_guid.getAt(0),
                        pItem->m_guid.getAt(1),
                        pItem->m_guid.getAt(2),
@@ -1407,6 +1407,8 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
                        pItem->m_guid.getAt(14),
                        pItem->m_guid.getAt(15),
                        pItem->m_strDeviceName.c_str());
+                syslog(LOG_DEBUG,"Match = %s",
+                        (pItem->m_guid == destguid) ? "true" : false );       
             }
 
             if (pItem->m_guid == destguid) {
