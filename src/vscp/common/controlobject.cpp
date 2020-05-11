@@ -1408,7 +1408,7 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
                        pItem->m_guid.getAt(15),
                        pItem->m_strDeviceName.c_str());
                 syslog(LOG_DEBUG,"Match = %s",
-                        (pItem->m_guid == destguid) ? "true" : false );       
+                        (pItem->m_guid == destguid) ? "true" : "false" );       
             }
 
             if (pItem->m_guid == destguid) {
