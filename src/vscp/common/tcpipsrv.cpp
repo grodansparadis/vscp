@@ -1366,7 +1366,7 @@ tcpipClientObj::handleClientSend(void)
         return;
 
     // Set timestamp block for event
-    vscp_setEventDateTimeBlockToNow(&event);
+    vscp_setEventDateTimeBlockToNow(&event);  // TODO - change to UTC
 
     if (NULL == m_pObj) {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
@@ -1500,7 +1500,7 @@ tcpipClientObj::handleClientSend(void)
     }
 
     // Handle data
-    if (512 < tokens.size()) {
+    if (VSCP_MAX_DATA < tokens.size()) {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
     }
@@ -1536,7 +1536,7 @@ tcpipClientObj::handleClientSend(void)
         event.pdata = NULL;
     }
 
-    // Check if we are allowed top send CLASS1.PROTOCOL events
+    // Check if we are allowed to send CLASS1.PROTOCOL events
     if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
         !checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
 

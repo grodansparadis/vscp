@@ -1357,8 +1357,8 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
         if (__VSCP_DEBUG_EXTRA) {
             syslog(LOG_DEBUG,
                    "Level I event over Level II "
-                   "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
-                   "%d:%d:%d:%d:%d:%d:%d:%d:",
+                   "dest = %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
+                   "%02X:%02X:%02X:%02X:%v:%02X:%02X:%02X:",
                    destguid.getAt(0),
                    destguid.getAt(1),
                    destguid.getAt(2),
@@ -1416,7 +1416,7 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
                 // pDestClientItem = pItem;
                 bSent = true;
                 if (!sendEventToClient(pItem, pEvent)) {
-                    ;
+                    syslog(LOG_DEBUG,"sendEventToClient: Failed!");
                 }
                 break;
             }

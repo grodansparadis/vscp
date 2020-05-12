@@ -85,7 +85,8 @@ deviceThread(void* pData)
     pClientItem->m_bOpen = true;
     if (VSCP_DRIVER_LEVEL1 == pDevItem->m_driverLevel) {
         pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
-    } else if (VSCP_DRIVER_LEVEL2 == pDevItem->m_driverLevel) {
+    }
+    else if (VSCP_DRIVER_LEVEL2 == pDevItem->m_driverLevel) {
         pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2;
     }
 
@@ -440,7 +441,8 @@ deviceThread(void* pData)
             // Wait for workerthreads to abort
             pthread_join(pDevItem->m_level1WriteThread, NULL);
             pthread_join(pDevItem->m_level1ReceiveThread, NULL);
-        } else {
+        }
+        else {
 
             // * * * * Non blocking version * * * *
 
@@ -478,7 +480,8 @@ deviceThread(void* pData)
                                 if (pDevItem->m_interface_guid.isNULL()) {
                                     pDevItem->m_interface_guid.writeGUID(
                                       pev->GUID);
-                                } else {
+                                }
+                                else {
                                     // If no driver GUID set use interface GUID
                                     pClientItem->m_guid.writeGUID(pev->GUID);
                                 }
@@ -539,7 +542,8 @@ deviceThread(void* pData)
                         // Remove the event and the node
                         pClientItem->m_clientInputQueue.pop_front();
                         vscp_deleteEvent(pev);
-                    } else {
+                    }
+                    else {
                         // Another try
                         // pObj->m_semClientOutputQueue.Post();
                         vscp_deleteEvent(pev); // TODO ????
@@ -577,7 +581,6 @@ deviceThread(void* pData)
         pthread_join(pDevItem->m_level1ReceiveThread, NULL);
 
         dlclose(hdll);
-
     }
 
     //*************************************************************************
@@ -837,7 +840,8 @@ deviceLevel1ReceiveThread(void* pData)
                         if (!pDevItem->m_interface_guid.isNULL()) {
                             pDevItem->m_interface_guid.writeGUID(
                               pvscpEvent->GUID);
-                        } else {
+                        }
+                        else {
                             // If no driver GUID set use interface GUID
                             pDevItem->m_pClientItem->m_guid.writeGUID(
                               pvscpEvent->GUID);
@@ -947,7 +951,8 @@ deviceLevel1WriteThread(void* pData)
                                                    &msg,
                                                    300)) {
                 vscp_deleteEvent(pev);
-            } else {
+            }
+            else {
                 // Give it another try
                 sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
             }
@@ -1024,7 +1029,8 @@ deviceLevel2ReceiveThread(void* pData)
             // Set driver GUID if set
             if (!pDevItem->m_interface_guid.isNULL()) {
                 pDevItem->m_interface_guid.writeGUID(pev->GUID);
-            } else {
+            }
+            else {
                 // If no driver GUID set use interface GUID
                 pDevItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
             }
@@ -1042,8 +1048,8 @@ deviceLevel2ReceiveThread(void* pData)
             pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
             pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
             sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-
-        } else {
+        }
+        else {
             if (NULL == pev)
                 vscp_deleteEvent_v2(&pev);
         }
@@ -1098,7 +1104,8 @@ deviceLevel2WriteThread(void* pData)
                 pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
                 pthread_mutex_unlock(
                   &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-            } else {
+            }
+            else {
                 // Give it another try
                 sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
             }
