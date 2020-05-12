@@ -1,6 +1,9 @@
 vscpd (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; urgency=medium
 
-  * Level I driver translation value now initialized and saved, 
-  * systemd service now have user/group set to vscp
+  * vscp_convertEventToCanal
+       node id was not fetched correctly.
+       All level I events over level II was converted incorrectly.
+  * Fixed deadlock.
+  *      
 
  -- Ake Hedman <akhe@vscp.org>  %DATENOW
