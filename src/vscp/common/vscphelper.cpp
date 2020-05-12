@@ -4927,10 +4927,13 @@ vscp_convertEventToCanal(canalMsg* pcanalMsg, const vscpEvent* pvscpEvent)
     short sizeData       = 0;
     uint16_t vscp_class  = 0;
 
-    if (NULL == pcanalMsg)
+    if (NULL == pcanalMsg) {
         return false;
-    if (NULL == pvscpEvent)
+    }
+
+    if (NULL == pvscpEvent) {
         return false;
+    }
 
     sizeData   = pvscpEvent->sizeData;
     vscp_class = pvscpEvent->vscp_class;

@@ -945,11 +945,20 @@ deviceLevel1WriteThread(void* pData)
             }
 
             canalMsg msg;
-            vscp_convertEventToCanal(&msg, pev);
+            if (!vscp_convertEventToCanal(&msg, pev)) {
+                syslog(
+                  LOG_ERR,
+                  "deviceLevel1WriteThread - vscp_convertEventToCanal failed");
+                vscp_deleteEvent(pev);
+            }
+
             if (CANAL_ERROR_SUCCESS ==
                 pDevItem->m_proc_CanalBlockingSend(pDevItem->m_openHandle,
                                                    &msg,
                                                    300)) {
+                syslog(
+                  LOG_ERR,
+                  "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
                 vscp_deleteEvent(pev);
             }
             else {
