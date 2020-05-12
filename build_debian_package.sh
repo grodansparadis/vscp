@@ -9,11 +9,11 @@
 #   arg2 - COMPAT
 
 # Package version
-MAJOR_VERSION=`head -n4  VERSION.m4 |  grep major_version | awk '{print $2}' | tr -d "[] ()"`
-MINOR_VERSION=`head -n4  VERSION.m4 |  grep minor_version | awk '{print $2}' | tr -d "[] ()"`
-RELEASE_VERSION=`head -n4  VERSION.m4 |  grep release_version | awk '{print $2}' | tr -d "[] ()"`
-BUILD_VERSION=`head -n4  VERSION.m4 |  grep build_version | awk '{print $2}' | tr -d "[] ()"`
-RELEASE_DEBIAN=`head -n4  VERSION.m4 |  grep release_debian | awk '{print $2}' | tr -d "[] ()"`
+MAJOR_VERSION=`head -n5  VERSION.m4 |  grep major_version | awk '{print $2}' | tr -d "[] ()"`
+MINOR_VERSION=`head -n5  VERSION.m4 |  grep minor_version | awk '{print $2}' | tr -d "[] ()"`
+RELEASE_VERSION=`head -n5  VERSION.m4 |  grep release_version | awk '{print $2}' | tr -d "[] ()"`
+BUILD_VERSION=`head -n5  VERSION.m4 |  grep build_version | awk '{print $2}' | tr -d "[] ()"`
+RELEASE_DEBIAN=`head -n5  VERSION.m4 |  grep build_version | awk '{print $2}' | tr -d "[] ()"`
 
 NAME_PLUS_VER="vscpd_$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION"
 #BUILD_FOLDER="dist/`date +vscp_build_%y%m%d_%H%M%S`"
@@ -210,7 +210,7 @@ sed -i "s/%MAJOR-VERSION/${MAJOR_VERSION}/g" debian/*
 sed -i "s/%MINOR-VERSION/${MINOR_VERSION}/g" debian/*
 sed -i "s/%RELEASE-VERSION/${RELEASE_VERSION}/g" debian/*
 sed -i "s/%BUILD-VERSION/${BUILD_VERSION}/g" debian/*
-sed -i "s/%RELEASE-DEBIAN/${RELEASE_DEBIAN}/g" debian/*
+sed -i "s/%RELEASE-DEBIAN/${BUILD_VERSION}/g" debian/*
 sed -i "s/%COMPAT/${COMPAT}/g" debian/*
 sed -i "s/%SUBFOLDER/${SUBFOLDER}/g" debian/*
 sed -i "s/%DATENOW/${DATENOW}/g" debian/*

@@ -189,6 +189,7 @@ MAJOR_VERSION=major_version
 MINOR_VERSION=minor_version
 RELEASE_VERSION=release_version
 BUILD_VERSION=build_version
+RELEASE_DEBIAN=build_version
 
 dnl
 dnl Construct Makefiles

@@ -59,3 +59,4 @@ override_dh_auto_install:
 	install -d debian/vscpd/usr/share/man/man8/
 	install man/vscpd.8 debian/vscpd/usr/share/man/man8/vscpd.8
 	install -d debian/vscpd/usr/share/man/man5/
+	
