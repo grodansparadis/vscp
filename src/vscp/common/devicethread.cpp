@@ -514,7 +514,7 @@ deviceThread(void* pData)
                     std::deque<vscpEvent*>::iterator it;
                     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
                     vscpEvent* pev = pClientItem->m_clientInputQueue.front();
-                    pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
+                    pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
                     // Trow away Level II event on Level I interface
                     if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
