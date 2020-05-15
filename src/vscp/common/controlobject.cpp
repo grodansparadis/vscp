@@ -1358,7 +1358,7 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
             syslog(LOG_DEBUG,
                    "Level I event over Level II "
                    "dest = %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
-                   "%02X:%02X:%02X:%02X:%v:%02X:%02X:%02X:",
+                   "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:",
                    destguid.getAt(0),
                    destguid.getAt(1),
                    destguid.getAt(2),

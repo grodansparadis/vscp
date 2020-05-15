@@ -2285,7 +2285,6 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 
     if (vscp_getMeasurementAsDouble(&val64, pEvent)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
         uint8_t* p         = new uint8_t[12];
         if (NULL != p) {
 
@@ -2304,6 +2303,9 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                 (VSCP_CLASS1_MEASUREMENTX3 == pEvent->vscp_class) ||
                 (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class)) {
 
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                pEvent->sizeData = 4 + 8;    
+
                 // Sensor index
                 p[0] = pEvent->pdata[0] & VSCP_MASK_DATACODING_INDEX;
 
@@ -2315,7 +2317,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 
                 // Floating point value
                 val64 = VSCP_UINT64_SWAP_ON_LE(val64);
-                memcpy(p + 4, &val64, sizeof(val64));
+                memcpy(p + 4, (uint8_t *)&val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
 
@@ -2326,6 +2328,9 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                      (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                pEvent->sizeData = 4 + 8;
 
                 // Index = 0, Unit = 0, Zone = 0, Subzone = 0
                 // Floating point value
@@ -2342,6 +2347,9 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                      (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class)) {
 
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                pEvent->sizeData = 4 + 8;
+
                 // Index = 0, Unit = 0, Zone = 0, Subzone = 0
                 // Floating point value
                 val64 = VSCP_UINT64_SWAP_ON_LE(val64);
@@ -2356,6 +2364,9 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                      (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                pEvent->sizeData = 4 + 8;
 
                 // Sensor index
                 p[0] = pEvent->pdata[0];
@@ -2378,6 +2389,9 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                      (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) ||
                      (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class)) {
+
+                pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+                pEvent->sizeData = 4 + 8;
 
                 // Sensor index
                 p[0] = pEvent->pdata[0];
@@ -2433,8 +2447,6 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
 
     if (vscp_getMeasurementAsString(strval, pEvent)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-
         // Must be room for the number
         if ((4 + strval.length() + 1) > VSCP_MAX_DATA) {
             return false;
@@ -2453,6 +2465,9 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
             (VSCP_CLASS1_MEASUREMENTX3 == pEvent->vscp_class) ||
             (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class)) {
 
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->sizeData = 4 + strval.length();
+
             // Sensor index
             p[0] = pEvent->pdata[0] & VSCP_MASK_DATACODING_INDEX;
 
@@ -2462,8 +2477,8 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
             // unit
             p[3] = (pEvent->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
 
-            // Copy in the value string
-            strcpy(p + 4, (const char*)strval.c_str());
+            // Copy in the value string (without terminating zero)
+            memcpy(p + 4, (const char*)strval.c_str(), strval.length());
 
             delete[] pEvent->pdata; // Delete old data
 
@@ -2474,6 +2489,9 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREMENT64X2 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_MEASUREMENT64X3 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_MEASUREMENT64X4 == pEvent->vscp_class)) {
+
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->sizeData = 4 + strval.length();
 
             // Index = 0, Unit = 0, Zone = 0, Subzone = 0
             // Floating point value
@@ -2490,6 +2508,9 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class)) {
 
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->sizeData = 4 + strval.length();
+
             // Index = 0, Unit = 0, Zone = 0, Subzone = 0
             // Floating point value
             // Copy in the value string
@@ -2504,6 +2525,9 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->sizeData = 4 + strval.length();
 
             // Sensor index
             p[0] = pEvent->pdata[0];
@@ -2526,6 +2550,9 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) ||
                  (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class)) {
+
+            pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+            pEvent->sizeData = 4 + strval.length();
 
             // Sensor index
             p[0] = pEvent->pdata[0];
