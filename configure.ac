@@ -153,7 +153,8 @@ dnl
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
- src/vscp/vscpcmd "
+ src/vscp/vscpcmd\
+ tests/helperlib "
 
 AC_ARG_ENABLE(rpi, 
    AS_HELP_STRING([--enable-rpi], [Build Raspberry Pi specific stuff (default disabled)]))
@@ -199,7 +200,8 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/daemon/linux/Makefile 
          src/vscp/vscp-mkpasswd/Makefile 
-         src/vscp/vscpcmd/Makefile 
+         src/vscp/vscpcmd/Makefile
+         tests/helperlib/Makefile  
 ])
 
 

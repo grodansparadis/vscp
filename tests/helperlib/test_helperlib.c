@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../../src/vscp/helperlib/vscphelperlib.h"
+#include <vscphelper.h>
 
 // Output text for happy moments if set to one
 #define verbose_success		0
@@ -2618,6 +2618,12 @@ int main(int argc, char* argv[])
 
     vscphlp_closeSession( handle1 );
     vscphlp_closeSession( handle2 );
+
+    // ---------------------------------------------------------------------------------
+
+    uint8_t iv1[5] = {0xae,0x41,0x83,0x80,0x00};
+    float fval = vscp_getMeasurementAsFloat(iv1,5);
+    printf("Value is %f [16.437500]", fvalue );
 
     printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
     (void)getchar();

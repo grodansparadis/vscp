@@ -1,0 +1,46 @@
+CC = gcc
+CXX = g++
+
+OBJECTS =  vscpd.o \
+	clientlist.o \
+
+
+all:	unit_test
+
+
+#test_helperlib:       test_helperlib.c
+#	cc -std=c99 -UWXDEBUG test_helperlib.c -o test_helperlib -I../.. -I../../src/common -I../../src/vscp/common -L../../src/vscp/helperlib/linux -lm -lvscphelper
+
+unit_test:       unit_test.cpp
+	gcc -std=c++11 unit_test.cpp -o unit_test -I../.. -I../../src/common -I../../src/vscp/common -lm
+
+guid.o: ../../common/guid.cpp ../../common/guid.h
+        $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@
+
+vscpdatetime.o: ../../common/vscpdatetime.cpp ../../common/vscpdatetime.h
+        $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@
+
+vscp_aes.o: ../../../common/vscp_aes.c ../../../common/vscp_aes.h
+        $(CC) $(CFLAGS) -c ../../../common/vscp_aes.c -o $@
+
+crc.o: ../../../common/crc.c ../../../common/crc.h
+        $(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
+
+vscpbase64.o: ../../../common/vscpbase64.c ../../../common/vscpbase64.h
+        $(CC) $(CFLAGS) -c ../../../common/vscpbase64.c -o $@
+
+crc8.o: ../../../common/crc8.c ../../../common/crc8.h
+        $(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@
+
+randpassword.o: ../../../common/randpassword.cpp ../../../common/randpassword.h
+        $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
+
+fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
+        $(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
+
+vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
+        $(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
+
+clean:
+	rm -f unit_test
+	rm -f *.o

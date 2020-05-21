@@ -6685,7 +6685,8 @@ fi
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
- src/vscp/vscpcmd "
+ src/vscp/vscpcmd\
+ tests/helperlib "
 
 # Check whether --enable-rpi was given.
 if test "${enable_rpi+set}" = set; then :
@@ -6722,11 +6723,11 @@ fi
 MAJOR_VERSION=14
 MINOR_VERSION=0
 RELEASE_VERSION=3
-BUILD_VERSION=2
-RELEASE_DEBIAN=2
+BUILD_VERSION=5
+RELEASE_DEBIAN=5
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/vscpcmd/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/vscpcmd/Makefile tests/helperlib/Makefile"
 
 
 
@@ -7428,6 +7429,7 @@ do
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
     "src/vscp/vscp-mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscp-mkpasswd/Makefile" ;;
     "src/vscp/vscpcmd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscpcmd/Makefile" ;;
+    "tests/helperlib/Makefile") CONFIG_FILES="$CONFIG_FILES tests/helperlib/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

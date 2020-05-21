@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-04-24 18:01:04.593789
+                        Generated: 2020-05-17 17:16:22.913806
 */
  
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
@@ -54,15 +54,35 @@
 	m_hashClass[ 513 ] = _("CLASS2_LEVEL1_ALARM");
 	m_hashClass[ 514 ] = _("CLASS2_LEVEL1_SECURITY");
 	m_hashClass[ 522 ] = _("CLASS2_LEVEL1_MEASUREMENT");
+	m_hashClass[ 523 ] = _("CLASS2_LEVEL1_MEASUREMENTX1");
+	m_hashClass[ 524 ] = _("CLASS2_LEVEL1_MEASUREMENTX2");
+	m_hashClass[ 525 ] = _("CLASS2_LEVEL1_MEASUREMENTX3");
+	m_hashClass[ 526 ] = _("CLASS2_LEVEL1_MEASUREMENTX4");
 	m_hashClass[ 527 ] = _("CLASS2_LEVEL1_DATA");
 	m_hashClass[ 532 ] = _("CLASS2_LEVEL1_INFORMATION1");
 	m_hashClass[ 542 ] = _("CLASS2_LEVEL1_CONTROL");
 	m_hashClass[ 552 ] = _("CLASS2_LEVEL1_MULTIMEDIA");
 	m_hashClass[ 562 ] = _("CLASS2_LEVEL1_AOL");
 	m_hashClass[ 572 ] = _("CLASS2_LEVEL1_MEASUREMENT64");
+	m_hashClass[ 573 ] = _("CLASS2_LEVEL1_MEASUREMENT64X1");
+	m_hashClass[ 574 ] = _("CLASS2_LEVEL1_MEASUREMENT64X2");
+	m_hashClass[ 575 ] = _("CLASS2_LEVEL1_MEASUREMENT64X3");
+	m_hashClass[ 576 ] = _("CLASS2_LEVEL1_MEASUREMENT64X4");
 	m_hashClass[ 577 ] = _("CLASS2_LEVEL1_MEASUREZONE");
+	m_hashClass[ 578 ] = _("CLASS2_LEVEL1_MEASUREZONEX1");
+	m_hashClass[ 579 ] = _("CLASS2_LEVEL1_MEASUREZONEX2");
+	m_hashClass[ 580 ] = _("CLASS2_LEVEL1_MEASUREZONEX3");
+	m_hashClass[ 581 ] = _("CLASS2_LEVEL1_MEASUREZONEX4");
 	m_hashClass[ 582 ] = _("CLASS2_LEVEL1_MEASUREMENT32");
+	m_hashClass[ 583 ] = _("CLASS2_LEVEL1_MEASUREMENT32X1");
+	m_hashClass[ 584 ] = _("CLASS2_LEVEL1_MEASUREMENT32X2");
+	m_hashClass[ 585 ] = _("CLASS2_LEVEL1_MEASUREMENT32X3");
+	m_hashClass[ 586 ] = _("CLASS2_LEVEL1_MEASUREMENT32X4");
 	m_hashClass[ 597 ] = _("CLASS2_LEVEL1_SETVALUEZONE");
+	m_hashClass[ 598 ] = _("CLASS2_LEVEL1_SETVALUEZONEX1");
+	m_hashClass[ 599 ] = _("CLASS2_LEVEL1_SETVALUEZONEX2");
+	m_hashClass[ 600 ] = _("CLASS2_LEVEL1_SETVALUEZONEX3");
+	m_hashClass[ 601 ] = _("CLASS2_LEVEL1_SETVALUEZONEX4");
 	m_hashClass[ 602 ] = _("CLASS2_LEVEL1_WEATHER");
 	m_hashClass[ 607 ] = _("CLASS2_LEVEL1_WEATHERFORECAST");
 	m_hashClass[ 612 ] = _("CLASS2_LEVEL1_PHONE");
