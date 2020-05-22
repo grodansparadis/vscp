@@ -153,8 +153,7 @@ dnl
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
- src/vscp/vscpcmd\
- tests/helperlib "
+ src/vscp/vscpcmd "
 
 PROJ_TEST_SUBDIRS="tests/helperlib"
 
