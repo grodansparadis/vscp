@@ -17,6 +17,8 @@ jobs:
       uses: textbook/git-checkout-submodule-action@master
     - name: configure
       run: ./configure
+    - name: googletest_build
+      run: cd googletest && cmake CMakeLists.txt && make  
     - name: make
       run: make
     - name: make check
