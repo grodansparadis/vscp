@@ -18,7 +18,7 @@ jobs:
     - name: configure
       run: ./configure
     - name: googletest_build
-      run: cd googletest && cmake CMakeLists.txt && make  
+      run: cd googletest && cmake CMakeLists.txt 
     - name: make
       run: make
     - name: make check
