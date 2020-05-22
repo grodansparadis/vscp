@@ -321,3 +321,5 @@ src/vscp/drivers/level2/rpilcd/linux/test
 src/vscp/drivers/level2/rpilcd/linux/test-if2
 src/vscp/relayd/a.out
 src/vscp/relayd/relayd
+tests/helperlib/unittest
+
