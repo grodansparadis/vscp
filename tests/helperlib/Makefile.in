@@ -47,7 +47,8 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../../src/common \
 	-I../../src/vscp/common \
 	-I../../src/common/third_party/nlohmann \
-	-I../../googletest/googletest/include
+	-I../../googletest/googletest/include \
+	-L../../googletest/build/lib
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ -L../../googletest/lib -lgtest -lgtest_main
