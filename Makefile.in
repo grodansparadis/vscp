@@ -166,10 +166,12 @@ deb:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building deb in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) deb ); done
 
+googletest:
+	cd googletest && mkdir build && cd build && cmake .. && make
+
 check:
-#	cd googletest ; cmake CMakeLists.txt ; $(MAKE) ; cd ..
-#	@for d in $(PROJ_TEST_SUBDIRS); do (echo "====================================================" &&\
-#	echo "Building and running unit test in testdir " $$d && echo "====================================================" && cd $$d && $(MAKE) && ./unittest); done
+	@for d in $(PROJ_TEST_SUBDIRS); do (echo "====================================================" &&\
+	echo "Building and running unit test in testdir " $$d && echo "====================================================" && cd $$d && $(MAKE) && ./unittest); done
 
 distcheck:
 
