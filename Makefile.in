@@ -152,6 +152,7 @@ clean-conf: delete-all force-conf
 
 clean:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
+	@for d in $(PROJ_TEST_SUBDIRS); do (cd $$d && $(MAKE) clean); done
 	rm -f config.log
 	rm -f config.startup
 	rm -f config.status

@@ -47,11 +47,11 @@ CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments
 	-I../../src/common \
 	-I../../src/vscp/common \
 	-I../../src/common/third_party/nlohmann \
-	-I../../googletest/googletest/include \
-	-L../../googletest/build/lib
+	-I../../googletest/googletest/include
+	
 
 LDFLAGS = 
-EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/lib -lgtest -lgtest_main
+EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main
 DESTDIR=@DESTDIR@
 
 prefix = /usr/local
