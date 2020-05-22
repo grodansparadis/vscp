@@ -22,7 +22,7 @@ jobs:
     - name: make
       run: make 
     - name: googeltest  
-      run: make -f googletest/Makefile
+      run: make -f googletest/build/Makefile all
     - name: make check
       run: make check
     - name: make distcheck
