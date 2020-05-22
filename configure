@@ -623,6 +623,7 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+PROJ_TEST_SUBDIRS
 PROJ_SUBDIRS
 RPI
 VSCPDIR
@@ -6688,6 +6689,8 @@ PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscpcmd\
  tests/helperlib "
 
+PROJ_TEST_SUBDIRS="tests/helperlib"
+
 # Check whether --enable-rpi was given.
 if test "${enable_rpi+set}" = set; then :
   enableval=$enable_rpi;
@@ -6700,6 +6703,7 @@ if test "x$enable_rpi" == "xyes"; then :
   vscp_rpi=yes
 
 fi
+
 
 
 
@@ -8027,13 +8031,14 @@ echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
-echo   "LIBS          : ${LIBS}"
-echo   "EXTRALIBS     : ${EXTRALIBS}"
-echo   "CPPFLAGS      : ${CPPFLAGS}"
-echo   "CXXFLAGS      : ${CXXFLAGS}"
-echo   "CFLAGS        : ${CFLAGS}"
-echo   "LDFLAGS       : ${LDFLAGS}"
-echo   "PROJ_SUBDIRS  : ${PROJ_SUBDIRS}"
+echo   "LIBS               : ${LIBS}"
+echo   "EXTRALIBS          : ${EXTRALIBS}"
+echo   "CPPFLAGS           : ${CPPFLAGS}"
+echo   "CXXFLAGS           : ${CXXFLAGS}"
+echo   "CFLAGS             : ${CFLAGS}"
+echo   "LDFLAGS            : ${LDFLAGS}"
+echo   "PROJ_SUBDIRS       : ${PROJ_SUBDIRS}"
+echo   "PROJ_TEST_SUBDIRS  : ${PROJ_TEST_SUBDIRS}"
 
 if test "${ax_enable_debug}" = "yes"
 then

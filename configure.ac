@@ -156,6 +156,8 @@ PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscpcmd\
  tests/helperlib "
 
+PROJ_TEST_SUBDIRS="tests/helperlib"
+
 AC_ARG_ENABLE(rpi, 
    AS_HELP_STRING([--enable-rpi], [Build Raspberry Pi specific stuff (default disabled)]))
 
@@ -165,6 +167,7 @@ AS_IF([test "x$enable_rpi" == "xyes"], [
 ])
 
 AC_SUBST(PROJ_SUBDIRS)
+AC_SUBST(PROJ_TEST_SUBDIRS)
 
 dnl
 dnl  openssl version
@@ -220,13 +223,14 @@ echo   "Architecture          : $(arch)"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
 dnl Output some debugging information
-echo   "LIBS          : ${LIBS}"
-echo   "EXTRALIBS     : ${EXTRALIBS}"
-echo   "CPPFLAGS      : ${CPPFLAGS}"
-echo   "CXXFLAGS      : ${CXXFLAGS}"
-echo   "CFLAGS        : ${CFLAGS}"
-echo   "LDFLAGS       : ${LDFLAGS}"
-echo   "PROJ_SUBDIRS  : ${PROJ_SUBDIRS}"
+echo   "LIBS               : ${LIBS}"
+echo   "EXTRALIBS          : ${EXTRALIBS}"
+echo   "CPPFLAGS           : ${CPPFLAGS}"
+echo   "CXXFLAGS           : ${CXXFLAGS}"
+echo   "CFLAGS             : ${CFLAGS}"
+echo   "LDFLAGS            : ${LDFLAGS}"
+echo   "PROJ_SUBDIRS       : ${PROJ_SUBDIRS}"
+echo   "PROJ_TEST_SUBDIRS  : ${PROJ_TEST_SUBDIRS}"
 
 dnl echo   "${ax_enable_debug}"
 if test "${ax_enable_debug}" = "yes"

@@ -14,6 +14,7 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
 PROJ_SUBDIRS=@PROJ_SUBDIRS@
+PROJ_TEST_SUBDIRS=@PROJ_TEST_SUBDIRS@
 VSCP_PROJ_BASE_DIR=@VSCPDIR@
 IPADDRESS :=  $(shell hostname -I)
 
@@ -165,7 +166,9 @@ deb:
 	echo "Building deb in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) deb ); done
 
 check:
-
+	cd googletest ; cmake CMakeLists.txt ; make
+	@for d in $(PROJ_TEST_SUBDIRS); do (echo "====================================================" &&\
+	echo "Building and running unit test in testdir " $$d && echo "====================================================" && cd $$d && $(MAKE) && ./unittest); done
 
 distcheck:
 
