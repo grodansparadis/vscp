@@ -39,13 +39,15 @@ CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I@
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
-	-I../../src/common/third_party/nlohmann 
+	-I../../src/common/third_party/nlohmann \
+	-I../../googletest/googletest/include
 CXXFLAGS = -std=c++11 @CXXFLAGS@ ${WARNINGS}
 CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
-	-I../../src/common/third_party/nlohmann 
+	-I../../src/common/third_party/nlohmann \
+	-I../../googletest/googletest/include
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ -L../../googletest/lib -lgtest -lgtest_main

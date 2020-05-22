@@ -39,13 +39,15 @@ CFLAGS = -std=c99  -g -O0 -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNING
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
-	-I../../src/common/third_party/nlohmann 
+	-I../../src/common/third_party/nlohmann \
+	-I../../googletest/googletest/include
 CXXFLAGS = -std=c++11  -g -O0 ${WARNINGS}
 CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments -I../.. \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
-	-I../../src/common/third_party/nlohmann 
+	-I../../src/common/third_party/nlohmann \
+	-I../../googletest/googletest/include
 
 LDFLAGS = 
 EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/lib -lgtest -lgtest_main
