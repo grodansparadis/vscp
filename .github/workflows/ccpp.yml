@@ -20,7 +20,9 @@ jobs:
     - name: googletest_build
       run: cd googletest && mkdir build && cd build && cmake ..
     - name: make
-      run: make && cd googletest && make
+      run: make 
+    - name: googeltest  
+      run: cd googletest && make
     - name: make check
       run: make check
     - name: make distcheck
