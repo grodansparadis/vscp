@@ -2676,8 +2676,6 @@ tcpipClientThread(void* pData)
     ptcpipobj->m_pClientItem->m_strDeviceName +=
       ptcpipobj->m_pObj->m_strTcpInterfaceAddress;
     ptcpipobj->m_pClientItem->m_strDeviceName += ("]");
-    //ptcpipobj->m_pClientItem->m_strDeviceName += ("]|Started at ");
-    //ptcpipobj->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Start of activity
     ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);

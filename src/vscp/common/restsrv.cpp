@@ -542,12 +542,10 @@ restsrv_add_session(struct mg_connection* conn, CUserItem* pUserItem)
     pSession->m_pClientItem->m_pUserItem    = pUserItem;
     vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filter); // Clear filter
     pSession->m_pClientItem->m_bOpen = false; // Start out closed
+    ptcpipobj->m_pClientItem->m_dtutc = vscpdatetime::Now();
     pSession->m_pClientItem->m_type =
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal REST server client.");
-    pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    pSession->m_pClientItem->m_strDeviceName +=
-      vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
