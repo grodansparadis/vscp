@@ -279,10 +279,10 @@ tcpipListenThread(void* pData)
                           "Controlobject: Starting client tcp/ip thread...");
 
                         int err;
-                        if (err = pthread_create(&pClientObj->m_tcpipClientThread,
+                        if ((err = pthread_create(&pClientObj->m_tcpipClientThread,
                                            NULL,
                                            tcpipClientThread,
-                                           pClientObj)) {
+                                           pClientObj))) {
                             syslog(LOG_ERR,
                                    "[TCP/IP srv] -- Failed to run client "
                                    "tcp/ip client thread. error=%d", err);
@@ -2669,13 +2669,15 @@ tcpipClientThread(void* pData)
     }
 
     vscpdatetime now;
+    ptcpipobj->m_pClientItem->m_dtutc = now;
     ptcpipobj->m_pClientItem->m_bOpen = true;
     ptcpipobj->m_pClientItem->m_type  = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-    ptcpipobj->m_pClientItem->m_strDeviceName = ("Remote TCP/IP Server. [");
+    ptcpipobj->m_pClientItem->m_strDeviceName = ("Remote tcp/ip server connection @ [");
     ptcpipobj->m_pClientItem->m_strDeviceName +=
       ptcpipobj->m_pObj->m_strTcpInterfaceAddress;
-    ptcpipobj->m_pClientItem->m_strDeviceName += ("]|Started at ");
-    ptcpipobj->m_pClientItem->m_strDeviceName += now.getISODateTime();
+    ptcpipobj->m_pClientItem->m_strDeviceName += ("]");
+    //ptcpipobj->m_pClientItem->m_strDeviceName += ("]|Started at ");
+    //ptcpipobj->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Start of activity
     ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);
