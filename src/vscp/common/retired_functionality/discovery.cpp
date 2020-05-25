@@ -99,11 +99,10 @@ threadDiscovery(void *data)
 
     // This is an active client
     pObj->m_pClientItem->m_bOpen = true;
+    pObj->m_pClientItem->m_dtutc = vscpdatetime::Now();
     pObj->m_pClientItem->m_type  = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pObj->m_pClientItem->m_strDeviceName =
-      "VSCP node discovery thread.|Started at ";
-    pObj->m_pClientItem->m_strDeviceName +=
-      vscpdatetime::Now().getISODateTime();
+      "VSCP node discovery thread.";
 
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
