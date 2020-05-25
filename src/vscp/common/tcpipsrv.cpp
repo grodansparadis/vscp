@@ -2388,6 +2388,8 @@ tcpipClientObj::handleClientInterface_List(void)
         strBuf += strGUID;
         strBuf += std::string(",");
         strBuf += pItem->m_strDeviceName;
+        strBuf += std::string(" | Started at ");
+        strBuf += pItem->m_dtutc.getISODateTime();
         strBuf += std::string("\r\n");
 
         write(strBuf);
