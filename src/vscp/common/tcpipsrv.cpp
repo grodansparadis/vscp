@@ -278,13 +278,14 @@ tcpipListenThread(void* pData)
                           LOG_DEBUG,
                           "Controlobject: Starting client tcp/ip thread...");
 
-                        if (pthread_create(&pClientObj->m_tcpipClientThread,
+                        int err;
+                        if (err = pthread_create(&pClientObj->m_tcpipClientThread,
                                            NULL,
                                            tcpipClientThread,
                                            pClientObj)) {
                             syslog(LOG_ERR,
                                    "[TCP/IP srv] -- Failed to run client "
-                                   "tcp/ip client thread.");
+                                   "tcp/ip client thread. error=%d", err);
                             delete pClientObj;
                             stcp_close_connection(conn);
                             conn = NULL;
