@@ -541,12 +541,11 @@ websrv_add_session(struct mg_connection* conn)
 
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
+    pSession->m_pClientItem->m_dtutc = vscpdatetime::Now();
     pSession->m_pClientItem->m_type =
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal web server client.");
-    pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    vscpdatetime now = vscpdatetime::Now();
-    pSession->m_pClientItem->m_strDeviceName += now.getISODateTime();
+    
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
