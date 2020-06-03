@@ -198,14 +198,27 @@ class CControlObject {
     bool stopClientMsgWorkerThread(void);
 
     /*!
-        Add a new client to the clinet list
+        Add a new client to the client list
 
         @param Pointer to client that should be added.
         @param Normally not used but can be used to set a special
         client id.
         @return True on success.
-     */
+    */
     bool addClient(CClientItem* pClientItem, uint32_t id = 0);
+
+    /*!
+        Add a new client to the client list using GUID. 
+
+        This add client method is for drivers that specify a
+        full GUID (two lsb nilled).
+
+        @param Pointer to client that should be added.
+        @param guid The guid that is used for the client. Two least
+        significant bytes will be set to zero.
+        @return True on success.
+     */
+    bool addClient(CClientItem* pClientItem, cguid& guid);
 
     /*!
         Add a known node

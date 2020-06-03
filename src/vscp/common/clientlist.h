@@ -244,6 +244,15 @@ class CClientList
     bool addClient(CClientItem *pClientItem, uint32_t id = 0);
 
     /*!
+        Add a client to the list using set GUID
+        @param pClientItem Client to add
+        @param guid The guid that is used for the client. Two least
+        significant bytes will be set to zero.
+        @return true om success.
+    */
+    bool addClient(CClientItem* pClientItem, cguid& guid);
+
+    /*!
         Remove a client from the list
         @param pClientItem Pointer to client item
         @return true on success

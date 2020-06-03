@@ -34,10 +34,10 @@
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
 #define VSCPD_MAJOR_VERSION     14
 #define VSCPD_MINOR_VERSION     0
-#define VSCPD_RELEASE_VERSION   3
-#define VSCPD_BUILD_VERSION     5   
+#define VSCPD_RELEASE_VERSION   4
+#define VSCPD_BUILD_VERSION     1   
 
-#define VSCPD_DISPLAY_VERSION   "14.0.3-5 Silicon"
+#define VSCPD_DISPLAY_VERSION   "14.0.4-1 Silicon"
 
 #define VSCPD_COPYRIGHT                                                        \
     "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, "                \

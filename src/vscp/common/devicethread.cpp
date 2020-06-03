@@ -102,7 +102,7 @@ deviceThread(void* pData)
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
     if (!pObj->addClient(pClientItem,
-                         pDevItem->m_interface_guid.getClientID())) {
+                         pDevItem->m_interface_guid) ) {
         // Failed to add client
         delete pDevItem->m_pClientItem;
         pDevItem->m_pClientItem = NULL;

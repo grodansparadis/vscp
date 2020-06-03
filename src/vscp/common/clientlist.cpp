@@ -271,11 +271,10 @@ CClientList::findFreeId(uint16_t* pid)
 bool
 CClientList::addClient(CClientItem* pClientItem, uint32_t id)
 {
-    std::deque<CClientItem*>::iterator it;
-
     // Check pointer
-    if (NULL == pClientItem)
+    if (NULL == pClientItem) {
         return false;
+    }
 
     pClientItem->m_clientID = id ? id : 1;
 
@@ -286,6 +285,7 @@ CClientList::addClient(CClientItem* pClientItem, uint32_t id)
     }
 
     // We try to assign requested id
+    std::deque<CClientItem*>::iterator it;
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
         CClientItem* pItem = *it;
@@ -298,6 +298,31 @@ CClientList::addClient(CClientItem* pClientItem, uint32_t id)
 
     // Append to list
     m_itemList.push_back(pClientItem);
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addClient
+//
+
+bool
+CClientList::addClient(CClientItem* pClientItem, cguid& guid)
+{
+    // Check pointer
+    if (NULL == pClientItem) {
+        return false;
+    }
+
+    if ( !addClient(pClientItem) ) {
+        return false;
+    }
+
+    // Set the guid
+    pClientItem->m_guid = guid;
+
+    // Make sure nickname id is zero
+    pClientItem->m_guid.setNicknameID(0);
 
     return true;
 }

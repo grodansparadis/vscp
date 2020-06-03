@@ -1485,6 +1485,11 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEventEx* pex)
 bool
 CControlObject::addClient(CClientItem* pClientItem, uint32_t id)
 {
+    // Check pointer
+    if ( NULL == pClientItem ) {
+        return false;
+    }
+
     // Add client to client list
     if (!m_clientList.addClient(pClientItem, id)) {
         return false;
@@ -1496,6 +1501,26 @@ CControlObject::addClient(CClientItem* pClientItem, uint32_t id)
     // Fill in client id
     pClientItem->m_guid.setNicknameID(0);
     pClientItem->m_guid.setClientID(pClientItem->m_clientID);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// addClient - GUID (for drivers with set GUID)
+//
+
+bool
+CControlObject::addClient(CClientItem* pClientItem, cguid& guid)
+{
+    // Check pointer
+    if ( NULL == pClientItem ) {
+        return false;
+    }
+
+    // Add client to client list
+    if (!m_clientList.addClient(pClientItem, guid)) {
+        return false;
+    }
 
     return true;
 }
