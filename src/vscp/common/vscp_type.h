@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-05-17 17:16:22.329229
+                        Generated: 2020-06-11 14:08:10.984084
 */
  
 #ifndef VSCP_TYPE_H
@@ -182,7 +182,7 @@
 #define VSCP_TYPE_MEASUREMENT_INDUCTANCE            23  /* Inductance */
 #define VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT         24  /* Luminous Flux */
 #define VSCP_TYPE_MEASUREMENT_ILLUMINANCE           25  /* Illuminance */
-#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE        26  /* Radiation dose */
+#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_ABSORBED 26 /* Radiation dose (absorbed) */
 #define VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY   27  /* Catalytic activity */
 #define VSCP_TYPE_MEASUREMENT_VOLUME                28  /* Volume */
 #define VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY       29  /* Sound intensity */
@@ -201,9 +201,9 @@
 #define VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE    42  /* Electric elastance */
 #define VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY       43  /* Luminous energy */
 #define VSCP_TYPE_MEASUREMENT_LUMINANCE             44  /* Luminance */
-#define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION 45 /* Chemical concentration */
-#define VSCP_TYPE_MEASUREMENT_RESERVED46            46  /* Reserved */
-#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT       47  /* Dose equivalent */
+#define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION_MOLAR 45 /* Chemical (molar) concentration */
+#define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION_MASS 46 /* Chemical (mass) concentration */
+#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT       47  /* Reserved */
 #define VSCP_TYPE_MEASUREMENT_RESERVED48            48  /* Reserved */
 #define VSCP_TYPE_MEASUREMENT_DEWPOINT              49  /* Dew Point */
 #define VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL        50  /* Relative Level */
@@ -217,6 +217,8 @@
 #define VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE        58  /* Sound pressure (acoustic pressure) */
 #define VSCP_TYPE_MEASUREMENT_SOUND_DENSITY         59  /* Sound energy density */
 #define VSCP_TYPE_MEASUREMENT_SOUND_LEVEL           60  /* Sound level */
+#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ     61  /* Radiation dose (equivalent) */
+#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE 62 /* Radiation dose (exposure) */
     
 /*  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
 #define VSCP_TYPE_MEASUREMENTX1_GENERAL             0   /* General event */
