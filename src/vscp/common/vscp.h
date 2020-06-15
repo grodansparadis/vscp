@@ -388,7 +388,7 @@ extern "C"
 #define VSCP_BOOTLOADER_PIC1      0x01 /* PIC algorithm 0 */
 #define VSCP_BOOTLOADER_AVR1      0x10 /* AVR algorithm 0 */
 #define VSCP_BOOTLOADER_LPC1      0x20 /* NXP/Philips/Freescale algorithm 0 */
-#define VSPP_BOORLOADER_NXP1      0x20 /* NXP/Philips/Freescale algorithm 0 */
+#define VSPP_BOOTLOADER_NXP1      0x20 /* NXP/Philips/Freescale algorithm 0 */
 #define VSCP_BOOTLOADER_ST        0x30 /* ST STR algorithm 0 */
 #define VSCP_BOOTLOADER_FREESCALE 0x40 /* Freescale Kinetics algorithm 0 */
 #define VSCP_BOOTLOADER_NONE      0xff
@@ -408,7 +408,7 @@ extern "C"
 #define VSCP_DATACODING_INTEGER    0x60
 #define VSCP_DATACODING_NORMALIZED 0x80
 #define VSCP_DATACODING_SINGLE     0xA0 /* single precision float */
-#define VSCP_DATACODING_RESERVED1  0xC0
+#define VSCP_DATACODING_DOUBLE     0xC0 /* double precision float */
 #define VSCP_DATACODING_RESERVED2  0xE0
 
 /*
