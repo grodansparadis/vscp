@@ -107,7 +107,8 @@ CONNECT_TEST_OBJECTS = connect_test.o \
 
 ### Targets: ###
 
-all: unittest connect_test
+all: unittest
+#all: unittest connect_test
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
