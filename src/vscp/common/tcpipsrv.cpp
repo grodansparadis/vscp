@@ -392,6 +392,7 @@ tcpipClientObj::tcpipClientObj(tcpipListenThreadObj* pParent)
 
 tcpipClientObj::~tcpipClientObj()
 {
+    pthread_join(m_tcpipClientThread,NULL);
     m_commandArray.clear(); // TODO remove strings
 }
 
