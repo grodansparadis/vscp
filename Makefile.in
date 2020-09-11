@@ -25,7 +25,7 @@ all:
 install-all: install install-folders install-startup-script install-config install-sample-data install-sample-certs install-manpages
 
 install: install-manpages
-    # Install sub components
+# Install sub components
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) install); done
 	@echo
