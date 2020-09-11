@@ -107,7 +107,8 @@ CONNECT_TEST_OBJECTS = connect_test.o \
 
 ### Targets: ###
 
-all: unittest connect_test
+all: unittest
+#all: unittest connect_test
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
@@ -157,8 +158,8 @@ fastpbkdf2.o: ../../src/common/fastpbkdf2.c ../../src/common/fastpbkdf2.h
 vscpmd5.o: ../../src/common/vscpmd5.c ../../src/common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../src/common/vscpmd5.c -o $@
 
-connect_test: $(CONNECT_TEST_OBJECTS)
-	$(CXX) -o $@ $(CONNECT_TEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)	
+#connect_test: $(CONNECT_TEST_OBJECTS)
+#	$(CXX) -o $@ $(CONNECT_TEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)	
 
 unittest: $(UNITTEST_OBJECTS)
 	$(CXX) -o $@ $(UNITTEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)

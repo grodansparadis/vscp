@@ -51,7 +51,7 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = @EXTRALIBS@ -L../../googletest/build/lib -lgtest -lgtest_main -lvscphelper
+EXTRALIBS = @EXTRALIBS@ -L../../googletest/build/lib -lgtest -lgtest_main 
 DESTDIR=@DESTDIR@
 
 prefix = @prefix@
@@ -105,16 +105,16 @@ CONNECT_TEST_OBJECTS = connect_test.o \
 	vscpbase64.o \
 	vscpdatetime.o
 
-### Targets: ###
+### Targets: ###  all: unittest connect_test
 
 all: unittest
-#all: unittest connect_test
+
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
 
 connect_test.o: connect_test.cpp connect_test.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS) -lvscphelper
 
 vscphelper.o: ../../src/vscp/common/vscphelper.cpp ../../src/vscp/common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../src/vscp/common/vscphelper.cpp -o $@
