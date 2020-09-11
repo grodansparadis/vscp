@@ -292,6 +292,9 @@ tcpipListenThread(void* pData)
                             continue;
                         }
 
+                        // Make it detached
+                        pthread_detach(pClientObj->m_tcpipClientThread);
+
                         // Add conn to list of active connections
                         pthread_mutex_lock(&pListenObj->m_mutexTcpClientList);
                         pListenObj->m_tcpip_clientList.push_back(pClientObj);
@@ -392,7 +395,7 @@ tcpipClientObj::tcpipClientObj(tcpipListenThreadObj* pParent)
 
 tcpipClientObj::~tcpipClientObj()
 {
-    pthread_join(m_tcpipClientThread,NULL);
+    pthread_join(m_tcpipClientThread, NULL);
     m_commandArray.clear(); // TODO remove strings
 }
 
@@ -1529,7 +1532,7 @@ tcpipClientObj::handleClientSend(void)
         if (!tokens.empty()) {
             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
 
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
             return;
         }
@@ -1555,7 +1558,7 @@ tcpipClientObj::handleClientSend(void)
               strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
         if (NULL != event.pdata) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 
@@ -1579,7 +1582,7 @@ tcpipClientObj::handleClientSend(void)
               strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
         if (NULL != event.pdata) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 
@@ -1603,7 +1606,7 @@ tcpipClientObj::handleClientSend(void)
               strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
         if (NULL != event.pdata) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 
@@ -1627,7 +1630,7 @@ tcpipClientObj::handleClientSend(void)
               strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
         if (NULL != event.pdata) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 
@@ -1652,7 +1655,7 @@ tcpipClientObj::handleClientSend(void)
               strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
         if (NULL != event.pdata) {
-            delete[] event.pdata;
+            delete [] event.pdata;
             event.pdata = NULL;
         }
 

@@ -21,9 +21,9 @@
 #define verbose_info		1
 
 // Standard connection (a VSCP daemon must be running here)
-#define INTERFACE1_HOST         "127.0.0.1:9598"
+//#define INTERFACE1_HOST         "127.0.0.1:9598"
 //#define INTERFACE1_HOST         "192.168.1.44:9598"  // pi11
-//#define INTERFACE1_HOST         "192.168.1.34:9598"  // pi6
+#define INTERFACE1_HOST         "192.168.1.34:9598"  // pi6
 #define INTERFACE1_USER 	"admin"
 #define INTERFACE1_PASSWORD "secret"
 
