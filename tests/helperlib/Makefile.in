@@ -51,7 +51,7 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = @EXTRALIBS@ -L../../googletest/build/lib -lgtest -lgtest_main
+EXTRALIBS = @EXTRALIBS@ -L../../googletest/build/lib -lgtest -lgtest_main -lvscphelper
 DESTDIR=@DESTDIR@
 
 prefix = @prefix@
@@ -89,12 +89,31 @@ UNITTEST_OBJECTS =  unittest.o \
 	vscpbase64.o \
 	vscpdatetime.o
 
+CONNECT_TEST_OBJECTS = connect_test.o \
+	vscphelper.o \
+	vscpremotetcpif.o \
+	mdf.o \
+	sockettcp.o \
+	guid.o \
+	register.o \
+	crc.o \
+	crc8.o \
+	randpassword.o \
+	vscp_aes.o \
+	fastpbkdf2.o \
+	vscpmd5.o \
+	vscpbase64.o \
+	vscpdatetime.o
+
 ### Targets: ###
 
-all: unittest
+all: unittest connect_test
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
+
+connect_test.o: connect_test.cpp connect_test.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS)
 
 vscphelper.o: ../../src/vscp/common/vscphelper.cpp ../../src/vscp/common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../src/vscp/common/vscphelper.cpp -o $@
@@ -137,6 +156,9 @@ fastpbkdf2.o: ../../src/common/fastpbkdf2.c ../../src/common/fastpbkdf2.h
 
 vscpmd5.o: ../../src/common/vscpmd5.c ../../src/common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../src/common/vscpmd5.c -o $@
+
+connect_test: $(CONNECT_TEST_OBJECTS)
+	$(CXX) -o $@ $(CONNECT_TEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)	
 
 unittest: $(UNITTEST_OBJECTS)
 	$(CXX) -o $@ $(UNITTEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)

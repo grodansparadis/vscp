@@ -583,7 +583,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith("quit") ||
              m_pClientItem->CommandStartsWith("exit")) {
-        // long test = MG_F_CLOSE_IMMEDIATELY;
+
         if (__VSCP_DEBUG_TCP) {
             syslog(LOG_INFO, "[TCP/IP srv] Command: Close.");
         }

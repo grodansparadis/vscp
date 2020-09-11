@@ -35,13 +35,13 @@ WARNINGS = -Wall
 VERSION_DEFS = -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) \
         -DRELEASE_VERSION=$(RELEASE_VERSION) -DBUILD_VERSION=$(BUILD_VERSION)
 
-CFLAGS = -std=c99  -g -O0 -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
+CFLAGS = -std=c99  -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
 	-I../../src/common/third_party/nlohmann \
 	-I../../googletest/googletest/include
-CXXFLAGS = -std=c++11  -g -O0 ${WARNINGS}
+CXXFLAGS = -std=c++11  ${WARNINGS}
 CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments -I../.. \
 	-I. \
 	-I../../src/common \
@@ -51,7 +51,7 @@ CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments
 	
 
 LDFLAGS = 
-EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main
+EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main -lvscphelper
 DESTDIR=@DESTDIR@
 
 prefix = /usr/local
@@ -89,12 +89,31 @@ UNITTEST_OBJECTS =  unittest.o \
 	vscpbase64.o \
 	vscpdatetime.o
 
+CONNECT_TEST_OBJECTS = connect_test.o \
+	vscphelper.o \
+	vscpremotetcpif.o \
+	mdf.o \
+	sockettcp.o \
+	guid.o \
+	register.o \
+	crc.o \
+	crc8.o \
+	randpassword.o \
+	vscp_aes.o \
+	fastpbkdf2.o \
+	vscpmd5.o \
+	vscpbase64.o \
+	vscpdatetime.o
+
 ### Targets: ###
 
-all: unittest
+all: unittest connect_test
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
+
+connect_test.o: connect_test.cpp connect_test.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS)
 
 vscphelper.o: ../../src/vscp/common/vscphelper.cpp ../../src/vscp/common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../src/vscp/common/vscphelper.cpp -o $@
@@ -137,6 +156,9 @@ fastpbkdf2.o: ../../src/common/fastpbkdf2.c ../../src/common/fastpbkdf2.h
 
 vscpmd5.o: ../../src/common/vscpmd5.c ../../src/common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../src/common/vscpmd5.c -o $@
+
+connect_test: $(CONNECT_TEST_OBJECTS)
+	$(CXX) -o $@ $(CONNECT_TEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)	
 
 unittest: $(UNITTEST_OBJECTS)
 	$(CXX) -o $@ $(UNITTEST_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
