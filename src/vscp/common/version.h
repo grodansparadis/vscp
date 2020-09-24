@@ -51,3 +51,4 @@
 #define VSCP_VERSION(major, minor, release)                                    \
     (((major) << 16) | ((minor) << 8) | (release))
 #endif
+

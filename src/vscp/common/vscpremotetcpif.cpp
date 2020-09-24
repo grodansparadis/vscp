@@ -40,10 +40,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <version.h>
-#include <vscp.h>
-#include <vscpdatetime.h>
-#include <vscpremotetcpif.h>
+#include "version.h"
+#include "vscp.h"
+#include "vscpdatetime.h"
+#include "vscpremotetcpif.h"
 
 // Undef to get extra debug info
 //#define DEBUG_INNER_COMMUNICTION
