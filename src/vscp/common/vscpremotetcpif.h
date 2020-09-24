@@ -121,6 +121,22 @@ class VscpRemoteTcpIf
     virtual ~VscpRemoteTcpIf();
 
   public:
+
+    /*!
+        Set connect timeout.
+        @param to Timeout value in **seconds**.
+     */
+    void setConnectTimeout(uint16_t to = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS)
+    {
+        m_connectionTimeOut = to;
+    };
+
+    /*!
+        Get connection timeout (in seconds)
+        @return Connection timeout in **seconds**
+    */
+    uint16_t getConnectTimeout(void) { return m_connectionTimeOut; };
+
     /*!
         Set response timeout.
         @param to Timeout value in milliseconds.
@@ -130,6 +146,12 @@ class VscpRemoteTcpIf
         if (to < 100) to = 1000; // To be backward compatible
         if (to) m_responseTimeOut = to;
     };
+
+    /*!
+        Get response timeout
+        @return Response timeout in milliseconds
+    */
+    uint32_t setResponseTimeout(void)  { return m_responseTimeOut; };
 
     /*!
         Set after command sleep time (milliseconds)
@@ -614,6 +636,9 @@ class VscpRemoteTcpIf
   private:
     /// Flag for active receive loop
     bool m_bModeReceiveLoop;
+
+    /// Server connection timeout in **seconds**
+    uint16_t m_connectionTimeOut;
 
     /// Server response timeout in milliseconds
     uint32_t m_responseTimeOut;

@@ -60,6 +60,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
     m_conn = NULL;      // Not yet used
     
     m_bModeReceiveLoop = false;
+    m_connectionTimeOut = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS;
     m_responseTimeOut = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
     m_innerResponseTimeout = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT;
 
@@ -385,7 +386,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strHostname,
     tokens.pop_front();
 
     m_conn = stcp_connect_remote(
-      (const char*)host.c_str(), port, TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS);
+      (const char*)host.c_str(), port, m_connectionTimeOut);
     if (NULL == m_conn) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER

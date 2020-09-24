@@ -69,7 +69,7 @@ int vscpClientTcp::disconnect(void)
 
 bool vscpClientTcp::isConnected(void)
 {
-    return false;
+    return m_tcp.isConnected();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
