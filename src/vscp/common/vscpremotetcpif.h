@@ -151,7 +151,7 @@ class VscpRemoteTcpIf
         Get response timeout
         @return Response timeout in milliseconds
     */
-    uint32_t setResponseTimeout(void)  { return m_responseTimeOut; };
+    uint32_t getResponseTimeout(void)  { return m_responseTimeOut; };
 
     /*!
         Set after command sleep time (milliseconds)
@@ -495,6 +495,14 @@ class VscpRemoteTcpIf
     int doCmdInterfaceList(std::deque<std::string> &array);
 
     /*!
+        Get server capabilities WCYD
+        WCYD (What Can You Do)
+        @param pwcyd Pointer to uint64_t that receive capability code
+        @return VSCP_ERROR_SUCCESS if OK, else failure code
+    */
+    int doCmdWcyd(uint64_t *pwcyd);
+
+    /*!
         Dummy for Baudrate setting
      */
     int doCmdSetBaudrate(uint32_t baudrate)
@@ -522,7 +530,7 @@ class VscpRemoteTcpIf
     };
 
     /*!
-    Shutdown the VSCP daemon
+        Shutdown the VSCP daemon
      */
     int doCmdShutDown(void);
 
@@ -534,6 +542,13 @@ class VscpRemoteTcpIf
      */
     bool getEventFromLine(vscpEvent *pEvent, const std::string &strLine);
 
+    /*!
+        Get server capabilities WCYD
+        WCYD (What Can You Do)
+        @param pwcyd Pointer to uint64_t that receive capability code
+        @return VSCP_ERROR_SUCCESS if OK, else failure code
+    */
+    int doCmdWcyd(uint64_t &pwcyd);
 
     // ------------------------------------------------------------------------
     //                           R E G I S T E R S

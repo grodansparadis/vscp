@@ -37,21 +37,6 @@ public:
     vscpClientTcp();
     ~vscpClientTcp();
 
-
-    /*!
-        Initialize the tcp client
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    int init(std::string interface, uint32_t flags);
-
-    /*!
-        Initialize the tcp client
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    int init(const std::string &strHostname,
-                  const std::string &strUsername,
-                  const std::string &strPassword);
-
     /*!
         Initialize the tcp client
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -109,7 +94,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -118,6 +103,11 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getcount(uint16_t *pcount);
+
+    /*!
+        Clear the input queue
+    */
+    virtual int clear(void);
 
     /*!
         Get interfaces
@@ -136,17 +126,37 @@ public:
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEvent &ev) = 0;
+   virtual int setCallback(vscpEvent &ev);
 
     /*!
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEventEx &ex) = 0;
+   virtual int setCallback(vscpEventEx &ex);
+
+   /*!
+        Getter/setters for connection timeout
+        Time is in milliseconds
+    */
+    virtual void setConnectionTimeout(uint32_t timeout);
+    virtual uint32_t getConnectionTimeout(void);
+
+    /*!
+        Getter/setters for response timeout
+        Time is in milliseconds
+    */
+    virtual void setResponeTimeout(uint32_t timeout);
+    virtual uint32_t getResponseTimeout(void);
 
 private:
 
     VscpRemoteTcpIf m_tcp;
+
+    // Connection parameters set by init
+    std::string m_strHostname;
+    short m_port;
+    std::string m_strUsername;
+    std::string m_strPassword;
 };
 
 #endif

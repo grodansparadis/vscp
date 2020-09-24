@@ -107,6 +107,11 @@ public:
     virtual int getcount(uint16_t *pcount) = 0;
 
     /*!
+        Clear the input queue
+    */
+    virtual int clear(void) = 0;
+
+    /*!
         Get interfaces
         @param iflist Get a list of available interfaces
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -132,30 +137,20 @@ public:
     virtual int setCallback(vscpEventEx &ex) = 0;
 
     /*!
-        Getter/seters for connection timeout
+        Getter/setters for connection timeout
+        Time is in milliseconds
     */
-    virtual void setConnectionTimeout(uint32_t timeout) { m_connectTimeout = timeout; };
-    virtual uint32_t getConnectionTimeout(void) { return m_connectTimeout; };
+    virtual void setConnectionTimeout(uint32_t timeout) = 0;
+    virtual uint32_t getConnectionTimeout(void) = 0;
 
     /*!
-        Getter/seters for response timeout
+        Getter/setters for response timeout
+        Time is in milliseconds
     */
-    virtual void setResponeTimeout(uint32_t timeout) { m_responseTimeout = timeout; };
-    virtual uint32_t getResponseTimeout(void) { return m_responseTimeout; };
+    virtual void setResponeTimeout(uint32_t timeout) = 0;
+    virtual uint32_t getResponseTimeout(void) = 0;
 
 private:
-
-    /*!
-        Max time allowed to connect to remote device. 
-        Set to zero to use default in each implemention.
-    */
-    uint32_t m_connectTimeout;
-
-    /*!
-        Max time to get response from remote device
-        Set to zero to use default in each implemention.
-    */
-    uint32_t m_responseTimeout;
 
     /*!
         Callback for events

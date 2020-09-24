@@ -46,7 +46,7 @@
 #include "vscpremotetcpif.h"
 
 // Undef to get extra debug info
-//#define DEBUG_INNER_COMMUNICTION
+//#define DEBUG_INNER_COMMUNICATION
 
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
@@ -158,7 +158,7 @@ VscpRemoteTcpIf::doCommand(const char* cmd)
 {
     bool ret = false;
 
-#ifdef DEBUG_INNER_COMMUNICTION
+#ifdef DEBUG_INNER_COMMUNICATION
     VSCP_LOG_DEBUG( "doCommand: " + cmd );
 #endif
 
@@ -173,7 +173,7 @@ cmd.Length() ) ) || n != cmd.Length() ) { return VSCP_ERROR_ERROR;
 
     addInputStringArrayFromReply();
 
-#ifdef DEBUG_INNER_COMMUNICTION
+#ifdef DEBUG_INNER_COMMUNICATION
     VSCP_LOG_DEBUG(
 "------------------------------------------------------------" );
     VSCP_LOG_DEBUG( "checkReturnValue:  Queue before. Responsetime = %u. ",
@@ -184,7 +184,7 @@ m_responseTimeOut ); for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
 "------------------------------------------------------------" ); #endif
 
     if ( !ret ) {
-#ifdef DEBUG_INNER_COMMUNICTION
+#ifdef DEBUG_INNER_COMMUNICATION
         VSCP_LOG_DEBUG( "doCommand: checkReturnValue failed" );
 #endif
         return VSCP_ERROR_ERROR;
@@ -1622,6 +1622,45 @@ VscpRemoteTcpIf::doCmdInterfaceList(std::deque<std::string>& strarray)
 
     return VSCP_ERROR_SUCCESS;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// doCmdWcyd
+//
+
+int VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
+{
+    if ( NULL == pwcyd ) return VSCP_ERROR_INVALID_POINTER;
+
+    if (!isConnected())
+        return VSCP_ERROR_CONNECTION;
+
+    std::string strCmd("wcyd\r\n");
+    if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
+        return VSCP_ERROR_ERROR;
+    }
+
+    if (getInputQueueCount() < 2) {
+        return VSCP_ERROR_ERROR;   
+    } 
+
+    // Fetch capabilities line (aa:bb:cc:dd:ee:ff:gg:hh) eight hex chars
+    std::string strLine = m_inputStrArray[m_inputStrArray.size() - 2];
+
+    if ( strLine.length() < 23 ) return VSCP_ERROR_ERROR;
+    
+    *pwcyd = 0;
+    size_t pos;
+    for ( int i=0; i<8; i++) {
+        *pwcyd = *pwcyd << 8;
+        *pwcyd += std::stoul(strLine,&pos,16);
+        if ( 7 != i) {
+            strLine = strLine.substr(pos+1);  // Take away first part of str "zz:"
+        }
+    }
+
+    return VSCP_ERROR_SUCCESS;    
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdShutdown

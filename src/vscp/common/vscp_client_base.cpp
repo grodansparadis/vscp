@@ -35,8 +35,6 @@
 
 CVscpClient::CVscpClient()
 {
-    m_connectTimeout = 0;
-    m_responseTimeout = 0;
     m_evcallback = NULL;
     m_excallback = NULL;
 }

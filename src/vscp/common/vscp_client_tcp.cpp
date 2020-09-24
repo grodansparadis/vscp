@@ -33,7 +33,11 @@
 
 vscpClientTcp::vscpClientTcp() 
 {
-
+    // Default connect parameters
+    m_strHostname = "localhost";
+    m_port = VSCP_DEFAULT_TCP_PORT;
+    m_strUsername = "admin";
+    m_strPassword = "secret";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +55,10 @@ vscpClientTcp::~vscpClientTcp()
 
 int vscpClientTcp::connect(void) 
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdOpen(m_strHostname,
+                            m_port,
+                            m_strUsername,
+                            m_strPassword);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,7 +67,7 @@ int vscpClientTcp::connect(void)
 
 int vscpClientTcp::disconnect(void)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdClose();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,7 +85,7 @@ bool vscpClientTcp::isConnected(void)
 
 int vscpClientTcp::send(vscpEvent &ev)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdSend(&ev);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,7 +94,7 @@ int vscpClientTcp::send(vscpEvent &ev)
 
 int vscpClientTcp::send(vscpEventEx &ex)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdSendEx(&ex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,7 +103,7 @@ int vscpClientTcp::send(vscpEventEx &ex)
 
 int vscpClientTcp::receive(vscpEvent &ev)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdReceive(&ev);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,7 +112,7 @@ int vscpClientTcp::receive(vscpEvent &ev)
 
 int vscpClientTcp::receive(vscpEventEx &ex)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdReceiveEx(&ex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,7 +121,7 @@ int vscpClientTcp::receive(vscpEventEx &ex)
 
 int vscpClientTcp::setfilter(vscpEventFilter &filter)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdFilter(&filter);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,7 +130,18 @@ int vscpClientTcp::setfilter(vscpEventFilter &filter)
 
 int vscpClientTcp::getcount(uint16_t *pcount)
 {
+    if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
+    *pcount = m_tcp.doCmdDataAvailable();
     return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clear
+//
+
+int vscpClientTcp::clear(void) 
+{
+    return m_tcp.doCmdClear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,7 +150,7 @@ int vscpClientTcp::getcount(uint16_t *pcount)
 
 int vscpClientTcp::getinterfaces(std::deque<std::string> &iflist)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_tcp.doCmdInterfaceList(iflist);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,4 +178,40 @@ int vscpClientTcp::setCallback(vscpEvent &ev)
 int vscpClientTcp::setCallback(vscpEventEx &ex)
 {
     return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setConnectionTimeout
+//
+
+void vscpClientTcp::setConnectionTimeout(uint32_t timeout) 
+{
+    m_tcp.setConnectTimeout(timeout/1000);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getConnectionTimeout
+//
+
+uint32_t vscpClientTcp::getConnectionTimeout(void)
+{
+    return m_tcp.getConnectTimeout();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setResponeTimeout
+//
+
+void vscpClientTcp::setResponeTimeout(uint32_t timeout)
+{
+    m_tcp.setResponseTimeout(timeout);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getResponseTimeout
+//
+
+uint32_t vscpClientTcp::getResponseTimeout(void)
+{
+    return m_tcp.getResponseTimeout();
 }
