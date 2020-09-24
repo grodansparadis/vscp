@@ -36,9 +36,6 @@
 //  This exception does not invalidate any other reasons why a work based on
 //  this file might be covered by the GNU General Public License.
 //
-//  Alternative licenses for VSCP & Friends may be arranged by contacting
-//  eurosource at info@eurosource.se, http://www.eurosource.se
-//
 
 #ifndef _VSCPBOOTLOADER_H_
 #define _VSCPBOOTLOADER_H_

@@ -49,6 +49,7 @@
 
 #include "guid.h"
 #include "mdf.h"
+#include "vscp_bootdevice.h"
 
 // Timeout for response
 #define BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT 5000
@@ -65,12 +66,12 @@ class CBootDevice
     /*!
         Constructor
 
-        @param pdll Pointer to opended CANAL object.
+        @param pClient Pointer to opended CANAL object.
         @param nodeid Nickname/nodeid for node that should be loaded
                         with new code.
         @param bDeviceFound True if VSCP device previously has ben found.
     */
-    CBootDevice(CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound = true);
+    CBootDevice(CVscpClient &pClient, uint8_t nodeid, bool bDeviceFound = true);
 
     /*!
         Constructor
@@ -135,9 +136,9 @@ class CBootDevice
     uint8_t m_nodeid;
 
     /*!
-        Pointer to DLL communication object (Expected to be iopen)
+        Pointer to DLL communication object (Expected to be open)
     */
-    CDllWrapper *m_pdll;
+    CVscpClient *m_pClient;
 
     /*!
         GUID for tcp/ip node
@@ -148,11 +149,6 @@ class CBootDevice
         GUID for remote interface
     */
     cguid m_ifguid;
-
-    /*!
-        Pointer to TCP/IP communication object (Expected to be open)
-    */
-    VscpRemoteTcpIf *m_ptcpip;
 
     /*!
         Set if VSCP Device found. If set to false then the VSCP daevice is

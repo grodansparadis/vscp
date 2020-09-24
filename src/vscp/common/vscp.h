@@ -502,9 +502,9 @@ extern "C"
 #define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM 7
 
     /*
-        Bits for VSCP server 64/16-bit capability code
-        used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
-        and low end 16-bits for
+        Bits for VSCP server 64/16-bit capability code 
+        (WCYD - What Can You Do) used by CLASS1.PROTOCOL, 
+        HIGH END SERVER RESPONSE and low end 16-bits for
         CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
     */
 

@@ -1,6 +1,6 @@
-// vscp_base_client.h.
+// vscp_client_rs232.cpp
 //
-// Virtual base class for client communication classes.
+// RS-232 client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -22,4 +22,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-//
+
+#include "vscp_client_res232.h"
+
