@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
-// Copyright:   (C) 2009-2019
+// Copyright:   (C) 2000-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 // Licence:
 // This program is free software; you can redistribute it and/or
@@ -40,14 +40,14 @@
 //
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "devicebootloaderwizard.h"
+#pragma implementation "vscp_bootdevice.h"
 #endif
 
 #ifdef WIN32
 #include <winsock2.h>
 #endif
 
-#include "bootdevice.h"
+#include "vscp_bootdevice.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Ctor

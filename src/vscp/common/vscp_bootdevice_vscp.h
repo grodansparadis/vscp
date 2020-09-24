@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
-// Copyright:   (C) 2007-2019
+// Copyright:   (C) 2000-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //              (C) 2012 Dinesh Guleria
 // Licence:
@@ -41,7 +41,7 @@
 //
 
 #pragma once
-#include "bootdevice.h"
+#include "vscp_bootdevice.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

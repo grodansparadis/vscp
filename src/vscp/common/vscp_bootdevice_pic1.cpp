@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2019
+// Copyright:   (C) 2000-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -30,7 +30,7 @@
 #include <winsock2.h>
 #endif
 
-#include "bootdevice_pic1.h"
+#include "vscp_bootdevice_pic1.h"
 #include <stdio.h>
 
 ///////////////////////////////////////////////////////////////////////////////

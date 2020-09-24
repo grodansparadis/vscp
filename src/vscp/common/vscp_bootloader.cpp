@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     Thu 25 Oct 2007 22:32:58 CEST
 // RCS-ID:
-// Copyright:   (C) 2007-2019
+// Copyright:   (C) 2000-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //				(C) 2012 Dinesh Guleria
 // Licence:
@@ -41,10 +41,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "vscpbootloader.h"
+#pragma implementation "vscpboot_loader.h"
 #endif
 
-#include "vscpbootloader.h"
+#include "vscp_bootloader.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VSCPBootloader constructors
