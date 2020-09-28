@@ -50,8 +50,7 @@ vscpClientCanal::vscpClientCanal()
 
 vscpClientCanal::~vscpClientCanal() 
 {
-    m_bRun = false;
-    pthread_join(m_tid, NULL); 
+    disconnect();
     pthread_mutex_destroy(&m_mutexif);
 }
 
@@ -93,6 +92,9 @@ int vscpClientCanal::connect(void)
 
 int vscpClientCanal::disconnect(void)
 {
+    m_bRun = false;
+    pthread_join(m_tid, NULL); 
+    
     m_bConnected = false;
     return m_canalif.CanalClose();
 }

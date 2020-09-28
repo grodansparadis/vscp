@@ -25,6 +25,7 @@ find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
 include(FindMosquitto)
+include(FindLibWebSockets)
 
 # add the executable
 add_executable(test 
@@ -64,6 +65,7 @@ target_include_directories(test PUBLIC
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}
+    ${LIBWEBSOCKETS_INCLUDE_DIR}
     )
 
 target_link_libraries(test PRIVATE m
@@ -73,6 +75,7 @@ target_link_libraries(test PRIVATE m
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
     ${MOSQUITTO_LIBRARIES}
+    ${LIBWEBSOCKETS_LIBRARY_DIR}
     )    
 
 #add_library(MathFunctions mysqrt.cxx)

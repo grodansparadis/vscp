@@ -32,11 +32,7 @@
 
 // When a callback is set and connect is called this object is shared
 // with a workerthread that 
-struct treadobject {
-    bool bRun;                          // True as long as thread should run
-    VscpCanalDeviceIf *pcanalif;        // The CANAL interface
-    
-};
+
 class vscpClientCanal : CVscpClient
 {
 

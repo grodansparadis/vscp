@@ -28,14 +28,85 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
+#include "mosquitto.h"
 
-class vscpClientMqtt : CVscpClient
+#include <queue>
+
+enum enumMqttMsgFormat {json,xml};
+
+class vscpClientMqtt : public CVscpClient
 {
 
 public:
 
     vscpClientMqtt();
     ~vscpClientMqtt();
+
+    /*!
+        Set init. information for this client
+
+        @param strHost MQTT broker to connect to. Defaults to "localhost"
+        @param port Port of MQTT broker. Default is 1883        
+        @param strTopicSub Subscription topic. Default is "vscp/#"
+        @param strTopicPub Publishing topic. Escapes can be used
+            %guid% of event
+            %class% VSCP event class
+            %type% VSCP event type
+            %dt% VSCP event date/time
+            Default is "vscp/%guid%/%class%/%type%/"
+        @param clientId Client id to use. If empty string is supplied
+                            a random client id will be set.  
+        @param strUserName Username for connection session. If none is set
+            no username/password will be used.
+        @param strPassword Password for connection session. 
+        @param qos Quality of service (0/1/2). Default to 0.
+    */
+    int init(const std::string &strHost,
+                short port = 1883,                
+                const std::string &strTopicSub = "vscp/#",
+                const std::string &strTopicPub = "vscp/%guid%/%class%/%type%/",
+                const std::string &clientId = "",                
+                const std::string &strUserName = "",
+                const std::string &strPassword = "",
+                bool bCleanSession = false,
+                int qos = 0 );
+
+    /*!
+        Set retain. Should be called before connect. Default is false.
+        @param bRetain Set to true to enable retain.
+    */
+    int setRetain(bool bRetain);
+
+    /*!
+        Set keepalive. Should be called before connect. Default is 30.
+        @param keepAlive Keep alive value.
+    */
+    int setKeepAlive(int keepAlive);
+
+    /*!
+        Configure the client for certificate based SSL/TLS support. Must be called before connect.
+        All parameters here are sent to the mosquitto sub system.
+
+        @param cafile	path to a file containing the PEM encoded trusted CA certificate files.  
+                        Either cafile or capath must not be NULL.
+        @param capath	path to a directory containing the PEM encoded trusted CA certificate files.  
+                        See mosquitto.conf for more details on configuring this directory.  
+                        Either cafile or capath must not be NULL.
+        @param certfile	path to a file containing the PEM encoded certificate file for this client.  
+                        If NULL, keyfile must also be NULL and no client certificate will be used.
+        @param keyfile	path to a file containing the PEM encoded private key for this client.  
+                        If NULL, certfile must also be NULL and no client certificate will be used.
+        @param password	if keyfile is encrypted, password is used to decrypt the file.
+
+        @return VSCP_ERROR_SUCCESS is returned if OK and error code else.
+    */    
+    int set_tls( const std::string &cafile,
+   	                const std::string &capath,
+   	                const std::string &certfile,
+   	                const std::string &keyfile,
+   		            const std::string &password );
+
+    // TODO set will
 
     /*!
         Connect to remote host
@@ -85,7 +156,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -112,15 +183,68 @@ public:
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEvent &ev) = 0;
+   virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
 
     /*!
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEventEx &ex) = 0;
+   virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+public:   
+
+    // True as long as the worker thread should do it's work
+    bool m_bRun;
+
+    /*!
+        True of dll connection is open
+    */
+    bool m_bConnected;
+
+    // Mutex that protect CANAL interface when callbacks are defined
+    pthread_mutex_t m_mutexif;
+
+    enumMqttMsgFormat m_format;         // Format for mqtt events (JSON/XML)
+
+    LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
+    LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
+
+    // If no callback is defined received events are connected in
+    // this queue
+    std::deque<vscpEvent*> m_receiveQueue;
 
 private:
+
+    std::string m_strHost;      // MQTT broker
+    short m_port;               // MQTT broker port
+    std::string m_strTopicSub;  // Subscribe topic template
+    std::string m_strTopicPub;  // Publish topic template
+    std::string m_clientId;     // Client id
+    std::string m_strUserName;  // Username
+    std::string m_strPassword;  // Password
+    int m_qos;                  // Quality of service (0/1/2)
+    bool m_bRetain;             // Enable retain
+    int m_keepalive;            // Keep alive in seconds
+    bool m_bCleanSession;       // Clean session on disconnect if true
+
+    // SSL/TSL
+    bool m_bTLS;                // True of a TLS/SSL connection should be done
+
+    std::string m_cafile;	    // path to a file containing the PEM encoded trusted CA certificate files.  
+                                // Either cafile or capath must not be NULL.
+    std::string m_capath;	    //path to a directory containing the PEM encoded trusted CA certificate files.  
+                                // See mosquitto.conf for more details on configuring this directory.  
+                                // Either cafile or capath must not be NULL.
+    std::string m_certfile;	    //path to a file containing the PEM encoded certificate file for this client.  
+                                // If NULL, keyfile must also be NULL and no client certificate will be used.
+    std::string m_keyfile;      
+
+    std::string m_pwKeyfile;    // Password for keyfile (se only if it is encrypted on disc)
+
+    struct mosquitto *m_mosq;   // Handel for connection
+    
+    // Worker thread id
+    pthread_t m_tid;
 
 };
 

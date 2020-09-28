@@ -51,8 +51,6 @@ vscp_client_base.h
 /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.h
 mosquitto.h
 /home/akhe/development/VSCP/vscp/src/vscp/common/mosquitto.h
-queue
--
 
 /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.h
 config.h

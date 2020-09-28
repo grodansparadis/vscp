@@ -582,6 +582,7 @@ extern "C"
 #define VSCP_ERROR_INVALID_POINTER 48 /* Pointer with invalid value */
 #define VSCP_ERROR_INVALID_PERMISSION 49 /* Not allowed to do that */
 #define VSCP_ERROR_INVALID_PATH    50 /* Invalid path (permissions) */
+#define VSCP_ERROR_ERRNO           51 /* General error, errno variable holds error */
 
 /*
     Template for VSCP XML event data
