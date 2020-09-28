@@ -28,7 +28,15 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
+#include "vscpcanaldeviceif.h"
 
+// When a callback is set and connect is called this object is shared
+// with a workerthread that 
+struct treadobject {
+    bool bRun;                          // True as long as thread should run
+    VscpCanalDeviceIf *pcanalif;        // The CANAL interface
+    
+};
 class vscpClientCanal : CVscpClient
 {
 
@@ -36,6 +44,21 @@ public:
 
     vscpClientCanal();
     ~vscpClientCanal();
+
+    /*!
+        Initialize the CANAL client
+        @param strPath Path to CANAL driver.
+        @param strParameters CANAL driver configuration string.
+        @param flags CANAL driver configuration flags.
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    int init(const std::string &strPath,
+                const std::string &strParameters = "",
+                unsigned long flags = 0,
+                unsigned long baudrate = 0); 
+
+    // Run wizard
+    int runWizard(void);
 
     /*!
         Connect to remote host
@@ -113,16 +136,37 @@ public:
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEvent &ev) = 0;
+   virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
 
     /*!
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEventEx &ex) = 0;
+   virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+public:   
+
+    // True as long as the worker thread should do it's work
+    bool m_bRun;
+
+    // Mutex that protect CANAL interface when callbacks are defined
+    pthread_mutex_t m_mutexif;
+
+    // CANAL functionality
+    VscpCanalDeviceIf m_canalif;
+
+    LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
+    LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
 
 private:
 
+    /*!
+        True of dll connection is open
+    */
+    bool m_bConnected;
+
+    // Worker thread id
+    pthread_t m_tid;
 };
 
 

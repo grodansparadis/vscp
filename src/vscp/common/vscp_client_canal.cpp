@@ -23,23 +23,49 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "vscp_client_canal.h"
+#include <unistd.h>
+#include <pthread.h> 
 
+#include "vscp_client_canal.h"
+#include "vscphelper.h"
+
+// Forward declaration
+void *workerThread(void *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
 //
 
-vscpClientCanal::vscpClientCanal() {
-
+vscpClientCanal::vscpClientCanal() 
+{
+    m_bConnected = false;  // Not connected
+    m_tid = 0;
+    m_bRun = false;
+    pthread_mutex_init(&m_mutexif,NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // D-tor
 //
 
-vscpClientCanal::~vscpClientCanal() {
-    
+vscpClientCanal::~vscpClientCanal() 
+{
+    m_bRun = false;
+    pthread_join(m_tid, NULL); 
+    pthread_mutex_destroy(&m_mutexif);
+}
+
+int vscpClientCanal::init(const std::string &strPath,
+                const std::string &strParameters,
+                unsigned long flags,
+                unsigned long baudrate)
+{
+    m_canalif.CanalSetBaudrate(baudrate);   // Unusual implemention and return value may differ if
+                                            // not implemented so we do not check
+                                            // A standard implemention should return 
+                                            // CANAL_ERROR_NOT_SUPPORTED if this method is not
+                                            // implemented
+    return m_canalif.init(strPath,strParameters,flags);  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +74,17 @@ vscpClientCanal::~vscpClientCanal() {
 
 int vscpClientCanal::connect(void) 
 {
-    return VSCP_ERROR_SUCCESS;
+    int rv = m_canalif.CanalOpen();
+    if ( VSCP_ERROR_SUCCESS == rv ) {
+        m_bConnected = true;
+    }
+
+    // Start worker thread if a callback has been defined
+    if ( (NULL != m_evcallback) || (NULL != m_excallback) ) {
+        int rv = pthread_create(&m_tid, NULL, workerThread, this); 
+    }
+
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +93,17 @@ int vscpClientCanal::connect(void)
 
 int vscpClientCanal::disconnect(void)
 {
-    return VSCP_ERROR_SUCCESS;
+    m_bConnected = false;
+    return m_canalif.CanalClose();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isConnected
+//
+
+bool vscpClientCanal::isConnected(void)
+{
+    return m_bConnected;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,7 +112,12 @@ int vscpClientCanal::disconnect(void)
 
 int vscpClientCanal::send(vscpEvent &ev)
 {
-    return VSCP_ERROR_SUCCESS;
+    canalMsg canalMsg;
+    if ( !vscp_convertEventToCanal(&canalMsg, &ev ) ) {
+        return VSCP_ERROR_PARAMETER;    
+    }
+
+    return m_canalif.CanalSend(&canalMsg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,7 +126,12 @@ int vscpClientCanal::send(vscpEvent &ev)
 
 int vscpClientCanal::send(vscpEventEx &ex)
 {
-    return VSCP_ERROR_SUCCESS;
+    canalMsg canalMsg;
+    if ( !vscp_convertEventExToCanal(&canalMsg, &ex ) ) {
+        return VSCP_ERROR_PARAMETER;    
+    }
+
+    return m_canalif.CanalSend(&canalMsg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +140,17 @@ int vscpClientCanal::send(vscpEventEx &ex)
 
 int vscpClientCanal::receive(vscpEvent &ev)
 {
-    return VSCP_ERROR_SUCCESS;
+    int rv;
+    canalMsg canalMsg;
+    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    
+    if ( CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg) ) ) {
+        return rv;
+    }
+
+    return vscp_convertCanalToEvent(&ev,
+                                    &canalMsg,
+                                    guid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +159,17 @@ int vscpClientCanal::receive(vscpEvent &ev)
 
 int vscpClientCanal::receive(vscpEventEx &ex)
 {
-    return VSCP_ERROR_SUCCESS;
+    int rv;
+    canalMsg canalMsg;
+    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    
+    if ( CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg) ) ) {
+        return rv;
+    }
+
+    return vscp_convertCanalToEventEx(&ex,
+                                        &canalMsg,
+                                        guid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,7 +178,19 @@ int vscpClientCanal::receive(vscpEventEx &ex)
 
 int vscpClientCanal::setfilter(vscpEventFilter &filter)
 {
-    return VSCP_ERROR_SUCCESS;
+    int rv;
+
+    uint32_t _filter = ((unsigned long)filter.filter_priority << 26) |
+                    ((unsigned long)filter.filter_class << 16) |
+                    ((unsigned long)filter.filter_type << 8) | filter.filter_GUID[0];
+    if ( CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
+        return rv;
+    }
+
+    uint32_t _mask = ((unsigned long)filter.mask_priority << 26) |
+                    ((unsigned long)filter.mask_class << 16) |
+                    ((unsigned long)filter.mask_type << 8) | filter.mask_GUID[0];
+    return m_canalif.CanalSetMask(_mask);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,7 +199,7 @@ int vscpClientCanal::setfilter(vscpEventFilter &filter)
 
 int vscpClientCanal::getcount(uint16_t *pcount)
 {
-    return VSCP_ERROR_SUCCESS;
+    return m_canalif.CanalDataAvailable();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,6 +208,7 @@ int vscpClientCanal::getcount(uint16_t *pcount)
 
 int vscpClientCanal::getinterfaces(std::deque<std::string> &iflist)
 {
+    // No interfaces available
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -129,6 +218,7 @@ int vscpClientCanal::getinterfaces(std::deque<std::string> &iflist)
 
 int vscpClientCanal::getwcyd(uint64_t &wcyd)
 {
+    wcyd = VSCP_SERVER_CAPABILITY_NONE;   // No capabilities
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -136,8 +226,11 @@ int vscpClientCanal::getwcyd(uint64_t &wcyd)
 // setCallback
 //
 
-int vscpClientCanal::setCallback(vscpEvent &ev)
+int vscpClientCanal::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
 {
+    // Can not be called when connected
+    if ( m_bConnected ) return VSCP_ERROR_ERROR;
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -145,7 +238,64 @@ int vscpClientCanal::setCallback(vscpEvent &ev)
 // setCallback
 //
 
-int vscpClientCanal::setCallback(vscpEventEx &ex)
+int vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 {
+    // Can not be called when connected
+    if ( m_bConnected ) return VSCP_ERROR_ERROR;
+
     return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Callback workerthread
+//
+// This thread call the appropriate callback when events are received
+//
+
+
+void *workerThread(void *pObj)
+{
+    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    vscpClientCanal *pClient = (vscpClientCanal *)pObj;
+    if (NULL == pif) return NULL;
+
+    while (pClient->m_bRun) {
+
+        pthread_mutex_lock(&pif->m_mutexif);
+        
+        // Check if there are events to fetch
+        int cnt;
+        if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
+
+            while (cnt) {
+                canalMsg msg;
+                if ( CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalReceive(&msg) ) {
+                    if ( NULL != pClient->m_evcallback ) {
+                        vscpEvent ev;
+                        if (vscp_convertCanalToEvent(&ev,
+                                                        &msg,
+                                                        guid) ) {
+                            pClient->m_evcallback(ev);
+                        }
+                    }
+                    if ( NULL != pClient->m_excallback ) {
+                        vscpEventEx ex;
+                        if (vscp_convertCanalToEventEx(&ex,
+                                                        &msg,
+                                                        guid) ) {
+                            pClient->m_excallback(ex);
+                        }
+                    }
+                }
+                cnt--;
+            }
+
+        }
+
+        pthread_mutex_unlock(&pif->m_mutexif);
+        usleep(200);
+    }
+
+    return NULL;
 }

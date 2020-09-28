@@ -1,4 +1,4 @@
-// VscpCanalDeviceIf.cpp : Defines the initialization routines for the DLL.
+// vscpcanaldeviceif.cpp : Defines the initialization routines for the DLL.
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //

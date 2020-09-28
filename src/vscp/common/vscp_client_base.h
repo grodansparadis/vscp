@@ -128,13 +128,13 @@ public:
         Set (and enable) receive callback for events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEvent &ev) = 0;
+   virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback) = 0;
 
     /*!
         Set (and enable) receive callback ex events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(vscpEventEx &ex) = 0;
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback) = 0;
 
     /*!
         Getter/setters for connection timeout

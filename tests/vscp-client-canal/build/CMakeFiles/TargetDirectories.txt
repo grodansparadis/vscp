@@ -1,0 +1,3 @@
+/home/akhe/development/VSCP/vscp/tests/vscp-client-canal/build/CMakeFiles/rebuild_cache.dir
+/home/akhe/development/VSCP/vscp/tests/vscp-client-canal/build/CMakeFiles/edit_cache.dir
+/home/akhe/development/VSCP/vscp/tests/vscp-client-canal/build/CMakeFiles/test.dir

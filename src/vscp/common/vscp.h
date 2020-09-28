@@ -527,6 +527,7 @@ extern "C"
 #define VSCP_SERVER_CAPABILITY_AES256             (1 << 2)  // 4
 #define VSCP_SERVER_CAPABILITY_AES192             (1 << 1)  // 2
 #define VSCP_SERVER_CAPABILITY_AES128             1         // 1
+#define VSCP_SERVER_CAPABILITY_NONE               0         // No capabilities
 
 /*
     Offsets into the data of the capabilities event
