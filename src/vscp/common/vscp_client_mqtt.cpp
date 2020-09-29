@@ -106,7 +106,9 @@ void on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
             }
 
             // Save event in incoming queue
-            pObj->m_receiveQueue.push_back(pEvent);
+            if (pObj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE ) {
+                pObj->m_receiveQueue.push_back(pEvent);
+            }
         }
 
     }
@@ -162,9 +164,16 @@ vscpClientMqtt::vscpClientMqtt()
 
 vscpClientMqtt::~vscpClientMqtt() 
 {
-    disconnect();    
+    disconnect();
     mosquitto_lib_cleanup();     
     pthread_mutex_destroy(&m_mutexif);
+
+    vscpEvent *pev = NULL;
+    while ( m_receiveQueue.size()) {
+        pev = m_receiveQueue.front();
+        m_receiveQueue.pop_front();
+        vscp_deleteEvent_v2(&pev);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -445,18 +454,23 @@ int vscpClientMqtt::send(vscpEventEx &ex)
 //
 
 int vscpClientMqtt::receive(vscpEvent &ev)
-{
+{    
     int rv;
-    canalMsg canalMsg;
-    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    vscpEvent *pev = NULL;
     
-    // if ( CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg) ) ) {
-    //     return rv;
-    // }
+    if ( m_receiveQueue.size()) {
+        
+        pev = m_receiveQueue.front();
+        m_receiveQueue.pop_front();
+        if (NULL == pev) return VSCP_ERROR_MEMORY;
 
-    // return vscp_convertCanalToEvent(&ev,
-    //                                 &canalMsg,
-    //                                 guid);
+        if ( !vscp_copyEvent(&ev, pev) ) {
+            return VSCP_ERROR_MEMORY;
+        }
+
+        vscp_deleteEvent_v2(&pev);
+    }
+ 
     return VSCP_ERROR_SUCCESS;
 }
 

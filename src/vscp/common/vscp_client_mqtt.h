@@ -32,6 +32,10 @@
 
 #include <queue>
 
+// Max number of events in inqueue
+#define MQTT_MAX_INQUEUE_SIZE   2000
+
+// MQTT message formats
 enum enumMqttMsgFormat {json,xml};
 
 class vscpClientMqtt : public CVscpClient
