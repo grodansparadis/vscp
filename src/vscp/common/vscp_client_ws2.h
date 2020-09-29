@@ -37,6 +37,12 @@ public:
     vscpClientWs2();
     ~vscpClientWs2();
 
+    virtual int init(const std::string host,
+                    short port,
+                    const std::string username,
+                    const std::string password,
+                    const std::string vscpkey);
+
     /*!
         Connect to remote host
         @param bPoll If true polling is used.
@@ -94,6 +100,12 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getcount(uint16_t *pcount);
+
+    /*!
+        Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int clear(void);
 
     /*!
         Get interfaces

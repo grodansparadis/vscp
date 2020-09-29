@@ -35,16 +35,14 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_
  /home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h
  /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp
  /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.h
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o
  ../../../src/vscp/common/canal.h
- ../../../src/vscp/common/vscp.h
  ../../../src/vscp/common/vscp_class.h
  ../../../src/vscp/common/vscp_type.h
- ../config.h
+ /home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h
  /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.h
- /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp
- /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.h
- /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.h
+ /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp
+ /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o
  ../../../src/common/third_party/nlohmann/json.hpp
  ../../../src/vscp/common/canal.h
@@ -84,11 +82,11 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.c
  ../../../src/vscp/common/vscphelper.h
  ../config.h
  /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp
-CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o
  ../../../src/vscp/common/canal.h
  ../../../src/vscp/common/vscp.h
  ../../../src/vscp/common/vscp_class.h
  ../../../src/vscp/common/vscp_client_base.h
  ../../../src/vscp/common/vscp_client_mqtt.h
  ../../../src/vscp/common/vscp_type.h
- /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/test-vscp-client-mqtt.cpp
+ /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp

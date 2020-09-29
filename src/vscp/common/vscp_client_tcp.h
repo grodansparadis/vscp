@@ -111,6 +111,7 @@ public:
 
     /*!
         Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int clear(void);
 

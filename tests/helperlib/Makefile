@@ -35,13 +35,13 @@ WARNINGS = -Wall
 VERSION_DEFS = -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) \
         -DRELEASE_VERSION=$(RELEASE_VERSION) -DBUILD_VERSION=$(BUILD_VERSION)
 
-CFLAGS = -std=c99  -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
+CFLAGS = -std=c99  -g -O0 -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
 	-I../../src/common/third_party/nlohmann \
 	-I../../googletest/googletest/include
-CXXFLAGS = -std=c++11  ${WARNINGS}
+CXXFLAGS = -std=c++11  -g -O0 ${WARNINGS}
 CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments -I../.. \
 	-I. \
 	-I../../src/common \
@@ -51,7 +51,7 @@ CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments
 	
 
 LDFLAGS = 
-EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main -lvscphelper
+EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main 
 DESTDIR=@DESTDIR@
 
 prefix = /usr/local
@@ -105,16 +105,16 @@ CONNECT_TEST_OBJECTS = connect_test.o \
 	vscpbase64.o \
 	vscpdatetime.o
 
-### Targets: ###
+### Targets: ###  all: unittest connect_test
 
 all: unittest
-#all: unittest connect_test
+
 
 unittest.o: unittest.cpp unittest.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c unittest.cpp -o $@ $(EXTRALIBS)
 
 connect_test.o: connect_test.cpp connect_test.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c connect_test.cpp -o $@ $(EXTRALIBS) -lvscphelper
 
 vscphelper.o: ../../src/vscp/common/vscphelper.cpp ../../src/vscp/common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../src/vscp/common/vscphelper.cpp -o $@

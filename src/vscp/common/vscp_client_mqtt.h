@@ -36,7 +36,7 @@
 #define MQTT_MAX_INQUEUE_SIZE   2000
 
 // MQTT message formats
-enum enumMqttMsgFormat {json,xml};
+enum enumMqttMsgFormat {jsonfmt,xmlfmt};
 
 class vscpClientMqtt : public CVscpClient
 {
@@ -169,6 +169,12 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getcount(uint16_t *pcount);
+
+    /*!
+        Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int clear(void);
 
     /*!
         Get interfaces

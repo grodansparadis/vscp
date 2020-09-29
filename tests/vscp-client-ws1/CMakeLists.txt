@@ -24,12 +24,11 @@ include(FindEXPAT)
 find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
-include(FindMosquitto)
 include(FindLibWebSockets)
 
 # add the executable
 add_executable(test 
-    test-vscp-client-mqtt.cpp
+    test-vscp-client-ws1.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/guid.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/guid.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscphelper.h
@@ -40,8 +39,8 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpcanaldeviceif.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.cpp
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_mqtt.h
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_mqtt.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws1.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws1.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c
@@ -64,7 +63,6 @@ target_include_directories(test PUBLIC
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
-    ${MOSQUITTO_INCLUDE_DIR}
     ${LIBWEBSOCKETS_INCLUDE_DIR}
     )
 
@@ -74,7 +72,6 @@ target_link_libraries(test PRIVATE m
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
-    ${MOSQUITTO_LIBRARIES}
     ${LIBWEBSOCKETS_LIBRARY_DIR}
     )    
 

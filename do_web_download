@@ -27,5 +27,5 @@ rm -rf /tmp/vscp-ux-master
 echo "Web samples installed to $DESTDIR/web/html"
 echo "Done! \n"
 
-echo "Test by going to http//localhost:8884 or https//localhost:8843"
+echo "Test by going to http://localhost:8884 or https://localhost:8843"
 echo "with the VSCP daemon started."

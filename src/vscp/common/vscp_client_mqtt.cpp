@@ -74,7 +74,7 @@ void on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
     vscpClientMqtt *pObj = (vscpClientMqtt *)pData;
     std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
     
-    if ( json == pObj->m_format ) {
+    if ( jsonfmt == pObj->m_format ) {
         
         vscpEvent ev;
         vscpEventEx ex;
@@ -112,7 +112,7 @@ void on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
         }
 
     }
-    else if ( xml == pObj->m_format ) {
+    else if ( xmlfmt == pObj->m_format ) {
 
     }
     else {
@@ -137,7 +137,7 @@ void on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 
 vscpClientMqtt::vscpClientMqtt() 
 {
-    m_format == json;
+    m_format == jsonfmt;
     m_mosq = NULL;
     m_bConnected = false;  // Not connected
     m_tid = 0;
@@ -349,12 +349,12 @@ int vscpClientMqtt::send(vscpEvent &ev)
     std::string strPayload;
     std::string strTopic;
 
-    if ( m_format == json ) {
+    if ( m_format == jsonfmt ) {
         if ( !vscp_convertEventToJSON(strPayload, &ev) ) {
             return VSCP_ERROR_PARAMETER;    
         }
     }
-    else if ( m_format == xml ) {
+    else if ( m_format == xmlfmt ) {
         if ( !vscp_convertEventToXML(strPayload, &ev) ) {
             return VSCP_ERROR_PARAMETER;    
         }
@@ -404,12 +404,12 @@ int vscpClientMqtt::send(vscpEventEx &ex)
     std::string strPayload;
     std::string strTopic;
 
-    if ( m_format == json ) {
+    if ( m_format == jsonfmt ) {
         if ( !vscp_convertEventExToJSON(strPayload, &ex) ) {
             return VSCP_ERROR_PARAMETER;    
         }
     }
-    else if ( m_format == xml ) {
+    else if ( m_format == xmlfmt ) {
         if ( !vscp_convertEventExToXML(strPayload, &ex) ) {
             return VSCP_ERROR_PARAMETER;    
         }

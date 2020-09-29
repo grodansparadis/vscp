@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt
+CMAKE_SOURCE_DIR = /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build
+CMAKE_BINARY_DIR = /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/test.dir/depend.make
@@ -57,22 +57,22 @@ include CMakeFiles/test.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/test.dir/flags.make
 
-CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: CMakeFiles/test.dir/flags.make
-CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../test-vscp-client-mqtt.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o -c /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/test-vscp-client-mqtt.cpp
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../test-vscp-client-ws1.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o -c /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp
 
-CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/test-vscp-client-mqtt.cpp > CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.i
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/test-vscp-client-ws1.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp > CMakeFiles/test.dir/test-vscp-client-ws1.cpp.i
 
-CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/test-vscp-client-mqtt.cpp -o CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.s
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/test-vscp-client-ws1.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp -o CMakeFiles/test.dir/test-vscp-client-ws1.cpp.s
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.i: cmake_force
@@ -85,7 +85,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.s: 
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.i: cmake_force
@@ -98,7 +98,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.i: cmake_force
@@ -111,7 +111,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.i: cmake_force
@@ -124,7 +124,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldev
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.i: cmake_force
@@ -135,22 +135,22 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.s
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: CMakeFiles/test.dir/flags.make
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o -c /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp > CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.i
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp > CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.i
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.s
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.s
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/vscp/src/common/vscpbase64.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o   -c /home/akhe/development/VSCP/vscp/src/common/vscpbase64.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.i: cmake_force
@@ -163,7 +163,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.s: c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o: /home/akhe/development/VSCP/vscp/src/common/vscpmd5.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o   -c /home/akhe/development/VSCP/vscp/src/common/vscpmd5.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.i: cmake_force
@@ -176,7 +176,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.s: cmak
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o: /home/akhe/development/VSCP/vscp/src/common/crc.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o   -c /home/akhe/development/VSCP/vscp/src/common/crc.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.i: cmake_force
@@ -189,7 +189,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.s: cmake_fo
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o: /home/akhe/development/VSCP/vscp/src/common/crc8.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o   -c /home/akhe/development/VSCP/vscp/src/common/crc8.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.i: cmake_force
@@ -202,7 +202,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.s: cmake_f
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o: /home/akhe/development/VSCP/vscp/src/common/vscp_aes.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o   -c /home/akhe/development/VSCP/vscp/src/common/vscp_aes.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.i: cmake_force
@@ -215,7 +215,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.s: cma
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o: /home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o   -c /home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c
 
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.i: cmake_force
@@ -228,13 +228,13 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.s: c
 
 # Object files for target test
 test_OBJECTS = \
-"CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o" \
+"CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o" \
-"CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o" \
+"CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o" \
@@ -245,13 +245,13 @@ test_OBJECTS = \
 # External object files for target test
 test_EXTERNAL_OBJECTS =
 
-test: CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o
+test: CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o
-test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o
+test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o
@@ -264,9 +264,8 @@ test: /usr/lib/x86_64-linux-gnu/libcrypto.so
 test: /usr/lib/x86_64-linux-gnu/libssl.so
 test: /usr/lib/x86_64-linux-gnu/libcrypto.so
 test: /usr/lib/x86_64-linux-gnu/libexpat.so
-test: /usr/lib/x86_64-linux-gnu/libmosquitto.so
 test: CMakeFiles/test.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/test.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -279,6 +278,6 @@ CMakeFiles/test.dir/clean:
 .PHONY : CMakeFiles/test.dir/clean
 
 CMakeFiles/test.dir/depend:
-	cd /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build /home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles/test.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build /home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/test.dir/depend
 

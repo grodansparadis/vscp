@@ -7,11 +7,11 @@ file(REMOVE_RECURSE
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o"
-  "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o"
+  "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o"
-  "CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o"
+  "CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o"
   "test"
   "test.pdb"
 )
