@@ -656,7 +656,8 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
                "[websrv] check_admin_authorization: Admin user [%s] i not "
                "available.",
                gpobj->m_admin_user.c_str());
-        mg_send_basic_access_authentication_request(conn, NULL);
+        //mg_send_basic_access_authentication_request(conn, NULL);  // 1.13
+        mg_send_digest_access_authentication_request(conn, NULL);
         return 401;
     }
 
@@ -665,7 +666,8 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
         syslog(LOG_ERR,
                "[websrv] check_admin_authorization: Authorization header or "
                "digest missing for admin log in.");
-        mg_send_basic_access_authentication_request(conn, NULL);
+        //mg_send_basic_access_authentication_request(conn, NULL); 1.13
+        mg_send_digest_access_authentication_request(conn,NULL);
         return 401;
     }
 
@@ -684,7 +686,8 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
                                  strlen(buf) + 1,
                                  decoded,
                                  &len)) {
-        mg_send_basic_access_authentication_request(conn, NULL);
+        //mg_send_basic_access_authentication_request(conn, NULL); 1.13
+        mg_send_digest_access_authentication_request(conn,NULL);
         return 401;
     }
 
@@ -716,7 +719,8 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
                "allowed connect. User [%s]. Wrong user/password",
                (const char*)reqinfo->remote_addr,
                (const char*)pUserItem->getUserName().c_str());
-        mg_send_basic_access_authentication_request(conn, NULL);
+        //mg_send_basic_access_authentication_request(conn, NULL); 1.13
+        mg_send_digest_access_authentication_request(conn,NULL);
         return 401;
     }
 
@@ -732,7 +736,8 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
                "NOT allowed to connect. User [%s]",
                (const char*)reqinfo->remote_addr,
                (const char*)pUserItem->getUserName().c_str());
-        mg_send_basic_access_authentication_request(conn, NULL);
+        // mg_send_basic_access_authentication_request(conn, NULL); 1.13
+        mg_send_digest_access_authentication_request(conn,NULL);
         return 401;
     }
 

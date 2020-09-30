@@ -36,13 +36,14 @@ VERSION_DEFS = -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION)
         -DRELEASE_VERSION=$(RELEASE_VERSION) -DBUILD_VERSION=$(BUILD_VERSION)
 
 CIVETWEB_FLAGS = -DUSE_IPV6 -DUSE_WEBSOCKET \
-	-DUSE_LUA -DUSE_DUKTAPE -DUSE_ZLIB -DUSE_SERVER_STATS
+	-DUSE_LUA -DLUA_COMPAT_APIINTCASTS -DLUA_COMPAT_LOG10 \
+	-DUSE_DUKTAPE -DUSE_ZLIB -DUSE_SERVER_STATS
 CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I@top_srcdir@ \
 	-I. \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party -I../../../common/third_party/lua-5.3.5/src/ \
+	-I../../../common/third_party -I../../../common/third_party/lua-5.4.0/src/ \
 	-I../../../common/third_party/duktape-2.5.0/src/ \
 	-I../../../common/third_party/sqlite3-3.30.1/
 CFLAGS += $(CIVETWEB_FLAGS) 
@@ -52,7 +53,7 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party -I../../../common/third_party/lua-5.3.5/src/ \
+	-I../../../common/third_party -I../../../common/third_party/lua-5.4.0/src/ \
 	-I../../../common/third_party/duktape-2.5.0/src/ \
 	-I../../../common/third_party/sqlite3-3.30.1/
 CPPFLAGS += $(CIVETWEB_FLAGS) 
