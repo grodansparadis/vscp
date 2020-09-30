@@ -2379,8 +2379,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         bRemoteUserConfigFound = TRUE;
     }
     else if (bVscpConfigFound && bRemoteUserConfigFound &&
-             (2 == depth_full_config_parser) &&
-             (0 == vscp_strcasecmp(name, "user"))) {
+             (2 == depth_full_config_parser) /*&&
+             (0 == vscp_strcasecmp(name, "user"))*/) {
 
         vscpEventFilter VSCPFilter;
         bool bFilterPresent = false;
@@ -2395,7 +2395,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 
         vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
-        for (int i = 0; attr[i]; i += 2) {
+        for (int i=0; attr[i]; i += 2) {
 
             std::string attribute = attr[i + 1];
             vscp_trim(attribute);
@@ -2434,32 +2434,32 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                         bMaskPresent = true;
                     }
                 }
-            }
+            }            
+        }
 
-            if (bFilterPresent && bMaskPresent) {
-                pObj->m_userList.addUser(name,
-                                         md5,
-                                         fullname,
-                                         note,
-                                         pObj->m_web_authentication_domain,
-                                         &VSCPFilter,
-                                         privilege,
-                                         allowfrom,
-                                         allowevent,
-                                         0);
-            }
-            else {
-                pObj->m_userList.addUser(name,
-                                         md5,
-                                         fullname,
-                                         note,
-                                         pObj->m_web_authentication_domain,
-                                         NULL,
-                                         privilege,
-                                         allowfrom,
-                                         allowevent,
-                                         0);
-            }
+        if (bFilterPresent && bMaskPresent) {
+            pObj->m_userList.addUser(name,
+                                        md5,
+                                        fullname,
+                                        note,
+                                        pObj->m_web_authentication_domain,
+                                        &VSCPFilter,
+                                        privilege,
+                                        allowfrom,
+                                        allowevent,
+                                        0);
+        }
+        else {
+            pObj->m_userList.addUser(name,
+                                        md5,
+                                        fullname,
+                                        note,
+                                        pObj->m_web_authentication_domain,
+                                        NULL,
+                                        privilege,
+                                        allowfrom,
+                                        allowevent,
+                                        0);
         }
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&

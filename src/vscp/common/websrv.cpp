@@ -3402,12 +3402,12 @@ start_webserver(void)
         web_options[pos++] = vscp_strdup("yes");
     }
 
-    if (gpobj->lua_websocket_pattern.length()) {
-        web_options[pos++] =
-          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
-        web_options[pos++] =
-          vscp_strdup((const char*)gpobj->lua_websocket_pattern.c_str());
-    }
+    // if (gpobj->lua_websocket_pattern.length()) {   // !!! Duplicate  ????
+    //     web_options[pos++] =
+    //       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
+    //     web_options[pos++] =
+    //       vscp_strdup((const char*)gpobj->lua_websocket_pattern.c_str());
+    // }
 
     // Mark end
     web_options[pos++] = NULL;

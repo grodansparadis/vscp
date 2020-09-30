@@ -88,7 +88,7 @@ startWebsocket()
 {
 	char ebuf[100] = {0};
 	const char *path = "/ws2";
-	newconn1 = mg_connect_websocket_client( "127.0.0.1"/*"echo.websocket.org"*/, // host
+	newconn1 = mg_connect_websocket_client( "192.168.1.7"/*"echo.websocket.org"*/, // host
 	                                       8884 /*443*/,     // port
 	                                       0 /*1*/,       	 // ssl
 	                                       ebuf,
