@@ -2645,6 +2645,10 @@ endFullConfigParser(void* data, const char* name)
         bVscpConfigFound = FALSE;
     }
     if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "remoteuser"))) {
+        bRemoteUserConfigFound = FALSE;
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
         ((0 == vscp_strcasecmp(name, "level1driver")) ||
          (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = FALSE;
