@@ -43,9 +43,12 @@ CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I@
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party -I../../../common/third_party/lua-5.4.0/src/ \
+	-I../../../common/third_party \
+	-I../../../common/third_party/lua-5.4.0/src/ \
 	-I../../../common/third_party/duktape-2.5.0/src/ \
-	-I../../../common/third_party/sqlite3-3.30.1/
+	-I../../../common/third_party/sqlite3-3.30.1/ \
+	-I ../../../common/third_party/civetweb-1.13/include/ \
+	-I ../../../common/third_party/civetweb-1.13/src/
 CFLAGS += $(CIVETWEB_FLAGS) 
 CXXFLAGS = -std=c++11 @CXXFLAGS@ ${WARNINGS}
 CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
@@ -53,9 +56,12 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party -I../../../common/third_party/lua-5.4.0/src/ \
+	-I../../../common/third_party \
+	-I../../../common/third_party/lua-5.4.0/src/ \
 	-I../../../common/third_party/duktape-2.5.0/src/ \
-	-I../../../common/third_party/sqlite3-3.30.1/
+	-I../../../common/third_party/sqlite3-3.30.1/ \
+	-I ../../../common/third_party/civetweb-1.13/include/ \
+	-I ../../../common/third_party/civetweb-1.13/src/
 CPPFLAGS += $(CIVETWEB_FLAGS) 
 
 LDFLAGS = @LDFLAGS@
@@ -208,8 +214,8 @@ fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-civetweb.o: ../../../common/civetweb.c ../../../common/civetweb.h
-	$(CC) $(CFLAGS) $(CIVETWEB_FLAGS) -c ../../../common/civetweb.c -o $@
+civetweb.o: ../../../common/third_party/civetweb-1.13/src/civetweb.c ../../../common/third_party/civetweb-1.13/include/civetweb.h
+	$(CC) $(CFLAGS) $(CIVETWEB_FLAGS) -c ../../../common/third_party/civetweb-1.13/src/civetweb.c -o $@
 
 duktape.o: ../../../common/third_party/duktape-2.5.0/src/duktape.c ../../../common/third_party/duktape-2.5.0/src/duktape.h
 	$(CC) $(CFLAGS) -c ../../../common/third_party/duktape-2.5.0/src/duktape.c -o $@
