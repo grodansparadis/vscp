@@ -11,7 +11,7 @@
 
 #include "vscp_client_mqtt.h"
 
-#define XML_BUFF_SIZE 0xffff
+#define WS2_RESPONSE_TIMEOUT	2000	
 
 // for convenience
 using json = nlohmann::json;
@@ -31,20 +31,6 @@ typedef enum ws2_substates {ws2_idle,ws2_waiting} ws2_substates;
 // 						ws2cmd	/* Command send/reply */} enumType;
 // typedef enum enumCommand {ws2auth,ws2open,ws2close} enumComman;
 
-struct ws2_response {
-	enumType type;
-	enumCommand cmd;
-	std::deque<std::string> args;
-	int error_code;
-	std::string error_str;
- };
-
-struct ws2_package {
-	enumType type;
-	std::string cmd;
-	std::deque<std::string> args;
-};
-
 const char *user = "admin";
 const char *password = "secret";
 uint8_t vscpkey[] = { 0xA4,0xA8,0x6F,0x7D,0x7E,0x11,0x9B,0xA3,
@@ -54,9 +40,9 @@ uint8_t vscpkey[] = { 0xA4,0xA8,0x6F,0x7D,0x7E,0x11,0x9B,0xA3,
 
 sem_t sem_msg; 
 
+std::deque<std::string> receiveQueue;
+
 struct tclient_data {
-	//void *data;
-	//size_t len;
 	int closed;
 	std::deque<std::string> receiveQueue;
 };
@@ -64,98 +50,7 @@ struct tclient_data {
 struct tclient_data client1_data; // = {NULL, 0, 0};
 struct mg_connection *newconn1 = NULL;
 
-///////////////////////////////////////////////////////////////////////////////
-// ws2_parse_resp
-//
 
-int ws2_parse_resp( struct ws2_response *presp, std::string& strws2pkt)
-{
-	// Check pointer
-	if (NULL == presp ) {
-		return VSCP_TYPE_ERROR_INVALID_POINTER;
-	}
-
-	try {
-		json json_pkg = json::parse(strws2pkt.c_str());
-
-		if (json_pkg.find("type") != json_pkg.end()) {
-			
-			std::string type = json_pkg.at("type").get<std::string>();
-			vscp_trim(type);
-			vscp_makeUpper(type);
-			
-			if ( type == "+") {
-				presp->type = ws2pos;
-			}
-			else if ( type == "-" ) {
-				presp->type = ws2neg;
-			}
-		}
-
-		if (json_pkg.find("error_code") != json_pkg.end()) {
-			presp->error_code = json_pkg.at("erro_code").get<int>();
-		}
-
-		if (json_pkg.find("error_str") != json_pkg.end()) {
-			presp->error_str = json_pkg.at("error_str").get<std::string>();
-		}
-
-		for (auto it = json_pkg.begin(); it != json_pkg.end(); ++it) {
-			if ("args" == it.key()) {	
-				std::deque<std::string> queue = it.value();
-				presp->args = queue; 									
-			}
-		}
-	}
-	catch (...) {
-		return VSCP_ERROR_ERROR;
-	}
-
-	return VSCP_ERROR_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ws2_create_json
-//
-
-int ws2_send_pkg( json& j,struct ws2_package *ppkg )
-{
-	// Check pointer
-	if (NULL == ppkg ) {
-		return VSCP_TYPE_ERROR_INVALID_POINTER;
-	}
-
-	json templ_cmd = {
-		{"type","cmd"},
-		{"command","noop"},
-		{"args",nullptr}
-	};
-	templ_cmd["args"]["iv"] = "5a475c082c80dcdf7f2dfbd976253b24";
-	templ_cmd["args"]["crypto"] = "89d599aceb8e846dc3daf6cd33ce5e6d";
-
-	switch (ppkg->type) {
-
-		case ws2pos:
-			j["type"] = "+";
-			break;
-		
-		case ws2neg:
-			j["type"] = "-";
-			break;
-
-		case ws2cmd:
-			j["type"] = "cmd";
-			break;			
-	}
-
-	if ( ws2cmd == ppkg->type ) {
-		j["type"] = ppkg->cmd;
-	}
-
-	j["args"] = ppkg->args;
-
-	return VSCP_ERROR_SUCCESS;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // ws2_make_auth_pkg
@@ -247,11 +142,50 @@ websocket_client_close_handler(const struct mg_connection *conn,
 	    (struct tclient_data *)mg_get_user_data(ctx);
 
 	printf("Client: Close handler\n");
-	pclient_data->closed++;
+	//pclient_data->closed++;
 }
 
-void
-startWebsocket()
+///////////////////////////////////////////////////////////////////////////////
+// waitForResponse
+//
+
+int waitForResponse( uint32_t timeout )
+{	
+	time_t ts;
+	time(&ts);
+
+	struct timespec to;
+	to.tv_nsec = 0;
+	to.tv_sec = ts + timeout/1000;
+
+	if ( -1 == sem_timedwait(&sem_msg,&to) ) {
+		printf("!!!!!!!!!!!!!!!!! Error = %d\n",errno);
+		switch(errno) {
+
+			case EINTR:
+				return VSCP_ERROR_INTERUPTED;
+
+			case EINVAL:
+				return VSCP_ERROR_PARAMETER;
+
+			case EAGAIN:
+				return VSCP_ERROR_ERROR;
+
+			case ETIMEDOUT:	
+			default:
+				return VSCP_ERROR_TIMEOUT;
+		}
+
+	}
+
+	return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// startWebsocket
+//
+
+void startWebsocket()
 {
 	char ebuf[100] = {0};
 	const char *path = "/ws2";
@@ -268,7 +202,7 @@ startWebsocket()
 
 	if (newconn1 == NULL) {
 		printf("Error: %s\n", ebuf);
-	} 
+	}
 	else {
 
 		// Response will be something like
@@ -286,121 +220,86 @@ startWebsocket()
 			a secret key between the VSCP daemon and a client
 		*/
 
-		sem_wait(&sem_msg);
-		std::string strWsPkt = client1_data.receiveQueue.front();		
+		// struct timespec to;
+		// time_t ts;
+		// time(&ts);
+		// to.tv_nsec = 0;
+		// to.tv_sec = ts + WS2_RESPONSE_TIMEOUT;
+		// if ( -1 == sem_timedwait(&sem_msg,&to) ) {
+		// 	printf("!!!!!!!!!!!!!!!!! Error = %d\n",errno);
+		// 	switch(errno) {
+
+		// 	}
+		// 	return;
+		// }
+
+		if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+			printf("ERROR or TIMEOUT\n");
+			return;
+		}
+		std::string strws2pkt = client1_data.receiveQueue.front();		
 		client1_data.receiveQueue.pop_front();
+		printf("strWsPkt = %s\n",strws2pkt.c_str());
 
-		printf("strWsPkt = %s\n",strWsPkt.c_str());
-
-		struct ws2_response *presponse = (struct ws2_response *)new struct ws2_response;
-		json json_pkg = json::parse(strWsPkt.c_str());
-		if (json_pkg.find("type") != json_pkg.end()) {
-
-            std::string type = json_pkg.at("type").get<std::string>();
-            vscp_trim(type);
-            vscp_makeUpper(type);
-			printf("Type = %s\n", type.c_str());
-			if ( type == "+") {
-				presponse->type = ws2pos;
-			}
-			else if ( type == "-" ) {
-				presponse->type = ws2neg;
-			}
-			else if ( type == "CMD" ) {
-				presponse->type = ws2cmd;
-			}
+		json j;
+		try {
+			j = json::parse(strws2pkt.c_str());
+		}
+		catch (...) {
+			printf("Parsing error\n");
+			return;
 		}
 
-		if (json_pkg.find("command") != json_pkg.end()) {
-
-            // presponse->command = json_pkg.at("command").get<std::string>();
-            // vscp_trim(presponse->command);
-            // vscp_makeUpper(presponse->command);
-			// printf("Type = %s\n", presponse->command.c_str());
-		}
-
-		if (json_pkg.find("error_code") != json_pkg.end()) {
-
-            presponse->error_code = json_pkg.at("erro_code").get<int>();
-			printf("error-code = %d\n", presponse->error_code);
-		}
-
-		if (json_pkg.find("error_str") != json_pkg.end()) {
-
-            presponse->error_str = json_pkg.at("error_str").get<std::string>();
-            vscp_trim(presponse->error_str);
-            vscp_makeUpper(presponse->error_str);
-			printf("error-str = %s\n", presponse->error_str.c_str());
-		}
-
-		uint8_t sid[16];
-		for (auto it = json_pkg.begin(); it != json_pkg.end(); ++it) {
-			if ("args" == it.key()) {	
-				std::deque<std::string> ll = it.value();
-				presponse->args = ll; //it.value();
-				printf("args size = %ld\n",presponse->args.size());
-				std::map<std::string, std::string> argmap;
-				for ( int i = 0; i <= presponse->args.size(); i++) {
-					std::string str = presponse->args.front();
-					presponse->args.pop_front();
-					printf("arg %d = %s\n",i, str.c_str());
-					if ( 1 == i) {
-						printf("size = %ld\n",vscp_hexStr2ByteArray(sid,16,str.c_str()));
-					}
-				}
-				// try {
-				// 	for (auto it = json_obj.begin(); it != json_obj.end(); ++it) {
-				// 		if (it.value().is_string()) {
-				// 			argmap[it.key()] = it.value();
-				// 			printf("%s = %s\n",it.key().c_str(),argmap[it.key()].c_str());
-				// 		}
-				// 	}
-				// }
-				// catch (...) {
-				// 	printf("ERROR\n");
-				// }					
-			}
-		}
-
-		const char *text = "Can you hear me, Major Tom?";
-		printf("OK ... sending text\n");
-
+		std::string sidstr;
 		uint8_t iv[16];
-		std::string result;
-		std::string str_iv = "5a475c082c80dcdf7f2dfbd976253b24";
-		printf("size = %ld\n",vscp_hexStr2ByteArray(iv,16,str_iv.c_str()));
-		vscp_makePasswordHash(result,"admin:secret",iv);
-		printf("encrypted: %s %s\n",result.c_str(),
-			vscp_isPasswordValid(result,"admin:secret") ? "OK" : "BAD");
+		if ( j["type"] == "+") {
+			printf("------------------------------------> type\n");
+			std::deque<std::string> args = j["args"];
+			printf("%ld\n",args.size());
+			std::string token = j["args"][0];
+			sidstr = j["args"][1];
+			printf("%s\n",token.c_str());
+			if ( (2 == args.size()) &&
+			     ("AUTH0" == j["args"][0] )  ) {
+				printf("------------------------------------> auth\n");
+				printf("------------------------------------> sid   %s\n",sidstr.c_str());
+				vscp_hexStr2ByteArray(iv,16,sidstr.c_str());
+			}
+		}
+		else {
+			return;
+		}
+
+		// login
 
 		uint8_t buf[200]; 
 		char out[200];
-		uint8_t ttt[] = "admin:secret";
-		AES_CBC_encrypt_buffer(AES128, buf, ttt, 12, vscpkey, iv);
-		vscp_byteArray2HexStr(out, buf, 16);
-		printf("%s\n", out);
+		// uint8_t ttt[] = "admin:secret";
+		// AES_CBC_encrypt_buffer(AES128, buf, ttt, 12, vscpkey, iv);
+		// vscp_byteArray2HexStr(out, buf, 16);
+		// printf("%s\n", out);
 
-		//sprintf(buf,template_command, )
+		// //sprintf(buf,template_command, )
 
-		text = "{\"type\": \"cmd\","\
-            "\"command\": \"auth\","\
-            "\"args\": {"\
-               "\"iv\":\"5a475c082c80dcdf7f2dfbd976253b24\","\
-               "\"crypto\": \"89d599aceb8e846dc3daf6cd33ce5e6d\""\
-            "}}";
+		// const char *text = "{\"type\": \"cmd\","\
+        //     "\"command\": \"auth\","\
+        //     "\"args\": {"\
+        //        "\"iv\":\"5a475c082c80dcdf7f2dfbd976253b24\","\
+        //        "\"crypto\": \"89d599aceb8e846dc3daf6cd33ce5e6d\""\
+        //     "}}";
 
-		json tttt;
-		//  = {
-		// {"type","cmd"},
-		// {"command","noop"},
-		// {"args",nullptr}
-		// };
-		tttt["type"] = "cmd";
-		tttt["command"] = "auth";
-		tttt["args"]["iv"] = "5a475c082c80dcdf7f2dfbd976253b24";
-		tttt["args"]["crypto"] = "89d599aceb8e846dc3daf6cd33ce5e6d";
+		json authcmd;
+		// //  = {
+		// // {"type","cmd"},
+		// // {"command","noop"},
+		// // {"args",nullptr}
+		// // };
+		authcmd["type"] = "cmd";
+		authcmd["command"] = "auth";
+		authcmd["args"]["iv"] = "5a475c082c80dcdf7f2dfbd976253b24";
+		authcmd["args"]["crypto"] = "89d599aceb8e846dc3daf6cd33ce5e6d";
 
-		printf("%s\n",tttt.dump().c_str());
+		// printf("%s\n",tttt.dump().c_str());
 
 		std::string strout;
 		ws2_encrypt_password(strout,
@@ -410,14 +309,37 @@ startWebsocket()
 								iv);
 		printf("Function: %s\n",strout.c_str());
 		
-		tttt["args"]["crypto"] = strout;	
+		authcmd["args"]["iv"] = sidstr;
+		authcmd["args"]["crypto"] = strout;	
 
 		mg_websocket_client_write(newconn1,
 		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          tttt.dump().c_str(),
-		                          tttt.dump().length());
-		sleep(1);
+		                          authcmd.dump().c_str(),
+		                          authcmd.dump().length());
+		
+		if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+			printf("ERROR or TIMEOUT\n");
+			return;
+		}
 
+		// We are at the connected state
+
+		json cmd;
+		cmd["type"] = "cmd";
+		cmd["command"] = "close";
+		cmd["args"] = nullptr;
+
+		mg_websocket_client_write(newconn1,
+									MG_WEBSOCKET_OPCODE_TEXT,
+									cmd.dump().c_str(),
+									cmd.dump().length());
+
+		if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+			printf("ERROR or TIMEOUT\n");
+			return;
+		}
+
+		mg_close_connection( newconn1 );
 		
 		// states
 		// ------
@@ -433,7 +355,10 @@ startWebsocket()
 		// idle         - Response is received.
 		// waiting 		- Waiting for response from remote server.
 		// enum ws2_substates {ws2_idle,ws2_waiting}
-										
+
+		sleep(1);
+		sleep(1);
+		sleep(1);								
 	}
 }
 

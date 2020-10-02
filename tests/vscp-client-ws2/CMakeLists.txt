@@ -42,7 +42,7 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws2.h
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws1.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws2.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c

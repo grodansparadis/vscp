@@ -29,7 +29,7 @@
 #include <vscpremotetcpif.h>
 #include "vscp_client_base.h"
 
-class vscpClientTcp : CVscpClient
+class vscpClientTcp : public CVscpClient
 {
 
 public:

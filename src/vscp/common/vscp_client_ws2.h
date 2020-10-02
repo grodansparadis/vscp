@@ -28,8 +28,12 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
+#include <json.hpp>
 
-class vscpClientWs2 : CVscpClient
+const uint32_t WS2_CONNECTION_TIMEOUT = 30000;
+const uint32_t WS2_RESPONSE_TIMEOUT	= 2000;
+
+class vscpClientWs2 : public CVscpClient
 {
 
 public:
@@ -37,11 +41,23 @@ public:
     vscpClientWs2();
     ~vscpClientWs2();
 
+    /*!
+        Init client
+        @param host Host to connect to.
+        @param port Port on host to connect to.
+        @param username Username credentials.
+        @param password Password credentials.
+        @param vscpkey Secret key.
+        @param connection_timeout Connection timeout in ms.
+        @param response_timeout Response timeout in ms.
+    */
     virtual int init(const std::string host,
                     short port,
                     const std::string username,
                     const std::string password,
-                    const std::string vscpkey);
+                    uint8_t *vscpkey,
+                    uint32_t connection_timeout = WS2_CONNECTION_TIMEOUT,
+                    uint32_t response_timeout = WS2_RESPONSE_TIMEOUT );
 
     /*!
         Connect to remote host
@@ -124,16 +140,74 @@ public:
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEvent &ev) = 0;
+    virtual int setCallback(vscpEvent &ev) = 0;
 
     /*!
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(vscpEventEx &ex) = 0;
+    virtual int setCallback(vscpEventEx &ex) = 0;
+
+    /*!
+        Encrypt the admin/password pair
+        @param strout Receive encrypted password
+        @param struser Username
+        @param strpassword Password
+        @param vscpkey 32 byte secret key known by client and server, This
+                key should be read from disk and NOT be stored in code.
+        @param iv initialization vector, 16 byte seed for encryption
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    int encrypt_password(std::string& strout,
+							std::string struser,
+							std::string strpassword,
+							uint8_t *vscpkey,
+							uint8_t *iv);
+
+
+    /*!
+        Wait for data yo arrive fromthe websocket
+        @param timeout Maximum time to wait.
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+                VSC_ERROR_TIMEOUT is returned for timeout.
+    */
+    int waitForResponse( uint32_t timeout = WS2_RESPONSE_TIMEOUT );
+
+public:
+
+    // True if connected
+    bool m_bConnected;
+
+    // Semaphore for message receive queue
+    sem_t m_sem_msg;
+
+    // JSON message receive queue
+    std::deque<nlohmann::json> m_msgReceiveQueue;
+
+    // VSCP Event receive queue
+    std::deque<vscpEvent *> m_eventQueue;
 
 private:
 
+    bool m_bSSL;    // True for SSL/TSL
+
+    // This is the encryption result over "username:password"
+    // using the vscpkey and iv from server for encryption
+    std::string m_credentials;
+
+    // Initialization vector
+    uint8_t m_iv[16];
+
+    // Host to connect to (default is 8884)
+    // (default is localhost)
+    std::string m_host;
+
+    // Port on host to connect to (8884/8843  443)
+    // (default is 8884)
+    short m_port;
+
+    // Connection object
+    struct mg_connection *m_conn;
 };
 
 #endif

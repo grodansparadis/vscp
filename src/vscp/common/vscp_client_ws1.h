@@ -29,7 +29,7 @@
 #include "vscp.h"
 #include "vscp_client_base.h"
 
-class vscpClientWs1 : CVscpClient
+class vscpClientWs1 : public CVscpClient
 {
 
 public:

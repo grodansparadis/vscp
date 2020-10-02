@@ -33,7 +33,7 @@
 // When a callback is set and connect is called this object is shared
 // with a workerthread that 
 
-class vscpClientCanal : CVscpClient
+class vscpClientCanal : public CVscpClient
 {
 
 public:

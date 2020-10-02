@@ -30,7 +30,7 @@
 #include "vscp.h"
 #include "vscp_client_base.h"
 
-class vscpClientRs232 : CVscpClient
+class vscpClientRs232 : public CVscpClient
 {
 
 public:

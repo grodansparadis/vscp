@@ -150,7 +150,19 @@ public:
     virtual void setResponeTimeout(uint32_t timeout) = 0;
     virtual uint32_t getResponseTimeout(void) = 0;
 
-private:
+    /*!
+        Check if ev callback is defined
+        @return true if callback is defined
+    */
+    bool isEvCallback(void) {return (nullptr != m_evcallback); };
+
+    /*!
+        Check if ex callback is defined
+        @return true if callback is defined
+    */
+    bool isExCallback(void) {return (nullptr != m_excallback); };
+
+protected:
 
     /*!
         Callback for events

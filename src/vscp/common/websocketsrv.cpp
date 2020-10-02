@@ -2263,6 +2263,8 @@ ws2_command(struct mg_connection* conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
                            (const char*)str.c_str(),
                            str.length());
+        sleep(1);
+        mg_close_connection(conn);                           
     }
 
     // ------------------------------------------------------------------------
