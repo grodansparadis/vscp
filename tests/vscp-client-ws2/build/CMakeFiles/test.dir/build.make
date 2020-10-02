@@ -226,18 +226,18 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.s: c
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.s
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o: CMakeFiles/test.dir/flags.make
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/civetweb.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o   -c /home/akhe/development/VSCP/vscp/src/common/civetweb.c
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o   -c /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/akhe/development/VSCP/vscp/src/common/civetweb.c > CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.i
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c > CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.i
 
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/akhe/development/VSCP/vscp/src/common/civetweb.c -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.s
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c -o CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.s
 
 # Object files for target test
 test_OBJECTS = \
@@ -254,7 +254,7 @@ test_OBJECTS = \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o" \
 "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o" \
-"CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o"
+"CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o"
 
 # External object files for target test
 test_EXTERNAL_OBJECTS =
@@ -272,7 +272,7 @@ test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o
 test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o
-test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o
+test: CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o
 test: CMakeFiles/test.dir/build.make
 test: /usr/lib/x86_64-linux-gnu/libssl.so
 test: /usr/lib/x86_64-linux-gnu/libcrypto.so

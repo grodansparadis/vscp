@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/civetweb.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o"
+  "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o"
   "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"

@@ -1857,7 +1857,7 @@ extern "C"
      * The first string is the salt, the second the hashed password.
      *
      * @param pSalt Pointer to a 16 byte buffer that will receive the salt.
-     * @param pHash Pointer to a 32 byte buffer that will receive the salt.
+     * @param pHash Pointer to a 32 byte buffer that will receive the hash.
      * @param stored_pw Stored password on the form salt;hash
      * @return True on success, false on failure.
      *

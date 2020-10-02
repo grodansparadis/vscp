@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-../../../src/common/civetweb.h
+../../../src/common/third_party/civetweb-1.13/include/civetweb.h
 stddef.h
 -
 stdio.h
@@ -338,6 +338,10 @@ utility
 vector
 -
 
+../../../src/common/vscp_aes.h
+stdint.h
+-
+
 ../../../src/vscp/common/canal.h
 
 ../../../src/vscp/common/vscp.h
@@ -422,6 +426,8 @@ pthread.h
 semaphore.h
 -
 unistd.h
+-
+vscp_aes.h
 -
 vscphelper.h
 -

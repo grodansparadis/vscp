@@ -7,11 +7,11 @@ C_FLAGS =  -DOPENSSL_API_1_1 -DOPENSSL_API_1_1 -DUSE_WEBSOCKET
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/nlohmann 
+C_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/civetweb-1.13/include -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/nlohmann 
 
 CXX_FLAGS =  -DOPENSSL_API_1_1   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/nlohmann 
+CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/civetweb-1.13/include -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws2/../../src/common/third_party/nlohmann 
 

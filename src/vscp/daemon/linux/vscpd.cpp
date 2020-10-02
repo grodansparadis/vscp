@@ -503,7 +503,7 @@ createFolderStuct(std::string& rootFolder)
         return false;
     }
 
-    if (!createFolder("/etc/vscp/ca_certificats")) {
+    if (!createFolder("/etc/vscp/ca_certificates")) {
         return false;
     }
 
