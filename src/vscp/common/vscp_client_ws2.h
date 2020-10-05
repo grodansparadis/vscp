@@ -185,7 +185,7 @@ public:
     std::deque<nlohmann::json> m_msgReceiveQueue;
 
     // VSCP Event receive queue
-    std::deque<vscpEvent *> m_eventQueue;
+    std::deque<vscpEvent *> m_eventReceiveQueue;
 
 private:
 

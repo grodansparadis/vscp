@@ -65,7 +65,6 @@ ws2_client_data_handler(struct mg_connection *conn,
         j = json::parse(str.c_str());
     }
     catch (...) {
-        printf("Parsing error\n");
         return 0;
     }
 
@@ -90,7 +89,7 @@ ws2_client_data_handler(struct mg_connection *conn,
             std::string str = j["event"].dump();
 
             // Add to event queue
-            pObj->m_eventQueue.push_back(pev);
+            pObj->m_eventReceiveQueue.push_back(pev);
         }
     }
     else {
@@ -134,6 +133,14 @@ vscpClientWs2::vscpClientWs2()
 
 vscpClientWs2::~vscpClientWs2()
 {
+    disconnect();
+
+    while (m_eventReceiveQueue.size() ) {
+        vscpEvent *pev = m_eventReceiveQueue.front();
+        m_eventReceiveQueue.pop_front();
+        vscp_deleteEvent_v2(&pev);
+    }
+
     sem_destroy(&m_sem_msg);
 }
 
@@ -211,9 +218,13 @@ int vscpClientWs2::disconnect(void)
 		                          cmd.dump().length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
-		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
 
     mg_close_connection(m_conn);
 
@@ -271,6 +282,11 @@ int vscpClientWs2::send(vscpEvent &ev)
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -318,6 +334,11 @@ int vscpClientWs2::send(vscpEventEx &ex)
 		return VSCP_ERROR_TIMEOUT;
 	}
 
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -327,10 +348,26 @@ int vscpClientWs2::send(vscpEventEx &ex)
 
 int vscpClientWs2::receive(vscpEvent &ev)
 {
+    // check if there are anything to fetch
+    if (!m_eventReceiveQueue.size()) {
+        return VSCP_ERROR_RCV_EMPTY;
+    }
+
     // only valid if no callback is defined
     if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
         return VSCP_ERROR_NOT_SUPPORTED;
     }
+
+    vscpEvent *pev = m_eventReceiveQueue.front();
+    m_eventReceiveQueue.pop_front();
+
+    // Must be a avalid pointer
+    if ( NULL == pev ) {
+        return VSCP_ERROR_MEMORY;
+    }
+
+    vscp_copyEvent(&ev,pev);
+    vscp_deleteEvent_v2(&pev);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -341,10 +378,26 @@ int vscpClientWs2::receive(vscpEvent &ev)
 
 int vscpClientWs2::receive(vscpEventEx &ex)
 {
+    // check if there are anything to fetch
+    if (!m_eventReceiveQueue.size()) {
+        return VSCP_ERROR_RCV_EMPTY;
+    }
+
     // only valid if no callback is defined
     if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
         return VSCP_ERROR_NOT_SUPPORTED;
     }
+
+    vscpEvent *pev = m_eventReceiveQueue.front();
+    m_eventReceiveQueue.pop_front();
+
+    // Must be a avalid pointer
+    if ( NULL == pev ) {
+        return VSCP_ERROR_MEMORY;
+    }
+
+    vscp_convertEventToEventEx(&ex,pev);
+    vscp_deleteEvent_v2(&pev);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -355,6 +408,39 @@ int vscpClientWs2::receive(vscpEventEx &ex)
 
 int vscpClientWs2::setfilter(vscpEventFilter &filter)
 {
+    std::string strGUID;
+    json cmd;
+
+    cmd["type"] = "cmd";
+	cmd["command"] = "setfilter";
+
+    cmd["args"]["filter_priority"] = filter.filter_priority;
+    cmd["args"]["filter_class"] = filter.filter_class;
+    cmd["args"]["filter_type"] = filter.filter_type;
+    vscp_writeGuidArrayToString(strGUID,filter.filter_GUID);
+    cmd["args"]["filter_guid"] = strGUID;
+
+    cmd["args"]["mask_priority"] = filter.mask_priority;
+    cmd["args"]["mask_class"] = filter.mask_class;
+    cmd["args"]["mask_type"] = filter.mask_type;
+    vscp_writeGuidArrayToString(strGUID,filter.mask_GUID);
+    cmd["args"]["mask_guid"] = strGUID;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          cmd.dump().c_str(),
+		                          cmd.dump().length());
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("ERROR or TIMEOUT\n");
+		return VSCP_ERROR_TIMEOUT;
+	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -365,7 +451,7 @@ int vscpClientWs2::setfilter(vscpEventFilter &filter)
 int vscpClientWs2::getcount(uint16_t *pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-
+    *pcount = m_eventReceiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -375,6 +461,12 @@ int vscpClientWs2::getcount(uint16_t *pcount)
 
 int vscpClientWs2::clear(void) 
 {
+    while (m_eventReceiveQueue.size() ) {
+        vscpEvent *pev = m_eventReceiveQueue.front();
+        m_eventReceiveQueue.pop_front();
+        vscp_deleteEvent_v2(&pev);
+    }
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -384,6 +476,32 @@ int vscpClientWs2::clear(void)
 
 int vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
 {
+    std::string strGUID;
+    json cmd;
+
+    cmd["type"] = "cmd";
+	cmd["command"] = "interfaces";
+
+    cmd["args"] = nullptr;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          cmd.dump().c_str(),
+		                          cmd.dump().length());
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("ERROR or TIMEOUT\n");
+		return VSCP_ERROR_TIMEOUT;
+	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+
+    std::deque<std::string> args = j["args"];
+    iflist = args;
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -393,6 +511,36 @@ int vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
 
 int vscpClientWs2::getwcyd(uint64_t &wcyd)
 {
+    std::string strGUID;
+    json cmd;
+
+    cmd["type"] = "cmd";
+	cmd["command"] = "wcyd";
+
+    cmd["args"] = nullptr;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          cmd.dump().c_str(),
+		                          cmd.dump().length());
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("ERROR or TIMEOUT\n");
+		return VSCP_ERROR_TIMEOUT;
+	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+
+    std::deque<std::string> args = j["args"];
+    if (!args.size()) {
+        return VSCP_ERROR_PARAMETER;
+    }
+
+    wcyd = j["args"][0];
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -455,7 +603,7 @@ int vscpClientWs2::waitForResponse( uint32_t timeout )
 	to.tv_sec = ts + timeout/1000;
 
 	if ( -1 == sem_timedwait(&m_sem_msg,&to) ) {
-		printf("!!!!!!!!!!!!!!!!! Error = %d\n",errno);
+		
 		switch(errno) {
 
 			case EINTR:

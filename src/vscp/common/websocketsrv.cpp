@@ -1395,6 +1395,72 @@ ws1_command(struct mg_connection* conn,
                            (const char*)strResult.c_str(),
                            strResult.length());
     }
+    // ------------------------------------------------------------------------
+    //                              INTERFACES
+    //-------------------------------------------------------------------------
+
+    else if (vscp_startsWith(strTok, "INTERFACES")) {
+
+        std::string strGUID;
+        std::string strResult = ("+;INTERFACES;");
+ 
+        // Display Interface List
+        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
+
+        std::deque<CClientItem*>::iterator it;
+        for (it = gpobj->m_clientList.m_itemList.begin();
+            it != gpobj->m_clientList.m_itemList.end();
+            ++it) {
+
+            CClientItem* pItem = *it;
+
+            std::string str;
+            pItem->m_guid.toString(strGUID);
+            strResult += vscp_str_format("%d,", pItem->m_clientID);
+            strResult += vscp_str_format("%d,", pItem->m_type);
+            strResult += strGUID;
+            strResult += std::string(",");
+            strResult += pItem->m_strDeviceName;
+            strResult += std::string(" | Started at ");
+            strResult += pItem->m_dtutc.getISODateTime();
+            strResult += std::string(";");
+        }
+
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+
+        // Positive reply
+        mg_websocket_write(conn,
+                           MG_WEBSOCKET_OPCODE_TEXT,
+                           (const char*)strResult.c_str(),
+                           strResult.length());
+    }
+    // ------------------------------------------------------------------------
+    //                              WCYD
+    //-------------------------------------------------------------------------
+
+    else if (vscp_startsWith(strTok, "WCYD") || 
+             vscp_startsWith(strTok, "WHATCANYOUDO") ) {
+
+        std::string strResult = ("+;WCYD;");;
+        uint8_t capabilities[8];
+
+        gpobj->getVscpCapabilities(capabilities);
+        strResult = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
+                                        capabilities[7],
+                                        capabilities[6],
+                                        capabilities[5],
+                                        capabilities[4],
+                                        capabilities[3],
+                                        capabilities[2],
+                                        capabilities[1],
+                                        capabilities[0]);
+
+        // Positive reply
+        mg_websocket_write(conn,
+                           MG_WEBSOCKET_OPCODE_TEXT,
+                           (const char*)strResult.c_str(),
+                           strResult.length());
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -2461,6 +2527,82 @@ ws2_command(struct mg_connection* conn,
         std::string strResult = ("{ \"copyright\" : \"");
         strResult += VSCPD_COPYRIGHT;
         strResult += "\" }";
+
+        // Positive reply
+        std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE,
+                                          strCmd.c_str(),
+                                          strResult.c_str());
+        mg_websocket_write(conn,
+                           MG_WEBSOCKET_OPCODE_TEXT,
+                           (const char*)str.c_str(),
+                           str.length());
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              INTERFACES
+    //-------------------------------------------------------------------------
+
+    else if ("INTERFACES" == strCmd) {
+        
+        std::string strvalue;
+        std::string strGUID;
+        std::deque<std::string> iflist;
+
+        // Display Interface List
+        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
+
+        std::deque<CClientItem*>::iterator it;
+        for (it = gpobj->m_clientList.m_itemList.begin();
+            it != gpobj->m_clientList.m_itemList.end();
+            ++it) {
+
+            CClientItem* pItem = *it;
+
+            std::string str;
+            pItem->m_guid.toString(strGUID);
+            str = vscp_str_format("%d,", pItem->m_clientID);
+            str += vscp_str_format("%d,", pItem->m_type);
+            str += strGUID;
+            str += std::string(",");
+            str += pItem->m_strDeviceName;
+            str += std::string(" | Started at ");
+            str += pItem->m_dtutc.getISODateTime();
+            str += std::string("\r\n");
+            iflist.push_back(str);
+        }
+
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+
+        json j;
+        j["type"] = "+";
+        j["command"] = strCmd.c_str();
+        j["args"] = iflist;
+
+        mg_websocket_write(conn,
+                           MG_WEBSOCKET_OPCODE_TEXT,
+                           j.dump().c_str(),
+                           j.dump().length());
+    }
+
+    // ------------------------------------------------------------------------
+    //                              WCYD
+    //-------------------------------------------------------------------------
+
+    else if (("WCYD" == strCmd) || ("WHATCANYOUDO" == strCmd)) {
+
+        std::string strResult;
+        uint8_t capabilities[8];
+
+        gpobj->getVscpCapabilities(capabilities);
+        strResult = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
+                                        capabilities[7],
+                                        capabilities[6],
+                                        capabilities[5],
+                                        capabilities[4],
+                                        capabilities[3],
+                                        capabilities[2],
+                                        capabilities[1],
+                                        capabilities[0]);
 
         // Positive reply
         std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE,
