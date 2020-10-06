@@ -141,18 +141,6 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
-    /*!
-        Set receive callback
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-   virtual int setCallback(vscpEvent &ev);
-
-    /*!
-        Set receive callback
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-   virtual int setCallback(vscpEventEx &ex);
-
    /*!
         Getter/setters for connection timeout
         Time is in milliseconds

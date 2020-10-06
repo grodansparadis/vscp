@@ -85,7 +85,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -121,17 +121,6 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
-    /*!
-        Set receive callback
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-   virtual int setCallback(vscpEvent &ev) = 0;
-
-    /*!
-        Set receive callback
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-   virtual int setCallback(vscpEventEx &ex) = 0;
 
 private:
 
