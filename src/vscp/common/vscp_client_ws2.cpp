@@ -110,18 +110,19 @@ ws2_client_data_handler(struct mg_connection *conn,
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
                 std::string str = j["event"].dump();
-                if ( !vscp_convertJSONToEvent(pev, str) ) return 0;
+                if ( !vscp_convertJSONToEvent(pev, str) ) return 1;
+                pObj->m_evcallback(pev);
             }   
             else if (pObj->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 std::string str = j["event"].dump();
-                if ( !vscp_convertJSONToEventEx(pex, str) ) return 0;
+                if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
+                pObj->m_evcallback(pex);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
-
                 std::string str = j["event"].dump();
 
                 // Add to event queue
@@ -255,7 +256,7 @@ int vscpClientWs2::connect(void)
         return VSCP_ERROR_CONNECTION;
 	}
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_connect ) ) {
 		printf("ERROR or TIMEOUT\n");
         disconnect();
 		return VSCP_ERROR_TIMEOUT;
@@ -289,7 +290,7 @@ int vscpClientWs2::connect(void)
 		                          authcmd.dump().c_str(),
 		                          authcmd.dump().length());
 		
-	if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+	if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("User not validated\n");
         disconnect();
 		return VSCP_ERROR_USER;
@@ -316,7 +317,7 @@ int vscpClientWs2::connect(void)
 		                          authcmd.dump().c_str(),
 		                          authcmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("Unable to open connection\n");
         disconnect();
 		return VSCP_ERROR_OPERATION_FAILED;
@@ -355,7 +356,7 @@ int vscpClientWs2::disconnect(void)
     // We do not check results of the op to make sure we
     // disconnect even if something goes wrong command wise
 
-    // if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    // if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 	// 	return VSCP_ERROR_TIMEOUT;
 	// }
 
@@ -425,7 +426,7 @@ int vscpClientWs2::send(vscpEvent &ev)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -479,7 +480,7 @@ int vscpClientWs2::send(vscpEventEx &ex)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -587,7 +588,7 @@ int vscpClientWs2::setfilter(vscpEventFilter &filter)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -642,7 +643,7 @@ int vscpClientWs2::getversion(uint8_t *pmajor,
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -701,7 +702,7 @@ int vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -737,7 +738,7 @@ int vscpClientWs2::getwcyd(uint64_t &wcyd)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
 		return VSCP_ERROR_TIMEOUT;
 	}
@@ -754,24 +755,6 @@ int vscpClientWs2::getwcyd(uint64_t &wcyd)
 
     wcyd = j["args"][0];
 
-    return VSCP_ERROR_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setCallback
-//
-
-int vscpClientWs2::setCallback(vscpEvent &ev)
-{
-    return VSCP_ERROR_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// setCallback
-//
-
-int vscpClientWs2::setCallback(vscpEventEx &ex)
-{
     return VSCP_ERROR_SUCCESS;
 }
 

@@ -36,8 +36,8 @@
 typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev );
 typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx &ex );
 #else
-typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent &ev );     // Event callback
-typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx &ex );   // Event ex callback
+typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev );     // Event callback
+typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex );   // Event ex callback
 #endif
 
 class CVscpClient
@@ -175,7 +175,7 @@ public:
     */
     bool isExCallback(void) {return (nullptr != m_excallback); };
 
-protected:
+public:
 
     /*!
         Callback for events

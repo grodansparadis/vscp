@@ -20,11 +20,15 @@ find_package(OpenSSL REQUIRED)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DOPENSSL_API_1_1")
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
 
+set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
+
 include(FindEXPAT)
 find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
 include(FindLibWebSockets)
+
+set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_WEBSOCKET")
 
 # add the executable
 add_executable(test 
@@ -54,16 +58,19 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.c
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.h
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include/civetweb.h
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/src/civetweb.c
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/json.hpp
     )
 
 target_include_directories(test PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
-    ${LIBWEBSOCKETS_INCLUDE_DIR}
+    ${MOSQUITTO_INCLUDE_DIR}
     )
 
 target_link_libraries(test PRIVATE m
@@ -72,7 +79,6 @@ target_link_libraries(test PRIVATE m
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
-    ${LIBWEBSOCKETS_LIBRARY_DIR}
     )    
 
 #add_library(MathFunctions mysqrt.cxx)

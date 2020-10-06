@@ -10,6 +10,21 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o: /home/a
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o: /home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o: /home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.h
 
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: ../../../src/common/third_party/civetweb-1.13/include/civetweb.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb_private_lua.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/handle_form.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/md5.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/mod_duktape.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/mod_http2.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/mod_lua.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/mod_lua_shared.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/mod_zlib.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/response.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/sha1.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/timer.inl
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o: /home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/wolfssl_extras.inl
+
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o: /home/akhe/development/VSCP/vscp/src/common/vscp_aes.c
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o: /home/akhe/development/VSCP/vscp/src/common/vscp_aes.h
 
@@ -35,10 +50,14 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.h
 
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/common/third_party/civetweb-1.13/include/civetweb.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/common/vscp_aes.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/vscp/common/canal.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/vscp/common/vscp.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/vscp/common/vscp_class.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/vscp/common/vscp_type.h
-CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../../../src/vscp/common/vscphelper.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: ../config.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.h
@@ -82,11 +101,16 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.c
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o: ../config.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o: /home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp
 
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/common/third_party/civetweb-1.13/include/civetweb.h
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/common/third_party/nlohmann/json.hpp
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/common/vscp_aes.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/canal.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp_class.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp_client_base.h
-CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp_client_mqtt.h
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp_client_ws1.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscp_type.h
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../../../src/vscp/common/vscphelper.h
+CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../config.h
 CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o: ../test-vscp-client-ws1.cpp
 

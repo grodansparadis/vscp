@@ -3,15 +3,15 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_FLAGS =  -DOPENSSL_API_1_1  
+C_FLAGS =  -DOPENSSL_API_1_1 -DOPENSSL_API_1_1 -DUSE_WEBSOCKET  
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/nlohmann 
+C_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/civetweb-1.13/include -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/nlohmann 
 
 CXX_FLAGS =  -DOPENSSL_API_1_1   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/nlohmann 
+CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1 -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/civetweb-1.13/include -I/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/../../src/common/third_party/nlohmann 
 

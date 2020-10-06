@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/akhe/development/VSCP/vscp/src/common/crc.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o"
   "/home/akhe/development/VSCP/vscp/src/common/crc8.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o"
   "/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o"
+  "/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o"
   "/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o"
   "/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o"
   "/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"
@@ -20,6 +21,7 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "../"
   "../../../src/vscp/common"
   "../../../src/common"
+  "../../../src/common/third_party/civetweb-1.13/include"
   "../../../src/common/third_party/nlohmann"
   )
 set(CMAKE_DEPENDS_CHECK_CXX
@@ -39,6 +41,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../"
   "../../../src/vscp/common"
   "../../../src/common"
+  "../../../src/common/third_party/civetweb-1.13/include"
   "../../../src/common/third_party/nlohmann"
   )
 

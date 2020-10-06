@@ -322,7 +322,7 @@ void _startWebsocket()
 			return;
 		}
 
-		// We are at the connected state
+		// We are in the connected state
 
 		json cmd;
 		cmd["type"] = "cmd";
