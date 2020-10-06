@@ -33,13 +33,41 @@
 
 #include "vscp_client_base.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// CVscpClient
+//
+
 CVscpClient::CVscpClient()
 {
     m_evcallback = NULL;
     m_excallback = NULL;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ~CVscpClient
+//
+
 CVscpClient::~CVscpClient()
 {
     ;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// setCallback
+//
+
+int CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback) 
+{ 
+    m_evcallback = evcallback; 
+    return VSCP_ERROR_SUCCESS;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// setCallback
+//
+
+int CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback) 
+{ 
+    m_excallback = excallback; 
+    return VSCP_ERROR_SUCCESS;
+};

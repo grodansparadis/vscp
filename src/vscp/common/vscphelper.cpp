@@ -6550,7 +6550,7 @@ vscp_md5(char* digest, const unsigned char* buf, size_t len)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_bin2str
+// vscp_byteArray2HexStr
 //
 // Stringify binary data. Output buffer must be twice as big as input,
 // because each byte takes 2 bytes in string representation

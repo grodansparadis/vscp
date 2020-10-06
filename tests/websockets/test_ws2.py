@@ -142,11 +142,11 @@ async def connect():
             }
         }
 
-        print(f"\nSet filter  {json.dumps(cmdFilter)}")
-        await websocket.send(json.dumps(cmdFilter))
-        response = await websocket.recv()
-        wsrply = json.loads(response)
-        print(f"Response from server: {json.dumps(wsrply, indent=2)}")
+        # print(f"\nSet filter  {json.dumps(cmdFilter)}")
+        # await websocket.send(json.dumps(cmdFilter))
+        # response = await websocket.recv()
+        # wsrply = json.loads(response)
+        # print(f"Response from server: {json.dumps(wsrply, indent=2)}")
 
         print("Waiting for class=30, Type=5 as events (Active FILTER) (Abort with ctrl+c)")
         while True:
@@ -155,11 +155,11 @@ async def connect():
             print(f"Response from server: {json.dumps(wsrply, indent=2)}")
             e = wsrply["event"] # Get event
             # get without extracted event
-            print(f"VSCP Class={wsrply['event']['class']}")
+            print(f"VSCP Class={wsrply['event']['vscpClass']}")
             # use extracted event 
-            print(f"VSCP Type={e['type']}")
+            print(f"VSCP Type={e['vscpType']}")
             # Event can be edited and changed
-            e['type'] = 99
+            e['vscpType'] = 99
             print(f"Modified event: {json.dumps(e, indent=2)}")
 
 if __name__ == '__main__':

@@ -52,50 +52,97 @@ ws2_client_data_handler(struct mg_connection *conn,
 	vscpClientWs2 *pObj =
 	    (vscpClientWs2 *)mg_get_user_data(ctx);
 
-	printf("Client received data from server: ");
-	std::string str(data,data_len);
-	printf("%s\n",str.c_str());
+    printf("--------------------------------------------------->\n");    
 
-    // If type is event put in event queue or send
-    // out on defined callbacks
-    // If other type put in message queue
+    // We may get some different message types (websocket opcodes).
+	// We will handle these messages differently. 
+	bool isText = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_TEXT);
+	bool isBin = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_BINARY);
+	bool isPing = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_PING);
+	bool isPong = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_PONG);
+	bool isClose = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE); 
 
-    json j;
-    try {
-        j = json::parse(str.c_str());
-    }
-    catch (...) {
-        return 0;
-    }
+    // Check if we got a websocket PING request 
+	if (isPing) {
+		// PING requests are to check if the connection is broken.
+		// They should be replied with a PONG with the same data.
+		//
+        printf("Ping\n");
+		mg_websocket_client_write(pObj->m_conn,
+		                            MG_WEBSOCKET_OPCODE_PONG,
+		                            data,
+		                            data_len);
+		return 1;
+	}
 
-    if ( "event" == j["type"]) {
+	// Check if we got a websocket PONG message 
+	if (isPong) {
+		// A PONG message may be a response to our PING, but
+		// it is also allowed to send unsolicited PONG messages
+		// send by the server to check some lower level TCP
+		// connections. Just ignore all kinds of PONGs. 
+        printf("Pong\n");
+		return 1;
+	}   
 
-        if (pObj->isEvCallback()) {
-            vscpEvent *pev = new vscpEvent;
-            if ( NULL == pev ) return 0;
-            std::string str = j["event"].dump();
-            if ( !vscp_convertJSONToEvent(pev, str) ) return 0;
-        }   
-        else if (pObj->isExCallback()) {
-            vscpEventEx *pex = new vscpEventEx;
-            if ( NULL == pex ) return 0;
-            std::string str = j["event"].dump();
-            if ( !vscp_convertJSONToEventEx(pex, str) ) return 0;
-        } 
+    // It we got a websocket TEXT message, handle it ... 
+	if (isText) {
+
+        printf("Client received data from server: ");
+        std::string str(data,data_len);
+        printf("%s\n",str.c_str());
+
+        // If type is event put in event queue or send
+        // out on defined callbacks
+        // If other type put in message queue
+
+        json j;
+        try {
+            j = json::parse(str.c_str());
+        }
+        catch (...) {
+            return 1;
+        }
+
+        if ( "event" == j["type"]) {
+
+            if (pObj->isEvCallback()) {
+                vscpEvent *pev = new vscpEvent;
+                if ( NULL == pev ) return 0;
+                std::string str = j["event"].dump();
+                if ( !vscp_convertJSONToEvent(pev, str) ) return 0;
+            }   
+            else if (pObj->isExCallback()) {
+                vscpEventEx *pex = new vscpEventEx;
+                if ( NULL == pex ) return 0;
+                std::string str = j["event"].dump();
+                if ( !vscp_convertJSONToEventEx(pex, str) ) return 0;
+            } 
+            else {
+                vscpEvent *pev = new vscpEvent;
+                if ( NULL == pev ) return 0;
+
+                std::string str = j["event"].dump();
+
+                // Add to event queue
+                pObj->m_eventReceiveQueue.push_back(pev);
+            }
+        }
         else {
-            vscpEvent *pev = new vscpEvent;
-            if ( NULL == pev ) return 0;
-
-            std::string str = j["event"].dump();
-
-            // Add to event queue
-            pObj->m_eventReceiveQueue.push_back(pev);
+            pObj->m_msgReceiveQueue.push_back(j);
+            sem_post(&pObj->m_sem_msg);
         }
     }
-    else {
-	    pObj->m_msgReceiveQueue.push_back(j);
-	    sem_post(&pObj->m_sem_msg);
+
+    // Another option would be BINARY data. 
+	if (isBin) {
+        ;
     }
+
+    // It could be a CLOSE message as well. 
+	if (isClose) {
+		return 0;
+	}
 
 	return 1;
 }
@@ -109,7 +156,7 @@ ws2_client_close_handler(const struct mg_connection *conn,
 	    (vscpClientWs2 *)mg_get_user_data(ctx);
 
     pObj->m_bConnected = false;
-	printf("Client: Close handler\n");
+	printf("----------------> Client: Close handler\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,6 +169,10 @@ vscpClientWs2::vscpClientWs2()
     m_conn = NULL;
     m_host = "localhost";
     m_port = 8884;
+    m_bSSL = false;     // SSL/TLS not activated by default
+
+    setConnectionTimeout();
+    setResponseTimeout();
 
     sem_init(&m_sem_msg, 0, 0);
     mg_init_library(MG_FEATURES_SSL);
@@ -150,15 +201,19 @@ vscpClientWs2::~vscpClientWs2()
 
 int vscpClientWs2::init(const std::string host,
                         short port,
+                        bool bSSL,
                         const std::string username,
                         const std::string password,
                         uint8_t* vscpkey,
                         uint32_t connection_timeout,
                         uint32_t response_timeout)
-{
-    m_bSSL = false;     // SSL/TLS not activated by default
+{    
+    m_host = host;
+    m_port = port;
+    m_bSSL = bSSL;
+    
     setConnectionTimeout(connection_timeout);
-    setResponeTimeout(response_timeout);
+    setResponseTimeout(response_timeout);
 
     // Get iv
     vscp_getSalt(m_iv, 16);
@@ -180,8 +235,10 @@ int vscpClientWs2::init(const std::string host,
 
 int vscpClientWs2::connect(void) 
 {
+    json j;
     char ebuf[100] = {0};
 	const char *path = "/ws2";
+
 	m_conn = mg_connect_websocket_client( m_host.c_str(),
 	                                       m_port,
 	                                       m_bSSL ? 1 : 0,
@@ -195,8 +252,86 @@ int vscpClientWs2::connect(void)
 
 	if (NULL == m_conn) {
 		printf("Error: %s\n", ebuf);
-        return VSCP_TYPE_ERROR_CONNECTION;
+        return VSCP_ERROR_CONNECTION;
 	}
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("ERROR or TIMEOUT\n");
+        disconnect();
+		return VSCP_ERROR_TIMEOUT;
+	}
+
+    // Get response message
+    j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+
+    // Get arguments (AUTH0,iv)
+    std::deque<std::string> args = j["args"];
+
+    if ( (2 != args.size()) ||  
+         ("+" != j["type"]) || 
+         ("AUTH0" != j["args"][0]) ) {
+        printf("Mr strange\n");     
+        disconnect();
+        return VSCP_ERROR_TIMEOUT; 
+    }
+
+    json authcmd;
+	authcmd["type"] = "cmd";
+	authcmd["command"] = "auth";
+    char ivbuf[50];
+    vscp_byteArray2HexStr(ivbuf, m_iv, 16);
+    authcmd["args"]["iv"] = std::string(ivbuf);
+    authcmd["args"]["crypto"] = m_credentials;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          authcmd.dump().c_str(),
+		                          authcmd.dump().length());
+		
+	if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("User not validated\n");
+        disconnect();
+		return VSCP_ERROR_USER;
+	}
+
+    // Get response message
+    j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+
+    if ( ("+" != j["type"]) || 
+         ("AUTH" != j["command"]) ) {
+        printf("Invalid response on AUTH\n");     
+        disconnect();
+        return VSCP_ERROR_TIMEOUT; 
+    }
+
+    json opencmd;
+	authcmd["type"] = "cmd";
+	authcmd["command"] = "open";
+    authcmd["args"] = nullptr;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          authcmd.dump().c_str(),
+		                          authcmd.dump().length());
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("Unable to open connection\n");
+        disconnect();
+		return VSCP_ERROR_OPERATION_FAILED;
+	}
+
+    // Get response message
+    j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+
+    if ( ("+" != j["type"]) || 
+         ("OPEN" != j["command"]) ) {
+        printf("2 Unable to open connection\n");     
+        disconnect();
+        return VSCP_ERROR_TIMEOUT; 
+    }
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -217,16 +352,25 @@ int vscpClientWs2::disconnect(void)
 		                          cmd.dump().c_str(),
 		                          cmd.dump().length());
 
-    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
-		return VSCP_ERROR_TIMEOUT;
-	}
+    // We do not check results of the op to make sure we
+    // disconnect even if something goes wrong command wise
 
-    // Check return value
-    json j = m_msgReceiveQueue.front();
-    m_msgReceiveQueue.pop_front();
-    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+    // if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+	// 	return VSCP_ERROR_TIMEOUT;
+	// }
+
+    // // Check return value
+    // json j = m_msgReceiveQueue.front();
+    // m_msgReceiveQueue.pop_front();
+    // if ( "+" != j["type"]) return VSCP_ERROR_OPERATION_FAILED;
+
+    mg_websocket_client_write(m_conn,
+                                  MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE,
+                                  NULL,
+                                  0);
 
     mg_close_connection(m_conn);
+    m_conn = NULL;
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -247,6 +391,9 @@ bool vscpClientWs2::isConnected(void)
 int vscpClientWs2::send(vscpEvent &ev)
 {
     json cmd;
+
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+
     cmd["type"] = "event";
 	cmd["event"]["head"] = ev.head;
     cmd["event"]["obid"] = ev.obid;
@@ -298,6 +445,9 @@ int vscpClientWs2::send(vscpEvent &ev)
 int vscpClientWs2::send(vscpEventEx &ex)
 {
     json cmd;
+
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+
     cmd["type"] = "event";
 	cmd["event"]["head"] = ex.head;
     cmd["event"]["obid"] = ex.obid;
@@ -348,6 +498,8 @@ int vscpClientWs2::send(vscpEventEx &ex)
 
 int vscpClientWs2::receive(vscpEvent &ev)
 {
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+    
     // check if there are anything to fetch
     if (!m_eventReceiveQueue.size()) {
         return VSCP_ERROR_RCV_EMPTY;
@@ -378,7 +530,9 @@ int vscpClientWs2::receive(vscpEvent &ev)
 
 int vscpClientWs2::receive(vscpEventEx &ex)
 {
-    // check if there are anything to fetch
+   if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+
+   // check if there are anything to fetch
     if (!m_eventReceiveQueue.size()) {
         return VSCP_ERROR_RCV_EMPTY;
     }
@@ -410,6 +564,8 @@ int vscpClientWs2::setfilter(vscpEventFilter &filter)
 {
     std::string strGUID;
     json cmd;
+
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
 
     cmd["type"] = "cmd";
 	cmd["command"] = "setfilter";
@@ -456,6 +612,60 @@ int vscpClientWs2::getcount(uint16_t *pcount)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getcount
+//
+
+int vscpClientWs2::getversion(uint8_t *pmajor,
+                                uint8_t *pminor,
+                                uint8_t *prelease,
+                                uint8_t *pbuild)
+{
+    json cmd;
+
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+
+    // Check pointers
+    if ( (NULL != pmajor) ||
+         (NULL != pminor) ||
+         (NULL != prelease) ||
+         (NULL != pbuild) ) {
+        return VSCP_ERROR_PARAMETER;
+    }
+
+    cmd["type"] = "cmd";
+	cmd["command"] = "version";
+
+    cmd["args"] = nullptr;
+
+    mg_websocket_client_write(m_conn,
+		                          MG_WEBSOCKET_OPCODE_TEXT,
+		                          cmd.dump().c_str(),
+		                          cmd.dump().length());
+
+    if ( VSCP_ERROR_SUCCESS != waitForResponse( WS2_RESPONSE_TIMEOUT ) ) {
+		printf("ERROR or TIMEOUT\n");
+		return VSCP_ERROR_TIMEOUT;
+	}
+
+    // Check return value
+    json j = m_msgReceiveQueue.front();
+    m_msgReceiveQueue.pop_front();
+    if ( "+" != j["type"]) VSCP_ERROR_OPERATION_FAILED;
+
+    // Version is delivered as array on form [major,minor,release,build]
+
+    std::deque<std::string> args = j["args"];
+    if (4 != args.size()) return VSCP_ERROR_MISSING;
+
+    *pmajor = j["args"][0];
+    *pminor = j["args"][1];
+    *prelease = j["args"][2];
+    *pbuild = j["args"][3];   
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // clear
 //
 
@@ -478,6 +688,8 @@ int vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
 {
     std::string strGUID;
     json cmd;
+
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
 
     cmd["type"] = "cmd";
 	cmd["command"] = "interfaces";
@@ -514,9 +726,10 @@ int vscpClientWs2::getwcyd(uint64_t &wcyd)
     std::string strGUID;
     json cmd;
 
+    if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
+
     cmd["type"] = "cmd";
 	cmd["command"] = "wcyd";
-
     cmd["args"] = nullptr;
 
     mg_websocket_client_write(m_conn,

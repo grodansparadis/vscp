@@ -496,9 +496,9 @@ websock_post_incomingEvents(void)
                         if (WS_TYPE_1 == pSession->m_wstypes) {
                             str = ("E;") + str;
                             mg_websocket_write(pSession->m_conn,
-                                               MG_WEBSOCKET_OPCODE_TEXT,
-                                               (const char*)str.c_str(),
-                                               str.length());
+                                                MG_WEBSOCKET_OPCODE_TEXT,
+                                                (const char*)str.c_str(),
+                                                str.length());
                         }
                         else if (WS_TYPE_2 == pSession->m_wstypes) {
                             std::string strEvent;
@@ -506,12 +506,12 @@ websock_post_incomingEvents(void)
                             std::string str =
                               vscp_str_format(WS2_EVENT, strEvent.c_str());
                             mg_websocket_write(pSession->m_conn,
-                                               MG_WEBSOCKET_OPCODE_TEXT,
-                                               (const char*)str.c_str(),
-                                               str.length());
+                                                MG_WEBSOCKET_OPCODE_TEXT,
+                                                (const char*)str.c_str(),
+                                                str.length());
                         }
                     }
-                }
+                } // filter
 
                 // Remove the event
                 vscp_deleteEvent_v2(&pEvent);
@@ -2499,9 +2499,8 @@ ws2_command(struct mg_connection* conn,
 
     else if (("VERSION" == strCmd) || ("VER" == strCmd)) {
 
-        // std::string strvalue;
         std::string strResult;
-        strResult = vscp_str_format("{ \"version\" : \"%d.%d.%d-%d\" }",
+        strResult = vscp_str_format("[%d,%d,%d,%d]",
                                     VSCPD_MAJOR_VERSION,
                                     VSCPD_MINOR_VERSION,
                                     VSCPD_RELEASE_VERSION,
@@ -2524,9 +2523,9 @@ ws2_command(struct mg_connection* conn,
 
         std::string strvalue;
 
-        std::string strResult = ("{ \"copyright\" : \"");
+        std::string strResult = ("[ \"copyright\" : \"");
         strResult += VSCPD_COPYRIGHT;
-        strResult += "\" }";
+        strResult += "\" ]";
 
         // Positive reply
         std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE,

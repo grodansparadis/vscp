@@ -112,6 +112,19 @@ public:
     virtual int clear(void) = 0;
 
     /*!
+        Get version from interface
+        @param pmajor Pointer to uint8_t that get major version of interface.
+        @param pminor Pointer to uint8_t that get minor version of interface.
+        @param prelease Pointer to uint8_t that get release version of interface.
+        @param pbuild Pointer to uint8_t that get build version of interface.
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int getversion(uint8_t *pmajor,
+                            uint8_t *pminor,
+                            uint8_t *prelease,
+                            uint8_t *pbuild) = 0;
+
+    /*!
         Get interfaces
         @param iflist Get a list of available interfaces
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -128,13 +141,13 @@ public:
         Set (and enable) receive callback for events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback) = 0;
+   virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback);
 
     /*!
         Set (and enable) receive callback ex events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback) = 0;
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
 
     /*!
         Getter/setters for connection timeout
@@ -147,7 +160,7 @@ public:
         Getter/setters for response timeout
         Time is in milliseconds
     */
-    virtual void setResponeTimeout(uint32_t timeout) = 0;
+    virtual void setResponseTimeout(uint32_t timeout) = 0;
     virtual uint32_t getResponseTimeout(void) = 0;
 
     /*!

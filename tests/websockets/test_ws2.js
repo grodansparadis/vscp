@@ -73,14 +73,14 @@ ws.on('open', function open() {
   var sendEvent = {
     "type": "event",
     "event" : {
-        "head" : 0,
-        "obid": 0,
-        "datetime": "2020-01-29T23:05:59Z",
-        "timestamp": 0,
-        "class": 30,
-        "type": 5,
-        "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:02:00:00",
-        "data": [1,2,3,4,5,6]
+        "vscpHead" : 0,
+        "vscpObId": 0,
+        "vscpDateTime": "2020-01-29T23:05:59Z",
+        "vscpTimeStamp": 0,
+        "vscpClass": 30,
+        "vscpType": 5,
+        "vscpGuid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:02:00:00",
+        "vscpData": [1,2,3,4,5,6]
     }
   }
 
@@ -111,7 +111,7 @@ ws.on('open', function open() {
   console.log("---------------------------------------------------------");
   console.log("Waiting for events (Abort with ctrl+c)")
 
-  console.log("Will only receive CLASS1.CONTROL, TurnOn now after filter");
+  console.log("Will only receive CLASS1.CONTROL(30), TurnOn(5) now after filter");
   console.log("is set");
   console.log("---------------------------------------------------------");
 

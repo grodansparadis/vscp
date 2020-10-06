@@ -116,6 +116,19 @@ public:
     virtual int getcount(uint16_t *pcount);
 
     /*!
+        Get version from interface
+        @param pmajor Pointer to uint8_t that get major version of interface.
+        @param pminor Pointer to uint8_t that get minor version of interface.
+        @param prelease Pointer to uint8_t that get release version of interface.
+        @param pbuild Pointer to uint8_t that get build version of interface.
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int getversion(uint8_t *pmajor,
+                            uint8_t *pminor,
+                            uint8_t *prelease,
+                            uint8_t *pbuild);
+
+    /*!
         Get interfaces
         @param iflist Get a list of available interfaces
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.

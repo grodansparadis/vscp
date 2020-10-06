@@ -4198,7 +4198,7 @@ mg_construct_local_link(const struct mg_connection *conn,
 			int auth_domain_check_enabled =
 			    conn->dom_ctx->config[ENABLE_AUTH_DOMAIN_CHECK]
 			    && (!mg_strcasecmp(
-			           conn->dom_ctx->config[ENABLE_AUTH_DOMAIN_CHECK], "yes"));
+			        conn->dom_ctx->config[ENABLE_AUTH_DOMAIN_CHECK], "yes"));
 
 			const char *server_domain =
 			    conn->dom_ctx->config[AUTHENTICATION_DOMAIN];
@@ -12551,7 +12551,7 @@ print_dav_dir_entry(struct de *de, void *data)
 	struct mg_connection *conn = (struct mg_connection *)data;
 	if (!de || !conn
 	    || !print_props(
-	           conn, conn->request_info.local_uri, de->file_name, &de->file)) {
+	        conn, conn->request_info.local_uri, de->file_name, &de->file)) {
 		/* stop scan */
 		return 1;
 	}
@@ -14953,7 +14953,7 @@ parse_port_string(const struct vec *vec, struct socket *so, int *ip_version)
 	} else if (sscanf(vec->ptr, "[%49[^]]]:%u%n", buf, &port, &len) == 2
 	           && ((size_t)len <= vec->len)
 	           && mg_inet_pton(
-	                  AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6), 0)) {
+	               AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6), 0)) {
 		/* IPv6 address, examples: see above */
 		/* so->lsa.sin6.sin6_family = AF_INET6; already set by mg_inet_pton
 		 */
@@ -16591,9 +16591,9 @@ init_ssl_ctx_impl(struct mg_context *phys_ctx,
 	callback_ret = (phys_ctx->callbacks.init_ssl_domain == NULL)
 	                   ? 0
 	                   : (phys_ctx->callbacks.init_ssl_domain(
-	                         dom_ctx->config[AUTHENTICATION_DOMAIN],
-	                         dom_ctx->ssl_ctx,
-	                         phys_ctx->user_data));
+	                       dom_ctx->config[AUTHENTICATION_DOMAIN],
+	                       dom_ctx->ssl_ctx,
+	                       phys_ctx->user_data));
 
 	/* If domain callback returns 0, civetweb sets up the SSL certificate.
 	 * If it returns 1, civetweb assumes the calback already did this.
@@ -16784,9 +16784,9 @@ init_ssl_ctx(struct mg_context *phys_ctx, struct mg_domain_context *dom_ctx)
 	callback_ret = (phys_ctx->callbacks.external_ssl_ctx_domain == NULL)
 	                   ? 0
 	                   : (phys_ctx->callbacks.external_ssl_ctx_domain(
-	                         dom_ctx->config[AUTHENTICATION_DOMAIN],
-	                         &ssl_ctx,
-	                         phys_ctx->user_data));
+	                       dom_ctx->config[AUTHENTICATION_DOMAIN],
+	                       &ssl_ctx,
+	                       phys_ctx->user_data));
 
 	if (callback_ret < 0) {
 		/* Callback < 0: Error. Abort init. */

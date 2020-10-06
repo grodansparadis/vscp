@@ -576,14 +576,16 @@ extern "C"
     43 /* Supplied buffer is to small to fit content */
 #define VSCP_ERROR_UNKNOWN_ITEM                                                \
     44 /* Requested item (remote variable) is unknown */
-#define VSCP_ERROR_ALREADY_DEFINED  45 /* The name is already in use. */
-#define VSCP_ERROR_WRITE_ERROR      46 /* Error when writing data */
-#define VSCP_ERROR_STOPPED          47 /* Operation stopped or aborted */
-#define VSCP_ERROR_INVALID_POINTER  48 /* Pointer with invalid value */
-#define VSCP_ERROR_INVALID_PERMISSION 49 /* Not allowed to do that */
-#define VSCP_ERROR_INVALID_PATH     50 /* Invalid path (permissions) */
-#define VSCP_ERROR_ERRNO            51 /* General error, errno variable holds error */
-#define VSCP_ERROR_INTERUPTED       52 /* Interupted by signal or other cause */
+#define VSCP_ERROR_ALREADY_DEFINED      45 /* The name is already in use. */
+#define VSCP_ERROR_WRITE_ERROR          46 /* Error when writing data */
+#define VSCP_ERROR_STOPPED              47 /* Operation stopped or aborted */
+#define VSCP_ERROR_INVALID_POINTER      48 /* Pointer with invalid value */
+#define VSCP_ERROR_INVALID_PERMISSION   49 /* Not allowed to do that */
+#define VSCP_ERROR_INVALID_PATH         50 /* Invalid path (permissions) */
+#define VSCP_ERROR_ERRNO                51 /* General error, errno variable holds error */
+#define VSCP_ERROR_INTERUPTED           52 /* Interupted by signal or other cause */
+#define VSCP_ERROR_MISSING              53 /* Value, paramter or something else is missing */ 
+#define VSCP_ERROR_NOT_CONNECTED        54 /* There is no connection */
 
 /*
     Template for VSCP XML event data

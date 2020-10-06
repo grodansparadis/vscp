@@ -45,6 +45,7 @@ public:
         Init client
         @param host Host to connect to.
         @param port Port on host to connect to.
+        @param bSSL True to activate SSL/TLS.
         @param username Username credentials.
         @param password Password credentials.
         @param vscpkey Secret key.
@@ -53,6 +54,7 @@ public:
     */
     virtual int init(const std::string host,
                     short port,
+                    bool bSSL,
                     const std::string username,
                     const std::string password,
                     uint8_t *vscpkey,
@@ -107,7 +109,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -122,6 +124,19 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int clear(void);
+
+    /*!
+        Get version from interface
+        @param pmajor Pointer to uint8_t that get major version of interface.
+        @param pminor Pointer to uint8_t that get minor version of interface.
+        @param prelease Pointer to uint8_t that get release version of interface.
+        @param pbuild Pointer to uint8_t that get build version of interface.
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int getversion(uint8_t *pmajor,
+                            uint8_t *pminor,
+                            uint8_t *prelease,
+                            uint8_t *pbuild);
 
     /*!
         Get interfaces
@@ -140,13 +155,19 @@ public:
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(vscpEvent &ev) = 0;
+    virtual int setCallback(vscpEvent &ev);
 
     /*!
         Set receive callback
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(vscpEventEx &ex) = 0;
+    virtual int setCallback(vscpEventEx &ex);
+
+    virtual void setConnectionTimeout(uint32_t timeout = WS2_CONNECTION_TIMEOUT) { m_timeout_connect = timeout; };
+    virtual uint32_t getConnectionTimeout(void) { return m_timeout_connect; };
+
+    virtual void setResponseTimeout(uint32_t timeout = WS2_RESPONSE_TIMEOUT) { m_timeout_response = timeout; };
+    virtual uint32_t getResponseTimeout(void) { return m_timeout_response; };
 
     /*!
         Encrypt the admin/password pair
@@ -178,6 +199,9 @@ public:
     // True if connected
     bool m_bConnected;
 
+    // Connection object
+    struct mg_connection *m_conn;
+
     // Semaphore for message receive queue
     sem_t m_sem_msg;
 
@@ -206,8 +230,9 @@ private:
     // (default is 8884)
     short m_port;
 
-    // Connection object
-    struct mg_connection *m_conn;
+    uint32_t m_timeout_connect;
+
+    uint32_t m_timeout_response;
 };
 
 #endif

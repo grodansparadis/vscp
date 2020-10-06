@@ -20,13 +20,15 @@ find_package(OpenSSL REQUIRED)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DOPENSSL_API_1_1")
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
 
-set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1 -DUSE_WEBSOCKET")
+set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
 
 include(FindEXPAT)
 find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
 include(FindLibWebSockets)
+
+set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_WEBSOCKET")
 
 # add the executable
 add_executable(test 

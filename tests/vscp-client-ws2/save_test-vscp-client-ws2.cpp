@@ -9,7 +9,7 @@
 #include "civetweb.h"
 #include <json.hpp> // Needs C++11  -std=c++11
 
-#include "vscp_client_ws2.h"
+#include "vscp_client_mqtt.h"
 
 #define WS2_RESPONSE_TIMEOUT	2000	
 
@@ -182,10 +182,10 @@ int waitForResponse( uint32_t timeout )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// _startWebsocket
+// startWebsocket
 //
 
-void _startWebsocket()
+void startWebsocket()
 {
 	char ebuf[100] = {0};
 	const char *path = "/ws2";
@@ -362,39 +362,6 @@ void _startWebsocket()
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// startWebsocket
-//
-
-void startWebsocket()
-{
-	vscpClientWs2 c;
-	c.init("127.0.0.1",
-					8884,
-					false,
-					"admin",
-					"secret",
-					vscpkey );
-
-	if (VSCP_ERROR_SUCCESS == c.connect()) {
-		printf("Connected\n");
-	}	
-
-	for ( int i=0;i<120;i++) {
-		printf("Sending PING\n" );
-		mg_websocket_client_write(c.m_conn,
-		                          MG_WEBSOCKET_OPCODE_PING,
-		                          (const char *)&i,
-		                          sizeof(int));
-		sleep(1);				
-	}
-
-	if (VSCP_ERROR_SUCCESS == c.disconnect()) {
-		printf("Disconnected\n");
-	}
-
-	printf("The END!\n");
-}
 
 int main()
 {
