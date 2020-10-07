@@ -124,7 +124,8 @@ VSCPD_OBJECTS =  vscpd.o \
 	fastpbkdf2.o \
 	vscpmd5.o \
 	vscpbase64.o \
-	vscpdatetime.o
+	vscpdatetime.o \
+	udpsrv.o
 
 ### Targets: ###
 
@@ -189,6 +190,9 @@ configfile.o: ../../../common/configfile.cpp ../../../common/configfile.h
 
 vscpdatetime.o: ../../common/vscpdatetime.cpp ../../common/vscpdatetime.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@
+
+udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/udpsrv.cpp -o $@
 
 dllist.o: ../../../common/dllist.c ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@

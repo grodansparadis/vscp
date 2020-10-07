@@ -36,6 +36,7 @@
 #include <devicelist.h>
 #include <interfacelist.h>
 #include <tcpipsrv.h>
+#include <udpsrv.h>
 #include <userlist.h>
 #include <vscp.h>
 #include <websocket.h>
@@ -168,12 +169,12 @@ class CControlObject {
     /*!
         Start the UDP worker thread
     */
-    // bool startUDPSrvThread(void);
+    bool startUDPSrvThreads(void);
 
     /*!
         Stop the UDP Workerthread
     */
-    // bool stopUDPSrvThread(void);
+    bool stopUDPSrvThreads(void);
 
     /*!
         Start the Multicast worker threads
@@ -421,6 +422,16 @@ class CControlObject {
     std::string m_tcpip_ssl_cipher_list;
     uint8_t m_tcpip_ssl_protocol_version;
     bool m_tcpip_ssl_short_trust;
+
+    //*****************************************************
+    //                 UDP interface
+    //*****************************************************
+
+    // Protect UDP remote list
+    pthread_mutex_t m_mutexUDPRemotes;
+
+    // List containing remote receiving UDP clients
+    std::deque<udpRemoteClient *>m_udpremotes; 
 
     //*****************************************************
     //               webserver interface

@@ -1,4 +1,4 @@
-// udpclientthread.h
+// udpsrv.h
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
@@ -33,20 +33,10 @@
 #include "userlist.h"
 
 // Prototypes
-void *
-UDPThread(void *pData);
+void *UdpReceiveWorkerThread(void *pData);
+void *UdpSendWorkerThread(void *pData);
 
-// Client structure (Will receive events from VSCP server)
-typedef struct
-{
-    bool m_bEnable; // Enable the client
-    std::string
-      m_remoteAddress; // Address for remote client UDP://192.168.1.99:1234
-    vscpEventFilter m_filter; // Filter for outgoing events to this UDP client
-    uint8_t m_nEncryption;    // Encryption algorithm to use for this client
-    bool m_bSetBroadcast;     // Set broadcast flag  MG_F_ENABLE_BROADCAST
-    uint8_t m_index;          // Rolling send index (only low tree bits used)
-} udpRemoteClientInfo;
+#define UDP_MAX_PACKAGE     2048
 
 typedef struct
 {
@@ -56,7 +46,51 @@ typedef struct
     uint8_t m_nRetry;    // Retry counter
 } eventResendItem;
 
-// XX_DECLARE_LIST(eventResendItem, udpResendItemList);
+
+// Remote UDP Client structure. One is defined for each
+// remote client.
+class udpRemoteClient
+{
+public:
+    udpRemoteClient(CControlObject *pobj = NULL);
+    ~udpRemoteClient();
+
+    /*!
+        Initialize the UDP remote client
+        @param host Host to connect to
+        @param port Port on host to connect to.
+        @param nEncryption Encryption to use. None, AES128, AES192, AES256
+        @param bBroadcast True to set broadcast bit on sent frame.
+        @return VSCP_ERROR_SUCCESS if all goes well, otherwise error.
+    */
+    int init(std::string host, 
+                short port = VSCP_DEFAULT_UDP_PORT, 
+                uint8_t nEncryption = VSCP_ENCRYPTION_NONE, 
+                bool bSetBroadcast = false);
+
+    /*!
+        Send event to UDP remote client
+    */
+    int sendFrame(void);
+
+    // Assign control object
+    void setControlObjectPointer(CControlObject *pCtrlObj) { m_pCtrlObj = pCtrlObj; };
+
+private:
+
+    struct sockaddr_in m_to;
+    int m_sockfd;                 // Sending socket
+
+    uint8_t m_nEncryption;        // Encryption algorithm to use for this client
+    bool m_bSetBroadcast;         // Set broadcast flag  MG_F_ENABLE_BROADCAST
+    uint8_t m_index;              // Rolling send index (only low tree bits used)    
+
+    CClientItem *m_pClientItem;   // Client we are working as     
+
+    // The global control object
+    CControlObject *m_pCtrlObj;
+};
+
 
 /*!
     This class implement the listen thread for
@@ -74,115 +108,60 @@ class UDPSrvObj
     ~UDPSrvObj();
 
     /*!
-     *  Connection handler
-     *
-     * @param nc Mongoose connection handle
-     * @param ev Mongoose event.
-     * @param p Pointer to user data.
-     */
-    static void ev_handler(struct mg_connection *nc, int ev, void *p);
-
-    /*!
      * Receive UDP frame
      *
-     * @param nc Mongoose connection handle
-     * @param pClientItem Client item for this user. Normally "USP"
-     * @param pRxFilter Pointer to receive filter. Can be NULL to accept
-     *          all events.
-     * @param index Running packet index.-
-     * @return True on success, false on failure.
+     * @param sockfd UDP socket descriptor for listening socket.
+     * @param pClientItem Client item for this user. Normally "UDP"
+     * @return VSCP_ERROR_SUCCESS on success, errorcode on failure.
      */
-    static bool receiveFrame(struct mg_connection *nc,
-                             CClientItem *pClientItem,
-                             vscpEventFilter *pRxFilter);
+    int receiveFrame(int sockfd,
+                      CClientItem *pClientItem);
 
     /*!
-     *  Send ACk reply
+     *  Send ACK reply
      *
-     *  @pram nc Pointer to connection
      *  @param pkttype Packet type
      *  @param index Running index 0-7
+     *  @return VSCP_ERROR_SUCCESS on success, errorcode on failure.
      */
-    static bool replyAckFrame(struct mg_connection *nc,
-                              uint8_t pkttype,
-                              uint8_t index);
+    int replyAckFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index);
 
     /*!
-     *  Send NACk reply
+     *  Send NACK reply
      *
-     *  @pram nc Pointer to connection
      *  @param pkttype Packet type
      *  @param index Running index 0-7
+     *  @return VSCP_ERROR_SUCCESS on success, errorcode on failure.
      */
-    static bool replyNackFrame(struct mg_connection *nc,
-                               uint8_t pkttype,
-                               uint8_t index);
+    int replyNackFrame(struct sockaddr *to, uint8_t pkttype,uint8_t index);
 
-    /*!
-     * Send frame to all clients
-     *
-     * @param pmgt Pointer to communication structure
-     * @param pClientItem Pointer to client
-     * @return True on success false on failure
-     */
-    bool sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem);
-
-    /*!
-        Assign control object
-    */
-    void setControlObjectPointer(CControlObject *pobj) { m_pobj = pobj; };
+    // Assign control object
+    void setControlObjectPointer(CControlObject *pCtrlObj) { m_pCtrlObj = pCtrlObj; };
 
     // --- Member variables ---
 
-    /*!
-     *  Mutex that protect the UDP info structure
-     */
+    // Mutex that protect the UDP info structure
     pthread_mutex_t m_mutexUDPInfo;
 
     bool m_bQuit;
 
-    // TODO move private????
+    bool m_bEnable;                 // Enable UDP
+    struct sockaddr_in m_servaddr;  // Bind address + port
+    int m_sockfd;                   // Socket used to send ACK/NACK)
+    bool m_bAllowUnsecure;          // Allow un encrypted datagrams
+    bool m_bAck;                    // ACK received datagram
+    std::string m_user;             // User account to use for UDP
+    std::string m_password;         // Password for user account
+    std::string m_interface;        // Interface to bind to "UDP://33333"
+    cguid m_guid;                   // GUID to use for server client object
+    vscpEventFilter m_filter;       // Filter for incoming events to this UDP client
 
-    bool m_bEnable;           // Enable UDP
-    bool m_bAllowUnsecure;    // Allow un encrypted datagrams
-    bool m_bAck;              // ACK received datagram
-    std::string m_user;       // User account to use for UDP
-    std::string m_password;   // Password for user account
-    std::string m_interface;  // Interface to bind to "UDP://33333"
-    cguid m_guid;             // GUID to use for server client object
-    vscpEventFilter m_filter; // Filter for incoming events to this UDP client
-    std::deque<udpRemoteClientInfo *>
-      m_remotes; // List containing remote receiving clients
-
-  private:
     // UDP Client item
     CClientItem *m_pClientItem;
 
     // The global control object
-    CControlObject *m_pobj;
+    CControlObject *m_pCtrlObj;
 };
 
-/*!
-    This class implement a worker thread that
-    logs UDP received data.
-*/
-
-class UDPWorkerObj
-{
-
-  public:
-    /// Constructor
-    UDPWorkerObj();
-
-    /// Destructor
-    ~UDPWorkerObj();
-
-    // --- Member variables ---
-
-    /*!
-        Termination control
-    */
-    bool m_bQuit;
-};
 
 #endif

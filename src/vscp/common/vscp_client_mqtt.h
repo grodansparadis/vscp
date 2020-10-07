@@ -245,14 +245,14 @@ private:
 
     std::string m_cafile;	    // path to a file containing the PEM encoded trusted CA certificate files.  
                                 // Either cafile or capath must not be NULL.
-    std::string m_capath;	    //path to a directory containing the PEM encoded trusted CA certificate files.  
+    std::string m_capath;	    // path to a directory containing the PEM encoded trusted CA certificate files.  
                                 // See mosquitto.conf for more details on configuring this directory.  
                                 // Either cafile or capath must not be NULL.
-    std::string m_certfile;	    //path to a file containing the PEM encoded certificate file for this client.  
+    std::string m_certfile;	    // path to a file containing the PEM encoded certificate file for this client.  
                                 // If NULL, keyfile must also be NULL and no client certificate will be used.
     std::string m_keyfile;      
 
-    std::string m_pwKeyfile;    // Password for keyfile (se only if it is encrypted on disc)
+    std::string m_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
 
     struct mosquitto *m_mosq;   // Handel for connection
     

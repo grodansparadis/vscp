@@ -181,6 +181,11 @@ CControlObject::CControlObject()
         syslog(LOG_ERR, "Unable to init m_mutex_UserList");
         return;
     }
+    
+    if (0 != pthread_mutex_init(&m_mutexUDPRemotes, NULL)) {
+        syslog(LOG_ERR, "Unable to init m_mutexUDPRemotes");
+        return;
+    }
 
     m_rootFolder = "/var/lib/vscp/vscpd/";
 
@@ -371,6 +376,11 @@ CControlObject::~CControlObject()
 
     if (0 != pthread_mutex_destroy(&m_mutex_UserList)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_UserList");
+        return;
+    }
+
+    if (0 != pthread_mutex_destroy(&m_mutexUDPRemotes)) {
+        syslog(LOG_ERR, "Unable to destroy m_mutexUDPRemotes");
         return;
     }
 

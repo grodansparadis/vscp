@@ -42,10 +42,10 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 
-#define VSCP_DEFAULT_UDP_PORT        33333
-#define VSCP_DEFAULT_TCP_PORT        9598
-#define VSCP_ANNOUNCE_MULTICAST_PORT 9598
-#define VSCP_DEFAULT_MULTICAST_PORT  44444
+#define VSCP_DEFAULT_UDP_PORT           33333
+#define VSCP_DEFAULT_TCP_PORT           9598
+#define VSCP_ANNOUNCE_MULTICAST_PORT    9598
+#define VSCP_DEFAULT_MULTICAST_PORT     44444
 
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER 0x00
 #define VSCP_ADDRESS_NEW_NODE           0xff
@@ -355,6 +355,9 @@ extern "C"
 
 /* Two byte CRC follow here and if the frame is encrypted */
 /* the initialization vector follows. */
+
+// Maximum packet size (for buffer allocation)
+#define VSCP_MULTICAST_PACKET0_MAX  (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + VSCP_LEVEL2_MAXDATA + 16)
 
 /* VSCP multicast packet types */
 #define VSCP_MULTICAST_TYPE_EVENT 0
