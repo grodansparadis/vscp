@@ -41,14 +41,14 @@
 // "driver" can send and receive events and log in to tcp/ip through local host
 
 // Rights nibble 7
-#define VSCP_USER_RIGHT_ALLOW_SHUTDOWN  0x80000000
-#define VSCP_USER_RIGHT_ALLOW_RESTART   0x40000000
-#define VSCP_USER_RIGHT_ALLOW_INTERFACE 0x20000000
 #define VSCP_USER_RIGHT_ALLOW_TEST      0x10000000
+#define VSCP_USER_RIGHT_ALLOW_INTERFACE 0x20000000
+#define VSCP_USER_RIGHT_ALLOW_RESTART   0x40000000
+#define VSCP_USER_RIGHT_ALLOW_SHUTDOWN  0x80000000
 
 // Rights nibble 6
-#define VSCP_USER_RIGHT_ALLOW_SETGUID   0x08000000
 #define VSCP_USER_RIGHT_ALLOW_SETFILTER 0x04000000
+#define VSCP_USER_RIGHT_ALLOW_SETGUID   0x08000000
 
 // Rights nibble 5
 
@@ -64,29 +64,33 @@
 #define VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT                                \
     0x00040000 // Allowed to send Level 2 protocol events
 #define VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT                                   \
-    0x00040000 // Allowed to send HLO event(s)
+    0x00080000 // Allowed to send HLO event(s)
 
-// Rights nibble 1
-
-// Rights nibble 0 - Low nibble is priority. Higher
-// value allow for more restricted use of commands/functionality
-#define VSCP_USER_RIGHT_ALLOW_TCPIP     0x00000010
-#define VSCP_USER_RIGHT_ALLOW_WEBSOCKET 0x00000020
-#define VSCP_USER_RIGHT_ALLOW_WEB       0x00000040
+// Rights nibble 0/1
+#define VSCP_USER_RIGHT_ALLOW_TCPIP     0x00000001
+#define VSCP_USER_RIGHT_ALLOW_WEBSOCKET 0x00000002  // ws1/ws2
+#define VSCP_USER_RIGHT_ALLOW_WEB       0x00000004  // Web interface
+#define VSCP_USER_RIGHT_ALLOW_UDP       0x00000008
+#define VSCP_USER_RIGHT_ALLOW_REST      0x00000010  // REST
+#define VSCP_USER_RIGHT_ALLOW_MQTT      0x00000020  // MQTT
 
 // Default user privilege
-#define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFF
+#define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFF    // Can do everything (and more)
 
 #define VSCP_USER_DEFAULT_RIGHTS                                               \
-    VSCP_USER_RIGHT_ALLOW_TCPIP | VSCP_USER_RIGHT_ALLOW_WEBSOCKET |            \
-      VSCP_USER_RIGHT_ALLOW_WEB | VSCP_USER_RIGHT_ALLOW_SEND_EVENT |           \
+    VSCP_USER_RIGHT_ALLOW_TCPIP |                                              \
+      VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
+      VSCP_USER_RIGHT_ALLOW_WEB |                                              \      
+      VSCP_USER_RIGHT_ALLOW_REST |                                             \
+      VSCP_USER_RIGHT_ALLOW_USP |                                              \
+      VSCP_USER_RIGHT_ALLOW_MQTT                                               \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
       VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
 
 #define VSCP_DRIVER_DEFAULT_RIGHTS                                             \
-    VSCP_USER_RIGHT_ALLOW_TCPIP | VSCP_USER_RIGHT_ALLOW_WEBSOCKET |            \
-      VSCP_USER_RIGHT_ALLOW_WEB | VSCP_USER_RIGHT_ALLOW_SEND_EVENT |           \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
       VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \

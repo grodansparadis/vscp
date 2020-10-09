@@ -361,8 +361,7 @@ UDPSrvObj::receiveFrame(int sockfd,
         // receive
         pEvent->obid = pClientItem->m_clientID;
 
-        // There must be room in the receive queue (even if room 
-        // has been better)
+        // There must be room in the receive queue 
         if (m_pCtrlObj->m_maxItemsInClientReceiveQueue >
             m_pCtrlObj->m_clientOutputQueue.size()) {
 
@@ -517,6 +516,7 @@ UdpReceiveWorkerThread(void *pData)
                 sizeof(pObj->m_servaddr)) < 0 )
     { 
         syslog( LOG_ERR, "UDP RX Client: Unable to bind to server port."); 
+        close(sockfd);
         return NULL; 
     } 
 
@@ -527,11 +527,12 @@ UdpReceiveWorkerThread(void *pData)
     int len; 
     len = sizeof(cliaddr);  //len is value/result 
 
-    // We need to create a client object and add this object to the list
+    // We need to create a client object and add this object to the list of clients
     pObj->m_pClientItem = new CClientItem;
     if (NULL == pObj->m_pClientItem) {
         syslog( LOG_ERR,
             "[UDP RX Client] Unable to allocate memory for client - terminating."); 
+        close(sockfd);    
         return NULL;
     }
 
@@ -560,6 +561,7 @@ UdpReceiveWorkerThread(void *pData)
             syslog( LOG_ERR,
                 "[UDP RX Client] User [%s] NOT allowed to connect.",
                 (const char *)pObj->m_user.c_str());
+            close(sockfd);    
             return NULL;
         }
     } else {
@@ -576,6 +578,7 @@ UdpReceiveWorkerThread(void *pData)
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
         syslog( LOG_ERR,
             "UDP server: Failed to add client. Terminating thread.");
+        close(sockfd);    
         return NULL;
     }
     pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
