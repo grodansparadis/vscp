@@ -313,31 +313,67 @@ CUserItem::setUserRightsFromString(const std::string& strRights)
             if (0 == strcasecmp(str.c_str(), "admin")) {
                 // All rights
                 m_userRights |= VSCP_ADMIN_DEFAULT_RIGHTS;
-            } else if (0 == strcasecmp(str.c_str(), "user")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "user")) {
                 // A standard user
                 m_userRights |= VSCP_USER_DEFAULT_RIGHTS;
-            } else if (0 == strcasecmp(str.c_str(), "driver")) {
+            }
+            else if (0 == strcasecmp(str.c_str(), "web")) {
+                // A standard driver
+                m_userRights |= VSCP_WEB_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "rest")) {
+                // A standard driver
+                m_userRights |= VSCP_REST_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "tcp")) {
+                // A standard driver
+                m_userRights |= VSCP_TCP_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "websocket")) {
+                // A standard driver
+                m_userRights |= VSCP_WEBSOCKET_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "mqtt")) {
+                // A standard driver
+                m_userRights |= VSCP_MQTT_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "udp")) {
+                // A standard driver
+                m_userRights |= VSCP_UDP_DEFAULT_RIGHTS;
+            }
+            else if (0 == strcasecmp(str.c_str(), "driver")) {
                 // A standard driver
                 m_userRights |= VSCP_DRIVER_DEFAULT_RIGHTS;
-            } else if (0 == strcasecmp(str.c_str(), "send-events")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "send-events")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_EVENT;
-            } else if (0 == strcasecmp(str.c_str(), "receive-events")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "receive-events")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_RCV_EVENT;
-            } else if (0 == strcasecmp(str.c_str(), "l1ctrl-events")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "l1ctrl-events")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT;
-            } else if (0 == strcasecmp(str.c_str(), "l2ctrl-events")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "l2ctrl-events")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT;
-            } else if (0 == strcasecmp(str.c_str(), "hlo-events")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "hlo-events")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT;
-            } else if (0 == strcasecmp(str.c_str(), "shutdown")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "shutdown")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_SHUTDOWN;
-            } else if (0 == strcasecmp(str.c_str(), "restart")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "restart")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_RESTART;
-            } else if (0 == strcasecmp(str.c_str(), "interface")) {
+            }
+            else if (0 == strcasecmp(str.c_str(), "interface")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_INTERFACE;
-            } else if (0 == strcasecmp(str.c_str(), "test")) {
+            } 
+            else if (0 == strcasecmp(str.c_str(), "test")) {
                 m_userRights |= VSCP_USER_RIGHT_ALLOW_TEST;
-            } else {
+            } 
+            else {
                 // Numerical
                 uint32_t val = vscp_readStringValue(str);
                 m_userRights |= val;
@@ -730,8 +766,6 @@ CUserList::addSuperUser(const std::string& user,
                         const std::string& allowedRemotes,
                         uint32_t bFlags)
 {
-    //char buf[512];
-
     // Cant add user with username that is already defined.
     if (NULL != m_userhashmap[user]) {
         return false;

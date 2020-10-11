@@ -51,14 +51,10 @@
 #define VSCP_USER_RIGHT_ALLOW_SETGUID   0x08000000
 
 // Rights nibble 5
+#define VSCP_USER_RIGHT_ALLOW_RCV_EVENT     0x00100000  // Allowed to receive events
 
 // Rights nibble 4
-
-// Rights nibble 3
-#define VSCP_USER_RIGHT_ALLOW_RCV_EVENT 0x00100000 // Allowed to receive events
-
-// Rights nibble 2
-#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT 0x00010000 // Allowed to send events
+#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT    0x00010000  // Allowed to send events
 #define VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT                                \
     0x00020000 // Allowed to send Level I protocol events
 #define VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT                                \
@@ -66,12 +62,18 @@
 #define VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT                                   \
     0x00080000 // Allowed to send HLO event(s)
 
+// Rights nibble 3
+
+
+// Rights nibble 2
+
+
 // Rights nibble 0/1
 #define VSCP_USER_RIGHT_ALLOW_TCPIP     0x00000001
 #define VSCP_USER_RIGHT_ALLOW_WEBSOCKET 0x00000002  // ws1/ws2
 #define VSCP_USER_RIGHT_ALLOW_WEB       0x00000004  // Web interface
-#define VSCP_USER_RIGHT_ALLOW_UDP       0x00000008
-#define VSCP_USER_RIGHT_ALLOW_REST      0x00000010  // REST
+#define VSCP_USER_RIGHT_ALLOW_REST      0x00000008  // REST
+#define VSCP_USER_RIGHT_ALLOW_UDP       0x00000010  // UDP clienty
 #define VSCP_USER_RIGHT_ALLOW_MQTT      0x00000020  // MQTT
 
 // Default user privilege
@@ -80,16 +82,64 @@
 #define VSCP_USER_DEFAULT_RIGHTS                                               \
     VSCP_USER_RIGHT_ALLOW_TCPIP |                                              \
       VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
-      VSCP_USER_RIGHT_ALLOW_WEB |                                              \      
+      VSCP_USER_RIGHT_ALLOW_WEB |                                              \
       VSCP_USER_RIGHT_ALLOW_REST |                                             \
-      VSCP_USER_RIGHT_ALLOW_USP |                                              \
-      VSCP_USER_RIGHT_ALLOW_MQTT                                               \
+      VSCP_USER_RIGHT_ALLOW_UDP |                                              \
+      VSCP_USER_RIGHT_ALLOW_MQTT |                                             \
       VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
       VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
 
 #define VSCP_DRIVER_DEFAULT_RIGHTS                                             \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT
+
+#define VSCP_TCP_DEFAULT_RIGHTS                                                \
+      VSCP_USER_RIGHT_ALLOW_TCPIP |                                            \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT 
+
+#define VSCP_WEBSOCKET_DEFAULT_RIGHTS                                          \
+      VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT
+
+#define VSCP_WEB_DEFAULT_RIGHTS                                                \
+      VSCP_USER_RIGHT_ALLOW_WEB |                                              \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT 
+
+#define VSCP_REST_DEFAULT_RIGHTS                                               \
+      VSCP_USER_RIGHT_ALLOW_REST |                                             \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT 
+
+#define VSCP_UDP_DEFAULT_RIGHTS                                                \
+      VSCP_USER_RIGHT_ALLOW_UDP |                                              \
+      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT      
+
+#define VSCP_MQTT_DEFAULT_RIGHTS                                               \
+      VSCP_USER_RIGHT_ALLOW_MQTT |                                             \
       VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
       VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
