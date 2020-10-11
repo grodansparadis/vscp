@@ -1786,6 +1786,7 @@ static int depth_full_config_parser = 0;
 static int bVscpConfigFound         = 0;
 static int bGeneralConfigFound      = 0;
 static int bRemoteUserConfigFound   = 0;
+static int bUDPConfigFound          = 0;
 static int bLevel1DriverConfigFound = 0;
 static int bLevel2DriverConfigFound = 0;
 static int bLevel3DriverConfigFound = 0;
@@ -2473,6 +2474,109 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         }
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "udp"))) {
+        
+        bVscpConfigFound = TRUE;
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpsrv.m_bEnable = true;
+                }
+                else {
+                    pObj->m_udpsrv.m_bEnable = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                pObj->m_udpsrv.m_interface = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                pObj->m_udpsrv.m_guid.getFromString(attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                pObj->m_udpsrv.m_user = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ballowunsecure")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpsrv.m_bAllowUnsecure = true;
+                }
+                else {
+                    pObj->m_udpsrv.m_bAllowUnsecure = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "bAck")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpsrv.m_bAck = true;
+                }
+                else {
+                    pObj->m_udpsrv.m_bAck = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                vscp_readFilterFromString(&pObj->m_udpsrv.m_filter,attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                vscp_readMaskFromString(&pObj->m_udpsrv.m_filter,attribute);
+            }
+            
+        }
+    }
+    else if (bVscpConfigFound && bUDPConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "client"))) {
+
+        bool bEnable = false;
+        std::string interface;
+        std::string user;
+        vscpEventFilter filter;
+        int nEncryption = 0;
+        bool bSetBroadcast = false;
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnable = true;
+                }
+                else {
+                    bEnable = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                interface = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                user = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                vscp_readFilterFromString(&filter,attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                vscp_readMaskFromString(&filter,attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "bSetBroadcast")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bSetBroadcast = true;
+                }
+                else {
+                    bSetBroadcast = false;
+                }
+            }
+
+        }
+
+        // Add UDP client if enabled
+        pObj->addUdpClient(bEnable,interface,user,filter,nEncryption,bSetBroadcast);
+        
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              ((0 == vscp_strcasecmp(name, "level1driver")) ||
               (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = TRUE;
@@ -2504,7 +2608,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
             else if (0 == vscp_strcasecmp(attr[i], "name")) {
                 strName = attribute;
-                // Replace spaces in name with underscore
+                // Replace possible spaces in name with underscore
                 std::string::size_type found;
                 while (std::string::npos !=
                        (found = strName.find_first_of(" "))) {
@@ -2657,6 +2761,10 @@ endFullConfigParser(void* data, const char* name)
     if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              (0 == vscp_strcasecmp(name, "remoteuser"))) {
         bRemoteUserConfigFound = FALSE;
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "udp"))) {
+        bUDPConfigFound = FALSE;
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
         ((0 == vscp_strcasecmp(name, "level1driver")) ||

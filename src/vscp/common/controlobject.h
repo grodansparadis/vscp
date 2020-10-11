@@ -427,6 +427,9 @@ class CControlObject {
     //                 UDP interface
     //*****************************************************
 
+    // UDP server functionality
+    UDPSrvObj m_udpsrv;
+
     // Protect UDP remote list
     pthread_mutex_t m_mutexUDPRemotes;
 

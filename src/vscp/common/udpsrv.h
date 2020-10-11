@@ -83,8 +83,10 @@ private:
 
     uint8_t m_nEncryption;        // Encryption algorithm to use for this client
     bool m_bSetBroadcast;         // Set broadcast flag  MG_F_ENABLE_BROADCAST
-    uint8_t m_index;              // Rolling send index (only low tree bits used)    
+    uint8_t m_index;              // Rolling send index (only low tree bits used) 
+    vscpEventFilter m_filter;     // Outgoing filter for this remote client   
 
+    std::string m_user;           // user clinet act as
     CClientItem *m_pClientItem;   // Client we are working as     
 
     // The global control object
@@ -146,13 +148,14 @@ class UDPSrvObj
     bool m_bQuit;
 
     bool m_bEnable;                 // Enable UDP
+    std::string m_interface;        // Interface to bind to "UDP://33333"
     struct sockaddr_in m_servaddr;  // Bind address + port
     int m_sockfd;                   // Socket used to send ACK/NACK)
+
     bool m_bAllowUnsecure;          // Allow un encrypted datagrams
     bool m_bAck;                    // ACK received datagram
     std::string m_user;             // User account to use for UDP
-    std::string m_password;         // Password for user account
-    std::string m_interface;        // Interface to bind to "UDP://33333"
+    std::string m_password;         // Password for user account    
     cguid m_guid;                   // GUID to use for server client object
     vscpEventFilter m_filter;       // Filter for incoming events to this UDP client
 
