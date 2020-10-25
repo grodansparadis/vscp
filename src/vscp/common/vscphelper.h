@@ -1908,6 +1908,20 @@ extern "C"
      */
     bool vscp_getSaltHex(std::string& strSalt, size_t len);
 
+
+    /*!
+        vscp_getHostFromInterface
+
+        Get host part from interface on form protocol://host:port
+        (tcp://, stcp:// etc)
+
+        @param interface Interface on form [protocol://]host[:port]
+        @return host as string
+
+    */
+    std::string
+    vscp_getHostFromInterface(std::string interface);
+
 #ifdef __cplusplus
 }
 #endif

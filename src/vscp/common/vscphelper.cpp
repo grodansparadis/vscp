@@ -6753,3 +6753,35 @@ vscp_getSaltHex(std::string& strSalt, size_t len)
 
     return true;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getHostFromInterface
+//
+
+std::string
+vscp_getHostFromInterface(std::string interface)
+{
+    size_t pos;
+    std::string str = interface;
+    vscp_trim(str);
+
+    // tcp:// stcp:// udp:// sudp:// ....
+    if ( std::string::npos == (pos = str.find("://") ) ) {
+        str = str.substr(pos+1);
+    }
+
+    if ( std::string::npos == (pos = str.find(":") ) ) {
+        str = str.substr(0,pos);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getPortFromInterface
+//
+
+int
+vscp_getPortFromInterface(std::string interface)
+{
+    
+}

@@ -177,6 +177,21 @@ class CControlObject {
     bool stopUDPSrvThreads(void);
 
     /*!
+        Add UDP client
+        @param interface Adress and port for client on the form host:port
+        @param user User account to use for connection
+        @param filter VSCP filter to use for the outgoing connection
+        @param nEncryption Encryption to use
+        @param bSetBroadCast Enable broadcast
+        @return true on success, false on error.
+    */
+    bool addUDPClient( std::string& interface,
+                        std::string& user,
+                        vscpEventFilter& filter,
+                        uint8_t nEncryption = VSCP_ENCRYPTION_NONE,
+                        bool bSetBroadcast = false );
+
+    /*!
         Start the Multicast worker threads
     */
     bool startMulticastWorkerThreads(void);

@@ -401,6 +401,9 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 {
     std::string str;
 
+    std::string sss = "stp://host:1234";
+    sss = vscp_getHostFromInterface(sss);
+
     // Save root folder for later use.
     m_rootFolder = rootFolder;
 
@@ -1192,6 +1195,37 @@ CControlObject::getVscpCapabilities(uint8_t* pCapability)
         pCapability[i] = caps & 0xff;
         caps           = caps >> 8;
     }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addUDPClient
+//
+
+bool 
+CControlObject::addUDPClient( std::string& interface,
+                                std::string& user,
+                                vscpEventFilter& filter,
+                                uint8_t nEncryption,
+                                bool bSetBroadcast )
+{
+    udpRemoteClient *premote = new udpRemoteClient;
+    if ( NULL == premote) {
+        syslog(LOG_ERR, "addUDPClient - Unable to add UDP client (memory)");
+    }
+
+
+
+    premote->setControlObjectPointer(this);
+    int rv;
+    // if ( VSCP_ERROR_SUCCESS != (rv = premote->init(host,
+    //                                             port,
+    //                                             nEncryption,
+    //                                             bSetBroadcast) ) ) {
+    //     syslog(LOG_ERR, "addUDPClient - Unable to add UDP client (init) rv=%d", rv);
+    //     return false;                                            
+    // }
 
     return true;
 }
@@ -2573,7 +2607,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         }
 
         // Add UDP client if enabled
-        pObj->addUdpClient(bEnable,interface,user,filter,nEncryption,bSetBroadcast);
+        if ( bEnable) {
+            pObj->addUDPClient(interface,user,filter,nEncryption,bSetBroadcast);
+        }
         
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
