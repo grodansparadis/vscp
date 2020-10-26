@@ -76,8 +76,12 @@ char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
 
 udpRemoteClient::udpRemoteClient(CControlObject *pobj)
 {
+    m_bQuit = false;
+    m_bEnable = false;
     m_sockfd = 0;
     m_index = 0;    // Rolling index starts at zero
+    m_nEncryption  = VSCP_ENCRYPTION_NONE;
+    m_bSetBroadcast = false;
     m_pClientItem = NULL;
 
     setControlObjectPointer(pobj);   
@@ -93,9 +97,7 @@ udpRemoteClient::~udpRemoteClient()
 //
 
 int 
-udpRemoteClient::init(std::string host,
-                        short port,
-                        uint8_t nEncryption,
+udpRemoteClient::init( uint8_t nEncryption,
                         bool bSetBroadcast)
 {
     m_nEncryption = nEncryption;
@@ -105,17 +107,37 @@ udpRemoteClient::init(std::string host,
         return VSCP_ERROR_ERROR;
     }
 
-    memset((char *) &m_to, 0, sizeof(m_to));
-    m_to.sin_family = AF_INET;
-    m_to.sin_port = htons(port);
+    memset((char *) &m_clientAddress, 0, sizeof(m_clientAddress));
+    m_clientAddress.sin_family = AF_INET;
+    m_clientAddress.sin_port = htons(m_remotePort);
 
-    if ( 0 == inet_aton( host.c_str() , &m_to.sin_addr) )  {
+    if ( 0 == inet_aton( m_remoteAddress.c_str() , &m_clientAddress.sin_addr) )  {
         syslog(LOG_ERR, "UDP remote client: inet_aton() failed.");
         close(m_sockfd);
         return VSCP_ERROR_ERROR;
     }
 
     return VSCP_ERROR_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// startWorkerThread
+//
+
+bool udpRemoteClient::startWorkerThread(void) 
+{
+    if (pthread_create(&m_udpClientWorkerThread,
+                       NULL,
+                       UdpClientWorkerThread,
+                       this)) {
+        syslog(LOG_ERR,
+               "Controlobject: Unable to start the UDP server thread.");
+        return false;
+    }
+
+
+
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,7 +233,9 @@ udpRemoteClient::sendFrame(void)
 #endif
     
     // Send event to client
-    int bytes_send = sendto(m_sockfd, sendbuf, lenSend, 0, (struct sockaddr *)&m_to, sizeof(m_to));
+    int bytes_send = sendto(m_sockfd, 
+                            sendbuf, lenSend, 0, 
+                            (struct sockaddr *)&m_remoteAddress, sizeof(m_remoteAddress));
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -368,7 +392,7 @@ UDPSrvObj::receiveFrame(int sockfd,
             pthread_mutex_lock(&m_pCtrlObj->m_mutex_ClientOutputQueue);
             m_pCtrlObj->m_clientOutputQueue.push_back(pEvent);
             sem_post(&m_pCtrlObj->m_semClientOutputQueue);
-            pthread_mutex_lock(&m_pCtrlObj->m_mutex_ClientOutputQueue);
+            pthread_mutex_unlock(&m_pCtrlObj->m_mutex_ClientOutputQueue);
 
         } 
         else {
@@ -477,11 +501,11 @@ UDPSrvObj::replyNackFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// UdpReceiveWorkerThread
+// UdpSrvWorkerThread
 //
 
 void *
-UdpReceiveWorkerThread(void *pData)
+UdpSrvWorkerThread(void *pData)
 {
     int sockfd; 
     char rcvbuf[UDP_MAX_PACKAGE];
@@ -508,7 +532,7 @@ UdpReceiveWorkerThread(void *pData)
     } 
       
     memset(&servaddr, 0, sizeof(servaddr));
-    memset(&cliaddr, 0, sizeof(cliaddr));
+    
 
     // Bind the socket with the server address 
     if ( bind(sockfd, 
@@ -524,8 +548,7 @@ UdpReceiveWorkerThread(void *pData)
                         get_ip_str((struct sockaddr *)&pObj->m_servaddr,
                                     rcvbuf,sizeof(rcvbuf)) );
       
-    int len; 
-    len = sizeof(cliaddr);  //len is value/result 
+    
 
     // We need to create a client object and add this object to the list of clients
     pObj->m_pClientItem = new CClientItem;
@@ -539,20 +562,19 @@ UdpReceiveWorkerThread(void *pData)
     // This is now an active Client
     pObj->m_pClientItem->m_bOpen         = true;
     pObj->m_pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-    pObj->m_pClientItem->m_strDeviceName = ("Internal UDP RX Client listener. [");
+    pObj->m_pClientItem->m_strDeviceName = "Internal UDP RX Client listener. [";
     pObj->m_pClientItem->m_strDeviceName += get_ip_str((struct sockaddr *)&pObj->m_servaddr,rcvbuf,sizeof(rcvbuf));
-    pObj->m_pClientItem->m_strDeviceName += ("]|Started at ");
-    pObj->m_pClientItem->m_strDeviceName +=
-    vscpdatetime::Now().getISODateTime();
+    pObj->m_pClientItem->m_strDeviceName += "]|Started at ";
+    pObj->m_pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // If a user is defined get user item
     vscp_trim(pObj->m_user);
     if (pObj->m_user.length()) {
-        pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-        pObj->m_pClientItem->m_pUserItem = 
-            pObj->m_pCtrlObj->m_userList.validateUser( pObj->m_user, 
-                                            pObj->m_password);
+
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_UserList);
+        pObj->m_pClientItem->m_pUserItem = 
+            pObj->m_pCtrlObj->m_userList.getUser(pObj->m_user);
+        pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_UserList);
 
         if (NULL == pObj->m_pClientItem->m_pUserItem) {
 
@@ -581,7 +603,7 @@ UdpReceiveWorkerThread(void *pData)
         close(sockfd);    
         return NULL;
     }
-    pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+    pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_clientList);
 
     // Set receive filter
     memcpy(&pObj->m_pClientItem->m_filter,
@@ -607,18 +629,13 @@ UdpReceiveWorkerThread(void *pData)
         if (poll_ret > 0) {            
 
             // OK receive the frame
-            if (pObj->receiveFrame(sockfd, pObj->m_pClientItem)) {
-
-                
-
+            if (pObj->receiveFrame(sockfd, pObj->m_pClientItem)) {                
+                ;
             }
             else {
-
-                
+                ;
             }
 
-
-            pObj->receiveFrame(sockfd, pObj->m_pClientItem);
         }
 
         //pObj->sendFrames(sockfd, pObj->m_pClientItem);
@@ -637,17 +654,18 @@ UdpReceiveWorkerThread(void *pData)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// UDPSendWorkerThread
+// UspClientWorkerThread
 //
 
 void *
-UdpSendWorkerThread(void *pData)
+UdpClientWorkerThread(void *pData)
 {
-    int sockfd;
     char rcvbuf[UDP_MAX_PACKAGE];
-    struct sockaddr_in servaddr, cliaddr;
 
-    UDPSrvObj *pObj = (UDPSrvObj *)pData;
+    // Init. CRC data
+    crcInit();
+
+    udpRemoteClient *pObj = (udpRemoteClient *)pData;
     if (NULL == pObj) {
         syslog( LOG_ERR, "UDP TX Client: No thread worker object defined.");
         return NULL;
@@ -658,16 +676,104 @@ UdpSendWorkerThread(void *pData)
         return NULL;
     }
 
-    // Init. CRC data
-    crcInit();
+    // // Creating socket file descriptor 
+    // if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
+    //     syslog( LOG_ERR,"UDP TX Client: socket creation failed"); 
+    //     exit(EXIT_FAILURE); 
+    // } 
 
+    // memset(&client_addr, 0, sizeof(client_addr));
+    // client_addr.sin_family = AF_INET;
+    // client_addr.sin_addr.s_addr  = inet_addr(pObj->m_interface.c_str());
+    // //servaddr.sin_addr.s_addr = INADDR_ANY;    // Broadcast
+    // client_addr.sin_port   = htons(1024);
+
+
+    // We need to create a client object and add this object to the list of clients
+    pObj->m_pClientItem = new CClientItem;
+    if (NULL == pObj->m_pClientItem) {
+        syslog( LOG_ERR,
+            "[UDP RX Client] Unable to allocate memory for client - terminating."); 
+        close(pObj->m_sockfd);    
+        return NULL;
+    }
+
+    // This is now an active Client
+    pObj->m_pClientItem->m_bOpen         = true;
+    pObj->m_pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
+    pObj->m_pClientItem->m_strDeviceName = ("Internal UDP RX Client listener. [");
+    pObj->m_pClientItem->m_strDeviceName += get_ip_str((struct sockaddr *)&pObj->m_remoteAddress,rcvbuf,sizeof(rcvbuf));
+    pObj->m_pClientItem->m_strDeviceName += ("]|Started at ");
+    pObj->m_pClientItem->m_strDeviceName +=
+    vscpdatetime::Now().getISODateTime();
+
+    // If a user is defined get user item
+    vscp_trim(pObj->m_user);
+    if (pObj->m_user.length()) {
+        pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+        pObj->m_pClientItem->m_pUserItem = 
+            pObj->m_pCtrlObj->m_userList.validateUser( pObj->m_user, 
+                                                        pObj->m_password);
+        pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_UserList);
+
+        if (NULL == pObj->m_pClientItem->m_pUserItem) {
+
+            delete pObj->m_pClientItem;
+
+            syslog( LOG_ERR,
+                "[UDP RX Client] User [%s] NOT allowed to connect.",
+                (const char *)pObj->m_user.c_str());
+            close(pObj->m_sockfd);    
+            return NULL;
+        }
+    } 
+    else {
+        pObj->m_pClientItem->m_pUserItem = NULL; // No user defined
+    }
+
+    // Add the client to the Client List
+    pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+    if (!pObj->m_pCtrlObj->addClient(pObj->m_pClientItem, 
+                                        CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP)) {
+        // Failed to add client
+        delete pObj->m_pClientItem;
+        pObj->m_pClientItem = NULL;
+        pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+        syslog( LOG_ERR,
+            "UDP server: Failed to add client. Terminating thread.");
+        close(pObj->m_sockfd);    
+        return NULL;
+    }
+    pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+
+    // Set receive filter
+    memcpy(&pObj->m_pClientItem->m_filter,
+            &pObj->m_filter,
+            sizeof(vscpEventFilter));
+
+    // Set GUID for channel
+    if (!pObj->m_guid.isNULL()) {
+        pObj->m_pClientItem->m_guid = pObj->m_guid;
+    }
+
+    syslog( LOG_ERR, "UDP RX Client: Thread started.");
     
+    // Run run run...
+    while (!pObj->m_bQuit) {
 
-    // while () {
+        // pObj->sendFrame();
 
-    // }
+    }
 
-    syslog( LOG_ERR, "UDP TX ClientThread: Quit.");
+    if (NULL != pObj->m_pClientItem) {
+        // Add the client to the Client List
+        pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
+        pObj->m_pCtrlObj->removeClient(pObj->m_pClientItem);
+        pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_clientList);
+    }
 
+    syslog( LOG_ERR, "UDP RX ClientThread: Quit.");
+    
     return NULL;
 }
+

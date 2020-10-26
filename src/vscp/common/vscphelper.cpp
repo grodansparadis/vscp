@@ -39,6 +39,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <netdb.h>	
+#include <arpa/inet.h>
+
 #ifdef _WIN32
 #include <io.h>
 #define access _access_s
@@ -953,6 +956,57 @@ static int
 isbyte(int n)
 {
     return (n >= 0) && (n <= 255);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_hostname_to_ip 
+//
+
+int vscp_hostname_to_ip(char *ip, const char *hostname)
+{
+	struct hostent *he;
+	struct in_addr **addr_list;
+		
+	if ( NULL == (he = gethostbyname( hostname ) ) ) {
+		// get the host info
+		return VSCP_ERROR_ERROR;
+	}
+
+	addr_list = (struct in_addr **) he->h_addr_list;
+	
+	if ( NULL != addr_list[0]) {
+		//Return the first one;
+		strcpy(ip , inet_ntoa(*addr_list[0]) );
+		return VSCP_ERROR_SUCCESS;
+	}
+	
+	return VSCP_ERROR_ERROR;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getPortFromInterface
+//
+
+int
+vscp_getPortFromInterface(std::string interface)
+{
+    int port;
+    size_t pos;
+    std::string str = interface;
+    vscp_trim(str);
+
+    // tcp:// stcp:// udp:// sudp:// ....
+    if ( std::string::npos == (pos = str.find("://") ) ) {
+        str = str.substr(pos+1);
+    }
+
+    if ( std::string::npos == (pos = str.find(":") ) ) {
+        str = str.substr(pos);
+    }
+
+    port = atoi(str.c_str());
+
+    return port;  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -6774,14 +6828,7 @@ vscp_getHostFromInterface(std::string interface)
     if ( std::string::npos == (pos = str.find(":") ) ) {
         str = str.substr(0,pos);
     }
+
+    return str;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// vscp_getPortFromInterface
-//
-
-int
-vscp_getPortFromInterface(std::string interface)
-{
-    
-}

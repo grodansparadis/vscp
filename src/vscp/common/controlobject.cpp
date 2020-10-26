@@ -228,6 +228,9 @@ CControlObject::CControlObject()
     m_tcpip_ssl_protocol_version = 0;
     m_tcpip_ssl_short_trust      = false;
 
+    // UDP Server
+    m_udpsrv.init(this);
+
     // Web server SSL settings
     m_web_ssl_certificate          = "/etc/vscp/certs/server.pem";
     m_web_ssl_certificate_chain    = "";
@@ -318,6 +321,13 @@ CControlObject::~CControlObject()
         syslog(LOG_DEBUG, "Cleaning up");
     }
 
+    // Delete all UDP clients
+    while (m_udpremotes.size()) {
+        udpRemoteClient *pClient = m_udpremotes.front();
+        m_udpremotes.front();
+        delete pClient;
+    }
+
     // Remove objects in Client send queue
     std::list<vscpEvent*>::iterator iterVSCP;
     pthread_mutex_lock(&m_mutex_ClientOutputQueue);
@@ -400,9 +410,6 @@ bool
 CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 {
     std::string str;
-
-    std::string sss = "stp://host:1234";
-    sss = vscp_getHostFromInterface(sss);
 
     // Save root folder for later use.
     m_rootFolder = rootFolder;
@@ -566,6 +573,15 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     }
     catch (...) {
         syslog(LOG_ERR, "Exception when starting tcp/ip server");
+        return FALSE;
+    }
+
+    // Start UDP interface
+    try {
+        startUDPSrvThreads();
+    }
+    catch (...) {
+        syslog(LOG_ERR, "Exception when starting UDP server");
         return FALSE;
     }
 
@@ -879,6 +895,13 @@ CControlObject::cleanup(void)
     }
 
     try {
+        stopUDPSrvThreads();
+    }
+    catch (...) {
+        syslog(LOG_ERR, "REST: Exception occurred when stoping UDP server");
+    }
+
+    try {
         stopTcpipSrvThread();
     }
     catch (...) {
@@ -991,6 +1014,67 @@ CControlObject::stopTcpipSrvThread(void)
 
     if (__VSCP_DEBUG_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// startUSPSrvThreads
+//
+
+bool
+CControlObject::startUDPSrvThreads(void)
+{
+    if (!m_enableTcpip) {
+        if (__VSCP_DEBUG_TCP) {
+            syslog(LOG_DEBUG, "Controlobject: USP interface disabled.");
+        }
+        return true;
+    }
+
+    if (pthread_create(&m_udpSrvWorkerThread,
+                       NULL,
+                       UdpSrvWorkerThread,
+                       &m_udpsrv)) {
+        syslog(LOG_ERR,
+               "Controlobject: Unable to start the UDP server thread.");
+        return false;
+    }
+
+    // Create UDP client threads.
+    for (auto it = m_udpremotes.cbegin(); it != m_udpremotes.cend(); ++it) {
+		udpRemoteClient *pClient =  *it;
+        if ( NULL == pClient ) continue;
+        if (!pClient->startWorkerThread()) {
+            syslog(LOG_ERR,"Failed to start UDP sender workerthread for interface %s",
+                pClient->getRemoteAddress().c_str());
+        }
+        // TODO debug message
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// stopUSPSrvThreads
+//
+
+bool
+CControlObject::stopUDPSrvThreads(void)
+{
+    // Tell the thread it's time to quit
+    m_udpsrv.m_bQuit = VSCP_TCPIP_SRV_STOP;
+
+    if (__VSCP_DEBUG_TCP) {
+        syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
+    }
+
+    pthread_join(m_udpSrvWorkerThread, NULL);
+
+
+    if (__VSCP_DEBUG_TCP) {
+        syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
     }
 
     return true;
@@ -1195,37 +1279,6 @@ CControlObject::getVscpCapabilities(uint8_t* pCapability)
         pCapability[i] = caps & 0xff;
         caps           = caps >> 8;
     }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// addUDPClient
-//
-
-bool 
-CControlObject::addUDPClient( std::string& interface,
-                                std::string& user,
-                                vscpEventFilter& filter,
-                                uint8_t nEncryption,
-                                bool bSetBroadcast )
-{
-    udpRemoteClient *premote = new udpRemoteClient;
-    if ( NULL == premote) {
-        syslog(LOG_ERR, "addUDPClient - Unable to add UDP client (memory)");
-    }
-
-
-
-    premote->setControlObjectPointer(this);
-    int rv;
-    // if ( VSCP_ERROR_SUCCESS != (rv = premote->init(host,
-    //                                             port,
-    //                                             nEncryption,
-    //                                             bSetBroadcast) ) ) {
-    //     syslog(LOG_ERR, "addUDPClient - Unable to add UDP client (init) rv=%d", rv);
-    //     return false;                                            
-    // }
 
     return true;
 }
@@ -1583,6 +1636,62 @@ CControlObject::removeClient(CClientItem* pClientItem)
     // Remove the client
     m_clientList.removeClient(pClientItem);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// addUdpClient
+//
+
+void CControlObject::addUdpClient(bool bEnable,
+                                    std::string& interface,
+                                    std::string& user,
+                                    std::string& password,
+                                    vscpEventFilter& filter,
+                                    int encryption,
+                                    bool setbroadcast)
+{
+    udpRemoteClient *pClient = new udpRemoteClient();
+    if ( NULL == pClient ) {
+      syslog(LOG_ERR,"Unable to allocate client structure for UDP client. if=%s",interface.c_str());
+      return;
+    }
+
+    // udp:://1.2.3.4:1234
+    // udp://a.b.c:1234
+    // udp://1234
+    // udp://1.2.3.4
+    long unsigned int pos;
+    std::string remoteAddress = "127.0.0.1";
+    short port = VSCP_DEFAULT_UDP_PORT;
+
+    vscp_startsWith(interface, "udp://", &interface);
+    vscp_trim(interface);
+    if ( interface.length()) {
+        if (std::string::npos != (pos = interface.find_first_of(':'))) {
+            remoteAddress = interface.substr(0,pos);
+            port = atoi(interface.substr(pos+1).c_str());
+        }
+        else {
+            remoteAddress = interface;
+        }
+    }
+
+    char buf[50];
+    if ( VSCP_ERROR_SUCCESS == vscp_hostname_to_ip(buf,remoteAddress.c_str()) ) {
+        remoteAddress = buf;       
+    }
+
+    pClient->enable(bEnable);
+    pClient->setControlObjectPointer(this);
+    pClient->setRemoteAddress(remoteAddress);
+    pClient->setRemotePort(port);
+    pClient->setUser(user);
+    pClient->setFilter(filter);
+    pClient->setEncryption(encryption);
+    pClient->SetBroadcastBit(setbroadcast);
+
+    m_udpremotes.push_back(pClient);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // addKnowNode
@@ -2526,6 +2635,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 }
             }
             else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                vscp_startsWith(attribute, "udp://", &attribute);
+                vscp_trim(attribute);
                 pObj->m_udpsrv.m_interface = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "guid")) {
@@ -2534,7 +2645,10 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else if (0 == vscp_strcasecmp(attr[i], "user")) {
                 pObj->m_udpsrv.m_user = attribute;
             }
-            else if (0 == vscp_strcasecmp(attr[i], "ballowunsecure")) {
+            else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                pObj->m_udpsrv.m_password = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "allowunsecure")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_udpsrv.m_bAllowUnsecure = true;
                 }
@@ -2542,7 +2656,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     pObj->m_udpsrv.m_bAllowUnsecure = false;
                 }
             }
-            else if (0 == vscp_strcasecmp(attr[i], "bAck")) {
+            else if (0 == vscp_strcasecmp(attr[i], "back")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_udpsrv.m_bAck = true;
                 }
@@ -2566,6 +2680,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         bool bEnable = false;
         std::string interface;
         std::string user;
+        std::string password;
         vscpEventFilter filter;
         int nEncryption = 0;
         bool bSetBroadcast = false;
@@ -2584,10 +2699,15 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 }
             }
             else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                vscp_startsWith(attribute, "udp://", &attribute);
+                vscp_trim(attribute);
                 interface = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "user")) {
                 user = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                password = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "filter")) {
                 vscp_readFilterFromString(&filter,attribute);
@@ -2595,7 +2715,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else if (0 == vscp_strcasecmp(attr[i], "mask")) {
                 vscp_readMaskFromString(&filter,attribute);
             }
-            else if (0 == vscp_strcasecmp(attr[i], "bSetBroadcast")) {
+            else if (0 == vscp_strcasecmp(attr[i], "Setbroadcast")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     bSetBroadcast = true;
                 }
@@ -2607,9 +2727,13 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         }
 
         // Add UDP client if enabled
-        if ( bEnable) {
-            pObj->addUDPClient(interface,user,filter,nEncryption,bSetBroadcast);
-        }
+        pObj->addUdpClient(bEnable,
+                            interface,
+                            user,
+                            password,
+                            filter,
+                            nEncryption,
+                            bSetBroadcast);
         
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&

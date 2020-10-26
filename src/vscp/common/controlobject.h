@@ -177,21 +177,6 @@ class CControlObject {
     bool stopUDPSrvThreads(void);
 
     /*!
-        Add UDP client
-        @param interface Adress and port for client on the form host:port
-        @param user User account to use for connection
-        @param filter VSCP filter to use for the outgoing connection
-        @param nEncryption Encryption to use
-        @param bSetBroadCast Enable broadcast
-        @return true on success, false on error.
-    */
-    bool addUDPClient( std::string& interface,
-                        std::string& user,
-                        vscpEventFilter& filter,
-                        uint8_t nEncryption = VSCP_ENCRYPTION_NONE,
-                        bool bSetBroadcast = false );
-
-    /*!
         Start the Multicast worker threads
     */
     bool startMulticastWorkerThreads(void);
@@ -251,7 +236,26 @@ class CControlObject {
     void removeClient(CClientItem* pClientItem);
 
     /*!
-        Get device address for primary ehernet adapter
+        Add one UDP client
+
+        @param bEnable True to enable connection
+        @param interface The remote interface of the clinet to connect to
+        @param user User to connect as
+        @param password Password for user
+        @param filter Outgoing filter.
+        @param encryption Encryption to use for frames. 0=none (default), 1=AES128, 2=AES192, 3=AES256
+        @param setbroadcast Set to true to set broadcast bit (default=false).
+    */
+    void addUdpClient(bool bEnable, 
+                        std::string& interface, 
+                        std::string& user,
+                        std::string& password,
+                        vscpEventFilter& filter,
+                        int encryption = VSCP_ENCRYPTION_NONE,
+                        bool setbroadcast = false);
+
+    /*!
+        Get device address for primary ethernet adapter
 
         @param guid class
      */
@@ -447,6 +451,9 @@ class CControlObject {
 
     // Protect UDP remote list
     pthread_mutex_t m_mutexUDPRemotes;
+
+    // Worker thread for UDP server
+    pthread_t m_udpSrvWorkerThread;
 
     // List containing remote receiving UDP clients
     std::deque<udpRemoteClient *>m_udpremotes; 

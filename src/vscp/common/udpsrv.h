@@ -33,25 +33,27 @@
 #include "userlist.h"
 
 // Prototypes
-void *UdpReceiveWorkerThread(void *pData);
-void *UdpSendWorkerThread(void *pData);
+void *UdpSrvWorkerThread(void *pData);
+void *UdpClientWorkerThread(void *pData);
 
 #define UDP_MAX_PACKAGE     2048
 
-typedef struct
-{
-    uint8_t m_index;     // Frame index
-    vscpEvent *m_pEvent; // Event to send
-    uint32_t m_lastSent; // Last sent
-    uint8_t m_nRetry;    // Retry counter
-} eventResendItem;
+// typedef struct
+// {
+//     uint8_t m_index;     // Frame index
+//     vscpEvent *m_pEvent; // Event to send
+//     uint32_t m_lastSent; // Last sent
+//     uint8_t m_nRetry;    // Retry counter
+// } eventResendItem;
 
 
 // Remote UDP Client structure. One is defined for each
 // remote client.
 class udpRemoteClient
 {
+
 public:
+
     udpRemoteClient(CControlObject *pobj = NULL);
     ~udpRemoteClient();
 
@@ -63,34 +65,79 @@ public:
         @param bBroadcast True to set broadcast bit on sent frame.
         @return VSCP_ERROR_SUCCESS if all goes well, otherwise error.
     */
-    int init(std::string host, 
-                short port = VSCP_DEFAULT_UDP_PORT, 
-                uint8_t nEncryption = VSCP_ENCRYPTION_NONE, 
+    int init( uint8_t nEncryption = VSCP_ENCRYPTION_NONE, 
                 bool bSetBroadcast = false);
+
+    /*!
+        Start the clinet worker thread
+        @return True on success, false on failure.
+    */
+    bool startWorkerThread(void);                
 
     /*!
         Send event to UDP remote client
     */
     int sendFrame(void);
 
+    // Getter/setters
+    void enable(bool bEnable = true) { m_bEnable = bEnable; };
+
+    void setRemoteAddress(std::string& remoteAddress) { m_remoteAddress = remoteAddress; };
+    std::string getRemoteAddress(void) { return m_remoteAddress; };
+
+    void setRemotePort(short remotePort) { m_remotePort = remotePort; };
+    short getRemotePort(void) { return m_remotePort; };
+
+    void setUser(std::string& user) { m_user = user; };
+    std::string getUser(void) { return m_user; };
+
+    void setEncryption(uint8_t encryption=VSCP_ENCRYPTION_NONE) 
+        { if (encryption <= VSCP_ENCRYPTION_AES256) m_nEncryption = encryption; };
+
+    uint8_t getEncryption(void) {return m_nEncryption; };
+
+    void SetBroadcastBit(bool enable=true) { m_bSetBroadcast = enable; };
+    bool isBroadCastBitSet(void) { return m_bSetBroadcast; };
+
+    void setFilter(vscpEventFilter& filter) { memcpy(&m_filter,&filter,sizeof(vscpEventFilter)); };
+
     // Assign control object
     void setControlObjectPointer(CControlObject *pCtrlObj) { m_pCtrlObj = pCtrlObj; };
 
-private:
+public:
 
-    struct sockaddr_in m_to;
-    int m_sockfd;                 // Sending socket
+    // Client thread will run as long as false
+    bool m_bQuit;
 
-    uint8_t m_nEncryption;        // Encryption algorithm to use for this client
-    bool m_bSetBroadcast;         // Set broadcast flag  MG_F_ENABLE_BROADCAST
-    uint8_t m_index;              // Rolling send index (only low tree bits used) 
-    vscpEventFilter m_filter;     // Outgoing filter for this remote client   
-
-    std::string m_user;           // user clinet act as
-    CClientItem *m_pClientItem;   // Client we are working as     
+     // Client we are working as
+    CClientItem *m_pClientItem;
 
     // The global control object
     CControlObject *m_pCtrlObj;
+
+public:
+
+    bool m_bEnable;
+
+    int m_sockfd;
+    struct sockaddr_in m_clientAddress;
+
+    // Interface to connect to
+    std::string m_remoteAddress;
+    short m_remotePort;
+
+    vscpEventFilter m_filter;     // Outgoing filter for this remote client.
+    cguid m_guid;                 // GUID for outgoing channel.     
+
+    std::string m_user;           // user the client act as
+    std::string m_password;       // Password for user we act as
+
+    uint8_t m_nEncryption;        // Encryption algorithm to use for this client.
+    bool m_bSetBroadcast;         // Set broadcast flag  MG_F_ENABLE_BROADCAST.
+    uint8_t m_index;              // Rolling send index (only low tree bits used. 
+
+    // The thread that do the actual sending
+    pthread_t m_udpClientWorkerThread;
 };
 
 
@@ -104,10 +151,17 @@ class UDPSrvObj
 
   public:
     /// Constructor
-    UDPSrvObj(CControlObject *pobj = NULL);
+    UDPSrvObj(CControlObject *pobj=NULL);
 
     /// Destructor
     ~UDPSrvObj();
+
+    /*!
+        Init UDP server object
+
+        @param pobj Pointer to VSCP daemon control object
+    */
+    void init(CControlObject *pobj) { m_pCtrlObj = pobj; };
 
     /*!
      * Receive UDP frame

@@ -605,6 +605,29 @@ extern "C"
     bool vscp_XML_Escape(char* dst, size_t dst_len, const char* src);
 
     /*!
+        Get ip from domain name
+
+        @param ip IP address for resolved hostname
+        @param hostname Hostname to resolve
+        @return VSCP_ERROR_SUCCESS if it manage to resolve the hostname and 
+                VSCP_ERROR_ERROR else.
+    */
+    int vscp_hostname_to_ip( char *ip, const char *hostname);
+
+    /*!
+        vscp_getHostFromInterface
+
+        Get host part from interface on form protocol://host:port
+        (tcp://, stcp:// etc)
+
+        @param interface Interface on form [protocol://]host[:port]
+        @return host as string
+
+    */
+    std::string
+    vscp_getHostFromInterface(std::string interface);
+
+    /*!
      * Parse IPv4 address and return net part and mask part
      *
      * @param addr ipv4 address to parse (a.b.c.d/m)
@@ -1909,18 +1932,7 @@ extern "C"
     bool vscp_getSaltHex(std::string& strSalt, size_t len);
 
 
-    /*!
-        vscp_getHostFromInterface
-
-        Get host part from interface on form protocol://host:port
-        (tcp://, stcp:// etc)
-
-        @param interface Interface on form [protocol://]host[:port]
-        @return host as string
-
-    */
-    std::string
-    vscp_getHostFromInterface(std::string interface);
+    
 
 #ifdef __cplusplus
 }
