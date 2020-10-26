@@ -260,7 +260,6 @@ src/vscp/drivers/level2/sim/linux/vscp2drv_sim/
 nbproject/
 src/vscp/daemon/linux/nbproject/
 src/vscp/vscpworks/nbproject/
-.vscode/
 src/vscp/daemon/linux/1
 src/vscp/daemon/linux/1-shm
 src/vscp/daemon/linux/1-wal
