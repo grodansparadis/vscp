@@ -32,10 +32,7 @@
 
 #define _POSIX
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -65,8 +62,10 @@
 #include <expat.h>
 #include <json.hpp>
 #include <lua.h>
+
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
+
 #include <sqlite3.h>
 
 #include "web_css.h"
@@ -95,6 +94,11 @@
 #include <websocket.h>
 
 #include "websrv.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -127,8 +131,8 @@ const char* pguid_types[] = { "Common GUID",
 ///////////////////////////////////////////////////
 
 extern CControlObject* gpobj;
-extern bool gbRestart;   // Should be set true to restart the VSCP daemon
-extern int gbStopDaemon; // Should be set true to stop the daemon
+extern bool gbRestart;          // Should be set true to restart the VSCP daemon
+extern int gbStopDaemon;        // Should be set true to stop the daemon
 
 ///////////////////////////////////////////////////
 //                WEBSERVER

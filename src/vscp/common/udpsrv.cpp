@@ -26,12 +26,12 @@
 // SOFTWARE.
 //
 
-#include <string>
+#include "udpsrv.h"
 
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 #include <controlobject.h>
 #include <crc.h>
@@ -42,7 +42,7 @@
 #include <vscp_aes.h>
 #include <vscphelper.h>
 
-#include "udpsrv.h"
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 // get_ip_str
@@ -50,18 +50,23 @@
 // Convert a struct sockaddr address to a string, IPv4 and IPv6:
 //
 
-char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
+char*
+get_ip_str(const struct sockaddr* sa, char* s, size_t maxlen)
 {
-    switch(sa->sa_family) {
-        
+    switch (sa->sa_family) {
+
         case AF_INET:
-            inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),
-                    s, maxlen);
+            inet_ntop(AF_INET,
+                      &(((struct sockaddr_in*)sa)->sin_addr),
+                      s,
+                      maxlen);
             break;
 
         case AF_INET6:
-            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),
-                    s, maxlen);
+            inet_ntop(AF_INET6,
+                      &(((struct sockaddr_in6*)sa)->sin6_addr),
+                      s,
+                      maxlen);
             break;
 
         default:
@@ -74,17 +79,15 @@ char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
 
 // -----------------------------------------------------------------------------
 
-udpRemoteClient::udpRemoteClient(CControlObject *pobj)
+udpRemoteClient::udpRemoteClient()
 {
-    m_bQuit = false;
-    m_bEnable = false;
-    m_sockfd = 0;
-    m_index = 0;    // Rolling index starts at zero
-    m_nEncryption  = VSCP_ENCRYPTION_NONE;
+    m_bQuit         = false;
+    m_bEnable       = false;
+    m_sockfd        = 0;
+    m_index         = 0;    // Rolling index starts at zero
+    m_nEncryption   = VSCP_ENCRYPTION_NONE;
     m_bSetBroadcast = false;
-    m_pClientItem = NULL;
-
-    setControlObjectPointer(pobj);   
+    m_pClientItem   = NULL;
 }
 
 udpRemoteClient::~udpRemoteClient()
@@ -96,22 +99,25 @@ udpRemoteClient::~udpRemoteClient()
 // init
 //
 
-int 
-udpRemoteClient::init( uint8_t nEncryption,
-                        bool bSetBroadcast)
+int
+udpRemoteClient::init(CControlObject* pobj,
+                      uint8_t nEncryption,
+                      bool bSetBroadcast)
 {
-    m_nEncryption = nEncryption;
+    setControlObjectPointer(pobj);
+
+    m_nEncryption   = nEncryption;
     m_bSetBroadcast = bSetBroadcast;
 
-    if ( -1 == ( m_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) ) ) {
+    if (-1 == (m_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
         return VSCP_ERROR_ERROR;
     }
 
-    memset((char *) &m_clientAddress, 0, sizeof(m_clientAddress));
+    memset((char*)&m_clientAddress, 0, sizeof(m_clientAddress));
     m_clientAddress.sin_family = AF_INET;
-    m_clientAddress.sin_port = htons(m_remotePort);
+    m_clientAddress.sin_port   = htons(m_remotePort);
 
-    if ( 0 == inet_aton( m_remoteAddress.c_str() , &m_clientAddress.sin_addr) )  {
+    if (0 == inet_aton(m_remoteAddress.c_str(), &m_clientAddress.sin_addr)) {
         syslog(LOG_ERR, "UDP remote client: inet_aton() failed.");
         close(m_sockfd);
         return VSCP_ERROR_ERROR;
@@ -124,18 +130,17 @@ udpRemoteClient::init( uint8_t nEncryption,
 // startWorkerThread
 //
 
-bool udpRemoteClient::startWorkerThread(void) 
+bool
+udpRemoteClient::startWorkerThread(void)
 {
     if (pthread_create(&m_udpClientWorkerThread,
                        NULL,
-                       UdpClientWorkerThread,
+                       udpClientWorkerThread,
                        this)) {
         syslog(LOG_ERR,
                "Controlobject: Unable to start the UDP server thread.");
         return false;
     }
-
-
 
     return true;
 }
@@ -148,8 +153,8 @@ int
 udpRemoteClient::sendFrame(void)
 {
     // We specify a send buffer that holds the maximum possible size
-    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX]; // Send buffer
-    uint8_t iv[16]; // Initialization vector
+    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX];  // Send buffer
+    uint8_t iv[16];                                     // Initialization vector
 
     // Check if there is an event to send
     if (!m_pClientItem->m_clientInputQueue.size()) {
@@ -157,11 +162,12 @@ udpRemoteClient::sendFrame(void)
     }
 
     pthread_mutex_lock(&m_pClientItem->m_mutexClientInputQueue);
-    vscpEvent *pEvent = m_pClientItem->m_clientInputQueue.front();
+    vscpEvent* pEvent = m_pClientItem->m_clientInputQueue.front();
     m_pClientItem->m_clientInputQueue.pop_front();
     pthread_mutex_unlock(&m_pClientItem->m_mutexClientInputQueue);
 
-    if (NULL == pEvent) return false;
+    if (NULL == pEvent)
+        return false;
 
     // Check that size is valid
     if (pEvent->sizeData > VSCP_LEVEL2_MAXDATA) {
@@ -170,7 +176,7 @@ udpRemoteClient::sendFrame(void)
     }
 
     // Send the event to client
-    //pthread_mutex_lock(&m_pCtrlObj->m_mutexUDPRemotes);
+    // pthread_mutex_lock(&m_pCtrlObj->m_mutexUDPRemotes);
 
     //    for ( auto it = m_pCtrlObj->m_udpremotes.crbegin();
     //         it != m_pCtrlObj->m_udpremotes.crend();
@@ -178,13 +184,14 @@ udpRemoteClient::sendFrame(void)
 
     //        udpRemoteClient *pRemoteUDPNode = *it;
 
-           // Check if filtered out
-        //    if (!vscp_doLevel2Filter(pEvent, &pRemoteUDPNode->m_filter)) {
-        //        continue;
-        //    }
+    // Check if filtered out
+    //    if (!vscp_doLevel2Filter(pEvent, &pRemoteUDPNode->m_filter)) {
+    //        continue;
+    //    }
 
     // Packet type
-    sendbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] = SET_VSCP_MULTICAST_TYPE(0, m_nEncryption);
+    sendbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] =
+      SET_VSCP_MULTICAST_TYPE(0, m_nEncryption);
 
     // Get initialization vector
     getRandomIV(iv, 16);
@@ -206,14 +213,14 @@ udpRemoteClient::sendFrame(void)
     m_index++;
 
     size_t lenSend =
-        1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2;
+      1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2;
     if (0 == (lenSend = vscp_encryptFrame(sendbuf,
-                                        wrkbuf,
-                                        lenSend,
-                                        m_pCtrlObj->getSystemKey(NULL),
-                                        iv,
-                                        m_nEncryption))) { 
-        vscp_deleteEvent_v2(&pEvent); 
+                                          wrkbuf,
+                                          lenSend,
+                                          m_pCtrlObj->getSystemKey(NULL),
+                                          iv,
+                                          m_nEncryption))) {
+        vscp_deleteEvent_v2(&pEvent);
         return VSCP_ERROR_OPERATION_FAILED;
     }
 #if 0
@@ -231,11 +238,14 @@ udpRemoteClient::sendFrame(void)
     }
     xxPrintf("\n");
 #endif
-    
+
     // Send event to client
-    int bytes_send = sendto(m_sockfd, 
-                            sendbuf, lenSend, 0, 
-                            (struct sockaddr *)&m_remoteAddress, sizeof(m_remoteAddress));
+    int nsent = sendto(m_sockfd,
+                       sendbuf,
+                       lenSend,
+                       0,
+                       (struct sockaddr*)&m_remoteAddress,
+                       sizeof(m_remoteAddress));
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -249,17 +259,16 @@ udpRemoteClient::sendFrame(void)
 //
 //
 
-UDPSrvObj::UDPSrvObj(CControlObject *pobj)
+udpSrvObj::udpSrvObj()
 {
-    m_bQuit       = false;
-    
-    // Default server information 
-    m_servaddr.sin_family = AF_INET; // IPv4 
-    m_servaddr.sin_addr.s_addr = INADDR_ANY; 
-    m_servaddr.sin_port = htons(VSCP_DEFAULT_UDP_PORT); 
-    
+    m_bQuit = false;
+
+    // Default server information
+    m_servaddr.sin_family      = AF_INET;   // IPv4
+    m_servaddr.sin_addr.s_addr = INADDR_ANY;
+    m_servaddr.sin_port        = htons(VSCP_DEFAULT_UDP_PORT);
+
     m_pClientItem = NULL;
-    setControlObjectPointer(pobj);
     pthread_mutex_init(&m_mutexUDPInfo, NULL);
 }
 
@@ -267,55 +276,59 @@ UDPSrvObj::UDPSrvObj(CControlObject *pobj)
 // DTOR
 //
 
-UDPSrvObj::~UDPSrvObj()
+udpSrvObj::~udpSrvObj()
 {
     pthread_mutex_destroy(&m_mutexUDPInfo);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // receiveFrame
 //
 
 int
-UDPSrvObj::receiveFrame(int sockfd,
-                        CClientItem *pClientItem)
+udpSrvObj::receiveFrame(int sockfd, CClientItem* pClientItem)
 {
     uint8_t rcvbuf[VSCP_MULTICAST_PACKET0_MAX];
-    vscpEvent *pEvent;
+    vscpEvent* pEvent;
     int flags = MSG_DONTWAIT;
     struct sockaddr from;
     socklen_t addrlen = sizeof(from);
 
     // Check pointers
-    if (NULL == pClientItem) return VSCP_ERROR_PARAMETER;
+    if (NULL == pClientItem)
+        return VSCP_ERROR_PARAMETER;
 
     memset(rcvbuf, 0, sizeof(rcvbuf));
-    ssize_t rcvlen = recvfrom(sockfd, rcvbuf, sizeof(rcvbuf), flags, &from, &addrlen);
-    
+    ssize_t rcvlen =
+      recvfrom(sockfd, rcvbuf, sizeof(rcvbuf), flags, &from, &addrlen);
+
     // Null frame
-    if ( 0 == rcvlen ) {
+    if (0 == rcvlen) {
         // Packet to short
-        syslog( LOG_ERR,
-                "UDP receive server: The peer has performed an orderly shutdown, UDP frame have invalid length = %d",
-                (int)rcvlen );
+        syslog(LOG_ERR,
+               "UDP receive server: The peer has performed an orderly "
+               "shutdown, UDP frame have invalid length = %d",
+               (int)rcvlen);
         if (m_bAck) {
-            replyNackFrame(&from,
-                           rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
-                          (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
+            replyNackFrame(
+              &from,
+              rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+              (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
         }
         return VSCP_ERROR_ERROR;
     }
 
     // Error
-    if ( -1 == rcvlen ) {
+    if (-1 == rcvlen) {
         // Packet to short
-        syslog( LOG_ERR,
-                "UDP receive server: Error when receiving UDP frame = %d", errno );
+        syslog(LOG_ERR,
+               "UDP receive server: Error when receiving UDP frame = %d",
+               errno);
         if (m_bAck) {
-            replyNackFrame(&from,
-                           rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
-                          (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
+            replyNackFrame(
+              &from,
+              rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+              (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
         }
         return VSCP_ERROR_ERROR;
     }
@@ -325,53 +338,59 @@ UDPSrvObj::receiveFrame(int sockfd,
     if (rcvlen < (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2)) {
 
         // Packet to short
-        syslog( LOG_ERR,
-                "UDP receive server: UDP frame have invalid length = %d",
-                (int)rcvlen );
+        syslog(LOG_ERR,
+               "UDP receive server: UDP frame have invalid length = %d",
+               (int)rcvlen);
         if (m_bAck) {
-            replyNackFrame(&from,
-                           rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
-                          (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
-        }
-        return VSCP_ERROR_ERROR;  
-    }
-
-    // If un-secure frames are not supported 
-    // frames must be encrypted
-    if (!m_bAllowUnsecure && !GET_VSCP_MULTICAST_PACKET_ENCRYPTION(rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE])) {
-        syslog( LOG_ERR, "UDP receive server: UDP frame must be encrypted (or"
-                            "m_bAllowUnsecure set to 'true') to be accepted."); 
-        if (m_bAck) {
-            replyNackFrame((struct sockaddr *)&from,
-                           rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
-                          (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
+            replyNackFrame(
+              &from,
+              rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+              (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
         }
         return VSCP_ERROR_ERROR;
     }
-        
-    if (!vscp_decryptFrame( rcvbuf,
-                            rcvbuf,
-                            rcvlen, // actually len-16 but encrypt routine handle
-                            m_pCtrlObj->getSystemKey(NULL), 
-                            NULL,  // Will be copied from the last 16-bytes
-                            GET_VSCP_MULTICAST_PACKET_ENCRYPTION(rcvbuf[0]))) {
-        syslog( LOG_ERR, "UDP receive server: Decryption of UDP frame failed");
+
+    // If un-secure frames are not supported
+    // frames must be encrypted
+    if (!m_bAllowUnsecure && !GET_VSCP_MULTICAST_PACKET_ENCRYPTION(
+                               rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE])) {
+        syslog(LOG_ERR,
+               "UDP receive server: UDP frame must be encrypted (or"
+               "m_bAllowUnsecure set to 'true') to be accepted.");
         if (m_bAck) {
-            replyNackFrame((struct sockaddr *)&from,
-                           rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
-                          (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
+            replyNackFrame(
+              (struct sockaddr*)&from,
+              rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+              (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
+        }
+        return VSCP_ERROR_ERROR;
+    }
+
+    if (!vscp_decryptFrame(rcvbuf,
+                           rcvbuf,
+                           rcvlen,  // actually len-16 but encrypt routine handle
+                           m_pCtrlObj->getSystemKey(NULL),
+                           NULL,    // Will be copied from the last 16-bytes
+                           GET_VSCP_MULTICAST_PACKET_ENCRYPTION(rcvbuf[0]))) {
+        syslog(LOG_ERR, "UDP receive server: Decryption of UDP frame failed");
+        if (m_bAck) {
+            replyNackFrame(
+              (struct sockaddr*)&from,
+              rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+              (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
         }
         return VSCP_ERROR_ERROR;
     };
 
     if (m_bAck) {
-        replyAckFrame((struct sockaddr *)&from,
-                       rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
+        replyAckFrame((struct sockaddr*)&from,
+                      rcvbuf[VSCP_MULTICAST_PACKET0_POS_PKTTYPE],
                       (rcvbuf[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] & 0xf8));
     }
 
     // Allocate a new event
-    if (NULL == (pEvent = new vscpEvent)) return false;
+    if (NULL == (pEvent = new vscpEvent))
+        return false;
     pEvent->pdata = NULL;
 
     if (!vscp_getEventFromFrame(pEvent, rcvbuf, rcvlen)) {
@@ -385,7 +404,7 @@ UDPSrvObj::receiveFrame(int sockfd,
         // receive
         pEvent->obid = pClientItem->m_clientID;
 
-        // There must be room in the receive queue 
+        // There must be room in the receive queue
         if (m_pCtrlObj->m_maxItemsInClientReceiveQueue >
             m_pCtrlObj->m_clientOutputQueue.size()) {
 
@@ -393,12 +412,11 @@ UDPSrvObj::receiveFrame(int sockfd,
             m_pCtrlObj->m_clientOutputQueue.push_back(pEvent);
             sem_post(&m_pCtrlObj->m_semClientOutputQueue);
             pthread_mutex_unlock(&m_pCtrlObj->m_mutex_ClientOutputQueue);
-
-        } 
+        }
         else {
             vscp_deleteEvent_v2(&pEvent);
         }
-    } 
+    }
     else {
         vscp_deleteEvent_v2(&pEvent);
     }
@@ -406,16 +424,14 @@ UDPSrvObj::receiveFrame(int sockfd,
     return VSCP_ERROR_SUCCESS;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // replyAckFrame
 //
 
 int
-UDPSrvObj::replyAckFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
+udpSrvObj::replyAckFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
 {
-    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX]; // Send buffer
+    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX];  // Send buffer
     vscpEventEx ex;
 
     ex.head      = (index & 0xf8);
@@ -432,21 +448,21 @@ UDPSrvObj::replyAckFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
     ex.vscp_class = VSCP_CLASS1_ERROR;
     ex.vscp_type  = VSCP_TYPE_ERROR_SUCCESS;
     ex.sizeData   = 3;
-    memset(ex.data, 0, 3); // index/zone/subzone = 0
+    memset(ex.data, 0, 3);  // index/zone/subzone = 0
     ex.data[0] = index;
 
-    if (!vscp_writeEventExToFrame(sendbuf, sizeof(sendbuf), pkttype, &ex))
-    { return false;
+    if (!vscp_writeEventExToFrame(sendbuf, sizeof(sendbuf), pkttype, &ex)) {
+        return false;
     }
 
     // Send to remote node
     size_t slen = sizeof(to);
-    if ( -1 == sendto( m_sockfd,
-                        sendbuf,
-                        1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData,
-                        0,
-                        (struct sockaddr *)&to,
-                        slen ) ) {
+    if (-1 == sendto(m_sockfd,
+                     sendbuf,
+                     1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData,
+                     0,
+                     (struct sockaddr*)&to,
+                     slen)) {
         ;
     }
 
@@ -458,9 +474,9 @@ UDPSrvObj::replyAckFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
 //
 
 int
-UDPSrvObj::replyNackFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
+udpSrvObj::replyNackFrame(struct sockaddr* to, uint8_t pkttype, uint8_t index)
 {
-    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX]; // Send buffer
+    unsigned char sendbuf[VSCP_MULTICAST_PACKET0_MAX];  // Send buffer
     vscpEventEx ex;
 
     ex.head      = (index & 0xf8);
@@ -477,48 +493,46 @@ UDPSrvObj::replyNackFrame(struct sockaddr *to, uint8_t pkttype, uint8_t index)
     ex.vscp_class = VSCP_CLASS1_ERROR;
     ex.vscp_type  = VSCP_TYPE_ERROR_ERROR;
     ex.sizeData   = 3;
-    memset(ex.data, 0, 3); // index/zone/subzone = 0
+    memset(ex.data, 0, 3);  // index/zone/subzone = 0
     ex.data[0] = index;
 
-    if (!vscp_writeEventExToFrame(sendbuf, sizeof(sendbuf), pkttype, &ex))
-    { return false;
+    if (!vscp_writeEventExToFrame(sendbuf, sizeof(sendbuf), pkttype, &ex)) {
+        return false;
     }
 
     // Send to remote node
     size_t slen = sizeof(to);
-    if ( -1 == sendto( m_sockfd,
-                        sendbuf,
-                        1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData,
-                        0,
-                        (struct sockaddr *)&to,
-                        slen ) ) {
+    if (-1 == sendto(m_sockfd,
+                     sendbuf,
+                     1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + ex.sizeData,
+                     0,
+                     (struct sockaddr*)&to,
+                     slen)) {
         ;
     }
 
     return VSCP_ERROR_SUCCESS;
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// UdpSrvWorkerThread
+// udpSrvWorkerThread
 //
 
-void *
-UdpSrvWorkerThread(void *pData)
+void*
+udpSrvWorkerThread(void* pData)
 {
-    int sockfd; 
+    int sockfd;
     char rcvbuf[UDP_MAX_PACKAGE];
     struct sockaddr_in servaddr, cliaddr;
 
-    UDPSrvObj *pObj = (UDPSrvObj *)pData;
+    udpSrvObj* pObj = (udpSrvObj*)pData;
     if (NULL == pObj) {
-        syslog( LOG_ERR, "UDP RX Client: No thread worker object defined.");
+        syslog(LOG_ERR, "UDP RX Client: No thread worker object defined.");
         return NULL;
     }
 
     if (NULL == pObj->m_pCtrlObj) {
-        syslog( LOG_ERR, "UDP RX Client: No control object defined.");
+        syslog(LOG_ERR, "UDP RX Client: No control object defined.");
         return NULL;
     }
 
@@ -526,119 +540,120 @@ UdpSrvWorkerThread(void *pData)
     crcInit();
 
     // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        syslog( LOG_ERR, "UDP RX Client: Socket could not be created.");
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        syslog(LOG_ERR, "UDP RX Client: Socket could not be created.");
         return NULL;
-    } 
-      
+    }
+
     memset(&servaddr, 0, sizeof(servaddr));
-    
 
-    // Bind the socket with the server address 
-    if ( bind(sockfd, 
-                (const struct sockaddr *)&pObj->m_servaddr,
-                sizeof(pObj->m_servaddr)) < 0 )
-    { 
-        syslog( LOG_ERR, "UDP RX Client: Unable to bind to server port."); 
+    // Bind the socket with the server address
+    if (bind(sockfd,
+             (const struct sockaddr*)&pObj->m_servaddr,
+             sizeof(pObj->m_servaddr)) < 0) {
+        syslog(LOG_ERR, "UDP RX Client: Unable to bind to server port.");
         close(sockfd);
-        return NULL; 
-    } 
+        return NULL;
+    }
 
-    syslog( LOG_ERR, "UDP RX Client: Bind to interface. [%s]",
-                        get_ip_str((struct sockaddr *)&pObj->m_servaddr,
-                                    rcvbuf,sizeof(rcvbuf)) );
-      
-    
+    syslog(
+      LOG_ERR,
+      "UDP RX Client: Bind to interface. [%s]",
+      get_ip_str((struct sockaddr*)&pObj->m_servaddr, rcvbuf, sizeof(rcvbuf)));
 
-    // We need to create a client object and add this object to the list of clients
+    // We need to create a client object and add this object to the list of
+    // clients
     pObj->m_pClientItem = new CClientItem;
     if (NULL == pObj->m_pClientItem) {
-        syslog( LOG_ERR,
-            "[UDP RX Client] Unable to allocate memory for client - terminating."); 
-        close(sockfd);    
+        syslog(LOG_ERR,
+               "[UDP RX Client] Unable to allocate memory for client - "
+               "terminating.");
+        close(sockfd);
         return NULL;
     }
 
     // This is now an active Client
-    pObj->m_pClientItem->m_bOpen         = true;
-    pObj->m_pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
+    pObj->m_pClientItem->m_bOpen = true;
+    pObj->m_pClientItem->m_type  = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
     pObj->m_pClientItem->m_strDeviceName = "Internal UDP RX Client listener. [";
-    pObj->m_pClientItem->m_strDeviceName += get_ip_str((struct sockaddr *)&pObj->m_servaddr,rcvbuf,sizeof(rcvbuf));
+    pObj->m_pClientItem->m_strDeviceName +=
+      get_ip_str((struct sockaddr*)&pObj->m_servaddr, rcvbuf, sizeof(rcvbuf));
     pObj->m_pClientItem->m_strDeviceName += "]|Started at ";
-    pObj->m_pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
+    pObj->m_pClientItem->m_strDeviceName +=
+      vscpdatetime::Now().getISODateTime();
 
     // If a user is defined get user item
     vscp_trim(pObj->m_user);
     if (pObj->m_user.length()) {
 
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_UserList);
-        pObj->m_pClientItem->m_pUserItem = 
-            pObj->m_pCtrlObj->m_userList.getUser(pObj->m_user);
+        pObj->m_pClientItem->m_pUserItem =
+          pObj->m_pCtrlObj->m_userList.getUser(pObj->m_user);
         pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_UserList);
 
         if (NULL == pObj->m_pClientItem->m_pUserItem) {
 
             delete pObj->m_pClientItem;
 
-            syslog( LOG_ERR,
-                "[UDP RX Client] User [%s] NOT allowed to connect.",
-                (const char *)pObj->m_user.c_str());
-            close(sockfd);    
+            syslog(LOG_ERR,
+                   "[UDP RX Client] User [%s] NOT allowed to connect.",
+                   (const char*)pObj->m_user.c_str());
+            close(sockfd);
             return NULL;
         }
-    } else {
-        pObj->m_pClientItem->m_pUserItem = NULL; // No user defined
+    }
+    else {
+        pObj->m_pClientItem->m_pUserItem = NULL;    // No user defined
     }
 
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-    if (!pObj->m_pCtrlObj->addClient(pObj->m_pClientItem, 
-                                        CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP)) {
+    if (!pObj->m_pCtrlObj->addClient(pObj->m_pClientItem,
+                                     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP)) {
         // Failed to add client
         delete pObj->m_pClientItem;
         pObj->m_pClientItem = NULL;
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-        syslog( LOG_ERR,
-            "UDP server: Failed to add client. Terminating thread.");
-        close(sockfd);    
+        syslog(LOG_ERR,
+               "UDP server: Failed to add client. Terminating thread.");
+        close(sockfd);
         return NULL;
     }
     pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_clientList);
 
     // Set receive filter
     memcpy(&pObj->m_pClientItem->m_filter,
-            &pObj->m_filter,
-            sizeof(vscpEventFilter));
+           &pObj->m_filter,
+           sizeof(vscpEventFilter));
 
     // Set GUID for channel
     if (!pObj->m_guid.isNULL()) {
         pObj->m_pClientItem->m_guid = pObj->m_guid;
     }
 
-    syslog( LOG_ERR, "UDP RX Client: Thread started.");
+    syslog(LOG_ERR, "UDP RX Client: Thread started.");
 
     struct pollfd poll_set;
-    poll_set.events = POLLIN;
-    poll_set.fd = sockfd;
+    poll_set.events  = POLLIN;
+    poll_set.fd      = sockfd;
     poll_set.revents = 0;
 
     int poll_ret;
     while (!pObj->m_bQuit) {
 
         poll_ret = poll(&poll_set, 1, 500);
-        if (poll_ret > 0) {            
+        if (poll_ret > 0) {
 
             // OK receive the frame
-            if (pObj->receiveFrame(sockfd, pObj->m_pClientItem)) {                
+            if (pObj->receiveFrame(sockfd, pObj->m_pClientItem)) {
                 ;
             }
             else {
                 ;
             }
-
         }
 
-        //pObj->sendFrames(sockfd, pObj->m_pClientItem);
+        // pObj->sendFrames(sockfd, pObj->m_pClientItem);
     } // while
 
     if (NULL != pObj->m_pClientItem) {
@@ -648,8 +663,8 @@ UdpSrvWorkerThread(void *pData)
         pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_clientList);
     }
 
-    syslog( LOG_ERR, "UDP RX ClientThread: Quit.");
-    
+    syslog(LOG_ERR, "UDP RX ClientThread: Quit.");
+
     return NULL;
 }
 
@@ -657,30 +672,30 @@ UdpSrvWorkerThread(void *pData)
 // UspClientWorkerThread
 //
 
-void *
-UdpClientWorkerThread(void *pData)
+void*
+udpClientWorkerThread(void* pData)
 {
     char rcvbuf[UDP_MAX_PACKAGE];
 
     // Init. CRC data
     crcInit();
 
-    udpRemoteClient *pObj = (udpRemoteClient *)pData;
+    udpRemoteClient* pObj = (udpRemoteClient*)pData;
     if (NULL == pObj) {
-        syslog( LOG_ERR, "UDP TX Client: No thread worker object defined.");
+        syslog(LOG_ERR, "UDP TX Client: No thread worker object defined.");
         return NULL;
     }
 
     if (NULL == pObj->m_pCtrlObj) {
-        syslog( LOG_ERR, "UDP TX Client: No control object defined.");
+        syslog(LOG_ERR, "UDP TX Client: No control object defined.");
         return NULL;
     }
 
-    // // Creating socket file descriptor 
-    // if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
-    //     syslog( LOG_ERR,"UDP TX Client: socket creation failed"); 
-    //     exit(EXIT_FAILURE); 
-    // } 
+    // // Creating socket file descriptor
+    // if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+    //     syslog( LOG_ERR,"UDP TX Client: socket creation failed");
+    //     exit(EXIT_FAILURE);
+    // }
 
     // memset(&client_addr, 0, sizeof(client_addr));
     // client_addr.sin_family = AF_INET;
@@ -688,81 +703,84 @@ UdpClientWorkerThread(void *pData)
     // //servaddr.sin_addr.s_addr = INADDR_ANY;    // Broadcast
     // client_addr.sin_port   = htons(1024);
 
-
-    // We need to create a client object and add this object to the list of clients
+    // We need to create a client object and add this object to the list of
+    // clients
     pObj->m_pClientItem = new CClientItem;
     if (NULL == pObj->m_pClientItem) {
-        syslog( LOG_ERR,
-            "[UDP RX Client] Unable to allocate memory for client - terminating."); 
-        close(pObj->m_sockfd);    
+        syslog(LOG_ERR,
+               "[UDP RX Client] Unable to allocate memory for client - "
+               "terminating.");
+        close(pObj->m_sockfd);
         return NULL;
     }
 
     // This is now an active Client
-    pObj->m_pClientItem->m_bOpen         = true;
-    pObj->m_pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-    pObj->m_pClientItem->m_strDeviceName = ("Internal UDP RX Client listener. [");
-    pObj->m_pClientItem->m_strDeviceName += get_ip_str((struct sockaddr *)&pObj->m_remoteAddress,rcvbuf,sizeof(rcvbuf));
+    pObj->m_pClientItem->m_bOpen = true;
+    pObj->m_pClientItem->m_type  = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
+    pObj->m_pClientItem->m_strDeviceName =
+      ("Internal UDP RX Client listener. [");
+    pObj->m_pClientItem->m_strDeviceName +=
+      get_ip_str((struct sockaddr*)&pObj->m_remoteAddress,
+                 rcvbuf,
+                 sizeof(rcvbuf));
     pObj->m_pClientItem->m_strDeviceName += ("]|Started at ");
     pObj->m_pClientItem->m_strDeviceName +=
-    vscpdatetime::Now().getISODateTime();
+      vscpdatetime::Now().getISODateTime();
 
     // If a user is defined get user item
     vscp_trim(pObj->m_user);
     if (pObj->m_user.length()) {
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-        pObj->m_pClientItem->m_pUserItem = 
-            pObj->m_pCtrlObj->m_userList.validateUser( pObj->m_user, 
-                                                        pObj->m_password);
+        pObj->m_pClientItem->m_pUserItem =
+          pObj->m_pCtrlObj->m_userList.validateUser(pObj->m_user,
+                                                    pObj->m_password);
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_UserList);
 
         if (NULL == pObj->m_pClientItem->m_pUserItem) {
 
             delete pObj->m_pClientItem;
 
-            syslog( LOG_ERR,
-                "[UDP RX Client] User [%s] NOT allowed to connect.",
-                (const char *)pObj->m_user.c_str());
-            close(pObj->m_sockfd);    
+            syslog(LOG_ERR,
+                   "[UDP RX Client] User [%s] NOT allowed to connect.",
+                   (const char*)pObj->m_user.c_str());
+            close(pObj->m_sockfd);
             return NULL;
         }
-    } 
+    }
     else {
-        pObj->m_pClientItem->m_pUserItem = NULL; // No user defined
+        pObj->m_pClientItem->m_pUserItem = NULL;    // No user defined
     }
 
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-    if (!pObj->m_pCtrlObj->addClient(pObj->m_pClientItem, 
-                                        CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP)) {
+    if (!pObj->m_pCtrlObj->addClient(pObj->m_pClientItem,
+                                     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP)) {
         // Failed to add client
         delete pObj->m_pClientItem;
         pObj->m_pClientItem = NULL;
         pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
-        syslog( LOG_ERR,
-            "UDP server: Failed to add client. Terminating thread.");
-        close(pObj->m_sockfd);    
+        syslog(LOG_ERR,
+               "UDP server: Failed to add client. Terminating thread.");
+        close(pObj->m_sockfd);
         return NULL;
     }
     pthread_mutex_lock(&pObj->m_pCtrlObj->m_mutex_clientList);
 
     // Set receive filter
     memcpy(&pObj->m_pClientItem->m_filter,
-            &pObj->m_filter,
-            sizeof(vscpEventFilter));
+           &pObj->m_filter,
+           sizeof(vscpEventFilter));
 
     // Set GUID for channel
     if (!pObj->m_guid.isNULL()) {
         pObj->m_pClientItem->m_guid = pObj->m_guid;
     }
 
-    syslog( LOG_ERR, "UDP RX Client: Thread started.");
-    
+    syslog(LOG_ERR, "UDP RX Client: Thread started.");
+
     // Run run run...
     while (!pObj->m_bQuit) {
-
         // pObj->sendFrame();
-
     }
 
     if (NULL != pObj->m_pClientItem) {
@@ -772,8 +790,7 @@ UdpClientWorkerThread(void *pData)
         pthread_mutex_unlock(&pObj->m_pCtrlObj->m_mutex_clientList);
     }
 
-    syslog( LOG_ERR, "UDP RX ClientThread: Quit.");
-    
+    syslog(LOG_ERR, "UDP RX ClientThread: Quit.");
+
     return NULL;
 }
-

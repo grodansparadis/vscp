@@ -1,7 +1,7 @@
 {
     // Whether git is enabled.
     "git.enabled": false,
-    
+
     "files.associations": {
         "*.tcc": "cpp",
         "optional": "cpp",
@@ -78,5 +78,7 @@
         "Paradis",
         "VSCP",
         "akhe"
-    ]
+    ],
+    "editor.dragAndDrop": false,
+    "diffEditor.codeLens": true
 }

@@ -39,6 +39,7 @@ AC_CHECK_LIB([wrap], [request_init])
 AC_CHECK_LIB([systemd], [sd_notify])
 AC_CHECK_LIB([ssl], [SSL_free])
 AC_CHECK_LIB([expat], [XML_ParserCreate])
+AC_CHECK_LIB([mosquitto], [mosquitto_lib_init])
 
 # Checks for header files.
 AC_HEADER_DIRENT

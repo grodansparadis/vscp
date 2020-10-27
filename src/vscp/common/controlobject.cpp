@@ -1035,7 +1035,7 @@ CControlObject::startUDPSrvThreads(void)
 
     if (pthread_create(&m_udpSrvWorkerThread,
                        NULL,
-                       UdpSrvWorkerThread,
+                       udpSrvWorkerThread,
                        &m_udpsrv)) {
         syslog(LOG_ERR,
                "Controlobject: Unable to start the UDP server thread.");

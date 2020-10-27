@@ -29,7 +29,7 @@
 #if !defined(CONTROLOBJECT_H__INCLUDED_)
 #define CONTROLOBJECT_H__INCLUDED_
 
-#include <set>
+
 
 #include <automation.h>
 #include <clientlist.h>
@@ -41,6 +41,8 @@
 #include <vscp.h>
 #include <websocket.h>
 #include <websrv.h>
+
+#include <set>
 
 // Forward declarations
 class TCPListenThread;
@@ -447,7 +449,7 @@ class CControlObject {
     //*****************************************************
 
     // UDP server functionality
-    UDPSrvObj m_udpsrv;
+    udpSrvObj m_udpsrv;
 
     // Protect UDP remote list
     pthread_mutex_t m_mutexUDPRemotes;
@@ -456,7 +458,7 @@ class CControlObject {
     pthread_t m_udpSrvWorkerThread;
 
     // List containing remote receiving UDP clients
-    std::deque<udpRemoteClient *>m_udpremotes; 
+    std::deque<udpRemoteClient *>m_udpremotes;
 
     //*****************************************************
     //               webserver interface

@@ -29,8 +29,11 @@
 #if !defined(VSCP_WEBSRV_H__INCLUDED_)
 #define VSCP_WEBSRV_H__INCLUDED_
 
-#include "userlist.h"
-#include "websocket.h"
+#include <userlist.h>
+#include <websocket.h>
+
+#include <map>
+#include <string>
 
 #define WEB_ERROR   0   // Page was not served
 #define WEB_OK      1   // Page served 1-999
@@ -94,8 +97,8 @@ void
 ws2_closeHandler(const struct mg_connection *conn, void *cbdata);
 
 
-#define WEBSRV_MAX_SESSIONS 1000   // Max web server active sessions
-#define WEBSRV_NAL_USERNAMELEN 128 // Max length for userdname
+#define WEBSRV_MAX_SESSIONS 1000        // Max web server active sessions
+#define WEBSRV_NAL_USERNAMELEN 128      // Max length for userdname
 
 /**
  * Invalid method page.
@@ -171,15 +174,6 @@ struct websrv_session
     // User
     CUserItem *m_pUserItem;
 
-    // String submitted via form.
-    // char value_1[64];
-
-    // Another value submitted via form.
-    // char value_2[64];
-
-    // Keypairs
-    // HashString m_keys;
-    // XX_DECLARE_STRING_HASH_MAP( std::string, HashString );
 };
 
 // Test Certificate
@@ -304,7 +298,7 @@ websrv_parseHeader(std::map<std::string,std::string> &hdrmap, std::string &heade
   @return True on success.
 */
 bool
-websrv_getHeaderElement(std::map<std::string,std::string> &hdrmap,
+websrv_getHeaderElement(std::map<std::string, std::string> &hdrmap,
                         const std::string &name,
                         std::string &value);
 
