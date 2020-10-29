@@ -78,7 +78,7 @@ class udpRemoteClient {
              bool bSetBroadcast  = false);
 
     /*!
-        Start the clinet worker thread
+        Start the client worker thread
         @return True on success, false on failure.
     */
     bool startWorkerThread(void);
@@ -126,6 +126,7 @@ class udpRemoteClient {
     }
 
   public:
+
     // Client thread will run as long as false
     bool m_bQuit;
 

@@ -66,14 +66,14 @@ public:
         @param qos Quality of service (0/1/2). Default to 0.
     */
     int init(const std::string &strHost,
-                short port = 1883,                
+                unsigned short port = 1883,
                 const std::string &strTopicSub = "vscp/#",
                 const std::string &strTopicPub = "vscp/%guid%/%class%/%type%/",
-                const std::string &clientId = "",                
+                const std::string &clientId = "",
                 const std::string &strUserName = "",
                 const std::string &strPassword = "",
                 bool bCleanSession = false,
-                int qos = 0 );
+                int qos = 0);
 
     /*!
         Set retain. Should be called before connect. Default is false.
@@ -104,11 +104,11 @@ public:
 
         @return VSCP_ERROR_SUCCESS is returned if OK and error code else.
     */    
-    int set_tls( const std::string &cafile,
-   	                const std::string &capath,
-   	                const std::string &certfile,
-   	                const std::string &keyfile,
-   		            const std::string &password );
+    int set_tls(const std::string &cafile,
+                    const std::string &capath,
+                    const std::string &certfile,
+                    const std::string &keyfile,
+                    const std::string &password);
 
     // TODO set will
 
@@ -202,9 +202,72 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+    /*!
+        Set (and enable) receive callback for events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
 
+    /*!
+        Set (and enable) receive callback ex events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+    /*!
+        Getter/setters for connection timeout
+        Time is in milliseconds
+    */
+    virtual void setConnectionTimeout(uint32_t timeout)
+    {
+        m_timeoutConnection = timeout;
+    };
+
+    virtual uint32_t getConnectionTimeout(void)
+    {
+        return m_timeoutConnection;
+    };
+
+    /*!
+        Getter/setters for response timeout
+        Time is in milliseconds
+    */
+    virtual void setResponseTimeout(uint32_t timeout)
+    {
+        m_timeoutResponse = timeout;
+    };
+    virtual uint32_t getResponseTimeout(void)
+    {
+        return m_timeoutResponse;
+    };
+
+    /*!
+        Getter for remote host
+
+        @return Return remote host as string
+    */
+    std::string getHost(void) 
+    {
+        return m_strHost;
+    }
+
+    /*!
+        Getter for remote port
+
+        @return remote host port.
+    */
+    unsigned short getPort(void) 
+    {
+        return m_port;
+    }
 
 public:   
+
+    // Timeout in milliseconds for host connection.
+    uint32_t m_timeoutConnection;
+
+    // Timeout in milliseconds for response.
+    uint32_t m_timeoutResponse;
 
     // True as long as the worker thread should do it's work
     bool m_bRun;
@@ -229,7 +292,7 @@ public:
 private:
 
     std::string m_strHost;      // MQTT broker
-    short m_port;               // MQTT broker port
+    unsigned short m_port;      // MQTT broker port
     std::string m_strTopicSub;  // Subscribe topic template
     std::string m_strTopicPub;  // Publish topic template
     std::string m_clientId;     // Client id

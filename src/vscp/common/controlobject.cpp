@@ -117,8 +117,8 @@ void*
 clientMsgWorkerThread(void* userdata); // this
 void*
 tcpipListenThread(void* pData); // tcpipsev.cpp
-void*
-UDPThread(void* pData); // udpsrv.cpp
+
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -230,6 +230,10 @@ CControlObject::CControlObject()
 
     // UDP Server
     m_udpsrv.init(this);
+    m_enableUdp = false;        // Disabled by default
+
+    // MQTT functionality
+    m_enableMqtt = false;       // Disabled by default
 
     // Web server SSL settings
     m_web_ssl_certificate          = "/etc/vscp/certs/server.pem";
@@ -1026,9 +1030,9 @@ CControlObject::stopTcpipSrvThread(void)
 bool
 CControlObject::startUDPSrvThreads(void)
 {
-    if (!m_enableTcpip) {
+    if (!m_enableUdp) {
         if (__VSCP_DEBUG_TCP) {
-            syslog(LOG_DEBUG, "Controlobject: USP interface disabled.");
+            syslog(LOG_DEBUG, "Controlobject: UDP interface disabled.");
         }
         return true;
     }
@@ -1044,8 +1048,14 @@ CControlObject::startUDPSrvThreads(void)
 
     // Create UDP client threads.
     for (auto it = m_udpremotes.cbegin(); it != m_udpremotes.cend(); ++it) {
-		udpRemoteClient *pClient =  *it;
-        if ( NULL == pClient ) continue;
+		
+        udpRemoteClient *pClient =  *it;
+        if ( NULL == pClient ) {
+            syslog(LOG_ERR,
+                        "UDP client object is NULL. Will skip it");
+            continue;
+        }
+
         if (!pClient->startWorkerThread()) {
             syslog(LOG_ERR,"Failed to start UDP sender workerthread for interface %s",
                 pClient->getRemoteAddress().c_str());
@@ -1075,6 +1085,84 @@ CControlObject::stopUDPSrvThreads(void)
 
     if (__VSCP_DEBUG_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// startMQTTClientThreads
+//
+
+bool
+CControlObject::startMQTTClientThreads(void)
+{
+    if (!m_enableMqtt) {
+        if (__VSCP_DEBUG_TCP) {
+            syslog(LOG_DEBUG, "Controlobject: MQTT interface disabled.");
+        }
+        return true;
+    }
+
+    // Create and start MQTT client threads.
+    for (auto it = m_mqttClients.cbegin(); it != m_mqttClients.cend(); ++it) {
+
+        vscpMqttObj *pMqttObj =  *it;
+        if ( NULL == pMqttObj ) {
+            syslog(LOG_ERR,
+                    "MQTT client object is NULL. Will skip it");
+            continue;
+        }
+
+        if (!pMqttObj->startWorkerThread(this)) {
+            syslog(LOG_ERR,
+                    "Failed to start MQTT client workerthread for interface %s",
+                    pMqttObj->getInterface().c_str());
+        }
+
+        // TODO debug message
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// stopMQTTClientThreads
+//
+
+bool
+CControlObject::stopMQTTClientThreads(void)
+{
+    // Tell the thread it's time to quit
+    m_udpsrv.m_bQuit = VSCP_TCPIP_SRV_STOP;
+
+    if (__VSCP_DEBUG_TCP) {
+        syslog(LOG_DEBUG, "Controlobject: Terminating MQTT thread.");
+    }
+    
+    // Create and start MQTT client threads.
+    //for (auto it = m_mqttClients.cbegin(); it != m_mqttClients.cend(); ++it) {
+    while (m_mqttClients.size()) {
+
+        vscpMqttObj *pMqttObj =  m_mqttClients.front();
+        m_mqttClients.pop_front();
+        if ( NULL == pMqttObj ) {
+            syslog(LOG_ERR,
+                    "MQTT client object is NULL. Will skip it");
+            continue;
+        }
+
+        // End workerthread
+        pMqttObj->m_bQuit = true;
+        pthread_join(pMqttObj->m_mqttClientWorkerThread, NULL);
+
+        delete pMqttObj;
+
+        // TODO debug message
+    }
+
+    if (__VSCP_DEBUG_TCP) {
+        syslog(LOG_DEBUG, "Controlobject: Terminated MQTT thread.");
     }
 
     return true;
@@ -1692,6 +1780,30 @@ void CControlObject::addUdpClient(bool bEnable,
     m_udpremotes.push_back(pClient);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// addMqttClient
+// 
+
+void CControlObject::addMqttClient( std::string &interface,
+			                std::string &user,
+			                std::string &password,
+			                vscpEventFilter &filter,
+			                cguid &guid,
+			                int qos,
+			                bool bCleanSession,
+			                bool bRetain,
+			                uint32_t keepalive,
+			                std::string &topicSubscribe,
+			                std::string &topicPublish,
+			                std::string &cafile,
+			                std::string &capath,
+			                std::string &certfile,
+			                std::string &keyfile,
+			                std::string &xpassword )
+{
+    // TODO
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // addKnowNode
@@ -1930,6 +2042,7 @@ static int bVscpConfigFound         = 0;
 static int bGeneralConfigFound      = 0;
 static int bRemoteUserConfigFound   = 0;
 static int bUDPConfigFound          = 0;
+static int bMQTTConfigFound         = 0;
 static int bLevel1DriverConfigFound = 0;
 static int bLevel2DriverConfigFound = 0;
 static int bLevel3DriverConfigFound = 0;
@@ -2737,6 +2850,154 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "mqtt"))) {
+        
+        bVscpConfigFound = TRUE;
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_enableMqtt = true;
+                }
+                else {
+                    pObj->m_enableMqtt = false;
+                }
+            }            
+            
+        }
+    }
+    else if (bVscpConfigFound && bMQTTConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "client"))) {
+
+        bool bEnable = false;
+        std::string interface = "localhost:1883";
+        std::string user = "mqtt";
+        std::string password = "secret";
+        vscpEventFilter filter;
+        memset(&filter,0,sizeof(vscpEventFilter));
+        cguid guid;
+        int qos = 0;
+        bool bCleanSession = false;
+        bool bRetain = false;
+        int keepalive = -1;
+        std::string topic_subscribe = "vscp/#";
+        std::string topic_publish = "vscp/%guid%/%class%/%type%/";
+        std::string cafile = "";
+    	std::string capath = "";
+    	std::string certfile = "";
+    	std::string keyfile = "";
+    	std::string xpassword = "";
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnable = true;
+                }
+                else {
+                    bEnable = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                vscp_startsWith(attribute, "tcp://", &attribute);
+                vscp_startsWith(attribute, "stcp://", &attribute);
+                vscp_trim(attribute);
+                pObj->m_udpsrv.m_interface = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                user = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                password = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                vscp_readFilterFromString(&filter,attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                vscp_readMaskFromString(&filter,attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "qos")) {
+                qos = vscp_readStringValue(attribute);
+                if (qos>3) {
+                    syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
+                    qos = 0;                    
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                guid.getFromString(attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {  // bCleanSession
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bCleanSession = true;
+                }
+                else {
+                    bCleanSession = false;
+                }
+            }                        
+            else if (0 == vscp_strcasecmp(attr[i], "bretain")) {        // bRetain
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bRetain = true;
+                }
+                else {
+                    bRetain = false;
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
+                keepalive = vscp_readStringValue(attribute);
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "topic-subscribe")) {
+                topic_subscribe = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "topic-publish")) {
+                topic_publish = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
+                cafile = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "capath")) {
+                capath = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
+                certfile = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
+                keyfile = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "xpassword")) {
+                xpassword = attribute;
+            }
+
+        }
+
+        if (bEnable) {
+            pObj->addMqttClient(interface,
+			                        user,
+			                        password,
+			                        filter,
+			                        guid,
+			                        qos,
+			                        bCleanSession,
+			                        bRetain,
+			                        keepalive,
+			                        topic_subscribe,
+			                        topic_publish,
+			                        cafile,
+			                        capath,
+			                        certfile,
+			                        keyfile,
+			                        xpassword );
+        }
+        
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              ((0 == vscp_strcasecmp(name, "level1driver")) ||
               (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = TRUE;
@@ -2925,6 +3186,10 @@ endFullConfigParser(void* data, const char* name)
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              (0 == vscp_strcasecmp(name, "udp"))) {
         bUDPConfigFound = FALSE;
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "mqtt"))) {
+        bMQTTConfigFound = FALSE;
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
         ((0 == vscp_strcasecmp(name, "level1driver")) ||

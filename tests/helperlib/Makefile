@@ -7,7 +7,7 @@ MAJOR_VERSION=@MAJOR_VERSION@
 MINOR_VERSION=@MINOR_VERSION@
 RELEASE_VERSION=@RELEASE_VERSION@
 BUILD_VERSION=@BUILD_VERSION@
-PACKAGE_VERSION=14.0.4
+PACKAGE_VERSION=14.0.5
 
 # STATIC = yes if a static build is requested.
 STATIC=no
@@ -51,7 +51,7 @@ CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments
 	
 
 LDFLAGS = 
-EXTRALIBS =  -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main 
+EXTRALIBS =  -lmosquitto -lexpat -lssl -lsystemd -lwrap -lz -lrt -lm -lcrypto -lpthread -ldl  -L../../googletest/build/lib -lgtest -lgtest_main 
 DESTDIR=@DESTDIR@
 
 prefix = /usr/local

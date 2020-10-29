@@ -35,24 +35,19 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 
-#include <set>
 #include <deque>
+#include <set>
 
-#define MDF_ACCESS_READ 1
+#define MDF_ACCESS_READ  1
 #define MDF_ACCESS_WRITE 2
 
 #define REGISTER_TYPE_STANDARD 0
 #define REGISTER_TYPE_DMATRIX1 1
-#define REGISTER_TYPE_BLOCK 2
+#define REGISTER_TYPE_BLOCK    2
 
-enum vscp_level
-{
-    level1 = 1,
-    level2
-};
+enum vscp_level { level1 = 1, level2 };
 
-enum vscp_abstraction_type
-{
+enum vscp_abstraction_type {
     type_unknown = 0,
     type_string,
     type_bitfield,
@@ -91,8 +86,7 @@ enum vscp_abstraction_type
 
  */
 
-class CMDF_ValueListValue
-{
+class CMDF_ValueListValue {
 
   public:
     CMDF_ValueListValue();
@@ -110,8 +104,7 @@ class CMDF_ValueListValue
 
  */
 
-class CMDF_Abstraction
-{
+class CMDF_Abstraction {
 
   public:
     CMDF_Abstraction();
@@ -162,7 +155,7 @@ class CMDF_Abstraction
     uint32_t m_bgcolor; // Cell background colour. Default = white.
     uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
-    std::deque<CMDF_ValueListValue *>
+    std::deque<CMDF_ValueListValue*>
       m_list_value; // list with selectable values
 };
 
@@ -176,8 +169,7 @@ class CMDF_Abstraction
 
  */
 
-class CMDF_Bit
-{
+class CMDF_Bit {
 
   public:
     CMDF_Bit();
@@ -201,7 +193,7 @@ class CMDF_Bit
 
     uint8_t m_nAccess; // 'access'   Access rights for the bit(-field)
 
-    std::deque<CMDF_ValueListValue *>
+    std::deque<CMDF_ValueListValue*>
       m_list_value; // List with selectable values
 };
 
@@ -212,8 +204,7 @@ class CMDF_Bit
 
  */
 
-class CMDF_Register
-{
+class CMDF_Register {
 
   public:
     CMDF_Register();
@@ -232,7 +223,7 @@ class CMDF_Register
     /*!
         Assignment
     */
-    CMDF_Register &operator=(const CMDF_Register &other);
+    CMDF_Register& operator=(const CMDF_Register& other);
 
     std::string m_strName;
     std::string m_strDescription;
@@ -253,8 +244,8 @@ class CMDF_Register
 
     uint8_t m_nAccess;
 
-    std::deque<CMDF_Bit *> m_list_bit; // dll list with bit defines
-    std::deque<CMDF_ValueListValue *>
+    std::deque<CMDF_Bit*> m_list_bit; // dll list with bit defines
+    std::deque<CMDF_ValueListValue*>
       m_list_value; // dll list with selectable values
 
     // For VSCP Works
@@ -272,8 +263,7 @@ class CMDF_Register
 
  */
 
-class CMDF_ActionParameter
-{
+class CMDF_ActionParameter {
 
   public:
     CMDF_ActionParameter();
@@ -292,8 +282,8 @@ class CMDF_ActionParameter
     uint16_t m_nOffset;
     uint8_t m_width;
 
-    std::deque<CMDF_Bit *> m_list_bit; // List with bit defines
-    std::deque<CMDF_ValueListValue *>
+    std::deque<CMDF_Bit*> m_list_bit; // List with bit defines
+    std::deque<CMDF_ValueListValue*>
       m_list_value; // List with selectable values
 };
 
@@ -304,8 +294,7 @@ class CMDF_ActionParameter
 
  */
 
-class CMDF_Action
-{
+class CMDF_Action {
 
   public:
     CMDF_Action();
@@ -323,7 +312,7 @@ class CMDF_Action
 
     uint16_t m_nCode;
 
-    std::deque<CMDF_ActionParameter *>
+    std::deque<CMDF_ActionParameter*>
       m_list_ActionParameter; // List with action parameters
 };
 
@@ -334,8 +323,7 @@ class CMDF_Action
   decision matrix.
  */
 
-class CMDF_DecisionMatrix
-{
+class CMDF_DecisionMatrix {
 
   public:
     CMDF_DecisionMatrix();
@@ -353,7 +341,7 @@ class CMDF_DecisionMatrix
     uint16_t m_nRowSize;     // Size of a DM row (Normally 8)
     bool m_bIndexed;         // True of storage is indexed
 
-    std::deque<CMDF_Action *> m_list_action; // Action description
+    std::deque<CMDF_Action*> m_list_action; // Action description
 };
 
 /*!
@@ -363,8 +351,7 @@ class CMDF_DecisionMatrix
 
  */
 
-class CMDF_EventData
-{
+class CMDF_EventData {
 
   public:
     CMDF_EventData();
@@ -382,8 +369,8 @@ class CMDF_EventData
 
     uint16_t m_nOffset;
 
-    std::deque<CMDF_Bit *> m_list_bit; // List with bit defines
-    std::deque<CMDF_ValueListValue *>
+    std::deque<CMDF_Bit*> m_list_bit; // List with bit defines
+    std::deque<CMDF_ValueListValue*>
       m_list_value; // List with selectable values
 };
 
@@ -394,8 +381,7 @@ class CMDF_EventData
 
  */
 
-class CMDF_Event
-{
+class CMDF_Event {
 
   public:
     CMDF_Event();
@@ -415,7 +401,7 @@ class CMDF_Event
     uint16_t m_nType;
     uint8_t m_nPriority;
 
-    std::deque<CMDF_EventData *>
+    std::deque<CMDF_EventData*>
       m_list_eventdata; // List with event data descriptions
 };
 
@@ -427,8 +413,7 @@ class CMDF_Event
 
  */
 
-class CMDF_Item
-{
+class CMDF_Item {
 
   public:
     CMDF_Item();
@@ -447,8 +432,7 @@ class CMDF_Item
   decission matrix.
  */
 
-class CMDF_BootLoaderInfo
-{
+class CMDF_BootLoaderInfo {
 
   public:
     CMDF_BootLoaderInfo();
@@ -471,8 +455,7 @@ class CMDF_BootLoaderInfo
 
  */
 
-class CMDF_Address
-{
+class CMDF_Address {
 
   public:
     CMDF_Address();
@@ -499,8 +482,7 @@ class CMDF_Address
 
  */
 
-class CMDF_Manufacturer
-{
+class CMDF_Manufacturer {
 
   public:
     CMDF_Manufacturer();
@@ -513,12 +495,12 @@ class CMDF_Manufacturer
 
     std::string m_strName;
 
-    std::deque<CMDF_Address *> m_list_Address;
+    std::deque<CMDF_Address*> m_list_Address;
 
-    std::deque<CMDF_Item *> m_list_Phone;
-    std::deque<CMDF_Item *> m_list_Fax;
-    std::deque<CMDF_Item *> m_list_Email;
-    std::deque<CMDF_Item *> m_list_Web;
+    std::deque<CMDF_Item*> m_list_Phone;
+    std::deque<CMDF_Item*> m_list_Fax;
+    std::deque<CMDF_Item*> m_list_Email;
+    std::deque<CMDF_Item*> m_list_Web;
 };
 
 /*!
@@ -528,8 +510,7 @@ class CMDF_Manufacturer
 
  */
 
-class CMDF_Firmware
-{
+class CMDF_Firmware {
 
   public:
     CMDF_Firmware();
@@ -572,8 +553,7 @@ class CMDF_Firmware
 
  */
 
-class CMDF
-{
+class CMDF {
 
   public:
     CMDF();
@@ -591,7 +571,7 @@ class CMDF
        file.
         @return Return true if a valid file is downloaded.
     */
-    bool downLoadMDF(std::string &remoteFile, std::string &tempFile);
+    bool downLoadMDF(std::string& remoteFile, std::string& tempFile);
 
     /*!
         Load MDF from local or remote storage and parse it into
@@ -600,20 +580,20 @@ class CMDF
         @param blocalFile Asks for a local file if set to true.
         @return returns true on success, false on failure.
     */
-    bool load(std::string &remoteFile, bool bLocalFile = false);
+    bool load(std::string& remoteFile, bool bLocalFile = false);
 
     /*!
         Format an MDF description so it can be shown
         @param str String to format.
     */
-    void mdfDescriptionFormat(std::string &str);
+    void mdfDescriptionFormat(std::string& str);
 
     /*!
         Parse a MDF
         @param path Path to downloaded MDF
         @return true if the parsing went well.
     */
-    bool parseMDF(std::string &path);
+    bool parseMDF(std::string& path);
 
     // Helpers
 
@@ -629,7 +609,7 @@ class CMDF
         @param array Reference to array with pages
         @return Number of register pages used.
     */
-    uint32_t getPages(std::set<long> &pages);
+    uint32_t getPages(std::set<long>& pages);
 
     /*!
         Return register class from register + page
@@ -637,7 +617,7 @@ class CMDF
         @param page Page top search for.
         @return Pointer to CMDF_Register class if found else NULL.
     */
-    CMDF_Register *getMDFRegister(uint8_t reg, uint16_t page);
+    CMDF_Register* getMDFRegister(uint8_t reg, uint16_t page);
 
     /*
         Return temporary file path
@@ -663,17 +643,17 @@ class CMDF
 
     CMDF_Firmware m_firmware; // Firmware file
 
-    std::deque<CMDF_Manufacturer *>
+    std::deque<CMDF_Manufacturer*>
       m_list_manufacturer; // Manufacturer information
 
     CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
     CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
 
-    std::deque<CMDF_Event *> m_list_event; // Events this node can generate
-    std::deque<CMDF_Register *> m_list_register; // List with defined registers
-    std::deque<CMDF_Abstraction *>
-      m_list_abstraction;                    // List with defined abstractions
-    std::deque<CMDF_Bit *> m_list_alarmbits; // List with alarm bit defines
+    std::deque<CMDF_Event*> m_list_event;       // Events this node can generate
+    std::deque<CMDF_Register*> m_list_register; // List with defined registers
+    std::deque<CMDF_Abstraction*>
+      m_list_abstraction;                   // List with defined abstractions
+    std::deque<CMDF_Bit*> m_list_alarmbits; // List with alarm bit defines
 };
 
 #endif

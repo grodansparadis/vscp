@@ -37,6 +37,7 @@
 #include <interfacelist.h>
 #include <tcpipsrv.h>
 #include <udpsrv.h>
+#include <mqtt.h>
 #include <userlist.h>
 #include <vscp.h>
 #include <websocket.h>
@@ -179,6 +180,16 @@ class CControlObject {
     bool stopUDPSrvThreads(void);
 
     /*!
+        Start the MQTT worker thread
+    */
+    bool startMQTTClientThreads(void);
+
+    /*!
+        Stop the MQTT Workerthread
+    */
+    bool stopMQTTClientThreads(void);
+
+    /*!
         Start the Multicast worker threads
     */
     bool startMulticastWorkerThreads(void);
@@ -255,6 +266,26 @@ class CControlObject {
                         vscpEventFilter& filter,
                         int encryption = VSCP_ENCRYPTION_NONE,
                         bool setbroadcast = false);
+
+    /*!
+        Add one MQTT client
+    */                            
+    void addMqttClient( std::string &interface,
+			                std::string &user,
+			                std::string &password,
+			                vscpEventFilter &filter,
+			                cguid &guid,
+			                int qos,
+			                bool bCleanSession,
+			                bool bRetain,
+			                uint32_t keepalive,
+			                std::string &topicSubscribe,
+			                std::string &topicPublish,
+			                std::string &cafile,
+			                std::string &capath,
+			                std::string &certgile,
+			                std::string &keyfile,
+			                std::string &xpassword );
 
     /*!
         Get device address for primary ethernet adapter
@@ -448,6 +479,8 @@ class CControlObject {
     //                 UDP interface
     //*****************************************************
 
+    bool m_enableUdp;
+
     // UDP server functionality
     udpSrvObj m_udpsrv;
 
@@ -459,6 +492,19 @@ class CControlObject {
 
     // List containing remote receiving UDP clients
     std::deque<udpRemoteClient *>m_udpremotes;
+
+
+    //*****************************************************
+    //                MQTT client interface
+    //*****************************************************
+
+    bool m_enableMqtt;
+
+    // Protect MQTT client list
+    pthread_mutex_t m_mutexMqttClients;
+
+    // List containing MQTT clients
+    std::deque<vscpMqttObj *>m_mqttClients;
 
     //*****************************************************
     //               webserver interface
