@@ -99,6 +99,24 @@ TEST(HelperLib, vscphlp_convertEventToJSON) {
     delete [] e.pdata;
 }
 
+TEST(HelperLib, vscphlp_convertEventExToJSON) {
+    vscpEventEx ex;
+    std::string result;
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventExToJSON(result, &ex));
+    //printf("%s\n",result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpClass\": 10,") );
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpType\": 6,") );
+}
+
 TEST(HelperLib, vscphlp_convertEventToXML) {
     vscpEvent e;
     std::string result;
@@ -117,6 +135,60 @@ TEST(HelperLib, vscphlp_convertEventToXML) {
     ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpClass=\"10\"") );
     ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpType=\"6\"") );
     delete [] e.pdata;
+}
+
+TEST(HelperLib, vscphlp_convertEventExToXML) {
+    vscpEventEx ex;
+    std::string result;
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventExToXML(result, &ex));
+    //printf("%s\n", result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpClass=\"10\"") );
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpType=\"6\"") );
+}
+
+TEST(HelperLib, vscphlp_convertEventToHTML) {
+    vscpEvent e;
+    std::string result;
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata = new uint8_t[4];
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventToHTML(result, &e));
+    //printf("|%s|\n", result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "<h2>VSCP Event</h2> <p>Class: 10 <br>Type: 6 <br></p><p>Data count: 4<br>Data: 0x80,0x02,0x1B,0x22<br></p><p>From GUID: ") );
+    delete [] e.pdata;
+}
+
+TEST(HelperLib, vscphlp_convertEventExToHTML) {
+    vscpEventEx ex;
+    std::string result;
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventExToHTML(result, &ex));
+    printf("|%s|\n", result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "<h2>VSCP Event</h2> <p>Class: 10 <br>Type: 6 <br></p><p>Data count: 4<br>Data: 0x80,0x02,0x1B,0x22<br></p><p>From GUID: ") );
 }
 
 int main(int argc, char **argv) {

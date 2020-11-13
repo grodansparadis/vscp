@@ -3830,7 +3830,6 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
                              (unsigned short int)pEvent->vscp_class,
                              (unsigned short int)pEvent->vscp_type,
                              (const char*)strguid.c_str(),
-                             /*(unsigned short int)pEvent->sizeData,*/
                              (const char*)strdata.c_str());
 
     return true;
@@ -3972,7 +3971,6 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
                              (unsigned short int)pEventEx->vscp_class,
                              (unsigned short int)pEventEx->vscp_type,
                              (const char*)strguid.c_str(),
-                             (unsigned short int)pEventEx->sizeData,
                              (const char*)strdata.c_str());
 
     return true;
@@ -4109,10 +4107,9 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
-                              (const char*)dt.c_str(),
                               (unsigned short int)pEvent->vscp_class,
                               (unsigned short int)pEvent->vscp_type,
-                              (unsigned short int)pEvent->sizeData,
+                              (unsigned short int)pEvent->sizeData,                              
                               (const char*)strdata.c_str(),
                               (const char*)strguid.c_str(),
                               (unsigned short int)pEvent->head,
@@ -4150,10 +4147,9 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
-                              (const char*)dt.c_str(),
                               (unsigned short int)pEventEx->vscp_class,
                               (unsigned short int)pEventEx->vscp_type,
-                              (unsigned short int)pEventEx->sizeData,
+                              (unsigned short int)pEventEx->sizeData,                              
                               (const char*)strdata.c_str(),
                               (const char*)strguid.c_str(),
                               (unsigned short int)pEventEx->head,
