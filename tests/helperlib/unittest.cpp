@@ -79,6 +79,46 @@ TEST(HelperLib, vscp_getMeasurementAsDouble) {
     delete [] e.pdata;
 }
 
+TEST(HelperLib, vscphlp_convertEventToJSON) {
+    vscpEvent e;
+    std::string result;
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata = new uint8_t[4];
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventToJSON(result, &e));
+    //printf("%s\n",result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpClass\": 10,") );
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpType\": 6,") );
+    delete [] e.pdata;
+}
+
+TEST(HelperLib, vscphlp_convertEventToXML) {
+    vscpEvent e;
+    std::string result;
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata = new uint8_t[4];
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+    ASSERT_TRUE(vscp_convertEventToXML(result, &e));
+    //printf("%s\n", result.c_str());
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpClass=\"10\"") );
+    ASSERT_TRUE(NULL != strstr(result.c_str(), "vscpType=\"6\"") );
+    delete [] e.pdata;
+}
+
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -3830,7 +3830,7 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
                              (unsigned short int)pEvent->vscp_class,
                              (unsigned short int)pEvent->vscp_type,
                              (const char*)strguid.c_str(),
-                             (unsigned short int)pEvent->sizeData,
+                             /*(unsigned short int)pEvent->sizeData,*/
                              (const char*)strdata.c_str());
 
     return true;
