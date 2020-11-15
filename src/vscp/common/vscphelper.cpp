@@ -2170,6 +2170,32 @@ vscp_makeFloatMeasurementEvent(vscpEvent* pEvent,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_makeFloatMeasurementEventEx
+//
+
+bool
+vscp_makeFloatMeasurementEventEx(vscpEventEx* pEventEx,
+                                    float value,
+                                    uint8_t unit,
+                                    uint8_t sensoridx) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_makeFloatMeasurementEvent(pEvent,
+                                            value,
+                                            unit,
+                                            sensoridx)) return false;
+
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+
+    vscp_deleteEvent_v2(&pEvent);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_makeStringMeasurementEvent
 //
 
@@ -2217,6 +2243,32 @@ vscp_makeStringMeasurementEvent(vscpEvent* pEvent,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_makeStringMeasurementEventEx
+//
+
+bool
+vscp_makeStringMeasurementEventEx(vscpEventEx* pEventEx,
+                                    double value,
+                                    uint8_t unit,
+                                    uint8_t sensoridx) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_makeStringMeasurementEvent(pEvent,
+                                            value,
+                                            unit,
+                                            sensoridx)) return false;
+
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+
+    vscp_deleteEvent_v2(&pEvent);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_makeLevel2FloatMeasurementEvent
 //
 
@@ -2251,6 +2303,38 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent* pEvent,
     pEvent->pdata[2] = subzone;
     pEvent->pdata[3] = unit;
     memcpy((pEvent->pdata + 4), (unsigned char*)&value, 8);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeLevel2FloatMeasurementEventEx
+//
+
+bool
+vscp_makeLevel2FloatMeasurementEvent(vscpEventEx* pEventEx,
+                                      uint16_t type,
+                                      double value,
+                                      uint8_t unit,
+                                      uint8_t sensoridx,
+                                      uint8_t zone,
+                                      uint8_t subzone) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_makeLevel2FloatMeasurementEvent(pEvent,
+                                                type,
+                                                value,
+                                                unit,
+                                                sensoridx,
+                                                zone,
+                                                subzone)) return false;
+
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+
+    vscp_deleteEvent_v2(&pEvent);
 
     return true;
 }
@@ -2297,6 +2381,38 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent* pEvent,
     pEvent->pdata[2] = subzone;
     pEvent->pdata[3] = unit;
     memcpy((pEvent->pdata + 4), strData.c_str(), pEvent->sizeData);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeLevel2StringMeasurementEventEx
+//
+
+bool
+vscp_makeLevel2StringMeasurementEventEx(vscpEventEx* pEventEx,
+                                      uint16_t type,
+                                      double value,
+                                      uint8_t unit,
+                                      uint8_t sensoridx,
+                                      uint8_t zone,
+                                      uint8_t subzone) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_makeLevel2StringMeasurementEvent(pEvent,
+                                                type,
+                                                value,
+                                                unit,
+                                                sensoridx,
+                                                zone,
+                                                subzone)) return false;
+
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+
+    vscp_deleteEvent_v2(&pEvent);
 
     return true;
 }
@@ -2464,6 +2580,30 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_convertLevel1MeasuremenToLevel2DoubleEx
+//
+
+bool
+vscp_convertLevel1MeasuremenToLevel2DoubleEx(vscpEventEx* pEventEx,
+                                                uint16_t type,
+                                                double value,
+                                                uint8_t unit,
+                                                uint8_t sensoridx,
+                                                uint8_t zone,
+                                                uint8_t subzone) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_convertLevel1MeasuremenToLevel2Double(pEvent)) return false;
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+    vscp_deleteEvent_v2(&pEvent);
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_convertLevel1MeasuremenToLevel2String
 //
 
@@ -2616,6 +2756,26 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
     else {
         return false; // Could not get value
     }
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertLevel1MeasuremenToLevel2StringEx
+//
+
+bool
+vscp_convertLevel1MeasuremenToLevel2StringEx(vscpEventEx* pEventEx) 
+{
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent) return false;
+    pEvent->pdata = NULL;
+
+    if (!vscp_convertLevel1MeasuremenToLevel2String(pEvent)) return false;
+
+    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+
+    vscp_deleteEvent_v2(&pEvent);
 
     return true;
 }
