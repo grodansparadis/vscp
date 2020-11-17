@@ -187,8 +187,95 @@ TEST(HelperLib, vscphlp_convertEventExToHTML) {
     ex.data[2] = 0x1B;
     ex.data[3] = 0x22;
     ASSERT_TRUE(vscp_convertEventExToHTML(result, &ex));
-    printf("|%s|\n", result.c_str());
+    //printf("|%s|\n", result.c_str());
     ASSERT_TRUE(NULL != strstr(result.c_str(), "<h2>VSCP Event</h2> <p>Class: 10 <br>Type: 6 <br></p><p>Data count: 4<br>Data: 0x80,0x02,0x1B,0x22<br></p><p>From GUID: ") );
+}
+
+TEST(HelperLib, vscp_makeFloatMeasurementEventEx) {
+    vscpEventEx ex;
+
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    float f = 23.456;
+    bool rv = vscp_makeFloatMeasurementEventEx( &ex,
+                                                f,
+                                                1,
+                                                3 );
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(ex.vscp_class == VSCP_CLASS1_MEASUREMENT);
+    //printf("%d",ex.sizeData);
+    ASSERT_TRUE(5 == ex.sizeData);
+    //printf("%d %d %d %d %d ",ex.data[0],ex.data[1],ex.data[2],ex.data[3],ex.data[4]);
+    ASSERT_TRUE(171 == ex.data[0]);
+    ASSERT_TRUE(227 == ex.data[1]);
+    ASSERT_TRUE(165 == ex.data[2]);
+    ASSERT_TRUE(187 == ex.data[3]);
+    ASSERT_TRUE(65 == ex.data[4]);
+}
+
+TEST(HelperLib, vscp_makeLevel2StringMeasurementEventEx) {
+    vscpEventEx ex;
+
+    double d = 23.456;
+    bool rv = vscp_makeLevel2StringMeasurementEventEx( &ex,
+                                                        VSCP_TYPE_MEASUREMENT_TEMPERATURE,
+                                                        d,
+                                                        0,   /* unit */ 
+                                                        1,   /* sensorindex */
+                                                        2,   /* zone*/
+                                                        3 ); /* subzone */
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(ex.vscp_class == VSCP_CLASS2_MEASUREMENT_STR);
+    printf("%d",ex.sizeData);
+    ASSERT_TRUE(14 == ex.sizeData);
+    printf(" %d %d %d %d %d ",ex.data[10],ex.data[11],ex.data[12],ex.data[13],ex.data[13]);
+    ASSERT_TRUE(1 == ex.data[0]);
+    ASSERT_TRUE(2 == ex.data[1]);
+    ASSERT_TRUE(3 == ex.data[2]);
+    ASSERT_TRUE(0 == ex.data[3]);
+    ASSERT_TRUE(50 == ex.data[4]);
+    ASSERT_TRUE(51 == ex.data[5]);
+    ASSERT_TRUE(46 == ex.data[6]);
+    ASSERT_TRUE(52 == ex.data[7]);
+    ASSERT_TRUE(53 == ex.data[8]);
+    ASSERT_TRUE(54 == ex.data[9]);
+    ASSERT_TRUE(48 == ex.data[10]);
+    ASSERT_TRUE(48 == ex.data[11]);
+    ASSERT_TRUE(48 == ex.data[12]);
+    ASSERT_TRUE(0 == ex.data[13]);
+}
+
+TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2DoubleEx) {
+    vscpEventEx ex;
+
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_class = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+
+    bool rv = vscp_convertLevel1MeasuremenToLevel2DoubleEx( &ex ); 
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(ex.vscp_class == VSCP_CLASS2_MEASUREMENT_FLOAT);
+    printf("%d",ex.sizeData);
+    ASSERT_TRUE(14 == ex.sizeData);
+    // printf(" %d %d %d %d %d ",ex.data[10],ex.data[11],ex.data[12],ex.data[13],ex.data[13]);
+    // ASSERT_TRUE(1 == ex.data[0]);
+    // ASSERT_TRUE(2 == ex.data[1]);
+    // ASSERT_TRUE(3 == ex.data[2]);
+    // ASSERT_TRUE(0 == ex.data[3]);
+    // ASSERT_TRUE(50 == ex.data[4]);
+    // ASSERT_TRUE(51 == ex.data[5]);
+    // ASSERT_TRUE(46 == ex.data[6]);
+    // ASSERT_TRUE(52 == ex.data[7]);
+    // ASSERT_TRUE(53 == ex.data[8]);
+    // ASSERT_TRUE(54 == ex.data[9]);
+    // ASSERT_TRUE(48 == ex.data[10]);
+    // ASSERT_TRUE(48 == ex.data[11]);
+    // ASSERT_TRUE(48 == ex.data[12]);
+    // ASSERT_TRUE(0 == ex.data[13]);
 }
 
 int main(int argc, char **argv) {

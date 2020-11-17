@@ -2179,9 +2179,24 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx* pEventEx,
                                     uint8_t unit,
                                     uint8_t sensoridx) 
 {
+    if (NULL == pEventEx) return false;
+
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
+
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
 
     if (!vscp_makeFloatMeasurementEvent(pEvent,
                                             value,
@@ -2256,6 +2271,20 @@ vscp_makeStringMeasurementEventEx(vscpEventEx* pEventEx,
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
+    // Preserve data
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+
     if (!vscp_makeStringMeasurementEvent(pEvent,
                                             value,
                                             unit,
@@ -2323,6 +2352,20 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEventEx* pEventEx,
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
+
+    // Preserve data
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
 
     if (!vscp_makeLevel2FloatMeasurementEvent(pEvent,
                                                 type,
@@ -2402,6 +2445,20 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx* pEventEx,
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
+    // Preserve data
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+
     if (!vscp_makeLevel2StringMeasurementEvent(pEvent,
                                                 type,
                                                 value,
@@ -2443,12 +2500,12 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 
             memset(p, 0, 12);
             /*
-            0 	Index for sensor, 0-255.
-            1 	Zone, 0-255.
-            2 	Sub zone, 0-255.
-            3 	Unit from measurements, 0-255.
-            4-11 	64-bit double precision floating point value stored MSB
-            first.
+                0 	Index for sensor, 0-255.
+                1 	Zone, 0-255.
+                2 	Sub zone, 0-255.
+                3 	Unit from measurements, 0-255.
+                4-11 	64-bit double precision floating point value 
+                stored MSB first.
              */
             if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) ||
                 (VSCP_CLASS1_MEASUREMENTX1 == pEvent->vscp_class) ||
@@ -2584,20 +2641,28 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 //
 
 bool
-vscp_convertLevel1MeasuremenToLevel2DoubleEx(vscpEventEx* pEventEx,
-                                                uint16_t type,
-                                                double value,
-                                                uint8_t unit,
-                                                uint8_t sensoridx,
-                                                uint8_t zone,
-                                                uint8_t subzone) 
+vscp_convertLevel1MeasuremenToLevel2DoubleEx(vscpEventEx* pEventEx) 
 {
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
+    // Preserve data
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+
     if (!vscp_convertLevel1MeasuremenToLevel2Double(pEvent)) return false;
-    if ( !vscp_convertEventToEventEx(pEventEx, pEvent) ) return false;
+    if (!vscp_convertEventToEventEx(pEventEx, pEvent)) return false;
     vscp_deleteEvent_v2(&pEvent);
 
     return true;
@@ -2770,6 +2835,20 @@ vscp_convertLevel1MeasuremenToLevel2StringEx(vscpEventEx* pEventEx)
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
+
+    // Preserve data
+    pEvent->head = pEventEx->head;
+    pEvent->vscp_class = pEventEx->vscp_class;
+    pEvent->vscp_type = pEventEx->vscp_type;
+    pEvent->obid = pEventEx->obid;
+    pEvent->timestamp = pEventEx->timestamp;
+    pEvent->obid = pEventEx->year;
+    pEvent->obid = pEventEx->month;
+    pEvent->obid = pEventEx->day;
+    pEvent->obid = pEventEx->hour;
+    pEvent->obid = pEventEx->minute;
+    pEvent->obid = pEventEx->second;
+    memcpy(pEvent->GUID, pEventEx->GUID, 16);
 
     if (!vscp_convertLevel1MeasuremenToLevel2String(pEvent)) return false;
 

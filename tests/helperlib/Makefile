@@ -35,13 +35,13 @@ WARNINGS = -Wall
 VERSION_DEFS = -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) \
         -DRELEASE_VERSION=$(RELEASE_VERSION) -DBUILD_VERSION=$(BUILD_VERSION)
 
-CFLAGS = -std=c99  -g -O0 -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
+CFLAGS = -std=c99  -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNINGS} -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I../.. \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \
 	-I../../src/common/third_party/nlohmann \
 	-I../../googletest/googletest/include
-CXXFLAGS = -std=c++11  -g -O0 ${WARNINGS}
+CXXFLAGS = -std=c++11  ${WARNINGS}
 CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments -I../.. \
 	-I. \
 	-I../../src/common \
