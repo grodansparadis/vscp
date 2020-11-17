@@ -1,3 +1,3 @@
-<h2>test_vesphelper</h2>
+# Unittests for the vssphelper code
 
-Test for the tcp/if interface and the libvscphelper library code.
+Unittests for the tcp/if interface of the vscp helper library code.
