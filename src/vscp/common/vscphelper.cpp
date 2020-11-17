@@ -2341,7 +2341,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent* pEvent,
 //
 
 bool
-vscp_makeLevel2FloatMeasurementEvent(vscpEventEx* pEventEx,
+vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx* pEventEx,
                                       uint16_t type,
                                       double value,
                                       uint8_t unit,
@@ -2434,12 +2434,12 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent* pEvent,
 
 bool
 vscp_makeLevel2StringMeasurementEventEx(vscpEventEx* pEventEx,
-                                      uint16_t type,
-                                      double value,
-                                      uint8_t unit,
-                                      uint8_t sensoridx,
-                                      uint8_t zone,
-                                      uint8_t subzone) 
+                                        uint16_t type,
+                                        double value,
+                                        uint8_t unit,
+                                        uint8_t sensoridx,
+                                        uint8_t zone,
+                                        uint8_t subzone) 
 {
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
@@ -2484,14 +2484,18 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
     double val64;
 
     // Check pointers
-    if (NULL == pEvent)
+    if (NULL == pEvent) {
         return false;
-    if (NULL == pEvent->pdata)
+    }
+
+    if (NULL == pEvent->pdata) {
         return false;
+    }
 
     // Must be a measurement event
-    if (!vscp_isMeasurement(pEvent))
+    if (!vscp_isMeasurement(pEvent)) {
         return false;
+    }
 
     if (vscp_getMeasurementAsDouble(&val64, pEvent)) {
 
