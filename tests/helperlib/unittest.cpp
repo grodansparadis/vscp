@@ -89,7 +89,7 @@ TEST(HelperLib, vscp_getMeasurementAsDouble)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventToJSON) 
+TEST(HelperLib, vscp_convertEventToJSON) 
 {
     vscpEvent e;
     std::string result;
@@ -112,7 +112,7 @@ TEST(HelperLib, vscphlp_convertEventToJSON)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventExToJSON) 
+TEST(HelperLib, vscp_convertEventExToJSON) 
 {    
     vscpEventEx ex;
     memset(&ex, 0, sizeof(vscpEventEx));
@@ -134,7 +134,7 @@ TEST(HelperLib, vscphlp_convertEventExToJSON)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventToXML) 
+TEST(HelperLib, vscp_convertEventToXML) 
 {
     vscpEvent e;
     std::string result;
@@ -157,7 +157,7 @@ TEST(HelperLib, vscphlp_convertEventToXML)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventExToXML) 
+TEST(HelperLib, vscp_convertEventExToXML) 
 {
     vscpEventEx ex;
     memset(&ex, 0, sizeof(vscpEventEx));
@@ -179,7 +179,7 @@ TEST(HelperLib, vscphlp_convertEventExToXML)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventToHTML) 
+TEST(HelperLib, vscp_convertEventToHTML) 
 {
     vscpEvent e;
     std::string result;
@@ -201,7 +201,7 @@ TEST(HelperLib, vscphlp_convertEventToHTML)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscphlp_convertEventExToHTML) 
+TEST(HelperLib, vscp_convertEventExToHTML) 
 {
     vscpEventEx ex;
     memset(&ex, 0, sizeof(vscpEventEx));

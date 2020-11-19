@@ -2082,8 +2082,9 @@ vscp_convertFloatToFloatEventData(uint8_t* pdata,
     p = (void*)&value;
 
     *psize   = 5;
-    pdata[0] = VSCP_DATACODING_SINGLE + (unit << 3) +
-               sensoridx; // float + unit + sensor index
+    pdata[0] = VSCP_DATACODING_SINGLE + 
+                    (unit << 3) +
+                    sensoridx; // float + unit + sensor index
     memcpy(pdata + 1, p, 4);
 
     return true;
