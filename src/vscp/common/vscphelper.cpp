@@ -3479,13 +3479,17 @@ bool
 vscp_convertEventExToEvent(vscpEvent* pEvent, const vscpEventEx* pEventEx)
 {
     // Check pointers
-    if (NULL == pEvent)
+    if (NULL == pEvent) {
         return false;
-    if (NULL == pEventEx)
-        return false;
+    }
 
-    if (pEventEx->sizeData > VSCP_LEVEL2_MAXDATA)
+    if (NULL == pEventEx) {
         return false;
+    }
+
+    if (pEventEx->sizeData > VSCP_LEVEL1_MAXDATA) {
+        return false;
+    }
 
     if (pEventEx->sizeData) {
         // Allocate memory for data
