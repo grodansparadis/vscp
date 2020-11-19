@@ -1595,8 +1595,9 @@ vscp_getMeasurementFloat64AsString(std::string& strValue,
         offset = 16;
     }
 
-    if (pEvent->sizeData - offset != 8)
+    if (pEvent->sizeData - offset != 8) {
         return false;
+    }
 
     double* pfloat = (double*)(pEvent->pdata + offset);
     strValue       = vscp_str_format("%lf", *pfloat);
@@ -2267,23 +2268,14 @@ vscp_makeStringMeasurementEventEx(vscpEventEx* pEventEx,
                                     uint8_t unit,
                                     uint8_t sensoridx) 
 {
+    // Check pointer
+    if ( NULL == pEventEx ) return false;
+
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
-    // Preserve data
-    pEvent->head = pEventEx->head;
-    pEvent->vscp_class = pEventEx->vscp_class;
-    pEvent->vscp_type = pEventEx->vscp_type;
-    pEvent->obid = pEventEx->obid;
-    pEvent->timestamp = pEventEx->timestamp;
-    pEvent->obid = pEventEx->year;
-    pEvent->obid = pEventEx->month;
-    pEvent->obid = pEventEx->day;
-    pEvent->obid = pEventEx->hour;
-    pEvent->obid = pEventEx->minute;
-    pEvent->obid = pEventEx->second;
-    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx)) return false;
 
     if (!vscp_makeStringMeasurementEvent(pEvent,
                                             value,
@@ -2349,23 +2341,14 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx* pEventEx,
                                       uint8_t zone,
                                       uint8_t subzone) 
 {
+    // Check pointer
+    if ( NULL == pEventEx ) return false;
+
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
-    // Preserve data
-    pEvent->head = pEventEx->head;
-    pEvent->vscp_class = pEventEx->vscp_class;
-    pEvent->vscp_type = pEventEx->vscp_type;
-    pEvent->obid = pEventEx->obid;
-    pEvent->timestamp = pEventEx->timestamp;
-    pEvent->obid = pEventEx->year;
-    pEvent->obid = pEventEx->month;
-    pEvent->obid = pEventEx->day;
-    pEvent->obid = pEventEx->hour;
-    pEvent->obid = pEventEx->minute;
-    pEvent->obid = pEventEx->second;
-    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx)) return false;
 
     if (!vscp_makeLevel2FloatMeasurementEvent(pEvent,
                                                 type,
@@ -2441,23 +2424,15 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx* pEventEx,
                                         uint8_t zone,
                                         uint8_t subzone) 
 {
+    // Check pointer
+    if ( NULL == pEventEx ) return NULL;
+    
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
+    pEvent->sizeData = 0;
 
-    // Preserve data
-    pEvent->head = pEventEx->head;
-    pEvent->vscp_class = pEventEx->vscp_class;
-    pEvent->vscp_type = pEventEx->vscp_type;
-    pEvent->obid = pEventEx->obid;
-    pEvent->timestamp = pEventEx->timestamp;
-    pEvent->obid = pEventEx->year;
-    pEvent->obid = pEventEx->month;
-    pEvent->obid = pEventEx->day;
-    pEvent->obid = pEventEx->hour;
-    pEvent->obid = pEventEx->minute;
-    pEvent->obid = pEventEx->second;
-    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx)) return false;
 
     if (!vscp_makeLevel2StringMeasurementEvent(pEvent,
                                                 type,
@@ -2482,7 +2457,7 @@ bool
 vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 {
     double val64;
-
+    
     // Check pointers
     if (NULL == pEvent) {
         return false;
@@ -2491,12 +2466,12 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
     if (NULL == pEvent->pdata) {
         return false;
     }
-
+    
     // Must be a measurement event
     if (!vscp_isMeasurement(pEvent)) {
         return false;
     }
-
+    
     if (vscp_getMeasurementAsDouble(&val64, pEvent)) {
 
         uint8_t* p = new uint8_t[12];
@@ -2647,24 +2622,15 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 bool
 vscp_convertLevel1MeasuremenToLevel2DoubleEx(vscpEventEx* pEventEx) 
 {
+    // Check pointer
+    if (NULL == pEventEx) return false;
+    
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
+    pEvent->sizeData = 0;
 
-    // Preserve data
-    pEvent->head = pEventEx->head;
-    pEvent->vscp_class = pEventEx->vscp_class;
-    pEvent->vscp_type = pEventEx->vscp_type;
-    pEvent->obid = pEventEx->obid;
-    pEvent->timestamp = pEventEx->timestamp;
-    pEvent->obid = pEventEx->year;
-    pEvent->obid = pEventEx->month;
-    pEvent->obid = pEventEx->day;
-    pEvent->obid = pEventEx->hour;
-    pEvent->obid = pEventEx->minute;
-    pEvent->obid = pEventEx->second;
-    memcpy(pEvent->GUID, pEventEx->GUID, 16);
-
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx)) return false;
     if (!vscp_convertLevel1MeasuremenToLevel2Double(pEvent)) return false;
     if (!vscp_convertEventToEventEx(pEventEx, pEvent)) return false;
     vscp_deleteEvent_v2(&pEvent);
@@ -2836,23 +2802,14 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
 bool
 vscp_convertLevel1MeasuremenToLevel2StringEx(vscpEventEx* pEventEx) 
 {
+    // Check pointer
+    if ( NULL == pEventEx ) return false;
+
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return false;
     pEvent->pdata = NULL;
 
-    // Preserve data
-    pEvent->head = pEventEx->head;
-    pEvent->vscp_class = pEventEx->vscp_class;
-    pEvent->vscp_type = pEventEx->vscp_type;
-    pEvent->obid = pEventEx->obid;
-    pEvent->timestamp = pEventEx->timestamp;
-    pEvent->obid = pEventEx->year;
-    pEvent->obid = pEventEx->month;
-    pEvent->obid = pEventEx->day;
-    pEvent->obid = pEventEx->hour;
-    pEvent->obid = pEventEx->minute;
-    pEvent->obid = pEventEx->second;
-    memcpy(pEvent->GUID, pEventEx->GUID, 16);
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx)) return false;
 
     if (!vscp_convertLevel1MeasuremenToLevel2String(pEvent)) return false;
 
@@ -3676,8 +3633,9 @@ void
 vscp_deleteEvent(vscpEvent* pEvent)
 {
     // Check pointer
-    if (NULL == pEvent)
+    if (NULL == pEvent) {
         return;
+    }
 
     if (NULL != pEvent->pdata) {
         delete[] pEvent->pdata;

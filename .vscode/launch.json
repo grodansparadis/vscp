@@ -46,6 +46,27 @@
             ],
             "preLaunchTask": "build vscpl2drv-automation",
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "(gdb) unittest",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/akhe/development/VSCP/vscp/tests/helperlib/unittest",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build all",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }
