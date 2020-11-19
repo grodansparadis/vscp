@@ -3493,8 +3493,9 @@ vscp_convertEventExToEvent(vscpEvent* pEvent, const vscpEventEx* pEventEx)
 
     if (pEventEx->sizeData) {
         // Allocate memory for data
-        if (NULL == (pEvent->pdata = new uint8_t[pEventEx->sizeData]))
+        if (NULL == (pEvent->pdata = new uint8_t[pEventEx->sizeData])) {
             return false;
+        }
         memcpy(pEvent->pdata, pEventEx->data, pEventEx->sizeData);
     }
     else {
