@@ -66,8 +66,8 @@ find . -name *.so -print -exec rm -rf {} +;
 echo Removing unneeded folders...
 rm -rf ./src/vscp/install_win32
 rm -rf ./src/vscp/install_deb
-rm -rf firmware
-rm -rf docs
+#rm -rf firmware
+#rm -rf docs
 rm -f 'install_files/certs/client.key.orig'
 rm -f 'install_files/certs/server.key.orig'
 rm -f 'install_files/certs/server_bkup.key.orig'

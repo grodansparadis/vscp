@@ -87,13 +87,19 @@ i*86)
     BITS=32
     SUBFOLDER="i386-linux-gnu"
     ;;
+armhf)
+    echo "Building for armhf"	
+    BITS=32
+    SUBFOLDER="arm-linux-gnueabihf"
+    ARCH=armhf
+    ;;    
 armv6l)
     BITS=32
-    SUBFOLDER=""
+    SUBFOLDER="arm-linux-gnueabihf"
     ;; 
 armv7l)
     BITS=64
-    SUBFOLDER=""
+    SUBFOLDER="arm-linux-gnueabihf"
     ;;       
 *)
     BITS=?
