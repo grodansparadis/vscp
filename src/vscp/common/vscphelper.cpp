@@ -3458,6 +3458,12 @@ vscp_convertEventToEventEx(vscpEventEx* pEventEx, const vscpEvent* pEvent)
     // Convert
     pEventEx->crc        = pEvent->crc;
     pEventEx->obid       = pEvent->obid;
+    pEventEx->year       = pEvent->year;
+    pEventEx->month      = pEvent->month;
+    pEventEx->day        = pEvent->day;
+    pEventEx->hour       = pEvent->hour;
+    pEventEx->minute     = pEvent->minute;
+    pEventEx->second     = pEvent->second;
     pEventEx->timestamp  = pEvent->timestamp;
     pEventEx->head       = pEvent->head;
     pEventEx->obid       = pEvent->obid;

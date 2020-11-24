@@ -651,6 +651,81 @@ TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2StringEx)
 }
 
 //-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_convertStringToEvent) 
+{
+    vscpEvent e;
+    e.pdata = new uint8_t[4];
+
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+
+    std::string str = "0,10,6,0,2020-11-24T17:28:11Z,4216090068,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00,0x0B,0x16,0x21,0x2C";
+    bool rv = vscp_convertStringToEvent( &e, str ); 
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(e.vscp_class == VSCP_CLASS1_MEASUREMENT);
+    ASSERT_TRUE(e.vscp_type == VSCP_TYPE_MEASUREMENT_TEMPERATURE);
+    //printf("%d",ex.sizeData);
+    ASSERT_TRUE(4 == e.sizeData);
+    //printf("Hour: %d\n",e.hour);
+    ASSERT_TRUE(2020 == e.year);
+    ASSERT_TRUE(11 == e.month);
+    ASSERT_TRUE(24 == e.day);
+    ASSERT_TRUE(17 == e.hour);
+    ASSERT_TRUE(28 == e.minute);
+    ASSERT_TRUE(11 == e.second);
+    ASSERT_TRUE(4216090068 == e.timestamp);
+    ASSERT_TRUE(11 == e.pdata[0]);
+    ASSERT_TRUE(22 == e.pdata[1]);
+    ASSERT_TRUE(33 == e.pdata[2]);
+    ASSERT_TRUE(44 == e.pdata[3]);
+
+    vscp_deleteEvent(&e);
+}
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_convertStringToEventEx) 
+{
+    vscpEventEx ex;
+    memset(&ex, 0, sizeof(vscpEventEx));
+
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+
+    std::string str = "0,10,6,0,2020-11-24T17:28:11Z,4216090068,FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00,0x0B,0x16,0x21,0x2C";
+    bool rv = vscp_convertStringToEventEx( &ex, str ); 
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(ex.vscp_class == VSCP_CLASS1_MEASUREMENT);
+    ASSERT_TRUE(ex.vscp_type == VSCP_TYPE_MEASUREMENT_TEMPERATURE);
+    //printf("%d",ex.sizeData);
+    ASSERT_TRUE(4 == ex.sizeData);
+    //printf("Hour: %d\n",ex.hour);
+    ASSERT_TRUE(2020 == ex.year);
+    ASSERT_TRUE(11 == ex.month);
+    ASSERT_TRUE(24 == ex.day);
+    ASSERT_TRUE(17 == ex.hour);
+    ASSERT_TRUE(28 == ex.minute);
+    ASSERT_TRUE(11 == ex.second);
+    ASSERT_TRUE(4216090068 == ex.timestamp);
+    ASSERT_TRUE(11 == ex.data[0]);
+    ASSERT_TRUE(22 == ex.data[1]);
+    ASSERT_TRUE(33 == ex.data[2]);
+    ASSERT_TRUE(44 == ex.data[3]);
+}
+
+//-----------------------------------------------------------------------------
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
