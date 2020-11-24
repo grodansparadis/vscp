@@ -562,7 +562,7 @@ TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2DoubleEx)
 }
 
 //-----------------------------------------------------------------------------
-TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2String) 
+TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2String)
 {
     vscpEvent e;
     e.pdata = new uint8_t[4];
@@ -577,7 +577,7 @@ TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2String)
     e.pdata[2] = 0x1B;
     e.pdata[3] = 0x22;
 
-    bool rv = vscp_convertLevel1MeasuremenToLevel2String( &e ); 
+    bool rv = vscp_convertLevel1MeasuremenToLevel2String( &e );
     ASSERT_TRUE(rv);
     ASSERT_TRUE(e.vscp_class == VSCP_CLASS2_MEASUREMENT_STR);
     // printf("%d\n",e.sizeData);
@@ -605,6 +605,77 @@ TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2String)
     ASSERT_TRUE(48 == e.pdata[16]);
 
     vscp_deleteEvent(&e);
+}
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_convertEventToString)
+{
+    vscpEvent e;
+    e.pdata = new uint8_t[4];
+
+    e.head = 0;
+    e.obid = 0;
+    memset(e.GUID,0,16);
+    //e.timestamp = vscp_makeTimeStamp();
+    e.timestamp = 87654321;
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    std::string dt = "1981-02-27T20:20:11Z";
+    vscp_parseISOCombined(&tm, dt);
+    vscp_setEventDateTime(&e, &tm);
+    //vscp_setEventToNow(&e);
+
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+
+    std::string str;
+    bool rv = vscp_convertEventToString(str, &e);
+    ASSERT_TRUE(rv);
+    //printf("%s\n",str.c_str());
+    ASSERT_STREQ(str.c_str(), "0,10,6,0,1981-03-27T20:20:11Z,87654321,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00,0x80,0x02,0x1B,0x22");
+
+    vscp_deleteEvent(&e);    
+}
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_convertEventExToString)
+{
+    vscpEventEx ex;
+  
+    ex.head = 0;
+    ex.obid = 0;
+    memset(ex.GUID,0,16);
+    //ex.timestamp = vscp_makeTimeStamp();
+    ex.timestamp = 87654321;
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    std::string dt = "1981-02-27T20:20:11Z";
+    vscp_parseISOCombined(&tm, dt);
+    vscp_setEventExDateTime(&ex, &tm);
+    //vscp_setEventToNow(&ex);
+
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+
+    std::string str;
+    bool rv = vscp_convertEventExToString(str, &ex);
+    ASSERT_TRUE(rv);
+    //printf("%s\n",str.c_str());
+    ASSERT_STREQ(str.c_str(), "0,10,6,0,1981-03-27T20:20:11Z,87654321,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00,0x80,0x02,0x1B,0x22");
 }
 
 //-----------------------------------------------------------------------------
@@ -654,6 +725,7 @@ TEST(HelperLib, vscp_convertLevel1MeasuremenToLevel2StringEx)
 TEST(HelperLib, vscp_convertStringToEvent) 
 {
     vscpEvent e;
+    e.sizeData = 4;
     e.pdata = new uint8_t[4];
 
     e.vscp_class = VSCP_CLASS1_MEASUREMENT;
@@ -723,6 +795,117 @@ TEST(HelperLib, vscp_convertStringToEventEx)
     ASSERT_TRUE(22 == ex.data[1]);
     ASSERT_TRUE(33 == ex.data[2]);
     ASSERT_TRUE(44 == ex.data[3]);
+}
+
+
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_getDateStringFromEvent)
+{
+    vscpEvent e;
+    e.sizeData = 4;
+    e.pdata = new uint8_t[4];
+
+    e.head = 0;
+    e.obid = 0;
+    memset(e.GUID,0,16);
+    e.timestamp = vscp_makeTimeStamp();
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    std::string dt = "1981-02-27T20:20:11Z";
+    vscp_parseISOCombined(&tm, dt);
+    vscp_setEventDateTime(&e, &tm);
+    //vscp_setEventToNow(&e);
+
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+
+    std::string dt2;
+    bool rv = vscp_getDateStringFromEvent(dt2, &e);
+    ASSERT_TRUE(rv);
+    //printf("%s\n",dt2.c_str());
+    ASSERT_STREQ(dt2.c_str(), "1981-03-27T20:20:11Z");
+
+    vscp_deleteEvent(&e);
+}
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_getDateStringFromEventEx)
+{
+    vscpEventEx ex;
+  
+    ex.head = 0;
+    ex.obid = 0;
+    memset(ex.GUID,0,16);
+    //ex.timestamp = vscp_makeTimeStamp();
+    ex.timestamp = 87654321;
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    std::string dt = "1981-02-27T20:20:11Z";
+    vscp_parseISOCombined(&tm, dt);
+    vscp_setEventExDateTime(&ex, &tm);
+    //vscp_setEventToNow(&ex);
+
+    ex.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    ex.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    ex.sizeData = 4;
+    ex.data[0] = 0x80;
+    ex.data[1] = 0x02;
+    ex.data[2] = 0x1B;
+    ex.data[3] = 0x22;
+
+    std::string dt2;
+    bool rv = vscp_getDateStringFromEventEx(dt2, &ex);
+    ASSERT_TRUE(rv);
+    //printf("%s\n",dt2.c_str());
+    ASSERT_STREQ(dt2.c_str(), "1981-03-27T20:20:11Z");
+
+}
+
+//-----------------------------------------------------------------------------
+TEST(HelperLib, vscp_setVscpEventFromString)
+{
+    vscpEvent e;
+    e.sizeData = 4;
+    e.pdata = new uint8_t[4];
+
+    e.head = 0;
+    e.obid = 0;
+    memset(e.GUID,0,16);
+    e.timestamp = vscp_makeTimeStamp();
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
+    std::string dt = "1981-02-27T20:20:11Z";
+    vscp_parseISOCombined(&tm, dt);
+    vscp_setEventDateTime(&e, &tm);
+    //vscp_setEventToNow(&e);
+
+    e.vscp_class = VSCP_CLASS1_MEASUREMENT;
+    e.vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+
+    // 32-bit float coding = 100
+    e.sizeData = 4;
+    e.pdata[0] = 0x80;
+    e.pdata[1] = 0x02;
+    e.pdata[2] = 0x1B;
+    e.pdata[3] = 0x22;
+
+    std::string dt2;
+    bool rv = vscp_getDateStringFromEvent(dt2, &e);
+    ASSERT_TRUE(rv);
+    //printf("%s\n",dt2.c_str());
+    ASSERT_STREQ(dt2.c_str(), "1981-03-27T20:20:11Z");
+
+    vscp_deleteEvent(&e);
 }
 
 //-----------------------------------------------------------------------------
