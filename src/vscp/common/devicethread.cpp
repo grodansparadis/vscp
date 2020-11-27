@@ -56,6 +56,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread
 //
+// New bahaviour
+// =============
+// subscribe to MQTT channel topic_subscribe
+// publish to MQTT channel topic_publish
+//
 
 void*
 deviceThread(void* pData)
