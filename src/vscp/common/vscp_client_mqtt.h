@@ -57,18 +57,19 @@ public:
             %class% VSCP event class
             %type% VSCP event type
             %dt% VSCP event date/time
-            Default is "vscp/%guid%/%class%/%type%/"
+            Default is "vscp/%guid%/miso/%class%/%type%/"
         @param clientId Client id to use. If empty string is supplied
                             a random client id will be set.  
         @param strUserName Username for connection session. If none is set
             no username/password will be used.
         @param strPassword Password for connection session. 
         @param qos Quality of service (0/1/2). Default to 0.
+        @return VSCP_ERROR_SUCCESS on success
     */
     int init(const std::string &strHost,
                 unsigned short port = 1883,
                 const std::string &strTopicSub = "vscp/#",
-                const std::string &strTopicPub = "vscp/%guid%/%class%/%type%/",
+                const std::string &strTopicPub = "vscp/%guid%/miso/%class%/%type%/",
                 const std::string &clientId = "",
                 const std::string &strUserName = "",
                 const std::string &strPassword = "",
@@ -78,12 +79,14 @@ public:
     /*!
         Set retain. Should be called before connect. Default is false.
         @param bRetain Set to true to enable retain.
+        @return VSCP_ERROR_SUCCESS on success
     */
     int setRetain(bool bRetain);
 
     /*!
         Set keepalive. Should be called before connect. Default is 30.
         @param keepAlive Keep alive value.
+        @return VSCP_ERROR_SUCCESS on success
     */
     int setKeepAlive(int keepAlive);
 

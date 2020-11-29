@@ -50,25 +50,7 @@
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpobj;
 
-Driver3Process::Driver3Process()
-{
-    // TODO;
-}
-
-Driver3Process::~Driver3Process()
-{
-    // TODO;
-}
-
-void
-Driver3Process::OnTerminate(int pid, int status)
-{
-    // TODO
-    // http://man7.org/linux/man-pages/man2/waitpid.2.html
-    syslog(LOG_DEBUG, "[Diver Level III] - Terminating.");
-}
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
@@ -155,7 +137,7 @@ CDeviceItem::getAsString(void)
     str += m_strPath + ",";
     str += m_strParameter + ",";
     str += vscp_str_format("%d,%ul,", (int)m_driverLevel, m_DeviceFlags);
-    str += m_interface_guid.getAsString() + ",";
+    str += m_guid.getAsString() + ",";
     str += vscp_str_format("%04X", m_translation);
 
     return str;
@@ -178,9 +160,6 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     // *****************************************
     //  Create the worker thread for the device
     // *****************************************
-
-    // Share control object
-    m_pObj = pCtrlObject;
 
     if (pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
         syslog(LOG_ERR,
@@ -308,7 +287,7 @@ CDeviceList::addItem(const std::string &strName,
             pDeviceItem->m_strName        = strName;
             pDeviceItem->m_strParameter   = strParameter;
             pDeviceItem->m_strPath        = strPath;
-            pDeviceItem->m_interface_guid = guid;
+            pDeviceItem->m_guid           = guid;
             pDeviceItem->m_translation    = translation;
             
             // Set buffer sizes and flags
@@ -351,7 +330,7 @@ CDeviceList::getDeviceItemFromGUID(cguid &guid)
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if (pItem->m_interface_guid == guid) {
+        if (pItem->m_guid == guid) {
             returnItem = pItem;
             break;
         }
@@ -372,11 +351,6 @@ CDeviceList::getDeviceItemFromClientId(uint32_t id)
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if ((NULL != pItem->m_pClientItem) &&
-            (pItem->m_pClientItem->m_clientID == id)) {
-            returnItem = pItem;
-            break;
-        }
     }
 
     return returnItem;
@@ -394,11 +368,6 @@ CDeviceList::getDeviceItemFromName(std::string& name)
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if ((NULL != pItem->m_pClientItem) &&
-            (pItem->m_strName == name)) {
-            returnItem = pItem;
-            break;
-        }
     }
 
     return returnItem;

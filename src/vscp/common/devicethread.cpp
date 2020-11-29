@@ -65,67 +65,10 @@
 void*
 deviceThread(void* pData)
 {
-    // const char *dlsym_error;
-
     CDeviceItem* pDevItem = (CDeviceItem*)pData;
     if (NULL == pDevItem) {
         syslog(LOG_ERR, "No device item defined. Aborting device thread!");
         return NULL;
-    }
-
-    // Must have a valid pointer to the control object
-    CControlObject* pObj = pDevItem->m_pObj;
-    if (NULL == pObj) {
-        syslog(LOG_ERR, "No control object defined. Aborting device thread!");
-        return NULL;
-    }
-
-    // We need to create a clientobject and add this object to the list
-    CClientItem* pClientItem = pDevItem->m_pClientItem = new CClientItem;
-    if (NULL == pClientItem) {
-        return NULL;
-    }
-
-    // This is now an active Client
-    pClientItem->m_bOpen = true;
-    if (VSCP_DRIVER_LEVEL1 == pDevItem->m_driverLevel) {
-        pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
-    }
-    else if (VSCP_DRIVER_LEVEL2 == pDevItem->m_driverLevel) {
-        pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2;
-    }
-
-    pClientItem->m_dtutc.setUTCNow();
-    pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
-
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG,
-               "Devicethread: Starting %s",
-               pClientItem->m_strDeviceName.c_str());
-    }
-
-    // Add the client to the Client List
-    pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
-    if (!pObj->addClient(pClientItem,
-                         pDevItem->m_interface_guid) ) {
-        // Failed to add client
-        delete pDevItem->m_pClientItem;
-        pDevItem->m_pClientItem = NULL;
-
-        pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
-        syslog(LOG_ERR,
-               "Devicethread: Failed to add client. Terminating thread.");
-        return NULL;
-    }
-    pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
-
-    // Client now have GUID set to server GUID + channel id
-    // If device has a non NULL GUID replace the client GUID preserving
-    // the channel id with that GUID
-    if (!pClientItem->m_guid.isNULL()) {
-        memcpy(pClientItem->m_guid.m_id,
-               pDevItem->m_interface_guid.getGUID(),
-               12);
     }
 
     void* hdll;
@@ -474,39 +417,39 @@ deviceThread(void* pData)
 
                         bActivity = true;
 
-                        // There must be room in the receive queue
-                        if (pObj->m_maxItemsInClientReceiveQueue >
-                            pObj->m_clientOutputQueue.size()) {
+                        // // There must be room in the receive queue
+                        // if (pObj->m_maxItemsInClientReceiveQueue >
+                        //     pObj->m_clientOutputQueue.size()) {
 
-                            vscpEvent* pev = new vscpEvent;
-                            if (NULL != pev) {
+                        //     vscpEvent* pev = new vscpEvent;
+                        //     if (NULL != pev) {
 
-                                // Set driver GUID if set
-                                if (pDevItem->m_interface_guid.isNULL()) {
-                                    pDevItem->m_interface_guid.writeGUID(
-                                      pev->GUID);
-                                }
-                                else {
-                                    // If no driver GUID set use interface GUID
-                                    pClientItem->m_guid.writeGUID(pev->GUID);
-                                }
+                        //         // Set driver GUID if set
+                        //         if (pDevItem->m_guid.isNULL()) {
+                        //             pDevItem->m_guid.writeGUID(
+                        //               pev->GUID);
+                        //         }
+                        //         else {
+                        //             // If no driver GUID set use interface GUID
+                        //             pClientItem->m_guid.writeGUID(pev->GUID);
+                        //         }
 
-                                // Convert CANAL message to VSCP event
-                                vscp_convertCanalToEvent(
-                                  pev,
-                                  &msg,
-                                  pClientItem->m_guid.m_id);
+                        //         // Convert CANAL message to VSCP event
+                        //         vscp_convertCanalToEvent(
+                        //           pev,
+                        //           &msg,
+                        //           pClientItem->m_guid.m_id);
 
-                                pev->obid = pClientItem->m_clientID;
+                        //         pev->obid = pClientItem->m_clientID;
 
-                                pthread_mutex_lock(
-                                  &pObj->m_mutex_ClientOutputQueue);
-                                pObj->m_clientOutputQueue.push_back(pev);
-                                pthread_mutex_unlock(
-                                  &pObj->m_mutex_ClientOutputQueue);
-                                sem_post(&pObj->m_semClientOutputQueue);
-                            }
-                        }
+                        //         pthread_mutex_lock(
+                        //           &pObj->m_mutex_ClientOutputQueue);
+                        //         pObj->m_clientOutputQueue.push_back(pev);
+                        //         pthread_mutex_unlock(
+                        //           &pObj->m_mutex_ClientOutputQueue);
+                        //         sem_post(&pObj->m_semClientOutputQueue);
+                        //     }
+                        // }
                     }
                 } // data available
 
@@ -515,50 +458,50 @@ deviceThread(void* pData)
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
                 // Check if there is something to send
-                if (pClientItem->m_clientInputQueue.size()) {
+                // if (pClientItem->m_clientInputQueue.size()) {
 
                     bActivity = true;
 
-                    std::deque<vscpEvent*>::iterator it;
-                    pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
-                    vscpEvent* pev = pClientItem->m_clientInputQueue.front();
-                    pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
+                //     std::deque<vscpEvent*>::iterator it;
+                //     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
+                //     vscpEvent* pev = pClientItem->m_clientInputQueue.front();
+                //     pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
-                    // Trow away Level II event on Level I interface
-                    if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
-                         pClientItem->m_type) &&
-                        (pev->vscp_class > 512)) {
-                        // Remove the event and the node
-                        pClientItem->m_clientInputQueue.pop_front();
-                        syslog(LOG_ERR,
-                               "Level II event on Level I queue thrown away. "
-                               "class=%d, type=%d",
-                               pev->vscp_class,
-                               pev->vscp_type);
-                        vscp_deleteEvent(pev);
-                        continue;
-                    }
+                //     // Trow away Level II event on Level I interface
+                //     if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
+                //          pClientItem->m_type) &&
+                //         (pev->vscp_class > 512)) {
+                //         // Remove the event and the node
+                //         pClientItem->m_clientInputQueue.pop_front();
+                //         syslog(LOG_ERR,
+                //                "Level II event on Level I queue thrown away. "
+                //                "class=%d, type=%d",
+                //                pev->vscp_class,
+                //                pev->vscp_type);
+                //         vscp_deleteEvent(pev);
+                //         continue;
+                //     }
 
-                    canalMsg canmsg;
-                    vscp_convertEventToCanal(&canmsg, pev);
-                    if (CANAL_ERROR_SUCCESS ==
-                        pDevItem->m_proc_CanalSend(pDevItem->m_openHandle,
-                                                   &canmsg)) {
-                        // Remove the event and the node
-                        pClientItem->m_clientInputQueue.pop_front();
-                        vscp_deleteEvent(pev);
-                    }
-                    else {
-                        // Another try
-                        // pObj->m_semClientOutputQueue.Post();
-                        vscp_deleteEvent(pev); // TODO ????
-                    }
+                //     canalMsg canmsg;
+                //     vscp_convertEventToCanal(&canmsg, pev);
+                //     if (CANAL_ERROR_SUCCESS ==
+                //         pDevItem->m_proc_CanalSend(pDevItem->m_openHandle,
+                //                                    &canmsg)) {
+                //         // Remove the event and the node
+                //         pClientItem->m_clientInputQueue.pop_front();
+                //         vscp_deleteEvent(pev);
+                //     }
+                //     else {
+                //         // Another try
+                //         // pObj->m_semClientOutputQueue.Post();
+                //         vscp_deleteEvent(pev); // TODO ????
+                //     }
 
-                } // events
+                // } // events
 
-                if (!bActivity) {
-                    usleep(100000); // 100 ms
-                }
+                // if (!bActivity) {
+                //     usleep(100000); // 100 ms
+                // }
 
                 bActivity = false;
 
@@ -757,9 +700,9 @@ deviceThread(void* pData)
     }
 
     // Remove messages in the client queues
-    pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
-    pObj->removeClient(pClientItem);
-    pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
+    // pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
+    // pObj->removeClient(pClientItem);
+    // pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
 
     return NULL;
 }
@@ -796,103 +739,103 @@ deviceLevel1ReceiveThread(void* pData)
                                                   &msg,
                                                   500)) {
 
-            // There must be room in the receive queue
-            if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
-                pDevItem->m_pObj->m_clientOutputQueue.size()) {
+            // // There must be room in the receive queue
+            // if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
+            //     pDevItem->m_pObj->m_clientOutputQueue.size()) {
 
-                vscpEvent* pvscpEvent = new vscpEvent;
-                if (NULL != pvscpEvent) {
+            //     vscpEvent* pvscpEvent = new vscpEvent;
+            //     if (NULL != pvscpEvent) {
 
-                    memset(pvscpEvent, 0, sizeof(vscpEvent));
+            //         memset(pvscpEvent, 0, sizeof(vscpEvent));
 
-                    // Set driver GUID if set
-                    /*if ( pDevItem->m_interface_guid.isNULL()
-                    ) { pDevItem->m_interface_guid.writeGUID(
-                    pvscpEvent->GUID );
-                    }
-                    else {
-                        // If no driver GUID set use interface GUID
-                        pDevItem->m_guid.writeGUID(
-                    pvscpEvent->GUID );
-                    }*/
+            //         // Set driver GUID if set
+            //         /*if ( pDevItem->m_guid.isNULL()
+            //         ) { pDevItem->m_guid.writeGUID(
+            //         pvscpEvent->GUID );
+            //         }
+            //         else {
+            //             // If no driver GUID set use interface GUID
+            //             pDevItem->m_guid.writeGUID(
+            //         pvscpEvent->GUID );
+            //         }*/
 
-                    // Convert CANAL message to VSCP event
-                    vscp_convertCanalToEvent(
-                      pvscpEvent,
-                      &msg,
-                      pDevItem->m_pClientItem->m_guid.m_id);
+            //         // Convert CANAL message to VSCP event
+            //         vscp_convertCanalToEvent(
+            //           pvscpEvent,
+            //           &msg,
+            //           pDevItem->m_pClientItem->m_guid.m_id);
 
-                    pvscpEvent->obid = pDevItem->m_pClientItem->m_clientID;
+            //         pvscpEvent->obid = pDevItem->m_pClientItem->m_clientID;
 
-                    // If no GUID is set,
-                    //      - Set driver GUID if it is defined
-                    //      - Set to interface GUID if not.
+            //         // If no GUID is set,
+            //         //      - Set driver GUID if it is defined
+            //         //      - Set to interface GUID if not.
 
-                    uint8_t ifguid[16];
+            //         uint8_t ifguid[16];
 
-                    // Save nickname
-                    uint8_t nickname_lsb = pvscpEvent->GUID[15];
+            //         // Save nickname
+            //         uint8_t nickname_lsb = pvscpEvent->GUID[15];
 
-                    // Set if to use
-                    memcpy(ifguid, pvscpEvent->GUID, 16);
-                    ifguid[14] = 0;
-                    ifguid[15] = 0;
+            //         // Set if to use
+            //         memcpy(ifguid, pvscpEvent->GUID, 16);
+            //         ifguid[14] = 0;
+            //         ifguid[15] = 0;
 
-                    // If if is set to zero use interface id
-                    if (vscp_isGUIDEmpty(ifguid)) {
+            //         // If if is set to zero use interface id
+            //         if (vscp_isGUIDEmpty(ifguid)) {
 
-                        // Set driver GUID if set
-                        if (!pDevItem->m_interface_guid.isNULL()) {
-                            pDevItem->m_interface_guid.writeGUID(
-                              pvscpEvent->GUID);
-                        }
-                        else {
-                            // If no driver GUID set use interface GUID
-                            pDevItem->m_pClientItem->m_guid.writeGUID(
-                              pvscpEvent->GUID);
-                        }
+            //             // Set driver GUID if set
+            //             if (!pDevItem->m_guid.isNULL()) {
+            //                 pDevItem->m_guid.writeGUID(
+            //                   pvscpEvent->GUID);
+            //             }
+            //             else {
+            //                 // If no driver GUID set use interface GUID
+            //                 pDevItem->m_pClientItem->m_guid.writeGUID(
+            //                   pvscpEvent->GUID);
+            //             }
 
-                        // Preserve nickname
-                        pvscpEvent->GUID[15] = nickname_lsb;
-                    }
+            //             // Preserve nickname
+            //             pvscpEvent->GUID[15] = nickname_lsb;
+            //         }
 
-                    // =========================================================
-                    //                   Outgoing translations
-                    // =========================================================
+            //         // =========================================================
+            //         //                   Outgoing translations
+            //         // =========================================================
 
-                    // Level I measurement events to Level II measurement float
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
-                        vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
-                    }
+            //         // Level I measurement events to Level II measurement float
+            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
+            //             vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
+            //         }
 
-                    // Level I measurement events to Level II measurement string
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
-                        vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
-                    }
+            //         // Level I measurement events to Level II measurement string
+            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
+            //             vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
+            //         }
 
-                    // Level I events to Level I over Level II events
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
-                        pvscpEvent->vscp_class += 512;
-                        uint8_t* p = new uint8_t[16 + pvscpEvent->sizeData];
-                        if (NULL != p) {
-                            memset(p, 0, 16 + pvscpEvent->sizeData);
-                            memcpy(p + 16,
-                                   pvscpEvent->pdata,
-                                   pvscpEvent->sizeData);
-                            pvscpEvent->sizeData += 16;
-                            delete[] pvscpEvent->pdata;
-                            pvscpEvent->pdata = p;
-                        }
-                    }
+            //         // Level I events to Level I over Level II events
+            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
+            //             pvscpEvent->vscp_class += 512;
+            //             uint8_t* p = new uint8_t[16 + pvscpEvent->sizeData];
+            //             if (NULL != p) {
+            //                 memset(p, 0, 16 + pvscpEvent->sizeData);
+            //                 memcpy(p + 16,
+            //                        pvscpEvent->pdata,
+            //                        pvscpEvent->sizeData);
+            //                 pvscpEvent->sizeData += 16;
+            //                 delete[] pvscpEvent->pdata;
+            //                 pvscpEvent->pdata = p;
+            //             }
+            //         }
 
-                    pthread_mutex_lock(
-                      &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-                    pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
-                    pthread_mutex_unlock(
-                      &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-                    sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-                }
-            }
+            //         // pthread_mutex_lock(
+            //         //   &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+            //         // pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
+            //         // pthread_mutex_unlock(
+            //         //   &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+            //         // sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+            //     }
+            // }
         }
     }
 
@@ -923,55 +866,55 @@ deviceLevel1WriteThread(void* pData)
 
     while (!pDevItem->m_bQuit) {
 
-        // Wait until there is something to send
-        if ((-1 ==
-             vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
-                           500)) &&
-            errno == ETIMEDOUT) {
-            continue;
-        }
+        // // Wait until there is something to send
+        // if ((-1 ==
+        //      vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
+        //                    500)) &&
+        //     errno == ETIMEDOUT) {
+        //     continue;
+        // }
 
-        if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
+        // if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
 
-            pthread_mutex_lock(
-              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-            vscpEvent* pev =
-              pDevItem->m_pClientItem->m_clientInputQueue.front();
-            pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
-            pthread_mutex_unlock(
-              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //     pthread_mutex_lock(
+        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //     vscpEvent* pev =
+        //       pDevItem->m_pClientItem->m_clientInputQueue.front();
+        //     pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
+        //     pthread_mutex_unlock(
+        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
-            // Trow away event if Level II and Level I interface
-            if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
-                 pDevItem->m_pClientItem->m_type) &&
-                (pev->vscp_class > 512)) {
-                vscp_deleteEvent(pev);
-                continue;
-            }
+        //     // Trow away event if Level II and Level I interface
+        //     if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
+        //          pDevItem->m_pClientItem->m_type) &&
+        //         (pev->vscp_class > 512)) {
+        //         vscp_deleteEvent(pev);
+        //         continue;
+        //     }
 
-            canalMsg msg;
-            if (!vscp_convertEventToCanal(&msg, pev)) {
-                syslog(
-                  LOG_ERR,
-                  "deviceLevel1WriteThread - vscp_convertEventToCanal failed");
-                vscp_deleteEvent(pev);
-            }
+        //     canalMsg msg;
+        //     if (!vscp_convertEventToCanal(&msg, pev)) {
+        //         syslog(
+        //           LOG_ERR,
+        //           "deviceLevel1WriteThread - vscp_convertEventToCanal failed");
+        //         vscp_deleteEvent(pev);
+        //     }
 
-            if (CANAL_ERROR_SUCCESS ==
-                pDevItem->m_proc_CanalBlockingSend(pDevItem->m_openHandle,
-                                                   &msg,
-                                                   300)) {
-                syslog(
-                  LOG_ERR,
-                  "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
-                vscp_deleteEvent(pev);
-            }
-            else {
-                // Give it another try
-                sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-            }
+        //     if (CANAL_ERROR_SUCCESS ==
+        //         pDevItem->m_proc_CanalBlockingSend(pDevItem->m_openHandle,
+        //                                            &msg,
+        //                                            300)) {
+        //         syslog(
+        //           LOG_ERR,
+        //           "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
+        //         vscp_deleteEvent(pev);
+        //     }
+        //     else {
+        //         // Give it another try
+        //         //sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+        //     }
 
-        } // events in queue
+        // } // events in queue
 
     } // while
 
@@ -1014,9 +957,6 @@ deviceLevel2ReceiveThread(void* pData)
             continue;
         }
 
-        // Identify ourselves
-        pev->obid = pDevItem->m_pClientItem->m_clientID;
-
         // If timestamp is zero we set it here
         if (0 == pev->timestamp) {
             pev->timestamp = vscp_makeTimeStamp();
@@ -1041,12 +981,12 @@ deviceLevel2ReceiveThread(void* pData)
         if (vscp_isGUIDEmpty(ifguid)) {
 
             // Set driver GUID if set
-            if (!pDevItem->m_interface_guid.isNULL()) {
-                pDevItem->m_interface_guid.writeGUID(pev->GUID);
+            if (!pDevItem->m_guid.isNULL()) {
+                pDevItem->m_guid.writeGUID(pev->GUID);
             }
             else {
                 // If no driver GUID set use interface GUID
-                pDevItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
+                //pDevItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
             }
 
             // Preserve nickname
@@ -1055,18 +995,18 @@ deviceLevel2ReceiveThread(void* pData)
         }
 
         // There must be room in the receive queue
-        if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
-            pDevItem->m_pObj->m_clientOutputQueue.size()) {
+        // if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
+        //     pDevItem->m_pObj->m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-            pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
-            pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-            sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-        }
-        else {
-            if (NULL == pev)
-                vscp_deleteEvent_v2(&pev);
-        }
+        //     pthread_mutex_lock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+        //     pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
+        //     pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+        //     sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+        // }
+        // else {
+        //     if (NULL == pev)
+        //         vscp_deleteEvent_v2(&pev);
+        // }
     }
 
     return NULL;
@@ -1093,38 +1033,38 @@ deviceLevel2WriteThread(void* pData)
     while (!pDevItem->m_bQuit) {
 
         // Wait until there is something to send
-        if ((-1 ==
-             vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
-                           500)) &&
-            errno == ETIMEDOUT) {
-            continue;
-        }
+        // if ((-1 ==
+        //      vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
+        //                    500)) &&
+        //     errno == ETIMEDOUT) {
+        //     continue;
+        // }
 
-        if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
+        // if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
 
-            pthread_mutex_lock(
-              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-            vscpEvent* pev =
-              pDevItem->m_pClientItem->m_clientInputQueue.front();
-            pthread_mutex_unlock(
-              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //     pthread_mutex_lock(
+        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //     vscpEvent* pev =
+        //       pDevItem->m_pClientItem->m_clientInputQueue.front();
+        //     pthread_mutex_unlock(
+        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
-            if (CANAL_ERROR_SUCCESS ==
-                pDevItem->m_proc_VSCPWrite(pDevItem->m_openHandle, pev, 300)) {
+        //     if (CANAL_ERROR_SUCCESS ==
+        //         pDevItem->m_proc_VSCPWrite(pDevItem->m_openHandle, pev, 300)) {
 
-                // Remove the node
-                pthread_mutex_lock(
-                  &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-                pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
-                pthread_mutex_unlock(
-                  &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-            }
-            else {
-                // Give it another try
-                sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-            }
+        //         // Remove the node
+        //         pthread_mutex_lock(
+        //           &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //         pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
+        //         pthread_mutex_unlock(
+        //           &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //     }
+        //     else {
+        //         // Give it another try
+        //         //sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+        //     }
 
-        } // events in queue
+        // } // events in queue
 
     } // while
 

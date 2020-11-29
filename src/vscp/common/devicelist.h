@@ -35,11 +35,12 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include "canaldlldef.h"
-#include "clientlist.h"
-#include "devicethread.h"
-#include "guid.h"
-#include "level2drvdef.h"
+#include <canaldlldef.h>
+#include <devicethread.h>
+#include <guid.h>
+#include <level2drvdef.h>
+
+#include <vscp_client_mqtt.h>
 
 #define NO_TRANSLATION 0 // No translation bit set
 
@@ -62,20 +63,6 @@ enum _driver_levels
 class CClientItem;
 class cguid;
 class CControlObject;
-
-///////////////////////////////////////////////////////////////////////////////
-// Driver3Process
-//
-
-class Driver3Process
-{
-
-  public:
-    Driver3Process();
-    ~Driver3Process();
-
-    void OnTerminate(int pid, int status);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // CDeviceItem
@@ -148,9 +135,9 @@ class CDeviceItem
 
     /*!
         GUID to use for driver interface if set
-        four msb should be zero for this GUID
+        two msb should be zero for this GUID
     */
-    cguid m_interface_guid;
+    cguid m_guid;
 
     /*!
         All level II driver must have a GUID
@@ -163,9 +150,6 @@ class CDeviceItem
 
     // Device flags for CANAL DLL open
     uint32_t m_DeviceFlags;
-
-    // Client entry
-    CClientItem* m_pClientItem;
 
     // Mutex handle that is used for sharing of the device.
     pthread_mutex_t m_deviceMutex;
@@ -186,9 +170,6 @@ class CDeviceItem
     // ------------------------------------------------------------------------
     //                     Start of driver worker thread data
     // ------------------------------------------------------------------------
-
-    // Control object that invoked thread
-    CControlObject* m_pObj;
 
     // Holder for CANAL receive thread
     pthread_t m_level1ReceiveThread;
@@ -234,8 +215,7 @@ class CDeviceItem
     LPFNDLL_VSCPREAD m_proc_VSCPRead;
     LPFNDLL_VSCPGETVERSION m_proc_VSCPGetVersion;
 
-    // Level III
-    std::string m_pathExecutable;
+    vscpClientMqtt m_mqtt;
 };
 
 class CDeviceList

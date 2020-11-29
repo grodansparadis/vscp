@@ -35,7 +35,6 @@ AC_CHECK_LIB([crypto], [MD5_Init])
 AC_CHECK_LIB([m],[sin])
 AC_CHECK_LIB([rt],[clock_gettime])
 AC_CHECK_LIB([z], [gzopen])
-AC_CHECK_LIB([wrap], [request_init])
 AC_CHECK_LIB([systemd], [sd_notify])
 AC_CHECK_LIB([ssl], [SSL_free])
 AC_CHECK_LIB([expat], [XML_ParserCreate])
@@ -152,9 +151,7 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd\
- src/vscp/vscpcmd "
+PROJ_SUBDIRS="src/vscp/daemon/linux"
 
 PROJ_TEST_SUBDIRS="tests/helperlib"
 
@@ -202,8 +199,6 @@ dnl
 AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/daemon/linux/Makefile 
-         src/vscp/vscp-mkpasswd/Makefile 
-         src/vscp/vscpcmd/Makefile
          tests/helperlib/Makefile  
 ])
 
@@ -249,19 +244,11 @@ fi
 
 AS_IF([test "x$enable_systemd" = "xno"], 
    [echo   "Systemd enabled       : no"],
-   [echo   "Systemd enabled       : yes" ])
-
-AS_IF([test "x$enable_wrap" = "xno"], 
-   [echo   "tcpd wrap enabled     : no"],
-   [echo   "tcpd wrap enabled     : yes" ])   
+   [echo   "Systemd enabled       : yes" ])  
 
 AS_IF([test "x$enable_asan" = "xyes"], 
    [echo   "asan enabled          : yes"],
    [echo   "asan enabled          : no" ])
-
-AS_IF([test "x$enable_rpi" = "xyes"], 
-   [echo   "Raspberry Pi build    : yes"],
-   [echo   "Raspberry Pi build    : no" ])
 
 printf "
 You can tune the compiler flags in vscp-config.
@@ -269,15 +256,12 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
  use --enable-asan to build with AddressSanitizer https://github.com/google/sanitizers/wiki/AddressSanitizer
- use --enable-rpi to build Raspberry Pi specific drivers.
  use --disable-systemd to not use systemd (default: eanbled).
  use --disable-wrap to not use the tcpd wrapper (default: eanbled).
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
  \"make install-conf\" -- install/restore configuration files.
- \"make web-install\" -- install/restore web demo content including websocket examples.
- \"make deb\" -- builds VSCP & Friends Debian install files.
  \"make clean\" -- clean project.
 "
 dnl vi: set et sts=4 sw=4 com=\:dnl
