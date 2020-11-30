@@ -90,10 +90,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	fastpbkdf2.o \
 	vscpmd5.o \
 	vscpbase64.o \
-	vscpdatetime.o \
-    vscp_client_base.o \
-	vscp_client_mqtt.o \
-	mqtt.o
+	vscpdatetime.o
 
 ### Targets: ###
 
@@ -137,15 +134,6 @@ configfile.o: ../../../common/configfile.cpp ../../../common/configfile.h
 
 vscpdatetime.o: ../../common/vscpdatetime.cpp ../../common/vscpdatetime.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@
-
-vscp_client_base.o: ../../common/vscp_client_base.cpp ../../common/vscp_client_base.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_client_base.cpp -o $@
-
-vscp_client_mqtt.o: ../../common/vscp_client_mqtt.cpp ../../common/vscp_client_mqtt.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_client_mqtt.cpp -o $@
-
-mqtt.o: ../../common/mqtt.cpp ../../common/mqtt.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/mqtt.cpp -o $@
 
 dllist.o: ../../../common/dllist.c ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@

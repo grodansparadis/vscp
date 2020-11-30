@@ -25,13 +25,16 @@
 
 #include "vscp_client_mqtt.h"
 
-#include <vscphelper.h>
-
 #include <unistd.h>
 #include <pthread.h>
+#include <vscphelper.h>
 
 #include <string>
 #include <deque>
+
+#include <mustache.hpp>
+
+using namespace kainjow::mustache;
 
 // Forward declaration
 void *workerThread(void *pObj);
@@ -147,8 +150,6 @@ vscpClientMqtt::vscpClientMqtt()
     m_tid = 0;
     m_bRun = false;
     m_strHost = "localhost";
-    m_strTopicSub = "vscp/#";
-    m_strTopicPub = "vscp/%guid%/%class%/%type%/";
     m_clientId = "";
     m_strUserName = "";
     m_strPassword = "";
@@ -195,13 +196,19 @@ int vscpClientMqtt::init(const std::string &strHost,
 {
     m_strHost = strHost;                // MQTT broker
     m_port = port;                      // MQTT broker port
-    m_strTopicSub = strTopicSub;        // Subscribe topic template
-    m_strTopicPub = strTopicPub;        // Publish topic template
     m_clientId = clientId;              // Client id
     m_strUserName = strUserName;        // Username
     m_strPassword = strPassword;        // Password
     m_qos = qos;                        // Quality of service
     m_bCleanSession = bCleanSession;    // Clean session on disconnect if true
+
+    if (strTopicSub.length()) {
+        m_listTopicSub.push_back(strTopicSub);
+    }
+
+    if (strTopicPub.length()) {
+        m_listTopicPub.push_back(strTopicPub);
+    }
 
     mosquitto_lib_init();
 
@@ -219,6 +226,26 @@ int vscpClientMqtt::init(const std::string &strHost,
     mosquitto_message_callback_set(m_mosq, on_message);
     mosquitto_publish_callback_set(m_mosq, on_publish);
 
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addSubscription
+//
+
+int vscpClientMqtt::addSubscription(const std::string strTopicSub)
+{
+    m_listTopicSub.push_back(strTopicSub);
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addPublish
+//
+
+int vscpClientMqtt::addPublish(const std::string strTopicPub)
+{
+    m_listTopicPub.push_back(strTopicPub);
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -281,11 +308,23 @@ int vscpClientMqtt::connect(void)
     }
 
     // Only subscribe if subscription topic is defined
-    if ( m_strTopicSub.length() ) {
+    for (std::list<std::string>::const_iterator
+            it = m_listTopicSub.begin();
+            it != m_listTopicSub.end();
+            ++it){
 
+        std::string topic = (*it);
+
+        // Fix subscribe topics
+        mustache subtemplate{topic};
+        data data;
+        //data.set("guid", m_guid.getAsString());
+        std::string subscribe_topic = subtemplate.render(data);
+
+        // Subscribe to specified topic
         rv = mosquitto_subscribe(m_mosq,
-                                    &mid,
-                                    m_strTopicSub.c_str(),
+                                    &m_mid,
+                                    subscribe_topic.c_str(),
                                     m_qos);
 
         switch (rv) {

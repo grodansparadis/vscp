@@ -29,9 +29,6 @@
 #if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
-#include <deque>
-#include <string>
-
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -40,7 +37,10 @@
 #include <guid.h>
 #include <level2drvdef.h>
 
-#include <vscp_client_mqtt.h>
+#include <deque>
+#include <list>
+#include <string>
+
 
 #define NO_TRANSLATION 0 // No translation bit set
 
@@ -111,6 +111,7 @@ class CDeviceItem
     bool stopDriver(void);
 
   public:
+
     // Name of device
     std::string m_strName;
 
@@ -164,8 +165,40 @@ class CDeviceItem
     // Handle for dll/dl driver interface
     long m_openHandle;
 
-    // Level III driver pid
-    long m_pid;
+    // ------------------------------------------------------------------------
+    //                                   MQTT
+    // ------------------------------------------------------------------------
+
+    std::string m_mqtt_strHost;     // MQTT broker
+    unsigned short m_mqtt_port;     // MQTT broker port
+    std::list<std::string> m_mqtt_subscriptions;    // Subscribe topic templates
+    std::list<std::string> m_mqtt_publish;          // Publish topic templates
+
+    std::string m_mqtt_clientId;    // Client id
+    std::string m_mqtt_strUserName; // Username
+    std::string m_mqtt_strPassword; // Password
+    int m_mqtt_qos;                 // Quality of service (0/1/2)
+    bool m_mqtt_bRetain;            // Enable retain
+    int m_mqtt_keepalive;           // Keep alive in seconds
+    bool m_mqtt_bCleanSession;      // Clean session on disconnect if true
+
+    // SSL/TSL
+    bool m_mqtt_bTLS;               // True of a TLS/SSL connection should be done
+
+    std::string m_mqtt_cafile;	    // path to a file containing the PEM encoded trusted CA certificate files.
+                                    // Either cafile or capath must not be NULL.
+    std::string m_mqtt_capath;	    // path to a directory containing the PEM encoded trusted CA certificate files.
+                                    // See mosquitto.conf for more details on configuring this directory.
+                                    // Either cafile or capath must not be NULL.
+    std::string m_mqtt_certfile;	// path to a file containing the PEM encoded certificate file for this client.
+                                    // If NULL, keyfile must also be NULL and no client certificate will be used.
+    std::string m_mqtt_keyfile;
+
+    std::string m_mqtt_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
+
+    struct mosquitto *m_mqtt_mosq;   // Handel for connection
+    
+    int m_mqtt_mid;                  // Mosquitto message id
 
     // ------------------------------------------------------------------------
     //                     Start of driver worker thread data
@@ -215,8 +248,11 @@ class CDeviceItem
     LPFNDLL_VSCPREAD m_proc_VSCPRead;
     LPFNDLL_VSCPGETVERSION m_proc_VSCPGetVersion;
 
-    vscpClientMqtt m_mqtt;
+    // ------------------------------------------------------------------------
+
 };
+
+// ----------------------------------------------------------------------------
 
 class CDeviceList
 {
@@ -226,23 +262,23 @@ class CDeviceList
 
     /*!
         Add one driver item
+        @param bEnable True to enable driver
         @param strName Driver name
         @param strParameters Driver configuration string
         @param flags Driver flags
         @param guid Interface GUID
-        @param level Mark as Level I or Level II driver
-        @param bEnable True to enable driver
+        @param level Mark as Level I or Level II driver        
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem(const std::string& strName,
-                 const std::string& strParameters,
-                 const std::string& strPath,
-                 uint32_t flags,
-                 const cguid& guid,
-                 uint8_t level        = VSCP_DRIVER_LEVEL1,
-                 bool bEnable         = true,
-                 uint32_t translation = NO_TRANSLATION);
+    bool addItem(bool bEnable,
+                    const std::string& strName,
+                    const std::string& strParameters,
+                    const std::string& strPath,
+                    uint32_t flags,
+                    const cguid& guid,
+                    uint8_t level        = VSCP_DRIVER_LEVEL1,                 
+                    uint32_t translation = NO_TRANSLATION);
 
     /*!
         Remove a driver item
@@ -265,12 +301,6 @@ class CDeviceList
     */
     CDeviceItem* getDeviceItemFromGUID(cguid& guid);
 
-    /*!
-        Get device item from the client id
-        @param guid for device to look for
-        @return Pointer to device item or NULL if not found.
-    */
-    CDeviceItem* getDeviceItemFromClientId(uint32_t id);
 
     /*!
         Get all drivers as a string

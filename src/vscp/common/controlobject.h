@@ -31,8 +31,8 @@
 
 #include <devicelist.h>
 #include <mqtt.h>
+#include <vscpmqtt.h>
 #include <vscp.h>
-#include <vscp_client_mqtt.h>
 
 #include <set>
 #include <map>
@@ -92,6 +92,21 @@ class CControlObject {
     bool run(void);
 
     /*!
+        Send event on all publishing channels
+        @param pex Pointer to VSCP event ex
+        @return true on success, false on failure
+    */
+    bool sendEvent(vscpEventEx *pex);
+
+    /*!
+        Handle and send periodic events 
+        (previous automation)
+        @return true on success, false on failure
+    */
+    bool periodicEvents(void);
+
+
+    /*!
         Start worker threads for devices
         @return true on success
      */
@@ -102,18 +117,6 @@ class CControlObject {
         @return true on success
      */
     bool stopDeviceWorkerThreads(void);
-
-    /*!
-        Starting daemon worker thread
-        @return true on success
-     */
-    bool startDaemonWorkerThread(void);
-
-    /*!
-        Stop daemon worker thread
-        @return true on success
-     */
-    bool stopDaemonWorkerThread(void);
 
 
     /*!
@@ -130,6 +133,7 @@ class CControlObject {
      */
     bool getIPAddress(cguid& guid);
 
+
     /*!
         Read configuration data
         @param strcfgfile path to configuration file.
@@ -142,6 +146,9 @@ class CControlObject {
 
     // Will quit if set to true
     bool m_bQuit;
+
+    // User configurable server name
+    std::string m_strServerName;
 
     // VSCP daemon root folder
     std::string m_rootFolder;
@@ -169,8 +176,7 @@ class CControlObject {
      */
     uint32_t* m_debugFlags;
 
-    // MQTT interface of the daemon
-    vscpClientMqtt m_mqtt;
+
 
     //**************************************************************************
     //                                 DRIVERS
@@ -183,17 +189,51 @@ class CControlObject {
     // This set holds driver names.
     // Returns true for an active driver
     // A driver can only be loaded if it have an unique name.
-
     std::set<std::string> m_driverNameSet;
-
     std::map<std::string, CDeviceItem> m_driverNameDeviceMap;
 
     // Mutex for device queue
     pthread_mutex_t m_mutex_deviceList;
 
+    //**************************************************************************
+    //                                  MQTT 
+    //*************************************************************************
+
+    std::string m_mqtt_strHost;     // MQTT broker
+    unsigned short m_mqtt_port;     // MQTT broker port    
+    std::string m_mqtt_strclientId;    // Client id
+    std::string m_mqtt_strUserName; // Username
+    std::string m_mqtt_strPassword; // Password
+    int m_mqtt_qos;                 // Quality of service (0/1/2)
+    bool m_mqtt_bRetain;            // Enable retain
+    int m_mqtt_keepalive;           // Keep alive in seconds
+    bool m_mqtt_bCleanSession;      // Clean session on disconnect if true
+
+    // SSL/TSL
+    bool m_mqtt_bTLS;               // True of a TLS/SSL connection should be done
+
+    std::string m_mqtt_cafile;	    // path to a file containing the PEM encoded trusted CA certificate files.  
+                                    // Either cafile or capath must not be NULL.
+    std::string m_mqtt_capath;	    // path to a directory containing the PEM encoded trusted CA certificate files.  
+                                    // See mosquitto.conf for more details on configuring this directory.  
+                                    // Either cafile or capath must not be NULL.
+    std::string m_mqtt_certfile;	// path to a file containing the PEM encoded certificate file for this client.  
+                                    // If NULL, keyfile must also be NULL and no client certificate will be used.
+    std::string m_mqtt_keyfile;      
+
+    std::string m_mqtt_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
+
+    std::list<std::string> m_mqtt_subscriptions;    // Subscribe topic templates
+    std::list<std::string> m_mqtt_publish;          // Publish topic templates
+
+    struct mosquitto *m_mqtt_mosq;   // Handel for connection
+    int m_mqtt_id;                   // Message id - the send function will set this to the message id of this particular 
+                                     // message.  This can then be used with the subscribe callback to determine when 
+                                     // the message has been sent.
+
   private:
            
-
+    struct mosquitto *m_mosq;   // Handel for MQTT connection
 };
 
 #endif // !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)

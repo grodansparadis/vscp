@@ -141,7 +141,7 @@ public:
         Set (and enable) receive callback for events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback);
+    virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback);
 
     /*!
         Set (and enable) receive callback ex events
@@ -167,15 +167,15 @@ public:
         Check if ev callback is defined
         @return true if callback is defined
     */
-    bool isEvCallback(void) {return (nullptr != m_evcallback); };
+    bool isEvCallback(void) {return (nullptr != m_evcallback); }
 
     /*!
         Check if ex callback is defined
         @return true if callback is defined
     */
-    bool isExCallback(void) {return (nullptr != m_excallback); };
+    bool isExCallback(void) {return (nullptr != m_excallback); }
 
-public:
+ public:
 
     /*!
         Callback for events

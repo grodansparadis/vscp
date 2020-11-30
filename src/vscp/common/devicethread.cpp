@@ -28,6 +28,8 @@
 
 #define _POSIX
 
+#include "devicethread.h"
+
 #include <dlfcn.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -44,14 +46,82 @@
 #endif
 
 #include <canal_macro.h>
-#include <controlobject.h>
 #include <dllist.h>
 #include <level2drvdef.h>
 #include <vscp.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
 
-#include "devicethread.h"
+#include <mosquitto.h>
+
+//////////////////////////////////////////////////////////////////////
+//                         Callbacks
+//////////////////////////////////////////////////////////////////////
+
+
+static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CClientItem *pItem = (CClientItem *)pData;
+
+}
+
+
+static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CClientItem *pItem = (CClientItem *)pData;
+
+}
+
+
+static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CClientItem *pItem = (CClientItem *)pData;
+
+}
+
+
+static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+    if (NULL == pMsg) return;
+
+    CClientItem *pItem = (CClientItem *)pData;
+    std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
+
+
+}
+
+
+static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CClientItem *pItem = (CClientItem *)pData;
+
+}
+
+
+
+// ----------------------------------------------------------------------------
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread

@@ -26,7 +26,10 @@
 // SOFTWARE.
 //
 
+#include "devicelist.h"
+
 #define _POSIX
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -37,7 +40,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
-#include "devicelist.h"
+
 #include <canal.h>
 #include <clientlist.h>
 #include <controlobject.h>
@@ -45,6 +48,10 @@
 #include <dllist.h>
 #include <guid.h>
 #include <vscp.h>
+
+#include <mustache.hpp>
+
+using namespace kainjow::mustache;
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -102,9 +109,6 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPRead               = NULL;
     m_proc_VSCPGetVersion         = NULL;
     m_proc_VSCPGetVersion         = NULL;
-
-    // VSCP Level III
-    m_pid = 0;
 
 }
 
@@ -262,14 +266,14 @@ CDeviceList::~CDeviceList(void)
 //
 
 bool
-CDeviceList::addItem(const std::string &strName,
-                     const std::string &strParameter,
-                     const std::string &strPath,
-                     uint32_t flags,
-                     const cguid &guid,
-                     uint8_t level,
-                     bool bEnable,
-                     uint32_t translation)
+CDeviceList::addItem(bool bEnable,
+                        const std::string &strName,
+                        const std::string &strParameter,
+                        const std::string &strPath,
+                        uint32_t flags,
+                        const cguid &guid,
+                        uint8_t level,
+                        uint32_t translation)
 {
     bool rv                  = true;
     CDeviceItem *pDeviceItem = new CDeviceItem();
@@ -277,8 +281,7 @@ CDeviceList::addItem(const std::string &strName,
 
     if (NULL != pDeviceItem) {
 
-        if (vscp_fileExists(strPath)) {
-
+        if ( vscp_fileExists(strPath) ) {
             m_devItemList.push_back(pDeviceItem);
 
             pDeviceItem->m_bEnable = bEnable;
@@ -289,7 +292,7 @@ CDeviceList::addItem(const std::string &strName,
             pDeviceItem->m_strPath        = strPath;
             pDeviceItem->m_guid           = guid;
             pDeviceItem->m_translation    = translation;
-            
+
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
@@ -339,22 +342,6 @@ CDeviceList::getDeviceItemFromGUID(cguid &guid)
     return returnItem;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getDeviceItemFromClientId
-//
-
-CDeviceItem *
-CDeviceList::getDeviceItemFromClientId(uint32_t id)
-{
-    CDeviceItem *returnItem = NULL;
-
-    std::deque<CDeviceItem *>::iterator iter;
-    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
-        CDeviceItem *pItem = *iter;
-    }
-
-    return returnItem;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDeviceItemFromName
@@ -368,6 +355,10 @@ CDeviceList::getDeviceItemFromName(std::string& name)
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
+        if (pItem->m_strName == name) {
+            returnItem = pItem;
+            break;
+        }
     }
 
     return returnItem;

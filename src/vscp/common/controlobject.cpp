@@ -59,22 +59,8 @@
 #include <systemd/sd-daemon.h>
 #endif
 
-#include <algorithm>
-#include <deque>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
-
 #include <expat.h>
 
-#include <fastpbkdf2.h>
-#include <vscp_aes.h>
-
-#include <actioncodes.h>
-#include <automation.h>
-#include <canal_macro.h>
-#include <configfile.h>
 #include <crc.h>
 #include <devicelist.h>
 #include <devicethread.h>
@@ -84,7 +70,17 @@
 #include <vscp_debug.h>
 #include <vscpd_caps.h>
 #include <vscphelper.h>
-#include <vscpmd5.h>
+
+#include <algorithm>
+#include <deque>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+
+#include <mustache.hpp>
+
+using namespace kainjow::mustache;
 
 #define UNUSED(x) (void)(x)
 void
@@ -100,8 +96,73 @@ foo(const int i)
 #define XML_BUFF_SIZE 0xffff
 
 // Prototypes
-void
-createFolderStuct(std::string& rootFolder); // from vscpd.cpp
+
+//////////////////////////////////////////////////////////////////////
+//                         Callbacks
+//////////////////////////////////////////////////////////////////////
+
+
+static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CControlObject *pObj = (CControlObject *)pData;
+    printf("%s", logmsg);
+}
+
+
+static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    vscpClientMqtt *pObj = (vscpClientMqtt *)pData;
+
+    printf("CONNECT");
+}
+
+
+static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CControlObject *pObj = (CControlObject *)pData;
+
+    printf("DISCONNECT");
+}
+
+
+static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+    if (NULL == pMsg) return;
+
+    CControlObject *pObj = (CControlObject *)pData;
+    std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
+
+    printf("MESSAGE %s", payload.c_str() );
+}
+
+
+static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
+{
+    // Check pointers
+    if (NULL == mosq) return;
+    if (NULL == pData) return;
+
+    CControlObject *pObj = (CControlObject *)pData;
+
+    printf("PUBLISH");
+}
+
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -124,8 +185,8 @@ CControlObject::CControlObject()
         return;
     }
 
+    m_strServerName = "VSCP Daemon";
     m_rootFolder = "/var/lib/vscp/vscpd/";
-
     m_vscptoken = "Carpe diem quam minimum credula postero";
 
     // Nill the GUID
@@ -133,6 +194,25 @@ CControlObject::CControlObject()
 
     // Initialize the CRC
     crcInit();
+
+    // Init daemon MQTT
+    m_mqtt_strHost = "localhost";
+    m_mqtt_port = 1883;
+    //m_mqtt_strTopicSub = "/vscp/{guid}";
+    //m_mqtt_strTopicPub = "/vscp/{guid}";
+    m_mqtt_strclientId = "";
+    m_mqtt_strUserName = "vscp";
+    m_mqtt_strPassword = "secret";
+    m_mqtt_qos = 0;
+    m_mqtt_bRetain = false;
+    m_mqtt_keepalive = 60;
+    m_mqtt_bCleanSession = false;
+    m_mqtt_bTLS = false;
+    m_mqtt_cafile = "";
+    m_mqtt_capath = "";
+    m_mqtt_certfile = "";
+    m_mqtt_keyfile = "";
+    m_mqtt_pwKeyfile = "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,9 +313,6 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
     }
 
-    //==========================================================================
-    //                           Add driver user
-    //==========================================================================
 
     // Get GUID
     if (m_guid.isNULL()) {
@@ -253,13 +330,117 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     str += VSCPD_COPYRIGHT;
     syslog(LOG_INFO, "%s", str.c_str());
 
+    // Initialize MQTT
+
+    if ( MOSQ_ERR_SUCCESS != mosquitto_lib_init() ) {
+        syslog(LOG_ERR, "Unable to initialize mosquitto library.");
+        return false;
+    }
+
+    if (m_mqtt_strclientId.length()) {
+        m_mosq = mosquitto_new(m_mqtt_strclientId.c_str(), m_mqtt_bCleanSession, this);
+    }
+    else {
+        m_mqtt_bCleanSession = true;    // Must be true without id
+        m_mosq = mosquitto_new(NULL, m_mqtt_bCleanSession, this);
+        if (NULL == m_mosq) {
+            if (ENOMEM == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
+            }
+            else if (EINVAL == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+            }
+            return false;
+        }
+    }
+
+    mosquitto_log_callback_set(m_mosq, mqtt_log_callback);
+    mosquitto_connect_callback_set(m_mosq, mqtt_on_connect);
+    mosquitto_disconnect_callback_set(m_mosq, mqtt_on_disconnect);
+    mosquitto_message_callback_set(m_mosq, mqtt_on_message);
+    mosquitto_publish_callback_set(m_mosq, mqtt_on_publish);
+
+    // Set username/password if defined
+    if (m_mqtt_strUserName.length()) { 
+        int rv;       
+        if ( MOSQ_ERR_SUCCESS != 
+                ( rv = mosquitto_username_pw_set( m_mosq,
+                                                    m_mqtt_strUserName.c_str(),
+                                                    m_mqtt_strPassword.c_str() ) ) ) {
+            if ( MOSQ_ERR_INVAL == rv) {
+                syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
+            }
+            else if ( MOSQ_ERR_NOMEM == rv) {
+                syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
+            }
+                                                    
+        }
+    }
+
+    int rv = mosquitto_connect(m_mosq, 
+                                m_mqtt_strHost.c_str(), 
+                                m_mqtt_port, 
+                                m_mqtt_keepalive);
+
+    if ( MOSQ_ERR_SUCCESS != rv ) {
+        
+        if (MOSQ_ERR_INVAL == rv) {
+            syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
+        }
+        else if (MOSQ_ERR_ERRNO == rv) {
+            syslog(LOG_ERR, "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
+        }
+
+        return false;
+    }
+
+    // Start the worker loop
+    rv = mosquitto_loop_start(m_mosq);
+    if (MOSQ_ERR_SUCCESS != rv) {
+        mosquitto_disconnect(m_mosq);
+        return VSCP_ERROR_ERROR;
+    }
+
+    for (std::list<std::string>::const_iterator 
+            it = m_mqtt_subscriptions.begin(); 
+            it != m_mqtt_subscriptions.end(); 
+            ++it){
+
+        std::string topic = *it;
+
+        // Fix subscribe/publish topics
+        mustache subtemplate{topic};
+        data data;
+        data.set("guid", m_guid.getAsString());
+        std::string subscribe_topic = subtemplate.render(data);
+
+        // Subscribe to specified topic
+        rv = mosquitto_subscribe(m_mosq,
+                                    &m_mqtt_id,
+                                    subscribe_topic.c_str(),
+                                    m_mqtt_qos);
+
+        switch (rv) {
+            case MOSQ_ERR_INVAL:
+                syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - input parameters were invalid.",subscribe_topic.c_str());
+            case MOSQ_ERR_NOMEM:
+                syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - out of memory condition occurred.",subscribe_topic.c_str());
+            case MOSQ_ERR_NO_CONN:
+                syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
+            case MOSQ_ERR_MALFORMED_UTF8:
+                syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+            case MOSQ_ERR_OVERSIZE_PACKET:
+                syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+        }
+    }
+
     // Load drivers
     try {
         startDeviceWorkerThreads();
     }
     catch (...) {
         syslog(LOG_ERR, "Exception when loading drivers");
-        return FALSE;
+        return false;
     }
 
     return true;
@@ -286,7 +467,7 @@ CControlObject::run(void)
 
     struct timespec now, old_now;
     clock_gettime(CLOCK_REALTIME, &old_now);
-    old_now.tv_sec -= 60;  // Do firts send right away
+    old_now.tv_sec -= 60;  // Do first send right away
 
     while (true) {
 
@@ -298,9 +479,9 @@ CControlObject::run(void)
             // Save time
             clock_gettime(CLOCK_REALTIME, &old_now);
 
-            // if (!automation(pClientItem)) {
-            //     syslog(LOG_ERR, "Failed to send automation events!");
-            // }
+            if (periodicEvents()) {
+                 syslog(LOG_ERR, "Failed to send automation events!");
+            }
         }
 
     } // while
@@ -315,127 +496,7 @@ CControlObject::run(void)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// automation
 
-// bool
-// CControlObject::automation(CClientItem* pClientItem)
-// {
-//     vscpEventEx ex;
-
-//     // Send VSCP_CLASS1_INFORMATION,
-//     // Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
-//     ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
-//     ex.head      = 0;
-//     ex.timestamp = vscp_makeTimeStamp();
-//     vscp_setEventExToNow(&ex); // Set time to current time
-//     ex.vscp_class = VSCP_CLASS1_INFORMATION;
-//     ex.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
-//     ex.sizeData   = 3;
-
-//     // GUID
-//     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
-
-//     ex.data[0] = 0; // index
-//     ex.data[1] = 0; // zone
-//     ex.data[2] = 0; // subzone
-
-//     // if (!sendEvent(pClientItem, &ex)) {
-//     //     syslog(LOG_ERR, "Failed to send Class1 heartbeat");
-//     // }
-
-//     // Send VSCP_CLASS2_INFORMATION,
-//     // Type=2/VSCP2_TYPE_INFORMATION_HEART_BEAT
-//     ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
-//     ex.head      = 0;
-//     ex.timestamp = vscp_makeTimeStamp();
-//     vscp_setEventExToNow(&ex); // Set time to current time
-//     ex.vscp_class = VSCP_CLASS2_INFORMATION;
-//     ex.vscp_type  = VSCP2_TYPE_INFORMATION_HEART_BEAT;
-//     ex.sizeData   = 64;
-
-//     // GUID
-//     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
-
-//     memset(ex.data, 0, sizeof(ex.data));
-//     // memcpy(ex.data,
-//     //        m_strServerName.c_str(),
-//     //        std::min((int)strlen(m_strServerName.c_str()), 64));
-
-//     // if (!sendEvent(pClientItem, &ex)) {
-//     //     syslog(LOG_ERR, "Failed to send Class2 heartbeat");
-//     // }
-
-//     // Send VSCP_CLASS1_PROTOCOL,
-//     // Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
-//     ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
-//     ex.head      = 0;
-//     ex.timestamp = vscp_makeTimeStamp();
-//     vscp_setEventExToNow(&ex); // Set time to current time
-//     ex.vscp_class = VSCP_CLASS1_PROTOCOL;
-//     ex.vscp_type  = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
-//     ex.sizeData   = 5;
-
-//     // GUID
-//     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
-
-//     time_t tnow;
-//     time(&tnow);
-//     uint32_t time32 = (uint32_t)tnow;
-
-//     ex.data[0] = 0; // 8 - bit crc for VSCP daemon GUID
-//     ex.data[1] = (uint8_t)((time32 >> 24) & 0xff); // Time since epoch MSB
-//     ex.data[2] = (uint8_t)((time32 >> 16) & 0xff);
-//     ex.data[3] = (uint8_t)((time32 >> 8) & 0xff);
-//     ex.data[4] = (uint8_t)((time32)&0xff); // Time since epoch LSB
-
-//     // if (!sendEvent(pClientItem, &ex)) {
-//     //     syslog(LOG_ERR, "Failed to send segment controller heartbeat");
-//     // }
-
-//     // Send VSCP_CLASS2_PROTOCOL,
-//     // Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
-//     ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
-//     ex.head      = 0;
-//     ex.timestamp = vscp_makeTimeStamp();
-//     vscp_setEventExToNow(&ex); // Set time to current time
-//     ex.vscp_class = VSCP_CLASS2_PROTOCOL;
-//     ex.vscp_type  = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
-
-//     // Fill in data
-//     memset(ex.data, 0, sizeof(ex.data));
-
-//     // GUID
-//     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
-
-//     // Server ip address
-//     cguid guid;
-//     if (getIPAddress(guid)) {
-//         ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR]     = guid.getAt(8);
-//         ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 1] = guid.getAt(9);
-//         ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 2] = guid.getAt(10);
-//         ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 3] = guid.getAt(11);
-//     }
-
-//     // Server name
-//     // memcpy(ex.data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
-//     //        (const char*)m_strServerName.c_str(),
-//     //        std::min((int)strlen((const char*)m_strServerName.c_str()), 64));
-
-//     // Capabilities array
-//     //getVscpCapabilities(ex.data);
-
-//     // non-standard ports
-//     // TODO
-
-//     ex.sizeData = 104;
-
-//     // if (!sendEvent(pClientItem, &ex)) {
-//     //     syslog(LOG_ERR, "Failed to send high end server capabilities.");
-//     // }
-
-//     return true;
-// }
 
 /////////////////////////////////////////////////////////////////////////////
 // cleanup
@@ -472,6 +533,187 @@ CControlObject::cleanup(void)
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping client worker thread...");
     }
+
+    // Disconnect from MQTT broker}
+    int rv = mosquitto_disconnect(m_mosq);
+    if (MOSQ_ERR_SUCCESS != rv) {
+        if (MOSQ_ERR_INVAL == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: input parameters were invalid.");
+        }
+        else if (MOSQ_ERR_NO_CONN == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: client isn’t connected to a broker");
+        }
+    }
+
+    // stop the worker loop
+    rv = mosquitto_loop_stop(m_mosq, false);
+    if (MOSQ_ERR_SUCCESS != rv) {
+        if (MOSQ_ERR_INVAL == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: input parameters were invalid.");
+        }
+        else if (MOSQ_ERR_NOT_SUPPORTED == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: thread support is not available..");
+        }
+    }
+
+    // Clean up
+    mosquitto_destroy(m_mosq);
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool
+CControlObject::sendEvent(vscpEventEx *pex)
+{
+    // Check pointer
+    if (NULL == pex) {
+        syslog(LOG_ERR, "ControlObject: sendEvent: Event is NULL pointer");
+        return false;
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// periodicEvents
+//
+
+bool
+CControlObject::periodicEvents(void)
+{
+    vscpEventEx ex;
+
+    // Send VSCP_CLASS1_INFORMATION,
+    // Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS1_INFORMATION;
+    ex.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
+    ex.sizeData   = 3;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    ex.data[0] = 0; // index
+    ex.data[1] = 0; // zone
+    ex.data[2] = 0; // subzone
+
+    if (!sendEvent(&ex)) {
+        syslog(LOG_ERR, "Failed to send Class1 heartbeat");
+    }    
+
+    // Send VSCP_CLASS2_INFORMATION,
+    // Type=2/VSCP2_TYPE_INFORMATION_HEART_BEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS2_INFORMATION;
+    ex.vscp_type  = VSCP2_TYPE_INFORMATION_HEART_BEAT;
+    ex.sizeData   = 64;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    memset(ex.data, 0, sizeof(ex.data));
+    memcpy(ex.data,
+           m_strServerName.c_str(),
+           std::min((int)strlen(m_strServerName.c_str()), 64));
+
+    if (!sendEvent(&ex)) {
+         syslog(LOG_ERR, "Failed to send Class2 heartbeat");
+    }
+
+    // Send VSCP_CLASS1_PROTOCOL,
+    // Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS1_PROTOCOL;
+    ex.vscp_type  = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
+    ex.sizeData   = 5;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    time_t tnow;
+    time(&tnow);
+    uint32_t time32 = (uint32_t)tnow;
+
+    ex.data[0] = 0; // 8 - bit crc for VSCP daemon GUID
+    ex.data[1] = (uint8_t)((time32 >> 24) & 0xff); // Time since epoch MSB
+    ex.data[2] = (uint8_t)((time32 >> 16) & 0xff);
+    ex.data[3] = (uint8_t)((time32 >> 8) & 0xff);
+    ex.data[4] = (uint8_t)((time32)&0xff); // Time since epoch LSB
+
+    if (!sendEvent(&ex)) {
+         syslog(LOG_ERR, "Failed to send segment controller heartbeat");
+    }
+
+    // Send VSCP_CLASS2_PROTOCOL,
+    // Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS2_PROTOCOL;
+    ex.vscp_type  = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
+
+    // Fill in data
+    memset(ex.data, 0, sizeof(ex.data));
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    // Server ip address
+    cguid guid;
+    if (getIPAddress(guid)) {
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR]     = guid.getAt(8);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 1] = guid.getAt(9);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 2] = guid.getAt(10);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 3] = guid.getAt(11);
+    }
+
+    // Server name
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
+            (const char*)m_strServerName.c_str(),
+            std::min((int)strlen((const char*)m_strServerName.c_str()), 64));
+
+    // Capabilities array
+    getVscpCapabilities(ex.data);
+
+    // non-standard ports
+    // TODO
+
+    ex.sizeData = 104;
+
+    if (!sendEvent(&ex)) {
+         syslog(LOG_ERR, "Failed to send high end server capabilities.");
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// getVscpCapabilities
+//
+
+bool CControlObject::getVscpCapabilities(uint8_t *pCaps)
+{
+    // Check pointer
+    if (NULL == pCaps) {
+        syslog(LOG_ERR, "ControObject: getVscpCapabilities: NULL pointer.");
+        return false;
+    } 
+
+    // TODO
 
     return true;
 }
@@ -745,6 +987,8 @@ CControlObject::getIPAddress(cguid& guid)
 }
 
 
+
+
 // ----------------------------------------------------------------------------
 // FULL XML configuration callbacks
 // ----------------------------------------------------------------------------
@@ -755,13 +999,18 @@ static int bGeneralConfigFound      = 0;
 static int bMQTTConfigFound         = 0;
 static int bLevel1DriverConfigFound = 0;
 static int bLevel2DriverConfigFound = 0;
+static int bDriverConfigFound       = 0;
+
+// Name of driver currenly being configured
+static std::string m_currentDriverName;
 
 static void
 startFullConfigParser(void* data, const char* name, const char** attr)
 {
     CControlObject* pObj = (CControlObject*)data;
-    if (NULL == data)
+    if (NULL == data) {
         return;
+    }
 
     // fprintf(stderr, "%s\n", name);
 
@@ -785,6 +1034,10 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 pObj->m_guid.getFromString(attribute);
             }
+            else if (0 == vscp_strcasecmp(attr[i], "servername")) {
+                pObj->m_strServerName = attribute;
+            }
+            
 
         }
     }
@@ -858,25 +1111,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
     
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              (0 == vscp_strcasecmp(name, "mqtt"))) {
-        
-        bVscpConfigFound = TRUE;
 
-        std::string host = "127.0.0.1";
-        short port = 1883;
-        std::string clientid;
-        std::string user = "vscp";
-        std::string password = "secret";
-        int qos = 0;
-        bool bCleanSession = false;
-        bool bRetain = false;
-        int keepalive = -1;
-        std::string topic_subscribe = "vscp/#";
-        std::string topic_publish = "vscp/%guid%/%class%/%type%/";
-        std::string cafile = "";
-    	std::string capath = "";
-    	std::string certfile = "";
-    	std::string keyfile = "";
-    	std::string xpassword = "";
+        bMQTTConfigFound = TRUE;
 
         for (int i=0; attr[i]; i += 2) {
 
@@ -887,127 +1123,99 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 vscp_startsWith(attribute, "tcp://", &attribute);
                 vscp_startsWith(attribute, "stcp://", &attribute);
                 vscp_trim(attribute);
-                host = attribute;
+                pObj->m_mqtt_strHost = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "port")) {
-                port = vscp_readStringValue(attribute);
+                pObj->m_mqtt_port = vscp_readStringValue(attribute);
             }
             else if (0 == vscp_strcasecmp(attr[i], "user")) {
-                user = attribute;
+                pObj->m_mqtt_strUserName = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "password")) {
-                password = attribute;
+                pObj->m_mqtt_strPassword = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "qos")) {
-                qos = vscp_readStringValue(attribute);
-                if (qos>3) {
+                pObj->m_mqtt_qos = vscp_readStringValue(attribute);
+                if (pObj->m_mqtt_qos>3) {
                     syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
-                    qos = 0;
+                    pObj->m_mqtt_qos = 0;
                 }
             }
-            else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {  // bCleanSession
+            else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    bCleanSession = true;
+                    pObj->m_mqtt_bCleanSession = true;
                 }
                 else {
-                    bCleanSession = false;
+                    pObj->m_mqtt_bCleanSession = false;
                 }
-            }                        
-            else if (0 == vscp_strcasecmp(attr[i], "bretain")) {        // bRetain
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    bRetain = true;
+                    pObj->m_mqtt_bRetain = true;
                 }
                 else {
-                    bRetain = false;
+                    pObj->m_mqtt_bRetain = false;
                 }
             }
             else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
-                keepalive = vscp_readStringValue(attribute);
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "topic-subscribe")) {
-                topic_subscribe = attribute;
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "topic-publish")) {
-                topic_publish = attribute;
+                pObj->m_mqtt_keepalive = vscp_readStringValue(attribute);
             }
             else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
-                cafile = attribute;
+                if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
+                pObj->m_mqtt_cafile = attribute;                
             }
             else if (0 == vscp_strcasecmp(attr[i], "capath")) {
-                capath = attribute;
+                if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
+                pObj->m_mqtt_capath = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
-                certfile = attribute;
+                if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
+                pObj->m_mqtt_certfile = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
-                keyfile = attribute;
+                if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
+                pObj->m_mqtt_keyfile = attribute;
             }
-            else if (0 == vscp_strcasecmp(attr[i], "xpassword")) {
-                xpassword = attribute;
+            else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
+                pObj->m_mqtt_pwKeyfile = attribute;
             }
 
         }
-
-        if ( VSCP_ERROR_SUCCESS != pObj->m_mqtt.init( host,
-                                                    port,
-                                                    topic_subscribe,
-                                                    topic_publish,
-                                                    clientid,
-                                                    user,
-                                                    password,
-                                                    bCleanSession,
-                                                    qos ) ) {
-            syslog(LOG_ERR,"Failed to initialize MQTT broker.");
-            syslog(LOG_ERR,"host: %s Port %d",host.c_str(), (int)port );
-            syslog(LOG_ERR,"user %s ", user.c_str() );
-            syslog(LOG_ERR,"topic subscribe %s ", topic_subscribe.c_str() );
-            syslog(LOG_ERR,"topic publish %s ", topic_publish.c_str() );
-            syslog(LOG_ERR,"clinet id %s ", clientid.c_str() );
-            syslog(LOG_ERR,"bCleanSession: %s ", bCleanSession ? "true" : "false" );
-            syslog(LOG_ERR,"qos: %d ", qos );
-        }
-
-        if ( bRetain ) {
-            if ( VSCP_ERROR_SUCCESS != pObj->m_mqtt.setRetain(bRetain) ) {
-                syslog(LOG_ERR,"Failed to set MQTT broker retain");
-            }
-        }
-
-        if ( -1 != keepalive ) {
-            if ( VSCP_ERROR_SUCCESS != pObj->m_mqtt.setKeepAlive(keepalive) ) {
-                syslog(LOG_ERR,"Failed to set MQTT broker keepalive (%d)", keepalive);
-            }
-        }
-
-        if (cafile.length()) {
-           if ( VSCP_ERROR_SUCCESS != pObj->m_mqtt.set_tls(cafile,
-                                                            capath,
-                                                            certfile,
-                                                            keyfile,
-                                                            xpassword ) ) {
-               syslog(LOG_ERR,"Failed to set MQTT broker tls");
-           }
-        }
-
-        // if (bEnable) {
-        //     pObj->addMqttClient(interface,
-		// 	                        user,
-		// 	                        password,
-		// 	                        filter,
-		// 	                        guid,
-		// 	                        qos,
-		// 	                        bCleanSession,
-		// 	                        bRetain,
-		// 	                        keepalive,
-		// 	                        topic_subscribe,
-		// 	                        topic_publish,
-		// 	                        cafile,
-		// 	                        capath,
-		// 	                        certfile,
-		// 	                        keyfile,
-		// 	                        xpassword );
-        // }
         
+    }
+    else if (bVscpConfigFound && bMQTTConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "subscribe"))) {
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                pObj->m_mqtt_subscriptions.push_back(attribute);
+            }
+
+        }
+
+    }
+    else if (bVscpConfigFound && bMQTTConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "publish"))) {
+
+        std::string topic;
+
+        for (int i=0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                pObj->m_mqtt_publish.push_back(attribute);
+            }
+
+        }
+
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
              ((0 == vscp_strcasecmp(name, "level1driver")) ||
@@ -1025,6 +1233,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         uint32_t translation = 0;
         cguid guid;
         bool bEnabled = false;
+
+        bDriverConfigFound = TRUE;
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1051,8 +1261,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else if (0 == vscp_strcasecmp(attr[i], "config")) {
                 strConfig = attribute;
             }
-            else if (0 == vscp_strcasecmp(attr[i],
-                                          "parameter")) { // deprecated
+            else if (0 == vscp_strcasecmp(attr[i], "parameter")) { // deprecated
                 strConfig = attribute;
             }
             else if (0 == vscp_strcasecmp(attr[i], "path")) {
@@ -1069,15 +1278,16 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         } // for
 
-        if (bEnabled) {
+        //if (bEnabled) {
             // Add the level I device
-            if (!pObj->m_deviceList.addItem(strName,
+            m_currentDriverName = strName;
+            if (!pObj->m_deviceList.addItem(bEnabled,
+                                            strName,
                                             strConfig,
                                             strPath,
                                             flags,
                                             guid,
-                                            VSCP_DRIVER_LEVEL1,
-                                            bEnabled,
+                                            VSCP_DRIVER_LEVEL1,                                            
                                             translation)) {
                 syslog(LOG_ERR,
                        "Level I driver not added name=%s. "
@@ -1088,9 +1298,146 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else {
                 if (__VSCP_DEBUG_DRIVER1) {
                     syslog(LOG_DEBUG,
-                           "Level I driver added. name = %s - [%s]",
+                           "ControlObject: ReadConfig: Level I driver added. name = %s - [%s]",
                            strName.c_str(),
                            strPath.c_str());
+                }
+            }
+        //}
+    }
+    else if (bVscpConfigFound && bLevel1DriverConfigFound &&
+             (3 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "mqtt"))) {
+
+        bMQTTConfigFound = true;
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig: Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+
+            // Set defaults from master thread
+            pDriver->m_mqtt_strHost = pObj->m_mqtt_strHost;
+            pDriver->m_mqtt_port = pObj->m_mqtt_port;
+            pDriver->m_mqtt_strUserName = pObj->m_mqtt_strUserName;
+            pDriver->m_mqtt_strPassword = pObj->m_mqtt_strPassword;
+            pDriver->m_mqtt_qos = pObj->m_mqtt_qos;
+            pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
+            pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
+            pDriver->m_mqtt_keepalive = pObj->m_mqtt_keepalive;
+            pDriver->m_mqtt_cafile = pObj->m_mqtt_cafile;
+            pDriver->m_mqtt_capath = pObj->m_mqtt_capath;
+            pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
+            pDriver->m_mqtt_keyfile = pObj->m_mqtt_keyfile;
+            pDriver->m_mqtt_pwKeyfile = pObj->m_mqtt_pwKeyfile;
+
+            for (int i=0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "host")) {
+                    vscp_startsWith(attribute, "tcp://", &attribute);
+                    vscp_startsWith(attribute, "stcp://", &attribute);
+                    vscp_trim(attribute);
+                    pDriver->m_mqtt_strHost = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "port")) {
+                    pDriver->m_mqtt_port = vscp_readStringValue(attribute);
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                    pDriver->m_mqtt_strUserName = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                    pDriver->m_mqtt_strPassword = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "qos")) {
+                    pDriver->m_mqtt_qos = vscp_readStringValue(attribute);
+                    if (pDriver->m_mqtt_qos > 3) {
+                        syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
+                        pDriver->m_mqtt_qos = 0;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                        pDriver->m_mqtt_bCleanSession = true;
+                    }
+                    else {
+                        pDriver->m_mqtt_bCleanSession = false;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                        pDriver->m_mqtt_bRetain = true;
+                    }
+                    else {
+                        pDriver->m_mqtt_bRetain = false;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
+                    pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_cafile = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "capath")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_capath = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_certfile = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_keyfile = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_pwKeyfile = attribute; 
+                }
+            }  // for
+        }
+    }
+    else if (bVscpConfigFound && bLevel1DriverConfigFound && bMQTTConfigFound &&
+             (4 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "subscribe"))) {
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig: L1:Subscribe Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+            for (int i = 0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                    pDriver->m_mqtt_subscriptions.push_back(attribute);
+                }
+            }
+        }
+    }
+    else if (bVscpConfigFound && bLevel1DriverConfigFound && bMQTTConfigFound &&
+             (4 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "publish"))) {
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig L1:Publish: Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+            for (int i = 0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                    pDriver->m_mqtt_publish.push_back(attribute);
                 }
             }
         }
@@ -1108,6 +1455,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         std::string strPath;
         cguid guid;
         bool bEnabled = false;
+
+        bDriverConfigFound = TRUE;
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1148,13 +1497,15 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 
         // Add the level II device
         if (bEnabled) {
-            if (!pObj->m_deviceList.addItem(strName,
+
+            m_currentDriverName = strName;
+            if (!pObj->m_deviceList.addItem(bEnabled,
+                                            strName,
                                             strConfig,
                                             strPath,
                                             0,
                                             guid,
-                                            VSCP_DRIVER_LEVEL2,
-                                            bEnabled)) {
+                                            VSCP_DRIVER_LEVEL2)) {
                 if (__VSCP_DEBUG_DRIVER2) {
                     syslog(LOG_ERR,
                            "Level II driver was not added. name = %s"
@@ -1173,6 +1524,144 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         }
     }
+    else if (bVscpConfigFound && bLevel2DriverConfigFound &&
+             (3 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "mqtt"))) {
+
+        bMQTTConfigFound = true;
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig: Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+
+            // Set defaults from master thread
+            pDriver->m_mqtt_strHost = pObj->m_mqtt_strHost;
+            pDriver->m_mqtt_port = pObj->m_mqtt_port;
+            pDriver->m_mqtt_strUserName = pObj->m_mqtt_strUserName;
+            pDriver->m_mqtt_strPassword = pObj->m_mqtt_strPassword;
+            pDriver->m_mqtt_qos = pObj->m_mqtt_qos;
+            pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
+            pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
+            pDriver->m_mqtt_keepalive = pObj->m_mqtt_keepalive;
+            pDriver->m_mqtt_cafile = pObj->m_mqtt_cafile;
+            pDriver->m_mqtt_capath = pObj->m_mqtt_capath;
+            pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
+            pDriver->m_mqtt_keyfile = pObj->m_mqtt_keyfile;
+            pDriver->m_mqtt_pwKeyfile = pObj->m_mqtt_pwKeyfile;
+
+            for (int i=0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "host")) {
+                    vscp_startsWith(attribute, "tcp://", &attribute);
+                    vscp_startsWith(attribute, "stcp://", &attribute);
+                    vscp_trim(attribute);
+                    pDriver->m_mqtt_strHost = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "port")) {
+                    pDriver->m_mqtt_port = vscp_readStringValue(attribute);
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                    pDriver->m_mqtt_strUserName = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                    pDriver->m_mqtt_strPassword = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "qos")) {
+                    pDriver->m_mqtt_qos = vscp_readStringValue(attribute);
+                    if (pDriver->m_mqtt_qos > 3) {
+                        syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
+                        pDriver->m_mqtt_qos = 0;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                        pDriver->m_mqtt_bCleanSession = true;
+                    }
+                    else {
+                        pDriver->m_mqtt_bCleanSession = false;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                        pDriver->m_mqtt_bRetain = true;
+                    }
+                    else {
+                        pDriver->m_mqtt_bRetain = false;
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
+                    pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_cafile = attribute;
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "capath")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_capath = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_certfile = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_keyfile = attribute; 
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
+                    if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
+                    pDriver->m_mqtt_pwKeyfile = attribute; 
+                }
+            } // for
+        }
+    }
+    else if (bVscpConfigFound && bLevel2DriverConfigFound && bMQTTConfigFound &&
+             (4 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "subscribe"))) {
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig: L1:Subscribe Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+            for (int i = 0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                    pDriver->m_mqtt_subscriptions.push_back(attribute);
+                }
+            }
+        }
+    }
+    else if (bVscpConfigFound && bLevel2DriverConfigFound && bMQTTConfigFound &&
+             (4 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "publish"))) {
+
+        CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+        if ( NULL == pDriver ) {
+            syslog(LOG_ERR,"ControlObject: ReadConfig L1:Publish: Can't get driver object %s", m_currentDriverName.c_str() );
+        }
+        else {
+            for (int i = 0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "topic")) {
+                    pDriver->m_mqtt_publish.push_back(attribute);
+                }
+            }
+        }
+    }
+
 
     depth_full_config_parser++;
 }
@@ -1180,11 +1669,14 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 static void
 handleFullConfigData(void* data, const char* content, int length)
 {
+    ;
 }
 
 static void
 endFullConfigParser(void* data, const char* name)
 {
+    CControlObject* pObj = (CControlObject*)data;
+
     depth_full_config_parser--;
 
     if (1 == depth_full_config_parser &&
@@ -1192,8 +1684,21 @@ endFullConfigParser(void* data, const char* name)
         bVscpConfigFound = FALSE;
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-             (0 == vscp_strcasecmp(name, "mqtt"))) {
+                (0 == vscp_strcasecmp(name, "mqtt"))) {
+
         bMQTTConfigFound = FALSE;
+
+        if (NULL != pObj) {
+            // Set default subscription if none defined
+            if ( !pObj->m_mqtt_subscriptions.size() ) {
+                pObj->m_mqtt_subscriptions.push_back("vscp/{{guid}}/<-/#");
+            }
+
+            // Set default publish if none defined
+            if ( !pObj->m_mqtt_publish.size() ) {
+                pObj->m_mqtt_publish.push_back("vscp/{{guid}}/->/{{class}}/{{type}}");
+            }
+        }
     }
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
         ((0 == vscp_strcasecmp(name, "level1driver")) ||
@@ -1204,6 +1709,30 @@ endFullConfigParser(void* data, const char* name)
              (0 == vscp_strcasecmp(name, "level2driver"))) {
         bLevel2DriverConfigFound = FALSE;
     }
+    else if (bVscpConfigFound && (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "driver"))) {
+        bDriverConfigFound = FALSE;
+    }
+    else if (bVscpConfigFound && (3 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "mqtt"))) {
+        bMQTTConfigFound = FALSE;
+        if ( NULL != pObj ) {
+            CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
+            if ( NULL != pDriver ) {
+                
+                // Set default subscription if none defined
+                if ( !pDriver->m_mqtt_subscriptions.size() ) {
+                    pDriver->m_mqtt_subscriptions.push_back("vscp/{{guid}}/<-/#");
+                }
+
+                // Set default publish if none defined
+                if ( !pDriver->m_mqtt_publish.size() ) {
+                    pDriver->m_mqtt_publish.push_back("vscp/{{guid}}/->/{{class}}/{{type}}");
+                }
+            }
+        }
+    }
+
 }
 
 // ----------------------------------------------------------------------------
@@ -1264,7 +1793,8 @@ CControlObject::readConfiguration(const std::string& strcfgfile)
     XML_ParserFree(xmlParser);
 
     return true;
-} // XML config
+
+}   // XML config
 
 
 

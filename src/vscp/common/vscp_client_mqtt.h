@@ -31,6 +31,7 @@
 #include "mosquitto.h"
 
 #include <queue>
+#include <list>
 
 // Max number of events in inqueue
 #define MQTT_MAX_INQUEUE_SIZE   2000
@@ -57,7 +58,7 @@ public:
             %class% VSCP event class
             %type% VSCP event type
             %dt% VSCP event date/time
-            Default is "vscp/%guid%/miso/%class%/%type%/"
+            Default is "vscp/%guid%/->/%class%/%type%/"
         @param clientId Client id to use. If empty string is supplied
                             a random client id will be set.  
         @param strUserName Username for connection session. If none is set
@@ -69,12 +70,67 @@ public:
     int init(const std::string &strHost,
                 unsigned short port = 1883,
                 const std::string &strTopicSub = "vscp/#",
-                const std::string &strTopicPub = "vscp/%guid%/miso/%class%/%type%/",
+                const std::string &strTopicPub = "vscp/%guid%/->/%class%/%type%/",
                 const std::string &clientId = "",
                 const std::string &strUserName = "",
                 const std::string &strPassword = "",
                 bool bCleanSession = false,
                 int qos = 0);
+
+    // Init MQTT host
+    void setMqttHost(const std::string host = "127.0.0.1") { m_strHost = host; };
+
+    // Init MQTT port
+    void setMqttPort(const short port = 1883) { m_port = port; };
+
+    // Init MQTT user
+    void setMqttUser(const std::string user) { m_strUserName = user; };
+
+    // Init MQTT password
+    void setMqttPassword(const std::string password) { m_strPassword = password; };
+
+    // Init MQTT password
+    void setMqttQos(const int qos = 0) { m_qos = qos; };
+
+    // Init MQTT cleansession 
+    void setMqttCleanSession(const bool bCleanSession = true) { m_bCleanSession = bCleanSession; };
+
+    // Init MQTT retain
+    void setMqttRetain(const bool bRetain) { m_bTLS = true; m_bRetain = bRetain; };
+
+    // Init MQTT keepalive
+    void setMqttKeepAlive(const int keepalive) { m_bTLS = true; m_keepalive = keepalive; };
+
+    // Init MQTT CaFile
+    void setMqttCaFile(const std::string cafile) { m_bTLS = true; m_cafile = cafile; };
+
+    // Init MQTT CaPath
+    void setMqttCaPath(const std::string capath) { m_bTLS = true; m_capath = capath; };
+
+    // Init MQTT CertFile
+    void setMqttCertFile(const std::string certfile) { m_bTLS = true; m_certfile = certfile; };
+
+    // Init MQTT KeyFile
+    void setMqttKeyFile(const std::string keyfile) { m_bTLS = true; m_keyfile = keyfile; };
+
+    // Init MQTT PwKeyFile
+    void setMqttPwKeyFile(const std::string pwkeyfile) { m_bTLS = true; m_pwKeyfile = pwkeyfile; };
+
+    /*!
+        Add subscription item
+        
+        @param strTopicSub Subscription topic. Default is "vscp/#"
+        @return VSCP_ERROR_SUCCESS on success
+    */
+    int addSubscription(const std::string strTopicSub);
+
+    /*!
+        Add publishing item
+
+        @param strTopicPub Publishing topic. Escapes can be used
+        @return VSCP_ERROR_SUCCESS on success
+    */
+    int addPublish(const std::string strTopicPub);
 
     /*!
         Set retain. Should be called before connect. Default is false.
@@ -117,7 +173,6 @@ public:
 
     /*!
         Connect to remote host
-        @param bPoll If true polling is used.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int connect(void);
@@ -296,8 +351,9 @@ private:
 
     std::string m_strHost;      // MQTT broker
     unsigned short m_port;      // MQTT broker port
-    std::string m_strTopicSub;  // Subscribe topic template
-    std::string m_strTopicPub;  // Publish topic template
+    std::list<std::string> m_listTopicSub;  // Subscribe topic templates
+    std::list<std::string> m_listTopicPub;  // Publish topic templates
+
     std::string m_clientId;     // Client id
     std::string m_strUserName;  // Username
     std::string m_strPassword;  // Password
@@ -321,6 +377,7 @@ private:
     std::string m_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
 
     struct mosquitto *m_mosq;   // Handel for connection
+    int m_mid;
     
     // Worker thread id
     pthread_t m_tid;
