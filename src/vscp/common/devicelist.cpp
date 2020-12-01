@@ -40,18 +40,23 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <mosquitto.h>
 
 #include <canal.h>
-#include <clientlist.h>
-#include <controlobject.h>
 #include <devicethread.h>
-#include <dllist.h>
+#include <vscp_debug.h>
+#include <vscphelper.h>
 #include <guid.h>
 #include <vscp.h>
 
 #include <mustache.hpp>
 
 using namespace kainjow::mustache;
+
+
+#ifndef FALSE
+#define FALSE   0
+#endif
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -75,11 +80,13 @@ CDeviceItem::CDeviceItem()
 
     m_translation = NO_TRANSLATION; // Default is no translation
 
-    m_strName.clear();      // No Device Name
-    m_strParameter.clear(); // No Parameters
-    m_strPath.clear();      // No path
-    m_DeviceFlags = 0;      // Default: No flags.
-    m_driverLevel = 0;      // Standard Canal messages is the default
+    m_strName.clear();          // No Device Name
+    m_strParameter.clear();     // No Parameters
+    m_strPath.clear();          // No path
+    m_DeviceFlags = 0;          // Default: No flags.
+    m_driverLevel = 0;          // Standard Canal messages is the default
+
+    m_mqtt_format = jsonfmt;    // JSON is default format
 
     // VSCP Level I
     m_proc_CanalOpen            = NULL;
@@ -110,6 +117,7 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPGetVersion         = NULL;
     m_proc_VSCPGetVersion         = NULL;
 
+    m_debugFlags = VSCP_DEBUG_NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,6 +240,146 @@ CDeviceItem::resumeDriver(void)
     return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool CDeviceItem::sendEvent(vscpEvent *pev)
+{
+    int rv = true;
+    uint8_t *pbuf = NULL;   // Used for binary payload
+    std::string strPayload;
+    std::string strTopic;
+
+    // Check pointer
+    if (NULL == pev) {
+        syslog(LOG_ERR, "ControlObject: sendEvent: Event is NULL pointer");
+        return false;
+    }
+
+    if ( m_mqtt_format == jsonfmt ) {
+        if ( !vscp_convertEventToJSON(strPayload, pev) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == xmlfmt ) {
+        if ( !vscp_convertEventToXML(strPayload, pev) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to XML");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == strfmt ) {
+        if ( !vscp_convertEventToString(strPayload, pev) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to STRING");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == binfmt ) {
+        pbuf = new uint8_t[VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData];
+        if (NULL == pbuf) {
+            return false;
+        }
+
+        if (!vscp_writeEventToFrame( pbuf,
+                                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
+                                    VSCP_MULTICAST_TYPE_EVENT,
+                                    pev ) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to BINARY");
+            return false;
+        }
+    }
+    else {
+        return VSCP_ERROR_NOT_SUPPORTED;
+    }
+
+    for (std::list<std::string>::const_iterator 
+            it = m_mqtt_publish.begin(); 
+            it != m_mqtt_publish.end(); 
+            ++it){
+
+        std::string topic_template = *it;
+
+        // Fix publish topics        
+        mustache subtemplate{topic_template};
+        data data;
+        data.set("guid", m_guid.getAsString());
+        data.set("class", vscp_str_format("%d",pev->vscp_class));
+        data.set("type", vscp_str_format("%d",pev->vscp_type));
+        strTopic = subtemplate.render(data);
+
+        if (m_mqtt_format != binfmt) {
+            rv = mosquitto_publish(m_mosq,
+                                    NULL,
+                                    strTopic.c_str(),
+                                    strPayload.length(),
+                                    strPayload.c_str(),
+                                    m_mqtt_qos,
+                                    FALSE );
+        }
+        else {            
+            rv = mosquitto_publish(m_mosq,
+                                    NULL,
+                                    strTopic.c_str(),
+                                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
+                                    pbuf,
+                                    m_mqtt_qos,
+                                    FALSE );            
+        }
+
+        // Translate mosquitto error code to VSCP error code
+        switch (rv) {
+            case MOSQ_ERR_INVAL:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Parameter");
+                rv = false;
+                break;
+            case MOSQ_ERR_NOMEM:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Memory");
+                rv = false;
+                break;
+            case MOSQ_ERR_NO_CONN:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Connection");
+                rv = false;
+                break;
+            case MOSQ_ERR_PROTOCOL:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error protocol");
+                rv = false;
+                return false;
+            case MOSQ_ERR_PAYLOAD_SIZE:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error payload size");
+                rv = false;
+                break;
+            case MOSQ_ERR_MALFORMED_UTF8:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
+                rv = false;
+                break;
+            case MOSQ_ERR_QOS_NOT_SUPPORTED:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
+                rv = false;
+                break;
+            case MOSQ_ERR_OVERSIZE_PACKET:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
+                rv = false;
+                break;
+        }
+
+        // End if error
+        if (!rv) break;
+
+    }  // for
+
+    if (m_mqtt_format == binfmt) {
+        // Clean up allocated buffer                                    
+        if (NULL != pbuf) {
+            delete [] pbuf;
+            pbuf = NULL;
+        }
+    }
+
+    return rv;
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
 //////////////////////////////////////////////////////////////////////
@@ -266,7 +414,7 @@ CDeviceList::~CDeviceList(void)
 //
 
 bool
-CDeviceList::addItem(bool bEnable,
+CDeviceList::addItem( const uint32_t debugflags,
                         const std::string &strName,
                         const std::string &strParameter,
                         const std::string &strPath,
@@ -276,6 +424,9 @@ CDeviceList::addItem(bool bEnable,
                         uint32_t translation)
 {
     bool rv                  = true;
+
+    
+
     CDeviceItem *pDeviceItem = new CDeviceItem();
     if (NULL == pDeviceItem) return false;
 
@@ -284,7 +435,8 @@ CDeviceList::addItem(bool bEnable,
         if ( vscp_fileExists(strPath) ) {
             m_devItemList.push_back(pDeviceItem);
 
-            pDeviceItem->m_bEnable = bEnable;
+            pDeviceItem->m_bEnable = true;
+            pDeviceItem->m_debugFlags = debugflags;
 
             pDeviceItem->m_driverLevel    = level;
             pDeviceItem->m_strName        = strName;

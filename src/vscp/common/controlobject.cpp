@@ -109,7 +109,11 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     if (NULL == pData) return;
 
     CControlObject *pObj = (CControlObject *)pData;
-    printf("%s", logmsg);
+
+    if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
+        printf("\n-------------------------------------------------------------------------------\n");
+        printf("LOG ------> \n%s", logmsg);
+    }
 }
 
 
@@ -119,9 +123,12 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    vscpClientMqtt *pObj = (vscpClientMqtt *)pData;
+    CControlObject *pObj = (CControlObject *)pData;
 
-    printf("CONNECT");
+    if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("\n-------------------------------------------------------------------------------\n");
+        printf("CONNECT\n");
+    }
 }
 
 
@@ -133,7 +140,10 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
     CControlObject *pObj = (CControlObject *)pData;
 
-    printf("DISCONNECT");
+    if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("\n-------------------------------------------------------------------------------\n");
+        printf("DISCONNECT\n");
+    }
 }
 
 
@@ -147,7 +157,10 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
     CControlObject *pObj = (CControlObject *)pData;
     std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
 
-    printf("MESSAGE %s", payload.c_str() );
+    if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+        printf("\n-------------------------------------------------------------------------------\n");
+        printf("MESSAGE ------> \n %s", payload.c_str() );
+    }
 }
 
 
@@ -159,7 +172,10 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
 
     CControlObject *pObj = (CControlObject *)pData;
 
-    printf("PUBLISH");
+    if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_PUBLISH) {
+        printf("\n-------------------------------------------------------------------------------\n");
+        printf("PUBLISH ------> \n");
+    }
 }
 
 
@@ -176,7 +192,7 @@ CControlObject::CControlObject()
     // Open syslog
     openlog("vscpd", LOG_CONS, LOG_DAEMON);
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Starting the vscpd daemon");
     }
 
@@ -198,8 +214,6 @@ CControlObject::CControlObject()
     // Init daemon MQTT
     m_mqtt_strHost = "localhost";
     m_mqtt_port = 1883;
-    //m_mqtt_strTopicSub = "/vscp/{guid}";
-    //m_mqtt_strTopicPub = "/vscp/{guid}";
     m_mqtt_strclientId = "";
     m_mqtt_strUserName = "vscp";
     m_mqtt_strPassword = "secret";
@@ -213,6 +227,7 @@ CControlObject::CControlObject()
     m_mqtt_certfile = "";
     m_mqtt_keyfile = "";
     m_mqtt_pwKeyfile = "";
+    m_mqtt_format = jsonfmt;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,7 +236,7 @@ CControlObject::CControlObject()
 
 CControlObject::~CControlObject()
 {
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Cleaning up");
     }
 
@@ -230,7 +245,7 @@ CControlObject::~CControlObject()
         return;
     }
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Terminating the vscpd daemon");
     }
 
@@ -275,7 +290,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     ////////////////////////////////////////////////////////////////////////////
 
     // Read XML configuration
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Reading configuration file");
     }
 
@@ -309,7 +324,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     }
 #endif
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
     }
 
@@ -343,15 +358,16 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     else {
         m_mqtt_bCleanSession = true;    // Must be true without id
         m_mosq = mosquitto_new(NULL, m_mqtt_bCleanSession, this);
-        if (NULL == m_mosq) {
-            if (ENOMEM == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
-            }
-            else if (EINVAL == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
-            }
-            return false;
+    }
+
+    if (NULL == m_mosq) {
+        if (ENOMEM == errno) {
+            syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
         }
+        else if (EINVAL == errno) {
+            syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+        }
+        return false;
     }
 
     mosquitto_log_callback_set(m_mosq, mqtt_log_callback);
@@ -447,6 +463,70 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// cleanup
+
+bool
+CControlObject::cleanup(void)
+{
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Giving worker threads time to stop "
+               "operations...");
+    }
+
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping device worker thread...");
+    }
+
+    try {
+        stopDeviceWorkerThreads();
+    }
+    catch (...) {
+        syslog(LOG_ERR,
+               "REST: Exception occurred when stoping device worker threads");
+    }
+
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+        syslog(
+          LOG_DEBUG,
+          "ControlObject: cleanup - Stopping VSCP Server worker thread...");
+    }
+
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping client worker thread...");
+    }
+
+    // Disconnect from MQTT broker}
+    int rv = mosquitto_disconnect(m_mosq);
+    if (MOSQ_ERR_SUCCESS != rv) {
+        if (MOSQ_ERR_INVAL == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: input parameters were invalid.");
+        }
+        else if (MOSQ_ERR_NO_CONN == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: client isn’t connected to a broker");
+        }
+    }
+
+    // stop the worker loop
+    rv = mosquitto_loop_stop(m_mosq, false);
+    if (MOSQ_ERR_SUCCESS != rv) {
+        if (MOSQ_ERR_INVAL == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: input parameters were invalid.");
+        }
+        else if (MOSQ_ERR_NOT_SUPPORTED == rv) {
+            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: thread support is not available..");
+        }
+    }
+
+    // Clean up
+    mosquitto_destroy(m_mosq);
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // run - Program main loop
 //
 // Most work is done in the threads at the moment
@@ -489,7 +569,7 @@ CControlObject::run(void)
 
     // Clean up is called in main file
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Mainloop ending");
     }
 
@@ -498,69 +578,7 @@ CControlObject::run(void)
 
 
 
-/////////////////////////////////////////////////////////////////////////////
-// cleanup
 
-bool
-CControlObject::cleanup(void)
-{
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG,
-               "ControlObject: cleanup - Giving worker threads time to stop "
-               "operations...");
-    }
-
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG,
-               "ControlObject: cleanup - Stopping device worker thread...");
-    }
-
-    try {
-        stopDeviceWorkerThreads();
-    }
-    catch (...) {
-        syslog(LOG_ERR,
-               "REST: Exception occurred when stoping device worker threads");
-    }
-
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(
-          LOG_DEBUG,
-          "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    }
-
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG,
-               "ControlObject: cleanup - Stopping client worker thread...");
-    }
-
-    // Disconnect from MQTT broker}
-    int rv = mosquitto_disconnect(m_mosq);
-    if (MOSQ_ERR_SUCCESS != rv) {
-        if (MOSQ_ERR_INVAL == rv) {
-            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: input parameters were invalid.");
-        }
-        else if (MOSQ_ERR_NO_CONN == rv) {
-            syslog(LOG_ERR, "ControlObject: mosquitto_disconnect: client isn’t connected to a broker");
-        }
-    }
-
-    // stop the worker loop
-    rv = mosquitto_loop_stop(m_mosq, false);
-    if (MOSQ_ERR_SUCCESS != rv) {
-        if (MOSQ_ERR_INVAL == rv) {
-            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: input parameters were invalid.");
-        }
-        else if (MOSQ_ERR_NOT_SUPPORTED == rv) {
-            syslog(LOG_ERR, "ControlObject: mosquitto_loop_stop: thread support is not available..");
-        }
-    }
-
-    // Clean up
-    mosquitto_destroy(m_mosq);
-
-    return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // sendEvent
@@ -569,13 +587,129 @@ CControlObject::cleanup(void)
 bool
 CControlObject::sendEvent(vscpEventEx *pex)
 {
+    int rv = true;
+    uint8_t *pbuf = NULL;   // Used for binary payload
+    std::string strPayload;
+    std::string strTopic;
+
     // Check pointer
     if (NULL == pex) {
         syslog(LOG_ERR, "ControlObject: sendEvent: Event is NULL pointer");
         return false;
     }
 
-    return true;
+    if ( m_mqtt_format == jsonfmt ) {
+        if ( !vscp_convertEventExToJSON(strPayload, pex) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == xmlfmt ) {
+        if ( !vscp_convertEventExToXML(strPayload, pex) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to XML");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == strfmt ) {
+        if ( !vscp_convertEventExToString(strPayload, pex) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to STRING");
+            return false;
+        }
+    }
+    else if ( m_mqtt_format == binfmt ) {
+        pbuf = new uint8_t[VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pex->sizeData];
+        if (NULL == pbuf) {
+            return false;
+        }
+
+        if (!vscp_writeEventExToFrame( pbuf,
+                                        VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pex->sizeData,
+                                        VSCP_MULTICAST_TYPE_EVENT,
+                                        pex ) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to BINARY");
+            return false;
+        }
+    }
+    else {
+        return VSCP_ERROR_NOT_SUPPORTED;
+    }
+
+    for (std::list<std::string>::const_iterator 
+            it = m_mqtt_publish.begin(); 
+            it != m_mqtt_publish.end(); 
+            ++it){
+
+        std::string topic_template = *it;
+
+        // Fix publish topics
+        mustache subtemplate{topic_template};
+        data data;
+        data.set("guid", m_guid.getAsString());
+        data.set("class", vscp_str_format("%d",pex->vscp_class));
+        data.set("type", vscp_str_format("%d",pex->vscp_type));
+        strTopic = subtemplate.render(data);
+
+        if (m_mqtt_format != binfmt) {
+            rv = mosquitto_publish(m_mosq,
+                                    NULL,
+                                    strTopic.c_str(),
+                                    strPayload.length(),
+                                    strPayload.c_str(),
+                                    m_mqtt_qos,
+                                    FALSE );
+        }
+        else {
+            rv = mosquitto_publish(m_mosq,
+                                    NULL,
+                                    strTopic.c_str(),
+                                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pex->sizeData,
+                                    pbuf,
+                                    m_mqtt_qos,
+                                    FALSE );
+        }
+
+        // Translate mosquitto error code to VSCP error code
+        switch (rv) {
+            case MOSQ_ERR_INVAL:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Parameter");
+                break;
+            case MOSQ_ERR_NOMEM:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Memory");
+                break;
+            case MOSQ_ERR_NO_CONN:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Connection");
+                break;
+            case MOSQ_ERR_PROTOCOL:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error protocol");
+                break;
+            case MOSQ_ERR_PAYLOAD_SIZE:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error payload size");
+                break;
+            case MOSQ_ERR_MALFORMED_UTF8:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
+                break;
+            case MOSQ_ERR_QOS_NOT_SUPPORTED:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
+                break;
+            case MOSQ_ERR_OVERSIZE_PACKET:
+                syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
+                break;
+        }
+
+        // End if error
+        if (!rv) break;
+
+    }  // for
+
+    if (m_mqtt_format == binfmt) {
+        // Clean up allocated buffer                                    
+        if (NULL != pbuf) {
+            delete [] pbuf;
+            pbuf = NULL;
+        }
+    }
+
+    return rv;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -596,6 +730,7 @@ CControlObject::periodicEvents(void)
     ex.vscp_class = VSCP_CLASS1_INFORMATION;
     ex.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
     ex.sizeData   = 3;
+    m_guid.writeGUID(ex.GUID);
 
     // GUID
     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
@@ -617,6 +752,7 @@ CControlObject::periodicEvents(void)
     ex.vscp_class = VSCP_CLASS2_INFORMATION;
     ex.vscp_type  = VSCP2_TYPE_INFORMATION_HEART_BEAT;
     ex.sizeData   = 64;
+    m_guid.writeGUID(ex.GUID);
 
     // GUID
     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
@@ -639,6 +775,7 @@ CControlObject::periodicEvents(void)
     ex.vscp_class = VSCP_CLASS1_PROTOCOL;
     ex.vscp_type  = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
     ex.sizeData   = 5;
+    m_guid.writeGUID(ex.GUID);
 
     // GUID
     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
@@ -665,6 +802,7 @@ CControlObject::periodicEvents(void)
     vscp_setEventExToNow(&ex); // Set time to current time
     ex.vscp_class = VSCP_CLASS2_PROTOCOL;
     ex.vscp_type  = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
+    m_guid.writeGUID(ex.GUID);
 
     // Fill in data
     memset(ex.data, 0, sizeof(ex.data));
@@ -693,6 +831,7 @@ CControlObject::periodicEvents(void)
     // TODO
 
     ex.sizeData = 104;
+    m_guid.writeGUID(ex.GUID);
 
     if (!sendEvent(&ex)) {
          syslog(LOG_ERR, "Failed to send high end server capabilities.");
@@ -726,7 +865,7 @@ bool
 CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem* pDeviceItem;
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
     }
 
@@ -738,7 +877,7 @@ CControlObject::startDeviceWorkerThreads(void)
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
-            if (__VSCP_DEBUG_EXTRA) {
+            if (m_debugFlags & VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Preparing: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -748,7 +887,7 @@ CControlObject::startDeviceWorkerThreads(void)
             if (!pDeviceItem->m_bEnable)
                 continue;
 
-            if (__VSCP_DEBUG_EXTRA) {
+            if (m_debugFlags & VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Starting: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -772,7 +911,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem* pDeviceItem;
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
     }
     std::deque<CDeviceItem*>::iterator iter;
@@ -782,7 +921,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-            if (__VSCP_DEBUG_EXTRA) {
+            if (m_debugFlags & VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Stopping: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -883,8 +1022,9 @@ CControlObject::getMacAddress(cguid& guid)
     guid.clear();
 
     fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (-1 == fd)
+    if (-1 == fd) {
         return false;
+    }
 
     memset(&s, 0, sizeof(s));
     strcpy(s.ifr_name, "eth0");
@@ -892,7 +1032,7 @@ CControlObject::getMacAddress(cguid& guid)
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
 
         // ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
-        if (__VSCP_DEBUG_EXTRA) {
+        if (m_debugFlags & VSCP_DEBUG_EXTRA) {
             syslog(LOG_DEBUG,
                    "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
                    (uint8_t)s.ifr_addr.sa_data[0],
@@ -1037,58 +1177,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                 pObj->m_strServerName = attribute;
             }
-            
-
-        }
-    }
-    else if (bVscpConfigFound && bGeneralConfigFound &&
-             (2 == depth_full_config_parser) &&
-             (0 == vscp_strcasecmp(name, "debug"))) {
-
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            if (0 == vscp_strcasecmp(attr[i], "byte1")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte2")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[1] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte3")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[2] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte4")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[3] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte5")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[4] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte6")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[5] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte7")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[6] = vscp_readStringValue(attribute);
-                }
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "byte8")) {
-                if (attribute.length()) {
-                    pObj->m_debugFlags[7] = vscp_readStringValue(attribute);
-                }
+            else if (0 == vscp_strcasecmp(attr[i], "debug")) {
+                pObj->m_debugFlags = vscp_readStringValue(attribute);
             }
         }
     }
@@ -1278,17 +1368,17 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         } // for
 
-        //if (bEnabled) {
+        if (bEnabled) {
             // Add the level I device
             m_currentDriverName = strName;
-            if (!pObj->m_deviceList.addItem(bEnabled,
-                                            strName,
-                                            strConfig,
-                                            strPath,
-                                            flags,
-                                            guid,
-                                            VSCP_DRIVER_LEVEL1,                                            
-                                            translation)) {
+            if (!pObj->m_deviceList.addItem( pObj->m_debugFlags,
+                                                strName,
+                                                strConfig,
+                                                strPath,
+                                                flags,
+                                                guid,
+                                                VSCP_DRIVER_LEVEL1,                                            
+                                                translation)) {
                 syslog(LOG_ERR,
                        "Level I driver not added name=%s. "
                        "Path does not exist. - [%s]",
@@ -1296,14 +1386,14 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                        strPath.c_str());
             }
             else {
-                if (__VSCP_DEBUG_DRIVER1) {
+                if (pObj->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
                     syslog(LOG_DEBUG,
                            "ControlObject: ReadConfig: Level I driver added. name = %s - [%s]",
                            strName.c_str(),
                            strPath.c_str());
                 }
             }
-        //}
+        }
     }
     else if (bVscpConfigFound && bLevel1DriverConfigFound &&
              (3 == depth_full_config_parser) &&
@@ -1499,14 +1589,14 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         if (bEnabled) {
 
             m_currentDriverName = strName;
-            if (!pObj->m_deviceList.addItem(bEnabled,
-                                            strName,
-                                            strConfig,
-                                            strPath,
-                                            0,
-                                            guid,
-                                            VSCP_DRIVER_LEVEL2)) {
-                if (__VSCP_DEBUG_DRIVER2) {
+            if (!pObj->m_deviceList.addItem( pObj->m_debugFlags,
+                                                strName,
+                                                strConfig,
+                                                strPath,
+                                                0,
+                                                guid,
+                                                VSCP_DRIVER_LEVEL2)) {
+                if (pObj->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
                     syslog(LOG_ERR,
                            "Level II driver was not added. name = %s"
                            "Path does not exist. - [%s]",
@@ -1515,7 +1605,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 }
             }
             else {
-                if (__VSCP_DEBUG_DRIVER2) {
+                if (pObj->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
                     syslog(LOG_DEBUG,
                            "Level II driver added. name = %s- [%s]",
                            strName.c_str(),
@@ -1748,7 +1838,7 @@ CControlObject::readConfiguration(const std::string& strcfgfile)
 {
     FILE* fp;
 
-    if (__VSCP_DEBUG_EXTRA) {
+    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG,
                "Reading full XML configuration from [%s]",
                (const char*)strcfgfile.c_str());

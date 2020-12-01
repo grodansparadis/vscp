@@ -32,6 +32,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include <vscp.h>
 #include <canaldlldef.h>
 #include <devicethread.h>
 #include <guid.h>
@@ -86,6 +87,12 @@ class CDeviceItem
     std::string getAsString(void);
 
     /*!
+        Send VSCP event to broker on all
+        topics defined
+    */
+    bool sendEvent(vscpEvent *pev);
+
+    /*!
         Start driver
         @param Pointer to control object
         @return true on success, false on failure
@@ -111,6 +118,9 @@ class CDeviceItem
     bool stopDriver(void);
 
   public:
+
+    // This is set from the control object to the configured value
+    uint32_t m_debugFlags;
 
     // Name of device
     std::string m_strName;
@@ -166,7 +176,20 @@ class CDeviceItem
     long m_openHandle;
 
     // ------------------------------------------------------------------------
-    //                                   MQTT
+    //                             input Queue
+    // ------------------------------------------------------------------------
+
+    // Input Queue
+    std::deque<vscpEvent*> m_inputQueue;
+
+    // Semaphore to indicate that an event has been received
+    sem_t m_seminputQueue;
+
+    // Mutex handle that is used for sharing of the client object
+    pthread_mutex_t m_mutexinputQueue;
+
+    // ------------------------------------------------------------------------
+    //                                 MQTT
     // ------------------------------------------------------------------------
 
     std::string m_mqtt_strHost;     // MQTT broker
@@ -174,7 +197,7 @@ class CDeviceItem
     std::list<std::string> m_mqtt_subscriptions;    // Subscribe topic templates
     std::list<std::string> m_mqtt_publish;          // Publish topic templates
 
-    std::string m_mqtt_clientId;    // Client id
+    std::string m_mqtt_strClientId; // Client id
     std::string m_mqtt_strUserName; // Username
     std::string m_mqtt_strPassword; // Password
     int m_mqtt_qos;                 // Quality of service (0/1/2)
@@ -194,11 +217,11 @@ class CDeviceItem
                                     // If NULL, keyfile must also be NULL and no client certificate will be used.
     std::string m_mqtt_keyfile;
 
-    std::string m_mqtt_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
+    std::string m_mqtt_pwKeyfile;       // Password for keyfile (set only if it is encrypted on disc)
 
-    struct mosquitto *m_mqtt_mosq;   // Handel for connection
-    
-    int m_mqtt_mid;                  // Mosquitto message id
+    struct mosquitto *m_mosq;           // Handel for connection
+
+    enumMqttMsgFormat m_mqtt_format;    // Format for mqtt events (JSON/XML)
 
     // ------------------------------------------------------------------------
     //                     Start of driver worker thread data
@@ -262,7 +285,7 @@ class CDeviceList
 
     /*!
         Add one driver item
-        @param bEnable True to enable driver
+        @param debugflags Configured debug flags
         @param strName Driver name
         @param strParameters Driver configuration string
         @param flags Driver flags
@@ -271,7 +294,7 @@ class CDeviceList
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem(bool bEnable,
+    bool addItem( const uint32_t debugflags,
                     const std::string& strName,
                     const std::string& strParameters,
                     const std::string& strPath,

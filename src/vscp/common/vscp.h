@@ -325,7 +325,7 @@ extern "C"
 /* Packet frame format type = 0                         */
 /*      without byte0 and CRC                           */
 /*      total frame size is 1 + 34 + 2 + data-length    */
-#define VSCP_MULTICAST_PACKET0_HEADER_LENGTH 35
+#define VSCP_MULTICAST_PACKET0_HEADER_LENGTH      35
 
 /* Multicast packet ordinals */
 #define VSCP_MULTICAST_PACKET0_POS_PKTTYPE        0
@@ -723,6 +723,9 @@ note: This is a note <br>
     "\"filter_type\": %d,\n"                                                   \
     "\"filter_guid\": \"%s\",\n"                                               \
     "}"
+
+// MQTT message formats
+enum enumMqttMsgFormat {jsonfmt,xmlfmt,strfmt,binfmt};
 
 #ifdef __cplusplus
 }

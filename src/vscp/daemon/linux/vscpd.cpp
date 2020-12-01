@@ -60,7 +60,7 @@
 #include <vscphelper.h>
 
 //#define DEBUG
-uint32_t m_gdebugArray[8];
+uint32_t gdebugFlags;
 
 // Globals for the daemon
 int gbStopDaemon;
@@ -106,16 +106,7 @@ void
 getDebugValues(const char* optarg)
 {
     std::string attribute = optarg;
-    std::deque<std::string> tokens;
-    vscp_split(tokens, attribute, ",");
-    size_t cnt = tokens.size();
-    for (size_t idx = 0; idx < MIN(8, cnt); idx++) {
-        if (tokens.size()) {
-            uint32_t val       = vscp_readStringValue(tokens.front());
-            m_gdebugArray[idx] = val;
-            tokens.pop_front();
-        }
-    }
+    gdebugFlags = vscp_readStringValue(std::string(optarg));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -128,11 +119,6 @@ main(int argc, char** argv)
     int opt = 0;
     std::string rootFolder; // Folder where VSCP files & folders will be located
     std::string strcfgfile; // Points to XML configuration file
-
-    // Clear debug settings
-    for (int i = 0; i < 8; i++) {
-        m_gdebugArray[i] = 0;
-    }
 
     fprintf(stderr, "Prepare to start vscpd...\n");
 
@@ -251,9 +237,9 @@ init(std::string& strcfgfile, std::string& rootFolder)
         dup2(0, 2);
     }
 
-    signal(SIGHUP, _sighandlerStop);
-    signal(SIGUSR1, _sighandlerStop);
-    signal(SIGUSR2, _sighandlerRestart);
+    // signal(SIGHUP, _sighandlerStop);
+    // signal(SIGUSR1, _sighandlerStop);
+    // signal(SIGUSR2, _sighandlerRestart);
 
     // Write pid to file
     FILE* pFile;
@@ -348,7 +334,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
         }
 
         // Tansfer read debug parameters if set
-        gpobj->m_debugFlags = m_gdebugArray;
+        gpobj->m_debugFlags = gdebugFlags;
 
 
         // *******************************

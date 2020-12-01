@@ -46,11 +46,11 @@
 #endif
 
 #include <canal_macro.h>
-#include <dllist.h>
 #include <level2drvdef.h>
 #include <vscp.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
+#include <devicelist.h>
 
 #include <mosquitto.h>
 
@@ -65,7 +65,10 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    CClientItem *pItem = (CClientItem *)pData;
+    CDeviceItem *pItem = (CDeviceItem *)pData;
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
+
+    }
 
 }
 
@@ -76,7 +79,10 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    CClientItem *pItem = (CClientItem *)pData;
+    CDeviceItem *pItem = (CDeviceItem *)pData;
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+
+    }
 
 }
 
@@ -87,7 +93,10 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    CClientItem *pItem = (CClientItem *)pData;
+    CDeviceItem *pItem = (CDeviceItem *)pData;
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+
+    }
 
 }
 
@@ -99,10 +108,12 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
     if (NULL == pData) return;
     if (NULL == pMsg) return;
 
-    CClientItem *pItem = (CClientItem *)pData;
+    CDeviceItem *pItem = (CDeviceItem *)pData;
     std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
 
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
 
+    }
 }
 
 
@@ -112,8 +123,10 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    CClientItem *pItem = (CClientItem *)pData;
+    CDeviceItem *pItem = (CDeviceItem *)pData;
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_PUBLISH) {
 
+    }
 }
 
 
@@ -135,8 +148,8 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
 void*
 deviceThread(void* pData)
 {
-    CDeviceItem* pDevItem = (CDeviceItem*)pData;
-    if (NULL == pDevItem) {
+    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
+    if (NULL == pDeviceItem) {
         syslog(LOG_ERR, "No device item defined. Aborting device thread!");
         return NULL;
     }
@@ -144,28 +157,28 @@ deviceThread(void* pData)
     void* hdll;
 
     // Load dynamic library
-    hdll = dlopen(pDevItem->m_strPath.c_str(), RTLD_LAZY);
+    hdll = dlopen(pDeviceItem->m_strPath.c_str(), RTLD_LAZY);
     if (!hdll) {
         syslog(LOG_ERR,
                "Devicethread: Unable to load dynamic library. path = %s",
-               pDevItem->m_strPath.c_str());
+               pDeviceItem->m_strPath.c_str());
         return NULL;
     }
 
     //*************************************************************************
     //                         Level I drivers
     //*************************************************************************
-    if (VSCP_DRIVER_LEVEL1 == pDevItem->m_driverLevel) {
+    if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
 
         // Now find methods in library
-        if (__VSCP_DEBUG_DRIVER1) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
             syslog(LOG_DEBUG,
                    "Loading level I driver: %s",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         // * * * * CANAL OPEN * * * *
-        pDevItem->m_proc_CanalOpen =
+        pDeviceItem->m_proc_CanalOpen =
           (LPFNDLL_CANALOPEN)dlsym(hdll, "CanalOpen");
         const char* dlsym_error = dlerror();
 
@@ -173,162 +186,162 @@ deviceThread(void* pData)
             // Free the library
             syslog(LOG_ERR,
                    "%s : Unable to get dl entry for CanalOpen.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
         // * * * * CANAL CLOSE * * * *
-        pDevItem->m_proc_CanalClose =
+        pDeviceItem->m_proc_CanalClose =
           (LPFNDLL_CANALCLOSE)dlsym(hdll, "CanalClose");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalClose.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GETLEVEL * * * *
-        pDevItem->m_proc_CanalGetLevel =
+        pDeviceItem->m_proc_CanalGetLevel =
           (LPFNDLL_CANALGETLEVEL)dlsym(hdll, "CanalGetLevel");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetLevel.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL SEND * * * *
-        pDevItem->m_proc_CanalSend =
+        pDeviceItem->m_proc_CanalSend =
           (LPFNDLL_CANALSEND)dlsym(hdll, "CanalSend");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalSend.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL DATA AVAILABLE * * * *
-        pDevItem->m_proc_CanalDataAvailable =
+        pDeviceItem->m_proc_CanalDataAvailable =
           (LPFNDLL_CANALDATAAVAILABLE)dlsym(hdll, "CanalDataAvailable");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalDataAvailable.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL RECEIVE * * * *
-        pDevItem->m_proc_CanalReceive =
+        pDeviceItem->m_proc_CanalReceive =
           (LPFNDLL_CANALRECEIVE)dlsym(hdll, "CanalReceive");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalReceive.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GET STATUS * * * *
-        pDevItem->m_proc_CanalGetStatus =
+        pDeviceItem->m_proc_CanalGetStatus =
           (LPFNDLL_CANALGETSTATUS)dlsym(hdll, "CanalGetStatus");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetStatus.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GET STATISTICS * * * *
-        pDevItem->m_proc_CanalGetStatistics =
+        pDeviceItem->m_proc_CanalGetStatistics =
           (LPFNDLL_CANALGETSTATISTICS)dlsym(hdll, "CanalGetStatistics");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetStatistics.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL SET FILTER * * * *
-        pDevItem->m_proc_CanalSetFilter =
+        pDeviceItem->m_proc_CanalSetFilter =
           (LPFNDLL_CANALSETFILTER)dlsym(hdll, "CanalSetFilter");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalSetFilter.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL SET MASK * * * *
-        pDevItem->m_proc_CanalSetMask =
+        pDeviceItem->m_proc_CanalSetMask =
           (LPFNDLL_CANALSETMASK)dlsym(hdll, "CanalSetMask");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalSetMask.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GET VERSION * * * *
-        pDevItem->m_proc_CanalGetVersion =
+        pDeviceItem->m_proc_CanalGetVersion =
           (LPFNDLL_CANALGETVERSION)dlsym(hdll, "CanalGetVersion");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetVersion.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GET DLL VERSION * * * *
-        pDevItem->m_proc_CanalGetDllVersion =
+        pDeviceItem->m_proc_CanalGetDllVersion =
           (LPFNDLL_CANALGETDLLVERSION)dlsym(hdll, "CanalGetDllVersion");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetDllVersion.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
         // * * * * CANAL GET VENDOR STRING * * * *
-        pDevItem->m_proc_CanalGetVendorString =
+        pDeviceItem->m_proc_CanalGetVendorString =
           (LPFNDLL_CANALGETVENDORSTRING)dlsym(hdll, "CanalGetVendorString");
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalGetVendorString.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
@@ -338,90 +351,164 @@ deviceThread(void* pData)
         // ******************************
 
         // * * * * CANAL BLOCKING SEND * * * *
-        pDevItem->m_proc_CanalBlockingSend =
+        pDeviceItem->m_proc_CanalBlockingSend =
           (LPFNDLL_CANALBLOCKINGSEND)dlsym(hdll, "CanalBlockingSend");
         dlsym_error = dlerror();
         if (dlsym_error) {
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalBlockingSend. Probably "
                    "Generation 1 driver.",
-                   pDevItem->m_strName.c_str());
-            pDevItem->m_proc_CanalBlockingSend = NULL;
+                   pDeviceItem->m_strName.c_str());
+            pDeviceItem->m_proc_CanalBlockingSend = NULL;
         }
 
         // * * * * CANAL BLOCKING RECEIVE * * * *
-        pDevItem->m_proc_CanalBlockingReceive =
+        pDeviceItem->m_proc_CanalBlockingReceive =
           (LPFNDLL_CANALBLOCKINGRECEIVE)dlsym(hdll, "CanalBlockingReceive");
         dlsym_error = dlerror();
         if (dlsym_error) {
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for CanalBlockingReceive. "
                    "Probably Generation 1 driver.",
-                   pDevItem->m_strName.c_str());
-            pDevItem->m_proc_CanalBlockingReceive = NULL;
+                   pDeviceItem->m_strName.c_str());
+            pDeviceItem->m_proc_CanalBlockingReceive = NULL;
         }
 
         // * * * * CANAL GET DRIVER INFO * * * *
-        pDevItem->m_proc_CanalGetdriverInfo =
+        pDeviceItem->m_proc_CanalGetdriverInfo =
           (LPFNDLL_CANALGETDRIVERINFO)dlsym(hdll, "CanalGetDriverInfo");
         dlsym_error = dlerror();
         if (dlsym_error) {
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetDriverInfo. "
-                   "Probably Generation 1 driver.",
-                   pDevItem->m_strName.c_str());
-            pDevItem->m_proc_CanalGetdriverInfo = NULL;
+                    "%s: Unable to get dl entry for CanalGetDriverInfo. "
+                    "Probably Generation 1 driver.",
+                    pDeviceItem->m_strName.c_str());
+            pDeviceItem->m_proc_CanalGetdriverInfo = NULL;
         }
 
         // Open the device
-        pDevItem->m_openHandle = pDevItem->m_proc_CanalOpen(
-          (const char*)pDevItem->m_strParameter.c_str(),
-          pDevItem->m_DeviceFlags);
+        pDeviceItem->m_openHandle = pDeviceItem->m_proc_CanalOpen(
+          (const char*)pDeviceItem->m_strParameter.c_str(),
+          pDeviceItem->m_DeviceFlags);
 
         // Check if the driver opened properly
-        if (pDevItem->m_openHandle <= 0) {
+        if (pDeviceItem->m_openHandle <= 0) {
             syslog(LOG_ERR,
                    "Failed to open driver. Will not use it! %ld [%s] ",
-                   pDevItem->m_openHandle,
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_openHandle,
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
         }
 
-        if (__VSCP_DEBUG_DRIVER1) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Driver open.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
+        //--------------------------------------------------------------
+        //                            MQTT
+        // -------------------------------------------------------------
+
+        if (pDeviceItem->m_mqtt_strClientId.length()) {
+            pDeviceItem->m_mosq = mosquitto_new( pDeviceItem->m_mqtt_strClientId.c_str(), 
+                                                    pDeviceItem->m_mqtt_bCleanSession, 
+                                                    pDeviceItem);
+        }
+        else {
+            pDeviceItem->m_mqtt_bCleanSession = true;    // Must be true without id
+            pDeviceItem->m_mosq = mosquitto_new( NULL, 
+                                                    pDeviceItem->m_mqtt_bCleanSession, 
+                                                    pDeviceItem);
+        }
+        
+        if (NULL == pDeviceItem->m_mosq) {
+                
+            if (ENOMEM == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
+            }
+            else if (EINVAL == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+            }
+
+            dlclose(hdll);
+            return NULL;
+
+        }
+
+        // Set callbacks
+        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_log_callback);
+        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_on_connect);
+        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_on_disconnect);
+        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_on_message);
+        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
+
+        // Set username/password if defined
+        if (pDeviceItem->m_mqtt_strUserName.length()) { 
+            int rv;       
+            if ( MOSQ_ERR_SUCCESS != 
+                    ( rv = mosquitto_username_pw_set( pDeviceItem->m_mosq,
+                                                        pDeviceItem->m_mqtt_strUserName.c_str(),
+                                                        pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
+                if ( MOSQ_ERR_INVAL == rv) {
+                    syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
+                }
+                else if ( MOSQ_ERR_NOMEM == rv) {
+                    syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
+                }
+                                                    
+            }
+        }
+
+        int rv = mosquitto_connect( pDeviceItem->m_mosq, 
+                                        pDeviceItem->m_mqtt_strHost.c_str(), 
+                                        pDeviceItem->m_mqtt_port, 
+                                        pDeviceItem->m_mqtt_keepalive);
+
+        if ( MOSQ_ERR_SUCCESS != rv ) {
+            
+            if (MOSQ_ERR_INVAL == rv) {
+                syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
+            }
+            else if (MOSQ_ERR_ERRNO == rv) {
+                syslog(LOG_ERR, "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
+            }
+
+            dlclose(hdll);
+            return NULL;
+        }
+
+        // Start the worker loop
+        rv = mosquitto_loop_start(pDeviceItem->m_mosq);
+        if (MOSQ_ERR_SUCCESS != rv) {
+            mosquitto_disconnect(pDeviceItem->m_mosq);
+            dlclose(hdll);
+            return NULL;
+        }
+
+        // -------------------------------------------------------------
+
         // Get Driver Level
-        pDevItem->m_driverLevel =
-          pDevItem->m_proc_CanalGetLevel(pDevItem->m_openHandle);
+        pDeviceItem->m_driverLevel = pDeviceItem->m_proc_CanalGetLevel(pDeviceItem->m_openHandle);
 
         //  * * * Level I Driver * * *
 
         // Check if blocking driver is available
-        if (NULL != pDevItem->m_proc_CanalBlockingReceive) {
+        if (NULL != pDeviceItem->m_proc_CanalBlockingReceive) {
 
             // * * * * Blocking version * * * *
 
-            if (__VSCP_DEBUG_DRIVER1) {
-                syslog(LOG_DEBUG,
-                       "%s: [Device tread] Level I blocking version.",
-                       pDevItem->m_strName.c_str());
+            if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
+                syslog(LOG_DEBUG, "%s: [Device tread] Level I blocking version.", pDeviceItem->m_strName.c_str());
             }
 
             /////////////////////////////////////////////////////////////////////////////
             //                      Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
 
-            if (pthread_create(&pDevItem->m_level1WriteThread,
-                               NULL,
-                               deviceLevel1WriteThread,
-                               pDevItem)) {
-                syslog(LOG_ERR,
-                       "%s: Unable to run the device write worker thread.",
-                       pDevItem->m_strName.c_str());
+            if ( pthread_create(&pDeviceItem->m_level1WriteThread, NULL, deviceLevel1WriteThread, pDeviceItem)) {
+                syslog(LOG_ERR, "%s: Unable to run the device write worker thread.", pDeviceItem->m_strName.c_str());
                 dlclose(hdll);
                 return NULL;
             }
@@ -429,97 +516,72 @@ deviceThread(void* pData)
             /////////////////////////////////////////////////////////////////////////////
             // Device read worker thread
             /////////////////////////////////////////////////////////////////////////////
-            if (pthread_create(&pDevItem->m_level1ReceiveThread,
-                               NULL,
-                               deviceLevel1ReceiveThread,
-                               pDevItem)) {
-                syslog(LOG_ERR,
-                       "%s: Unable to run the device read worker thread.",
-                       pDevItem->m_strName.c_str());
-                pDevItem->m_bQuit = true;
-                pthread_join(pDevItem->m_level1WriteThread, NULL);
+            if (pthread_create( &pDeviceItem->m_level1ReceiveThread, NULL, deviceLevel1ReceiveThread, pDeviceItem)) {
+                syslog(LOG_ERR, "%s: Unable to run the device read worker thread.", pDeviceItem->m_strName.c_str());
+                pDeviceItem->m_bQuit = true;
+                pthread_join(pDeviceItem->m_level1WriteThread, NULL);
                 dlclose(hdll);
                 return NULL;
             }
 
             // Just sit and wait until the end of the world as we know it...
-            while (!pDevItem->m_bQuit) {
+            while (!pDeviceItem->m_bQuit) {
                 sleep(1);
             }
 
             // Signal worker threads to quit
-            pDevItem->m_bQuit = true;
+            pDeviceItem->m_bQuit = true;
 
-            if (__VSCP_DEBUG_DRIVER1) {
-                syslog(LOG_DEBUG,
-                       "%s: [Device tread] Level I work loop ended.",
-                       pDevItem->m_strName.c_str());
+            if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
+                syslog(LOG_DEBUG, "%s: [Device tread] Level I work loop ended.", pDeviceItem->m_strName.c_str());
             }
 
             // Wait for workerthreads to abort
-            pthread_join(pDevItem->m_level1WriteThread, NULL);
-            pthread_join(pDevItem->m_level1ReceiveThread, NULL);
+            pthread_join( pDeviceItem->m_level1WriteThread, NULL );
+            pthread_join( pDeviceItem->m_level1ReceiveThread, NULL );
         }
         else {
 
             // * * * * Non blocking version * * * *
 
-            if (__VSCP_DEBUG_DRIVER1) {
-                syslog(LOG_DEBUG,
-                       "%s: [Device tread] Level I NON Blocking version.",
-                       pDevItem->m_strName.c_str());
+            if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
+                syslog(LOG_DEBUG, "%s: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName.c_str());
             }
 
             bool bActivity;
-            while (!pDevItem->m_bQuit) {
+            while (!pDeviceItem->m_bQuit) {
 
                 bActivity = false;
+
                 /////////////////////////////////////////////////////////////////////////////
                 //                           Receive from device
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
-                if (pDevItem->m_proc_CanalDataAvailable(
-                      pDevItem->m_openHandle)) {
+                if ( pDeviceItem->m_proc_CanalDataAvailable( pDeviceItem->m_openHandle ) ) {
 
-                    if (CANAL_ERROR_SUCCESS ==
-                        pDevItem->m_proc_CanalReceive(pDevItem->m_openHandle,
-                                                      &msg)) {
+                    if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalReceive(pDeviceItem->m_openHandle, &msg)) {
 
                         bActivity = true;
 
-                        // // There must be room in the receive queue
-                        // if (pObj->m_maxItemsInClientReceiveQueue >
-                        //     pObj->m_clientOutputQueue.size()) {
+                        // Publish to MQTT broker
 
-                        //     vscpEvent* pev = new vscpEvent;
-                        //     if (NULL != pev) {
+                        vscpEvent* pev = new vscpEvent;
+                        if (NULL != pev) {
 
-                        //         // Set driver GUID if set
-                        //         if (pDevItem->m_guid.isNULL()) {
-                        //             pDevItem->m_guid.writeGUID(
-                        //               pev->GUID);
-                        //         }
-                        //         else {
-                        //             // If no driver GUID set use interface GUID
-                        //             pClientItem->m_guid.writeGUID(pev->GUID);
-                        //         }
+                            // Convert CANAL message to VSCP event
+                            vscp_convertCanalToEvent( pev,
+                                                        &msg,
+                                                        (unsigned char *)pDeviceItem->m_guid.getGUID());
 
-                        //         // Convert CANAL message to VSCP event
-                        //         vscp_convertCanalToEvent(
-                        //           pev,
-                        //           &msg,
-                        //           pClientItem->m_guid.m_id);
+                            pev->obid = 0;
 
-                        //         pev->obid = pClientItem->m_clientID;
+                            
 
-                        //         pthread_mutex_lock(
-                        //           &pObj->m_mutex_ClientOutputQueue);
-                        //         pObj->m_clientOutputQueue.push_back(pev);
-                        //         pthread_mutex_unlock(
-                        //           &pObj->m_mutex_ClientOutputQueue);
-                        //         sem_post(&pObj->m_semClientOutputQueue);
-                        //     }
-                        // }
+                        }
+                        else {
+
+                        }
+                        
                     }
                 } // data available
 
@@ -538,8 +600,8 @@ deviceThread(void* pData)
                 //     pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
                 //     // Trow away Level II event on Level I interface
-                //     if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
-                //          pClientItem->m_type) &&
+                //     if ((VSCP_DRIVER_LEVEL1 ==
+                //          pDeviceItem->m_driverLevel) &&
                 //         (pev->vscp_class > 512)) {
                 //         // Remove the event and the node
                 //         pClientItem->m_clientInputQueue.pop_front();
@@ -555,7 +617,7 @@ deviceThread(void* pData)
                 //     canalMsg canmsg;
                 //     vscp_convertEventToCanal(&canmsg, pev);
                 //     if (CANAL_ERROR_SUCCESS ==
-                //         pDevItem->m_proc_CanalSend(pDevItem->m_openHandle,
+                //         pDeviceItem->m_proc_CanalSend(pDeviceItem->m_openHandle,
                 //                                    &canmsg)) {
                 //         // Remove the event and the node
                 //         pClientItem->m_clientInputQueue.pop_front();
@@ -579,24 +641,26 @@ deviceThread(void* pData)
 
         } // if blocking/non blocking
 
-        if (__VSCP_DEBUG_DRIVER1) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Work loop ended.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         // Close CANAL channel
-        pDevItem->m_proc_CanalClose(pDevItem->m_openHandle);
+        pDeviceItem->m_proc_CanalClose(pDeviceItem->m_openHandle);
 
-        if (__VSCP_DEBUG_DRIVER1) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Closed.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
-        pDevItem->m_bQuit = true;
-        pthread_join(pDevItem->m_level1WriteThread, NULL);
-        pthread_join(pDevItem->m_level1ReceiveThread, NULL);
+        pDeviceItem->m_bQuit = true;
+        pthread_join(pDeviceItem->m_level1WriteThread, NULL);
+        pthread_join(pDeviceItem->m_level1ReceiveThread, NULL);
+
+        mosquitto_disconnect(pDeviceItem->m_mosq);
 
         dlclose(hdll);
     }
@@ -605,167 +669,169 @@ deviceThread(void* pData)
     //                         Level II drivers
     //*************************************************************************
 
-    else if (VSCP_DRIVER_LEVEL2 == pDevItem->m_driverLevel) {
+    else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
 
         // Now find methods in library
         syslog(LOG_INFO,
                "Loading level II driver: <%s>",
-               pDevItem->m_strName.c_str());
+               pDeviceItem->m_strName.c_str());
 
         // * * * * VSCP OPEN * * * *
-        if (NULL == (pDevItem->m_proc_VSCPOpen =
+        if (NULL == (pDeviceItem->m_proc_VSCPOpen =
                        (LPFNDLL_VSCPOPEN)dlsym(hdll, "VSCPOpen"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPOpen.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
         // * * * * VSCP CLOSE * * * *
-        if (NULL == (pDevItem->m_proc_VSCPClose =
+        if (NULL == (pDeviceItem->m_proc_VSCPClose =
                        (LPFNDLL_VSCPCLOSE)dlsym(hdll, "VSCPClose"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPClose.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
         // * * * * VSCPWRITE * * * *
-        if (NULL == (pDevItem->m_proc_VSCPWrite =
+        if (NULL == (pDeviceItem->m_proc_VSCPWrite =
                        (LPFNDLL_VSCPWRITE)dlsym(hdll, "VSCPWrite"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPWrite.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
         // * * * * VSCPREAD * * * *
-        if (NULL == (pDevItem->m_proc_VSCPRead =
+        if (NULL == (pDeviceItem->m_proc_VSCPRead =
                        (LPFNDLL_VSCPREAD)dlsym(hdll, "VSCPRead"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPBlockingReceive.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
         // * * * * VSCP GET VERSION * * * *
-        if (NULL == (pDevItem->m_proc_VSCPGetVersion =
+        if (NULL == (pDeviceItem->m_proc_VSCPGetVersion =
                        (LPFNDLL_VSCPGETVERSION)dlsym(hdll, "VSCPGetVersion"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPGetVersion.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: Discovered all methods\n",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         // Open up the driver
-        pDevItem->m_openHandle =
-          pDevItem->m_proc_VSCPOpen(pDevItem->m_strParameter.c_str(),
-                                    pDevItem->m_drvGuid.getGUID());
+        pDeviceItem->m_openHandle =
+          pDeviceItem->m_proc_VSCPOpen(pDeviceItem->m_strParameter.c_str(),
+                                    pDeviceItem->m_drvGuid.getGUID());
 
-        if (0 == pDevItem->m_openHandle) {
+        if (0 == pDeviceItem->m_openHandle) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: [Device tread] Unable to open VSCP "
                    " level II driver (path, config file access rights)."
                    " There may be additional info from driver "
                    "in syslog. If not enable debug flag in drivers config file",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             return NULL;
         }
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Open.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         /////////////////////////////////////////////////////////////////////////////
         // Level II - Device write worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (pthread_create(&pDevItem->m_level2WriteThread,
+        if (pthread_create(&pDeviceItem->m_level2WriteThread,
                            NULL,
                            deviceLevel2WriteThread,
-                           pDevItem)) {
+                           pDeviceItem)) {
             syslog(LOG_ERR,
                    "%s: Unable to run the device Level II write worker thread.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL; // TODO close dll
         }
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Write thread created.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         /////////////////////////////////////////////////////////////////////////////
         // Level II - Device read worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (pthread_create(&pDevItem->m_level2ReceiveThread,
+        if (pthread_create(&pDeviceItem->m_level2ReceiveThread,
                            NULL,
                            deviceLevel2ReceiveThread,
-                           pDevItem)) {
+                           pDeviceItem)) {
             syslog(LOG_ERR,
                    "%s: Unable to run the device Level II read worker thread.",
-                   pDevItem->m_strName.c_str());
-            pDevItem->m_bQuit = true;
-            pthread_join(pDevItem->m_level2WriteThread, NULL);
-            pthread_join(pDevItem->m_level2ReceiveThread, NULL);
+                   pDeviceItem->m_strName.c_str());
+            pDeviceItem->m_bQuit = true;
+            pthread_join(pDeviceItem->m_level2WriteThread, NULL);
+            pthread_join(pDeviceItem->m_level2ReceiveThread, NULL);
             dlclose(hdll);
             return NULL; // TODO close dll, kill other thread
         }
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Write thread created.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         // Just sit and wait until the end of the world as we know it...
-        while (!pDevItem->m_bQuit) {
+        while (!pDeviceItem->m_bQuit) {
             sleep(1);
         }
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Closing.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
         // Close channel
-        pDevItem->m_proc_VSCPClose(pDevItem->m_openHandle);
+        pDeviceItem->m_proc_VSCPClose(pDeviceItem->m_openHandle);
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Closed.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
 
-        pDevItem->m_bQuit = true;
-        pthread_join(pDevItem->m_level2WriteThread, NULL);
-        pthread_join(pDevItem->m_level2ReceiveThread, NULL);
+        pDeviceItem->m_bQuit = true;
+        pthread_join(pDeviceItem->m_level2WriteThread, NULL);
+        pthread_join(pDeviceItem->m_level2ReceiveThread, NULL);
+
+        mosquitto_disconnect(pDeviceItem->m_mosq);
 
         // Unload dll
         dlclose(hdll);
 
-        if (__VSCP_DEBUG_DRIVER2) {
+        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Done waiting for threads.",
-                   pDevItem->m_strName.c_str());
+                   pDeviceItem->m_strName.c_str());
         }
     }
 
@@ -789,8 +855,8 @@ deviceLevel1ReceiveThread(void* pData)
     canalMsg msg;
     // Level1MsgOutList::compatibility_iterator nodeLevel1;
 
-    CDeviceItem* pDevItem = (CDeviceItem*)pData;
-    if (NULL == pDevItem) {
+    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
+    if (NULL == pDeviceItem) {
         syslog(
           LOG_ERR,
           "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
@@ -798,20 +864,20 @@ deviceLevel1ReceiveThread(void* pData)
     }
 
     // Blocking receive method must have been found
-    if (NULL == pDevItem->m_proc_CanalBlockingReceive) {
+    if (NULL == pDeviceItem->m_proc_CanalBlockingReceive) {
         return NULL;
     }
 
-    while (!pDevItem->m_bQuit) {
+    while (!pDeviceItem->m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-            pDevItem->m_proc_CanalBlockingReceive(pDevItem->m_openHandle,
+            pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle,
                                                   &msg,
                                                   500)) {
 
             // // There must be room in the receive queue
-            // if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
-            //     pDevItem->m_pObj->m_clientOutputQueue.size()) {
+            // if (pDeviceItem->m_pObj->m_maxItemsInClientReceiveQueue >
+            //     pDeviceItem->m_pObj->m_clientOutputQueue.size()) {
 
             //     vscpEvent* pvscpEvent = new vscpEvent;
             //     if (NULL != pvscpEvent) {
@@ -819,13 +885,13 @@ deviceLevel1ReceiveThread(void* pData)
             //         memset(pvscpEvent, 0, sizeof(vscpEvent));
 
             //         // Set driver GUID if set
-            //         /*if ( pDevItem->m_guid.isNULL()
-            //         ) { pDevItem->m_guid.writeGUID(
+            //         /*if ( pDeviceItem->m_guid.isNULL()
+            //         ) { pDeviceItem->m_guid.writeGUID(
             //         pvscpEvent->GUID );
             //         }
             //         else {
             //             // If no driver GUID set use interface GUID
-            //             pDevItem->m_guid.writeGUID(
+            //             pDeviceItem->m_guid.writeGUID(
             //         pvscpEvent->GUID );
             //         }*/
 
@@ -833,9 +899,9 @@ deviceLevel1ReceiveThread(void* pData)
             //         vscp_convertCanalToEvent(
             //           pvscpEvent,
             //           &msg,
-            //           pDevItem->m_pClientItem->m_guid.m_id);
+            //           pDeviceItem->m_pClientItem->m_guid.m_id);
 
-            //         pvscpEvent->obid = pDevItem->m_pClientItem->m_clientID;
+            //         pvscpEvent->obid = pDeviceItem->m_pClientItem->m_clientID;
 
             //         // If no GUID is set,
             //         //      - Set driver GUID if it is defined
@@ -855,13 +921,13 @@ deviceLevel1ReceiveThread(void* pData)
             //         if (vscp_isGUIDEmpty(ifguid)) {
 
             //             // Set driver GUID if set
-            //             if (!pDevItem->m_guid.isNULL()) {
-            //                 pDevItem->m_guid.writeGUID(
+            //             if (!pDeviceItem->m_guid.isNULL()) {
+            //                 pDeviceItem->m_guid.writeGUID(
             //                   pvscpEvent->GUID);
             //             }
             //             else {
             //                 // If no driver GUID set use interface GUID
-            //                 pDevItem->m_pClientItem->m_guid.writeGUID(
+            //                 pDeviceItem->m_pClientItem->m_guid.writeGUID(
             //                   pvscpEvent->GUID);
             //             }
 
@@ -874,17 +940,17 @@ deviceLevel1ReceiveThread(void* pData)
             //         // =========================================================
 
             //         // Level I measurement events to Level II measurement float
-            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
+            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
             //             vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
             //         }
 
             //         // Level I measurement events to Level II measurement string
-            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
+            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
             //             vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
             //         }
 
             //         // Level I events to Level I over Level II events
-            //         if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
+            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
             //             pvscpEvent->vscp_class += 512;
             //             uint8_t* p = new uint8_t[16 + pvscpEvent->sizeData];
             //             if (NULL != p) {
@@ -899,11 +965,11 @@ deviceLevel1ReceiveThread(void* pData)
             //         }
 
             //         // pthread_mutex_lock(
-            //         //   &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-            //         // pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
+            //         //   &pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
+            //         // pDeviceItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
             //         // pthread_mutex_unlock(
-            //         //   &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-            //         // sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+            //         //   &pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
+            //         // sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
             //     }
             // }
         }
@@ -923,70 +989,58 @@ deviceLevel1WriteThread(void* pData)
 {
     // Level1MsgOutList::compatibility_iterator nodeLevel1;
 
-    CDeviceItem* pDevItem = (CDeviceItem*)pData;
-    if (NULL == pDevItem) {
+    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
+    if (NULL == pDeviceItem) {
         syslog(LOG_ERR,
                "deviceLevel1WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
     // Blocking send method must have been found
-    if (NULL == pDevItem->m_proc_CanalBlockingSend)
+    if (NULL == pDeviceItem->m_proc_CanalBlockingSend)
         return NULL;
 
-    while (!pDevItem->m_bQuit) {
+    while (!pDeviceItem->m_bQuit) {
 
-        // // Wait until there is something to send
-        // if ((-1 ==
-        //      vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
-        //                    500)) &&
-        //     errno == ETIMEDOUT) {
-        //     continue;
-        // }
+        // Wait until there is something to send
+        if ((-1 == vscp_sem_wait(&pDeviceItem->m_seminputQueue, 500)) && errno == ETIMEDOUT) {
+            continue;
+        }
 
-        // if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
+        if (pDeviceItem->m_inputQueue.size()) {
 
-        //     pthread_mutex_lock(
-        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-        //     vscpEvent* pev =
-        //       pDevItem->m_pClientItem->m_clientInputQueue.front();
-        //     pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
-        //     pthread_mutex_unlock(
-        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+            pthread_mutex_lock( &pDeviceItem->m_mutexinputQueue );
+            vscpEvent* pev = pDeviceItem->m_inputQueue.front();
+            pDeviceItem->m_inputQueue.pop_front();
+            pthread_mutex_unlock(&pDeviceItem->m_mutexinputQueue);
 
-        //     // Trow away event if Level II and Level I interface
-        //     if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
-        //          pDevItem->m_pClientItem->m_type) &&
-        //         (pev->vscp_class > 512)) {
-        //         vscp_deleteEvent(pev);
-        //         continue;
-        //     }
+            // Trow away event if Level II and Level I interface
+            if ((VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) && (pev->vscp_class > 512)) {
+                vscp_deleteEvent(pev);
+                continue;
+            }
 
-        //     canalMsg msg;
-        //     if (!vscp_convertEventToCanal(&msg, pev)) {
-        //         syslog(
-        //           LOG_ERR,
-        //           "deviceLevel1WriteThread - vscp_convertEventToCanal failed");
-        //         vscp_deleteEvent(pev);
-        //     }
+            canalMsg msg;
+            if (!vscp_convertEventToCanal(&msg, pev)) {
+                syslog( LOG_ERR, "deviceLevel1WriteThread - vscp_convertEventToCanal failed" );
+                vscp_deleteEvent(pev);
+            }
 
-        //     if (CANAL_ERROR_SUCCESS ==
-        //         pDevItem->m_proc_CanalBlockingSend(pDevItem->m_openHandle,
-        //                                            &msg,
-        //                                            300)) {
-        //         syslog(
-        //           LOG_ERR,
-        //           "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
-        //         vscp_deleteEvent(pev);
-        //     }
-        //     else {
-        //         // Give it another try
-        //         //sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-        //     }
+            if (CANAL_ERROR_SUCCESS ==
+                pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle,
+                                                   &msg,
+                                                   300)) {
+                syslog( LOG_ERR, "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
+                vscp_deleteEvent(pev);
+            }
+            else {
+                // Give it another try
+                //sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
+            }
 
-        // } // events in queue
+        }  // events in queue
 
-    } // while
+    }  // while
 
     return NULL;
 }
@@ -1006,8 +1060,8 @@ deviceLevel2ReceiveThread(void* pData)
 {
     vscpEvent* pev;
 
-    CDeviceItem* pDevItem = (CDeviceItem*)pData;
-    if (NULL == pDevItem) {
+    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
+    if (NULL == pDeviceItem) {
         syslog(
           LOG_ERR,
           "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
@@ -1015,12 +1069,12 @@ deviceLevel2ReceiveThread(void* pData)
     }
 
     int rv;
-    while (!pDevItem->m_bQuit) {
+    while (!pDeviceItem->m_bQuit) {
 
         pev = new vscpEvent;
         if (NULL == pev)
             continue;
-        rv = pDevItem->m_proc_VSCPRead(pDevItem->m_openHandle, pev, 500);
+        rv = pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, pev, 500);
 
         if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pev)) {
             delete pev;
@@ -1051,12 +1105,12 @@ deviceLevel2ReceiveThread(void* pData)
         if (vscp_isGUIDEmpty(ifguid)) {
 
             // Set driver GUID if set
-            if (!pDevItem->m_guid.isNULL()) {
-                pDevItem->m_guid.writeGUID(pev->GUID);
+            if (!pDeviceItem->m_guid.isNULL()) {
+                pDeviceItem->m_guid.writeGUID(pev->GUID);
             }
             else {
                 // If no driver GUID set use interface GUID
-                //pDevItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
+                //pDeviceItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
             }
 
             // Preserve nickname
@@ -1065,13 +1119,13 @@ deviceLevel2ReceiveThread(void* pData)
         }
 
         // There must be room in the receive queue
-        // if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
-        //     pDevItem->m_pObj->m_clientOutputQueue.size()) {
+        // if (pDeviceItem->m_pObj->m_maxItemsInClientReceiveQueue >
+        //     pDeviceItem->m_pObj->m_clientOutputQueue.size()) {
 
-        //     pthread_mutex_lock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-        //     pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
-        //     pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
-        //     sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+        //     pthread_mutex_lock(&pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
+        //     pDeviceItem->m_pObj->m_clientOutputQueue.push_back(pev);
+        //     pthread_mutex_unlock(&pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
+        //     sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
         // }
         // else {
         //     if (NULL == pev)
@@ -1093,45 +1147,45 @@ deviceLevel2ReceiveThread(void* pData)
 void*
 deviceLevel2WriteThread(void* pData)
 {
-    CDeviceItem* pDevItem = (CDeviceItem*)pData;
-    if (NULL == pDevItem) {
+    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
+    if (NULL == pDeviceItem) {
         syslog(LOG_ERR,
                "deviceLevel2WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
-    while (!pDevItem->m_bQuit) {
+    while (!pDeviceItem->m_bQuit) {
 
         // Wait until there is something to send
         // if ((-1 ==
-        //      vscp_sem_wait(&pDevItem->m_pClientItem->m_semClientInputQueue,
+        //      vscp_sem_wait(&pDeviceItem->m_pClientItem->m_semClientInputQueue,
         //                    500)) &&
         //     errno == ETIMEDOUT) {
         //     continue;
         // }
 
-        // if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
+        // if (pDeviceItem->m_pClientItem->m_clientInputQueue.size()) {
 
         //     pthread_mutex_lock(
-        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //       &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
         //     vscpEvent* pev =
-        //       pDevItem->m_pClientItem->m_clientInputQueue.front();
+        //       pDeviceItem->m_pClientItem->m_clientInputQueue.front();
         //     pthread_mutex_unlock(
-        //       &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //       &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
 
         //     if (CANAL_ERROR_SUCCESS ==
-        //         pDevItem->m_proc_VSCPWrite(pDevItem->m_openHandle, pev, 300)) {
+        //         pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, pev, 300)) {
 
         //         // Remove the node
         //         pthread_mutex_lock(
-        //           &pDevItem->m_pClientItem->m_mutexClientInputQueue);
-        //         pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
+        //           &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+        //         pDeviceItem->m_pClientItem->m_clientInputQueue.pop_front();
         //         pthread_mutex_unlock(
-        //           &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+        //           &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
         //     }
         //     else {
         //         // Give it another try
-        //         //sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
+        //         //sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
         //     }
 
         // } // events in queue

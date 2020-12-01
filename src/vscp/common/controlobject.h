@@ -53,6 +53,7 @@
 
 #define VSCP_MAX_DEVICES 1024 // abs. max. is 0xffff
 
+
 /*!
     This is the class that does the main work in the daemon.
 */
@@ -172,9 +173,8 @@ class CControlObject {
     /*!
      * Debug flags
      * See vscp_debug.h for possible flags.
-     * Set to point to m_gdebugArray in startup
      */
-    uint32_t* m_debugFlags;
+    uint32_t m_debugFlags;
 
 
 
@@ -226,10 +226,10 @@ class CControlObject {
     std::list<std::string> m_mqtt_subscriptions;    // Subscribe topic templates
     std::list<std::string> m_mqtt_publish;          // Publish topic templates
 
-    struct mosquitto *m_mqtt_mosq;   // Handel for connection
     int m_mqtt_id;                   // Message id - the send function will set this to the message id of this particular 
                                      // message.  This can then be used with the subscribe callback to determine when 
                                      // the message has been sent.
+    enumMqttMsgFormat m_mqtt_format; // Format for mqtt events (JSON/XML)
 
   private:
            
