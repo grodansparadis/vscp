@@ -54,10 +54,18 @@
 
 #include <mosquitto.h>
 
+#include <mustache.hpp>
+
+using namespace kainjow::mustache;
+
 //////////////////////////////////////////////////////////////////////
 //                         Callbacks
 //////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mqtt_log_callback
+//
 
 static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 {
@@ -66,12 +74,17 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     if (NULL == pData) return;
 
     CDeviceItem *pItem = (CDeviceItem *)pData;
-    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
 
+    printf("Driver LOG : %s\n", logmsg);
+    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
+        printf("Driver LOG : %s\n", logmsg);
     }
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mqtt_on_connect
+//
 
 static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
 {
@@ -80,12 +93,16 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == pData) return;
 
     CDeviceItem *pItem = (CDeviceItem *)pData;
+    printf("\nDriver MQTT CONNECT\n");
     if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
-
+        printf("\nDriver MQTT CONNECT\n");
     }
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mqtt_on_disconnect
+//
 
 static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 {
@@ -95,25 +112,94 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pItem = (CDeviceItem *)pData;
     if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
-
+        printf("\nDriver MQTT DISCONNECT\n");
     }
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mqtt_on_message
+//
 
 static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
 {
+    int rv;
+    vscpEvent ev;
+
     // Check pointers
     if (NULL == mosq) return;
     if (NULL == pData) return;
     if (NULL == pMsg) return;
 
-    CDeviceItem *pItem = (CDeviceItem *)pData;
-    std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
+    CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
+    
+    ev.sizeData = 0;
+    ev.pdata = NULL;
 
-    if (pItem->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+    if (pDeviceItem->m_mqtt_format == jsonfmt) {
+        std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
+        if ( !vscp_convertJSONToEvent(&ev, strPayload) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
+            return;
+        }
+    }
+    else if (pDeviceItem->m_mqtt_format == xmlfmt) {
+        std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
+        if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to XML");
+            return;
+        }
+    }
+    else if (pDeviceItem->m_mqtt_format == strfmt) {
+        std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
+        if ( !vscp_convertStringToEvent(&ev, strPayload) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to STRING");
+            return;
+        }
+    }
+    else if (pDeviceItem->m_mqtt_format == binfmt) {
+        if (!vscp_getEventFromFrame( &ev, (const uint8_t *)pMsg->payload, pMsg->payloadlen) ) {
+            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to BINARY");
+            return;
+        }
+    }
+    else {
+        syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event (invalid format)");
+        return;
+    }
+
+    if (pDeviceItem->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
 
     }
+
+    if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
+
+        canalMsg msg;
+        vscp_convertEventToCanal(&msg, &ev);
+
+        // Use blocking method if available
+        if (NULL == pDeviceItem->m_proc_CanalBlockingSend) {
+            if (CANAL_ERROR_SUCCESS == (rv = pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle,
+                                                        &msg,
+                                                        300))) {
+                syslog( LOG_ERR, "driver: mqtt_on_message - Failed to send event (m_proc_CanalBlockingSend) rv=%d", rv);
+            }
+        }
+        else {
+            if (CANAL_ERROR_SUCCESS != (rv = pDeviceItem->m_proc_CanalSend(pDeviceItem->m_openHandle, &msg))) {
+                syslog( LOG_ERR, "driver: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv=%d", rv);
+            }
+        }
+    }
+    else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
+        if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 300)) {
+            
+        }
+    }
+    else {
+        syslog( LOG_ERR, "driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2)");
+    }
+
 }
 
 
@@ -445,25 +531,23 @@ deviceThread(void* pData)
         mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
 
         // Set username/password if defined
-        if (pDeviceItem->m_mqtt_strUserName.length()) { 
-            int rv;       
-            if ( MOSQ_ERR_SUCCESS != 
-                    ( rv = mosquitto_username_pw_set( pDeviceItem->m_mosq,
-                                                        pDeviceItem->m_mqtt_strUserName.c_str(),
-                                                        pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
-                if ( MOSQ_ERR_INVAL == rv) {
+        if (pDeviceItem->m_mqtt_strUserName.length()) {
+            int rv;
+            if ( MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set( pDeviceItem->m_mosq,
+                                                                        pDeviceItem->m_mqtt_strUserName.c_str(),
+                                                                        pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
+                if (MOSQ_ERR_INVAL == rv) {
                     syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
                 }
-                else if ( MOSQ_ERR_NOMEM == rv) {
+                else if (MOSQ_ERR_NOMEM == rv) {
                     syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
                 }
-                                                    
             }
         }
 
-        int rv = mosquitto_connect( pDeviceItem->m_mosq, 
-                                        pDeviceItem->m_mqtt_strHost.c_str(), 
-                                        pDeviceItem->m_mqtt_port, 
+        int rv = mosquitto_connect(pDeviceItem->m_mosq,
+                                        pDeviceItem->m_mqtt_strHost.c_str(),
+                                        pDeviceItem->m_mqtt_port,
                                         pDeviceItem->m_mqtt_keepalive);
 
         if ( MOSQ_ERR_SUCCESS != rv ) {
@@ -487,7 +571,43 @@ deviceThread(void* pData)
             return NULL;
         }
 
+
+        for (std::list<std::string>::const_iterator 
+            it = pDeviceItem->m_mqtt_subscriptions.begin(); 
+            it != pDeviceItem->m_mqtt_subscriptions.end(); 
+            ++it){
+
+            std::string topic = *it;
+
+            // Fix subscribe/publish topics
+            mustache subtemplate{topic};
+            data data;
+            data.set("guid", pDeviceItem->m_guid.getAsString());
+            std::string subscribe_topic = subtemplate.render(data);
+
+            // Subscribe to specified topic
+            rv = mosquitto_subscribe(pDeviceItem->m_mosq,
+                                        NULL,
+                                        subscribe_topic.c_str(),
+                                        pDeviceItem->m_mqtt_qos);
+
+            switch (rv) {
+                case MOSQ_ERR_INVAL:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - input parameters were invalid.",subscribe_topic.c_str());
+                case MOSQ_ERR_NOMEM:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - out of memory condition occurred.",subscribe_topic.c_str());
+                case MOSQ_ERR_NO_CONN:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
+                case MOSQ_ERR_MALFORMED_UTF8:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+                case MOSQ_ERR_OVERSIZE_PACKET:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+            }
+        }
+
         // -------------------------------------------------------------
+
+        bool bActivity;
 
         // Get Driver Level
         pDeviceItem->m_driverLevel = pDeviceItem->m_proc_CanalGetLevel(pDeviceItem->m_openHandle);
@@ -507,26 +627,70 @@ deviceThread(void* pData)
             //                      Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
 
-            if ( pthread_create(&pDeviceItem->m_level1WriteThread, NULL, deviceLevel1WriteThread, pDeviceItem)) {
-                syslog(LOG_ERR, "%s: Unable to run the device write worker thread.", pDeviceItem->m_strName.c_str());
-                dlclose(hdll);
-                return NULL;
-            }
 
-            /////////////////////////////////////////////////////////////////////////////
-            // Device read worker thread
-            /////////////////////////////////////////////////////////////////////////////
-            if (pthread_create( &pDeviceItem->m_level1ReceiveThread, NULL, deviceLevel1ReceiveThread, pDeviceItem)) {
-                syslog(LOG_ERR, "%s: Unable to run the device read worker thread.", pDeviceItem->m_strName.c_str());
-                pDeviceItem->m_bQuit = true;
-                pthread_join(pDeviceItem->m_level1WriteThread, NULL);
-                dlclose(hdll);
-                return NULL;
-            }
-
-            // Just sit and wait until the end of the world as we know it...
+            // Wait for events or "the end"
             while (!pDeviceItem->m_bQuit) {
-                sleep(1);
+
+                canalMsg msg;
+                vscpEvent ev;
+
+                //int rx = mosquitto_loop(pDeviceItem->m_mosq, 0, 1);
+
+                if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle,
+                                                                                        &msg,
+                                                                                        50)) {
+
+                    // Publish to MQTT broker
+
+                    memset(&ev, 0, sizeof(vscpEvent));
+
+                    // Set driver GUID 
+                    pDeviceItem->m_guid.writeGUID(ev.GUID);
+
+                    // Convert CANAL message to VSCP event
+                    if (!vscp_convertCanalToEvent(&ev, &msg, (unsigned char *)pDeviceItem->m_guid.getGUID()) ) {
+                        syslog(LOG_ERR,"Driver L1: %s Failed to convet CANAL to event.\n", pDeviceItem->m_strName.c_str());
+                        break;
+                    }
+                    ev.obid = 0;
+                    ev.GUID[14] = 0;   // Make sure MSB of nickname is zero for Level I driver
+
+                    // =========================================================
+                    //                   Outgoing translations
+                    // =========================================================
+
+                    // Level I measurement events to Level II measurement float
+                    if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
+                        vscp_convertLevel1MeasuremenToLevel2Double(&ev);
+                    }
+
+                    // Level I measurement events to Level II measurement string
+                    if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
+                        vscp_convertLevel1MeasuremenToLevel2String(&ev);
+                    }
+
+                    // Level I events to Level I over Level II events
+                    if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
+                        ev.vscp_class += 512;
+                        uint8_t* p = new uint8_t[16 + ev.sizeData];
+                        if (NULL != p) {
+                            memset(p, 0, 16 + ev.sizeData);
+                            memcpy(p + 16,
+                                    ev.pdata,
+                                    ev.sizeData);
+                            ev.sizeData += 16;
+                            delete[] ev.pdata;
+                            ev.pdata = p;
+                        }
+                    }
+
+                    if (!pDeviceItem->sendEvent(&ev) ) {
+                        syslog(LOG_ERR,"Driver L1: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                        continue;
+                    } 
+                                                         
+                }
+
             }
 
             // Signal worker threads to quit
@@ -536,9 +700,6 @@ deviceThread(void* pData)
                 syslog(LOG_DEBUG, "%s: [Device tread] Level I work loop ended.", pDeviceItem->m_strName.c_str());
             }
 
-            // Wait for workerthreads to abort
-            pthread_join( pDeviceItem->m_level1WriteThread, NULL );
-            pthread_join( pDeviceItem->m_level1ReceiveThread, NULL );
         }
         else {
 
@@ -547,8 +708,7 @@ deviceThread(void* pData)
             if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL1) {
                 syslog(LOG_DEBUG, "%s: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName.c_str());
             }
-
-            bool bActivity;
+            
             while (!pDeviceItem->m_bQuit) {
 
                 bActivity = false;
@@ -568,72 +728,68 @@ deviceThread(void* pData)
                         vscpEvent* pev = new vscpEvent;
                         if (NULL != pev) {
 
+                            memset(pev, 0, sizeof(vscpEvent));
+
                             // Convert CANAL message to VSCP event
-                            vscp_convertCanalToEvent( pev,
-                                                        &msg,
-                                                        (unsigned char *)pDeviceItem->m_guid.getGUID());
-
+                            if (!vscp_convertCanalToEvent(pev, &msg, (unsigned char *)pDeviceItem->m_guid.getGUID())) {
+                                syslog(LOG_ERR, "Driver L1: %s Failed to convet CANAL to event.\n", pDeviceItem->m_strName.c_str());
+                                break;
+                            }
                             pev->obid = 0;
+                            pev->GUID[14] = 0;   // Make sure MSB of nickname is zero for Level I driver
 
-                            
+                            // =========================================================
+                            //                   Outgoing translations
+                            // =========================================================
 
+                            // Level I measurement events to Level II measurement float
+                            if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
+                                vscp_convertLevel1MeasuremenToLevel2Double(pev);
+                            }
+
+                            // Level I measurement events to Level II measurement string
+                            if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
+                                vscp_convertLevel1MeasuremenToLevel2String(pev);
+                            }
+
+                            // Level I events to Level I over Level II events
+                            if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
+                                pev->vscp_class += 512;
+                                uint8_t* p = new uint8_t[16 + pev->sizeData];
+                                if (NULL != p) {
+                                    memset(p, 0, 16 + pev->sizeData);
+                                    memcpy(p + 16,
+                                            pev->pdata,
+                                            pev->sizeData);
+                                    pev->sizeData += 16;
+                                    delete[] pev->pdata;
+                                    pev->pdata = p;
+                                }
+                            }
+
+                            if (!pDeviceItem->sendEvent(pev) ) {
+                                syslog(LOG_ERR,"Driver L1: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                                if (NULL == pev) {
+                                    vscp_deleteEvent_v2(&pev);
+                                }
+                                continue;
+                            } 
+
+                            if (NULL == pev) {
+                                vscp_deleteEvent_v2(&pev);
+                            }
                         }
                         else {
-
+                            syslog(LOG_ERR,"Driver L1: %s Memory problem.\n", pDeviceItem->m_strName.c_str());
+                            break;
                         }
                         
                     }
                 } // data available
 
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                //          Send messages (if any) in the output queue
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-                // Check if there is something to send
-                // if (pClientItem->m_clientInputQueue.size()) {
-
-                    bActivity = true;
-
-                //     std::deque<vscpEvent*>::iterator it;
-                //     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
-                //     vscpEvent* pev = pClientItem->m_clientInputQueue.front();
-                //     pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
-
-                //     // Trow away Level II event on Level I interface
-                //     if ((VSCP_DRIVER_LEVEL1 ==
-                //          pDeviceItem->m_driverLevel) &&
-                //         (pev->vscp_class > 512)) {
-                //         // Remove the event and the node
-                //         pClientItem->m_clientInputQueue.pop_front();
-                //         syslog(LOG_ERR,
-                //                "Level II event on Level I queue thrown away. "
-                //                "class=%d, type=%d",
-                //                pev->vscp_class,
-                //                pev->vscp_type);
-                //         vscp_deleteEvent(pev);
-                //         continue;
-                //     }
-
-                //     canalMsg canmsg;
-                //     vscp_convertEventToCanal(&canmsg, pev);
-                //     if (CANAL_ERROR_SUCCESS ==
-                //         pDeviceItem->m_proc_CanalSend(pDeviceItem->m_openHandle,
-                //                                    &canmsg)) {
-                //         // Remove the event and the node
-                //         pClientItem->m_clientInputQueue.pop_front();
-                //         vscp_deleteEvent(pev);
-                //     }
-                //     else {
-                //         // Another try
-                //         // pObj->m_semClientOutputQueue.Post();
-                //         vscp_deleteEvent(pev); // TODO ????
-                //     }
-
-                // } // events
-
-                // if (!bActivity) {
-                //     usleep(100000); // 100 ms
-                // }
+                if (!bActivity) {
+                     usleep(100000); // 100 ms
+                }
 
                 bActivity = false;
 
@@ -657,8 +813,6 @@ deviceThread(void* pData)
         }
 
         pDeviceItem->m_bQuit = true;
-        pthread_join(pDeviceItem->m_level1WriteThread, NULL);
-        pthread_join(pDeviceItem->m_level1ReceiveThread, NULL);
 
         mosquitto_disconnect(pDeviceItem->m_mosq);
 
@@ -754,54 +908,33 @@ deviceThread(void* pData)
                    pDeviceItem->m_strName.c_str());
         }
 
-        /////////////////////////////////////////////////////////////////////////////
-        // Level II - Device write worker thread
-        /////////////////////////////////////////////////////////////////////////////
 
-        if (pthread_create(&pDeviceItem->m_level2WriteThread,
-                           NULL,
-                           deviceLevel2WriteThread,
-                           pDeviceItem)) {
-            syslog(LOG_ERR,
-                   "%s: Unable to run the device Level II write worker thread.",
-                   pDeviceItem->m_strName.c_str());
-            dlclose(hdll);
-            return NULL; // TODO close dll
-        }
-
-        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Write thread created.",
-                   pDeviceItem->m_strName.c_str());
-        }
-
-        /////////////////////////////////////////////////////////////////////////////
-        // Level II - Device read worker thread
-        /////////////////////////////////////////////////////////////////////////////
-
-        if (pthread_create(&pDeviceItem->m_level2ReceiveThread,
-                           NULL,
-                           deviceLevel2ReceiveThread,
-                           pDeviceItem)) {
-            syslog(LOG_ERR,
-                   "%s: Unable to run the device Level II read worker thread.",
-                   pDeviceItem->m_strName.c_str());
-            pDeviceItem->m_bQuit = true;
-            pthread_join(pDeviceItem->m_level2WriteThread, NULL);
-            pthread_join(pDeviceItem->m_level2ReceiveThread, NULL);
-            dlclose(hdll);
-            return NULL; // TODO close dll, kill other thread
-        }
-
-        if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Write thread created.",
-                   pDeviceItem->m_strName.c_str());
-        }
+        // --------------------------------------------------------------------
+        //        Work loop - receive from device - send to MQTT broker
+        // --------------------------------------------------------------------
 
         // Just sit and wait until the end of the world as we know it...
         while (!pDeviceItem->m_bQuit) {
-            sleep(1);
+
+            vscpEvent ev;
+            memset(&ev, 0, sizeof(vscpEvent));
+
+            if ( CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, &ev, 500) ) {
+                continue;
+            }
+
+            // If timestamp is zero we set it here
+            if (0 == ev.timestamp) {
+                ev.timestamp = vscp_makeTimeStamp();
+            }
+
+            // Publish to MQTT broker
+
+            if (!pDeviceItem->sendEvent(&ev) ) {
+                syslog(LOG_ERR,"Driver L2: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                continue;
+            } 
+
         }
 
         if (pDeviceItem->m_debugFlags & VSCP_DEBUG_DRIVERL2) {
@@ -820,9 +953,6 @@ deviceThread(void* pData)
         }
 
         pDeviceItem->m_bQuit = true;
-        pthread_join(pDeviceItem->m_level2WriteThread, NULL);
-        pthread_join(pDeviceItem->m_level2ReceiveThread, NULL);
-
         mosquitto_disconnect(pDeviceItem->m_mosq);
 
         // Unload dll
@@ -835,362 +965,6 @@ deviceThread(void* pData)
         }
     }
 
-    // Remove messages in the client queues
-    // pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
-    // pObj->removeClient(pClientItem);
-    // pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
-
     return NULL;
 }
 
-// ****************************************************************************
-
-///////////////////////////////////////////////////////////////////////////////
-// deviceLevel1ReceiveThread
-//
-
-void*
-deviceLevel1ReceiveThread(void* pData)
-{
-    canalMsg msg;
-    // Level1MsgOutList::compatibility_iterator nodeLevel1;
-
-    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
-    if (NULL == pDeviceItem) {
-        syslog(
-          LOG_ERR,
-          "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
-        return NULL;
-    }
-
-    // Blocking receive method must have been found
-    if (NULL == pDeviceItem->m_proc_CanalBlockingReceive) {
-        return NULL;
-    }
-
-    while (!pDeviceItem->m_bQuit) {
-
-        if (CANAL_ERROR_SUCCESS ==
-            pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle,
-                                                  &msg,
-                                                  500)) {
-
-            // // There must be room in the receive queue
-            // if (pDeviceItem->m_pObj->m_maxItemsInClientReceiveQueue >
-            //     pDeviceItem->m_pObj->m_clientOutputQueue.size()) {
-
-            //     vscpEvent* pvscpEvent = new vscpEvent;
-            //     if (NULL != pvscpEvent) {
-
-            //         memset(pvscpEvent, 0, sizeof(vscpEvent));
-
-            //         // Set driver GUID if set
-            //         /*if ( pDeviceItem->m_guid.isNULL()
-            //         ) { pDeviceItem->m_guid.writeGUID(
-            //         pvscpEvent->GUID );
-            //         }
-            //         else {
-            //             // If no driver GUID set use interface GUID
-            //             pDeviceItem->m_guid.writeGUID(
-            //         pvscpEvent->GUID );
-            //         }*/
-
-            //         // Convert CANAL message to VSCP event
-            //         vscp_convertCanalToEvent(
-            //           pvscpEvent,
-            //           &msg,
-            //           pDeviceItem->m_pClientItem->m_guid.m_id);
-
-            //         pvscpEvent->obid = pDeviceItem->m_pClientItem->m_clientID;
-
-            //         // If no GUID is set,
-            //         //      - Set driver GUID if it is defined
-            //         //      - Set to interface GUID if not.
-
-            //         uint8_t ifguid[16];
-
-            //         // Save nickname
-            //         uint8_t nickname_lsb = pvscpEvent->GUID[15];
-
-            //         // Set if to use
-            //         memcpy(ifguid, pvscpEvent->GUID, 16);
-            //         ifguid[14] = 0;
-            //         ifguid[15] = 0;
-
-            //         // If if is set to zero use interface id
-            //         if (vscp_isGUIDEmpty(ifguid)) {
-
-            //             // Set driver GUID if set
-            //             if (!pDeviceItem->m_guid.isNULL()) {
-            //                 pDeviceItem->m_guid.writeGUID(
-            //                   pvscpEvent->GUID);
-            //             }
-            //             else {
-            //                 // If no driver GUID set use interface GUID
-            //                 pDeviceItem->m_pClientItem->m_guid.writeGUID(
-            //                   pvscpEvent->GUID);
-            //             }
-
-            //             // Preserve nickname
-            //             pvscpEvent->GUID[15] = nickname_lsb;
-            //         }
-
-            //         // =========================================================
-            //         //                   Outgoing translations
-            //         // =========================================================
-
-            //         // Level I measurement events to Level II measurement float
-            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
-            //             vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
-            //         }
-
-            //         // Level I measurement events to Level II measurement string
-            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2S) {
-            //             vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
-            //         }
-
-            //         // Level I events to Level I over Level II events
-            //         if (pDeviceItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
-            //             pvscpEvent->vscp_class += 512;
-            //             uint8_t* p = new uint8_t[16 + pvscpEvent->sizeData];
-            //             if (NULL != p) {
-            //                 memset(p, 0, 16 + pvscpEvent->sizeData);
-            //                 memcpy(p + 16,
-            //                        pvscpEvent->pdata,
-            //                        pvscpEvent->sizeData);
-            //                 pvscpEvent->sizeData += 16;
-            //                 delete[] pvscpEvent->pdata;
-            //                 pvscpEvent->pdata = p;
-            //             }
-            //         }
-
-            //         // pthread_mutex_lock(
-            //         //   &pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
-            //         // pDeviceItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
-            //         // pthread_mutex_unlock(
-            //         //   &pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
-            //         // sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
-            //     }
-            // }
-        }
-    }
-
-    return NULL;
-}
-
-// ****************************************************************************
-
-///////////////////////////////////////////////////////////////////////////////
-// deviceLevel1WriteThread
-//
-
-void*
-deviceLevel1WriteThread(void* pData)
-{
-    // Level1MsgOutList::compatibility_iterator nodeLevel1;
-
-    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
-    if (NULL == pDeviceItem) {
-        syslog(LOG_ERR,
-               "deviceLevel1WriteThread quitting due to NULL DevItem object.");
-        return NULL;
-    }
-
-    // Blocking send method must have been found
-    if (NULL == pDeviceItem->m_proc_CanalBlockingSend)
-        return NULL;
-
-    while (!pDeviceItem->m_bQuit) {
-
-        // Wait until there is something to send
-        if ((-1 == vscp_sem_wait(&pDeviceItem->m_seminputQueue, 500)) && errno == ETIMEDOUT) {
-            continue;
-        }
-
-        if (pDeviceItem->m_inputQueue.size()) {
-
-            pthread_mutex_lock( &pDeviceItem->m_mutexinputQueue );
-            vscpEvent* pev = pDeviceItem->m_inputQueue.front();
-            pDeviceItem->m_inputQueue.pop_front();
-            pthread_mutex_unlock(&pDeviceItem->m_mutexinputQueue);
-
-            // Trow away event if Level II and Level I interface
-            if ((VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) && (pev->vscp_class > 512)) {
-                vscp_deleteEvent(pev);
-                continue;
-            }
-
-            canalMsg msg;
-            if (!vscp_convertEventToCanal(&msg, pev)) {
-                syslog( LOG_ERR, "deviceLevel1WriteThread - vscp_convertEventToCanal failed" );
-                vscp_deleteEvent(pev);
-            }
-
-            if (CANAL_ERROR_SUCCESS ==
-                pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle,
-                                                   &msg,
-                                                   300)) {
-                syslog( LOG_ERR, "deviceLevel1WriteThread - m_proc_CanalBlockingSend failed");
-                vscp_deleteEvent(pev);
-            }
-            else {
-                // Give it another try
-                //sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
-            }
-
-        }  // events in queue
-
-    }  // while
-
-    return NULL;
-}
-
-//-----------------------------------------------------------------------------
-//                               L e v e l  I I
-//-----------------------------------------------------------------------------
-
-///////////////////////////////////////////////////////////////////////////////
-// deviceLevel2ReceiveThread
-//
-//  Read from device
-//
-
-void*
-deviceLevel2ReceiveThread(void* pData)
-{
-    vscpEvent* pev;
-
-    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
-    if (NULL == pDeviceItem) {
-        syslog(
-          LOG_ERR,
-          "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
-        return NULL;
-    }
-
-    int rv;
-    while (!pDeviceItem->m_bQuit) {
-
-        pev = new vscpEvent;
-        if (NULL == pev)
-            continue;
-        rv = pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, pev, 500);
-
-        if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pev)) {
-            delete pev;
-            continue;
-        }
-
-        // If timestamp is zero we set it here
-        if (0 == pev->timestamp) {
-            pev->timestamp = vscp_makeTimeStamp();
-        }
-
-        // If no GUID is set,
-        //      - Set driver GUID if define
-        //      - Set interface GUID if no driver GUID defined.
-
-        uint8_t ifguid[16];
-
-        // Save nickname
-        uint8_t nickname_msb = pev->GUID[14];
-        uint8_t nickname_lsb = pev->GUID[15];
-
-        // Set if to use
-        memcpy(ifguid, pev->GUID, 16);
-        ifguid[14] = 0;
-        ifguid[15] = 0;
-
-        // If if is set to zero use interface id
-        if (vscp_isGUIDEmpty(ifguid)) {
-
-            // Set driver GUID if set
-            if (!pDeviceItem->m_guid.isNULL()) {
-                pDeviceItem->m_guid.writeGUID(pev->GUID);
-            }
-            else {
-                // If no driver GUID set use interface GUID
-                //pDeviceItem->m_pClientItem->m_guid.writeGUID(pev->GUID);
-            }
-
-            // Preserve nickname
-            pev->GUID[14] = nickname_msb;
-            pev->GUID[15] = nickname_lsb;
-        }
-
-        // There must be room in the receive queue
-        // if (pDeviceItem->m_pObj->m_maxItemsInClientReceiveQueue >
-        //     pDeviceItem->m_pObj->m_clientOutputQueue.size()) {
-
-        //     pthread_mutex_lock(&pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
-        //     pDeviceItem->m_pObj->m_clientOutputQueue.push_back(pev);
-        //     pthread_mutex_unlock(&pDeviceItem->m_pObj->m_mutex_ClientOutputQueue);
-        //     sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
-        // }
-        // else {
-        //     if (NULL == pev)
-        //         vscp_deleteEvent_v2(&pev);
-        // }
-    }
-
-    return NULL;
-}
-
-// ****************************************************************************
-
-///////////////////////////////////////////////////////////////////////////////
-// deviceLevel2WriteThread
-//
-//  Write to device
-//
-
-void*
-deviceLevel2WriteThread(void* pData)
-{
-    CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
-    if (NULL == pDeviceItem) {
-        syslog(LOG_ERR,
-               "deviceLevel2WriteThread quitting due to NULL DevItem object.");
-        return NULL;
-    }
-
-    while (!pDeviceItem->m_bQuit) {
-
-        // Wait until there is something to send
-        // if ((-1 ==
-        //      vscp_sem_wait(&pDeviceItem->m_pClientItem->m_semClientInputQueue,
-        //                    500)) &&
-        //     errno == ETIMEDOUT) {
-        //     continue;
-        // }
-
-        // if (pDeviceItem->m_pClientItem->m_clientInputQueue.size()) {
-
-        //     pthread_mutex_lock(
-        //       &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
-        //     vscpEvent* pev =
-        //       pDeviceItem->m_pClientItem->m_clientInputQueue.front();
-        //     pthread_mutex_unlock(
-        //       &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
-
-        //     if (CANAL_ERROR_SUCCESS ==
-        //         pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, pev, 300)) {
-
-        //         // Remove the node
-        //         pthread_mutex_lock(
-        //           &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
-        //         pDeviceItem->m_pClientItem->m_clientInputQueue.pop_front();
-        //         pthread_mutex_unlock(
-        //           &pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
-        //     }
-        //     else {
-        //         // Give it another try
-        //         //sem_post(&pDeviceItem->m_pObj->m_semClientOutputQueue);
-        //     }
-
-        // } // events in queue
-
-    } // while
-
-    return NULL;
-}

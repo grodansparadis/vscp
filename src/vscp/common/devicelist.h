@@ -223,26 +223,6 @@ class CDeviceItem
 
     enumMqttMsgFormat m_mqtt_format;    // Format for mqtt events (JSON/XML)
 
-    // ------------------------------------------------------------------------
-    //                     Start of driver worker thread data
-    // ------------------------------------------------------------------------
-
-    // Holder for CANAL receive thread
-    pthread_t m_level1ReceiveThread;
-
-    // Holder for CANAL write thread
-    pthread_t m_level1WriteThread;
-
-    // Holder for VSCP Level II receive thread
-    pthread_t m_level2ReceiveThread;
-
-    // Holder for VSCP Level II write thread
-    pthread_t m_level2WriteThread;
-
-    // ------------------------------------------------------------------------
-    //                     End of driver worker thread data
-    // ------------------------------------------------------------------------
-
     // Level I (CANAL) driver methods
     LPFNDLL_CANALOPEN m_proc_CanalOpen;
     LPFNDLL_CANALCLOSE m_proc_CanalClose;

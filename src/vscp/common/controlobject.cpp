@@ -109,10 +109,10 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     if (NULL == pData) return;
 
     CControlObject *pObj = (CControlObject *)pData;
+    //printf("MQTT LOG : %s\n", logmsg);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
-        printf("\n-------------------------------------------------------------------------------\n");
-        printf("LOG ------> \n%s", logmsg);
+        printf("MQTT LOG : %s\n", logmsg);
     }
 }
 
@@ -188,6 +188,7 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
 CControlObject::CControlObject()
 {
     m_bQuit = false;
+    m_debugFlags = 0;
 
     // Open syslog
     openlog("vscpd", LOG_CONS, LOG_DAEMON);
@@ -697,7 +698,7 @@ CControlObject::sendEvent(vscpEventEx *pex)
         }
 
         // End if error
-        if (!rv) break;
+        if (MOSQ_ERR_SUCCESS != rv) break;
 
     }  // for
 
@@ -1214,21 +1215,42 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 vscp_startsWith(attribute, "stcp://", &attribute);
                 vscp_trim(attribute);
                 pObj->m_mqtt_strHost = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT hostname set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "port")) {
                 pObj->m_mqtt_port = vscp_readStringValue(attribute);
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT port set to %d\n", pObj->m_mqtt_port);
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "user")) {
                 pObj->m_mqtt_strUserName = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT user set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "password")) {
                 pObj->m_mqtt_strPassword = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT password set to **********\n");
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
+                pObj->m_mqtt_strclientId = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT ClientId set to %s\n",pObj->m_mqtt_strclientId.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "qos")) {
                 pObj->m_mqtt_qos = vscp_readStringValue(attribute);
-                if (pObj->m_mqtt_qos>3) {
+                if (pObj->m_mqtt_qos > 3) {
                     syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
                     pObj->m_mqtt_qos = 0;
+                }
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT qos set to %d\n", pObj->m_mqtt_qos);
                 }
             }
             else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
@@ -1238,6 +1260,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 else {
                     pObj->m_mqtt_bCleanSession = false;
                 }
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT bcleansession set to %s\n", pObj->m_mqtt_bCleanSession ? "true" : "false");
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
@@ -1246,28 +1271,83 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 else {
                     pObj->m_mqtt_bRetain = false;
                 }
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT bretain set to %s\n", pObj->m_mqtt_bRetain ? "true" : "false");
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
                 pObj->m_mqtt_keepalive = vscp_readStringValue(attribute);
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT keepalive set to %d\n", pObj->m_mqtt_keepalive);
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
                 if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
-                pObj->m_mqtt_cafile = attribute;                
+                pObj->m_mqtt_cafile = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT cafile set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "capath")) {
                 if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
                 pObj->m_mqtt_capath = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT capath set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
                 if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
                 pObj->m_mqtt_certfile = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT certfile set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
                 if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
                 pObj->m_mqtt_keyfile = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT keyfile set to %s\n", attribute.c_str());
+                }
             }
             else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
                 pObj->m_mqtt_pwKeyfile = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT pwkeyfile set to %s\n", attribute.c_str());
+                }
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "format")) {
+
+                vscp_makeUpper(attribute);
+                if (0 == vscp_strcasecmp(attribute.c_str(), "JSON")) {
+                    pObj->m_mqtt_format = jsonfmt;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attribute.c_str(), "XML")) {
+                    pObj->m_mqtt_format = xmlfmt;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("MQTT format set to 'XML' (%s)\n",attribute.c_str());
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attribute.c_str(), "STRING")) {
+                    pObj->m_mqtt_format = strfmt;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("MQTT format set to 'STRING' (%s)\n",attribute.c_str());
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attribute.c_str(), "BINARY")) {
+                    pObj->m_mqtt_format = binfmt;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("MQTT format set to 'BINARY' (%s)\n",attribute.c_str());
+                    }
+                }
+                else {
+                    pObj->m_mqtt_format = jsonfmt;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Unknown format: MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                    }
+                }
             }
 
         }
@@ -1368,9 +1448,11 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         } // for
 
+        // Save driver name for other stages
+        m_currentDriverName = strName;
+
         if (bEnabled) {
-            // Add the level I device
-            m_currentDriverName = strName;
+            // Add the level I device            
             if (!pObj->m_deviceList.addItem( pObj->m_debugFlags,
                                                 strName,
                                                 strConfig,
@@ -1413,6 +1495,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_port = pObj->m_mqtt_port;
             pDriver->m_mqtt_strUserName = pObj->m_mqtt_strUserName;
             pDriver->m_mqtt_strPassword = pObj->m_mqtt_strPassword;
+            pDriver->m_mqtt_strClientId = "";
             pDriver->m_mqtt_qos = pObj->m_mqtt_qos;
             pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
             pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
@@ -1422,6 +1505,11 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
             pDriver->m_mqtt_keyfile = pObj->m_mqtt_keyfile;
             pDriver->m_mqtt_pwKeyfile = pObj->m_mqtt_pwKeyfile;
+            pDriver->m_mqtt_format = pObj->m_mqtt_format;
+
+            if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                printf("Level I driver MQTT defaults set from main process\n");
+            }
 
             for (int i=0; attr[i]; i += 2) {
 
@@ -1433,21 +1521,42 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     vscp_startsWith(attribute, "stcp://", &attribute);
                     vscp_trim(attribute);
                     pDriver->m_mqtt_strHost = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT host set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "port")) {
                     pDriver->m_mqtt_port = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT port set to %d\n", pDriver->m_mqtt_port);
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "user")) {
                     pDriver->m_mqtt_strUserName = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT username set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "password")) {
                     pDriver->m_mqtt_strPassword = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT password set to **********\n");
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
+                    pDriver->m_mqtt_strClientId = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                    printf("Level I driver MQTT ClientId set to %s\n",pObj->m_mqtt_strclientId.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "qos")) {
                     pDriver->m_mqtt_qos = vscp_readStringValue(attribute);
                     if (pDriver->m_mqtt_qos > 3) {
                         syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
                         pDriver->m_mqtt_qos = 0;
+                    }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT qos set to %d\n", pDriver->m_mqtt_qos);
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
@@ -1457,6 +1566,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     else {
                         pDriver->m_mqtt_bCleanSession = false;
                     }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT bcleansession set to %s\n", pDriver->m_mqtt_bCleanSession ? "true" : "false");
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
                     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
@@ -1465,29 +1577,84 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     else {
                         pDriver->m_mqtt_bRetain = false;
                     }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT bretain set to %s\n", pDriver->m_mqtt_bRetain ? "true" : "false");
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
                     pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT keepalive set to %d\n", pDriver->m_mqtt_keepalive);
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_cafile = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT cafile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "capath")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_capath = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT capath set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_certfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT certfile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_keyfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT keyfile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_pwKeyfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level I driver MQTT pwkeyfile set to %s\n", attribute.c_str());
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "format")) {
+
+                    vscp_makeUpper(attribute);
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "JSON")) {
+                        pDriver->m_mqtt_format = jsonfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level I driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "XML")) {
+                        pObj->m_mqtt_format = xmlfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level I driver MQTT format set to 'XML' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "STRING")) {
+                        pObj->m_mqtt_format = strfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level I driver MQTT format set to 'STRING' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "BINARY")) {
+                        pObj->m_mqtt_format = binfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level I driver MQTT format set to 'BINARY' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else {
+                        pDriver->m_mqtt_format = jsonfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Unknown format: Level I driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                        }
+                    }
                 }
             }  // for
         }
@@ -1632,6 +1799,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_port = pObj->m_mqtt_port;
             pDriver->m_mqtt_strUserName = pObj->m_mqtt_strUserName;
             pDriver->m_mqtt_strPassword = pObj->m_mqtt_strPassword;
+            pDriver->m_mqtt_strClientId = "";
             pDriver->m_mqtt_qos = pObj->m_mqtt_qos;
             pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
             pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
@@ -1641,6 +1809,11 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
             pDriver->m_mqtt_keyfile = pObj->m_mqtt_keyfile;
             pDriver->m_mqtt_pwKeyfile = pObj->m_mqtt_pwKeyfile;
+            pDriver->m_mqtt_format = pObj->m_mqtt_format;
+
+            if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                printf("Level II driver MQTT defaults set from main process\n");
+            }
 
             for (int i=0; attr[i]; i += 2) {
 
@@ -1652,21 +1825,42 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     vscp_startsWith(attribute, "stcp://", &attribute);
                     vscp_trim(attribute);
                     pDriver->m_mqtt_strHost = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT host set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "port")) {
                     pDriver->m_mqtt_port = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT port set to %d\n", pDriver->m_mqtt_port);
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "user")) {
                     pDriver->m_mqtt_strUserName = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT username set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "password")) {
                     pDriver->m_mqtt_strPassword = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT password set to *********\n");
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
+                    pDriver->m_mqtt_strClientId = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                    printf("Level II driver MQTT ClientId set to %s\n",pObj->m_mqtt_strclientId.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "qos")) {
                     pDriver->m_mqtt_qos = vscp_readStringValue(attribute);
                     if (pDriver->m_mqtt_qos > 3) {
                         syslog(LOG_ERR,"Config: MQTT qos > 3. Set to 0.");
                         pDriver->m_mqtt_qos = 0;
+                    }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT qos set to %d\n", pDriver->m_mqtt_qos);
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "bcleansession")) {
@@ -1676,6 +1870,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     else {
                         pDriver->m_mqtt_bCleanSession = false;
                     }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT bCleanSession set to %s\n", pDriver->m_mqtt_bCleanSession ? "true" : "false");
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "bretain")) {
                     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
@@ -1684,29 +1881,83 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     else {
                         pDriver->m_mqtt_bRetain = false;
                     }
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT bRetain set to %s\n", pDriver->m_mqtt_bRetain ? "true" : "false");
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "keepalive")) {   
                     pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT keepalive set to %d\n", pDriver->m_mqtt_keepalive);
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_cafile = attribute;
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT cafile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "capath")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_capath = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT capath set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "certfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_certfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT certfile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "keyfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_keyfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT keyfile set to %s\n", attribute.c_str());
+                    }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "pwkeyfile")) {
                     if ( attribute.length() ) pDriver->m_mqtt_bTLS = true;
                     pDriver->m_mqtt_pwKeyfile = attribute; 
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        printf("Level II driver MQTT pwkeyfile set to %s\n", attribute.c_str());
+                    }
+                }
+                else if (0 == vscp_strcasecmp(attr[i], "format")) {
+                    vscp_makeUpper(attribute);
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "JSON")) {
+                        pObj->m_mqtt_format = jsonfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level II driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "XML")) {
+                        pObj->m_mqtt_format = xmlfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level II driver MQTT format set to 'XML' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "STRING")) {
+                        pObj->m_mqtt_format = strfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level II driver MQTT format set to 'STRING' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else if (0 == vscp_strcasecmp(attribute.c_str(), "BINARY")) {
+                        pObj->m_mqtt_format = binfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Level II driver MQTT format set to 'BINARY' (%s)\n",attribute.c_str());
+                        }
+                    }
+                    else {
+                        pObj->m_mqtt_format = jsonfmt;
+                        if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                            printf("Unknown format: Level II driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
+                        }
+                    }
                 }
             } // for
         }

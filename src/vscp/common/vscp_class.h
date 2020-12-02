@@ -47,7 +47,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-12-01 14:12:19.123085
+                        Generated: 2020-12-02 14:52:05.728017
 */
  
 #ifndef VSCP_CLASS_H
@@ -91,7 +91,7 @@
 #define VSCP_CLASS1_PHONE                    100       /* Phone */
 #define VSCP_CLASS1_DISPLAY                  102       /* Display */
 #define VSCP_CLASS1_IR                       110       /* IR Remote I/f */
-#define VSCP_CLASS1_CONFIGURATION            120       /* Configure */
+#define VSCP_CLASS1_CONFIGURATION            120       /* Configuration */
 #define VSCP_CLASS1_GNSS                     206       /* Position (GNSS) */
 #define VSCP_CLASS1_WIRELESS                 212       /* Wireless */
 #define VSCP_CLASS1_DIAGNOSTIC               506       /* Diagnostic */

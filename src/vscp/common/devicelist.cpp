@@ -315,16 +315,19 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                                     strPayload.length(),
                                     strPayload.c_str(),
                                     m_mqtt_qos,
-                                    FALSE );
+                                    true );
+            //mosquitto_loop(m_mosq, 0, 1);
         }
-        else {            
+        else {    
+            // Binary format publish        
             rv = mosquitto_publish(m_mosq,
                                     NULL,
                                     strTopic.c_str(),
                                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
                                     pbuf,
                                     m_mqtt_qos,
-                                    FALSE );            
+                                    true );
+            //mosquitto_loop(m_mosq, 0, 1);                                             
         }
 
         // Translate mosquitto error code to VSCP error code
@@ -368,8 +371,8 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
 
     }  // for
 
-    if (m_mqtt_format == binfmt) {
-        // Clean up allocated buffer                                    
+    // Clean up binary format buffer if used
+    if (m_mqtt_format == binfmt) {                                 
         if (NULL != pbuf) {
             delete [] pbuf;
             pbuf = NULL;
