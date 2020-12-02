@@ -17,10 +17,12 @@
       name: 'The VSCP Daemon',
       repo: 'https://github.com/grodansparadis/vscp/',
       coverpage: true,
-      loadSidebar: true,
-      autoHeader: true,
+      loadSidebar: './_sidebar.md',
+      autoHeader: './_coverpage.md',
       logo: './images/logo_100.png',
-
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+      },
       subMaxLevel: 3,
       search: 'auto', // default
 
