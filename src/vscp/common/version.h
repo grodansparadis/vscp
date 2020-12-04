@@ -40,12 +40,12 @@
 #define VSCPD_DISPLAY_VERSION   "15.0.0-1 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                        \
-    "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, "                \
+    "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, "                   \
     "https://www.grodansparadis.com"
 #define VSCPD_COPYRIGHT_HTML                                                   \
-    "Copyright Ⓒ 2000-2020 Ake Hedman, <a "                                 \
+    "Copyright Ⓒ 2000-2020 Ake Hedman, <a "                                   \
     "href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a "      \
-    "href=\"https://www.grodansparadis.com\">https://"                        \
+    "href=\"https://www.grodansparadis.com\">https://"                         \
     "www.grodansparadis.com</a>"
 
 #define VSCP_VERSION(major, minor, release)                                    \

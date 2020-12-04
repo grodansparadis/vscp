@@ -186,12 +186,6 @@ class CControlObject {
     CDeviceList m_deviceList;
     pthread_mutex_t m_mutex_DeviceList;
 
-    // This set holds driver names.
-    // Returns true for an active driver
-    // A driver can only be loaded if it have an unique name.
-    std::set<std::string> m_driverNameSet;
-    std::map<std::string, CDeviceItem> m_driverNameDeviceMap;
-
     // Mutex for device queue
     pthread_mutex_t m_mutex_deviceList;
 
@@ -230,6 +224,9 @@ class CControlObject {
                                      // message.  This can then be used with the subscribe callback to determine when 
                                      // the message has been sent.
     enumMqttMsgFormat m_mqtt_format; // Format for mqtt events (JSON/XML)
+
+    std::string m_topicInterfaces;   // Topic on which the dameon publish it's interfaces
+                                     // Default is vscp/{{guid}}/interfaces
 
   private:
            

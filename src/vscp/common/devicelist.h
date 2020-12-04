@@ -87,6 +87,23 @@ class CDeviceItem
     std::string getAsString(void);
 
     /*!
+        Get driver info as a JSON object
+        {
+            "enable"      : true|false,
+            "active"      : true:false,
+            "name"        : "drivername",
+            "path"        : "path to driver",
+            "param"       : "Driver parameters",
+            "level"       : 1/2,
+            "flags"       : numerical,
+            "guid"        : "guid on string form",
+            "translation" : 1/2/3
+        }
+        @return Driver info on JSON format
+    */
+    std::string getAsJSON(void);
+
+    /*!
         Send VSCP event to broker on all
         topics defined
     */
@@ -150,10 +167,6 @@ class CDeviceItem
     */
     cguid m_guid;
 
-    /*!
-        All level II driver must have a GUID
-    */
-    cguid m_drvGuid;
 
     // Worker thread for device
     pthread_t m_deviceThreadHandle;
@@ -311,6 +324,12 @@ class CDeviceList
         with \r\n
     */
     std::string getAllAsString(void);
+
+    /*!
+        Get drivers on JSON format
+        @return all drivers as a JSON object
+    */
+   std::string getAllAsJSON(void);
 
     /*!
         Count number of drivers

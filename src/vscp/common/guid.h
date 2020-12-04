@@ -181,6 +181,16 @@ class cguid
     uint8_t getLSB(void) { return m_id[15]; };
 
     /*!
+        Set MSB GUID position
+    */
+    void setMSB(const unsigned char value) { m_id[0] = value; };
+
+    /*!
+        Get MSB GUID position
+    */
+    uint8_t getMSB(void) { return m_id[0]; };
+
+    /*!
         Get Nickname GUID position
     */
     uint16_t getNicknameID(void) { return (m_id[14] << 8) + m_id[15]; };

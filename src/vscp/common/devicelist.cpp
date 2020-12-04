@@ -156,6 +156,39 @@ CDeviceItem::getAsString(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAsJSON
+//
+
+const char *json_drv_template = "{\
+            \"enable\"      : %s,\
+            \"active\"      : %s,\
+            \"name\"        : \"%s\",\
+            \"path\"        : \"%s\",\
+            \"param\"       : \"%s\",\
+            \"level\"       : %d,\
+            \"flags\"       : %lu,\
+            \"guid\"        : \"%s\",\
+            \"translation\" : %lu\
+        }";
+
+std::string
+CDeviceItem::getAsJSON(void)
+{
+    std::string str;
+    str = vscp_str_format(json_drv_template,
+                            m_bEnable ? "true" : "false",
+                            m_bActive ? "true" : "false",
+                            m_strName.c_str(),
+                            m_strPath.c_str(),
+                            m_strParameter.c_str(),
+                            (int)m_driverLevel, 
+                            m_DeviceFlags,
+                            m_guid.getAsString().c_str(),
+                            m_translation );
+    return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // startDriver
 //
 bool
@@ -293,19 +326,42 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         return VSCP_ERROR_NOT_SUPPORTED;
     }
 
-    for (std::list<std::string>::const_iterator 
-            it = m_mqtt_publish.begin(); 
-            it != m_mqtt_publish.end(); 
+    for (std::list<std::string>::const_iterator
+            it = m_mqtt_publish.begin();
+            it != m_mqtt_publish.end();
             ++it){
 
         std::string topic_template = *it;
 
-        // Fix publish topics        
+        // Fix publish topics
         mustache subtemplate{topic_template};
         data data;
-        data.set("guid", m_guid.getAsString());
+        data.set("guid", m_guid.getAsString());        
+        for (int i=0; i<15; i++) {
+            data.set(vscp_str_format("guid%d", i), vscp_str_format("%d", m_guid.getAt(i)));
+        }
+        data.set("guid.msb", vscp_str_format("%d", m_guid.getAt(0)));
+        data.set("guid.lsb", vscp_str_format("%d", m_guid.getMSB()));
+        data.set("nickname", vscp_str_format("%d", m_guid.getNicknameID()));
         data.set("class", vscp_str_format("%d",pev->vscp_class));
         data.set("type", vscp_str_format("%d",pev->vscp_type));
+
+        data.set("head", vscp_str_format("%d",pev->head));
+        data.set("obid", vscp_str_format("%ul",pev->obid));
+        data.set("timestamp", vscp_str_format("%ul",pev->timestamp));
+        std::string dt;
+        vscp_getDateStringFromEvent(dt,pev);
+        data.set("datetime", dt);        
+        data.set("year", vscp_str_format("%d",pev->year));
+        data.set("month", vscp_str_format("%d",pev->month));
+        data.set("day", vscp_str_format("%d",pev->day));
+        data.set("hour", vscp_str_format("%d",pev->hour));
+        data.set("minute", vscp_str_format("%d",pev->minute));
+        data.set("second", vscp_str_format("%d",pev->second));
+        data.set("clientid", m_mqtt_strClientId);
+        data.set("user", m_mqtt_strUserName);
+        data.set("host", m_mqtt_strHost);
+
         strTopic = subtemplate.render(data);
 
         if (m_mqtt_format != binfmt) {
@@ -315,8 +371,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                                     strPayload.length(),
                                     strPayload.c_str(),
                                     m_mqtt_qos,
-                                    true );
-            //mosquitto_loop(m_mosq, 0, 1);
+                                    m_mqtt_bRetain );
         }
         else {    
             // Binary format publish        
@@ -535,6 +590,32 @@ CDeviceList::getAllAsString(void)
             str += pItem->getAsString() + "\r\n";
         }
     }
+
+    return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllAsJSON
+//
+
+const char * interface_template = "{\
+    \"interfaces\" : [%s]\
+}";
+
+std::string
+CDeviceList::getAllAsJSON(void)
+{
+    std::string str;
+
+    std::deque<CDeviceItem *>::iterator iter;
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
+        CDeviceItem *pItem = *iter;
+        if (NULL != pItem) {
+            str += pItem->getAsJSON() + ",";
+        }
+    }
+
+    str = vscp_str_format(interface_template, str.c_str());
 
     return str;
 }

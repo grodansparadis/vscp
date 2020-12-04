@@ -886,10 +886,127 @@ deviceThread(void* pData)
                    pDeviceItem->m_strName.c_str());
         }
 
+
+        //--------------------------------------------------------------
+        //                        MQTT Level II
+        // -------------------------------------------------------------
+
+        if (pDeviceItem->m_mqtt_strClientId.length()) {
+            pDeviceItem->m_mosq = mosquitto_new( pDeviceItem->m_mqtt_strClientId.c_str(), 
+                                                    pDeviceItem->m_mqtt_bCleanSession, 
+                                                    pDeviceItem);
+        }
+        else {
+            pDeviceItem->m_mqtt_bCleanSession = true;    // Must be true without id
+            pDeviceItem->m_mosq = mosquitto_new( NULL, 
+                                                    pDeviceItem->m_mqtt_bCleanSession, 
+                                                    pDeviceItem);
+        }
+        
+        if (NULL == pDeviceItem->m_mosq) {
+                
+            if (ENOMEM == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
+            }
+            else if (EINVAL == errno) {
+                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+            }
+
+            dlclose(hdll);
+            return NULL;
+
+        }
+
+        // Set callbacks
+        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_log_callback);
+        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_on_connect);
+        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_on_disconnect);
+        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_on_message);
+        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
+
+        // Set username/password if defined
+        if (pDeviceItem->m_mqtt_strUserName.length()) {
+            int rv;
+            if ( MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set( pDeviceItem->m_mosq,
+                                                                        pDeviceItem->m_mqtt_strUserName.c_str(),
+                                                                        pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
+                if (MOSQ_ERR_INVAL == rv) {
+                    syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
+                }
+                else if (MOSQ_ERR_NOMEM == rv) {
+                    syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
+                }
+            }
+        }
+
+        int rv = mosquitto_connect(pDeviceItem->m_mosq,
+                                        pDeviceItem->m_mqtt_strHost.c_str(),
+                                        pDeviceItem->m_mqtt_port,
+                                        pDeviceItem->m_mqtt_keepalive);
+
+        if ( MOSQ_ERR_SUCCESS != rv ) {
+            
+            if (MOSQ_ERR_INVAL == rv) {
+                syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
+            }
+            else if (MOSQ_ERR_ERRNO == rv) {
+                syslog(LOG_ERR, "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
+            }
+
+            dlclose(hdll);
+            return NULL;
+        }
+
+        // Start the worker loop
+        rv = mosquitto_loop_start(pDeviceItem->m_mosq);
+        if (MOSQ_ERR_SUCCESS != rv) {
+            mosquitto_disconnect(pDeviceItem->m_mosq);
+            dlclose(hdll);
+            return NULL;
+        }
+
+
+        for (std::list<std::string>::const_iterator 
+            it = pDeviceItem->m_mqtt_subscriptions.begin(); 
+            it != pDeviceItem->m_mqtt_subscriptions.end(); 
+            ++it){
+
+            std::string topic = *it;
+
+            // Fix subscribe/publish topics
+            mustache subtemplate{topic};
+            data data;
+            data.set("guid", pDeviceItem->m_guid.getAsString());
+            std::string subscribe_topic = subtemplate.render(data);
+
+            // Subscribe to specified topic
+            rv = mosquitto_subscribe(pDeviceItem->m_mosq,
+                                        NULL,
+                                        subscribe_topic.c_str(),
+                                        pDeviceItem->m_mqtt_qos);
+
+            switch (rv) {
+                case MOSQ_ERR_INVAL:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - input parameters were invalid.",subscribe_topic.c_str());
+                case MOSQ_ERR_NOMEM:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - out of memory condition occurred.",subscribe_topic.c_str());
+                case MOSQ_ERR_NO_CONN:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
+                case MOSQ_ERR_MALFORMED_UTF8:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+                case MOSQ_ERR_OVERSIZE_PACKET:
+                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+            }
+        }
+
+        // -------------------------------------------------------------
+
+
+
         // Open up the driver
         pDeviceItem->m_openHandle =
           pDeviceItem->m_proc_VSCPOpen(pDeviceItem->m_strParameter.c_str(),
-                                    pDeviceItem->m_drvGuid.getGUID());
+                                    pDeviceItem->m_guid.getGUID());
 
         if (0 == pDeviceItem->m_openHandle) {
             // Free the library

@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <!--
-  2020-12-02
+  2020-11-30
   Example configuration file Unix
   Ake Hedman, akhe@grodansparadis.com
   https://www.grodansparadis.com
@@ -20,35 +20,31 @@
                    to drop privileges. 
                    Default: "vscp"
 
-      guid       - GUID for daemon - if all nills, "-" or not set, the mac addess 
-                   or the IP address of the computer will be used to set the 
-                   GUID for the daemon. Running with root privileges is needed to 
-                   get the MAC address. Best is to set a GUID yourself.
-                   Apply for your own GUID series at guid@vscp.org
+      guid       - GUID for daemon - if all nills, "-" or not set and the mac addess 
+                   or the IP address of the computer will be used to calculate the 
+                   GUID for the daemon Apply for your own GUID series at 
+                   guid@vscp.org
                    Default: "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01"
 
-      servername - is a user name for the daemon which it use to greet users with.
+      servername - is a user name for the daemon whcih it use to greet users with.
                    Default: "The VSCP daemon" 
-
-      debug      - Enable debug definitions here. Se debug section of manual for information. 
-                   Debugging flags can also be set on the command line but this setting override
-	               any setting that is done there. This is why this section is commented out.
     -->
     <general runasuser="vscp"
+             debbug="0"		
              guid="FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01"
-             servername="The VSCP daemon" 
-             debug="0x00000000" 
+             servername="The VSCP daemon"  
     />
 
     <!--
         The MQTT settings here is mainly for the daemon itself. The info will
         also be used for drivers that does not have mqtt data defined.
     -->    
-    <mqtt host="127.0.0.1"            
+    <mqtt host="192.168.1.7"
             port="1883"
             user="vscp"
-            password="secret"
-            clientid=""
+	    password="secret"
+	    clientid="mosq-vscp-daemon-000001"
+	    fmt="json"
             qos="0"
             bcleansession="false"
             bretain="false"
@@ -57,12 +53,14 @@
     	    capath=""
     	    certfile=""
     	    keyfile=""
-    	    pwkeyfile=""
-            format="json" >
+	    pwkeyfile=""
+	    format="string" >
         <subscribe topic="vscp/{{guid}}/#"
-                    qos="0"
-                    options="0" />
-        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>        
+                        qos="0"
+                        options="0" />
+	<publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+	<publish topic="source/{{guid}}/{{class}}/{{type}}"/>
+        <publish topic="DRAIN/{{guid}}/{{class}}/{{type}}"/>	
     </mqtt>
 
     <!-- 
@@ -87,15 +85,16 @@
                     flags="1"
                     translation="0x02"
                     path="/var/lib/vscp/drivers/level1/vscpl1drv-logger.so"
-                    guid="FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00" >
+                    guid="FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01" >
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+		    clientid="vscp-drv1-logger"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -104,12 +103,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile=""
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>
         </driver>
 
@@ -120,16 +119,17 @@
                 flags="0"
                 translation="0x02"
                 path="/var/lib/vscp/drivers/level1/vscpl1drv-can4vscp.so"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:02" >
 
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv1-can4vscp"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -138,12 +138,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -153,19 +153,20 @@
         -->
         <driver enable="false" 
                 name="socketcanl1"
-                config="vcan0"
+                config="can0"
                 flags="0"
                 translation="0x02"
-                path="/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:03:00:00:00:00:00:00:00" >
+                path="/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.0"
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03" >
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
-                <mqtt host="127.0.0.1"
+                <mqtt host="192.168.1.7"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv1-socketcan1"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -174,8 +175,8 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
@@ -190,16 +191,17 @@
                 flags="0"
                 translation="0x02"
                 path="/var/lib/vscp/drivers/level1/vscpl1drv-can232.so"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:04:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:04" >
  
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+		    clientid="vscp-drv1-can232"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -208,12 +210,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -236,16 +238,17 @@
                 name="Logger"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-logger.so"
                 path-config="/var/lib/vscp/vscpd/logger2.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:05:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01" >
 
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv2-logger"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -254,12 +257,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -268,16 +271,17 @@
                 name="lmsensors"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-lmsensors.so"
                 path-config="/var/lib/vscp/vscpd/lmsensors.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:06:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:02" >
 
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv2-lmsensors"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -286,12 +290,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -300,16 +304,17 @@
                 name="socketcan"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-socketcan.so"
                 path-config="/var/lib/vscp/vscpd/socketcan.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:07:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:03" >
 
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv2-socketcan"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -318,12 +323,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -332,16 +337,17 @@
                 name="mqtt"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-mqtt.so"
                 path-config="/var/lib/vscp/vscpd/mqtt.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:08:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:04" >
   
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+                    clientid="vscp-drv2-mqtt"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -350,45 +356,46 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
         <!-- Level II tcp/ip link -->
-        <driver enable="false" 
-                name="tcpiplink"
-                path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so"
-                path-config="/var/lib/vscp/vscpd/tcpiplink.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00" >
+        <driver enable="true"
+            name = "tcpiplink"
+            path-driver="/home/akhe/development/VSCP/vscpl2drv-tcpiplink/linux/vscpl2drv-tcpiplink.so.1.1.0"
+            path-config="/home/akhe/development/VSCP/vscpl2drv-tcpiplink/debug/conf_standard.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:88:99:AA:BB:CC:DD:EE:FF" >
 
-                <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
-                -->    
-                <mqtt host="127.0.0.1"
-                    port="1883"
-                    user="vscp"
-                    password="secret"
-                    qos="0"
-                    bcleansession="false"
-                    bretain="false"
-                    keepalive="60"
-                    cafile=""
-    	            capath=""
-    	            certfile=""
-    	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
-                        <subscribe topic="vscp/{{guid}}/#"
-                                        qos="0"
-                                        options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
-                </mqtt>                    
+            <!--
+                The MQTT settings here is mainly for the daemon itself. The info will
+                also be used for drivers that does not have mqtt data defined.
+            -->    
+            <mqtt host="192.168.1.7"
+                port="1883"
+                user="vscp"
+        password="secret"
+                clientid="vscp-drv2-tcpiplink"
+                qos="0"
+                bcleansession="false"
+                bretain="false"
+                keepalive="60"
+                cafile=""
+                capath=""
+                certfile=""
+                keyfile=""
+        pwkeyfile="" 
+        format="json" >
+                    <subscribe topic="vscp/{{guid}}/#"
+                                    qos="0"
+                                    options="0" />
+                    <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
+            </mqtt>                    
         </driver>
 
         <!-- Level II raw ethernet -->
@@ -396,16 +403,17 @@
                 name="rawethernet"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-raweth.so"
                 path-config="/var/lib/vscp/vscpd/raweth.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:0A:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:06" >
              
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+		    clientid="vscp-drv2-rawethernet"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -414,30 +422,31 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
        <!-- Level II simulation -->
-        <driver enable="true"
+        <driver enable="false"
                 name="sim"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-sim.so"
                 path-config="/var/lib/vscp/vscpd/sim.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:0B:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:07" >
 
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+		    clientid="vscp-drv2-sim"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -446,12 +455,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 
@@ -460,16 +469,17 @@
                 name="1-wire"
                 path-driver="/var/lib/vscp/drivers/level2/vscpl2drv-wire1.so"
                 path-config="/var/lib/vscp/vscpd/wire1.conf"
-                guid="FF:FF:FF:FF:FF:FF:FF:F5:0C:00:00:00:00:00:00:00" >
+                guid="FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:08" >
  
                 <!--
-                    The MQTT settings for driver. Settings are inherited from the main
-                    setting so no need to repeat if a setting is the same.
+                    The MQTT settings here is mainly for the daemon itself. The info will
+                    also be used for drivers that does not have mqtt data defined.
                 -->    
                 <mqtt host="127.0.0.1"
                     port="1883"
                     user="vscp"
-                    password="secret"
+		    password="secret"
+		    clientid="vscp-drv2-1wire"
                     qos="0"
                     bcleansession="false"
                     bretain="false"
@@ -478,12 +488,12 @@
     	            capath=""
     	            certfile=""
     	            keyfile=""
-    	            pwkeyfile=""
-                    format="json" >
+		    pwkeyfile="" 
+		    format="json" >
                         <subscribe topic="vscp/{{guid}}/#"
                                         qos="0"
                                         options="0" />
-                        <publish topic="vscp/{{guid}}/{{class}}/{{type}}"/>
+                        <publish topic="vscp/{{guid}}/->/{{class}}/{{type}}"/>
                 </mqtt>                    
         </driver>
 

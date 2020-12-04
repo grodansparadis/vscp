@@ -229,6 +229,8 @@ CControlObject::CControlObject()
     m_mqtt_keyfile = "";
     m_mqtt_pwKeyfile = "";
     m_mqtt_format = jsonfmt;
+
+    m_topicInterfaces = "vscp/{{guid}}/interfaces";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -450,6 +452,25 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
         }
     }
+
+
+    // Publish interfaces (retained)
+    // default topic "vscp/{{guid}}/interfaces"
+    // Fix publish topics
+    mustache subtemplate{m_topicInterfaces};
+    data data;
+    data.set("guid", m_guid.getAsString());  
+    std::string strTopic = subtemplate.render(data);
+    std::string strPayload = m_deviceList.getAllAsJSON();
+    printf("%s\n",strPayload.c_str());
+    rv = mosquitto_publish(m_mosq,
+                                    NULL,
+                                    strTopic.c_str(),
+                                    strPayload.length(),
+                                    strPayload.c_str(),
+                                    m_mqtt_qos,
+                                    true );
+   
 
     // Load drivers
     try {
@@ -1315,6 +1336,13 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 	                printf("MQTT pwkeyfile set to %s\n", attribute.c_str());
                 }
             }
+            else if (0 == vscp_strcasecmp(attr[i], "topic-interfaces")) {
+                pObj->m_topicInterfaces = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+	                printf("MQTT topic-interfaces set to %s\n", attribute.c_str());
+                }
+            }
+            m_topicInterfaces
             else if (0 == vscp_strcasecmp(attr[i], "format")) {
 
                 vscp_makeUpper(attribute);
@@ -1679,9 +1707,11 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         }
     }
-    else if (bVscpConfigFound && bLevel1DriverConfigFound && bMQTTConfigFound &&
-             (4 == depth_full_config_parser) &&
-             (0 == vscp_strcasecmp(name, "publish"))) {
+    else if (bVscpConfigFound && 
+                bLevel1DriverConfigFound && 
+                bMQTTConfigFound &&
+                (4 == depth_full_config_parser) &&
+                (0 == vscp_strcasecmp(name, "publish"))) {
 
         CDeviceItem *pDriver = pObj->m_deviceList.getDeviceItemFromName(m_currentDriverName);
         if ( NULL == pDriver ) {
@@ -1752,10 +1782,12 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         } // for
 
+        // Save driver name for other stages
+        m_currentDriverName = strName;
+
         // Add the level II device
         if (bEnabled) {
 
-            m_currentDriverName = strName;
             if (!pObj->m_deviceList.addItem( pObj->m_debugFlags,
                                                 strName,
                                                 strConfig,
@@ -1929,31 +1961,31 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 else if (0 == vscp_strcasecmp(attr[i], "format")) {
                     vscp_makeUpper(attribute);
                     if (0 == vscp_strcasecmp(attribute.c_str(), "JSON")) {
-                        pObj->m_mqtt_format = jsonfmt;
+                        pDriver->m_mqtt_format = jsonfmt;
                         if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                             printf("Level II driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
                         }
                     }
                     else if (0 == vscp_strcasecmp(attribute.c_str(), "XML")) {
-                        pObj->m_mqtt_format = xmlfmt;
+                        pDriver->m_mqtt_format = xmlfmt;
                         if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                             printf("Level II driver MQTT format set to 'XML' (%s)\n",attribute.c_str());
                         }
                     }
                     else if (0 == vscp_strcasecmp(attribute.c_str(), "STRING")) {
-                        pObj->m_mqtt_format = strfmt;
+                        pDriver->m_mqtt_format = strfmt;
                         if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                             printf("Level II driver MQTT format set to 'STRING' (%s)\n",attribute.c_str());
                         }
                     }
                     else if (0 == vscp_strcasecmp(attribute.c_str(), "BINARY")) {
-                        pObj->m_mqtt_format = binfmt;
+                        pDriver->m_mqtt_format = binfmt;
                         if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                             printf("Level II driver MQTT format set to 'BINARY' (%s)\n",attribute.c_str());
                         }
                     }
                     else {
-                        pObj->m_mqtt_format = jsonfmt;
+                        pDriver->m_mqtt_format = jsonfmt;
                         if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                             printf("Unknown format: Level II driver MQTT format set to 'JSON' (%s)\n",attribute.c_str());
                         }
@@ -2053,6 +2085,7 @@ endFullConfigParser(void* data, const char* name)
     else if (bVscpConfigFound && (2 == depth_full_config_parser) &&
              (0 == vscp_strcasecmp(name, "driver"))) {
         bDriverConfigFound = FALSE;
+        m_currentDriverName = "";
     }
     else if (bVscpConfigFound && (3 == depth_full_config_parser) &&
              (0 == vscp_strcasecmp(name, "mqtt"))) {
