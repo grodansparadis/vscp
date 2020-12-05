@@ -229,7 +229,6 @@ CControlObject::CControlObject()
     m_mqtt_keyfile = "";
     m_mqtt_pwKeyfile = "";
     m_mqtt_format = jsonfmt;
-
     m_topicInterfaces = "vscp/{{guid}}/interfaces";
 }
 
@@ -1342,7 +1341,6 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 	                printf("MQTT topic-interfaces set to %s\n", attribute.c_str());
                 }
             }
-            m_topicInterfaces
             else if (0 == vscp_strcasecmp(attr[i], "format")) {
 
                 vscp_makeUpper(attribute);

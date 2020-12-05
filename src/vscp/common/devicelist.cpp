@@ -49,7 +49,11 @@
 #include <guid.h>
 #include <vscp.h>
 
+#include <json.hpp>  // Needs C++11  -std=c++11
 #include <mustache.hpp>
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
 
 using namespace kainjow::mustache;
 
@@ -79,6 +83,8 @@ CDeviceItem::CDeviceItem()
     m_bActive = true;  // Not paused
 
     m_translation = NO_TRANSLATION; // Default is no translation
+
+    bJsonMeasurmentAdd = false;
 
     m_strName.clear();          // No Device Name
     m_strParameter.clear();     // No Parameters
@@ -290,15 +296,54 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         return false;
     }
 
+    // Convert to configured format 
+
     if ( m_mqtt_format == jsonfmt ) {
         if ( !vscp_convertEventToJSON(strPayload, pev) ) {
             syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
             return false;
         }
+
+        // If function is enable din configuration
+        // add measurement info to JSON object
+        //
+        // "measurement" : {
+        //     "value" : 1.23,
+        //     "unit" : 0,
+        //     "sensorindex" : 1,
+        //     "zone" : 11,
+        //     "subzone" : 22
+        // }
+        //
+
+        if (vscp_isMeasurement(pev)) {
+
+            double value = 0;
+            if (!vscp_getMeasurementAsDouble(&value, pev)) {
+                syslog(LOG_ERR,"Driver: sendEvent: Failed to convert event to value.");
+            }
+            else {
+                try {
+                    auto j = json::parse(strPayload);
+
+                    j["measurement"]["value"] = value;
+                    j["measurement"]["unit"] = vscp_getMeasurementUnit(pev);
+                    j["measurement"]["sensorindex"] = vscp_getMeasurementSensorIndex(pev);
+                    j["measurement"]["zone"] = vscp_getMeasurementZone(pev);
+                    j["measurement"]["subzone"] = vscp_getMeasurementSubZone(pev);
+
+                    strPayload = j.dump();
+                }
+                catch (...) {
+                    syslog(LOG_ERR,"Driver: sendEvent: Failed to add measurement info to event.");
+                }
+            }
+        }        
+
     }
     else if ( m_mqtt_format == xmlfmt ) {
         if ( !vscp_convertEventToXML(strPayload, pev) ) {
-            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to XML");
+            syslog(LOG_ERR, "Driver: sendEvent: Failed to convert event to XML");
             return false;
         }
     }
@@ -326,6 +371,10 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         return VSCP_ERROR_NOT_SUPPORTED;
     }
 
+
+
+    // Fix topic
+
     for (std::list<std::string>::const_iterator
             it = m_mqtt_publish.begin();
             it != m_mqtt_publish.end();
@@ -336,13 +385,18 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         // Fix publish topics
         mustache subtemplate{topic_template};
         data data;
-        data.set("guid", m_guid.getAsString());        
+        cguid evguid(pev->GUID);    // Event GUID
+        data.set("guid", evguid.getAsString());        
         for (int i=0; i<15; i++) {
-            data.set(vscp_str_format("guid%d", i), vscp_str_format("%d", m_guid.getAt(i)));
+            data.set(vscp_str_format("guid%d", i), vscp_str_format("%d", evguid.getAt(i)));
         }
-        data.set("guid.msb", vscp_str_format("%d", m_guid.getAt(0)));
-        data.set("guid.lsb", vscp_str_format("%d", m_guid.getMSB()));
-        data.set("nickname", vscp_str_format("%d", m_guid.getNicknameID()));
+        data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
+        data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
+        data.set("ifguid", m_guid.getAsString());
+        for (int i=0; i<15; i++) {
+            data.set(vscp_str_format("ifguid%d", i), vscp_str_format("%d", m_guid.getAt(i)));
+        }
+        data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
         data.set("class", vscp_str_format("%d",pev->vscp_class));
         data.set("type", vscp_str_format("%d",pev->vscp_type));
 

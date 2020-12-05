@@ -185,6 +185,14 @@ class CDeviceItem
      */
     uint32_t m_translation;
 
+    /*!
+        Added measurement objet to
+        json output if event is
+        measurement and this is 
+        configured.
+    */
+    bool bJsonMeasurmentAdd;
+
     // Handle for dll/dl driver interface
     long m_openHandle;
 
