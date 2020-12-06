@@ -470,14 +470,18 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
                 rv = false;
                 break;
+#if defined(MOSQ_ERR_QOS_NOT_SUPPORTED)                  
             case MOSQ_ERR_QOS_NOT_SUPPORTED:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
                 rv = false;
                 break;
+#endif                
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)                
             case MOSQ_ERR_OVERSIZE_PACKET:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
                 rv = false;
                 break;
+#endif                
         }
 
         // End if error
