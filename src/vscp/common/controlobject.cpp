@@ -60,6 +60,7 @@
 #endif
 
 #include <expat.h>
+#include <mosquitto.h>
 
 #include <crc.h>
 #include <devicelist.h>
