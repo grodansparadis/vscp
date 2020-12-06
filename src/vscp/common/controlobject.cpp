@@ -710,12 +710,12 @@ CControlObject::sendEvent(vscpEventEx *pex)
             case MOSQ_ERR_MALFORMED_UTF8:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
                 break;
-            case MOSQ_ERR_QOS_NOT_SUPPORTED:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
-                break;
-            case MOSQ_ERR_OVERSIZE_PACKET:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
-                break;
+            // case MOSQ_ERR_QOS_NOT_SUPPORTED:
+            //     syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
+            //     break;
+            // case MOSQ_ERR_OVERSIZE_PACKET:
+            //     syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
+            //     break;
         }
 
         // End if error
