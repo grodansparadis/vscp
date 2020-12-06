@@ -600,8 +600,10 @@ deviceThread(void* pData)
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
                 case MOSQ_ERR_MALFORMED_UTF8:
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)
                 case MOSQ_ERR_OVERSIZE_PACKET:
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+#endif                    
             }
         }
 
@@ -994,8 +996,10 @@ deviceThread(void* pData)
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
                 case MOSQ_ERR_MALFORMED_UTF8:
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)
                 case MOSQ_ERR_OVERSIZE_PACKET:
                     syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+#endif                    
             }
         }
 
