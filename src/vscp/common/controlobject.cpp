@@ -448,7 +448,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
             case MOSQ_ERR_MALFORMED_UTF8:
                 syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
-#ifdef  MOSQ_ERR_OVERSIZE_PACKET          
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)
             case MOSQ_ERR_OVERSIZE_PACKET:
                 syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
 #endif                
@@ -712,17 +712,17 @@ CControlObject::sendEvent(vscpEventEx *pex)
             case MOSQ_ERR_MALFORMED_UTF8:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
                 break;
-#ifdef MOSQ_ERR_QOS_NOT_SUPPORTED                
+#if defined(MOSQ_ERR_QOS_NOT_SUPPORTED)
             case MOSQ_ERR_QOS_NOT_SUPPORTED:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
                 break;
 #endif 
-#ifdef MOSQ_ERR_OVERSIZE_PACKET              
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)
             case MOSQ_ERR_OVERSIZE_PACKET:
                 syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
                 break;
+#endif                
         }
-#endif        
 
         // End if error
         if (MOSQ_ERR_SUCCESS != rv) break;
