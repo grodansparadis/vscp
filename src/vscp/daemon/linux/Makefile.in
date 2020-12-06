@@ -162,7 +162,7 @@ vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
 
-install: all install-folders install-startup-script install-configfile install-sample-certs
+install: all install-folders install-configfile install-sample-certs
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) -d $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) vscpd $(DESTDIR)$(bindir)
