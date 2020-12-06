@@ -416,6 +416,11 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         data.set("user", m_mqtt_strUserName);
         data.set("host", m_mqtt_strHost);
 
+        // guid-to-real   - GUID as realname
+        // class-to-real  - VSCP class as token
+        // type-to-real   - VSCP type to token.
+        // data-to-read   - Data to real
+
         strTopic = subtemplate.render(data);
 
         if (m_mqtt_format != binfmt) {

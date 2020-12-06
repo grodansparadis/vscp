@@ -736,7 +736,7 @@ deviceThread(void* pData)
                                 break;
                             }
                             pev->obid = 0;
-                            pev->GUID[14] = 0;   // Make sure MSB of nickname is zero for Level I driver
+                            //pev->GUID[14] = 0;   // Make sure high byte of nickname is zero for Level I driver
 
                             // =========================================================
                             //                   Outgoing translations
