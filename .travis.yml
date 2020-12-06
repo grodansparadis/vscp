@@ -32,6 +32,8 @@ before_script:
   - sudo apt-get install -y build-essential
   - sudo apt-get install -y libssl-dev
   - sudo apt-get install -y libcurl4-openssl-dev
+  - sudo apt-get install -y libsystemd-dev
+  - sudo apt-get install -y libexpat-dev
   - sudo apt-get install -y libmosquitto-dev
   - g++ --version
 
