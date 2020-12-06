@@ -189,15 +189,16 @@ install-folders:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level2
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/lib/systemd/system/
 
-install-startup-script:
-	@echo "- Installing startup script."
+# Install systemvinit startup
+install-startup-systemvinit:
 	@$(INSTALL_PROGRAM) -d $(DESTDIR)/etc
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/init.d
+	@echo "- Installing startup script."
 	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
- 	    echo "- Copying startup script";\
-	    $(INSTALL_PROGRAM) -b -m755 ../../../../debian_orig/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
-	    echo "- Installing startup script";\
-	    update-rc.d vscpd defaults;\
+		echo "- Copying startup script";\
+		$(INSTALL_PROGRAM) -b -m755 service/systemvinit/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
+		echo "- Installing startup script";\
+		update-rc.d vscpd defaults;\
 	fi
 
 install-configfile:
