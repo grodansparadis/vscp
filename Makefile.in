@@ -22,9 +22,7 @@ all:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE)); done
 
-install-all: install install-folders install-startup-script install-config install-sample-data install-sample-certs install-manpages
-
-install: install-manpages
+install:
 # Install sub components
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) install); done
@@ -36,13 +34,6 @@ install: install-manpages
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
 	@echo "   or 'vscpd -s' to start the daemon in the foreground."
 	@echo
-	@echo " - Admin interface is at http://localhost:8884/vscp"
-	@echo "   Username: admin, Password: secret"
-	@echo
-	@echo " - You can reach core functionality in the telnet interface on"
-	@echo "   this machine ($(IPADDRESS)) at port 9598."
-	@echo "   Username: 'admin', Password: 'secret'"
-	@echo
 	@echo " - The configuration file for the VSCP daemon is at '/etc/vscd/vscpd.conf' and"
 	@echo "   you can read about the different available options here "
 	@echo "   https://docs.vscp.org/vscpd/14.0/#/configuring_the_vscp_daemon"
@@ -51,55 +42,11 @@ install: install-manpages
 	@echo " - Documentation is at https://docs.vscp.org/vscpd/14.0 "
 	@echo "   and more general documentation can be found here https://docs.vscp.org"
 
-install-folders:
-	@echo "- Creating folders."
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level1
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp/
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/images
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/css
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/js
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/ca_certificates
-
 uninstall: 
     # Install sub components
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "uninstall in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) uninstall); done
 
-install-config:
-	@echo "- Installing main configuration file."
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp
-	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
-		$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
-	else\
-		mv $(DESTDIR)/etc/vscp/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
-		$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
-	fi
-
-# Install systemd startup
-install-startup-systemd:
-	cp service/systemd/vscpd.service.notify /lib/systemd/system/vscpd.service
-	sysctrl enable vscpd
-	sysctrl start vscpd
-
-# Install systemvinit startup
-install-startup-systemvinit:
-	@$(INSTALL_PROGRAM) -d $(DESTDIR)/etc
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/init.d
-	@echo "- Installing startup script."
-	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
-		echo "- Copying startup script";\
-		$(INSTALL_PROGRAM) -b -m755 service/systemvinit/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
-		echo "- Installing startup script";\
-		update-rc.d vscpd defaults;\
-	fi
 
 install-sample-certs:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
@@ -130,14 +77,8 @@ install-manpages:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man7
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man1
 	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 $(DESTDIR)/usr/share/man/man8/
-	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 $(DESTDIR)/usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpdrivers.7 $(DESTDIR)/usr/share/man/man7/
 	mandb
-
-install-web-samples:
-	@echo "- Installing web-sample pages."
-	sh do_web_download /var/lib/vscp/
 
 fetch_event_database:
 	echo "Fetching VSCP event database"
@@ -162,10 +103,6 @@ clean:
 distclean: clean
 	@sh clean_for_dist
 	rm -f m4/Makefile
-
-deb:
-	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
-	echo "Building deb in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) deb ); done
 
 googletest:
 	cd googletest && mkdir build && cd build && cmake .. && make
