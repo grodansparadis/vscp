@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-12-02 14:52:07.344651
+                        Generated: 2020-12-06 21:25:27.131664
 */
  
 
@@ -2082,11 +2082,11 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,3) ] = _("VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,4) ] = _("VSCP2_TYPE_INFORMATION_CHANNEL_ANNOUNCE");
 
-	//  CLASS2.TEXT2SPEECH = 1027  -  Text to speech
+	//  CLASS2.TEXT2SPEECH = 1027  -  Level II Text to speech
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,0) ] = _("VSCP2_TYPE_TEXT2SPEECH_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,1) ] = _("VSCP2_TYPE_TEXT2SPEECH_TALK");
 
-	//  CLASS2.HLO = 1028  -  High Level Object
+	//  CLASS2.HLO = 1028  -  Level II High Level Object
 	m_hashType[ MAKE_CLASSTYPE_LONG(1028,0) ] = _("VSCP2_TYPE_HLO_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1028,1) ] = _("VSCP2_TYPE_HLO_COMMAND");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1028,2) ] = _("VSCP2_TYPE_HLO_RESPONSE");
@@ -2097,7 +2097,7 @@
 	//  CLASS2.DISPLAY = 1030  -  Level II Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030,0) ] = _("VSCP2_TYPE_DISPLAY_GENERAL");
 
-	//  CLASS2.MEASUREMENT_STR = 1040  -  Measurement string
+	//  CLASS2.MEASUREMENT_STR = 1040  -  Level II Measurement string
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
@@ -2163,7 +2163,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,61) ] = _("VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,62) ] = _("VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE");
 
-	//  CLASS2.MEASUREMENT_FLOAT = 1060  -  Measurement float
+	//  CLASS2.MEASUREMENT_FLOAT = 1060  -  Level II Measurement float
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
@@ -2229,7 +2229,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,61) ] = _("VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,62) ] = _("VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE");
 
-	//  CLASS2.VSCPD = 65535  -  VSCP Daemon internal events
+	//  CLASS2.VSCPD = 65535  -  Level II VSCP Daemon internal events
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,0) ] = _("VSCP2_TYPE_VSCPD_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,1) ] = _("VSCP2_TYPE_VSCPD_LOOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,3) ] = _("VSCP2_TYPE_VSCPD_PAUSE");

@@ -40,18 +40,18 @@
 
 #include <deque>
 #include <list>
+#include <map>
 #include <string>
 
-
-#define NO_TRANSLATION 0 // No translation bit set
+#define NO_TRANSLATION 0    // No translation bit set
 
 // Out - translation bit definitions
 #define VSCP_DRIVER_OUT_TR_M1_M2F                                              \
-    0x01 // Level 1 measurement -> Level II measurement Float
+    0x01    // Level 1 measurement -> Level II measurement Float
 #define VSCP_DRIVER_OUT_TR_M1_M2S                                              \
-    0x02 // Level I measurement -> Level II measurement String
+    0x02    // Level I measurement -> Level II measurement String
 #define VSCP_DRIVER_OUT_TR_ALL_L2                                              \
-    0x04 // All Level I events to Level I over level II events
+    0x04    // All Level I events to Level I over level II events
 
 // In - translation bit definitions
 
@@ -136,8 +136,15 @@ class CDeviceItem
 
   public:
 
-    // This is set from the control object to the configured value
-    uint32_t m_debugFlags;
+    // ------------------------------------------------------------------------
+    //                         Configuration block
+    // All values here points to corresponding values in
+    // ControlObject
+    // ------------------------------------------------------------------------
+
+    const CControlObject *m_pCtrlObj;
+
+    // ------------------------------------------------------------------------
 
     // Name of device
     std::string m_strName;
@@ -191,7 +198,7 @@ class CDeviceItem
         measurement and this is 
         configured.
     */
-    bool bJsonMeasurmentAdd;
+    bool bJsonMeasurementAdd;
 
     // Handle for dll/dl driver interface
     long m_openHandle;
@@ -286,7 +293,7 @@ class CDeviceList
 
     /*!
         Add one driver item
-        @param debugflags Configured debug flags
+        @param pdebugflags Pointer to configured debug flags
         @param strName Driver name
         @param strParameters Driver configuration string
         @param flags Driver flags
@@ -295,7 +302,7 @@ class CDeviceList
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem( const uint32_t debugflags,
+    bool addItem( const CControlObject *pCtrlObj,
                     const std::string& strName,
                     const std::string& strParameters,
                     const std::string& strPath,

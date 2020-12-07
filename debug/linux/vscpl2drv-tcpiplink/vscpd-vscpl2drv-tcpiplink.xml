@@ -54,7 +54,7 @@
     	    certfile=""
     	    keyfile=""
 	        pwkeyfile=""
-	        format="string" >
+	        format="json" >
             <subscribe topic="vscp/{{guid}}/#"
                         qos="0"
                         options="0" />

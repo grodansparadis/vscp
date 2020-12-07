@@ -48,6 +48,7 @@
 #include <vscphelper.h>
 #include <guid.h>
 #include <vscp.h>
+#include <controlobject.h>
 
 #include <json.hpp>  // Needs C++11  -std=c++11
 #include <mustache.hpp>
@@ -84,7 +85,7 @@ CDeviceItem::CDeviceItem()
 
     m_translation = NO_TRANSLATION; // Default is no translation
 
-    bJsonMeasurmentAdd = false;
+    bJsonMeasurementAdd = false;
 
     m_strName.clear();          // No Device Name
     m_strParameter.clear();     // No Parameters
@@ -123,7 +124,6 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPGetVersion         = NULL;
     m_proc_VSCPGetVersion         = NULL;
 
-    m_debugFlags = VSCP_DEBUG_NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,32 +165,32 @@ CDeviceItem::getAsString(void)
 // getAsJSON
 //
 
-const char *json_drv_template = "{\
-            \"enable\"      : %s,\
-            \"active\"      : %s,\
-            \"name\"        : \"%s\",\
-            \"path\"        : \"%s\",\
-            \"param\"       : \"%s\",\
-            \"level\"       : %d,\
-            \"flags\"       : %lu,\
-            \"guid\"        : \"%s\",\
-            \"translation\" : %lu\
+const char *JSON_DRV_TEMPLATE = "{    \
+            \"enable\"      : %s,     \
+            \"active\"      : %s,     \
+            \"name\"        : \"%s\", \
+            \"path\"        : \"%s\", \
+            \"param\"       : \"%s\", \
+            \"level\"       : %d,     \
+            \"flags\"       : %lu,    \
+            \"guid\"        : \"%s\", \
+            \"translation\" : %lu     \
         }";
 
 std::string
 CDeviceItem::getAsJSON(void)
 {
     std::string str;
-    str = vscp_str_format(json_drv_template,
+    str = vscp_str_format(JSON_DRV_TEMPLATE,
                             m_bEnable ? "true" : "false",
                             m_bActive ? "true" : "false",
                             m_strName.c_str(),
                             m_strPath.c_str(),
                             m_strParameter.c_str(),
-                            (int)m_driverLevel, 
+                            (int)m_driverLevel,
                             m_DeviceFlags,
                             m_guid.getAsString().c_str(),
-                            m_translation );
+                            m_translation);
     return str;
 }
 
@@ -285,7 +285,7 @@ CDeviceItem::resumeDriver(void)
 
 bool CDeviceItem::sendEvent(vscpEvent *pev)
 {
-    int rv = true;
+    int rv = 0;
     uint8_t *pbuf = NULL;   // Used for binary payload
     std::string strPayload;
     std::string strTopic;
@@ -299,6 +299,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
     // Convert to configured format 
 
     if ( m_mqtt_format == jsonfmt ) {
+
         if ( !vscp_convertEventToJSON(strPayload, pev) ) {
             syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
             return false;
@@ -316,13 +317,12 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         // }
         //
 
-        if (vscp_isMeasurement(pev)) {
+        if (vscp_isMeasurement(pev) && bJsonMeasurementAdd) {
 
             double value = 0;
             if (!vscp_getMeasurementAsDouble(&value, pev)) {
-                syslog(LOG_ERR,"Driver: sendEvent: Failed to convert event to value.");
-            }
-            else {
+                syslog(LOG_ERR, "Driver: sendEvent: Failed to convert event to value.");
+            } else {
                 try {
                     auto j = json::parse(strPayload);
 
@@ -332,37 +332,40 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                     j["measurement"]["zone"] = vscp_getMeasurementZone(pev);
                     j["measurement"]["subzone"] = vscp_getMeasurementSubZone(pev);
 
+                    if (bJsonMeasurementAdd) {
+                        
+                    }
+
                     strPayload = j.dump();
                 }
                 catch (...) {
-                    syslog(LOG_ERR,"Driver: sendEvent: Failed to add measurement info to event.");
+                    syslog(LOG_ERR, "Driver: sendEvent: Failed to add measurement info to event.");
                 }
             }
-        }        
+        } else  if (bJsonMeasurementAdd) {
 
-    }
-    else if ( m_mqtt_format == xmlfmt ) {
+        }
+
+    } else if (m_mqtt_format == xmlfmt) {
         if ( !vscp_convertEventToXML(strPayload, pev) ) {
             syslog(LOG_ERR, "Driver: sendEvent: Failed to convert event to XML");
             return false;
         }
-    }
-    else if ( m_mqtt_format == strfmt ) {
+    } else if (m_mqtt_format == strfmt) {
         if ( !vscp_convertEventToString(strPayload, pev) ) {
             syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to STRING");
             return false;
         }
-    }
-    else if ( m_mqtt_format == binfmt ) {
+    } else if (m_mqtt_format == binfmt) {
         pbuf = new uint8_t[VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData];
         if (NULL == pbuf) {
             return false;
         }
 
-        if (!vscp_writeEventToFrame( pbuf,
+        if (!vscp_writeEventToFrame(pbuf,
                                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
                                     VSCP_MULTICAST_TYPE_EVENT,
-                                    pev ) ) {
+                                    pev) ) {
             syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to BINARY");
             return false;
         }
@@ -497,7 +500,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         }
     }
 
-    return rv;
+    return (0 == rv);
 }
 
 
@@ -535,7 +538,7 @@ CDeviceList::~CDeviceList(void)
 //
 
 bool
-CDeviceList::addItem( const uint32_t debugflags,
+CDeviceList::addItem( const CControlObject *pCtrlObj,
                         const std::string &strName,
                         const std::string &strParameter,
                         const std::string &strPath,
@@ -557,7 +560,7 @@ CDeviceList::addItem( const uint32_t debugflags,
             m_devItemList.push_back(pDeviceItem);
 
             pDeviceItem->m_bEnable = true;
-            pDeviceItem->m_debugFlags = debugflags;
+            pDeviceItem->m_pCtrlObj = pCtrlObj;
 
             pDeviceItem->m_driverLevel    = level;
             pDeviceItem->m_strName        = strName;
@@ -674,7 +677,8 @@ CDeviceList::getAllAsJSON(void)
     for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
         if (NULL != pItem) {
-            str += pItem->getAsJSON() + ",";
+            str += pItem->getAsJSON();
+            str += ",";
         }
     }
 

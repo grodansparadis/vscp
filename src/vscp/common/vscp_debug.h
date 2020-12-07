@@ -26,22 +26,27 @@
 // SOFTWARE.
 //
 
-// * * * VSCP daemon debug flags
-#define VSCP_DEBUG_NONE             0x00000000
-#define VSCP_DEBUG_ALL              0xFFFFFFFF
+// * * * VSCP daemon debug flags (64 flags)
+#define VSCP_DEBUG_NONE             0x0000000000000000
+#define VSCP_DEBUG_ALL              0xFFFFFFFFFFFFFFFF
 #define VSCP_DEBUG_EXTRA            (1 << 0)    // Verbose info
 #define VSCP_DEBUG_CONFIG           (1 << 1)    // Configuration
+
 #define VSCP_DEBUG_MQTT_CONNECT     (1 << 2)    // MQTT connect/disconnect debug info
 #define VSCP_DEBUG_MQTT_MSG         (1 << 3)    // MQTT message debug info
 #define VSCP_DEBUG_MQTT_PUBLISH     (1 << 4)    // MQTT publish debug info
 #define VSCP_DEBUG_MQTT_LOG         (1 << 5)    // MQTT log debug info
+
 #define VSCP_DEBUG_DRIVERL1         (1 << 6)    // Driver debug info level I
 #define VSCP_DEBUG_DRIVERL1_MQTT    (1 << 7)    // Driver MQTT debug info level I
 #define VSCP_DEBUG_DRIVERL1_RX      (1 << 8)    // Driver rx debug info level I
 #define VSCP_DEBUG_DRIVERL1_TX      (1 << 9)    // Driver tx debug info level I
+
 #define VSCP_DEBUG_DRIVERL2         (1 << 10)   // Driver debug info level II
 #define VSCP_DEBUG_DRIVERL2_MQTT    (1 << 11)   // Driver MQTT debug info level II
 #define VSCP_DEBUG_DRIVERL2_RX      (1 << 12)   // Driver rx debug info level II
 #define VSCP_DEBUG_DRIVERL2_TX      (1 << 13)   // Driver tx debug info level II
+
+#define VSCP_DEBUG_EVENT_DATABASE   (1 << 14)   // Event database debug
 
 

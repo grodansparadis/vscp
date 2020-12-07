@@ -47,7 +47,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-12-02 14:52:05.728017
+                        Generated: 2020-12-06 21:25:25.476756
 */
  
 #ifndef VSCP_CLASS_H
@@ -147,13 +147,13 @@
 #define VSCP_CLASS2_PROTOCOL                 1024      /* Level II Protocol Functionality */
 #define VSCP_CLASS2_CONTROL                  1025      /* Level II Control */
 #define VSCP_CLASS2_INFORMATION              1026      /* Level II Information */
-#define VSCP_CLASS2_TEXT2SPEECH              1027      /* Text to speech */
-#define VSCP_CLASS2_HLO                      1028      /* High Level Object */
+#define VSCP_CLASS2_TEXT2SPEECH              1027      /* Level II Text to speech */
+#define VSCP_CLASS2_HLO                      1028      /* Level II High Level Object */
 #define VSCP_CLASS2_CUSTOM                   1029      /* Level II Custom */
 #define VSCP_CLASS2_DISPLAY                  1030      /* Level II Display */
-#define VSCP_CLASS2_MEASUREMENT_STR          1040      /* Measurement string */
-#define VSCP_CLASS2_MEASUREMENT_FLOAT        1060      /* Measurement float */
-#define VSCP_CLASS2_VSCPD                    65535     /* VSCP Daemon internal events */
+#define VSCP_CLASS2_MEASUREMENT_STR          1040      /* Level II Measurement string */
+#define VSCP_CLASS2_MEASUREMENT_FLOAT        1060      /* Level II Measurement float */
+#define VSCP_CLASS2_VSCPD                    65535     /* Level II VSCP Daemon internal events */
  
 #endif
  

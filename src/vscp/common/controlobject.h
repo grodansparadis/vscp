@@ -170,17 +170,51 @@ class CControlObject {
     // Set to MAC address if not set explicit
     cguid m_guid;
 
+
+    /*!
+        Enabling bEventOutLookup will add clear
+        text VSCP event information to events in
+        the following fields
+
+        vscpClassToken
+        vscpTypeToken
+
+        This is not standard.
+    */
+    bool bEventOutLookup;
+
+
+    //**************************************************************************
+    //                                  DEBUG
+    //**************************************************************************
+
     /*!
      * Debug flags
      * See vscp_debug.h for possible flags.
      */
-    uint32_t m_debugFlags;
+    uint64_t m_debugFlags;
+
+
+    //**************************************************************************
+    //                                DATABASE
+    //**************************************************************************
+
+    /*!
+        Path to class/type definition database
+    */
+    std::string m_pathClassTypeDefinitionDb;
+
+    std::map<uint16_t, std::string> m_map_class_id2Token;   // vscp_class -> class_token
+    std::map<std::string, uint16_t> m_map_class_token2Id;   // class_token -> vscp_class
+
+    std::map<uint32_t, std::string> m_map_type_id2Token;    // ((vscp_class << 16) + vscp_type) -> type_token
+    std::map<std::string, uint32_t> m_map_type_token2Id;    // type_token -> ((vscp_class << 16) + vscp_type)
 
 
 
     //**************************************************************************
     //                                 DRIVERS
-    //*************************************************************************
+    //**************************************************************************
 
     // The list with available devices.
     CDeviceList m_deviceList;
@@ -188,6 +222,8 @@ class CControlObject {
 
     // Mutex for device queue
     pthread_mutex_t m_mutex_deviceList;
+
+
 
     //**************************************************************************
     //                                  MQTT 
