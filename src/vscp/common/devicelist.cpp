@@ -296,7 +296,10 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         return false;
     }
 
-    // Convert to configured format 
+    // Send the event to the discovery routine
+    m_pCtrlObj->discovery(pev);
+
+    // Convert to configured format
 
     if ( m_mqtt_format == jsonfmt ) {
 
@@ -391,21 +394,32 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         cguid evguid(pev->GUID);    // Event GUID
         data.set("guid", evguid.getAsString());        
         for (int i=0; i<15; i++) {
-            data.set(vscp_str_format("guid%d", i), vscp_str_format("%d", evguid.getAt(i)));
+            data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
         }
         data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
         data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
         data.set("ifguid", m_guid.getAsString());
+
+        if (NULL != pev->pdata) {
+            for (int i=0; i<pev->sizeData; i++) {
+                data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", pev->pdata[i]));
+            }
+        }
+
         for (int i=0; i<15; i++) {
-            data.set(vscp_str_format("ifguid%d", i), vscp_str_format("%d", m_guid.getAt(i)));
+            data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
         }
         data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
-        data.set("class", vscp_str_format("%d",pev->vscp_class));
-        data.set("type", vscp_str_format("%d",pev->vscp_type));
+        data.set("class", vscp_str_format("%d", pev->vscp_class));
+        data.set("type", vscp_str_format("%d", pev->vscp_type));
+
+        data.set("class-token", m_pCtrlObj->getTokenFromClassId(pev->vscp_class));
+        data.set("type-token", m_pCtrlObj->getTokenFromTypeId(pev->vscp_class, pev->vscp_type));
 
         data.set("head", vscp_str_format("%d",pev->head));
         data.set("obid", vscp_str_format("%ul",pev->obid));
         data.set("timestamp", vscp_str_format("%ul",pev->timestamp));
+
         std::string dt;
         vscp_getDateStringFromEvent(dt,pev);
         data.set("datetime", dt);        
@@ -415,13 +429,14 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         data.set("hour", vscp_str_format("%d",pev->hour));
         data.set("minute", vscp_str_format("%d",pev->minute));
         data.set("second", vscp_str_format("%d",pev->second));
+        
         data.set("clientid", m_mqtt_strClientId);
         data.set("user", m_mqtt_strUserName);
         data.set("host", m_mqtt_strHost);
+        
+        data.set("driver-name", m_strName);
 
         // guid-to-real   - GUID as realname
-        // class-to-real  - VSCP class as token
-        // type-to-real   - VSCP type to token.
         // data-to-read   - Data to real
 
         strTopic = subtemplate.render(data);
@@ -538,7 +553,7 @@ CDeviceList::~CDeviceList(void)
 //
 
 bool
-CDeviceList::addItem( const CControlObject *pCtrlObj,
+CDeviceList::addItem(CControlObject *pCtrlObj,
                         const std::string &strName,
                         const std::string &strParameter,
                         const std::string &strPath,
@@ -547,9 +562,7 @@ CDeviceList::addItem( const CControlObject *pCtrlObj,
                         uint8_t level,
                         uint32_t translation)
 {
-    bool rv                  = true;
-
-    
+    bool rv = true;
 
     CDeviceItem *pDeviceItem = new CDeviceItem();
     if (NULL == pDeviceItem) return false;
@@ -592,7 +605,7 @@ CDeviceList::addItem( const CControlObject *pCtrlObj,
 //
 
 bool
-CDeviceList::removeItem(unsigned long id)
+CDeviceList::removeItem(uint16_t id)
 {
     return true;
 }
@@ -624,7 +637,7 @@ CDeviceList::getDeviceItemFromGUID(cguid &guid)
 //
 
 CDeviceItem *
-CDeviceList::getDeviceItemFromName(std::string& name)
+CDeviceList::getDeviceItemFromName(const std::string& name)
 {
     CDeviceItem *returnItem = NULL;
 

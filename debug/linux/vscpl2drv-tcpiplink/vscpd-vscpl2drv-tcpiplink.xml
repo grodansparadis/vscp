@@ -28,11 +28,14 @@
 
       servername - is a user name for the daemon whcih it use to greet users with.
                    Default: "The VSCP daemon" 
+                       
     -->
     <general runasuser="vscp"
-             debbug="0"		
+             debug="0"		
              guid="FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01"
-             servername="The VSCP daemon"  
+             servername="The VSCP daemon"
+             classtypedb="/var/lib/vscp/vscpd/vscp_events.sqlite3"
+             maindb="/var/lib/vscp/vscpd/vscp.sqlite3"
     />
 
     <!--
@@ -393,7 +396,7 @@
                     <subscribe topic="vscp/{{guid}}/#"
                                     qos="0"
                                     options="0" />
-                    <publish topic="vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}"/>
+                    <publish topic="vscp/{{guid}}/{{class-token}}/{{type-token}}/{{nickname}}"/>
                 </mqtt>                    
         </driver>
 

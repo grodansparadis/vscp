@@ -142,7 +142,7 @@ class CDeviceItem
     // ControlObject
     // ------------------------------------------------------------------------
 
-    const CControlObject *m_pCtrlObj;
+    CControlObject *m_pCtrlObj;
 
     // ------------------------------------------------------------------------
 
@@ -220,18 +220,18 @@ class CDeviceItem
     //                                 MQTT
     // ------------------------------------------------------------------------
 
-    std::string m_mqtt_strHost;     // MQTT broker
-    unsigned short m_mqtt_port;     // MQTT broker port
+    std::string m_mqtt_strHost;         // MQTT broker
+    unsigned short m_mqtt_port;         // MQTT broker port
     std::list<std::string> m_mqtt_subscriptions;    // Subscribe topic templates
     std::list<std::string> m_mqtt_publish;          // Publish topic templates
 
-    std::string m_mqtt_strClientId; // Client id
-    std::string m_mqtt_strUserName; // Username
-    std::string m_mqtt_strPassword; // Password
-    int m_mqtt_qos;                 // Quality of service (0/1/2)
-    bool m_mqtt_bRetain;            // Enable retain
-    int m_mqtt_keepalive;           // Keep alive in seconds
-    bool m_mqtt_bCleanSession;      // Clean session on disconnect if true
+    std::string m_mqtt_strClientId;     // Client id
+    std::string m_mqtt_strUserName;     // Username
+    std::string m_mqtt_strPassword;     // Password
+    int m_mqtt_qos;                     // Quality of service (0/1/2)
+    bool m_mqtt_bRetain;                // Enable retain
+    int m_mqtt_keepalive;               // Keep alive in seconds
+    bool m_mqtt_bCleanSession;          // Clean session on disconnect if true
 
     // SSL/TSL
     bool m_mqtt_bTLS;               // True of a TLS/SSL connection should be done
@@ -302,7 +302,7 @@ class CDeviceList
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem( const CControlObject *pCtrlObj,
+    bool addItem( CControlObject *pCtrlObj,
                     const std::string& strName,
                     const std::string& strParameters,
                     const std::string& strPath,
@@ -317,14 +317,14 @@ class CDeviceList
         @return True if driver was removed successfully
                 otherwise false.
     */
-    bool removeItem(unsigned long id);
+    bool removeItem(uint16_t id);
 
     /*!
         Get device from it's name
         @param name Name of device.
         @return Pointer to a device item or NULL if not found.
     */
-    CDeviceItem* getDeviceItemFromName(std::string& name);
+    CDeviceItem* getDeviceItemFromName(const std::string& name);
     /*!
         Get device item from GUID
         @param guid for device to look for

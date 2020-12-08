@@ -213,7 +213,7 @@ CControlObject::CControlObject()
     // Init daemon MQTT
     m_mqtt_strHost = "localhost";
     m_mqtt_port = 1883;
-    m_mqtt_strclientId = "";
+    m_mqtt_strClientId = "";
     m_mqtt_strUserName = "vscp";
     m_mqtt_strPassword = "secret";
     m_mqtt_qos = 0;
@@ -331,79 +331,6 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
     }
 
-    // Load class/type definitions from database if they should be loaded
-
-    // Initialize the SQLite library
-    if ( SQLITE_OK != sqlite3_initialize() ) {
-        syslog(LOG_ERR, "Unable to initialize SQLite library.");
-    } else {
-        if (m_pathClassTypeDefinitionDb.length()) {
-
-            sqlite3 *db_vscp_classtype;
-            if (SQLITE_OK == sqlite3_open(m_pathClassTypeDefinitionDb.c_str(), &db_vscp_classtype)) {
-
-                // * * *   C L A S S E S   * * *
-
-                sqlite3_stmt *ppStmt;
-                if (SQLITE_OK != sqlite3_prepare(db_vscp_classtype,
-                                        "SELECT class,name,token from vscp_class",
-                                        -1,
-                                        &ppStmt,
-                                        NULL) )  {
-                    syslog(LOG_ERR, "Failed to prepare class fetch from class & type database.");
-                }
-
-                while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-                    uint16_t vscp_class = (uint16_t)sqlite3_column_int(ppStmt, 0);
-                    std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
-                    std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
-                    m_map_class_id2Token[vscp_class] = token;
-                    if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
-                        printf("Class = %s - ", m_map_class_id2Token[vscp_class].c_str() );
-                    }    
-                    m_map_class_token2Id[token] = vscp_class;
-                    if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
-                        printf("Id = %d\n", m_map_class_token2Id[token]);
-                    }
-                }
-                sqlite3_finalize(ppStmt);
-
-                // * * *   T Y P E S   * * *
-
-                if (SQLITE_OK != sqlite3_prepare(db_vscp_classtype,
-                                        "SELECT type,link_to_class,token from vscp_type",
-                                        -1,
-                                        &ppStmt,
-                                        NULL) )  {
-                    syslog(LOG_ERR, "Failed to prepare type fetch from class & type database.");
-                }
-
-
-                while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-                    uint16_t vscp_type = (uint16_t)sqlite3_column_int(ppStmt, 0);
-                    uint16_t link_to_class = (uint16_t)sqlite3_column_int(ppStmt, 1);
-                    std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
-                    m_map_type_id2Token[(link_to_class << 16) + vscp_type] = token;
-                    if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
-                        printf("Token = %s ", m_map_type_id2Token[(link_to_class << 16) + vscp_type].c_str() );
-                    }
-                    m_map_type_token2Id[token] = (link_to_class << 16) + vscp_type;
-                    if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
-                        printf("Id = %d\n", m_map_type_token2Id[token]);
-                    }
-                }
-                sqlite3_finalize(ppStmt);
-
-                sqlite3_close(db_vscp_classtype);
-            } else {
-                syslog(LOG_ERR,
-                        "Failed to open VSCP class & type definition database %s. [%s]",
-                        m_pathClassTypeDefinitionDb.c_str(),
-                        sqlite3_errmsg(db_vscp_classtype));
-            }
-
-        }
-    }
 
 
     // Get GUID
@@ -422,6 +349,212 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     str += VSCPD_COPYRIGHT;
     syslog(LOG_INFO, "%s", str.c_str());
 
+
+
+
+    // Load class/type definitions from database if they should be loaded
+
+    // Initialize the SQLite library
+    if ( SQLITE_OK != sqlite3_initialize() ) {
+        syslog(LOG_ERR, "Unable to initialize SQLite library.");
+        return false;
+    }
+
+    // Read in class/type info if available
+    if (m_pathClassTypeDefinitionDb.length()) {
+
+        sqlite3 *db_vscp_classtype;
+        if (SQLITE_OK == sqlite3_open(m_pathClassTypeDefinitionDb.c_str(), &db_vscp_classtype)) {
+
+            // * * *   C L A S S E S   * * *
+
+            sqlite3_stmt *ppStmt;
+            if (SQLITE_OK != sqlite3_prepare(db_vscp_classtype,
+                                    "SELECT class,name,token from vscp_class",
+                                    -1,
+                                    &ppStmt,
+                                    NULL) )  {
+                syslog(LOG_ERR, "Failed to prepare class fetch from class & type database.");
+            }
+
+            while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+                uint16_t vscp_class = (uint16_t)sqlite3_column_int(ppStmt, 0);
+                std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
+                std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
+                m_map_class_id2Token[vscp_class] = token;
+                if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
+                    syslog(LOG_DEBUG, "Class = %s - ", m_map_class_id2Token[vscp_class].c_str() );
+                }    
+                m_map_class_token2Id[token] = vscp_class;
+                if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
+                    syslog(LOG_DEBUG, "Id = %d\n", m_map_class_token2Id[token]);
+                }
+            }
+            sqlite3_finalize(ppStmt);
+
+            // * * *   T Y P E S   * * *
+
+            if (SQLITE_OK != sqlite3_prepare(db_vscp_classtype,
+                                    "SELECT type,link_to_class,token from vscp_type",
+                                    -1,
+                                    &ppStmt,
+                                    NULL) )  {
+                syslog(LOG_ERR, "Failed to prepare type fetch from class & type database.");
+            }
+
+
+            while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+                uint16_t vscp_type = (uint16_t)sqlite3_column_int(ppStmt, 0);
+                uint16_t link_to_class = (uint16_t)sqlite3_column_int(ppStmt, 1);
+                std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
+                m_map_type_id2Token[(link_to_class << 16) + vscp_type] = token;
+                if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
+                    syslog(LOG_DEBUG,"Token = %s ", m_map_type_id2Token[(link_to_class << 16) + vscp_type].c_str() );
+                }
+                m_map_type_token2Id[token] = (link_to_class << 16) + vscp_type;
+                if ( m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
+                    syslog(LOG_DEBUG, "Id = %d\n", m_map_type_token2Id[token]);
+                }
+            }
+            sqlite3_finalize(ppStmt);
+
+            sqlite3_close(db_vscp_classtype);
+        } else {
+            syslog(LOG_ERR,
+                    "Failed to open VSCP class & type definition database %s. [%s]",
+                    m_pathClassTypeDefinitionDb.c_str(),
+                    sqlite3_errmsg(db_vscp_classtype));
+        }
+
+    }
+
+    m_pathMainDb = "/tmp/test.sqlite3";
+
+    // Open the discovery database (create if not available)
+    if (m_pathMainDb.length()) {
+
+        // If file does not exist. Create it and tables and indexes
+        if (vscp_fileExists(m_pathMainDb)) {
+
+            if (SQLITE_OK != sqlite3_open(m_pathMainDb.c_str(),
+                                            &m_db_vscp_daemon)) {
+
+                // Failed to open/create the database file
+                syslog(LOG_ERR, "VSCP Daemon database could not be opened/created. - Path=%s error=%s",
+                                        m_pathMainDb.c_str(),
+                                        sqlite3_errmsg(m_db_vscp_daemon));
+                m_db_vscp_daemon = NULL;                                        
+            } else {
+
+                // Read in discovered nodes to in memory map
+
+                sqlite3_stmt *ppStmt;
+                if (SQLITE_OK != sqlite3_prepare(m_db_vscp_daemon,
+                                                    "SELECT guid,name from discovery",
+                                                    -1,
+                                                    &ppStmt,
+                                                    NULL) )  {
+                    syslog(LOG_ERR, "Failed to prepare discovery node fetch.");
+                }
+
+                while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+                    std::string guid = (const char *)sqlite3_column_text(ppStmt, 0);
+                    std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
+                    m_map_discoveryGuidToName[guid] = name;
+                    if (m_debugFlags & VSCP_DEBUG_MAIN_DATABASE) {
+                        syslog(LOG_DEBUG, "guid = %s - name = %s ", guid.c_str(), name.c_str() );
+                    }
+                }
+
+                sqlite3_finalize(ppStmt);
+
+            }
+
+        } else {
+
+            if (SQLITE_OK != sqlite3_open(m_pathMainDb.c_str(),
+                                            &m_db_vscp_daemon)) {
+
+                // Failed to open/create the database file
+                syslog(LOG_ERR, "VSCP Daemon database could not be opened/created. - Path=%s error=%s",
+                                        m_pathMainDb.c_str(),
+                                        sqlite3_errmsg(m_db_vscp_daemon));
+            }
+            
+            // We will try to create it
+            syslog(LOG_INFO, "Will try to create VSCP Daemon database here %s.", m_pathMainDb.c_str());
+
+            // Create settings db
+            char *pErrMsg = 0;
+            const char *psql;
+
+            psql = "CREATE TABLE \"discovery\" (                    \
+                \"id\"	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,   \
+                \"date\"	TEXT,                                   \
+                \"guid\"	TEXT UNIQUE,                            \
+                \"name\"	TEXT UNIQUE,                            \
+                \"description\"	TEXT                                \
+                );";
+
+            if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+                syslog(LOG_ERR,
+                        "Creation of the VSCP database failed with message %s",
+                        pErrMsg);
+                return false;
+            }
+
+            psql = "CREATE INDEX \"idxguid\" ON \"discovery\" (\"guid\")";
+
+            if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+                syslog(LOG_ERR,
+                        "Creation of the VSCP database index idxguid failed with message %s",
+                        pErrMsg);
+                return false;
+            }
+
+            psql = "CREATE INDEX \"idxname\" ON \"discovery\" (\"name\")";
+
+            if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+                syslog(LOG_ERR,
+                        "Creation of the VSCP database index idxname failed with message %s",
+                        pErrMsg);
+                return false;
+            }
+
+            // Add the daemon as the first database entry
+
+            std::string sql = "INSERT INTO \"discovery\" (date, guid, name, description ) VALUES (";
+            time_t now;
+            char buf[50];
+            time(&now);
+            vscp_getISOTimeString(buf, sizeof(buf), &now);
+            sql += "'";
+            sql += buf;
+            sql += "','";
+            sql += m_guid.getAsString();
+            sql += "','local-vscp-daemon','The local VSCP Daemon');";
+
+            if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, sql.c_str(), NULL, NULL, &pErrMsg)) {
+                syslog(LOG_ERR,
+                        "Creation of the VSCP database index idxname failed with message %s",
+                        pErrMsg);
+                return false;
+            }
+
+            // Add local host to in memory map
+            m_map_discoveryGuidToName[m_guid.getAsString()] = "local-vscp-daemon";
+
+        }
+    
+    }
+
+
+    
+
+
+
+
+
     // Initialize MQTT
 
     if ( MOSQ_ERR_SUCCESS != mosquitto_lib_init() ) {
@@ -429,8 +562,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         return false;
     }
 
-    if (m_mqtt_strclientId.length()) {
-        m_mosq = mosquitto_new(m_mqtt_strclientId.c_str(), m_mqtt_bCleanSession, this);
+    if (m_mqtt_strClientId.length()) {
+        m_mosq = mosquitto_new(m_mqtt_strClientId.c_str(), m_mqtt_bCleanSession, this);
     }
     else {
         m_mqtt_bCleanSession = true;    // Must be true without id
@@ -742,9 +875,47 @@ CControlObject::sendEvent(vscpEventEx *pex)
         // Fix publish topics
         mustache subtemplate{topic_template};
         data data;
-        data.set("guid", m_guid.getAsString());
-        data.set("class", vscp_str_format("%d",pex->vscp_class));
-        data.set("type", vscp_str_format("%d",pex->vscp_type));
+        cguid evguid(pex->GUID);    // Event GUID
+        data.set("guid", evguid.getAsString());        
+        for (int i=0; i<15; i++) {
+            data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
+        }
+        data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
+        data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
+        data.set("ifguid", m_guid.getAsString());
+
+        for (int i=0; i<pex->sizeData; i++) {
+            data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", pex->data[i]));
+        }
+
+        for (int i=0; i<15; i++) {
+            data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
+        }
+        data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
+        data.set("class", vscp_str_format("%d", pex->vscp_class));
+        data.set("type", vscp_str_format("%d", pex->vscp_type));
+
+        data.set("class-token", getTokenFromClassId(pex->vscp_class));
+        data.set("type-token", getTokenFromTypeId(pex->vscp_class, pex->vscp_type));
+
+        data.set("head", vscp_str_format("%d",pex->head));
+        data.set("obid", vscp_str_format("%ul",pex->obid));
+        data.set("timestamp", vscp_str_format("%ul",pex->timestamp));
+
+        std::string dt;
+        vscp_getDateStringFromEventEx(dt,pex);
+        data.set("datetime", dt);        
+        data.set("year", vscp_str_format("%d",pex->year));
+        data.set("month", vscp_str_format("%d",pex->month));
+        data.set("day", vscp_str_format("%d",pex->day));
+        data.set("hour", vscp_str_format("%d",pex->hour));
+        data.set("minute", vscp_str_format("%d",pex->minute));
+        data.set("second", vscp_str_format("%d",pex->second));
+        
+        data.set("clientid", m_mqtt_strClientId);
+        data.set("user", m_mqtt_strUserName);
+        data.set("host", m_mqtt_strHost);
+
         strTopic = subtemplate.render(data);
 
         if (m_mqtt_format != binfmt) {
@@ -940,6 +1111,53 @@ CControlObject::periodicEvents(void)
     }
 
     return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// discovery
+//
+
+void CControlObject::discovery(vscpEvent *pev)
+{
+    // Check pointer 
+    if (NULL == pev) {
+        syslog(LOG_ERR, "ControlObject: node discover: Event is NULL pointer.");
+        return;
+    }
+
+    // If not used - skip out
+    if (NULL == m_db_vscp_daemon) {
+        return;
+    }
+
+    char *pErrMsg = 0;
+    cguid guid(pev->GUID);
+    
+    if (!m_map_discoveryGuidToName[guid.getAsString()].length()) {
+
+        // Add the daemon as the first database entry
+
+        std::string sql = "INSERT INTO \"discovery\" (date, guid, name, description ) VALUES (";
+        time_t now;
+        char buf[50];
+        time(&now);
+        vscp_getISOTimeString(buf, sizeof(buf), &now);
+        sql += "'";
+        sql += buf;
+        sql += "','";
+        sql += guid.getAsString();
+        sql += "','discovered','');";
+
+        if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, sql.c_str(), NULL, NULL, &pErrMsg)) {
+            syslog(LOG_ERR,
+                    "Creation of the VSCP database index idxname failed with message %s",
+                    pErrMsg);
+            return;
+        }
+
+        // Add local host to in memory map
+        m_map_discoveryGuidToName[guid.getAsString()] = "Discovered";
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1254,8 +1472,6 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         return;
     }
 
-    // fprintf(stderr, "%s\n", name);
-
     if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
         bVscpConfigFound = TRUE;
@@ -1302,6 +1518,13 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     syslog(LOG_DEBUG, "ReadConfig: 'classtypedb' set to %s", attribute.c_str());
                 }
             }
+            else if (0 == vscp_strcasecmp(attr[i], "maindb")) {
+                pObj->m_pathMainDb = attribute;
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                    syslog(LOG_DEBUG, "ReadConfig: 'maindb' set to %s", attribute.c_str());
+                }
+            }
+            
         }
     } else if (bVscpConfigFound && bGeneralConfigFound &&
              (2 == depth_full_config_parser) &&
@@ -1362,9 +1585,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     syslog(LOG_DEBUG, "ReadConfig: MQTT password set to **********\n");
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
-                pObj->m_mqtt_strclientId = attribute;
+                pObj->m_mqtt_strClientId = attribute;
                 if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
-                    syslog(LOG_DEBUG, "ReadConfig: MQTT ClientId set to %s\n", pObj->m_mqtt_strclientId.c_str());
+                    syslog(LOG_DEBUG, "ReadConfig: MQTT ClientId set to %s\n", pObj->m_mqtt_strClientId.c_str());
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "qos")) {
                 pObj->m_mqtt_qos = vscp_readStringValue(attribute);
@@ -1701,7 +1924,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
                     pDriver->m_mqtt_strClientId = attribute;
                     if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
-	                    syslog(LOG_DEBUG, "ReadConfig: Level I driver MQTT ClientId set to %s\n",pObj->m_mqtt_strclientId.c_str());
+	                    syslog(LOG_DEBUG, "ReadConfig: Level I driver MQTT ClientId set to %s\n",pDriver->m_mqtt_strClientId.c_str());
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "qos")) {
@@ -2046,7 +2269,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 else if (0 == vscp_strcasecmp(attr[i], "clientid")) {
                     pDriver->m_mqtt_strClientId = attribute;
                     if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
-	                    syslog(LOG_DEBUG, "ReadConfig: Level II driver MQTT ClientId set to %s\n",pObj->m_mqtt_strclientId.c_str());
+	                    syslog(LOG_DEBUG, "ReadConfig: Level II driver MQTT ClientId set to %s\n", pDriver->m_mqtt_strClientId.c_str());
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "qos")) {

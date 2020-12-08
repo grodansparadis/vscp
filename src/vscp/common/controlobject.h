@@ -29,6 +29,8 @@
 #if !defined(CONTROLOBJECT_H__INCLUDED_)
 #define CONTROLOBJECT_H__INCLUDED_
 
+#include <sqlite3.h>
+
 #include <devicelist.h>
 #include <mqtt.h>
 #include <vscpmqtt.h>
@@ -142,8 +144,34 @@ class CControlObject {
      */
     bool readConfiguration(const std::string& strcfgfile);
 
+    /*!
+        Discovery routine
 
-  public:
+        Collects GUID's in a database and allow them
+        to be named.
+
+        @param pev Pointer to VSCP event
+    */
+    void discovery(vscpEvent *pev);
+
+    /*!
+        Get VSCP class token from id
+
+        @param id VSCP class 
+        @return VSCP class token as string
+    */
+    std::string getTokenFromClassId(uint16_t id) { return m_map_class_id2Token[id]; }
+
+    /*!
+        Get VSCP type token from class and type id
+
+        @param cid VSCP class 
+        @param tid VSCP class 
+        @return VSCP class token as string
+    */
+    std::string getTokenFromTypeId(uint16_t cid, uint16_t tid) { return m_map_type_id2Token[((cid << 16) + tid)]; }
+
+ public:
 
     // Will quit if set to true
     bool m_bQuit;
@@ -199,6 +227,7 @@ class CControlObject {
     //                                DATABASE
     //**************************************************************************
 
+
     /*!
         Path to class/type definition database
     */
@@ -210,7 +239,14 @@ class CControlObject {
     std::map<uint32_t, std::string> m_map_type_id2Token;    // ((vscp_class << 16) + vscp_type) -> type_token
     std::map<std::string, uint32_t> m_map_type_token2Id;    // type_token -> ((vscp_class << 16) + vscp_type)
 
+    /*!
+        Path to discovery database
+        Set empty to disable functionality
+    */
+    std::string m_pathMainDb;
+    sqlite3 *m_db_vscp_daemon;
 
+    std::map<std::string, std::string> m_map_discoveryGuidToName;   // key = GUID, value = name
 
     //**************************************************************************
     //                                 DRIVERS
@@ -231,7 +267,7 @@ class CControlObject {
 
     std::string m_mqtt_strHost;     // MQTT broker
     unsigned short m_mqtt_port;     // MQTT broker port    
-    std::string m_mqtt_strclientId;    // Client id
+    std::string m_mqtt_strClientId;    // Client id
     std::string m_mqtt_strUserName; // Username
     std::string m_mqtt_strPassword; // Password
     int m_mqtt_qos;                 // Quality of service (0/1/2)

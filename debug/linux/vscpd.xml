@@ -30,7 +30,7 @@
                    Default: "The VSCP daemon" 
     -->
     <general runasuser="vscp"
-             debbug="0"		
+             debug="0"		
              guid="FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01"
              servername="The VSCP daemon"  
     />

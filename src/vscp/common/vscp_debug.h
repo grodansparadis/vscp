@@ -48,5 +48,6 @@
 #define VSCP_DEBUG_DRIVERL2_TX      (1 << 13)   // Driver tx debug info level II
 
 #define VSCP_DEBUG_EVENT_DATABASE   (1 << 14)   // Event database debug
+#define VSCP_DEBUG_MAIN_DATABASE    (1 << 15)   // Discovery database debug
 
 

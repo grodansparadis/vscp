@@ -1,0 +1,419 @@
+{
+    "runasuser" : "vscp",
+    "debug" : 0,		
+    "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
+    "servername" : "The VSCP daemon",
+
+    "mqtt" : {
+        "host" : "192.168.1.7",
+        "port" : 1883,
+        "user" : "vscp",
+	    "password": "secret",
+	    "clientid" : "mosq-vscp-daemon-000001",
+	    "format" : "json",
+        "qos" : 0,
+        "bcleansession" : false,
+        "bretain" : false,
+        "keepalive" : 60,
+        "cafile" : "",
+    	"capath" : "",
+    	"certfile" : "",
+    	"keyfile" : "",
+        "pwkeyfile" : "",
+        "subscribe" : [
+            "vscp/{{guid}}/#"
+        ],
+        "publish" : [
+            "vscp/{{guid}}/{{class}}/{{type}}",
+            "source/{{guid}}/{{class}}/{{type}}",
+            "DRAIN/{{guid}}/{{class}}/{{type}}"
+        ]
+    },
+
+    "drivers" : {
+        "level1" : [
+            {
+                "enable" : false,
+                "name" : "logger",
+                "config" : "/tmp/canallog.txt",
+                "flags" : 1,
+                "translation" : 2,
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-l1drv-logger",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "can4vscp",
+                "config" : "/dev/ttyUSB0",
+                "flags" : 0,
+                "translation" : 2,
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can4vscp.so",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:02",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "socketcanl1",
+                "config" : "can0",
+                "flags" : 0,
+                "translation" : 2,
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.0",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "can232",
+                "config" : "/dev/ttyS0;19200;0;0;125",
+                "flags" : 0,
+                "translation" : 2,
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can232.so",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:04",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            }
+        ],
+        "level2" : [
+            {
+                "enable" : false,
+                "name" : "Logger",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-logger.so",
+                "path-config" : "/var/lib/vscp/vscpd/logger2.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "lmsensors",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-lmsensors.so",
+                "path-config" : "/var/lib/vscp/vscpd/lmsensors.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:06:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "socketcan",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-socketcan.so",
+                "path-config" : "/var/lib/vscp/vscpd/socketcan.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:07:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "mqtt",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-mqtt.so",
+                "path-config" : "/var/lib/vscp/vscpd/mqtt.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:08:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "tcpiplink",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
+                "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "rawethernet",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-raweth.so",
+                "path-config" : "/var/lib/vscp/vscpd/raweth.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0A:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "sim",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-sim.so",
+                "path-config" : "/var/lib/vscp/vscpd/sim.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0B:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            },
+            {
+                "enable" : false,
+                "name" : "1-wire",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-wire1.so",
+                "path-config" : "/var/lib/vscp/vscpd/wire1.conf",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0C:00:00:00:00:00:00:00",
+
+                "mqtt" : {
+                    "host" : "127.0.0.1",
+                    "port" : 1883,
+                    "user" : "vscp",
+                    "password": "secret",
+                    "clientid" : "mosq-vscp-daemon-000001",
+                    "format" : "json",
+                    "qos" : 0,
+                    "bcleansession" : false,
+                    "bretain" : false,
+                    "keepalive" : 60,
+                    "cafile" : "",
+                    "capath" : "",
+                    "certfile" : "",
+                    "keyfile" : "",
+                    "pwkeyfile" : "",
+                    "subscribe" : [
+                        "vscp/{{guid}}/#"
+                    ],
+                    "publish" : [
+                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                    ]
+                }
+            }
+        ]
+    }
+}

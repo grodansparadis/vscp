@@ -76,7 +76,6 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
 
-    printf("Driver LOG : %s\n", logmsg);
     if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
         syslog(LOG_DEBUG, "Driver %s MQTT log : %s\n", pDeviceItem->m_strName.c_str(), logmsg);
     }
@@ -94,7 +93,6 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == pData) return;
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
-    printf("\nDriver MQTT CONNECT\n");
     if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
         syslog(LOG_DEBUG, "Driver %s MQTT connect", pDeviceItem->m_strName.c_str());
     }
@@ -191,6 +189,7 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
                 syslog( LOG_ERR, "driver: %s: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv=%d", pDeviceItem->m_strName.c_str(), rv);
             }
         }
+
     }
     else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
         if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 300)) {
@@ -203,6 +202,9 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// mqtt_on_publish
+//
 
 static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
 {
@@ -215,6 +217,7 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
         syslog(LOG_DEBUG, "Driver: MQTT Publish");
     }
 }
+
 
 
 
@@ -247,8 +250,9 @@ deviceThread(void* pData)
     hdll = dlopen(pDeviceItem->m_strPath.c_str(), RTLD_LAZY);
     if (!hdll) {
         syslog(LOG_ERR,
-               "Devicethread: Unable to load dynamic library. path = %s",
-               pDeviceItem->m_strPath.c_str());
+               "Devicethread: Unable to load dynamic library. path = %s  [%s]",
+               pDeviceItem->m_strPath.c_str(),
+               dlerror() );
         return NULL;
     }
 
