@@ -31,7 +31,7 @@
 
 #include <string>
 
-#define HLO_CMD_COMMAND_TEMPLATE                                               \
+#define HLO_XML_CMD_COMMAND_TEMPLATE                                           \
     "<vscp-cmd op=\"%s\" "                                                     \
     "name=\"%s\" "                                                             \
     "type=\"%s\" "                                                             \
@@ -39,24 +39,36 @@
     "full=\"%s\" "                                                             \
     " />"
 
+/*!
+{
+    "vscp-cmd" : {
+        "op" : n,
+        "name" : "name",
+        "type" : n,
+        "value" : "value string",
+        "full" : true|false,
+    }
+}
+*/
+
 // All XML commands return this HLO content
 //     RESULT="OK"  - for success. Description can be used at will.
 //     RESULT="ERR" - for failure with cause of failure in description
-#define HLO_CMD_REPLY_TEMPLATE                                                 \
+#define HLO_XML_CMD_REPLY_TEMPLATE                                             \
     "<vscp-resp op=\"vscp-reply\" "                                            \
     "name=\"%s\" "                                                             \
     "result=\"%s\" "                                                           \
     "description=\"%s\" "                                                      \
     " />"
 
-#define HLO_READ_VAR_REPLY_TEMPLATE                                            \
+#define HLO_XML_READ_VAR_REPLY_TEMPLATE                                        \
     "<vscp-resp op=\"vscp-readvar\" "                                          \
     "name=\"%s\" "                                                             \
     "result=\"%s\" "                                                           \
     "type=%d "                                                                 \
     "value=\"%s\" />"
 
-#define HLO_READ_VAR_ERR_REPLY_TEMPLATE                                        \
+#define HLO_XML_READ_VAR_ERR_REPLY_TEMPLATE                                    \
     "<vscp-resp op=\"vscp-readvar\" "                                          \
     "name=\"%s\" "                                                             \
     "result=\"ERR\" "                                                          \
