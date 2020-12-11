@@ -220,6 +220,9 @@ CControlObject::CControlObject()
     m_mqtt_bRetain = false;
     m_mqtt_keepalive = 60;
     m_mqtt_bCleanSession = false;
+    reconnect_delay = 2;
+    reconnect_delay_max = 30;
+    reconnect_exponential_backoff = false;
     m_mqtt_bTLS = false;
     m_mqtt_cafile = "";
     m_mqtt_capath = "";
@@ -586,6 +589,13 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     mosquitto_message_callback_set(m_mosq, mqtt_on_message);
     mosquitto_publish_callback_set(m_mosq, mqtt_on_publish);
 
+    if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(m_mosq,
+   	                                    reconnect_delay,
+   	                                    reconnect_delay_max,
+   		                                reconnect_exponential_backoff)) {
+        syslog(LOG_ERR, "[Controlobject] Failed to set reconnect settings.");                                 
+    }
+
     // Set username/password if defined
     if (m_mqtt_strUserName.length()) { 
         int rv;       
@@ -608,8 +618,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                                 m_mqtt_port, 
                                 m_mqtt_keepalive);
 
-    if ( MOSQ_ERR_SUCCESS != rv ) {
-        
+    if (MOSQ_ERR_SUCCESS != rv) {
+
         if (MOSQ_ERR_INVAL == rv) {
             syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
         }
@@ -1621,6 +1631,21 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                     syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->m_mqtt_keepalive);
                 }
+            } else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay")) {
+                pObj->reconnect_delay = vscp_readStringValue(attribute);
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                    syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay-max")) {
+                pObj->reconnect_delay_max = vscp_readStringValue(attribute);
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                    syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay_max);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "reconnect-exponential-backoff")) {
+                pObj->reconnect_exponential_backoff = vscp_readStringValue(attribute);
+                if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                    syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_exponential_backoff);
+                }
             } else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
                 if ( attribute.length() ) pObj->m_mqtt_bTLS = true;
                 pObj->m_mqtt_cafile = attribute;
@@ -1878,6 +1903,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
             pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
             pDriver->m_mqtt_keepalive = pObj->m_mqtt_keepalive;
+            pDriver->reconnect_delay = pObj->reconnect_delay;
+            pDriver->reconnect_delay_max = pObj->reconnect_delay_max;
+            pDriver->reconnect_exponential_backoff = pObj->reconnect_exponential_backoff;
             pDriver->m_mqtt_cafile = pObj->m_mqtt_cafile;
             pDriver->m_mqtt_capath = pObj->m_mqtt_capath;
             pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
@@ -1963,6 +1991,21 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
                     if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                         syslog(LOG_DEBUG, "ReadConfig: Level I driver MQTT keepalive set to %d\n", pDriver->m_mqtt_keepalive);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay")) {
+                    pDriver->reconnect_delay = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay-max")) {
+                    pDriver->reconnect_delay_max = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay_max);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "reconnect-exponential-backoff")) {
+                    pDriver->reconnect_exponential_backoff = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_exponential_backoff);
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "cafile")) {
@@ -2223,6 +2266,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             pDriver->m_mqtt_bCleanSession = pObj->m_mqtt_bCleanSession;
             pDriver->m_mqtt_bRetain = pObj->m_mqtt_bRetain;
             pDriver->m_mqtt_keepalive = pObj->m_mqtt_keepalive;
+            pDriver->reconnect_delay = pObj->reconnect_delay;
+            pDriver->reconnect_delay_max = pObj->reconnect_delay_max;
+            pDriver->reconnect_exponential_backoff = pObj->reconnect_exponential_backoff;
             pDriver->m_mqtt_cafile = pObj->m_mqtt_cafile;
             pDriver->m_mqtt_capath = pObj->m_mqtt_capath;
             pDriver->m_mqtt_certfile = pObj->m_mqtt_certfile;
@@ -2308,6 +2354,22 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     pDriver->m_mqtt_keepalive = vscp_readStringValue(attribute);
                     if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
                         syslog(LOG_DEBUG, "ReadConfig: Level II driver MQTT keepalive set to %d\n", pDriver->m_mqtt_keepalive);
+                    }
+                } 
+                else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay")) {
+                    pDriver->reconnect_delay = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "reconnect-delay-max")) {
+                    pDriver->reconnect_delay_max = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_delay_max);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "reconnect-exponential-backoff")) {
+                    pDriver->reconnect_exponential_backoff = vscp_readStringValue(attribute);
+                    if (pObj->m_debugFlags & VSCP_DEBUG_CONFIG) {
+                        syslog(LOG_DEBUG, "ReadConfig:  MQTT keepalive set to %d\n", pObj->reconnect_exponential_backoff);
                     }
                 }
                 else if (0 == vscp_strcasecmp(attr[i], "cafile")) {

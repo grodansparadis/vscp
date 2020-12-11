@@ -274,6 +274,9 @@ class CControlObject {
     bool m_mqtt_bRetain;            // Enable retain
     int m_mqtt_keepalive;           // Keep alive in seconds
     bool m_mqtt_bCleanSession;      // Clean session on disconnect if true
+    uint16_t reconnect_delay;           // reconnect delay
+    uint16_t reconnect_delay_max;       // max time between reconnects
+    bool reconnect_exponential_backoff; // Use exponential backoff
 
     // SSL/TSL
     bool m_mqtt_bTLS;               // True of a TLS/SSL connection should be done

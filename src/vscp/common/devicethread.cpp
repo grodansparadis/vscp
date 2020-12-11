@@ -931,6 +931,13 @@ deviceThread(void* pData)
         mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_on_message);
         mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
 
+        if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(pDeviceItem->m_mosq,
+   	                                                            pDeviceItem->reconnect_delay,
+   	                                                            pDeviceItem->reconnect_delay_max,
+   		                                                        pDeviceItem->reconnect_exponential_backoff)) {
+            syslog(LOG_ERR, "[Controlobject] Failed to set reconnect settings.");                                 
+        }
+
         // Set username/password if defined
         if (pDeviceItem->m_mqtt_strUserName.length()) {
             int rv;
