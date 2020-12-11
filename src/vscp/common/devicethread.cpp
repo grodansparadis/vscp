@@ -932,9 +932,9 @@ deviceThread(void* pData)
         mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
 
         if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(pDeviceItem->m_mosq,
-   	                                                            pDeviceItem->reconnect_delay,
-   	                                                            pDeviceItem->reconnect_delay_max,
-   		                                                        pDeviceItem->reconnect_exponential_backoff)) {
+   	                                                            pDeviceItem->m_mqtt_reconnect_delay,
+   	                                                            pDeviceItem->m_mqtt_reconnect_delay_max,
+   		                                                        pDeviceItem->m_mqtt_reconnect_exponential_backoff)) {
             syslog(LOG_ERR, "[Controlobject] Failed to set reconnect settings.");                                 
         }
 

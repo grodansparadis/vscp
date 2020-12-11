@@ -95,9 +95,9 @@ CDeviceItem::CDeviceItem()
 
     m_mqtt_format = jsonfmt;    // JSON is default format
 
-    reconnect_delay = 2;
-    reconnect_delay_max = 30;
-    reconnect_exponential_backoff = false;
+    m_mqtt_reconnect_delay = 2;
+    m_mqtt_reconnect_delay_max = 30;
+    m_mqtt_reconnect_exponential_backoff = false;
 
     // VSCP Level I
     m_proc_CanalOpen            = NULL;

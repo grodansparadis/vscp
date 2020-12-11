@@ -3,6 +3,9 @@
     "debug" : 0,		
     "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
     "servername" : "The VSCP daemon",
+    "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
+    "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
+    "vscpkey" : "/var/vscp/vscp.key",
 
     "mqtt" : {
         "host" : "192.168.1.7",
@@ -23,6 +26,7 @@
     	"certfile" : "",
     	"keyfile" : "",
         "pwkeyfile" : "",
+        "topic-interfaces" : "vscp/{{guid}}/interfaces",
         "subscribe" : [
             "vscp/{{guid}}/#"
         ],
@@ -113,7 +117,7 @@
                 "config" : "can0",
                 "flags" : 0,
                 "translation" : 2,
-                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.0",
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {

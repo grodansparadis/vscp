@@ -39,6 +39,14 @@
 #include <set>
 #include <map>
 
+#include <json.hpp>  // Needs C++11  -std=c++11
+#include <mustache.hpp>
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
+using namespace kainjow::mustache;
+
 // Needed on Linux
 #ifndef VSCPMIN
 #define VSCPMIN(X, Y) ((X) < (Y) ? (X) : (Y))
@@ -144,6 +152,21 @@ class CControlObject {
      */
     bool readConfiguration(const std::string& strcfgfile);
 
+
+    /*!
+        Read the loaded JSON configuration
+        @param j JSON object
+        @return Returns true on success false on failure.
+    */
+    bool readJSON(const json& j);
+
+    /*!
+        Read the encryption key from a safe location
+        @param path Path to file containg the +128 byte key
+        @return true on success, false on failure.
+    */
+    bool readEncryptionKey(const std::string& path);
+
     /*!
         Discovery routine
 
@@ -186,7 +209,7 @@ class CControlObject {
     uint8_t m_systemKey[32];
 
     // VSCP encryption token
-    std::string m_vscptoken; 
+    std::string m_vscptoken;
 
     /*!
         User to run as for Unix
@@ -274,9 +297,9 @@ class CControlObject {
     bool m_mqtt_bRetain;            // Enable retain
     int m_mqtt_keepalive;           // Keep alive in seconds
     bool m_mqtt_bCleanSession;      // Clean session on disconnect if true
-    uint16_t reconnect_delay;           // reconnect delay
-    uint16_t reconnect_delay_max;       // max time between reconnects
-    bool reconnect_exponential_backoff; // Use exponential backoff
+    uint16_t m_mqtt_reconnect_delay;           // reconnect delay
+    uint16_t m_mqtt_reconnect_delay_max;       // max time between reconnects
+    bool m_mqtt_reconnect_exponential_backoff; // Use exponential backoff
 
     // SSL/TSL
     bool m_mqtt_bTLS;               // True of a TLS/SSL connection should be done
