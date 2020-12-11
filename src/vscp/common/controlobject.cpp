@@ -2775,7 +2775,7 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("format") ) {
             std::string format = j["mqtt"]["format"].get<std::string>();
             if (m_debugFlags & VSCP_DEBUG_CONFIG) {
-                syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", m_mqtt_format.c_str());
+                syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", format.c_str());
             }
             
             vscp_makeUpper(format);
@@ -3128,7 +3128,7 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("format") ) {
                                     std::string format = (*it)["mqtt"]["format"].get<std::string>();
                                     if (m_debugFlags & VSCP_DEBUG_CONFIG) {
-                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", pDriver->m_mqtt_format.c_str());
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", format.c_str());
                                     }
                                     
                                     vscp_makeUpper(format);
@@ -3466,7 +3466,7 @@ CControlObject::readJSON(const json& j)
 
                                     std::string format = (*it)["mqtt"]["format"].get<std::string>();
                                     if (m_debugFlags & VSCP_DEBUG_CONFIG) {
-                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", pDriver->m_mqtt_format.c_str());
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", format.c_str());
                                     }
                                     
                                     vscp_makeUpper(format);
