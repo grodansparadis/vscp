@@ -2775,7 +2775,7 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("format") ) {
             std::string format = j["mqtt"]["format"].get<std::string>();
             if (m_debugFlags & VSCP_DEBUG_CONFIG) {
-                syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", m_mqtt_strClientId.c_str());
+                syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", m_mqtt_format.c_str());
             }
             
             vscp_makeUpper(format);
@@ -3128,7 +3128,7 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("format") ) {
                                     std::string format = (*it)["mqtt"]["format"].get<std::string>();
                                     if (m_debugFlags & VSCP_DEBUG_CONFIG) {
-                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", pDriver->m_mqtt_strClientId.c_str());
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", pDriver->m_mqtt_format.c_str());
                                     }
                                     
                                     vscp_makeUpper(format);
@@ -3383,6 +3383,306 @@ CControlObject::readJSON(const json& j)
                                 "ControlObject: ReadConfig: Level II driver added. name = %s - [%s]",
                                 (*it)["name"].get<std::string>().c_str(),
                                 (*it)["path-driver"].get<std::string>().c_str());
+                        }
+
+                        // ********************************************************************************
+                        //                               Level II driver MQTT
+                        // ********************************************************************************
+
+                        if ( !((*it).contains("mqtt") && (*it)["mqtt"].is_object())) {
+                            if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                syslog(LOG_DEBUG, "ReadConfig: mqtt object. Defaults will be used.");
+                            }
+                        }
+                        else {
+
+                            CDeviceItem *pDriver = m_deviceList.getDeviceItemFromName((*it)["name"]);
+                            if ( NULL == pDriver ) {
+                                syslog(LOG_DEBUG, "ReadConfig: Driver MQTT info can not be added. Driver not found.");
+                            } else {
+
+                                // MQTT.host
+                                if ((*it)["mqtt"].contains("host") ) {
+                                    pDriver->m_mqtt_strHost = (*it)["mqtt"]["host"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'host' set to %s", pDriver->m_mqtt_strHost.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'host'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.port
+                                if ((*it)["mqtt"].contains("port") ) {
+                                    pDriver->m_mqtt_port = (*it)["mqtt"]["port"].get<int>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'port' set to %d", pDriver->m_mqtt_port);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'port'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.user
+                                if ((*it)["mqtt"].contains("user") ) {
+                                    pDriver->m_mqtt_strUserName = (*it)["mqtt"]["user"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'user' set to %s", pDriver->m_mqtt_strUserName.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'user'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.password
+                                if ((*it)["mqtt"].contains("password") ) {
+                                    pDriver->m_mqtt_strPassword = (*it)["mqtt"]["password"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'password' set to %s", pDriver->m_mqtt_strPassword.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'password'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.clientid
+                                if ((*it)["mqtt"].contains("clientid") ) {
+                                    pDriver->m_mqtt_strClientId = (*it)["mqtt"]["clientid"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'clientid' set to %s", pDriver->m_mqtt_strClientId.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'clientid'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.format
+                                if ((*it)["mqtt"].contains("format") ) {
+
+                                    std::string format = (*it)["mqtt"]["format"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'format' set to %s", pDriver->m_mqtt_format.c_str());
+                                    }
+                                    
+                                    vscp_makeUpper(format);
+                                    if (0 == vscp_strcasecmp(format.c_str(), "JSON")) {
+                                        pDriver->m_mqtt_format = jsonfmt;
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: MQTT format set to 'JSON' (%s)\n", format.c_str());
+                                        }
+                                    } else if (0 == vscp_strcasecmp(format.c_str(), "XML")) {
+                                        pDriver->m_mqtt_format = xmlfmt;
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: MQTT format set to 'XML' (%s)\n", format.c_str());
+                                        }
+                                    } else if (0 == vscp_strcasecmp(format.c_str(), "STRING")) {
+                                        pDriver->m_mqtt_format = strfmt;
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: MQTT format set to 'STRING' (%s)\n", format.c_str());
+                                        }
+                                    } else if (0 == vscp_strcasecmp(format.c_str(), "BINARY")) {
+                                        pDriver->m_mqtt_format = binfmt;
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: MQTT format set to 'BINARY' (%s)\n", format.c_str());
+                                        }
+                                    } else {
+                                        pDriver->m_mqtt_format = jsonfmt;
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: Unknown format: MQTT format set to 'JSON' (%s)\n", format.c_str());
+                                        }
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'format'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.qos
+                                if ((*it)["mqtt"].contains("qos") ) {
+                                    pDriver->m_mqtt_qos = (*it)["mqtt"]["qos"].get<int>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'qos' set to %d", pDriver->m_mqtt_qos);
+                                    }
+                                    if (pDriver->m_mqtt_qos > 2) {
+                                        syslog(LOG_WARNING, "ReadConfig: MQTT qos > 2. Set to 0.");
+                                        pDriver->m_mqtt_qos = 0;
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'qos'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.bcleansession
+                                if ((*it)["mqtt"].contains("bcleansession") ) {
+                                    pDriver->m_mqtt_bCleanSession = (*it)["mqtt"]["bcleansession"].get<bool>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'bcleansession' set to %d", pDriver->m_mqtt_bCleanSession);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'bcleansession'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.bretain
+                                if ((*it)["mqtt"].contains("bretain") ) {
+                                    pDriver->m_mqtt_bRetain = (*it)["mqtt"]["bretain"].get<bool>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'bretain' set to %d", pDriver->m_mqtt_bRetain);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.keepalive
+                                if ((*it)["mqtt"].contains("keepalive") ) {
+                                    pDriver->m_mqtt_keepalive = (*it)["mqtt"]["keepalive"].get<int>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'keepalive' set to %d", pDriver->m_mqtt_keepalive);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'keepalive'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.reconnect-delay
+                                if ((*it)["mqtt"].contains("reconnect-delay") ) {
+                                    pDriver->m_mqtt_reconnect_delay = (*it)["mqtt"]["reconnect-delay"].get<int>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'reconnect-delay' set to %d", pDriver->m_mqtt_reconnect_delay);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'reconnect-delay'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.reconnect-delay-max
+                                if ((*it)["mqtt"].contains("reconnect-delay-max") ) {
+                                    pDriver->m_mqtt_reconnect_delay_max = (*it)["mqtt"]["reconnect-delay-max"].get<int>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'reconnect-delay-max' set to %d", pDriver->m_mqtt_reconnect_delay);
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'm_mqtt_reconnect_delay_max'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.reconnect-exponential-backoff
+                                if ((*it)["mqtt"].contains("reconnect-exponential-backoff") ) {
+                                    pDriver->m_mqtt_reconnect_exponential_backoff = (*it)["mqtt"]["reconnect-exponential-backoff"].get<bool>();
+                            
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'reconnect-exponential-backoff' set to %d", pDriver->m_mqtt_reconnect_exponential_backoff);
+                                    }
+                                } else {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'reconnect_exponential_backoff'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.cafile
+                                if ((*it)["mqtt"].contains("cafile") ) {
+                                    pDriver->m_mqtt_cafile = (*it)["mqtt"]["cafile"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'cafile' set to %s", pDriver->m_mqtt_cafile.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'cafile'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.capath
+                                if ((*it)["mqtt"].contains("capath") ) {
+                                    pDriver->m_mqtt_capath = (*it)["mqtt"]["capath"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'capath' set to %s", pDriver->m_mqtt_capath.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'capath'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.certfile
+                                if ((*it)["mqtt"].contains("certfile") ) {
+                                    pDriver->m_mqtt_capath = (*it)["mqtt"]["certfile"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'certfile' set to %s", pDriver->m_mqtt_capath.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'certfile'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.keyfile
+                                if ((*it)["mqtt"].contains("keyfile") ) {
+                                    pDriver->m_mqtt_keyfile = (*it)["mqtt"]["keyfile"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'keyfile' set to %s", pDriver->m_mqtt_keyfile.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'keyfile'. Defaults will be used.");
+                                    }
+                                }
+
+                                // MQTT.pwkeyfile
+                                if ((*it)["mqtt"].contains("pwkeyfile") ) {
+                                    pDriver->m_mqtt_pwKeyfile = (*it)["mqtt"]["pwkeyfile"].get<std::string>();
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: MQTT 'pwkeyfile' set to %s", pDriver->m_mqtt_pwKeyfile.c_str());
+                                    }
+                                } else  {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: Failed to read MQTT 'pwkeyfile'. Defaults will be used.");
+                                    }
+                                }
+
+                                // subscribe
+                                if ( !((*it)["mqtt"].contains("subscribe") && (*it)["mqtt"]["subscribe"].is_array())) {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: mqtt.subscribe object. Defaults will be used.");
+                                    }
+                                }
+                                else {
+                                    json subsub = (*it)["mqtt"]["subscribe"];
+                                    for (json::iterator it = subsub.begin(); it != (*it).end(); ++it) {
+                                        pDriver->m_mqtt_subscriptions.push_back(subsub.get<std::string>());
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: mqtt.subscription %s.",subsub.get<std::string>().c_str());
+                                        }
+                                    }
+                                }
+
+                                // publish
+                                if ( !(sub["mqtt"].contains("publish") && sub["mqtt"]["publish"].is_array())) {
+                                    if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                        syslog(LOG_DEBUG, "ReadConfig: mqtt.publish object. Defaults will be used.");
+                                    }
+                                }
+                                else {
+                                    json subsub = (*it)["mqtt"]["publish"];
+                                    for (json::iterator it = subsub.begin(); it != subsub.end(); ++it) {
+                                        pDriver->m_mqtt_publish.push_back((*it).get<std::string>());
+                                        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+                                            syslog(LOG_DEBUG, "ReadConfig: mqtt.publish %s.",subsub.get<std::string>().c_str());
+                                        }
+                                    }
+                                }
+                            } //    MQTT block driver II
                         }
                     }
                 }
