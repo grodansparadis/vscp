@@ -112,12 +112,12 @@
                 }
             },
             {
-                "enable" : false,
+                "enable" : true,
                 "name" : "socketcanl1",
                 "config" : "can0",
                 "flags" : 0,
                 "translation" : 2,
-                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.1",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {

@@ -20,7 +20,7 @@
         "keepalive" : 60,
         "reconnect-delay" : 2,
         "reconnect-delay-max" : 10,
-        "reconnect-exponential-bbackoff" : false,
+        "reconnect-exponential-backoff" : false,
         "cafile" : "",
     	"capath" : "",
     	"certfile" : "",
@@ -276,7 +276,7 @@
                     "reconnect-exponential-backoff" : false,
                     "cafile" : "",
                     "capath" : "",
-                    "certfile" : "",
+                    "certuuuufile" : "",
                     "keyfile" : "",
                     "pwkeyfile" : "",
                     "subscribe" : [
@@ -322,9 +322,9 @@
                 }
             },
             {
-                "enable" : true,
+                "enable" : false,
                 "name" : "tcpiplink",
-                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so.1.1.0",
+                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
                 "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
 
