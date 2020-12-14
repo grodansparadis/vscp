@@ -1,5 +1,5 @@
 {
-    "runasuser" : "",
+    "runasuser" : "vscp",
     "debug" : 0,		
     "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
     "servername" : "The VSCP daemon",
@@ -276,7 +276,7 @@
                     "reconnect-exponential-backoff" : false,
                     "cafile" : "",
                     "capath" : "",
-                    "certuuuufile" : "",
+                    "certfile" : "",
                     "keyfile" : "",
                     "pwkeyfile" : "",
                     "subscribe" : [
@@ -324,16 +324,16 @@
             {
                 "enable" : false,
                 "name" : "tcpiplink",
-                "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
-                "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
+                "path-driver" : "/home/akhe/development/VSCP/vscpl2drv-tcpiplink/linux/vscpl2drv-tcpiplink.so.1.1.0",
+                "path-config" : "/home/akhe/development/VSCP/vscp/debug/linux/vscpl2drv-tcpiplink/driver-conf.json",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
-                    "port" : 1883,
+                    "host" : "192.168.1.7",
+                    "port" : 9596,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "vscp-drv2-tcpiplink",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -351,7 +351,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class-token}}/{{type-token}}/{{nickname}}"
                     ]
                 }
             },

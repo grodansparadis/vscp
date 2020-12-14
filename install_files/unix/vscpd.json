@@ -5,6 +5,7 @@
     "servername" : "The VSCP daemon",
     "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
     "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
+    "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
     "vscpkey" : "/var/vscp/vscp.key",
 
     "mqtt" : {

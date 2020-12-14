@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-12-06 21:25:26.040430
+                        Generated: 2020-12-14 13:29:05.106557
 */
  
 #ifndef VSCP_TYPE_H
@@ -154,6 +154,10 @@
 #define VSCP_TYPE_SECURITY_PASSWORD_FAIL            31  /* Invalid password */
 #define VSCP_TYPE_SECURITY_PASSWORD_WARNING         32  /* Password warning */
 #define VSCP_TYPE_SECURITY_PASSWORD_ERROR           33  /* Password error */
+#define VSCP_TYPE_SECURITY_GAS_SENSOR               34  /* Gas */
+#define VSCP_TYPE_SECURITY_IN_MOTION_DETECTED       35  /* In motion */
+#define VSCP_TYPE_SECURITY_NOT_IN_MOTION_DETECTED   36  /* Not in motion */
+#define VSCP_TYPE_SECURITY_VIBRATION_DETECTED       37  /* Vibration */
     
 /*  CLASS1.MEASUREMENT = 10  -  Measurement */
 #define VSCP_TYPE_MEASUREMENT_GENERAL               0   /* General event */
@@ -219,6 +223,7 @@
 #define VSCP_TYPE_MEASUREMENT_SOUND_LEVEL           60  /* Sound level */
 #define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ     61  /* Radiation dose (equivalent) */
 #define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE 62 /* Radiation dose (exposure) */
+#define VSCP_TYPE_MEASUREMENT_POWER_FACTOR          63  /* Power factor */
     
 /*  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
 #define VSCP_TYPE_MEASUREMENTX1_GENERAL             0   /* General event */
@@ -709,6 +714,8 @@
 #define VSCP_TYPE_DIAGNOSTIC_TX_FAIL                77  /* Transmission failure */
 #define VSCP_TYPE_DIAGNOSTIC_RX_FAIL                78  /* Receiption failure */
 #define VSCP_TYPE_DIAGNOSTIC_EXT_IC_FAIL            79  /* External IC failure */
+#define VSCP_TYPE_DIAGNOSTIC_CHARGING_ON            80  /* Charging of battery or similar has started or is in progress */
+#define VSCP_TYPE_DIAGNOSTIC_CHARGING_OFF           81  /* Charging of battery or similar has ended */
     
 /*  CLASS1.ERROR = 508  -  Error */
 #define VSCP_TYPE_ERROR_SUCCESS                     0   /* Success */
