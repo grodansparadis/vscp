@@ -172,7 +172,7 @@ install: all install-folders install-configfile install-sample-certs
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) -d $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) vscpd $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) -m 644 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf
+	$(INSTALL_PROGRAM) -m 644 ../../../../install_files/unix/vscpd.json $(DESTDIR)/etc/vscp/vscpd.json
 	cp ../../../../service/systemd/vscpd.service.notify /lib/systemd/system/vscpd.service
 #	systemctl enable vscpd
 #	systemctl start vscpd
