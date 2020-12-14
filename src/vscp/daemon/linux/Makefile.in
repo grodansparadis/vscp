@@ -162,8 +162,8 @@ fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-sqlite3.o: ../../../common/third_party/sqlite3-3.30.1/sqlite3.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3-3.30.1/sqlite3.c -o $@
+sqlite3.o: ../../../common/third_party/sqlite3-3.34.0/sqlite3.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3-3.34.0/sqlite3.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
