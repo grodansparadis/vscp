@@ -28,7 +28,7 @@ Variables fetched from the VSCP demon configuration file. Defaults will be used 
  | _send_detect          | boolean | false      | Set to true to enable detect events.                                                 | 
  | _disable_radio_detect | boolean | false      | Normally also the radio unit is detected. Set this variable to true to disable this. | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **btprox1** and the full variable name for the **_paustime* will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **btprox1** and the full variable name for the **_paustime* will thus be
 
     btproxy1_pausetime
 
@@ -37,7 +37,7 @@ If you have another diver and name it  **btproxy2** it will therefore instead re
 If your driver name contains spaces, for example "name of driver" it will get a prefix that is "name_of_driver". Leading and trailing spaces will be removed.
 
 
-##### Example of vscpd.conf entry for the driver.
+##### Example of vscpd.json entry for the driver.
 
 ```xml
 <driver enable="true" >

@@ -34,7 +34,7 @@ install:
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
 	@echo "   or 'vscpd -s' to start the daemon in the foreground."
 	@echo
-	@echo " - The configuration file for the VSCP daemon is at '/etc/vscd/vscpd.conf' and"
+	@echo " - The configuration file for the VSCP daemon is at '/etc/vscd/vscpd.json' and"
 	@echo "   you can read about the different available options here "
 	@echo "   https://docs.vscp.org/vscpd/14.0/#/configuring_the_vscp_daemon"
 	@echo "   Other configuration files is under /var/lib/vscp/vscpd"

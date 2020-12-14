@@ -2,7 +2,7 @@
 
 ## Location of the configuration file
 
-The daemon needs a configuration file called **vscpd.conf**. It will not start without this file nor if the file contains invalid information. Normally the installation program will create a default file.
+The daemon needs a configuration file called **vscpd.json**. It will not start without this file nor if the file contains invalid information. Normally the installation program will create a default file.
 
 On most machines it will be located in 
 

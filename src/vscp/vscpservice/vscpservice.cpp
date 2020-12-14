@@ -75,7 +75,7 @@ BOOL CVSCPService::OnInit()
     wxString strCfgFile;
    
     strCfgFile = wxStandardPaths::Get().GetConfigDir();
-    strCfgFile += _("/vscp/vscpd.conf");
+    strCfgFile += _("/vscp/vscpd.json");
 
 	rv = m_ctrlObj.init( strCfgFile );
 	 

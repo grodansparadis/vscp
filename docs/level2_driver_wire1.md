@@ -28,7 +28,7 @@ The parameter *NumberOfSensors* (which is optional) is the number of sensors the
  | _index[0..n]     | integer | Measurement index 0-7. Default is 0. | 
  | _coding[0..n]    | integer | Message coding 0-2. Default is 0. Allowed values 0=Normalized integer, 1=string, 2=floating point. | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **wire1** and the full variable name for the **_numberofsensors** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **wire1** and the full variable name for the **_numberofsensors** will thus be
 
     wire11_numberofsensors
 
@@ -36,7 +36,7 @@ If you have another diver and name it  **wire2** it will therefore instead reque
 
 If your driver name contains spaces, for example “name of driver” it will get a prefix that is “name_of_driver”. Leading and trailing spaces will be removed. 
 
-##### Example of vscpd.conf entry for the wire1 driver.
+##### Example of vscpd.json entry for the wire1 driver.
 
 ```xml
 <driver enable="true" >

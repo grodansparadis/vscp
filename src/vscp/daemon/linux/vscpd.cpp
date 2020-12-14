@@ -64,7 +64,7 @@ uint32_t gdebugFlags;
 
 // Globals for the daemon
 int gbStopDaemon;
-int gnDebugLevel       = 0;
+uint64_t gDebugLevel  = 0;
 bool gbDontRunAsDaemon = false;
 bool gbRestart         = false;
 std::string systemKey;
@@ -131,7 +131,7 @@ main(int argc, char** argv)
     crcInit();
 
     rootFolder   = "/var/lib/vscp/";
-    strcfgfile   = "/etc/vscp/vscpd.conf";
+    strcfgfile   = "/etc/vscp/vscpd.json";
     gbStopDaemon = false;
 
     while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
@@ -162,7 +162,7 @@ main(int argc, char** argv)
                 break;
 
             case 'd':
-                gnDebugLevel = atoi(optarg);
+                gDebugLevel =  std::stoull(optarg);  //atoi(optarg);
                 fprintf(stderr, "Debug flags=%s\n", optarg);
                 syslog(LOG_INFO, "Debug flags=%s\n", optarg);
                 getDebugValues(optarg);
@@ -448,9 +448,8 @@ help(char* szPrgname)
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
-    fprintf(stderr,
-            "\t-d\tDebug flags as comma separated list (d0,d1,d2,d3,,,).");
-    fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
+    fprintf(stderr, "\t-d\tDebug flags.");
+    fprintf(stderr, "that should be used (default: /etc/vscpd.json).\n");
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
 

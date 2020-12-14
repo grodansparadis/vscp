@@ -169,7 +169,7 @@ The **Remote TCP/IP Client** for example in this list is the TCP/IP clinet we co
 There are two drivers available for logging. One for Level I and one for Level II. You can think of Level II as used for more capable hardware with more memory and resources and Level I for low end hardware. We will enable the [Level II logger driver](./level2_driver_logger.md) here.
 
  1.  First stop the daemon. One or more **ctrl+c** will do that.
- 2.  Then open the vscpd.conf file in an editor. You find it under /ProgramData/vscp on windows or /srv/vscp on Linux/Unix.
+ 2.  Then open the vscpd.json file in an editor. You find it under /ProgramData/vscp on windows or /srv/vscp on Linux/Unix.
  3.  Now move down to the line that looks something like this
 
 ```xml	

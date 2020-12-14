@@ -13,7 +13,7 @@ Letting the driver talk to the daemon over the TCP/IP interface is favorable in 
 
 The level II driver is, just as the Level I driver, a dynamic link library with a specific set of exported methods. The exported methods are four of the methods from the CANAL interface and uses identical calling parameters and return values. There are some differences however noted below. 
 
-The configuration for a typical VSCP driver in the vscpd.conf file looks like this
+The configuration for a typical VSCP driver in the vscpd.json file looks like this
 
 ```xml
 <vscpdriver>  <!-- Information about VSCP Level II drivers -->

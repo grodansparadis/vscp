@@ -40,7 +40,7 @@ The parameter *NumberOfSensors* (which is optional) is the number of sensors the
  | _subzone          | integer | Subzone use if class is [CLASS2.MEASUREMENT_STR](http://docs.vscp.org/spec/latest/#/./class2.measurement_str), [CLASS1.MEASUREZONE](http://docs.vscp.org/spec/latest/#/./class1.measurezone) or [CLASS1.SETVALUEZONE](http://docs.vscp.org/spec/latest/#/./class1.setvaluezone)                                                                                                                                                                                                    | 
  | _unit             | integer | Unit use if class is [CLASS2.MEASUREMENT_STR](http://docs.vscp.org/spec/latest/#/./class2.measurement_str), [CLASS1.MEASUREZONE](http://docs.vscp.org/spec/latest/#/./class1.measurezone) or [CLASS1.SETVALUEZONE](http://docs.vscp.org/spec/latest/#/./class1.setvaluezone)                                                                                                                                                                                                       | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **lmsensors1** and the full variable name for the **_index** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **lmsensors1** and the full variable name for the **_index** will thus be
 
     lmsensors1_index
 
@@ -48,7 +48,7 @@ If you have another diver and name it  **lmsensors2** it will therefore instead 
 
 If your driver name contains spaces, for example “name of driver” it will get a prefix that is “name_of_driver”. Leading and trailing spaces will be removed.
 
-##### Example of vscpd.conf entry for the lm-sensors driver.
+##### Example of vscpd.json entry for the lm-sensors driver.
 
 ```xml
 <driver enable="true" >
@@ -230,7 +230,7 @@ and it is normally installed in */usr/local/bin*
 
 The documentation for it is in the specification document 30.3
 
-You need to have a driver entry in the  VSCP daemon configuration file located at /etc/vscp/vscpd.conf. These entries looks like
+You need to have a driver entry in the  VSCP daemon configuration file located at /etc/vscp/vscpd.json. These entries looks like
 
 ```xml	
 <driver enable="true" >

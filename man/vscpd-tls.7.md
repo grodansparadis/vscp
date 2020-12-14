@@ -30,7 +30,7 @@ The daemon uses simple to construct, yet very capable, drivers to talk to the re
 : Specify VSCP root folder. Default is /srv/vscp.
 
 -c path-to-vscpd-config-file
-: Tell where the program should look for the configuration file. Default is to look for this file in /etc/vscp/vscpd.conf.
+: Tell where the program should look for the configuration file. Default is to look for this file in /etc/vscp/vscpd.json.
 
 -k XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX....
 : Set the 32 byte encryption key string in hex format.

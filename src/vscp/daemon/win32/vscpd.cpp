@@ -140,9 +140,9 @@ int main(int argc, char **argv)
         strCfgFile = strCfgFile.Left( strCfgFile.Length() - 7 );
         strCfgFile += _( "vscp" );
     }
-    strCfgFile += _( "\\vscpd.conf" );
+    strCfgFile += _( "\\vscpd.json" );
 #else
-    strCfgFile += _("/vscp/vscpd.conf");
+    strCfgFile += _("/vscp/vscpd.json");
 #endif
 
     wxCmdLineParser *pparser = new wxCmdLineParser( cmdLineDesc, argc, argv );

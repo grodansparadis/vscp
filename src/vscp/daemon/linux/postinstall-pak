@@ -14,10 +14,10 @@ if [ ! -e /etc/init.d/vscpd ]; then
 fi
 
 # main configuration file
-if [ ! -e /etc/vscp/vscpd.conf ]; then
-    $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
+if [ ! -e /etc/vscp/vscpd.json ]; then
+    $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/vscpd.json_unix_distro /etc/vscp/vscpd.json
 else
-    $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/vscpd.conf_unix_distro /etc/vscp/vscpd.conf.`date +'%Y%m%d'`
+    $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/vscpd.json_unix_distro /etc/vscp/vscpd.json.`date +'%Y%m%d'`
 fi
 
 # Example variables

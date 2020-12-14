@@ -43,7 +43,7 @@ The parameter *NumberOfNodes* (which is optional) is the number of simulated dev
  | _measurementclass[0..n] | long    | Class used for sent measurement events. Default is [CLASS1.MEASUREMENT](http://docs.vscp.org/spec/latest/#/./class1.measurement)                                                                                                          | 
  | _measurementtype[0..n]  | long    | Type used for sent measurement events. Default is [Type=6, Temperature](http://docs.vscp.org/spec/latest/#/./class1.measurement#type6-0x06-temperature)                                                                                                          | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **sim1** and the full variable name for the **_zone0** will thus be 
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **sim1** and the full variable name for the **_zone0** will thus be 
 
    sim1_zone0 
 
@@ -51,7 +51,7 @@ If you have another diver and name it sim2 it will therefore instead request var
 
 If your driver name contains spaces, for example “name of driver” it will get a prefix that is “name_of_driver”. Leading and trailing spaces will be removed. 
 
-##### Example of vscpd.conf entry for the simulation driver.
+##### Example of vscpd.json entry for the simulation driver.
 
 ```xml
 <!-- Level II simulation  -->

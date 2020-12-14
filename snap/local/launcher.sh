@@ -24,7 +24,7 @@ if [ ! -e "$COMMON/vscpd_example.xml" ]
 then
   echo "Copying example config to $COMMON/vscpd_example.conf"
   echo "You can create a custom config by creating a file called $CUSTOM_CONFIG"
-  cp $SNAP/vscpd.conf $COMMON/vscpd_example.conf
+  cp $SNAP/vscpd.json $COMMON/vscpd_example.conf
 fi
 
 

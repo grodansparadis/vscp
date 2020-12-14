@@ -208,10 +208,10 @@ install-startup-systemvinit:
 install-configfile:
 	@echo "- Installing main configuration file."
 	@mkdir -p $(DESTDIR)/etc/vscp
-	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.json ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.json $(DESTDIR)/etc/vscp/vscpd.json;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.json $(DESTDIR)/etc/vscp/vscpd.json.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-certs:
@@ -237,8 +237,8 @@ uninstall:
 	rm -rf $(DESTDIR)/var/logs/vscp
 	em -rf $(DESTDIR)/var/web-vscp
 
-	rm -f $(DESTDIR)/etc/vscp/vscpd.conf
-	rm -rf $(DESTDIR)/etc/vscp/vscpd.conf.*
+	rm -f $(DESTDIR)/etc/vscp/vscpd.json
+	rm -rf $(DESTDIR)/etc/vscp/vscpd.json.*
 	# Remove /etc/vscp if empty
 	if [ ! "$(ls -A /etc/vscp)" ]; then\
 		rm -rf $(DESTDIR)/etc/vscp;\

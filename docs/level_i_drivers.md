@@ -8,7 +8,7 @@ Many ready to use Level I drivers are available in the VSCP & Friends package. A
 
 The good thing with the Level I interface is that you can add the .dll or .so as a driver for use with the VSCP daemon or use the dll/do directly from your own application such as in VSCP Works.
 
-The drivers are configured in the vscpd.conf file (format is [here](http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon)). 
+The drivers are configured in the vscpd.json file (format is [here](http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon)). 
 
 To make your own Level I driver just create a dynamically linked library that export the CANAL interface. There are plenty of examples to use as a starting point for creating your own driver in the [source tree for the VSCP & Friends package at GitHub](https://github.com/grodansparadis?tab=repositories&q=vscpl1drv&type=&language=). 
 
