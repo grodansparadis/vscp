@@ -40,7 +40,7 @@ CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -D_POSIX_SOURCE -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party/sqlite3-3.30.1/ \
+	-I../../../common/third_party/sqlite3-3.34.0/ \
 	-I../../../common/third_party
 CFLAGS += $(CIVETWEB_FLAGS) 
 CXXFLAGS = -std=c++11 @CXXFLAGS@ ${WARNINGS}
@@ -49,7 +49,7 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party/sqlite3-3.30.1/ \
+	-I../../../common/third_party/sqlite3-3.34.0/ \
 	-I../../../common/third_party
 CPPFLAGS += $(CIVETWEB_FLAGS) 
 
