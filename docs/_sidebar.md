@@ -4,70 +4,26 @@
 
 * Setup
 * [Setting up the system - intro](setting_up_the_system.md)
- * [Linux/Unix](setting_up_the_system_on_unix.md)
+ * [Linux/Unix](setting_up_the_system_on_linux.md)
  * [Windows](setting_up_the_system_on_windows.md)
  * [Macintosh](setting_up_the_system_on_macintosh.md)
- * [Rasperry Pi](setting_up_the_system_on_rasperry_pi.md)
+ * [Raspberry Pi](setting_up_the_system_on_raspberry_pi.md)
  * [Beaglebone](setting_up_the_system_on_beaglebone.md)
- * [OpenWrt](setting_up_the_system_on_openwrt.md)
- * [Carambola](setting_up_the_system_on_8devices_carambola.md)
  * [ArchLinuxArm](setting_up_the_system_on_an_embeded_archlinuxarm_system.md)
 
 * Configure
- * [Files and directory structure](files_and_directory_structure.md)
  * [Configuration file format](configuring_the_vscp_daemon.md)
  * [Startup switches](startup_switches.md)
+ * [Files and directory structure](files_and_directory_structure.md)
 
 * Logging, diagnostic and debugging
+  * [Solving problems and troubleshooting](solving_problems.md)
   * [logging](logging.md)
 
 * Server/Service Discovery
  * [General](server_disovery.md)
  * [High end server probe](server_disovery_probe.md)
  * [Heartbeats](server_disovery_heartbeats.md)	
-
-* Security
- * [General](security_general.md)
-
-* Webserver
- * [Web Server Interface](web_server_interface.md)
- * [Security](web_server_interface_security.md)
-
-* TCPIP Interface
- * [TCP/IP Control Interface](tcp_ip_control_interface.md)
- * [Security](tcp_ip_control_interface_security.md)
- * [TCP/IP Protocol Description](tcp_ip_protocol_description.md)
-   
-* UDP Interface
- * [UDP Control Interface](udpsrv.md)
-
-* Websocket interface
- * [Websocket Interface](websocket_interface.md)
- * [Security](websocket_interface_security.md)
- * [Errors](websocket_protocol_description.md#errors)
- * [Protocol Description](websocket_protocol_description.md)
- * Websocket Commands
-  * [Send Events](websocket_protocol_description.md#websocket-send-events)
-  * [noop](websocket_protocol_description.md#websocket-noop)
-  * [challenge](websocket_protocol_description.md#websocket-challenge)
-  * [auth](websocket_protocol_description.md#websocket-auth )
-  * [open](websocket_protocol_description.md#websocket-open )
-  * [close](websocket_protocol_description.md#websocket-close )
-  * [clrq](websocket_protocol_description.md#websocket-clrq )
-  * [sf](websocket_protocol_description.md#websocket-sf )
-  * [rvar](websocket_protocol_description.md#websocket-rvar )
-  * [wvar](websocket_protocol_description.md#websocket-wvar )
-  * [cvar](websocket_protocol_description.md#websocket-cvar )
-  * [delvar](websocket_protocol_description.md#websocket-delvar )
-  * [lstvar](websocket_protocol_description.md#websocket-lstvar )
-  * [rstvar](websocket_protocol_description.md#websocket-rstvar )
-  * [lenvar](websocket_protocol_description.md#websocket-lenvar )
-  * [lcvar](websocket_protocol_description.md#websocket-lcvar )
-  * [gt](websocket_protocol_description.md#websocket-gt )
-  * [measurement](websocket_protocol_description.md#websocket-measurement )
-
-* Rest Interface
- * [Rest Interface](rest_protocol.md)
 
 * Drivers
  *  [Driver Interfaces](driver_interfaces.md)
@@ -103,8 +59,8 @@
 
 * Appendix
  * [History](./history.md)
- * [Faq](./faq.md)
- * [Test events](test_events.md)
+ * [Setting up a Mosquitto MQTT broker](./mosquitto_set_up_broker.md)
+ * [Setting up websockets on a Mosquitto MQTT broker](./mosquitto_set_up_websockets.md)
 
 * Other documentation
  *  [Documentation Site](https://docs.vscp.org)

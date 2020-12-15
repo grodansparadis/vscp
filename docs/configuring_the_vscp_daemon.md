@@ -1,5 +1,14 @@
 # Configuring the VSCP Daemon
 
+The configuration file is used to tell which drivers should be used and how the VSCP daemon should operate. From version 15.0 this file has changed format from XML to JSON.
+
+When you change something in the configuration file you have to restart the VSCP daemon for the changes to take effect. You do this with
+
+```bash
+sudo systemctl restart vscpd
+```
+
+
 ## Location of the configuration file
 
 The daemon needs a configuration file called **vscpd.json**. It will not start without this file nor if the file contains invalid information. Normally the installation program will create a default file.
@@ -10,30 +19,34 @@ On most machines it will be located in
     
 The location that is searched to find the configuration file can be changed with switches when you start the daemon. see the section about [startup switches](http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_startup_switches) for each platform.
 
-The configuration file have a path to a sql database file that store configuration setting among other things. Many configuration items are possible to set in both the xml file and in sql file. If a setting is present in both the setting in the xml file will be used. 
 
 ##  Description of the configuration :id=config-description
 
-The configuration file is a standard XML file that contains information that tells the VSCP daemon what to do and how it should be done. The information in it is divided into sections and this documentation and each section and it's content is described below.
+The configuration file is a standard JSON file that contains information that tells the VSCP daemon what to do and how it should be done. The information in it is divided into sections and this documentation and each section and it's content is described below.
 
-You can view a sample configuration file [here](Sample vscpd configuration file).
+You can view a sample configuration file [here](https://github.com/grodansparadis/vscp/blob/master/install_files/unix/vscpd.json).
 
 ## The general section :id=config-general
 
 In the general section you find settings that are common to all components of the VSCP daemon software. 
 
-```xml
-<general runasuser="vscp"
-    guid="FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01"
-    debug=""
-    servername="The VSCP daemon" />
+```json
+"runasuser" : "vscp",		
+"guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
+"servername" : "The VSCP daemon",
+"classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
+"maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
+"discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
+"vscpkey" : "/var/vscp/vscp.key",
+"debug" : 0
 ```
 
 
 ### runasuser :id=config-general-runasuser
 
-__Only on Unix/Linux__. User to run the VSCP daemon as.
+__Only on Unix/Linux__. User to run the VSCP daemon as. This is for security and folders for VSCP & friends are set up with permissions for a vscp user on install. By running on this user it is no need to run the VSCP daemon as the root user.
 
+Change to the user you want or set to empty to run as the user who starts the VSCP daemon.
 
 
 ### guid :id=config-gerneral-guid
@@ -44,98 +57,324 @@ __Only on Unix/Linux__. User to run the VSCP daemon as.
 </guid>
 ```
 
-Set the server GUID for the daemon. This GUID is the base for all interface GUID's in the system. Interface GUID's is formed like xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:aa:aa:bb:bb where xx is guid set here, aa is the interface id and bb is nickname id's for devices on that interface. 
+Set the server GUID for the daemon. This GUID is the base for the system. 
 
 If not set here (or all nills) a GUID will be formed from the (first) MAC address of the machine the daemon runs on (on Linux needs to be run as root to get this) or if this fails the local IP address is used to form the GUID. The GUID string should be in MSB -> LSB order and have the four lsb set to zero.
-
-Clients will be identified with a GUID that consist of this GUID plus an on the system unique number in the aa aa bytes. Devices will use this GUID as the source for events if no GUID is set for the driver or if it is set to all zeros.
 
 **Example**
     FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:00:00:00:00
 
 ### debug :id=config-gerneral-debug    
 
-----
+The debug entry is a 64-bit number (each bit is a flag)  that enable a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
+
+TYhe debug bits are defined in [this file](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp_debug.h).
+
+Se the [solving problems](./solving_problems.md) section for more information.
+ 
 
 ### Servername :id=config-general-servername
 
 If set this real text name will be used as an identifier for the server along with the GUID. The default name will be something like
 
-    VSCP Daemon @ FF:FF:FF:FF:FF:FF:FF:FE:00:26:55:CA:1F:DA:00:00
+    The VSCP Daemon
 
+### classtypedb :id=config-general-classtypedb
+
+This is a path to a sqlite3 database file that holds information about VSCP events and can give symbolic output from the VSCP daemon. You can for instance have topics that display class or type as token instead of the numerical code. Live this entry blank if you have no interest in this.
+
+Events are added to the VSCP specification as times go by. The database installed with the VSCP daemon is the current at the moment of the release. If you want to update you can find the latest version [here](https://www.vscp.org/events/vscp_events.sqlite3). Update information is [here](https://www.vscp.org/events/version.json). 
+
+Load the latest file with
+
+```bash
+cd /var/lib/vscp
+sudo wget https://www.vscp.org/events/vscp_events.sqlite3
+```
+
+### classtypedb :id=config-general-maindb
+
+THis is the main database file for the VSCP daemon. It's main content is the discovery database which is used to collect information about nodes in the system. 
+
+This entry must point to a named file in a location that is writable (default is _/var/lib/vscp/vscpd/vscp.sqlite3_)
+
+### classtypedb :id=config-general-vscpkey
+
+This is the path to a security key that the VSCP daemon use to encrypt/decrypt information with. The default is _/var/vscp/vscp.key_ This file should only be editable by the root user and also not be possible to read by any one else.
+
+----
+##  MQTT :id=config-mqtt
+
+This is the main MQTT settings of the VSCP daemon. This is where interface and discovery information will be published. Also subscribe topics are here for server commands.
+
+Main MQTT settings are derived by drivers and other parts of the system from here. There is no ned to repeat information that is the same. Typically a driver, for example, will only differ in subscribe and publish tropics.
+
+### host :id=config-mqtt-host
+
+This is the tcp/ip address for the MQTT broker. Default is _127.0.0.1_, the local host.
+
+### port :id=config-mqtt-port
+
+This is the tcp/ip port for the MQTT broker. Default is 1883.
+
+### user :id=config-mqtt-user
+
+This is the username to use to login on the MQTT broker. Leave blank not to use credentials. 
+
+### password :id=config-mqtt-password
+
+This is the password to use to login on the MQTT broker. Leave blank not to use credentials. 
+
+### format :id=config-mqtt-format
+
+This is the format the VSCP daemon will use to publish it's information. There are four formats available
+
+| Format | Description |
+| ------ | ----------- |
+| json | This is the default. JSON format will be used. |
+| xml  | XML format will be used. |
+| string | Comma separated string format will be used. |
+| binary | Binary format will be used. |
+
+Default is JSON.
+
+### qos :id=config-mqtt-qos
+
+Quality of service for the MQTT connection. Default is zero. 
+
+| qos | Description |
+| --- | ----------- |
+| 0 | The event is sent at most once. |
+| 1 | The event is sent at least once. |
+| 2 | The event is sent at exactly once. |
+
+You can read more about qos [here](https://www.hivemq.com/blog/mqtt-essentials-part-6-mqtt-quality-of-service-levels/).
+
+### bcleansession :id=config-mqtt-bcleansession
+
+If true, start a clean MQTT session. If not set events are saved if the client disconnect from a broker and is delivered when it connects again. The client is identified by its client id.
+
+You can read more about clean MQTT sessions [here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages/).
+
+### bretain :id=config-mqtt-bretain
+
+If true, the **last** VSCP event is stored along with the qos for that event. Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained message immediately after they subscribe. You can read more [here](https://www.hivemq.com/blog/mqtt-essentials-part-8-retained-messages/).
+
+Default is false.
+
+### keepalive :id=config-mqtt-keepalive
+
+This is the time in seconds between keepalive messages. det default is sixty seconds.
+
+### reconnect-delay :id=config-mqtt-reconnect-delay
+
+If a connection is broken this is the time in seconds the client will wait until it tries to connect the MQTT broker again.
+
+### reconnect-delay-max :id=config-mqtt-reconnect-delay-max
+
+This is the maximum time a client will wait until it reconnects to a MQTT broker.
+
+### reconnect-reconnect-exponential-backoff :id=config-mqtt-reconnect-exponential-backoff
+
+Enable exponential back off for the reconnection. This means the reconnection attempts will be slower and slower.
+
+**Example 1**
+
+delay=2, delay_max=10, exponential_backoff=False Delays would be: 2, 4, 6, 8, 10, 10, ...
+
+**Example 2**
+
+delay=3, delay_max=30, exponential_backoff=True Delays would be: 3, 6, 12, 24, 30, 30, ...
+
+### topic-interfaces :id=config-mqtt-topic-interfaces
+
+On this topic interfaces of the VSCP daemon are published as a retained message.
+
+### subscribe :id=config-mqtt-subscribe
+
+This an array of topics on which the VSCP daemon will publish it's events. You can specify as many as you like.  Mustache escapes (escape tokens within {{_token_}}) can be used to create dynamic topics. The following escapes are valid for subscribe topics
+
+| Escape | Description |
+| ------ | ----------- |
+| {{guid}} | Will be replaces with the GUID of the VSCP daemon. |
+
+For example
+
+```bash
+"vscp/{{guid}}/#"
+```
+
+will subscribe to 
+
+```bash
+"vscp/FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00/#"
+```
+
+
+### publish :id=config-mqtt-publish
+
+This is an array of topics which the VSCP daemon will subscribe to. You can specify as many as you like. Mustache escapes (escape tokens within {{_token_}}) can be used to create dynamic topics. The topic is created just before the event is published. The following escapes are valid for publish topics
+
+| Escape | Description |
+| ------ | ----------- |
+| {{guid}} | Will be replaces with the GUID of the VSCP event that is about to be sent to the MQTT broker. |
+| {{guid-id}} | Will be replaces with the GUID id from the discovery database or the GUID if not present. |
+| {{guid[n]}} | Will be replaces with the GUID digit n of the VSCP event that is about to be sent to the MQTT broker. |
+| {{guid.msb}} | Will be replaces with the GUID most significant byte of the VSCP event that is about to be sent to the MQTT broker. |
+| {{guid.lsb}} | Will be replaces with the GUID least significant byte of the VSCP event that is about to be sent to the MQTT broker. |
+| {{ifguid}} | Will be replaces with the interface GUID for a driver or with the VSCP daemon GUID for server originating events. |
+ |
+| {{ifguid[n]}} | Will be replaces with the n:th digit of the interface GUID for a driver or with the n:th digit of the VSCP daemon GUID for server originating events. |
+| {{nickname}} | Will be replaced with the nickname. An unsigned integer formed of the least significant bytes of the event GUID. |
+| {{data[n]}} | Will be replaces with the n:th data byte of the VSCP event that is about to be sent to the MQTT broker. A dash will be set if n is larger then the number of data bytes in the event. |
+| {{class}} | The class of the VSCP event that is about to be sent to the MQTT broker. |
+| {{type}} | The type of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{class-token}} | The class token of the VSCP event that is about to be sent to the MQTT broker. Needs the vscp event database. |
+| {{type-token}} | The type-token of the VSCP event that is about to be sent to the MQTT broker. Needs the vscp event database. |
+| {{head}} | The _head_ of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{obid}} | The _obid_ of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{timestamp}} | The _timestamp_ of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{dt}} | The _datetime_ string of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{year}} | The _year_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{month}} | The _month_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{day}} | The _day_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{hour}} | The _hour_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{minute}} | The _minute_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{second}} | The _second_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
+| {{clientid}} | The MQTT client id for the current connection. |
+| {{user}} | The _user_ of the the current MQTT connection. |
+| {{host}} | The _host_ of the the current MQTT connection. |
+
+**Example 1**
+
+```bash
+"vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}"
+```
+
+will be 
+
+```bash
+vscp/FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08/10/6/8
+```
+
+if the event's GUID is FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08 and the VSCP class is 10 and the VSCP type is 6, that is a temperature measurement event.
+
+**Example 2**
+
+```bash
+"vscp/{{guid}}/{{class-token}}/{{type-token}}/{{nickname}}"
+```
+
+will be 
+
+```bash
+vscp/FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08/CLASS1.MEASUREMENT/VSCP_TYPE_MEASUREMENT_TEMPERATURE/8
+```
+
+if the event's GUID is FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08 and the VSCP class is 10 and the VSCP type is 6, that is a temperature measurement event.
+
+
+### SSL/TLS support
+
+### cafile :id=config-mqtt-cafile
+
+Path to a file containing the PEM encoded trusted CA certificate files.  Either cafile or capath must not be NULL if a secure connection is required.
+
+### capath :id=config-mqtt-capath
+
+Path to a directory containing the PEM encoded trusted CA certificate files.  See [mosquitto.conf](https://mosquitto.org/man/mosquitto-conf-5.html) for more details on configuring this directory.  Either cafile or capath must not be NULL if a secure connection is required.
+
+### certfile :id=config-mqtt-certfile
+
+Path to a file containing the PEM encoded certificate file for this client.  If NULL, keyfile must also be NULL and no client certificate will be used.
+
+### keyfile :id=config-mqtt-keyfile
+
+Path to a file containing the PEM encoded private key for this client.  If NULL, certfile must also be NULL and no client certificate will be used.
 
 ----
 ##  Level I Drivers :id=config-level1-driver
 
-Enable/disable daemon Level I driver interface. If disabled no Level I drivers will be loaded. Default is enabled. This is the driver type that in the past used to be called CANAL (CAN Abstraction Layer) drivers.
+Define a VSCP daemon level I driver. If disabled the driver will be loaded. 
 
-```xml
-<level1driver enable=”true|false” />
+Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers.
+
+```json
+"drivers" : {
+    "level1" : [
+        {
+            "enable" : false,
+            "name" : "logger",
+            "config" : "/tmp/canallog.txt",
+            "flags" : 1,
+            "translation" : 2,
+            "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
+            "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
+
+            "mqtt" : {
+                "host" : "127.0.0.1",
+                "port" : 1883,
+                "user" : "vscp",
+                "password": "secret",
+                "clientid" : "mosq-l1drv-logger",
+                "format" : "json",
+                "qos" : 0,
+                "bcleansession" : false,
+                "bretain" : false,
+                "keepalive" : 60,
+                "reconnect-delay" : 2,
+                "reconnect-delay-max" : 10,
+                "reconnect-exponential-backoff" : false,
+                "cafile" : "",
+                "capath" : "",
+                "certfile" : "",
+                "keyfile" : "",
+                "pwkeyfile" : "",
+                "subscribe" : [
+                    "vscp/{{guid}}/#"
+                ],
+                "publish" : [
+                    "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                ]
+            }
+        }
+    ]
+}
 ```
 
-The content consist of one or several driver entries each representing a level 1 driver that should be used. 
+The content consist of one or several driver entries in an array each representing a level 1 driver that should be used. 
 
-### enable
+### enable :id=config-level1-driver-enable
 
-Set to true to enable level I driver functionality , set to false to disable. This is convenient if one wants to disable all level I drivers without removing them from the configuration file.
+Set to true to enable loading of the driver, set to false to disable.
 
-### driver
-
-```xml
-<driver enable="false">
-```
-
-A level I driver entry.
-
-### enable
-
-The driver should be loaded if set to true. If set to false the driver will not be loaded.
-
-### name
-
-```xml
-<name>driver-name</name>
-```
+### name :id=config-level1-driver-name
 
 A name given by the user for the driver. This is the name by which the driver is identified by the system.
 
-### config
+### config :id=config-level1-driver-config
 
-```xml
-<config>config1;config2</config>
-```
+The semicolon separated configuration string for the driver. The meaning of this string is driver specific. See documentation for the driver.
 
-The semicolon separated configuration string for the driver. The meaning of this string is driver specific.
-
-### flags
-
-```xml
-<flags>0</flags>
-```
+### flags :id=config-level1-driver-flags
 
 A 32 bit driver specific number that have bits set that have special meaning for a driver. See the documentation for a specific driver for an explanation of the meaning of each flag bit for that driver.
 
-### path
+### path :id=config-level1-driver-path
 
-```xml
-<path>path-to-driver</path>
-```
+Path to where the driver is located. Usually points to a file located in _/var/lib/vscp/drivers/level1/_
 
-Path to where the driver is located. A dll file on Windows or a .so dl file on Linux etc.
+### guid :id=config-level1-driver-guid
 
-### guid
+__Must be set to a unique and valid GUID.**
 
-```xml
-<guid>guid-for-driver</guid>
-```
+The GUID that the driver will use for it's interface. This means that this is the GUID that will be the source of Level I events.
 
-The GUID that the driver will use for it's interface. This means that this is the GUID that will be the source of Level I events but only if the GUID is not set to all zeros in which case the generated interface GUID from the general section will be used as the base for the GUID. 
+Note that the GUID set here should have the two least significant bytes set to zero as they are reserved for nickname id's.
 
-Note that the GUID set here will have the two least significant bytes replaced by the node id so when set here they should be set to zero.
+### Translation :id=config-level1-driver-translation
 
-### Translation
-
-`<translation>` is a list of semicolon separated fields with translations that should be carried out by the system on event passing through driver.
+This is a list of semicolon separated fields with translations that should be carried out by the system on event passing through driver.
 
  | Mnemonic  | Description  | 
  | :--------:  | -----------  | 
@@ -143,118 +382,85 @@ Note that the GUID set here will have the two least significant bytes replaced b
  | Bit 2 (2) | Incoming Level I measurement events is translated to Level II measurement, string events.  | 
  | Bit 3 (4) | All incoming events will be translated to class Level I events over Level II, that is have 512 added to it's class. | 
 
-** Example **
 
-```xml
-<leve1driver enable="true" >
+### MQTT :id=config-level1-driver-mqtt
 
-    <!-- The level I logger driver  -->
-    <driver enable="false">
-        <name>logger</name>
-        <config>/tmp/canallog.txt</config>
-        <path>/ust/local/lib/canallogger.so</path>
-        <flags>1</flags>
-        <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        <translate>2</translate>
-    </driver>
+This is the same MQTT information described above. You can leave out parts that are the same in which case the main settings will be used. Or you can repeat the information or set new.
 
-    <!-- The can232 driver -->
-    <driver enable="false" >
-        <name>can232</name>
-        <config>/dev/ttyS0;19200;0;0;125</config>
-        <path>/usr/local/lib/can232drv.so</path>
-        <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        <flags>0</flags>
-    </driver>
+The _subscribe_ and _publish_ array's are the only parts that **must be preset**.
 
-    <!-- The xap driver is documented  -->
-    <driver enable="false" >
-        <name>xap</name>
-        <config>9598;3639</config>
-        <path>/usr/local/lib/xapdrv.so</path>
-        <flags>0</flags>
-        <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-    </driver>
 
-</leve1driver>
-```
 
 ----
 
 ## Level II drivers :id=config-level2-driver
 
-Level II drivers can handle the full VSCP abstraction and don't have the limitation of the Level I drivers. 
+Level II drivers can handle the full VSCP abstraction and don't have the small payload size and other limitations of the Level I drivers. 
 
+```json
+"drivers" : {
+    "level1" : [
+        {
+            "enable" : false,
+            "name" : "tcpiplink",
+            "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
+            "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
+            "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
 
-```xml
-<leve2driver enable=”true|false” />
+            "mqtt" : {
+                "host" : "127.0.0.1",
+                "port" : 1883,
+                "user" : "vscp",
+                "password": "secret",
+                "clientid" : "mosq-vscp-daemon-000001",
+                "format" : "json",
+                "qos" : 0,
+                "bcleansession" : false,
+                "bretain" : false,
+                "keepalive" : 60,
+                "reconnect-delay" : 2,
+                "reconnect-delay-max" : 10,
+                "reconnect-exponential-backoff" : false,
+                "cafile" : "",
+                "capath" : "",
+                "certfile" : "",
+                "keyfile" : "",
+                "pwkeyfile" : "",
+                "subscribe" : [
+                    "vscp/{{guid}}/#"
+                ],
+                "publish" : [
+                    "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                ]
+            }
+        }
+    ]
+}
 ```
 
-Enable/disable daemon Level II driver interface. If disabled no Level II drivers will be loaded. Default is enabled. 
-
-
-```xml
-`<driver enable="false">`
-```
-
-The content consist of one or several driver entries each representing a driver that should be used. 
-
-### enable
+### enable :id=config-level2-driver-enable
 
 The driver should be loaded if set to true. If false the driver will not be loaded.
 
-### name
-
-```xml
-`<name>`driver-name`</name>`
-```
+### name :id=config-level2-driver-name
 
 A name given by the user for the driver.
 
-### config
+### path-driver :id=config-level2-driver-path-driver
 
-```xml
-`<config>`config1;config2`</config>`
-```
+This is the path to the driver. Usually points to a file located in _/var/lib/vscp/drivers/level2/_
 
-The semi colon separated configuration string for the driver. The meaning of this string is driver specific.
+### path-config :id=config-level2-driver-path-config
 
-###  guid
+This is the path to the driver configuration file. This file can be located in /etc/vscp for best security or in _/var/lib/vscp/_ if the HLO write ability should be used or in any other suitable place on your disk.
 
-```xml
-`<guid>`guid-for-driver`</guid>`
-```
+The format of this file is up to the driver creator. JSON format is most common but XML and other formats are also valid.
+
+###  guid :id=config-level2-driver-guid
+
+__Must be set to a unique and valid GUID.**
 
 The GUID that the driver will use for it's interface.
-
-### translation
-
-See explanation for Level I drivers above.
-
-### known-nodes
-
-See explanation for Level I drivers above.
-
-**Example**
-
-```xml
-<level2driver enable="true|false">
-
-    <driver enable="true|false" >
-        <name>test</name>		
-        <path>path_to_driver`</path>
-        <config>param2;param2;param3;...</config>
-        <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        <known-nodes>
-            <node   guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" name="Known node1" />
-            <node guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:02" name="Known node2" />
-            <node guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:03" name="Known node3" />
-            <node guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:04" name="Known node4" />
-        </known-nodes>
-    </driver>
-
-</level2driver>
-```
 
 
 [filename](./bottom_copyright.md ':include')

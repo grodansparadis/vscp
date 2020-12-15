@@ -1,45 +1,35 @@
-# Setting up the system on Unix
+# Setting up the system on Linux
 
-To install VSCP & Friends on Unix you need to install the binary package or build the system from source. The build process is simple and it usually don't give any problems. You can find binary and source files [here](https://github.com/grodansparadis/vscp/releases)
+To install VSCP & Friends on Linux/Unix you need to install the binary package or build the system from source. The build process is simple and it usually don't give any problems. You can find the latest binaries and source files [here](https://github.com/grodansparadis/vscp/releases)
 
 ## Installing from binary package
 
-The binary package is supplied as a Debian package. There are several variants available. 
+The binary package is supplied as a Debian package. This should work as an installation method on all distribution's that can handle Debian packages. There are currently two variants available. 
 
-**x86_64** should work on a Debian/Ubuntu or other Debian derived 64-bit system.
+   * **x86_64** should work on a Debian/Ubuntu or other Debian derived 64-bit system.
+   * **arm7hf** should work on any arm7 system like Raspberry Pi.
 
-**amd64** should work on a Debian/Ubuntu or other Debian derived 32-bit system.
-
-**arm7hf** should work on any arm7 system like Raspberry Pi.
-
-### Debian package installation
-This should work as an installation method on all distribution's that can handle Debian packages.
 
 You find the Debian package [here](https://github.com/grodansparadis/vscp/releases). Download the package for your architecture and install with
 
-When this is written the 14.0.0 release is the latest and the Debian package for Raspberry Pi is named **vscpd_14.0.0-1_amd64.deb** Installing this package with
+When this is written the 15.0.0 release is the latest and the Debian package is named **vscpd_15.0.0-1_amd64.deb** Installing this package with
+ 
 
 ```bash
-    sudo dpkg -i vscpd_14.0.0-1_amd64.deb
-    sudo apt-get install -f
+    sudo apt install ./vscpd_15.0.0-1_amd64.deb
 ```
 
-or 
+after downloading the file.
 
-```bash
-    sudo apt install vscpd_14.0.0-1_amd64.deb
-```
-
-the last method is [recommended](https://unix.stackexchange.com/questions/159094/how-to-install-a-deb-file-by-dpkg-i-or-by-apt).
-
-
-After installing the package you can start the VSCP daemon with
+When you have installed the package you can start the VSCP daemon with
 
 ```bash
 systemctl start vscpd
 ```
 
 Thats it! You can start to work with VSCP.
+
+Now read the section about configuring your system.
 
 ### Private Debian package repository - Experimental
 
@@ -84,7 +74,7 @@ Prepare the build environment with
 ```bash
 sudo apt update
 sudo apt install build-essential
-sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev libmosquitto-dev
+sudo apt install git libssl-dev libsystemd-dev libwrap0-dev libz-dev libmosquitto-dev
 ```    
 to install the build tools. 
 
@@ -113,7 +103,7 @@ git clone https://github.com/grodansparadis/vscp.git
 
 *Note* For a production system choosing a stable release version is strongly recommended.
 
-You can also download a zip of the latest bleeding edge source by clicking ion the 'clone and download' button at
+You can also download a zip of the latest bleeding edge source by clicking on the 'clone and download' button at
 [GitHub](https://github.com/grodansparadis/vscp).
 
 Enter the 'vscp' folder created by the unpacking/clone process
@@ -226,19 +216,7 @@ Reboot or start service with
 sudo systemctl start vscpd
 ```
 
-```bash
-make web-install
-```
-
-installs default web content.  
-
-This is done with script 
-
-```bash
-./do_web_download
-```
-
-which downloads and installs the latest UX code in the default folder. This script is located in the project root folder and can be used without the makefile also.
+Read the section about configuring your system.
 
 ###  Step 6
 
@@ -248,7 +226,6 @@ After doing this you can set up a working VSCP & Friends system.
 
 ###  Step 7
 
- 
 Now reboot and the daemon will run. or issue
 
 ```bash
@@ -288,7 +265,7 @@ to install and then
 sudo /etc/init.d/vscpd start to start
 ```
 
-to start te service
+to start the service
 
 ----
 
