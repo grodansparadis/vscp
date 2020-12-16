@@ -1,5 +1,7 @@
 # VSCP Daemon Level I Drivers
 
+![](./images/level1-driver.png)
+
 This driver type is also called CANAL (CAN Abstraction Layer) drivers after the driver API they use. Most of them have no relation to [CAN](https://sv.wikipedia.org/wiki/Controller_Area_Network) other than the CANAL API which is used as a least common denominator allowing this type of driver handle many types of busses and devices.
 
 The driver is just a .dll (Windows) or a .so (Linux) file with the Level I/CANAL interface exported. The full interface is described [here](https://docs.vscp.org/canal/latest/#/). 

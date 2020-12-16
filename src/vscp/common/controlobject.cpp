@@ -730,18 +730,13 @@ CControlObject::cleanup(void)
     }
     catch (...) {
         syslog(LOG_ERR,
-               "REST: Exception occurred when stoping device worker threads");
+               "ControlObject: Exception occurred when stoping device worker threads");
     }
 
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(
           LOG_DEBUG,
           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    }
-
-    if (m_debugFlags & VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG,
-               "ControlObject: cleanup - Stopping client worker thread...");
     }
 
     // Disconnect from MQTT broker}
