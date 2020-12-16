@@ -9,6 +9,8 @@ sudo apt install mosquitto-clients
 
 may be all you may need. Skip the build step below if this is true on your machine.
 
+----
+
 This is a guide how to build and install mosquitto manually on Ubuntu with websockets enabled.
 
 It is more or less the same as explained in the article ["Six Steps to install mosquitto 1.4.2 with websockets on debian wheezy"](http://www.xappsoftware.com/wordpress/2015/05/18/six-steps-to-install-mosquitto-1-4-2-with-websockets-on-debian-wheezy/comment-page-1/)
@@ -57,51 +59,8 @@ $ sudo make install
 $ sudo cp mosquitto.conf /etc/mosquitto
 ```
 
-### Configure ports for mosquitto
+see [this document](./mosquitto_set_up_broker.md) on how to configure the broker.
 
-Add the following lines to /etc/mosquitto/mosquitto.conf in the "Default Listener" section: 
-
-```
-port 1883
-listener 9001
-protocol websockets
-```
-
-### Add user for vscp 
-
-```
-$ sudo adduser vscp
-```
-
-### Reboot your computer
-
-```bash
-$ reboot
-```
-
-### Run mosquitto
-
-```
-$ mosquitto -c /etc/mosquitto/mosquitto.conf
-```
-
-## Configure
-
-The official Mosquitto configuration document is [here](https://mosquitto.org/man/mosquitto-conf-5.html). It tells all really so look at it.
-
-In order for changes in the mosquitto.conf file to become effective you must restart the mosquitto broker.
-
-On windows you find it in the folder _c:\\mosquitto\\_ and on Linux you find it in _/etc/mosquitto_
-
-You have a good walktrough [here](http://www.steves-internet-guide.com/mossquitto-conf-file/) which I can recommend.
-
-## Securing
-
-[Here](http://www.steves-internet-guide.com/mosquitto-tls/) is a good guid on how to setup a secure connection to a mosquitto broker.
-
-## Bridging
-
-TYou can bridge several brokers. [Here](Using Two MQTT Brokers with Broker Bridging) is a good document on this subject. There is also info on this subject [here](http://www.steves-internet-guide.com/mosquitto-bridge-configuration/).
 
 
 
