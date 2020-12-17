@@ -191,7 +191,7 @@ class CHLO
     // ---------------------------------------
 
     // HLO operation
-    uint8_t m_op;
+    std::string m_op;
 
     // HLO name (variable name/opt op. arg name)
     std::string m_name;

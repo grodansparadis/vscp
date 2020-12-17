@@ -803,6 +803,8 @@ CControlObject::run(void)
             }
         }
 
+        usleep(5000);
+
     }  // while
 
 

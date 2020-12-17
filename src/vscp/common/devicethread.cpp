@@ -645,7 +645,7 @@ deviceThread(void* pData)
 
                 if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle,
                                                                                         &msg,
-                                                                                        50)) {
+                                                                                        500)) {
 
                     // Publish to MQTT broker
 
@@ -1015,6 +1015,8 @@ deviceThread(void* pData)
             }
         }
 
+
+
         // -------------------------------------------------------------
 
 
@@ -1052,7 +1054,7 @@ deviceThread(void* pData)
             vscpEvent ev;
             memset(&ev, 0, sizeof(vscpEvent));
 
-            if ( CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, &ev, 500) ) {
+            if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, &ev, 50)) {
                 continue;
             }
 
@@ -1063,10 +1065,10 @@ deviceThread(void* pData)
 
             // Publish to MQTT broker
 
-            if (!pDeviceItem->sendEvent(&ev) ) {
-                syslog(LOG_ERR,"Driver L2: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+            if (!pDeviceItem->sendEvent(&ev)) {
+                syslog(LOG_ERR, "Driver L2: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
                 continue;
-            } 
+            }
 
         }
 

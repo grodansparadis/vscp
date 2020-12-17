@@ -322,7 +322,7 @@
                 }
             },
             {
-                "enable" : false,
+                "enable" : true,
                 "name" : "tcpiplink",
                 "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
                 "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
@@ -330,7 +330,7 @@
 
                 "mqtt" : {
                     "host" : "127.0.0.1",
-                    "port" : 1883,
+                    "port" : 9598,
                     "user" : "vscp",
                     "password": "secret",
                     "clientid" : "mosq-vscp-daemon-000001",
