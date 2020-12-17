@@ -768,8 +768,9 @@ vscp_parseISOCombined(struct tm* ptm, std::string& dt)
     std::string isodt = dt.c_str();
 
     // Check pointer
-    if (NULL == ptm)
+    if (NULL == ptm) {
         return false;
+    }
 
     try {
         // year
@@ -3786,6 +3787,9 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
 //    "vscpData": [1,2,3,4,5,6,7],
 //    "vscpNote": "This is some text"
 // }
+//
+// All fields must exist except vscpNote which is ignored.
+//
 
 bool
 vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
@@ -3801,69 +3805,70 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
         auto j = json::parse(strJSON);
 
         // vscpHead
-        if (j.find("vscpHead") != j.end()) {
-            pEvent->head = j.at("vscpHead").get<uint16_t>();
-        }
+        if (j.find("vscpHead") == j.end()) return false;
+        pEvent->head = j.at("vscpHead").get<uint16_t>();
 
         // vscpObId
-        if (j.find("vscpObId") != j.end()) {
-            pEvent->obid = j.at("vscpObId").get<uint32_t>();
-        }
+        if (j.find("vscpObId") == j.end()) return false;
+        pEvent->obid = j.at("vscpObId").get<uint32_t>();
 
         // vscpTimeStamp
-        if (j.find("vscpTimeStamp") != j.end()) {
-            pEvent->timestamp = j.at("vscpTimeStamp").get<uint32_t>();
+        if (j.find("vscpTimeStamp") == j.end()) return false;
+        pEvent->timestamp = j.at("vscpTimeStamp").get<uint32_t>();
+    
+        // If timestamp is zero set a timestamp here
+        if (!pEvent->timestamp) {
+            pEvent->timestamp = vscp_makeTimeStamp();
         }
 
         // vscpDateTime
-        if (j.find("vscpDateTime") != j.end()) {
-            std::string dtStr = j.at("vscpDateTime").get<std::string>();
-            struct tm tm;
-            memset(&tm, 0, sizeof(tm));
-            vscp_parseISOCombined(&tm, dtStr);
-            vscp_setEventDateTime(pEvent, &tm);
-        }
+        if (j.find("vscpDateTime") == j.end()) return false;
+        std::string dtStr = j.at("vscpDateTime").get<std::string>();
+        struct tm tm;
+        memset(&tm, 0, sizeof(tm));
+        if ( vscp_parseISOCombined(&tm, dtStr) ) {
+            vscp_setEventDateTime(pEvent, &tm);            
+        } else {
+            // Set to current time
+            vscp_setEventToNow(pEvent);
+        }        
 
         // VSCP class
-        if (j.find("vscpClass") != j.end()) {
-            pEvent->vscp_class = j.at("vscpClass").get<uint16_t>();
-        }
+        if (j.find("vscpClass") == j.end()) return false;
+        pEvent->vscp_class = j.at("vscpClass").get<uint16_t>();
 
         // VSCP type
-        if (j.find("vscpType") != j.end()) {
-            pEvent->vscp_type = j.at("vscpType").get<uint16_t>();
-        }
+        if (j.find("vscpType") == j.end()) return false;
+        pEvent->vscp_type = j.at("vscpType").get<uint16_t>();
 
         // GUID
-        if (j.find("vscpGuid") != j.end()) {
-            std::string guidStr = j.at("vscpGuid").get<std::string>();
-            cguid guid;
-            guid.getFromString(guidStr);
-            guid.writeGUID(pEvent->GUID);
-        }
+        if (j.find("vscpGuid") == j.end()) return false;
+        std::string guidStr = j.at("vscpGuid").get<std::string>();
+        cguid guid;
+        guid.getFromString(guidStr);
+        guid.writeGUID(pEvent->GUID);
 
         pEvent->sizeData = 0;
-        if (j.find("vscpData") != j.end()) {
+        if (j.find("vscpData") == j.end()) return false;
 
-            std::vector<std::uint8_t> data_array = j.at("vscpData");
+        std::vector<std::uint8_t> data_array = j.at("vscpData");
 
-            // Check size
-            if (data_array.size() > VSCP_MAX_DATA)
+        // Check size
+        if (data_array.size() > VSCP_MAX_DATA)
+            return false;
+
+        pEvent->sizeData = data_array.size();
+        if (0 == pEvent->sizeData) {
+            pEvent->pdata = NULL;
+        }
+        else {
+            pEvent->pdata = new uint8_t[data_array.size()];
+            if (NULL == pEvent->pdata) {
                 return false;
-
-            pEvent->sizeData = data_array.size();
-            if (0 == pEvent->sizeData) {
-                pEvent->pdata = NULL;
             }
-            else {
-                pEvent->pdata = new uint8_t[data_array.size()];
-                if (NULL == pEvent->pdata)
-                    return false;
 
-                // memcpy( pEvent->pdata, &data_array[ 0 ], data_array.size() );
-                // C++11 variant of above
-                memcpy(pEvent->pdata, data_array.data(), data_array.size());
-            }
+            // C++11 variant of above
+            memcpy(pEvent->pdata, data_array.data(), data_array.size());
         }
     }
     catch (...) {

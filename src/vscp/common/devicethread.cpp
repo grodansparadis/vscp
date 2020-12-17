@@ -137,38 +137,44 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
 
     if (pDeviceItem->m_mqtt_format == jsonfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
+        printf("%s\n",strPayload.c_str());
         if ( !vscp_convertJSONToEvent(&ev, strPayload) ) {
-            syslog(LOG_ERR, "Driver: %s: Failed to convert event to JSON", pDeviceItem->m_strName.c_str());
+            // This is not a JSON formated event - we skip it
+            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+                syslog(LOG_ERR, "Driver: %s: Failed to convert event to JSON", pDeviceItem->m_strName.c_str());
+            }
             return;
         }
     }
     else if (pDeviceItem->m_mqtt_format == xmlfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
-            syslog(LOG_ERR, "Driver: %s: Failed to convert event to XML", pDeviceItem->m_strName.c_str());
+            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+                syslog(LOG_ERR, "Driver: %s: Failed to convert event to XML", pDeviceItem->m_strName.c_str());
+            }
             return;
         }
     }
     else if (pDeviceItem->m_mqtt_format == strfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertStringToEvent(&ev, strPayload) ) {
-            syslog(LOG_ERR, "Driver: %s: Failed to convert event to STRING", pDeviceItem->m_strName.c_str());
+            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+                syslog(LOG_ERR, "Driver: %s: Failed to convert event to STRING", pDeviceItem->m_strName.c_str());
+            }
             return;
         }
     }
     else if (pDeviceItem->m_mqtt_format == binfmt) {
         if (!vscp_getEventFromFrame( &ev, (const uint8_t *)pMsg->payload, pMsg->payloadlen) ) {
-            syslog(LOG_ERR, "Driver: %s: Failed to convert event to BINARY", pDeviceItem->m_strName.c_str());
+            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+                syslog(LOG_ERR, "Driver: %s: Failed to convert event to BINARY", pDeviceItem->m_strName.c_str());
+            }
             return;
         }
     }
     else {
         syslog(LOG_ERR, "Driver: %s: Failed to convert event (invalid format)", pDeviceItem->m_strName.c_str());
         return;
-    }
-
-    if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_MSG) {
-
     }
 
     if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
