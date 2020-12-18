@@ -1,6 +1,6 @@
 {
     "runasuser" : "",
-    "debug" : 0,		
+    "debug" : 60,		
     "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
     "servername" : "The VSCP daemon",
     "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
@@ -28,12 +28,10 @@
         "pwkeyfile" : "",
         "topic-interfaces" : "vscp/{{guid}}/interfaces",
         "subscribe" : [
-            "vscp/{{guid}}/#"
+            "oooo"
         ],
         "publish" : [
-            "vscp/{{guid}}/{{class}}/{{type}}",
-            "source/{{guid}}/{{class}}/{{type}}",
-            "DRAIN/{{guid}}/{{class}}/{{type}}"
+            "grodan"
         ]
     },
 
@@ -41,7 +39,7 @@
         "level1" : [
             {
                 "enable" : false,
-                "name" : "logger",
+                "name" : "loggerdrv",
                 "config" : "/tmp/canallog.txt",
                 "flags" : 1,
                 "translation" : 2,
@@ -49,7 +47,7 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "host" : "192.168.1.7",
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
@@ -71,7 +69,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscpp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -89,7 +87,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-can4vscp-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -107,7 +105,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -121,11 +119,11 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "host" : "192.168.1.7",
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-socketcanl1-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -139,11 +137,14 @@
                     "certfile" : "",
                     "keyfile" : "",
                     "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "subscribe" : [                        
+                        "aaa",
+                        "bbb",
+                        "ccc",
+                        "ddd"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -161,7 +162,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-can232-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -179,7 +180,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             }
@@ -187,17 +188,17 @@
         "level2" : [
             {
                 "enable" : false,
-                "name" : "Logger",
+                "name" : "Loggerdrv",
                 "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-logger.so",
                 "path-config" : "/var/lib/vscp/vscpd/logger2.conf",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "host" : "192.168.1.7",
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-loggerl1-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -215,7 +216,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -231,7 +232,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-lmsensors-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -249,7 +250,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -265,7 +266,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-socketcanl2-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -280,10 +281,10 @@
                     "keyfile" : "",
                     "pwkeyfile" : "",
                     "subscribe" : [
-                        "vscp/{{guid}}/#"
+                        "socketcan"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -299,7 +300,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-mqtt-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -317,12 +318,12 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
             {
-                "enable" : true,
+                "enable" : false,
                 "name" : "tcpiplink",
                 "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
                 "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
@@ -333,7 +334,7 @@
                     "port" : 9598,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-tcpiplink-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -351,7 +352,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -367,7 +368,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-raweth-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -385,7 +386,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -401,7 +402,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-sim-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -419,7 +420,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             },
@@ -435,7 +436,7 @@
                     "port" : 1883,
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-daemon-000001",
+                    "clientid" : "mosq-vscp-1wire-000001",
                     "format" : "json",
                     "qos" : 0,
                     "bcleansession" : false,
@@ -453,7 +454,7 @@
                         "vscp/{{guid}}/#"
                     ],
                     "publish" : [
-                        "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
+                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
                     ]
                 }
             }

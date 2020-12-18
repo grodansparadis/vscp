@@ -119,6 +119,11 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     CControlObject *pObj = reinterpret_cast<CControlObject *>(pData);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
+        char buf[80];
+        time_t tm;
+        time(&tm);
+        vscp_getTimeString(buf, sizeof(buf), &tm);
+        printf("SRV LOG: (%s) %s\n", buf, logmsg);
         syslog(LOG_DEBUG, "vscpd:  MQTT log : %s\n", logmsg);
     }
 }
@@ -133,6 +138,7 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
     CControlObject *pObj = reinterpret_cast<CControlObject *>(pData);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("SRV CONNECT:\n");
         syslog(LOG_DEBUG, "vscpd:  MQTT connect");
     }
 }
@@ -147,6 +153,7 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
     CControlObject *pObj = reinterpret_cast<CControlObject *>(pData);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("SRV DISCONNECT:\n");
         syslog(LOG_DEBUG, "vscpd:  MQTT disconnect");
     }
 }
@@ -163,6 +170,7 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
     std::string payload((const char *)pMsg->payload, pMsg->payloadlen);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+        printf("SRV: Message: [topic = %s]: Payload: %s\n", pMsg->topic, payload.c_str());
         syslog(LOG_DEBUG, "vscpd:  MQTT message [%s]", payload.c_str());
     }
 }
@@ -177,6 +185,7 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
     CControlObject *pObj = reinterpret_cast<CControlObject *>(pData);
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_PUBLISH) {
+        printf("SRV PUBLISH:\n");
         syslog(LOG_DEBUG, "vscpd:  MQTT disconnect");
     }
 }
@@ -237,6 +246,12 @@ CControlObject::CControlObject()
     m_mqtt_pwKeyfile = "";
     m_mqtt_format = jsonfmt;
     m_topicInterfaces = "vscp/{{guid}}/interfaces";
+
+    // Initialize MQTT
+    if ( MOSQ_ERR_SUCCESS != mosquitto_lib_init() ) {
+        syslog(LOG_ERR, "vscpd:  Unable to initialize mosquitto library.");
+        return;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -568,13 +583,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
     }
 
-
-    // Initialize MQTT
-
-    if ( MOSQ_ERR_SUCCESS != mosquitto_lib_init() ) {
-        syslog(LOG_ERR, "vscpd:  Unable to initialize mosquitto library.");
-        return false;
-    }
+    // Setup MQTT for server
 
     if (m_mqtt_strClientId.length()) {
         m_mosq = mosquitto_new(m_mqtt_strClientId.c_str(), m_mqtt_bCleanSession, this);
@@ -657,7 +666,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
         // Subscribe to specified topic
         rv = mosquitto_subscribe(m_mosq,
-                                    &m_mqtt_id,
+                                    /*m_mqtt_id*/NULL,
                                     subscribe_topic.c_str(),
                                     m_mqtt_qos);
 
@@ -1974,8 +1983,7 @@ CControlObject::readJSON(const json& j)
                             if (m_debugFlags & VSCP_DEBUG_CONFIG) {
                                 syslog(LOG_DEBUG, "ReadConfig: mqtt object. Defaults will be used.");
                             }
-                        }
-                        else {
+                        } else {
 
                             CDeviceItem *pDriver = m_deviceList.getDeviceItemFromName((*it)["name"]);
                             if ( NULL == pDriver ) {

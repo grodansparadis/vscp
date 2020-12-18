@@ -60,7 +60,6 @@
 #include <vscphelper.h>
 
 //#define DEBUG
-uint32_t gdebugFlags;
 
 // Globals for the daemon
 int gbStopDaemon;
@@ -102,12 +101,6 @@ _sighandlerRestart(int sig)
     gbRestart      = true;
 }
 
-void
-getDebugValues(const char* optarg)
-{
-    std::string attribute = optarg;
-    gdebugFlags = vscp_readStringValue(std::string(optarg));
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only app. object
@@ -162,10 +155,9 @@ main(int argc, char** argv)
                 break;
 
             case 'd':
-                gDebugLevel =  std::stoull(optarg);  //atoi(optarg);
+                gDebugLevel =  std::stoull(optarg);     //atoi(optarg);
                 fprintf(stderr, "Debug flags=%s\n", optarg);
                 syslog(LOG_INFO, "Debug flags=%s\n", optarg);
-                getDebugValues(optarg);
                 break;
 
             case 'g':
@@ -190,7 +182,7 @@ main(int argc, char** argv)
         exit(-1);
     }
 
-    closelog(); // Close syslog
+    closelog();     // Close syslog
 
     fprintf(stderr, "vscpd: Bye, bye.\n");
     exit(EXIT_SUCCESS);
@@ -212,17 +204,17 @@ init(std::string& strcfgfile, std::string& rootFolder)
             syslog(LOG_ERR, "Failed to fork.\n");
             return -1;
         } else if (0 != pid) {
-            exit(0); // Parent goes by by.
+            exit(0);    // Parent goes by by.
         }
 
-        sid = setsid(); // Become session leader
+        sid = setsid();     // Become session leader
         if (sid < 0) {
             // Failure
             syslog(LOG_ERR, "Failed to become session leader.\n");
             return -1;
         }
 
-        umask(0); // Clear out file mode creation mask
+        umask(0);   // Clear out file mode creation mask
 
         // Close out the standard file descriptors
         close(STDIN_FILENO);
@@ -247,8 +239,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
     if (NULL == pFile) {
         syslog(LOG_ERR, "Writing pid file failed.\n");
         fprintf(stderr, "Writing pid file failed.\n");
-    }
-    else {
+    } else {
         syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%u\n", sid);
         fprintf(pFile, "%u\n", sid);
         fclose(pFile);
@@ -325,6 +316,9 @@ init(std::string& strcfgfile, std::string& rootFolder)
                               32,
                               (const char*)systemKey.c_str());
 
+        // Tansfer read debug parameters if set
+        gpobj->m_debugFlags = gDebugLevel;
+
         fprintf(stderr, "vscpd: init.\n");
         if (!gpobj->init(strcfgfile, rootFolder)) {
             fprintf(stderr, "Can't initialize daemon. Exiting.\n");
@@ -332,10 +326,6 @@ init(std::string& strcfgfile, std::string& rootFolder)
             unlink("/var/run/vscpd.pid");
             return FALSE;
         }
-
-        // Tansfer read debug parameters if set
-        gpobj->m_debugFlags = gdebugFlags;
-
 
         // *******************************
         //    Main loop is entered here

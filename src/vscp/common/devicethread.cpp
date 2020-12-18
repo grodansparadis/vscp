@@ -65,10 +65,10 @@ using namespace kainjow::mustache;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_log_callback
+// mqtt_drv_log_callback
 //
 
-static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
+static void mqtt_drv_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 {
     // Check pointers
     if (NULL == mosq) return;
@@ -77,16 +77,20 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
 
     if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
-        syslog(LOG_DEBUG, "Driver %s MQTT log : %s\n", pDeviceItem->m_strName.c_str(), logmsg);
+        char buf[80];
+        time_t tm;
+        time(&tm);
+        vscp_getTimeString(buf, sizeof(buf), &tm);
+        printf("DRV LOG: (%s) %s\n", buf, logmsg);
+        syslog(LOG_DEBUG, "Driver  %s MQTT log : %s\n",  pDeviceItem->m_strName.c_str(), logmsg);
     }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_on_connect
+// mqtt_drv_on_connect
 //
 
-static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
+static void mqtt_drv_on_connect(struct mosquitto *mosq, void *pData, int rv)
 {
     // Check pointers
     if (NULL == mosq) return;
@@ -94,16 +98,17 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
     if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("DRV CONNECT:\n");
         syslog(LOG_DEBUG, "Driver %s MQTT connect", pDeviceItem->m_strName.c_str());
     }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_on_disconnect
+// mqtt_drv_on_disconnect
 //
 
-static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
+static void mqtt_drv_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 {
     // Check pointers
     if (NULL == mosq) return;
@@ -111,16 +116,17 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
     if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_CONNECT) {
+        printf("DRV DISCONNECT:\n");
         syslog(LOG_DEBUG, "Driver %s MQTT disconnect", pDeviceItem->m_strName.c_str());
     }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_on_message
+// mqtt_drv_on_message
 //
 
-static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
+static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
 {
     int rv;
     vscpEvent ev;
@@ -131,22 +137,21 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
     if (NULL == pMsg) return;
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
-    
+
     ev.sizeData = 0;
     ev.pdata = NULL;
 
     if (pDeviceItem->m_mqtt_format == jsonfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
-        printf("%s\n",strPayload.c_str());
-        if ( !vscp_convertJSONToEvent(&ev, strPayload) ) {
+        printf("DRV: Message: [topic = %s]: Payload: %s\n", pMsg->topic, strPayload.c_str());
+        if (!vscp_convertJSONToEvent(&ev, strPayload)) {
             // This is not a JSON formated event - we skip it
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
                 syslog(LOG_ERR, "Driver: %s: Failed to convert event to JSON", pDeviceItem->m_strName.c_str());
             }
             return;
         }
-    }
-    else if (pDeviceItem->m_mqtt_format == xmlfmt) {
+    } else if (pDeviceItem->m_mqtt_format == xmlfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
@@ -198,21 +203,21 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
 
     }
     else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
-        if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 300)) {
-            
+        if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 500)) {
+            syslog( LOG_ERR, "driver: mqtt_on_message - Failed to send level II event.");
         }
     }
     else {
-        syslog( LOG_ERR, "driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2)");
+        syslog( LOG_ERR, "driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2).");
     }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_on_publish
+// mqtt_drv_on_publish
 //
 
-static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
+static void mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
 {
     // Check pointers
     if (NULL == mosq) return;
@@ -505,7 +510,7 @@ deviceThread(void* pData)
         }
 
         //--------------------------------------------------------------
-        //                            MQTT
+        //                       MQTT Level I
         // -------------------------------------------------------------
 
         if (pDeviceItem->m_mqtt_strClientId.length()) {
@@ -535,11 +540,11 @@ deviceThread(void* pData)
         }
 
         // Set callbacks
-        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_log_callback);
-        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_on_connect);
-        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_on_disconnect);
-        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_on_message);
-        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
+        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_drv_log_callback);
+        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_connect);
+        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_disconnect);
+        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_message);
+        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_publish);
 
         // Set username/password if defined
         if (pDeviceItem->m_mqtt_strUserName.length()) {
@@ -573,6 +578,8 @@ deviceThread(void* pData)
             dlclose(hdll);
             return NULL;
         }
+
+        //mosquitto_threaded_set(pDeviceItem->m_mosq, true);
 
         // Start the worker loop
         rv = mosquitto_loop_start(pDeviceItem->m_mosq);
@@ -647,11 +654,10 @@ deviceThread(void* pData)
                 canalMsg msg;
                 vscpEvent ev;
 
-                //int rx = mosquitto_loop(pDeviceItem->m_mosq, 0, 1);
-
+                //int rx = mosquitto_loop(pDeviceItem->m_mosq, 10, 1);
                 if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle,
                                                                                         &msg,
-                                                                                        500)) {
+                                                                                        50)) {
 
                     // Publish to MQTT broker
 
@@ -725,6 +731,8 @@ deviceThread(void* pData)
             while (!pDeviceItem->m_bQuit) {
 
                 bActivity = false;
+                
+                //int rx = mosquitto_loop(pDeviceItem->m_mosq, 10, 1);
 
                 /////////////////////////////////////////////////////////////////////////////
                 //                           Receive from device
@@ -802,6 +810,7 @@ deviceThread(void* pData)
 
                 if (!bActivity) {
                      usleep(100000); // 100 ms
+                     //int rx = mosquitto_loop(pDeviceItem->m_mosq, 100, 1);
                 }
 
                 bActivity = false;
@@ -931,11 +940,11 @@ deviceThread(void* pData)
         }
 
         // Set callbacks
-        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_log_callback);
-        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_on_connect);
-        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_on_disconnect);
-        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_on_message);
-        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_on_publish);
+        mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_drv_log_callback);
+        mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_connect);
+        mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_disconnect);
+        mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_message);
+        mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_publish);
 
         if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(pDeviceItem->m_mosq,
    	                                                            pDeviceItem->m_mqtt_reconnect_delay,
@@ -976,6 +985,8 @@ deviceThread(void* pData)
             dlclose(hdll);
             return NULL;
         }
+
+        //mosquitto_threaded_set(pDeviceItem->m_mosq, true);
 
         // Start the worker loop
         rv = mosquitto_loop_start(pDeviceItem->m_mosq);
@@ -1060,6 +1071,7 @@ deviceThread(void* pData)
             vscpEvent ev;
             memset(&ev, 0, sizeof(vscpEvent));
 
+            //int rx = mosquitto_loop(pDeviceItem->m_mosq, 0, 1);
             if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, &ev, 50)) {
                 continue;
             }
