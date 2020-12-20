@@ -590,6 +590,25 @@ extern "C"
 #define VSCP_ERROR_MISSING              53 /* Value, paramter or something else is missing */ 
 #define VSCP_ERROR_NOT_CONNECTED        54 /* There is no connection */
 
+/*!
+    HLO (High Level Object) type (bits 7,6,5,4)
+*/
+
+#define HLO_TYPE_UTF8                   0
+#define HLO_TYPE_XML                    1
+#define HLO_TYPE_JSON                   2
+#define HLO_TYPE_BASE64                 3
+#define HLO_TYPE_USER_DEFINED           15
+
+/*!
+    HLO (High Level Object) encryption (bits 3,2,1,0)
+*/
+
+#define HLO_ENCRYPTION_NONE             0
+#define HLO_ENCRYPTION_AES128           1
+#define HLO_ENCRYPTION_AES192           2
+#define HLO_ENCRYPTION_AES256           3
+
 /*
     Template for VSCP XML event data
 
@@ -607,8 +626,8 @@ datetime,vscpHead,vscpObId,vscpDateTime,vscpTimeStamp,vscpClass,vscpType,vscpGui
      vscpData="0x48,0x34,0x35,0x2E,0x34,0x36,0x34" />
 
  */
-#define VSCP_XML_EVENT_TEMPLATE                                                \
-    "<event "                                                                  \
+#define VSCP_XML_EVENT_TEMPLATE                                                    \
+    "<event "                                                                      \
     "vscpHead=\"%d\" "                                                             \
     "vscpObId=\"%lu\" "                                                            \
     "vscpDateTime=\"%s\" "                                                         \
@@ -636,8 +655,8 @@ datetime,vscpHead,vscpObId,vscpDateTime,vscpTimeStamp,vscpClass,vscpType,vscpGui
     "vscpNote": "This is some text"
 }
 */
-#define VSCP_JSON_EVENT_TEMPLATE                                               \
-    "{\n"                                                                      \
+#define VSCP_JSON_EVENT_TEMPLATE                                                   \
+    "{\n"                                                                          \
     "\"vscpHead\": %d,\n"                                                          \
     "\"vscpObId\":  %lu,\n"                                                        \
     "\"vscpDateTime\": \"%s\",\n"                                                  \
@@ -693,7 +712,7 @@ note: This is a note <br>
     "From GUID: %s<br>"                                                        \
     "</p>"                                                                     \
     "<p>"                                                                      \
-    "vscpHead: %d <br>"                                                            \
+    "vscpHead: %d <br>"                                                        \
     "<p>"                                                                      \
     "DateTime: %s <br>"                                                        \
     "</p>"                                                                     \
