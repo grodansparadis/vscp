@@ -594,20 +594,20 @@ extern "C"
     HLO (High Level Object) type (bits 7,6,5,4)
 */
 
-#define HLO_TYPE_UTF8                   0
-#define HLO_TYPE_XML                    1
-#define HLO_TYPE_JSON                   2
-#define HLO_TYPE_BASE64                 3
-#define HLO_TYPE_USER_DEFINED           15
+#define VSCP_HLO_TYPE_UTF8                   0
+#define VSCP_HLO_TYPE_XML                    1
+#define VSCP_HLO_TYPE_JSON                   2
+#define VSCP_HLO_TYPE_BASE64                 3
+#define VSCP_HLO_TYPE_USER_DEFINED           15
 
 /*!
     HLO (High Level Object) encryption (bits 3,2,1,0)
 */
 
-#define HLO_ENCRYPTION_NONE             0
-#define HLO_ENCRYPTION_AES128           1
-#define HLO_ENCRYPTION_AES192           2
-#define HLO_ENCRYPTION_AES256           3
+#define VSCP_HLO_ENCRYPTION_NONE             0
+#define VSCP_HLO_ENCRYPTION_AES128           1
+#define VSCP_HLO_ENCRYPTION_AES192           2
+#define VSCP_HLO_ENCRYPTION_AES256           3
 
 /*
     Template for VSCP XML event data

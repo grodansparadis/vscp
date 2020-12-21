@@ -45,14 +45,14 @@ using namespace kainjow::mustache;
 Command format
 --------------------------------------------
 {
-    "op" : "command",
+    "op" : "operation-token",
     "arg" : "argument"
 }
 
 or
 
 {
-    "op" : "command",
+    "op" : "operation-token",
     "arg" : {
         "arg1" : "foo",
         "arg2" : "bar"
@@ -76,12 +76,14 @@ Reply format
 Full format depends on command.
 
 {
+    "op" : "xxxx",	
     "rv" : "OK|ERROR" 
 }
 
 Remote Variable
 ---------------
 {
+    "op" : "xxxx",
     "name" : "variable-name",
     "type" : n,
     "value" : "binhex encoded value" or numeric 
