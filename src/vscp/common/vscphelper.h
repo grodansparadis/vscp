@@ -1907,8 +1907,8 @@ extern "C"
      * @param input This is the frame that should be decrypted.
      * @param len This is the length of the frame to be decrypted.
      * @param key This is a pointer to the secret encryption key. This key
-     *            should be 128 bytes for AES128, 192 bytes for AES192,
-     *            256 bytes for AES256.
+     *            should be 128 bits for AES128, 192 bits for AES192,
+     *            256 bits for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a
      *           128 bit content. If NULL the iv is expected to be the last
      *           16 bytes of the encrypted data.
