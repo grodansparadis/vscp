@@ -1038,7 +1038,7 @@ deviceThread(void* pData)
 
 
 
-        // Open up the driver
+        // Open up the L2 driver
         pDeviceItem->m_openHandle =
           pDeviceItem->m_proc_VSCPOpen(pDeviceItem->m_strParameter.c_str(),
                                     pDeviceItem->m_guid.getGUID());
@@ -1062,7 +1062,7 @@ deviceThread(void* pData)
 
 
         // --------------------------------------------------------------------
-        //        Work loop - receive from device - send to MQTT broker
+        //        Work loop L2 - receive from device - send to MQTT broker
         // --------------------------------------------------------------------
 
         // Just sit and wait until the end of the world as we know it...

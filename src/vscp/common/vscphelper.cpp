@@ -3494,10 +3494,6 @@ vscp_convertEventExToEvent(vscpEvent* pEvent, const vscpEventEx* pEventEx)
         return false;
     }
 
-    if (pEventEx->sizeData > VSCP_LEVEL1_MAXDATA) {
-        return false;
-    }
-
     if (pEventEx->sizeData) {
         // Allocate memory for data
         if (NULL == (pEvent->pdata = new uint8_t[pEventEx->sizeData])) {

@@ -78,15 +78,18 @@ Full format depends on command.
 {
     "op" : "xxxx",	
     "rv" : "OK|ERROR" 
+    "note" : "optional clear text message"
 }
 
 Remote Variable
 ---------------
 {
     "op" : "xxxx",
-    "name" : "variable-name",
-    "type" : n,
-    "value" : "binhex encoded value" or numeric 
+    arg {
+    	"name" : "variable-name",
+    	"type" : n,
+    	"value" : "binhex encoded value" or numeric 
+    }
 }
 
 String format is always binhex encoded. A numeric value and 
@@ -117,13 +120,12 @@ j["op"] = "noop";
     "op" : "readvar",
     "arg" : {
         "name" : "variable name",
-        "full" : true|false
     }
 }
 
 {
     "op" : "readvar",
-    "result" : "ok",
+    "rv" : "ok",
     "arg" : {
         "name" : "variable name",
         "value" : value
