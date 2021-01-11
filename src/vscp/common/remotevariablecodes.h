@@ -37,7 +37,7 @@
 #define VSCP_VAR_PERSISTENT         true
 #define VSCP_VAR_NON_PERISTENT      false
 
-// Permissions
+// Permissions for attr field
 #define PERMISSION_OWNER_READ       0x400
 #define PERMISSION_OWNER_WRITE      0x200
 #define PERMISSION_OWNER_EXECUTE    0x100
@@ -75,6 +75,7 @@ name,type,index,value
 	"type": 1,
     "index" : 2,
 	"value": "This is a test variable"
+    "attr" : attribute/permission flags as of above
 }
 
 optional index for array element
@@ -85,7 +86,8 @@ optional index for array element
     "{\n"                                                                      \
     "\"name\": \"%s\",\n"                                                      \
     "\"type\": %hu,\n"                                                         \
-    "\"value\": %s,\n"                                                         \
+    "\"attr\": %d,\n"                                                          \
+    "\"value\": %s,\n"                                                         \    
     "}"
 
 
@@ -94,6 +96,7 @@ optional index for array element
     "<variable \n"                                                             \
     "name=\"%s\" \n"                                                           \
     "type=\"%hu\" \n"                                                          \
+    "attr=\"%d\" \n"                                                           \
     "value=\"%s\" />"
 
 // ****************************************************************************

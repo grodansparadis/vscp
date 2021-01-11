@@ -5290,7 +5290,6 @@ vscp_convertEventExToCanal(canalMsg* pcanalMsg, const vscpEventEx* pvscpEventEx)
     }
 
     rv = vscp_convertEventToCanal(pcanalMsg, pEvent);
-
     vscp_deleteEvent(pEvent);
 
     return rv;
