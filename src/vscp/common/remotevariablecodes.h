@@ -87,7 +87,7 @@ optional index for array element
     "\"name\": \"%s\",\n"                                                      \
     "\"type\": %hu,\n"                                                         \
     "\"attr\": %d,\n"                                                          \
-    "\"value\": %s,\n"                                                         \    
+    "\"value\": %s,\n"                                                         \
     "}"
 
 
@@ -103,24 +103,25 @@ optional index for array element
 //                          Remote variable types
 // ****************************************************************************
 
-#define VSCP_REMOTE_VARIABLE_CODE_UNASSIGNED      (0)  // No value
-#define VSCP_REMOTE_VARIABLE_CODE_STRING          (1)  // String value
-#define VSCP_REMOTE_VARIABLE_CODE_BOOLEAN         (2)  // Boolean value
-#define VSCP_REMOTE_VARIABLE_CODE_INTEGER         (3)  // Integer value
-#define VSCP_REMOTE_VARIABLE_CODE_NUMBER          (3)  // Integer value synonym
-#define VSCP_REMOTE_VARIABLE_CODE_LONG            (4)  // Long value
-#define VSCP_REMOTE_VARIABLE_CODE_DOUBLE          (5)  // Floating point value
-#define VSCP_REMOTE_VARIABLE_CODE_MEASUREMENT     (6)  // VSCP data coding
-#define VSCP_REMOTE_VARIABLE_CODE_EVENT           (7)  // VSCP event (Level II)
-#define VSCP_REMOTE_VARIABLE_CODE_GUID            (8)  // VSCP GUID
-#define VSCP_REMOTE_VARIABLE_CODE_EVENT_DATA      (9)  // VSCP event data
-#define VSCP_REMOTE_VARIABLE_CODE_EVENT_CLASS     (10) // VSCP event class
-#define VSCP_REMOTE_VARIABLE_CODE_EVENT_TYPE      (11) // VSCP event type
-#define VSCP_REMOTE_VARIABLE_CODE_EVENT_TIMESTAMP (12) // VSCP event timestamp
-#define VSCP_REMOTE_VARIABLE_CODE_DATETIME        (13) // Date + Time in iso format
-#define VSCP_REMOTE_VARIABLE_CODE_DATE            (14) // Date in iso format
-#define VSCP_REMOTE_VARIABLE_CODE_TIME            (15) // Time in iso format
-#define VSCP_REMOTE_VARIABLE_CODE_BLOB            (16) // Base64 binary encoded data
+#define VSCP_REMOTE_VARIABLE_CODE_UNASSIGNED      (0)   // No value
+#define VSCP_REMOTE_VARIABLE_CODE_STRING          (1)   // String value
+#define VSCP_REMOTE_VARIABLE_CODE_BOOLEAN         (2)   // Boolean value
+#define VSCP_REMOTE_VARIABLE_CODE_INTEGER         (3)   // Integer value
+#define VSCP_REMOTE_VARIABLE_CODE_NUMBER          (3)   // Integer value synonym
+#define VSCP_REMOTE_VARIABLE_CODE_LONG            (4)   // Long value
+#define VSCP_REMOTE_VARIABLE_CODE_DOUBLE          (5)   // Floating point value
+
+#define VSCP_REMOTE_VARIABLE_CODE_MEASUREMENT     (6)   // VSCP data coding
+#define VSCP_REMOTE_VARIABLE_CODE_EVENT           (7)   // VSCP event (Level II)
+#define VSCP_REMOTE_VARIABLE_CODE_GUID            (8)   // VSCP GUID
+#define VSCP_REMOTE_VARIABLE_CODE_EVENT_DATA      (9)   // VSCP event data
+#define VSCP_REMOTE_VARIABLE_CODE_EVENT_CLASS     (10)  // VSCP event class
+#define VSCP_REMOTE_VARIABLE_CODE_EVENT_TYPE      (11)  // VSCP event type
+#define VSCP_REMOTE_VARIABLE_CODE_EVENT_TIMESTAMP (12)  // VSCP event timestamp
+#define VSCP_REMOTE_VARIABLE_CODE_DATETIME        (13)  // Date + Time in iso format
+#define VSCP_REMOTE_VARIABLE_CODE_DATE            (14)  // Date in iso format
+#define VSCP_REMOTE_VARIABLE_CODE_TIME            (15)  // Time in iso format
+#define VSCP_REMOTE_VARIABLE_CODE_BLOB            (16)  // Base64 binary encoded data
 
 #define VSCP_REMOTE_VARIABLE_CODE_UINT8           (17)
 #define VSCP_REMOTE_VARIABLE_CODE_UINT16          (18)
@@ -132,14 +133,14 @@ optional index for array element
 #define VSCP_REMOTE_VARIABLE_CODE_INT32           (23)
 #define VSCP_REMOTE_VARIABLE_CODE_INT64           (24)
 
-#define VSCP_REMOTE_VARIABLE_CODE_MIME            (100) // Mime type (mime-type;base64 encoded content)
-#define VSCP_REMOTE_VARIABLE_CODE_HTML            (101) // HTML Page
-#define VSCP_REMOTE_VARIABLE_CODE_JAVASCRIPT      (102) // Javascript code
-#define VSCP_REMOTE_VARIABLE_CODE_JSON            (103) // JSON data
-#define VSCP_REMOTE_VARIABLE_CODE_XML             (104) // XML data
-#define VSCP_REMOTE_VARIABLE_CODE_SQL             (105) // SQL data
-#define VSCP_REMOTE_VARIABLE_CODE_PYTHON          (106) // Python code
-#define VSCP_REMOTE_VARIABLE_CODE_LUA             (200) // LUA code
+#define VSCP_REMOTE_VARIABLE_CODE_MIME            (100)     // Mime type (mime-type;base64 encoded content)
+#define VSCP_REMOTE_VARIABLE_CODE_HTML            (101)     // HTML Page
+#define VSCP_REMOTE_VARIABLE_CODE_JAVASCRIPT      (102)     // Javascript code
+#define VSCP_REMOTE_VARIABLE_CODE_JSON            (103)     // JSON data
+#define VSCP_REMOTE_VARIABLE_CODE_XML             (104)     // XML data
+#define VSCP_REMOTE_VARIABLE_CODE_SQL             (105)     // SQL data
+#define VSCP_REMOTE_VARIABLE_CODE_PYTHON          (106)     // Python code
+#define VSCP_REMOTE_VARIABLE_CODE_LUA             (107)     // LUA code
 
 
 // ****************************************************************************
@@ -147,14 +148,15 @@ optional index for array element
 // ****************************************************************************
 
 // Remote variable hlo errors
-#define ERR_VARIABLE_OK         0   // No error
-#define ERR_VARIABLE_UNKNOWN    1   // No variable with that name
-#define ERR_VARIABLE_READ_ONLY  2   // Variable can't be written
-#define ERR_VARIABLE_WRONG_TYPE 3   // Expected other type
-#define ERR_VARIABLE_USER       4   // User is not allowed to do this operation
-#define ERR_VARIABLE_PERMISSION 5   // RWX permission not right to do operation
-#define ERR_VARIABLE_SYNTAX     6   // Syntax or format is wrong
-#define ERR_VARIABLE_VALUE      7   // Variable have invalid value
-#define ERR_VARIABLE_INDEX_OOB  8   // Index out of bounds
+#define VSCP_ERR_VARIABLE_OK                    0   // No error
+#define VSCP_ERR_VARIABLE_UNKNOWN               1   // No variable with that name
+#define VSCP_ERR_VARIABLE_READ_ONLY             2   // Variable can't be written
+#define VSCP_ERR_VARIABLE_WRONG_TYPE            3   // Expected other type
+#define VSCP_ERR_VARIABLE_USER                  4   // User is not allowed to do this operation
+#define VSCP_ERR_VARIABLE_PERMISSION            5   // RWX permission not right to do operation
+#define VSCP_ERR_VARIABLE_SYNTAX                6   // Syntax or format is wrong
+#define VSCP_ERR_VARIABLE_VALUE                 7   // Variable have invalid value
+#define VSCP_ERR_VARIABLE_INDEX_OOB             8   // Index out of bounds
+#define VSCP_ERR_VARIABLE_WRITE_NOT_ALLOWED     9   // Variable write is not allowed
 
 #endif
