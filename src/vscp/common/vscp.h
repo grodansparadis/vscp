@@ -547,7 +547,7 @@ extern "C"
 #define VSCP_ERROR_ERROR             -1 /* Error */
 #define VSCP_ERROR_CHANNEL           7  /* Invalid channel */
 #define VSCP_ERROR_FIFO_EMPTY        8  /* FIFO is empty */
-#define VSCP_ERROR_FIFO_FULL         9  /* FIFI is full */
+#define VSCP_ERROR_FIFO_FULL         9  /* FIFO is full */
 #define VSCP_ERROR_FIFO_SIZE         10 /* FIFO size error */
 #define VSCP_ERROR_FIFO_WAIT         11 /* FIFO wait failed */
 #define VSCP_ERROR_GENERIC           12 /* Generic error */
@@ -586,7 +586,7 @@ extern "C"
 #define VSCP_ERROR_INVALID_PERMISSION   49 /* Not allowed to do that */
 #define VSCP_ERROR_INVALID_PATH         50 /* Invalid path (permissions) */
 #define VSCP_ERROR_ERRNO                51 /* General error, errno variable holds error */
-#define VSCP_ERROR_INTERUPTED           52 /* Interupted by signal or other cause */
+#define VSCP_ERROR_INTERRUPTED          52 /* Interrupted by signal or other cause */
 #define VSCP_ERROR_MISSING              53 /* Value, paramter or something else is missing */ 
 #define VSCP_ERROR_NOT_CONNECTED        54 /* There is no connection */
 #define VSCP_ERROR_READ_ONLY            55 /* Item (variable) is read only */  
