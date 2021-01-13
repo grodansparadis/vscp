@@ -147,16 +147,7 @@ optional index for array element
 //                          Remote variable errors
 // ****************************************************************************
 
-// Remote variable hlo errors
-#define VSCP_ERR_VARIABLE_OK                    0   // No error
-#define VSCP_ERR_VARIABLE_UNKNOWN               1   // No variable with that name
-#define VSCP_ERR_VARIABLE_READ_ONLY             2   // Variable can't be written
-#define VSCP_ERR_VARIABLE_WRONG_TYPE            3   // Expected other type
-#define VSCP_ERR_VARIABLE_USER                  4   // User is not allowed to do this operation
-#define VSCP_ERR_VARIABLE_PERMISSION            5   // RWX permission not right to do operation
-#define VSCP_ERR_VARIABLE_SYNTAX                6   // Syntax or format is wrong
-#define VSCP_ERR_VARIABLE_VALUE                 7   // Variable have invalid value
-#define VSCP_ERR_VARIABLE_INDEX_OOB             8   // Index out of bounds
-#define VSCP_ERR_VARIABLE_WRITE_NOT_ALLOWED     9   // Variable write is not allowed
+// Moved to vscp.h
+
 
 #endif

@@ -589,6 +589,11 @@ extern "C"
 #define VSCP_ERROR_INTERUPTED           52 /* Interupted by signal or other cause */
 #define VSCP_ERROR_MISSING              53 /* Value, paramter or something else is missing */ 
 #define VSCP_ERROR_NOT_CONNECTED        54 /* There is no connection */
+#define VSCP_ERROR_READ_ONLY            55 /* Item (variable) is read only */  
+#define VSCP_ERROR_INVALID_TYPE         56 /* Item (variable) is of wrong type */
+#define VSCP_ERROR_PERMISSION           57 /* Does hot have permission to do that */
+#define VSCP_ERROR_INVALID_SYNTAX       58 /* Syntax is invalid */
+#define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)
