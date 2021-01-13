@@ -118,9 +118,9 @@ optional index for array element
 #define VSCP_REMOTE_VARIABLE_CODE_EVENT_CLASS     (10)  // VSCP event class
 #define VSCP_REMOTE_VARIABLE_CODE_EVENT_TYPE      (11)  // VSCP event type
 #define VSCP_REMOTE_VARIABLE_CODE_EVENT_TIMESTAMP (12)  // VSCP event timestamp
-#define VSCP_REMOTE_VARIABLE_CODE_DATETIME        (13)  // Date + Time in iso format
-#define VSCP_REMOTE_VARIABLE_CODE_DATE            (14)  // Date in iso format
-#define VSCP_REMOTE_VARIABLE_CODE_TIME            (15)  // Time in iso format
+#define VSCP_REMOTE_VARIABLE_CODE_DATETIME        (13)  // Date + Time in iso format (YYYY-MM-DDTHH:MM:SS)
+#define VSCP_REMOTE_VARIABLE_CODE_DATE            (14)  // Date in iso format (YYYY-MM-DD)
+#define VSCP_REMOTE_VARIABLE_CODE_TIME            (15)  // Time in iso format (HH:MM:SS)
 #define VSCP_REMOTE_VARIABLE_CODE_BLOB            (16)  // Base64 binary encoded data
 
 #define VSCP_REMOTE_VARIABLE_CODE_UINT8           (17)
