@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
+// Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +40,7 @@
 #define VSCPD_DISPLAY_VERSION   "15.0.0-1 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                        \
-    "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, "                   \
+    "Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB, "                   \
     "https://www.grodansparadis.com"
 #define VSCPD_COPYRIGHT_HTML                                                   \
     "Copyright Ⓒ 2000-2020 Ake Hedman, <a "                                   \

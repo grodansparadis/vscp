@@ -28,4 +28,4 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 <a href="https://github.com/grodansparadis/vscp_html5">HTML5 websocket UI repository</a>.
 </p>
 
-Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
+Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB - MIT license.
