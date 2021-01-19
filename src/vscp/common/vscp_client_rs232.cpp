@@ -23,5 +23,5 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "vscp_client_res232.h"
+#include "vscp_client_rs232.h"
 

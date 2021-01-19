@@ -145,6 +145,18 @@ int vscpClientTcp::clear(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientTcp::getversion(uint8_t *pmajor,
+                                uint8_t *pminor,
+                                uint8_t *prelease,
+                                uint8_t *pbuild)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getinterfaces
 //
 

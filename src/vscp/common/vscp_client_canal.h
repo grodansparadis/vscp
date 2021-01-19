@@ -141,6 +141,17 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+    /*!
+        Set (and enable) receive callback for events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
+
+    /*!
+        Set (and enable) receive callback ex events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
 
 public:   
 

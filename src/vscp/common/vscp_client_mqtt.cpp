@@ -37,7 +37,7 @@
 using namespace kainjow::mustache;
 
 // Forward declaration
-void *workerThread(void *pObj);
+static void *workerThread(void *pObj);
 
 // * * * * Callbacks * * * *
 
@@ -646,7 +646,7 @@ int vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 //
 
 
-void *workerThread(void *pObj)
+static void *workerThread(void *pObj)
 {
     uint8_t guid[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     vscpClientMqtt *pClient = (vscpClientMqtt *)pObj;

@@ -786,7 +786,7 @@ int vscpClientWs1::waitForResponse( uint32_t timeout )
 		switch(errno) {
 
 			case EINTR:
-				return VSCP_ERROR_INTERUPTED;
+				return VSCP_ERROR_INTERRUPTED;
 
 			case EINVAL:
 				return VSCP_ERROR_PARAMETER;

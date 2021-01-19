@@ -30,7 +30,7 @@
 #include "vscphelper.h"
 
 // Forward declaration
-void *workerThread(void *pObj);
+static void *workerThread(void *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -205,6 +205,20 @@ int vscpClientCanal::getcount(uint16_t *pcount)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientCanal::getversion(uint8_t *pmajor,
+                                    uint8_t *pminor,
+                                    uint8_t *prelease,
+                                    uint8_t *pbuild)
+{
+    uint32_t ver = m_canalif.CanalGetDllVersion();
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getinterfaces
 //
 
@@ -256,15 +270,17 @@ int vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 //
 
 
-void *workerThread(void *pObj)
+static void *workerThread(void *pObj)
 {
     uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     vscpClientCanal *pClient = (vscpClientCanal *)pObj;
+    VscpCanalDeviceIf *pif = (VscpCanalDeviceIf *)&(pClient->m_canalif);
+
     if (NULL == pif) return NULL;
 
     while (pClient->m_bRun) {
 
-        pthread_mutex_lock(&pif->m_mutexif);
+        //pthread_mutex_lock(&pif->m_mutexif);
         
         // Check if there are events to fetch
         int cnt;
@@ -278,7 +294,7 @@ void *workerThread(void *pObj)
                         if (vscp_convertCanalToEvent(&ev,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_evcallback(ev);
+                            pClient->m_evcallback(&ev);
                         }
                     }
                     if ( NULL != pClient->m_excallback ) {
@@ -286,7 +302,7 @@ void *workerThread(void *pObj)
                         if (vscp_convertCanalToEventEx(&ex,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_excallback(ex);
+                            pClient->m_excallback(&ex);
                         }
                     }
                 }
@@ -295,7 +311,7 @@ void *workerThread(void *pObj)
 
         }
 
-        pthread_mutex_unlock(&pif->m_mutexif);
+        //pthread_mutex_unlock(&pif->m_mutexif);
         usleep(200);
     }
 

@@ -118,7 +118,7 @@ ws2_client_data_handler(struct mg_connection *conn,
                 if ( NULL == pex ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
-                pObj->m_evcallback(pex);
+                pObj->m_excallback(pex);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -803,7 +803,7 @@ int vscpClientWs2::waitForResponse( uint32_t timeout )
 		switch(errno) {
 
 			case EINTR:
-				return VSCP_ERROR_INTERUPTED;
+				return VSCP_ERROR_INTERRUPTED;
 
 			case EINVAL:
 				return VSCP_ERROR_PARAMETER;
