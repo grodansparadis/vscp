@@ -168,12 +168,12 @@ module.exports = function(RED) {
                     }   
                 }            
                 buffer = parts[parts.length-1];
-            } 
+            }) 
 
-        });
+        };
         
         client.on('end', function() {
-            if ( buffer.length > 0) ) {
+            if ( buffer.length > 0) {
                 var msg = {topic:node.topic,payload:{}};
                 msg._session = {type:"vscp",id:id};
                 if (buffer.length !== 0) {
