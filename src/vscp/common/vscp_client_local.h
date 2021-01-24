@@ -1,6 +1,6 @@
-// vscp_client_udp.h
+// vscp_client_local.h
 //
-// tcp/ip client communication classes.
+// RS-232 client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,19 +23,20 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(VSCPCLIENTUDP_H__INCLUDED_)
-#define VSCPCLIENTUDP_H__INCLUDED_
+#if !defined(vscpClientLocal_H__INCLUDED_)
+#define vscpClientLocal_H__INCLUDED_
+
 
 #include "vscp.h"
 #include "vscp_client_base.h"
 
-class vscpClientUdp : public CVscpClient
+class vscpClientLocal : public CVscpClient
 {
 
 public:
 
-    vscpClientUdp();
-    ~vscpClientUdp();
+    vscpClientLocal();
+    ~vscpClientLocal();
 
     /*!
         Connect to remote host
@@ -45,16 +46,16 @@ public:
     virtual int connect(void);
 
     /*!
-        Disconnect from remote host
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int disconnect(void);
-
-    /*!
         Check if connected.
         @return true if connected, false otherwise.
     */
     virtual bool isConnected(void);
+
+    /*!
+        Disconnect from remote host
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int disconnect(void);
 
     /*!
         Send VSCP event to remote host.

@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
-// Copyright:   (C) 2000-2020
+// Copyright:   © 2007-2021
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //              (C) 2012 Dinesh Guleria
 // Licence:

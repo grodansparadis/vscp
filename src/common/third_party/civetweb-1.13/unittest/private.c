@@ -604,7 +604,7 @@ END_TEST
 START_TEST(test_parse_port_string)
 {
 	/* Adapted from unit_test.c */
-	/* Copyright (c) 2013-2020 the Civetweb developers */
+	/* Copyright © 2007-2021 the Civetweb developers */
 	/* Copyright (c) 2004-2013 Sergey Lyubka */
 	struct t_test_parse_port_string {
 		const char *port_string;

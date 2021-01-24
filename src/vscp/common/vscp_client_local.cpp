@@ -1,6 +1,6 @@
-// vscp_client_udp.cpp
+// vscp_client_local.cpp
 //
-// tcp/ip client communication classes.
+// RS-232 client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,4 +23,5 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "vscp_client_udp.h"
+#include "vscp_client_rs232.h"
+
