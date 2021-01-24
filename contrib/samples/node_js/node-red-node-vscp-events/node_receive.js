@@ -213,7 +213,7 @@ module.exports = function(RED) {
         
     }
     
-    RED.nodes.registerType("vscp-receive", receiveVSCP{
+    RED.nodes.registerType("vscp-receive", receiveVSCP() {
         credentials: {
             username: {type:"text"},
             password: {type:"password"}
