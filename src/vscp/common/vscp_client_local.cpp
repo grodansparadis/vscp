@@ -25,3 +25,184 @@
 
 #include "vscp_client_local.h"
 
+///////////////////////////////////////////////////////////////////////////////
+// CTor
+//
+
+vscpClientLocal::vscpClientLocal() : CVscpClient()
+{
+    ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DTor
+//
+
+vscpClientLocal::~vscpClientLocal()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// connect
+//
+
+int vscpClientLocal::connect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// disconnect
+//
+
+int vscpClientLocal::disconnect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isConnected
+//
+
+bool vscpClientLocal::isConnected(void)
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientLocal::send(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientLocal::send(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientLocal::receive(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientLocal::receive(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setfilter
+//
+
+int vscpClientLocal::setfilter(vscpEventFilter &filter)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getcount
+//
+
+int vscpClientLocal::getcount(uint16_t *pcount)
+{
+    if (NULL == pcount ) return VSCP_ERROR_INVALID_POINTER;
+    *pcount = 0;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// clear
+//
+
+int vscpClientLocal::clear()
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientLocal::getversion(uint8_t *pmajor,
+                                uint8_t *pminor,
+                                uint8_t *prelease,
+                                uint8_t *pbuild)
+{
+    if (NULL == pmajor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pminor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == prelease ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pbuild ) return VSCP_ERROR_INVALID_POINTER;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getinterfaces
+//
+
+int vscpClientLocal::getinterfaces(std::deque<std::string> &iflist)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getwcyd
+//
+
+int vscpClientLocal::getwcyd(uint64_t &wcyd)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setConnectionTimeout
+//
+
+void vscpClientLocal::setConnectionTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getConnectionTimeout
+//
+
+uint32_t vscpClientLocal::getConnectionTimeout(void)
+{
+    return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setResponseTimeout
+//
+
+void vscpClientLocal::setResponseTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getResponseTimeout
+//
+
+uint32_t vscpClientLocal::getResponseTimeout(void)
+{
+    return 0;
+}
+
