@@ -1,4 +1,4 @@
-// vscp_client_multicast.h
+// vscp_client_udp.h
 //
 // tcp/ip client communication classes.
 //
@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2021
+// Copyright:   (C) 2007-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -23,19 +23,19 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(VSCPCLIENTUDP_H__INCLUDED_)
-#define VSCPCLIENTUDP_H__INCLUDED_
+#if !defined(VSCPCLIENTMULTICAST_H__INCLUDED_)
+#define VSCPCLIENTMULTICAST_H__INCLUDED_
 
 #include "vscp.h"
 #include "vscp_client_base.h"
 
-class vscpClientUdp : public CVscpClient
+class vscpClientMulticast : public CVscpClient
 {
 
 public:
 
-    vscpClientUdp();
-    ~vscpClientUdp();
+    vscpClientMulticast();
+    ~vscpClientMulticast();
 
     /*!
         Connect to remote host

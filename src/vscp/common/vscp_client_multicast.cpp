@@ -1,4 +1,4 @@
-// vscp_client_multicast.cpp
+// vscp_client_udp.cpp
 //
 // tcp/ip client communication classes.
 //
@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright: © 2007-2021
+// Copyright:   (C) 2007-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -21,6 +21,6 @@
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
-//
+//6
 
-#include "vscp_client_udp.h"
+#include "vscp_client_multicast.h"

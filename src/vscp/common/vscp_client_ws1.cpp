@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2021
+// Copyright:   (C) 2007-2020
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -31,7 +31,9 @@
 #include <unistd.h> 
 #include <vscp_aes.h>
 #include <vscphelper.h>
+extern "C" {
 #include "civetweb.h"
+}
 
 #include "vscp_client_ws1.h"
 
