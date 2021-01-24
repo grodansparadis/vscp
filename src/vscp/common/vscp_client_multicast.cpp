@@ -1,4 +1,4 @@
-// vscp_client_udp.cpp
+// vscp_client_multicast.cpp
 //
 // tcp/ip client communication classes.
 //
