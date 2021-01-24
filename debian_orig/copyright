@@ -4,7 +4,7 @@ Upstream-Contact: Ake Hedman <akhe@vscp.org>
 Source: https://github.com/grodansparadis/vscpl2drv-mqtt
 
 Files: *
-Copyright: 2000-2020 Ake Hedman <akhe@vscp.org>
+Copyright: 2000-2021 Ake Hedman <akhe@vscp.org>
 License: MIT
 
 License: MIT
