@@ -24,3 +24,185 @@
 //6
 
 #include "vscp_client_multicast.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// CTor
+//
+
+vscpClientMulticast::vscpClientMulticast() : CVscpClient()
+{
+    ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DTor
+//
+
+vscpClientMulticast::~vscpClientMulticast()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// connect
+//
+
+int vscpClientMulticast::connect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// disconnect
+//
+
+int vscpClientMulticast::disconnect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isConnected
+//
+
+bool vscpClientMulticast::isConnected(void)
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientMulticast::send(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientMulticast::send(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientMulticast::receive(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientMulticast::receive(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setfilter
+//
+
+int vscpClientMulticast::setfilter(vscpEventFilter &filter)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getcount
+//
+
+int vscpClientMulticast::getcount(uint16_t *pcount)
+{
+    if (NULL == pcount ) return VSCP_ERROR_INVALID_POINTER;
+    *pcount = 0;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// clear
+//
+
+int vscpClientMulticast::clear()
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientMulticast::getversion(uint8_t *pmajor,
+                                uint8_t *pminor,
+                                uint8_t *prelease,
+                                uint8_t *pbuild)
+{
+    if (NULL == pmajor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pminor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == prelease ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pbuild ) return VSCP_ERROR_INVALID_POINTER;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getinterfaces
+//
+
+int vscpClientMulticast::getinterfaces(std::deque<std::string> &iflist)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getwcyd
+//
+
+int vscpClientMulticast::getwcyd(uint64_t &wcyd)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setConnectionTimeout
+//
+
+void vscpClientMulticast::setConnectionTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getConnectionTimeout
+//
+
+uint32_t vscpClientMulticast::getConnectionTimeout(void)
+{
+    return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setResponseTimeout
+//
+
+void vscpClientMulticast::setResponseTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getResponseTimeout
+//
+
+uint32_t vscpClientMulticast::getResponseTimeout(void)
+{
+    return 0;
+}
+

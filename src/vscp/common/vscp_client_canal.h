@@ -105,7 +105,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -114,6 +114,12 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getcount(uint16_t *pcount);
+
+    /*!
+        Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int clear(void);
 
     /*!
         Get version from interface
@@ -152,6 +158,20 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+    /*!
+        Getter/setters for connection timeout
+        Time is in milliseconds
+    */
+    virtual void setConnectionTimeout(uint32_t timeout);
+    virtual uint32_t getConnectionTimeout(void);
+
+    /*!
+        Getter/setters for response timeout
+        Time is in milliseconds
+    */
+    virtual void setResponseTimeout(uint32_t timeout);
+    virtual uint32_t getResponseTimeout(void);
 
 public:   
 

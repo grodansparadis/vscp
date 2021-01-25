@@ -24,3 +24,184 @@
 //
 
 #include "vscp_client_rest.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// CTor
+//
+
+vscpClientRest::vscpClientRest() : CVscpClient()
+{
+    ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DTor
+//
+
+vscpClientRest::~vscpClientRest()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// connect
+//
+
+int vscpClientRest::connect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// disconnect
+//
+
+int vscpClientRest::disconnect(void)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isConnected
+//
+
+bool vscpClientRest::isConnected(void)
+{
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientRest::send(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientRest::send(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientRest::receive(vscpEvent &ev)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientRest::receive(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setfilter
+//
+
+int vscpClientRest::setfilter(vscpEventFilter &filter)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getcount
+//
+
+int vscpClientRest::getcount(uint16_t *pcount)
+{
+    if (NULL == pcount ) return VSCP_ERROR_INVALID_POINTER;
+    *pcount = 0;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// clear
+//
+
+int vscpClientRest::clear()
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientRest::getversion(uint8_t *pmajor,
+                                uint8_t *pminor,
+                                uint8_t *prelease,
+                                uint8_t *pbuild)
+{
+    if (NULL == pmajor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pminor ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == prelease ) return VSCP_ERROR_INVALID_POINTER;
+    if (NULL == pbuild ) return VSCP_ERROR_INVALID_POINTER;
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getinterfaces
+//
+
+int vscpClientRest::getinterfaces(std::deque<std::string> &iflist)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getwcyd
+//
+
+int vscpClientRest::getwcyd(uint64_t &wcyd)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setConnectionTimeout
+//
+
+void vscpClientRest::setConnectionTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getConnectionTimeout
+//
+
+uint32_t vscpClientRest::getConnectionTimeout(void)
+{
+    return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setResponseTimeout
+//
+
+void vscpClientRest::setResponseTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getResponseTimeout
+//
+
+uint32_t vscpClientRest::getResponseTimeout(void)
+{
+    return 0;
+}
