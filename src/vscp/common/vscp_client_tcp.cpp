@@ -221,7 +221,7 @@ uint32_t vscpClientTcp::getConnectionTimeout(void)
 // setResponeTimeout
 //
 
-void vscpClientTcp::setResponeTimeout(uint32_t timeout)
+void vscpClientTcp::setResponseTimeout(uint32_t timeout)
 {
     m_tcp.setResponseTimeout(timeout);
 }

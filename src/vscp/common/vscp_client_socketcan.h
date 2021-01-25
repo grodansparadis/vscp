@@ -1,6 +1,6 @@
-// vscp_client_tcp.h
+// vscp_client_socketcan.cpp
 //
-// tcp/ip client communication classes.
+// CANAL client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,33 +23,38 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(VSCPCLIENTTCP_H__INCLUDED_)
-#define VSCPCLIENTTCP_H__INCLUDED_
+#if !defined(VSCPCLIENTSOCKETCAN_H__INCLUDED_)
+#define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
-#include <vscpremotetcpif.h>
+#include "vscp.h"
 #include "vscp_client_base.h"
+#include "vscpcanaldeviceif.h"
 
-class vscpClientTcp : public CVscpClient
+// When a callback is set and connect is called this object is shared
+// with a workerthread that 
+
+class vscpClientSocketCan : public CVscpClient
 {
 
 public:
 
-    vscpClientTcp();
-    ~vscpClientTcp();
+    vscpClientSocketCan();
+    ~vscpClientSocketCan();
 
     /*!
-        Initialize the tcp client
-        @param strHostname Hostname for remote host. Can be prefixed with
-            tcp:// or stcp:// (SSL connection)
-        @param port Port to connect to on remote host.
-        @param strUsername Username used to login on remote host.
-        @param strPassword Password used to login on remote host.
+        Initialize the CANAL client
+        @param strPath Path to CANAL driver.
+        @param strParameters CANAL driver configuration string.
+        @param flags CANAL driver configuration flags.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    int init(const std::string &strHostname = "localhost",
-                short port = VSCP_DEFAULT_TCP_PORT,
-                const std::string &strUsername = "admin",
-                const std::string &strPassword = "secret");                  
+    int init(const std::string &strPath,
+                const std::string &strParameters = "",
+                unsigned long flags = 0,
+                unsigned long baudrate = 0); 
+
+    // Run wizard
+    int runWizard(void);
 
     /*!
         Connect to remote host
@@ -87,6 +92,7 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int receive(vscpEvent &ev);
+    
 
     /*!
         Receive VSCP event ex from remote host
@@ -142,6 +148,18 @@ public:
     virtual int getwcyd(uint64_t &wcyd);
 
     /*!
+        Set (and enable) receive callback for events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
+
+    /*!
+        Set (and enable) receive callback ex events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+    /*!
         Return a JSON representation of connection
         @return JSON representation as string
     */
@@ -168,15 +186,30 @@ public:
     virtual void setResponseTimeout(uint32_t timeout);
     virtual uint32_t getResponseTimeout(void);
 
+public:   
+
+    // True as long as the worker thread should do it's work
+    bool m_bRun;
+
+    // Mutex that protect CANAL interface when callbacks are defined
+    pthread_mutex_t m_mutexif;
+
+    // CANAL functionality
+    VscpCanalDeviceIf m_canalif;
+
+    LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
+    LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
+
 private:
 
-    VscpRemoteTcpIf m_tcp;
+    /*!
+        True of dll connection is open
+    */
+    bool m_bConnected;
 
-    // Connection parameters set by init
-    std::string m_strHostname;
-    short m_port;
-    std::string m_strUsername;
-    std::string m_strPassword;
+    // Worker thread id
+    pthread_t m_tid;
 };
+
 
 #endif
