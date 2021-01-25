@@ -1,4 +1,4 @@
-// vscp_client_rawcan.cpp
+// vscp_client_rawmqtt.cpp
 //
 // tcp/ip client communication classes.
 //
@@ -29,7 +29,7 @@
 // CTor
 //
 
-vscpClientRawCan::vscpClientRawCan() : CVscpClient()
+vscpClientRawMqtt::vscpClientRawMqtt() : CVscpClient()
 {
     m_type = CVscpClient::connType::UDP;
 }
@@ -38,7 +38,7 @@ vscpClientRawCan::vscpClientRawCan() : CVscpClient()
 // DTor
 //
 
-vscpClientRawCan::~vscpClientRawCan()
+vscpClientRawMqtt::~vscpClientRawMqtt()
 {
     ;
 }
@@ -47,7 +47,7 @@ vscpClientRawCan::~vscpClientRawCan()
 // toJSON
 //
 
-std::string vscpClientRawCan::toJSON(void) 
+std::string vscpClientRawMqtt::toJSON(void) 
 {
     std::string rv;
 
@@ -59,7 +59,7 @@ std::string vscpClientRawCan::toJSON(void)
 // fromJSON
 //
 
-bool vscpClientRawCan::fromJSON(const std::string& config)
+bool vscpClientRawMqtt::fromJSON(const std::string& config)
 {
     return true;
 }
@@ -68,7 +68,7 @@ bool vscpClientRawCan::fromJSON(const std::string& config)
 // connect
 //
 
-int vscpClientRawCan::connect(void)
+int vscpClientRawMqtt::connect(void)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -77,7 +77,7 @@ int vscpClientRawCan::connect(void)
 // disconnect
 //
 
-int vscpClientRawCan::disconnect(void)
+int vscpClientRawMqtt::disconnect(void)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -86,7 +86,7 @@ int vscpClientRawCan::disconnect(void)
 // isConnected
 //
 
-bool vscpClientRawCan::isConnected(void)
+bool vscpClientRawMqtt::isConnected(void)
 {
     return true;
 }
@@ -95,7 +95,7 @@ bool vscpClientRawCan::isConnected(void)
 // send
 //
 
-int vscpClientRawCan::send(vscpEvent &ev)
+int vscpClientRawMqtt::send(vscpEvent &ev)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -104,7 +104,7 @@ int vscpClientRawCan::send(vscpEvent &ev)
 // send
 //
 
-int vscpClientRawCan::send(vscpEventEx &ex)
+int vscpClientRawMqtt::send(vscpEventEx &ex)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -113,7 +113,7 @@ int vscpClientRawCan::send(vscpEventEx &ex)
 // receive
 //
 
-int vscpClientRawCan::receive(vscpEvent &ev)
+int vscpClientRawMqtt::receive(vscpEvent &ev)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -122,7 +122,7 @@ int vscpClientRawCan::receive(vscpEvent &ev)
 // receive
 //
 
-int vscpClientRawCan::receive(vscpEventEx &ex)
+int vscpClientRawMqtt::receive(vscpEventEx &ex)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -131,7 +131,7 @@ int vscpClientRawCan::receive(vscpEventEx &ex)
 // setfilter
 //
 
-int vscpClientRawCan::setfilter(vscpEventFilter &filter)
+int vscpClientRawMqtt::setfilter(vscpEventFilter &filter)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -140,7 +140,7 @@ int vscpClientRawCan::setfilter(vscpEventFilter &filter)
 // getcount
 //
 
-int vscpClientRawCan::getcount(uint16_t *pcount)
+int vscpClientRawMqtt::getcount(uint16_t *pcount)
 {
     if (NULL == pcount ) return VSCP_ERROR_INVALID_POINTER;
     *pcount = 0;
@@ -151,7 +151,7 @@ int vscpClientRawCan::getcount(uint16_t *pcount)
 // clear
 //
 
-int vscpClientRawCan::clear()
+int vscpClientRawMqtt::clear()
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -160,7 +160,7 @@ int vscpClientRawCan::clear()
 // getversion
 //
 
-int vscpClientRawCan::getversion(uint8_t *pmajor,
+int vscpClientRawMqtt::getversion(uint8_t *pmajor,
                                 uint8_t *pminor,
                                 uint8_t *prelease,
                                 uint8_t *pbuild)
@@ -176,7 +176,7 @@ int vscpClientRawCan::getversion(uint8_t *pmajor,
 // getinterfaces
 //
 
-int vscpClientRawCan::getinterfaces(std::deque<std::string> &iflist)
+int vscpClientRawMqtt::getinterfaces(std::deque<std::string> &iflist)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -185,7 +185,7 @@ int vscpClientRawCan::getinterfaces(std::deque<std::string> &iflist)
 // getwcyd
 //
 
-int vscpClientRawCan::getwcyd(uint64_t &wcyd)
+int vscpClientRawMqtt::getwcyd(uint64_t &wcyd)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -194,7 +194,7 @@ int vscpClientRawCan::getwcyd(uint64_t &wcyd)
 // setConnectionTimeout
 //
 
-void vscpClientRawCan::setConnectionTimeout(uint32_t timeout)
+void vscpClientRawMqtt::setConnectionTimeout(uint32_t timeout)
 {
     ;
 }
@@ -203,7 +203,7 @@ void vscpClientRawCan::setConnectionTimeout(uint32_t timeout)
 // getConnectionTimeout
 //
 
-uint32_t vscpClientRawCan::getConnectionTimeout(void)
+uint32_t vscpClientRawMqtt::getConnectionTimeout(void)
 {
     return 0;
 }
@@ -212,7 +212,7 @@ uint32_t vscpClientRawCan::getConnectionTimeout(void)
 // setResponseTimeout
 //
 
-void vscpClientRawCan::setResponseTimeout(uint32_t timeout)
+void vscpClientRawMqtt::setResponseTimeout(uint32_t timeout)
 {
     ;
 }
@@ -221,7 +221,7 @@ void vscpClientRawCan::setResponseTimeout(uint32_t timeout)
 // getResponseTimeout
 //
 
-uint32_t vscpClientRawCan::getResponseTimeout(void)
+uint32_t vscpClientRawMqtt::getResponseTimeout(void)
 {
     return 0;
 }

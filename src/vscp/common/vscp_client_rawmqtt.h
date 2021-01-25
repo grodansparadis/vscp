@@ -1,4 +1,4 @@
-// vscp_client_rawcan.h
+// vscp_client_rawmqtt.h
 //
 // tcp/ip client communication classes.
 //
@@ -23,19 +23,19 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(VSCPCLIENTRAWCAN_H__INCLUDED_)
-#define VSCPCLIENTRAWCAN_H__INCLUDED_
+#if !defined(VSCPCLIENTRAWMQTT_H__INCLUDED_)
+#define VSCPCLIENTRAWMQTT_H__INCLUDED_
 
 #include "vscp.h"
 #include "vscp_client_base.h"
 
-class vscpClientRawCan : public CVscpClient
+class vscpClientRawMqtt : public CVscpClient
 {
 
 public:
 
-    vscpClientRawCan();
-    ~vscpClientRawCan();
+    vscpClientRawMqtt();
+    ~vscpClientRawMqtt();
 
     /*!
         Connect to remote host
