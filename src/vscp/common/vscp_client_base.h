@@ -28,9 +28,14 @@
 
 #include "vscp.h"    
 
+#include <nlohmann/json.hpp>
+
 #include <deque>
 #include <list>
 #include <string>
+
+// for convenience
+using json = nlohmann::json;
 
 #ifdef WIN32
 typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev );
@@ -44,8 +49,27 @@ class CVscpClient
 {
 
 public:
+
     CVscpClient();
     ~CVscpClient();
+
+    enum class connType {
+        NONE=0, 
+        LOCAL, 
+        TCPIP, 
+        CANAL, 
+        SOCKETCAN, 
+        WS1, 
+        WS2, 
+        MQTT, 
+        UDP, 
+        MULTICAST, 
+        REST, 
+        RS232, 
+        RS485, 
+        RAWCAN, 
+        RAWMQTT
+    };
 
     /*!
         Connect to remote host
@@ -175,6 +199,37 @@ public:
     */
     bool isExCallback(void) {return (nullptr != m_excallback); }
 
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string toJSON(void) = 0;
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool fromJSON(const std::string& config) = 0;
+
+    // ------------------------------------------------------------------------
+    
+    /*!
+        Get connection type
+        @return Type for the connection
+    */
+    connType getType(void);
+
+    /*!
+        Set name for communication object
+    */
+    virtual void setName(const std::string& name) { m_name = name; };
+
+    /*!
+        Set name for communication object
+    */
+    virtual std::string getName(void) { return m_name; };
+
  public:
 
     /*!
@@ -186,6 +241,12 @@ public:
         Callback for ex events
     */
     LPFNDLL_EX_CALLBACK m_excallback;
+
+    // Type of connection object
+    connType m_type = CVscpClient::connType::NONE;
+
+    // Name for connection object 
+    std::string m_name;
 };
 
 #endif

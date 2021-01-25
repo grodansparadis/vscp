@@ -160,6 +160,19 @@ public:
     virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
 
     /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string toJSON(void);
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool fromJSON(const std::string& config);
+
+    /*!
         Getter/setters for connection timeout
         Time is in milliseconds
     */

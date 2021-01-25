@@ -33,6 +33,8 @@
 
 vscpClientTcp::vscpClientTcp() 
 {
+    m_type = CVscpClient::connType::TCPIP;
+    
     // Default connect parameters
     m_strHostname = "localhost";
     m_port = VSCP_DEFAULT_TCP_PORT;
@@ -47,6 +49,28 @@ vscpClientTcp::vscpClientTcp()
 vscpClientTcp::~vscpClientTcp() 
 {
     
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// toJSON
+//
+
+std::string vscpClientTcp::toJSON(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// fromJSON
+//
+
+bool vscpClientTcp::fromJSON(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

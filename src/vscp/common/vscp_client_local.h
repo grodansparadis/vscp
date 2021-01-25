@@ -128,6 +128,18 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string toJSON(void);
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool fromJSON(const std::string& config);
 
     /*!
         Getter/setters for connection timeout
@@ -143,8 +155,22 @@ public:
     virtual void setResponseTimeout(uint32_t timeout);
     virtual uint32_t getResponseTimeout(void);
 
+    /*!
+        Setter for path
+        @param path Path to set
+    */
+    virtual void setPath(const std::string path) { m_path = path; };
+
+    /*!
+        Getter for path
+        @return Path 
+    */
+    virtual std::string getPath(void) { return m_path; };
 
 private:
+
+    // Path to file or other local item
+    std::string m_path;
 
 };
 

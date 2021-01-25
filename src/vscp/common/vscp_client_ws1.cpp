@@ -156,6 +156,7 @@ ws1_client_close_handler(const struct mg_connection *conn,
 
 vscpClientWs1::vscpClientWs1()
 {
+    m_type = CVscpClient::connType::WS1;
     m_bConnected = false;
     m_conn = NULL;
     m_host = "localhost";
@@ -184,6 +185,27 @@ vscpClientWs1::~vscpClientWs1()
     }
 
     sem_destroy(&m_sem_msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// toJSON
+//
+
+std::string vscpClientWs1::toJSON(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// fromJSON
+//
+
+bool vscpClientWs1::fromJSON(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@
 
 vscpClientMulticast::vscpClientMulticast() : CVscpClient()
 {
-    ;
+    m_type = CVscpClient::connType::MULTICAST;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,27 @@ vscpClientMulticast::vscpClientMulticast() : CVscpClient()
 vscpClientMulticast::~vscpClientMulticast()
 {
     ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// toJSON
+//
+
+std::string vscpClientMulticast::toJSON(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// fromJSON
+//
+
+bool vscpClientMulticast::fromJSON(const std::string& config)
+{
+    return true;
 }
 
 

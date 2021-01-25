@@ -26,6 +26,8 @@
 #if !defined(VSCPCLIENTWS1_H__INCLUDED_)
 #define VSCPCLIENTWS1_H__INCLUDED_
 
+#include <semaphore.h>
+
 #include "vscp.h"
 #include "vscp_client_base.h"
 
@@ -149,6 +151,19 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getwcyd(uint64_t &wcyd);
+
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string toJSON(void);
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool fromJSON(const std::string& config);
 
 
     virtual void setConnectionTimeout(uint32_t timeout = WS1_CONNECTION_TIMEOUT) { m_timeout_connect = timeout; };

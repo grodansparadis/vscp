@@ -38,6 +38,7 @@ static void *workerThread(void *pObj);
 
 vscpClientCanal::vscpClientCanal() 
 {
+    m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
     m_tid = 0;
     m_bRun = false;
@@ -54,6 +55,10 @@ vscpClientCanal::~vscpClientCanal()
     pthread_mutex_destroy(&m_mutexif);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
 int vscpClientCanal::init(const std::string &strPath,
                 const std::string &strParameters,
                 unsigned long flags,
@@ -65,6 +70,27 @@ int vscpClientCanal::init(const std::string &strPath,
                                             // CANAL_ERROR_NOT_SUPPORTED if this method is not
                                             // implemented
     return m_canalif.init(strPath,strParameters,flags);  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// toJSON
+//
+
+std::string vscpClientCanal::toJSON(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// fromJSON
+//
+
+bool vscpClientCanal::fromJSON(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -144,6 +144,7 @@ void on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 
 vscpClientMqtt::vscpClientMqtt()
 {
+    m_type = CVscpClient::connType::MQTT;
     m_format == jsonfmt;
     m_mosq = NULL;
     m_bConnected = false;  // Not connected
@@ -178,6 +179,27 @@ vscpClientMqtt::~vscpClientMqtt()
         m_receiveQueue.pop_front();
         vscp_deleteEvent_v2(&pev);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// toJSON
+//
+
+std::string vscpClientMqtt::toJSON(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// fromJSON
+//
+
+bool vscpClientMqtt::fromJSON(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
