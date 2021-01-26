@@ -23,7 +23,7 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "vscp_client_udp.h"
+#include "vscp_client_rawcan.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTor

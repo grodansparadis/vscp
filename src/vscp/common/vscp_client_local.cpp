@@ -49,9 +49,13 @@ vscpClientLocal::~vscpClientLocal()
 
 std::string vscpClientLocal::toJSON(void) 
 {
-    std::string rv;
+    json j;
+    std::string rv;    
 
-    return rv;
+    j["name"] = getName();
+    j["path"] = m_path;
+
+    return j.dump();
 }
 
 
@@ -61,6 +65,20 @@ std::string vscpClientLocal::toJSON(void)
 
 bool vscpClientLocal::fromJSON(const std::string& config)
 {
+    json j;
+    try {
+        j = json::parse(config);
+        
+        if (!j["name"].is_string()) return false;
+        if (!j["path"].is_string()) return false;
+
+        setName(j["name"]);
+        m_path = j["path"];
+    }
+    catch (...) {
+        return false;
+    }
+
     return true;
 }
 

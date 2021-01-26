@@ -358,8 +358,10 @@ int vscpClientMqtt::connect(void)
                 return VSCP_ERROR_CONNECTION;
             case MOSQ_ERR_MALFORMED_UTF8:
                 return VSCP_ERROR_PARAMETER;
+#ifdef  MOSQ_ERR_OVERSIZE_PACKET               
             case MOSQ_ERR_OVERSIZE_PACKET:
                 return VSCP_ERROR_FIFO_SIZE;
+#endif                
         }
 
     }
@@ -448,10 +450,14 @@ int vscpClientMqtt::send(vscpEvent &ev)
             return VSCP_ERROR_FIFO_SIZE;
         case MOSQ_ERR_MALFORMED_UTF8:
             return VSCP_ERROR_PARAMETER;
+#ifdef  MOSQ_ERR_QOS_NOT_SUPPORTED          
         case MOSQ_ERR_QOS_NOT_SUPPORTED:
             return VSCP_ERROR_NOT_SUPPORTED;
+#endif            
+#ifdef  MOSQ_ERR_OVERSIZE_PACKET              
         case MOSQ_ERR_OVERSIZE_PACKET:
             return VSCP_ERROR_FIFO_SIZE;
+#endif            
     }
 
     return VSCP_ERROR_SUCCESS;
@@ -503,10 +509,14 @@ int vscpClientMqtt::send(vscpEventEx &ex)
             return VSCP_ERROR_FIFO_SIZE;
         case MOSQ_ERR_MALFORMED_UTF8:
             return VSCP_ERROR_PARAMETER;
+#ifdef  MOSQ_ERR_QOS_NOT_SUPPORTED             
         case MOSQ_ERR_QOS_NOT_SUPPORTED:
             return VSCP_ERROR_NOT_SUPPORTED;
+#endif            
+#ifdef  MOSQ_ERR_OVERSIZE_PACKET              
         case MOSQ_ERR_OVERSIZE_PACKET:
             return VSCP_ERROR_FIFO_SIZE;
+#endif            
     }
 
     return VSCP_ERROR_SUCCESS;
