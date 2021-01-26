@@ -60,15 +60,17 @@ vscpClientCanal::~vscpClientCanal()
 //
 
 int vscpClientCanal::init(const std::string &strPath,
-                const std::string &strParameters,
-                unsigned long flags,
-                unsigned long baudrate)
+                            const std::string &strParameters,
+                            unsigned long flags,
+                            unsigned long baudrate)
 {
-    m_canalif.CanalSetBaudrate(baudrate);   // Unusual implemention and return value may differ if
-                                            // not implemented so we do not check
-                                            // A standard implemention should return 
-                                            // CANAL_ERROR_NOT_SUPPORTED if this method is not
-                                            // implemented
+    if (!baudrate) {
+        m_canalif.CanalSetBaudrate(baudrate);   // Unusual implemention and return value may differ if
+                                                // not implemented so we do not check
+                                                // A standard implemention should return 
+                                                // CANAL_ERROR_NOT_SUPPORTED if this method is not
+                                                // implemented
+    }
     return m_canalif.init(strPath,strParameters,flags);  
 }
 
@@ -78,9 +80,15 @@ int vscpClientCanal::init(const std::string &strPath,
 
 std::string vscpClientCanal::toJSON(void) 
 {
-    std::string rv;
+    json j;
+    std::string rv;    
 
-    return rv;
+    j["name"] = getName();
+    j["path"] = m_path;
+    j["path"] = m_path;
+    j["path"] = m_path;
+
+    return j.dump();
 }
 
 
@@ -90,6 +98,20 @@ std::string vscpClientCanal::toJSON(void)
 
 bool vscpClientCanal::fromJSON(const std::string& config)
 {
+    json j;
+    try {
+        j = json::parse(config);
+        
+        if (!j["name"].is_string()) return false;
+        if (!j["path"].is_string()) return false;
+
+        setName(j["name"]);
+        m_path = j["path"];
+    }
+    catch (...) {
+        return false;
+    }
+
     return true;
 }
 

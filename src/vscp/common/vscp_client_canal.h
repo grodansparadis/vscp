@@ -46,6 +46,8 @@ public:
         @param strPath Path to CANAL driver.
         @param strParameters CANAL driver configuration string.
         @param flags CANAL driver configuration flags.
+        @param baudrate Set baudrate/bitrate. If zero baudrate is
+                            not set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     int init(const std::string &strPath,
