@@ -57,6 +57,7 @@ VscpCanalDeviceIf::VscpCanalDeviceIf()
     m_openHandle  = 0;
     m_deviceFlags = 0;
     m_bAsync      = false;
+    m_hdll        = NULL;
 }
 
 VscpCanalDeviceIf::~VscpCanalDeviceIf()

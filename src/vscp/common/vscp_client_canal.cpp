@@ -62,16 +62,16 @@ vscpClientCanal::~vscpClientCanal()
 int vscpClientCanal::init(const std::string &strPath,
                             const std::string &strParameters,
                             unsigned long flags,
-                            unsigned long baudrate)
+                            unsigned long datarate)
 {
-    if (!baudrate) {
-        m_canalif.CanalSetBaudrate(baudrate);   // Unusual implemention and return value may differ if
+    if (!datarate) {
+        m_canalif.CanalSetBaudrate(datarate);   // Unusual implemention and return value may differ if
                                                 // not implemented so we do not check
                                                 // A standard implemention should return 
                                                 // CANAL_ERROR_NOT_SUPPORTED if this method is not
                                                 // implemented
     }
-    return m_canalif.init(strPath,strParameters,flags);  
+    return (CANAL_ERROR_SUCCESS == m_canalif.init(strPath,strParameters,flags));  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,9 +84,9 @@ std::string vscpClientCanal::toJSON(void)
     std::string rv;    
 
     j["name"] = getName();
-    j["path"] = m_path;
-    j["path"] = m_path;
-    j["path"] = m_path;
+    j["path"] = m_canalif.getPath();
+    j["config"] = m_canalif.getParameter();
+    j["flags"] = m_canalif.getDeviceFlags();
 
     return j.dump();
 }
@@ -102,11 +102,32 @@ bool vscpClientCanal::fromJSON(const std::string& config)
     try {
         j = json::parse(config);
         
-        if (!j["name"].is_string()) return false;
-        if (!j["path"].is_string()) return false;
+        if (!j["name"].is_string()) return false;   // Must be set
+        if (!j["path"].is_string()) return false;   // Must be set
+
+        if (j.contains("config")) {
+            if (!j["config"].is_string()) return false;
+        }
+        else {
+            j["config"] = "";  // Set default
+        }
+
+        if (j.contains("flags")) {
+            if (!j["flags"].is_number()) return false;
+        }
+        else {
+            j["flags"] = 0;  // Set default
+        }
+
+        if (j.contains("datarate")) {
+            if (!j["datarate"].is_number()) return false;
+        }
+        else {
+            j["datarate"] = 0;  // Set default
+        }
 
         setName(j["name"]);
-        m_path = j["path"];
+        return (VSCP_ERROR_SUCCESS == init(j["path"], j["config"], j["flags"], j["datarate"]));
     }
     catch (...) {
         return false;

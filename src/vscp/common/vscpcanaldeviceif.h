@@ -30,6 +30,8 @@
 
 #include <string>
 
+#include <dlfcn.h>
+
 #include <canaldlldef.h>
 
 // Format code for object data
@@ -393,6 +395,26 @@ class VscpCanalDeviceIf
         or nULL if no data is available.
     */
     const char *CanalGetDriverInfo(void);
+
+    /*!
+        Getter for path
+    */
+    std::string getPath(void) { return m_strPath; };
+
+    /*!
+        Getter for parameter
+    */
+    std::string getParameter(void) { return m_strParameter; };
+
+    /*!
+        Getter for flags
+    */
+    uint32_t getDeviceFlags(void) { return m_deviceFlags; };
+
+    /*!
+        Release the driver
+    */
+    void releaseDriver(void) { if (NULL != m_hdll )  { dlclose(m_hdll); m_hdll = NULL; } };
 
   private:
     // Driver DLL/DL path
