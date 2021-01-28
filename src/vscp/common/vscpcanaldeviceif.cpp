@@ -58,6 +58,7 @@ VscpCanalDeviceIf::VscpCanalDeviceIf()
     m_deviceFlags = 0;
     m_bAsync      = false;
     m_hdll        = NULL;
+    m_bGenerationOne = false;   // We guess it is a generation two CANAL driver
 }
 
 VscpCanalDeviceIf::~VscpCanalDeviceIf()
@@ -267,6 +268,7 @@ VscpCanalDeviceIf::init()
                "Generation 1 driver.",
                m_strPath.c_str());
         m_proc_CanalBlockingSend = NULL;
+        m_bGenerationOne = true;
     }
 
     // * * * * CANAL BLOCKING RECEIVE * * * *
@@ -279,6 +281,7 @@ VscpCanalDeviceIf::init()
                "Probably Generation 1 driver.",
                m_strPath.c_str());
         m_proc_CanalBlockingReceive = NULL;
+        m_bGenerationOne = true;
     }
 
     // * * * * CANAL GET DRIVER INFO * * * *
@@ -291,6 +294,7 @@ VscpCanalDeviceIf::init()
                "Probably Generation 1 driver.",
                m_strPath.c_str());
         m_proc_CanalGetdriverInfo = NULL;
+        m_bGenerationOne = true;
     }
 
     return CANAL_ERROR_SUCCESS;

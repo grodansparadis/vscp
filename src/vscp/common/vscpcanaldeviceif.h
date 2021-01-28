@@ -416,6 +416,12 @@ class VscpCanalDeviceIf
     */
     void releaseDriver(void) { if (NULL != m_hdll )  { dlclose(m_hdll); m_hdll = NULL; } };
 
+    /*!
+        Return true if the driver is a genaration 1 driver
+        @return True of generation 1 driver
+    */
+    bool isGenerationOne(void) { return m_bGenerationOne; };
+
   private:
     // Driver DLL/DL path
     std::string m_strPath;
@@ -434,6 +440,9 @@ class VscpCanalDeviceIf
 
     // Handle for dll/dl driver interface
     long m_openHandle;
+
+    // Set to true if driver is a generation one driver
+    bool m_bGenerationOne;
 
     // ------------------------------------------------------------------------
     //                     End of driver worker thread data

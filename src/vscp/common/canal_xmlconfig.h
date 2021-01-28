@@ -39,55 +39,7 @@
 #include <string>
 #include <list>
 
-// This class represent one wizard choice
 
-class wizardChoiceItem
-{
- public:
-    wizardChoiceItem();
-    ~wizardChoiceItem();
-
-    /*!
-        Set one choices item
-        @param value Value on string form for choice
-        @param description Description of this choice
-    */
-    void setChoice(const std::string& value, const std::string& description) 
-        { m_value = value; m_description = description; };
-
-    /*!
-        Set choice value
-        @param value Value on string form for choice
-    */
-    void setValue(const std::string& value) { m_value=value; };
-    
-    /*!
-        Get choice value
-        @return Value for choice as standard string
-    */
-    std::string getValue(void) { return m_value; };
-
-    /*!
-        Set choice description
-        @param description Description of this choice
-    */
-    void setDescription(const std::string& description) { m_description = description; };
-
-    /*!
-        Get choice description
-        @return Description for choice as standard string
-    */
-    std::string getDescription(void) { return m_description; };        
-
- protected:
-
-    /// Choice value
-    std::string m_value;
-
-    /// Choice description
-    std::string m_description;
-
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,9 +51,11 @@ class wizardChoiceItem
 
 class wizardStepBase
 {
-    enum class wizardTypes {NONE,STRING,BOOL,INT32,UINT32,INT64,UINT64,FLOAT,CHOICE};
 
-    const int m_type = wizardTypes::NONE;
+public:    
+    enum class wizardType {NONE,STRING,BOOL,INT32,UINT32,INT64,UINT64,FLOAT,CHOICE};
+
+    wizardType m_type = wizardType::NONE;
 
  public:
     wizardStepBase();
@@ -112,7 +66,7 @@ class wizardStepBase
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    virtual bool setValueFormString(const std::string& strValue) = 0;
+    virtual void setValueFormString(const std::string& strValue) = 0;
 
     /*!
         Get set value on string form
@@ -173,14 +127,13 @@ class wizardStepString : public wizardStepBase
     wizardStepString();
     ~wizardStepString();
 
-    const int m_type = wizardTypes::STRING;
-
+    
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue) { m_value = strValue; };
+    void setValueFormString(const std::string& strValue) { m_value = strValue; };
 
     /*!
         Get set value on string form
@@ -227,14 +180,12 @@ class wizardStepBool : public wizardStepBase
     wizardStepBool();
     ~wizardStepBool();
 
-    const int m_type = wizardTypes::BOOL;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -244,10 +195,10 @@ class wizardStepBool : public wizardStepBase
 
     /*!
         Check if the value is valid (true/false/1/0/on/off/yes/no)
-        @param value bool value to check for validity
+        @param value Standard string value to check for validity
         @return True if value is valid.
     */
-    virtual bool isValueValid(bool value);
+    virtual bool isValueValid(const std::string& strValue);
 
  private:
 
@@ -273,14 +224,12 @@ class wizardStepInt32 : public wizardStepBase
     wizardStepInt32();
     ~wizardStepInt32();
 
-    const int m_type = wizardTypes::INT32;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -293,7 +242,7 @@ class wizardStepInt32 : public wizardStepBase
         @param value int32_t value to check for validity
         @return True if value is valid.
     */
-    bool isValueValid(int32_t value);
+    bool isValueValid(const std::string& strValue);
 
     // Getters/Setters for max value
     int32_t getMaxValue() { return m_max; };
@@ -333,14 +282,12 @@ class wizardStepUInt32 : public wizardStepBase
     wizardStepUInt32();
     ~wizardStepUInt32();
 
-    const int m_type = wizardTypes::UINT32;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -353,7 +300,7 @@ class wizardStepUInt32 : public wizardStepBase
         @param value uint32_t value to check for validity
         @return True if value is valid.
     */
-    bool isValueValid(uint32_t value);
+    bool isValueValid(const std::string& strValue);
 
     // Getters/Setters for max value
     uint32_t getMaxValue() { return m_max; };
@@ -366,7 +313,7 @@ class wizardStepUInt32 : public wizardStepBase
  private:
 
     /// Item value
-    uint32_t value;
+    uint32_t m_value;
 
     /// Item max value
     uint32_t m_max;
@@ -393,14 +340,12 @@ class wizardStepInt64 : public wizardStepBase
     wizardStepInt64();
     ~wizardStepInt64();
 
-    const int m_type = wizardTypes::INT64;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -413,7 +358,7 @@ class wizardStepInt64 : public wizardStepBase
         @param value int64_t value to check for validity
         @return True if value is valid.
     */
-    bool isValueValid(int64_t value);
+    bool isValueValid(const std::string& strValue);
 
     // Getters/Setters for max value
     int64_t getMaxValue() { return m_max; };
@@ -453,14 +398,12 @@ class wizardStepUInt64 : public wizardStepBase
     wizardStepUInt64();
     ~wizardStepUInt64();
 
-    const int m_type = wizardTypes::UINT64;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -473,7 +416,7 @@ class wizardStepUInt64 : public wizardStepBase
         @param value uint64_t value to check for validity
         @return True if value is valid.
     */
-    bool isValueValid(uint64_t value);
+    bool isValueValid(const std::string& strValue);
 
     // Getters/Setters for max value
     uint64_t getMaxValue() { return m_max; };
@@ -514,14 +457,12 @@ class wizardStepFloat : public wizardStepBase
     wizardStepFloat();
     ~wizardStepFloat();
 
-    const int m_type = wizardTypes::FLOAT;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -534,7 +475,7 @@ class wizardStepFloat : public wizardStepBase
         @param value Float value to check for validity
         @return True if value is valid.
     */
-    bool isValueValid(float value);
+    bool isValueValid(const std::string& strValue);
 
     // Getters/Setters for max value
     double getMaxValue() { return m_max; };
@@ -556,7 +497,101 @@ class wizardStepFloat : public wizardStepBase
     double m_min;
 };
 
+
+
 // ----------------------------------------------------------------------------
+
+
+
+class wizardChoiceItemData
+{
+ public:
+    wizardChoiceItemData();
+    ~wizardChoiceItemData();
+
+    /*!
+        Set description for bit(s)
+        @param description Description for bit(s)
+    */
+    void setDescription(const std::string description) { m_description = description; };
+
+    /*!
+        Get description for bit(s)
+        @return Description for bit(s) as standard string
+    */
+    std::string getDescription(void) { return m_description; };
+
+    /*!
+        Set the value form it's string representation
+        @param strValue Value on string form
+        @return true on success, false on failure.
+    */
+    void setValue(const std::string& strValue) { m_value = strValue; };
+
+    /*!
+        Get set value on string form
+        @return Value on string form
+    */
+    std::string getValue(void) { return m_value; };
+
+ private:
+
+    /// Bit choice value
+    std::string m_value;
+
+    /// Bit choice description
+    std::string m_description;
+};
+
+// This class represent one wizard choice
+
+class wizardChoiceItem
+{
+ public:
+    wizardChoiceItem();
+    ~wizardChoiceItem();
+
+    /*!
+        Set one choices item
+        @param value Value on string form for choice
+        @param description Description of this choice
+    */
+    void setChoice(const std::string& value, const std::string& description) 
+        { m_value = value; m_description = description; };
+
+    /*!
+        Set choice value
+        @param value Value on string form for choice
+    */
+    void setValue(const std::string& value) { m_value=value; };
+    
+    /*!
+        Get choice value
+        @return Value for choice as standard string
+    */
+    std::string getValue(void) { return m_value; };
+
+    /*!
+        Set choice description
+        @param description Description of this choice
+    */
+    void setDescription(const std::string& description) { m_description = description; };
+
+    /*!
+        Get choice description
+        @return Description for choice as standard string
+    */
+    std::string getDescription(void) { return m_description; };        
+
+ protected:
+
+    /// Choice value
+    std::string m_value;
+
+    /// Choice description
+    std::string m_description;
+
+};
 
 
 /*!
@@ -577,20 +612,27 @@ class wizardStepChoice : public wizardStepBase
  public:
     wizardStepChoice();
     ~wizardStepChoice();
-    
-    const int m_type = wizardTypes::CHOICE;
+
+
+    /*!
+        Set the value form it's string representation
+        @param strValue Value on string form
+        @return true on success, false on failure.
+    */
+    virtual void setValueFormString(const std::string& strValue) { m_value = strValue; };
+
 
     /*!
         Get set value on string form
         @return Value on string form
     */
-    std::string getValueAsString(void);
+    std::string getValueAsString(void) { return m_value; };
 
 
  private:
 
     /// Index for selected item  (0 = default, first item)
-    int m_selIdx;
+    std::string m_value;
 
     /// List with choices
     std::list<wizardChoiceItemData *> m_choices;
@@ -697,8 +739,6 @@ class wizardFlagBitString : public wizardFlagBitBase
     wizardFlagBitString();
     ~wizardFlagBitString();
 
-    const int m_type = wizardTypes::STRING;
-
     /*!
         Set choice value
         @param value Value on string form for choice
@@ -738,14 +778,12 @@ class wizardFlagBitBool : public wizardFlagBitBase
     wizardFlagBitBool();
     ~wizardFlagBitBool();
 
-    const int m_type = wizardTypes::BOOL;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -758,7 +796,7 @@ class wizardFlagBitBool : public wizardFlagBitBase
         @param value bool value to check for validity
         @return True if value is valid.
     */
-    virtual bool isValueValid(bool value);
+    virtual bool isValueValid(const std::string& strValue);
 
  private:
 
@@ -784,14 +822,12 @@ class wizardFlagBitInt32 : public wizardFlagBitBase
     wizardFlagBitInt32();
     ~wizardFlagBitInt32();
 
-    const int m_type = wizardTypes::INT32;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -824,14 +860,12 @@ class wizardFlagBitUInt32 : public wizardFlagBitBase
     wizardFlagBitUInt32();
     ~wizardFlagBitUInt32();
 
-    const int m_type = wizardTypes::UINT32;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -863,14 +897,12 @@ class wizardFlagBitInt64 : public wizardFlagBitBase
     wizardFlagBitInt64();
     ~wizardFlagBitInt64();
 
-    const int m_type = wizardTypes::INT64;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -903,14 +935,12 @@ class wizardFlagBitUInt64 : public wizardFlagBitBase
     wizardFlagBitUInt64();
     ~wizardFlagBitUInt64();
 
-    const int m_type = wizardTypes::UINT64;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -943,14 +973,12 @@ class wizardFlagBitFloat : public wizardFlagBitBase
     wizardFlagBitFloat();
     ~wizardFlagBitFloat();
 
-    const int m_type = wizardTypes::FLOAT;
-
     /*!
         Set the value form it's string representation
         @param strValue Value on string form
         @return true on success, false on failure.
     */
-    bool setValueFormString(const std::string& strValue);
+    void setValueFormString(const std::string& strValue);
 
     /*!
         Get set value on string form
@@ -989,17 +1017,10 @@ class wizardChoiceFlagItemData
     std::string getDescription(void) { return m_description; };
 
     /*!
-        Set the value form it's string representation
-        @param strValue Value on string form
-        @return true on success, false on failure.
-    */
-    bool setValue(const std::string& strValue) { m_value = strValue; };
-
-    /*!
         Get set value on string form
         @return Value on string form
     */
-    std::string getValue(void) { return m_value; };
+    std::string getValueAsString(void) { return m_value; };
 
  private:
 
@@ -1029,8 +1050,6 @@ class wizardFlagBitChoice : public wizardFlagBitBase
  public:
     wizardFlagBitChoice();
     ~wizardFlagBitChoice();
-    
-    const int m_type = wizardTypes::CHOICE;
 
     /*!
         Get set value on string form
@@ -1068,9 +1087,6 @@ class canalXmlConfig
     canalXmlConfig();
     ~canalXmlConfig();
 
-    void setDescription(std::string& str) { m_description = description; };
-    std::string getDescription(void) { return m_description; }
-
     /*!
         Add a wizard step
         @param step Wizard step object to add
@@ -1081,10 +1097,10 @@ class canalXmlConfig
     /*!
         Parse the XML config and create the wizard
         structure.
-        @param CANAL XML configuration
+        @param xmlcfg CANAL XML configuration
         @return true on success, false on failure
     */
-    bool parseXML(std::string xmlconfig);
+    bool parseXML(const std::string& xmlcfg);
 
     // Setters for description
     void setDescription(const std::string& description) { m_description = description; };
