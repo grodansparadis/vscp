@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <expat.h>
 
@@ -232,6 +233,8 @@ startSetupParser( void *data, const char *name, const char **attr )
     }
     else if ( bFlags && ( 0 == strcmp( name, "bit") ) &&   ( 2 == depth_setup_parser ) ) {
 
+        bBit = true;
+
         uint8_t pos = 0;
         uint8_t width = 1;
         wizardStepBase::wizardType type = wizardStepBase::wizardType::NONE;
@@ -360,6 +363,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
     }
     else if ( bBit && ( 0 == strcmp( name, "choice") ) && ( 3 == depth_setup_parser ) ) {
+
         std::string value;
         std::string description;        
 
@@ -474,50 +478,7 @@ endSetupParser( void *data, const char *name )
 // ----------------------------------------------------------------------------
 
 
-//////////////////////////////////////////////////////////////////////////////
-// CTor
-//
 
-wizardChoiceItem::wizardChoiceItem()
-{
-    // Set defaults    
-    m_description = "CANAL driver configuration item";        
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DTor
-//
-
-wizardChoiceItem::~wizardChoiceItem()
-{
-
-}
-
-
-// ----------------------------------------------------------------------------
-
-
-//////////////////////////////////////////////////////////////////////////////
-// CTor
-//
-
-wizardBitChoice::wizardBitChoice()
-{
-    // Set defaults    
-    m_description = "CANAL driver configuration item";        
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DTor
-//
-
-wizardBitChoice::~wizardBitChoice()
-{
-
-}
-
-
-// ----------------------------------------------------------------------------
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -987,6 +948,29 @@ bool wizardStepFloat::isValueValid(const std::string& strValue)
 // CTor
 //
 
+wizardChoiceItem::wizardChoiceItem()
+{
+    // Set defaults    
+    m_description = "CANAL driver configuration item";    
+    m_value = "Default";    
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// DTor
+//
+
+wizardChoiceItem::~wizardChoiceItem()
+{
+
+}
+
+
+// ----------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////////
+// CTor
+//
+
 wizardStepChoice::wizardStepChoice() :
     wizardStepBase()
 {
@@ -1194,6 +1178,29 @@ wizardFlagBitFloat::~wizardFlagBitFloat()
 // CTor
 //
 
+wizardBitChoice::wizardBitChoice()
+{
+    // Set defaults    
+    m_description = "CANAL driver configuration item";
+    m_value = "0";        
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// DTor
+//
+
+wizardBitChoice::~wizardBitChoice()
+{
+
+}
+
+
+// ----------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////////
+// CTor
+//
+
 wizardFlagBitChoice::wizardFlagBitChoice() :
     wizardFlagBitBase()
 {
@@ -1207,6 +1214,20 @@ wizardFlagBitChoice::wizardFlagBitChoice() :
 wizardFlagBitChoice::~wizardFlagBitChoice()
 {
     
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getFlagsValue
+//
+// value & (2^width - 1) gives valied values for a field
+//  value << pos move the value to the right pos.
+
+uint32_t wizardFlagBitChoice::getFlagsValue(void)
+{
+    uint32_t value = vscp_readStringValue(m_value);
+    value &= (uint32_t)pow(2,(m_width - 1));    // Mask
+    value = value << m_pos;                     // Shift to pos
+    return value;
 }
 
 
@@ -1295,7 +1316,7 @@ bool canalXmlConfig::addFlagWizardStep(wizardFlagBitBase *item)
                     "<bit pos=\"1\" width=\"2\" type=\"int32\" "                                  \
                     "  description=\"Test2\" "                                                    \
                     "  infourl=\"https://test.com\" /> "                                          \
-                    "<bit pos=\"3\" width=\"2\" type=\"int32\" "                                  \
+                    "<bit pos=\"3\" width=\"2\" type=\"choice\" "                                 \
                     "  description=\"Test3\" "                                                    \
                     "  infourl=\"https://test.com\" > "                                           \
                     "<choice value=\"0\" description=\"First field value\"  /> "                  \
@@ -1351,67 +1372,78 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
     {
         std::list<wizardStepBase *>::iterator it;
         for (it = m_stepsWizardItems.begin(); it != m_stepsWizardItems.end(); ++it){
-            fprintf(stderr,"Type = %d\n", static_cast<int>((*it)->m_type));
+            
+            fprintf(stderr,"\tType = %d\n", static_cast<int>((*it)->m_type));
+            
             switch ((*it)->m_type) {
 
                 case wizardStepBase::wizardType::NONE:
-                    fprintf(stderr, "wizardType::NONE\n"); 
+                    fprintf(stderr, "\twizardType::NONE\n"); 
                     break;
                 
                 case wizardStepBase::wizardType::STRING:
                     {
-                        fprintf(stderr, "wizardType::STRING\n"); 
+                        fprintf(stderr, "\twizardType::STRING\n"); 
                         wizardStepString *item = (wizardStepString *)(*it);
-                        fprintf(stderr, "Value = %s\n", item->getValue().c_str());
+                        fprintf(stderr, "\tValue = %s\n", item->getValue().c_str());
                     }
                     break;
                 
                 case wizardStepBase::wizardType::BOOL:
                     {
-                        fprintf(stderr, "wizardType::BOOL\n"); 
+                        fprintf(stderr, "\twizardType::BOOL\n"); 
                         wizardStepBool *item = (wizardStepBool *)(*it);
                     }
                     break;
                 
                 case wizardStepBase::wizardType::INT32:
                     {
-                        fprintf(stderr, "wizardType::INT32\n"); 
+                        fprintf(stderr, "\twizardType::INT32\n"); 
                         wizardStepInt32 *item = (wizardStepInt32 *)(*it);
                     }
                     break;
                 
                 case wizardStepBase::wizardType::UINT32:
                     {
-                        fprintf(stderr, "wizardType::UINT32\n"); 
+                        fprintf(stderr, "\twizardType::UINT32\n"); 
                         wizardStepUInt32 *item = (wizardStepUInt32 *)(*it);
                     }
                     break;
                 
                 case wizardStepBase::wizardType::INT64:
                     {
-                        fprintf(stderr, "wizardType::INT64\n");
+                        fprintf(stderr, "\twizardType::INT64\n");
                         wizardStepInt64 *item = (wizardStepInt64 *)(*it); 
                     }
                     break;
                 
                 case wizardStepBase::wizardType::UINT64:
                     {
-                        fprintf(stderr, "wizardType::UINT64\n");
+                        fprintf(stderr, "\twizardType::UINT64\n");
                         wizardStepUInt64 *item = (wizardStepUInt64 *)(*it); 
                     }
                     break;
                 
                 case wizardStepBase::wizardType::FLOAT:
                     {
-                        fprintf(stderr, "wizardType::FLOAT\n");
+                        fprintf(stderr, "\twizardType::FLOAT\n");
                         wizardStepFloat *item = (wizardStepFloat *)(*it); 
                     }
                     break;
 
                 case wizardStepBase::wizardType::CHOICE:
                     {
-                        fprintf(stderr, "wizardType::CHOICE\n");
+                        fprintf(stderr, "\twizardType::CHOICE\n");
                         wizardStepChoice *item = (wizardStepChoice *)(*it);
+
+                        std::list<wizardChoiceItem *>::iterator it;
+                        for (it = item->m_choices.begin(); it != item->m_choices.end(); ++it){
+                            wizardChoiceItem *itemChoice = (wizardChoiceItem *)(*it);
+                            fprintf(stderr, 
+                                        "\t\tChoice Value=%s Description=%s\n",
+                                        itemChoice->getValue().c_str(), 
+                                        itemChoice->getDescription().c_str());
+                        }
                     }
                     break;    
 
@@ -1427,7 +1459,84 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
     {
         std::list<wizardFlagBitBase *>::iterator it;
         for (it = m_stepsWizardFlags.begin(); it != m_stepsWizardFlags.end(); ++it){
-            fprintf(stderr,"Type = %d\n", static_cast<int>((*it)->m_type));
+
+            fprintf(stderr,"\tType = %d\n", static_cast<int>((*it)->m_type));
+
+            switch ((*it)->m_type) {
+
+                case wizardStepBase::wizardType::NONE:
+                    fprintf(stderr, "\twizardType::NONE\n"); 
+                    break;
+                
+                case wizardStepBase::wizardType::STRING:
+                    {
+                        fprintf(stderr, "\twizardType::STRING\n"); 
+                        wizardFlagBitString *item = (wizardFlagBitString *)(*it);
+                        fprintf(stderr, "\tValue = %s\n", item->getValue().c_str());
+                    }
+                    break;
+                
+                case wizardStepBase::wizardType::BOOL:
+                    {
+                        fprintf(stderr, "\twizardType::BOOL\n"); 
+                        wizardFlagBitBool *item = (wizardFlagBitBool *)(*it);
+                    }
+                    break;
+                
+                case wizardStepBase::wizardType::INT32:
+                    {
+                        fprintf(stderr, "\twizardType::INT32\n"); 
+                        wizardFlagBitInt32 *item = (wizardFlagBitInt32 *)(*it);
+                    }
+                    break;
+                
+                case wizardStepBase::wizardType::UINT32:
+                    {
+                        fprintf(stderr, "\twizardType::UINT32\n"); 
+                        wizardFlagBitUInt32 *item = (wizardFlagBitUInt32 *)(*it);
+                    }
+                    break;
+                
+                case wizardStepBase::wizardType::INT64:
+                    {
+                        fprintf(stderr, "\twizardType::INT64\n");
+                        wizardFlagBitInt64 *item = (wizardFlagBitInt64 *)(*it); 
+                    }
+                    break;
+                
+                case wizardStepBase::wizardType::UINT64:
+                    {
+                        fprintf(stderr, "\twizardType::UINT64\n");
+                        wizardFlagBitUInt64 *item = (wizardFlagBitUInt64 *)(*it); 
+                    }
+                    break;
+                
+                    {
+                        fprintf(stderr, "\twizardType::FLOAT\n");
+                        wizardFlagBitFloat *item = (wizardFlagBitFloat *)(*it); 
+                    }
+                    break;
+
+                case wizardStepBase::wizardType::CHOICE:
+                    {
+                        fprintf(stderr, "\twizardType::CHOICE\n");
+                        wizardFlagBitChoice *item = (wizardFlagBitChoice *)(*it);
+   
+                        std::list<wizardBitChoice *>::iterator it;
+                        for (it = item->m_choices.begin(); it != item->m_choices.end(); ++it){
+                            wizardBitChoice *itemChoice = (wizardBitChoice *)(*it);
+                            fprintf(stderr, 
+                                        "\t\tChoice Value=%s Description=%s\n",
+                                        itemChoice->getValue().c_str(), 
+                                        itemChoice->getDescription().c_str());
+                        }
+                    }
+                    break;    
+
+                default:
+                    // we do nothing
+                    break;                               
+            }
         }
     }
 

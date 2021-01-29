@@ -636,13 +636,17 @@ class wizardStepChoice : public wizardStepBase
     */
     void addChoice(wizardChoiceItem *choice) { m_choices.push_back(choice); };
 
+ public:
+
+    /// List with choices
+    std::list<wizardChoiceItem *> m_choices;
+
  private:
 
     /// Index for selected item  (0 = default, first item)
     std::string m_value;
 
-    /// List with choices
-    std::list<wizardChoiceItem *> m_choices;
+    
 };
 
 
@@ -1031,7 +1035,7 @@ class wizardBitChoice
         Get set value on string form
         @return Value on string form
     */
-    std::string getValue(void) { return m_value; };
+    std::string getValue(void) { return m_value; };     
 
     /*!
         Get set value on string form
@@ -1052,6 +1056,13 @@ class wizardBitChoice
 /*!
     Class that holds a configuration choice
 
+    A flag choice is a choices that can set a bit field of
+    size one to 32 bits to a value. pos (0-31) is the fields starting 
+    position. Width is number of bits (1-32).
+
+    value & (2^width - 1) gives valied values for a field
+    value << pos move the value to the right pos.
+
     -----------------------------------
     |  item 1
     |  item 2
@@ -1069,20 +1080,34 @@ class wizardFlagBitChoice : public wizardFlagBitBase
     ~wizardFlagBitChoice();
 
     /*!
-        Get set value on string form
+        Get selected value on string form
         @return Value on string form
     */
-    std::string getValue(void);
+    std::string getValue(void) {return m_value; };
 
+    /*!
+        Get the flags value. 
+        @return Flags value to add total flags value
+    */
+    uint32_t getFlagsValue(void);
+    
+
+    /*!
+        Add flag bit choice
+        @param choice Pointer to a wizardBitChoice
+    */
     void addChoice(wizardBitChoice *choice) { m_choices.push_back(choice); };
+
+ public:
+    
+    /// List with choices
+    std::list<wizardBitChoice *> m_choices;
 
  private:
 
     /// Selected value
-    std::string m_value;
-
-    /// List with choices
-    std::list<wizardBitChoice *> m_choices;
+    std::string m_value;    
+    
 };
 
 // ----------------------------------------------------------------------------
