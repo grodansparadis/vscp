@@ -38,9 +38,8 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
-// Uncomment to get some debug info
-#define DEBUG_CANAL_XMLCONFIG
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                Items
@@ -72,7 +71,14 @@ public:
         Get set value on string form
         @return Value on string form
     */
-    virtual std::string getValue(void) = 0;    
+    virtual std::string getValue(void) = 0;
+
+    /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    virtual std::string getRealValue(const std::string& input) = 0;
 
     /*!
         Set description
@@ -98,7 +104,18 @@ public:
     */
     std::string getInfoUrl(void) { return m_infourl; };
 
+    /*!
+        Set optional
+        @param bOptional Set optional flag
+    */
     void setOptional(bool bOptional) { m_bOptional = bOptional; };
+
+    /*!
+        Return optional flag
+        @return Boolean for optional flag
+    */
+    bool isOptional(void) { return m_bOptional; };
+    
 
  private:   
 
@@ -144,10 +161,17 @@ class wizardStepString : public wizardStepBase
     std::string getValue(void) { return m_value;}; 
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    virtual std::string getRealValue(const std::string& input) { return getValue(); };
+
+    /*!
         Check if the value is valid
         @return True if value is valid.
     */
-    virtual bool isValueValid(const std::string& strValue) { return true; };
+    bool isValueValid(const std::string& strValue) { return true; };
 
  private:
 
@@ -196,11 +220,18 @@ class wizardStepBool : public wizardStepBase
     std::string getValue(void); 
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    virtual std::string getRealValue(const std::string& input) { return getValue(); };
+
+    /*!
         Check if the value is valid (true/false/1/0/on/off/yes/no)
         @param value Standard string value to check for validity
         @return True if value is valid.
     */
-    virtual bool isValueValid(const std::string& strValue);
+    bool isValueValid(const std::string& strValue);
 
  private:
 
@@ -238,6 +269,13 @@ class wizardStepInt32 : public wizardStepBase
         @return Value on string form
     */
     std::string getValue(void);
+
+    /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input) { return getValue(); };
 
     /*!
         Check if the value is valid
@@ -298,6 +336,13 @@ class wizardStepUInt32 : public wizardStepBase
     std::string getValue(void);
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input) { return getValue(); };
+
+    /*!
         Check if the value is valid
         @param value uint32_t value to check for validity
         @return True if value is valid.
@@ -356,6 +401,13 @@ class wizardStepInt64 : public wizardStepBase
     std::string getValue(void);
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input) { return getValue(); };
+
+    /*!
         Check if the value is valid
         @param value int64_t value to check for validity
         @return True if value is valid.
@@ -412,6 +464,13 @@ class wizardStepUInt64 : public wizardStepBase
         @return Value on string form
     */
     std::string getValue(void);
+
+    /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input) { return getValue(); };
 
     /*!
         Check if the value is valid
@@ -473,6 +532,13 @@ class wizardStepFloat : public wizardStepBase
     std::string getValue(void);
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input) { return getValue(); };
+
+    /*!
         Check if the value is valid
         @param value Float value to check for validity
         @return True if value is valid.
@@ -505,45 +571,6 @@ class wizardStepFloat : public wizardStepBase
 
 
 
-// class wizardItemChoice
-// {
-//  public:
-//     wizardItemChoice();
-//     ~wizardItemChoice();
-
-//     /*!
-//         Set description for bit(s)
-//         @param description Description for bit(s)
-//     */
-//     void setDescription(const std::string description) { m_description = description; };
-
-//     /*!
-//         Get description for bit(s)
-//         @return Description for bit(s) as standard string
-//     */
-//     std::string getDescription(void) { return m_description; };
-
-//     /*!
-//         Set the value form it's string representation
-//         @param strValue Value on string form
-//         @return true on success, false on failure.
-//     */
-//     void setValue(const std::string& strValue) { m_value = strValue; };
-
-//     /*!
-//         Get set value on string form
-//         @return Value on string form
-//     */
-//     std::string getValue(void) { return m_value; };
-
-//  private:
-
-//     /// Bit choice value
-//     std::string m_value;
-
-//     /// Bit choice description
-//     std::string m_description;
-// };
 
 // This class represent one wizard choice
 
@@ -566,6 +593,7 @@ class wizardChoiceItem
         @param value Value on string form for choice
     */
     void setValue(const std::string& value) { m_value=value; };
+    
     
     /*!
         Get choice value
@@ -631,6 +659,13 @@ class wizardStepChoice : public wizardStepBase
     std::string getValue(void) { return m_value; };
 
     /*!
+        Get the real value from dialog value (can be index into list etc)
+        @param input String that should be handled
+        @return Real value on standard string form
+    */
+    std::string getRealValue(const std::string& input);
+
+    /*!
         Add choice item
         @param choice Pointer to wizardItemChoice
     */
@@ -639,7 +674,7 @@ class wizardStepChoice : public wizardStepBase
  public:
 
     /// List with choices
-    std::list<wizardChoiceItem *> m_choices;
+    std::vector<wizardChoiceItem *> m_choices;
 
  private:
 
@@ -673,6 +708,26 @@ public:
     ~wizardFlagBitBase();
 
     /*!
+        Set value
+        @param strValue Value on string format
+    */
+    virtual void setValue(const std::string& strValue) = 0;
+
+    /*!
+        Get value
+        @return Value on string form
+    */
+    virtual std::string getValue(void) = 0;
+
+    /*!
+        Get the real value as unsigned integer from dialog flag value 
+        (can be index into list etc)
+        @param input String that should be handled
+        @return Real value as unsigned int
+    */
+    virtual uint32_t getRealValue(const std::string& input) = 0;
+
+    /*!
         Set position in flags integer (Must be in range 0-31)
         @param pos pos to set 
     */
@@ -695,7 +750,6 @@ public:
         @return Set bitfield width
     */
     uint8_t getWidth(void) { return m_width; };
-
 
     /*!
         Set description for bit(s)
@@ -737,45 +791,10 @@ public:
     std::string m_infourl;
 };
 
-// ----------------------------------------------------------------------------
-
-/*!
-    Class that holds a configuration string
-
-    -----------------------------------
-    |  label: _________________________
-    -----------------------------------
-              OK    CANCEL
-*/
-class wizardFlagBitString : public wizardFlagBitBase
-{
-
- public:
-    wizardFlagBitString();
-    ~wizardFlagBitString();
-
-    /*!
-        Set choice value
-        @param value Value on string form for choice
-    */
-    void setValue(const std::string& value) { m_value = value; };
-    
-    /*!
-        Get choice value
-        @return Value for choice as standard string
-    */
-    std::string getValue(void) { return m_value; };
-
-    
-
- private:
-
-    /// Item value
-    std::string m_value;
-
-};
 
 // ----------------------------------------------------------------------------
+
+
 
 /*!
     Class that holds a configuration boolean
@@ -807,6 +826,14 @@ class wizardFlagBitBool : public wizardFlagBitBase
     std::string getValue(void); 
 
     /*!
+        Get the real value as unsigned integer from dialog flag value 
+        (can be index into list etc)
+        @param input String that should be handled
+        @return Real value as unsigned int
+    */
+    uint32_t getRealValue(const std::string& input);
+
+    /*!
         Check if the value is valid (true/false/1/0/on/off/yes/no)
         @param value bool value to check for validity
         @return True if value is valid.
@@ -819,45 +846,11 @@ class wizardFlagBitBool : public wizardFlagBitBase
     bool m_value;   
 };
 
+
+
 // ----------------------------------------------------------------------------
 
-/*!
-    Class that holds a configuration int32
 
-    -----------------------------------
-    |  label: _________________________
-    -----------------------------------
-              OK    CANCEL
-*/
-
-class wizardFlagBitInt32 : public wizardFlagBitBase
-{
-
- public:
-    wizardFlagBitInt32();
-    ~wizardFlagBitInt32();
-
-    /*!
-        Set the value form it's string representation
-        @param strValue Value on string form
-        @return true on success, false on failure.
-    */
-    void setValue(const std::string& strValue);
-
-    /*!
-        Get set value on string form
-        @return Value on string form
-    */
-    std::string getValue(void);
-
-
- private:
-
-    /// Item value
-    int32_t m_value;
-};
-
-// ----------------------------------------------------------------------------
 
 /*!
     Class that holds a configuration uint32
@@ -868,12 +861,12 @@ class wizardFlagBitInt32 : public wizardFlagBitBase
               OK    CANCEL
 */
 
-class wizardFlagBitUInt32 : public wizardFlagBitBase
+class wizardFlagBitNumber : public wizardFlagBitBase
 {
 
  public:
-    wizardFlagBitUInt32();
-    ~wizardFlagBitUInt32();
+    wizardFlagBitNumber();
+    ~wizardFlagBitNumber();
 
     /*!
         Set the value form it's string representation
@@ -888,129 +881,25 @@ class wizardFlagBitUInt32 : public wizardFlagBitBase
     */
     std::string getValue(void);
 
- private:
-
-    /// Item value
-    uint32_t value;
-};
-
-// ----------------------------------------------------------------------------
-
-/*!
-    Class that holds a configuration int64
-
-    -----------------------------------
-    |  label: _________________________
-    -----------------------------------
-              OK    CANCEL
-*/
-
-class wizardFlagBitInt64 : public wizardFlagBitBase
-{
-
- public:
-    wizardFlagBitInt64();
-    ~wizardFlagBitInt64();
-
     /*!
-        Set the value form it's string representation
-        @param strValue Value on string form
-        @return true on success, false on failure.
+        Get the real value as unsigned integer from dialog flag value 
+        (can be index into list etc)
+        @param input String that should be handled
+        @return Real value as unsigned int
     */
-    void setValue(const std::string& strValue);
-
-    /*!
-        Get set value on string form
-        @return Value on string form
-    */
-    std::string getValue(void);
-
+    uint32_t getRealValue(const std::string& input);
 
  private:
 
     /// Item value
-    int64_t m_value;
-
-};
-
-// ----------------------------------------------------------------------------
-
-/*!
-    Class that holds a configuration uint64
-
-    -----------------------------------
-    |  label: _________________________
-    -----------------------------------
-              OK    CANCEL
-*/
-class wizardFlagBitUInt64 : public wizardFlagBitBase
-{
-
- public:
-    wizardFlagBitUInt64();
-    ~wizardFlagBitUInt64();
-
-    /*!
-        Set the value form it's string representation
-        @param strValue Value on string form
-        @return true on success, false on failure.
-    */
-    void setValue(const std::string& strValue);
-
-    /*!
-        Get set value on string form
-        @return Value on string form
-    */
-    std::string getValue(void);
-
- private:
-
-    /// Item value
-    uint64_t m_value;
-
-};
-
-// ----------------------------------------------------------------------------
-
-/*!
-    Class that holds a configuration float
-
-    -----------------------------------
-    |  label: _________________________
-    -----------------------------------
-              OK    CANCEL
-*/
-
-class wizardFlagBitFloat : public wizardFlagBitBase
-{
-
- public:
-    wizardFlagBitFloat();
-    ~wizardFlagBitFloat();
-
-    /*!
-        Set the value form it's string representation
-        @param strValue Value on string form
-        @return true on success, false on failure.
-    */
-    void setValue(const std::string& strValue);
-
-    /*!
-        Get set value on string form
-        @return Value on string form
-    */
-    std::string getValue(void);
-
-
- private:
-    
-    /// Item value
-    double m_value;
-    
+    uint32_t m_value;
 };
 
 
+
 // ----------------------------------------------------------------------------
+
+
 
 
 class wizardBitChoice
@@ -1086,6 +975,20 @@ class wizardFlagBitChoice : public wizardFlagBitBase
     std::string getValue(void) {return m_value; };
 
     /*!
+        Set value
+        @param value Value on string form
+    */
+    void setValue(const std::string& value) { m_value = value; };
+
+    /*!
+        Get the real value as unsigned integer from dialog flag value 
+        (can be index into list etc)
+        @param input String that should be handled
+        @return Real value as unsigned int
+    */
+    uint32_t getRealValue(const std::string& input);
+
+    /*!
         Get the flags value. 
         @return Flags value to add total flags value
     */
@@ -1101,7 +1004,7 @@ class wizardFlagBitChoice : public wizardFlagBitBase
  public:
     
     /// List with choices
-    std::list<wizardBitChoice *> m_choices;
+    std::vector<wizardBitChoice *> m_choices;
 
  private:
 
@@ -1166,15 +1069,17 @@ class canalXmlConfig
 
     // Setters for description
     void setInfoUrl(const std::string& infourl) { m_infourl = infourl; };
-    std::string setInfoUrl(void) { return m_infourl; }
+    std::string getInfoUrl(void) { return m_infourl; }
 
- private:
+ public:
 
     // List with wizard item steps (objects)
     std::list<wizardStepBase *> m_stepsWizardItems;  
 
     // List with wizard flag steps (objects)
     std::list<wizardFlagBitBase *> m_stepsWizardFlags;
+
+ private:
 
     /// Description for driver
     std::string m_description;

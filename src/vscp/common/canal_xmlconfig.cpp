@@ -41,6 +41,9 @@
 #include <climits>
 #include <cfloat>
 
+// Uncomment to get some debug info
+//#define DEBUG_CANAL_XMLCONFIG
+
 // Buffer for XML parser
 #define XML_BUFF_SIZE 100000
 
@@ -127,20 +130,20 @@ startSetupParser( void *data, const char *name, const char **attr )
                     else if (std::string::npos != attribute.find("BOOL")) {
                         type = wizardStepBase::wizardType::BOOL;
                     }
-                    else if (std::string::npos != attribute.find("INT32")) {
-                        type = wizardStepBase::wizardType::INT32;
-                    }
                     else if (std::string::npos != attribute.find("UINT32")) {
                         type = wizardStepBase::wizardType::UINT32;
                     }
-                    else if (std::string::npos != attribute.find("INT64")) {
-                        type = wizardStepBase::wizardType::INT64;
+                    else if (std::string::npos != attribute.find("INT32")) {
+                        type = wizardStepBase::wizardType::INT32;
                     }
                     else if (std::string::npos != attribute.find("UINT64")) {
                         type = wizardStepBase::wizardType::UINT64;
                     }
+                    else if (std::string::npos != attribute.find("INT64")) {
+                        type = wizardStepBase::wizardType::INT64;
+                    }                    
                     else if (std::string::npos != attribute.find("FLOAT")) {
-                        type = wizardStepBase::wizardType::STRING;
+                        type = wizardStepBase::wizardType::FLOAT;
                     }
                     else if (std::string::npos != attribute.find("CHOICE")) {
                         type = wizardStepBase::wizardType::CHOICE;
@@ -170,7 +173,7 @@ startSetupParser( void *data, const char *name, const char **attr )
                 }
             }
 
-        }
+        } // for
 
         if (bOptionalSet) {
             bOptional = true;
@@ -220,13 +223,12 @@ startSetupParser( void *data, const char *name, const char **attr )
                 break;                               
         }
 
-        item->setOptional(bOptional);
-        item->setInfoUrl(infourl);
-        item->setDescription(description);
-        item->setValue(initialval);
-
         // Add the item
         if (NULL != item) {
+            item->setOptional(bOptional);
+            item->setInfoUrl(infourl);
+            item->setDescription(description);
+            item->setValue(initialval);
             pConfig->addWizardStep(item);            
         }
 
@@ -238,6 +240,7 @@ startSetupParser( void *data, const char *name, const char **attr )
         uint8_t pos = 0;
         uint8_t width = 1;
         wizardStepBase::wizardType type = wizardStepBase::wizardType::NONE;
+        std::string initialval;
         std::string description;
         std::string infourl;
 
@@ -248,6 +251,9 @@ startSetupParser( void *data, const char *name, const char **attr )
             }
             else if ( 0 == strcmp( attr[i], "width") ) {
                 width = vscp_readStringValue(attribute);
+            }
+            else if ( 0 == strcmp( attr[i], "default") ) {
+                initialval = attribute;
             }
             else if ( 0 == strcmp( attr[i], "description") ) {
                 description = attribute;
@@ -261,26 +267,11 @@ startSetupParser( void *data, const char *name, const char **attr )
                     if (std::string::npos != attribute.find("none")) {
                         type = wizardStepBase::wizardType::NONE;
                     }
-                    else if (std::string::npos != attribute.find("STRING")) {
-                        type = wizardStepBase::wizardType::STRING;
-                    }
                     else if (std::string::npos != attribute.find("BOOL")) {
                         type = wizardStepBase::wizardType::BOOL;
                     }
-                    else if (std::string::npos != attribute.find("INT32")) {
-                        type = wizardStepBase::wizardType::INT32;
-                    }
-                    else if (std::string::npos != attribute.find("UINT32")) {
+                    else if (std::string::npos != attribute.find("NUMBER")) {
                         type = wizardStepBase::wizardType::UINT32;
-                    }
-                    else if (std::string::npos != attribute.find("INT64")) {
-                        type = wizardStepBase::wizardType::INT64;
-                    }
-                    else if (std::string::npos != attribute.find("UINT64")) {
-                        type = wizardStepBase::wizardType::UINT64;
-                    }
-                    else if (std::string::npos != attribute.find("FLOAT")) {
-                        type = wizardStepBase::wizardType::STRING;
                     }
                     else if (std::string::npos != attribute.find("CHOICE")) {
                         type = wizardStepBase::wizardType::CHOICE;
@@ -296,32 +287,12 @@ startSetupParser( void *data, const char *name, const char **attr )
                 item = NULL; 
                 break;
             
-            case wizardStepBase::wizardType::STRING:
-                item = new wizardFlagBitString();
-                break;
-            
             case wizardStepBase::wizardType::BOOL:
                 item = new wizardFlagBitBool();
                 break;
             
-            case wizardStepBase::wizardType::INT32:
-                item = new wizardFlagBitInt32();
-                break;
-            
             case wizardStepBase::wizardType::UINT32:
-                item = new wizardFlagBitUInt32();
-                break;
-            
-            case wizardStepBase::wizardType::INT64:
-                item = new wizardFlagBitInt64();
-                break;
-            
-            case wizardStepBase::wizardType::UINT64:
-                item = new wizardFlagBitUInt64();
-                break;
-            
-            case wizardStepBase::wizardType::FLOAT:
-                item = new wizardFlagBitFloat();
+                item = new wizardFlagBitNumber();
                 break;
 
             case wizardStepBase::wizardType::CHOICE:
@@ -335,6 +306,10 @@ startSetupParser( void *data, const char *name, const char **attr )
 
         // Add the item
         if (NULL != item) {
+            item->setPos(pos);
+            item->setWidth(width);
+            item->setInfoUrl(infourl);
+            item->setDescription(description);
             pConfig->addFlagWizardStep(item);
         }
 
@@ -967,6 +942,8 @@ wizardChoiceItem::~wizardChoiceItem()
 
 // ----------------------------------------------------------------------------
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 // CTor
 //
@@ -986,11 +963,35 @@ wizardStepChoice::~wizardStepChoice()
     
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// getRealValue
+//
 
-// Flags
+std::string wizardStepChoice::getRealValue(const std::string& input)
+{
+    std::string rv;
+
+    uint16_t idx = vscp_readStringValue(input);
+    if ( idx >= m_choices.size() ) {
+
+    }
+    else {
+        wizardChoiceItem *choice = m_choices[idx];
+        rv = choice->getValue();
+    }
+
+    return rv;
+}
+
+
 
 
 // ----------------------------------------------------------------------------
+//                                 Flags
+// ----------------------------------------------------------------------------
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1014,28 +1015,6 @@ wizardFlagBitBase::~wizardFlagBitBase()
 
 // ----------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////////////////////
-// CTor
-//
-
-wizardFlagBitString::wizardFlagBitString() :
-    wizardFlagBitBase()
-{
-    m_type = wizardStepBase::wizardType::STRING;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DTor
-//
-
-wizardFlagBitString::~wizardFlagBitString()
-{
-    
-}
-
-
-// ----------------------------------------------------------------------------
-
 
 //////////////////////////////////////////////////////////////////////////////
 // CTor
@@ -1045,6 +1024,7 @@ wizardFlagBitBool::wizardFlagBitBool() :
     wizardFlagBitBase()
 {
     m_type = wizardStepBase::wizardType::BOOL;
+    m_value = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1056,26 +1036,102 @@ wizardFlagBitBool::~wizardFlagBitBool()
     
 }
 
-// ----------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+
+void wizardFlagBitBool::setValue(const std::string& strValue)
+{
+    std::string str = strValue;
+    vscp_makeLower(str);      
+    if (std::string::npos != str.find("true")) { 
+        m_value = true;
+    }
+    else if (std::string::npos != str.find("yes")) { 
+        m_value = true;
+    }
+    else if (std::string::npos != str.find("on")) { 
+        m_value = true;
+    }
+    else if (std::string::npos != str.find("1")) { 
+        m_value = true;        
+    }
+    else if (std::string::npos != str.find("false")) { 
+        m_value = false;
+    }
+    else if (std::string::npos != str.find("no")) { 
+        m_value = false;
+    }
+    else if (std::string::npos != str.find("off")) { 
+        m_value = false;
+    }
+    else if (std::string::npos != str.find("0")) { 
+        m_value = false;
+    }
+    else {
+        m_value = false;
+    }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
-// CTor
+// getValue
 //
 
-wizardFlagBitInt32::wizardFlagBitInt32() :
-    wizardFlagBitBase()
+std::string wizardFlagBitBool::getValue(void)
 {
-    m_type = wizardStepBase::wizardType::INT32;
+    return m_value ? "true" : "false";
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// DTor
+// isValueValid
 //
 
-wizardFlagBitInt32::~wizardFlagBitInt32()
+bool wizardFlagBitBool::isValueValid(const std::string& strValue)
 {
+    std::string str = strValue;
+    vscp_makeLower(str);      
+    if (std::string::npos != str.find("true")) { 
+        return true;
+    }
+    else if (std::string::npos != str.find("yes")) { 
+        return true;
+    }
+    else if (std::string::npos != str.find("on")) { 
+        return true;
+    }
+    else if (std::string::npos != str.find("1")) { 
+        return true;        
+    }
+    else if (std::string::npos != str.find("false")) { 
+        return true;
+    }
+    else if (std::string::npos != str.find("no")) { 
+       return true;
+    }
+    else if (std::string::npos != str.find("off")) { 
+        return true;
+    }
+    else if (std::string::npos != str.find("0")) { 
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getRealValue
+//
+
+uint32_t wizardFlagBitBool::getRealValue(const std::string& input)
+{
+    uint32_t rv = 0;
     
+    if (std::string::npos != input.find("true")) {        
+        rv = 1 << getPos();
+    }
+    return rv;
 }
 
 
@@ -1086,7 +1142,7 @@ wizardFlagBitInt32::~wizardFlagBitInt32()
 // CTor
 //
 
-wizardFlagBitUInt32::wizardFlagBitUInt32() :
+wizardFlagBitNumber::wizardFlagBitNumber() :
     wizardFlagBitBase()
 {
     m_type = wizardStepBase::wizardType::UINT32;
@@ -1096,78 +1152,40 @@ wizardFlagBitUInt32::wizardFlagBitUInt32() :
 // DTor
 //
 
-wizardFlagBitUInt32::~wizardFlagBitUInt32()
+wizardFlagBitNumber::~wizardFlagBitNumber()
 {
     
 }
 
 
-// ----------------------------------------------------------------------------
-
-
 //////////////////////////////////////////////////////////////////////////////
-// CTor
+// setValue
 //
 
-wizardFlagBitInt64::wizardFlagBitInt64() :
-    wizardFlagBitBase()
+void wizardFlagBitNumber::setValue(const std::string& strValue)
 {
-    m_type = wizardStepBase::wizardType::INT64;
+    m_value = vscp_readStringValue(strValue);
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// DTor
+// getValue
 //
 
-wizardFlagBitInt64::~wizardFlagBitInt64()
+std::string wizardFlagBitNumber::getValue(void)
 {
-    
+    return vscp_str_format("%lu", m_value);
 }
 
-
-// ----------------------------------------------------------------------------
-
-
-//////////////////////////////////////////////////////////////////////////////
-// CTor
+/////////////////////////////////////////////////////////////////////////////
+// getRealValue
 //
 
-wizardFlagBitUInt64::wizardFlagBitUInt64() :
-    wizardFlagBitBase()
+uint32_t wizardFlagBitNumber::getRealValue(const std::string& input)
 {
-    m_type = wizardStepBase::wizardType::UINT64;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DTor
-//
-
-wizardFlagBitUInt64::~wizardFlagBitUInt64()
-{
-    
-}
-
-
-// ----------------------------------------------------------------------------
-
-
-//////////////////////////////////////////////////////////////////////////////
-// CTor
-//
-
-wizardFlagBitFloat::wizardFlagBitFloat() :
-    wizardFlagBitBase()
-{
-    m_type = wizardStepBase::wizardType::FLOAT;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DTor
-//
-
-wizardFlagBitFloat::~wizardFlagBitFloat()
-{
-    
+    uint32_t value = vscp_readStringValue(input);
+    value &= (uint32_t)pow(2, m_width) - 1;    // Mask
+    value = value << m_pos;                    // Shift to pos
+    return value;
 }
 
 
@@ -1230,6 +1248,26 @@ uint32_t wizardFlagBitChoice::getFlagsValue(void)
     return value;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// getRealValue
+//
+
+uint32_t wizardFlagBitChoice::getRealValue(const std::string& input)
+{
+    uint32_t rv;
+
+    uint16_t idx = vscp_readStringValue(input);
+    if ( idx >= m_choices.size() ) {
+
+    }
+    else {
+        wizardBitChoice *choice = m_choices[idx];
+        rv = vscp_readStringValue(choice->getValue());
+    }
+
+    return rv;
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -1280,45 +1318,66 @@ bool canalXmlConfig::addFlagWizardStep(wizardFlagBitBase *item)
 #define XML_CONFIG  "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"                             \
                     "<!-- Version 1.0   2021-01-26   -->"                                         \
                     "<config>"                                                                    \
-                    "<description format=\"text\">Level I (CANAL) SocketCan driver'</description>"\
+                    "<description format=\"text\">VSCP level I (CANAL) SocketCan driver</description>"\
                     "<level>1</level>"                                                            \
                     "<blocking>yes</blocking>"                                                    \
-                    "<infourl>https://github.com/grodansparadis/vscpl1drv-socketcan</infourl>"    \
+                    "<infourl>https://github.com/grodansparadis/vscpl1drv-socketcan#vscpl1drv-socketcan---vscp-level-i-socketcan-driver</infourl>"    \
                     "<items>"                                                                     \
                     "<item type=\"string\" optional=\"false\" default=\"vcan0\" "                 \
                     "  description=\"socketcan interface (vcan, can0, can1...)\" "                \
                     "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
-                    "<item type=\"string\" optional=\"true\" "                                    \
+                    "<item type=\"string\" optional=\"true\" default=\"1234\" "                                    \
                     "  description=\"mask (priority,class,type,guid)\" "                          \
                     "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
-                    "<item type=\"string\" optional=\"true\" "                                    \
+                    "<item type=\"string\" optional=\"true\" default=\"5678\""                                    \
                     "  description=\"filter (priority,class,type,guid)\" "                        \
                     "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
-                    "<item type=\"string\" optional=\"true\" "                                    \
-                    "  description=\"filter (priority,class,type,guid)\" "                        \
+                    "<item type=\"string\" optional=\"true\" default=\"ABCD\" "                                    \
+                    "  description=\"yyyyyyyy (Special)\" "                        \
                     "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
                     "<item type=\"choice\" optional=\"true\" "                                    \
-                    "  description=\"filter (priority,class,type,guid)\" "                        \
+                    "  description=\"A list fi coices\" "                        \
                     "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" >" \
                     "<choice value=\"1\" description=\"First value\"  /> "                        \
                     "<choice value=\"2\" description=\"Second value\" /> "                        \
                     "<choice value=\"3\" description=\"Third value\"  /> "                        \
                     "<choice value=\"4\" description=\"Fourth value\" /> "                        \
                     "</item>"                                                                     \
+                    "<item type=\"bool\" optional=\"true\" default=\"true\" "                                    \
+                    "  description=\"A boolean value (default=true)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"bool\" optional=\"true\" default=\"false\" "                                    \
+                    "  description=\"A boolean value (default=true)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"int32\" optional=\"true\" default=\"-34\" "                                    \
+                    "  description=\"A int32 value (default=-34)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"uint32\" optional=\"true\" default=\"987\" "                                    \
+                    "  description=\"A uint32 value (default=-987)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"int64\" optional=\"true\" default=\"-34\" "                                    \
+                    "  description=\"A int64 value (default=-34)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"uint64\" optional=\"true\" default=\"987\" "                                    \
+                    "  description=\"A uint64 value (default=-987)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
+                    "<item type=\"float\" optional=\"true\" default=\"123.45\" "                                    \
+                    "  description=\"A float value (default=123.5)\" "                        \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#configuration-string\" />" \
                     "</items>"                                                                    \
                     "<flags>"                                                                     \
-                    "<bit pos=\"31\" width=\"1\" type=\"bool\" "                                  \
-                    "  description=\"Enable debug\" "                                             \
-                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#flags\" /> "\
                     "<bit pos=\"0\" width=\"1\" type=\"bool\" "                                   \
                     "  description=\"Test1\" "                                                    \
                     "  infourl=\"https://test.com\" /> "                                          \
-                    "<bit pos=\"1\" width=\"2\" type=\"int32\" "                                  \
+                    "<bit pos=\"1\" width=\"4\" type=\"number\" "                                 \
                     "  description=\"Test2\" "                                                    \
                     "  infourl=\"https://test.com\" /> "                                          \
-                    "<bit pos=\"3\" width=\"2\" type=\"choice\" "                                 \
+                    "<bit pos=\"5\" width=\"2\" type=\"choice\" "                                 \
                     "  description=\"Test3\" "                                                    \
                     "  infourl=\"https://test.com\" > "                                           \
+                    "<bit pos=\"31\" width=\"1\" type=\"bool\" "                                  \
+                    "  description=\"Enable debug\" "                                             \
+                    "  infourl=\"https://github.com/grodansparadis/vscpl1drv-socketcan#flags\" /> "\
                     "<choice value=\"0\" description=\"First field value\"  /> "                  \
                     "<choice value=\"1\" description=\"Second field value\" /> "                  \
                     "<choice value=\"2\" description=\"Third field value\"  /> "                  \
@@ -1359,6 +1418,9 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
 
     XML_ParserFree( xmlParser );
 
+// ----------------------------------------------------------------------------
+//                             Debug output start
+// ----------------------------------------------------------------------------
 #ifdef DEBUG_CANAL_XMLCONFIG
     fprintf(stderr, "Description: %s\n", m_description.c_str());
     fprintf(stderr, "Info URL: %s\n", m_infourl.c_str());
@@ -1436,7 +1498,7 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
                         fprintf(stderr, "\twizardType::CHOICE\n");
                         wizardStepChoice *item = (wizardStepChoice *)(*it);
 
-                        std::list<wizardChoiceItem *>::iterator it;
+                        std::vector<wizardChoiceItem *>::iterator it;
                         for (it = item->m_choices.begin(); it != item->m_choices.end(); ++it){
                             wizardChoiceItem *itemChoice = (wizardChoiceItem *)(*it);
                             fprintf(stderr, 
@@ -1468,14 +1530,6 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
                     fprintf(stderr, "\twizardType::NONE\n"); 
                     break;
                 
-                case wizardStepBase::wizardType::STRING:
-                    {
-                        fprintf(stderr, "\twizardType::STRING\n"); 
-                        wizardFlagBitString *item = (wizardFlagBitString *)(*it);
-                        fprintf(stderr, "\tValue = %s\n", item->getValue().c_str());
-                    }
-                    break;
-                
                 case wizardStepBase::wizardType::BOOL:
                     {
                         fprintf(stderr, "\twizardType::BOOL\n"); 
@@ -1483,37 +1537,10 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
                     }
                     break;
                 
-                case wizardStepBase::wizardType::INT32:
-                    {
-                        fprintf(stderr, "\twizardType::INT32\n"); 
-                        wizardFlagBitInt32 *item = (wizardFlagBitInt32 *)(*it);
-                    }
-                    break;
-                
                 case wizardStepBase::wizardType::UINT32:
                     {
                         fprintf(stderr, "\twizardType::UINT32\n"); 
-                        wizardFlagBitUInt32 *item = (wizardFlagBitUInt32 *)(*it);
-                    }
-                    break;
-                
-                case wizardStepBase::wizardType::INT64:
-                    {
-                        fprintf(stderr, "\twizardType::INT64\n");
-                        wizardFlagBitInt64 *item = (wizardFlagBitInt64 *)(*it); 
-                    }
-                    break;
-                
-                case wizardStepBase::wizardType::UINT64:
-                    {
-                        fprintf(stderr, "\twizardType::UINT64\n");
-                        wizardFlagBitUInt64 *item = (wizardFlagBitUInt64 *)(*it); 
-                    }
-                    break;
-                
-                    {
-                        fprintf(stderr, "\twizardType::FLOAT\n");
-                        wizardFlagBitFloat *item = (wizardFlagBitFloat *)(*it); 
+                        wizardFlagBitNumber *item = (wizardFlagBitNumber *)(*it);
                     }
                     break;
 
@@ -1522,7 +1549,7 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
                         fprintf(stderr, "\twizardType::CHOICE\n");
                         wizardFlagBitChoice *item = (wizardFlagBitChoice *)(*it);
    
-                        std::list<wizardBitChoice *>::iterator it;
+                        std::vector<wizardBitChoice *>::iterator it;
                         for (it = item->m_choices.begin(); it != item->m_choices.end(); ++it){
                             wizardBitChoice *itemChoice = (wizardBitChoice *)(*it);
                             fprintf(stderr, 
@@ -1539,8 +1566,11 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
             }
         }
     }
-
 #endif
+
+// ----------------------------------------------------------------------------
+//                             Debug output end
+// ----------------------------------------------------------------------------
 
     return true;
 }
