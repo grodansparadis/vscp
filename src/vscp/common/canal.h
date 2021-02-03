@@ -42,13 +42,45 @@
 #define EXPORT
 #endif
 
-#ifdef WIN32
-#ifndef WINAPI
-#define WINAPI __stdcall
-#endif
-#else
 
-#endif
+/* CAN DLC to real data length conversion helpers */
+static const unsigned char canal_dlc2len[] = {
+        0, 1, 2, 3, 4, 5, 6, 7,
+		8, 12, 16, 20, 24, 32, 48, 64 };
+
+/* get data length from can_dlc with sanitized can_dlc */
+unsigned char canal_dlc2len(unsigned char can_dlc)
+{
+	return canal_dlc2len[can_dlc & 0x0F];
+}
+
+static const unsigned char canal_len2dlc[] = {
+                    0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
+					9, 9, 9, 9,				            /* 9 - 12 */
+					10, 10, 10, 10,				        /* 13 - 16 */
+					11, 11, 11, 11,				        /* 17 - 20 */
+					12, 12, 12, 12,				        /* 21 - 24 */
+					13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
+					14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
+					14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
+					15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
+					15, 15, 15, 15, 15, 15, 15, 15 };	/* 57 - 64 */
+
+/* map the sanitized data length to an appropriate data length code */
+unsigned char canal_len2dlc(unsigned char len)
+{
+	if (len > 64) {
+		return 0xF;
+    }
+
+	return canal_len2dlc[len];
+}
+
+enum canal_socketMode
+{
+    MODE_CAN_MTU = CAN_MTU,
+    MODE_CANFD_MTU = CANFD_MTU
+};
 
 
 #define CAN_MAX_STANDARD_ID                     0x7ff
@@ -64,8 +96,8 @@
 */
 
 #define CANAL_MAIN_VERSION                      1
-#define CANAL_MINOR_VERSION                     0
-#define CANAL_SUB_VERSION                       6
+#define CANAL_MINOR_VERSION                     1
+#define CANAL_SUB_VERSION                       0
 
 
 /* Canal Levels */
@@ -116,7 +148,7 @@ typedef struct structCanalMsg {
     unsigned long obid;                 /* Used by driver for channel info etc. */
     unsigned long id;                   /* CAN id (11-bit or 29-bit) */
     unsigned char sizeData;             /* Data size 0-8 */
-    unsigned char data[8];              /* CAN Data	 */
+    unsigned char data[64];             /* CAN Data	 */
     unsigned long timestamp;            /* Relative time stamp for package in microseconds */
 } canalMsg;
 
@@ -504,6 +536,12 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_INTERNAL                36          /* Some kind of internal program error */
 #define CANAL_ERROR_COMMUNICATION           37          /* Some kind of communication error */
 #define CANAL_ERROR_USER                    38          /* Login error */
+// Version 1.1.0
+#define CANAL_ERROR_MTU                     39          /* Frame does not fit */
+#define CANAL_ERROR_FD_SUPPORT              40          /* Flexible data-rate is not supported on this interface */
+#define CANAL_ERROR_FD_SUPPORT_ENABLE       41          /* Error on enabling fexible-data-rate support */ 
+#define CANAL_ERROR_SOCKET_CREATE           42          /* Unable to create (socketcan) socket */
+#define CANAL_ERROR_CONVERT_NAME_TO_INDEX   43          /* Unable to convert (socketcan) name to index */
 
 /* Filter mask settings */
 #define CANUSB_ACCEPTANCE_FILTER_ALL        0x00000000
