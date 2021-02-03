@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 # set the project name
 project(test LANGUAGES CXX C)
@@ -36,6 +36,8 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_canal.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_canal.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/canal_xmlconfig.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/canal_xmlconfig.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c
@@ -55,7 +57,7 @@ add_executable(test
 target_include_directories(test PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     )
