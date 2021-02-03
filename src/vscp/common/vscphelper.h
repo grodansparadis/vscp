@@ -1597,13 +1597,15 @@ extern "C"
         Covert VSCP event to CANAL message
     */
     bool vscp_convertEventToCanal(canalMsg* pcanalMsg,
-                                  const vscpEvent* pvscpEvent);
+                                  const vscpEvent* pvscpEvent,
+                                  uint8_t mode=CAN_MTU);
 
     /*!
         Covert VSCP event to CANAL message
     */
     bool vscp_convertEventExToCanal(canalMsg* pcanalMsg,
-                                    const vscpEventEx* pvscpEvent);
+                                    const vscpEventEx* pvscpEvent,
+                                    uint8_t mode=CAN_MTU);
 
     /*!
         Copy one VSCP event to another

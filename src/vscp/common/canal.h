@@ -42,45 +42,17 @@
 #define EXPORT
 #endif
 
+#ifndef WIN32
+#include <linux/can.h>
+#endif
 
-/* CAN DLC to real data length conversion helpers */
-static const unsigned char canal_dlc2len[] = {
-        0, 1, 2, 3, 4, 5, 6, 7,
-		8, 12, 16, 20, 24, 32, 48, 64 };
+#ifndef CAN_MTU
+#define CAN_MTU 0
+#endif
 
-/* get data length from can_dlc with sanitized can_dlc */
-unsigned char canal_dlc2len(unsigned char can_dlc)
-{
-	return canal_dlc2len[can_dlc & 0x0F];
-}
-
-static const unsigned char canal_len2dlc[] = {
-                    0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
-					9, 9, 9, 9,				            /* 9 - 12 */
-					10, 10, 10, 10,				        /* 13 - 16 */
-					11, 11, 11, 11,				        /* 17 - 20 */
-					12, 12, 12, 12,				        /* 21 - 24 */
-					13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
-					14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
-					14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
-					15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
-					15, 15, 15, 15, 15, 15, 15, 15 };	/* 57 - 64 */
-
-/* map the sanitized data length to an appropriate data length code */
-unsigned char canal_len2dlc(unsigned char len)
-{
-	if (len > 64) {
-		return 0xF;
-    }
-
-	return canal_len2dlc[len];
-}
-
-enum canal_socketMode
-{
-    MODE_CAN_MTU = CAN_MTU,
-    MODE_CANFD_MTU = CANFD_MTU
-};
+#ifndef CAN_MTU
+#define CANFD_MTU 1
+#endif
 
 
 #define CAN_MAX_STANDARD_ID                     0x7ff
@@ -454,6 +426,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IDFLAG_EXTENDED               0x00000001  /* Extended message id (29-bit) */
 #define CANAL_IDFLAG_RTR                    0x00000002  /* RTR-Frame */
 #define CANAL_IDFLAG_STATUS                 0x00000004  /* This package is a status indication (id holds error code) */
+#define CANAL_IDFLAG_FD                     0x00000008  /* This is a FD frame */
 #define CANAL_IDFLAG_SEND                   0x80000000  /* Reserved for use by application software to indicate send */
 
 /* Communication speeds */
@@ -542,6 +515,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_FD_SUPPORT_ENABLE       41          /* Error on enabling fexible-data-rate support */ 
 #define CANAL_ERROR_SOCKET_CREATE           42          /* Unable to create (socketcan) socket */
 #define CANAL_ERROR_CONVERT_NAME_TO_INDEX   43          /* Unable to convert (socketcan) name to index */
+#define CANAL_ERROR_SOCKET_BIND             44          /* Unable to bind to socket or equivalent */
 
 /* Filter mask settings */
 #define CANUSB_ACCEPTANCE_FILTER_ALL        0x00000000

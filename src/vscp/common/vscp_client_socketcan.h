@@ -30,38 +30,6 @@
 #include "vscp_client_base.h"
 #include "vscpcanaldeviceif.h"
 
-// CAN DLC to real data length conversion helpers 
-
-static const unsigned char dlc2len[] = {0, 1, 2, 3, 4, 5, 6, 7,
-					8, 12, 16, 20, 24, 32, 48, 64};
-
-// get data length from can_dlc with sanitized can_dlc 
-unsigned char can_dlc2len(unsigned char can_dlc)
-{
-	return dlc2len[can_dlc & 0x0F];
-}
-
-static const unsigned char len2dlc[] = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
-		9, 9, 9, 9,				            /* 9 - 12 */
-		10, 10, 10, 10,				        /* 13 - 16 */
-		11, 11, 11, 11,				        /* 17 - 20 */
-		12, 12, 12, 12,				        /* 21 - 24 */
-		13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
-		14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
-		14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
-		15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
-		15, 15, 15, 15, 15, 15, 15, 15};	/* 57 - 64 */
-
-// map the sanitized data length to an appropriate data length code 
-unsigned char can_len2dlc(unsigned char len)
-{
-	if (len > 64)
-		return 0xF;
-
-	return len2dlc[len];
-}
-
 
 // ----------------------------------------------------------------------------
 
@@ -77,17 +45,16 @@ public:
     vscpClientSocketCan();
     ~vscpClientSocketCan();
 
+    const uint32_t FLAG_ENABLE_DEBUG = 0x80000000;  // Debug mode
+    const uint32_t FLAG_FD_MODE      = 0x4000000;   // Enable FD mode
+
     /*!
         Initialize the CANAL client
-        @param strPath Path to CANAL driver.
-        @param strParameters CANAL driver configuration string.
-        @param flags CANAL driver configuration flags.
+        @param interface Socketcan interface name
+        @param flags Driver configuration flags. See m_flags below.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    int init(const std::string &strPath,
-                const std::string &strParameters = "",
-                unsigned long flags = 0,
-                unsigned long baudrate = 0); 
+    int init(const std::string &interface, unsigned long flags); 
 
     // Run wizard
     int runWizard(void);
@@ -239,7 +206,20 @@ public:
     /// Socketcan interface
     std::string m_interface;
 
+    /*!
+        Flags for interface
+        bit 32 - Enable debug
+        bit 31 - FD mode
+    */
+    uint32_t m_flags;
+
 private:
+
+    /// Socket for SocketCan
+    int m_socket;
+
+    /// CAN mode
+    int m_mode;
 
     /*!
         True of dll connection is open

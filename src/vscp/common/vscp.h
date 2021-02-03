@@ -581,6 +581,7 @@ extern "C"
     44 /* Requested item (remote variable) is unknown */
 #define VSCP_ERROR_ALREADY_DEFINED      45 /* The name is already in use. */
 #define VSCP_ERROR_WRITE_ERROR          46 /* Error when writing data */
+#define VSCP_ERROR_WRITE                46 /* Error when writing data */
 #define VSCP_ERROR_STOPPED              47 /* Operation stopped or aborted */
 #define VSCP_ERROR_INVALID_POINTER      48 /* Pointer with invalid value */
 #define VSCP_ERROR_INVALID_PERMISSION   49 /* Not allowed to do that */
