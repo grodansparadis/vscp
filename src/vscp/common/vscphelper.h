@@ -418,6 +418,10 @@ extern "C"
     {
         size_t start = 0, end = 0;
 
+        std::string str = theString;
+        vscp_trim(str);
+        if (!theString.length()) return;
+
         while (end != std::string::npos) {
             end = theString.find(theDelimiter, start);
 
