@@ -65,30 +65,30 @@
 #include <string>
 #include <list>
 
-/* CAN DLC to real data length conversion helpers */
+// CAN DLC to real data length conversion helpers 
 static const unsigned char canal_tbldlc2len[] = {
-        0, 1, 2, 3, 4, 5, 6, 7,
-		8, 12, 16, 20, 24, 32, 48, 64 };
+    0, 1, 2, 3, 4, 5, 6, 7,
+	8, 12, 16, 20, 24, 32, 48, 64 };
 
-/* get data length from can_dlc with sanitized can_dlc */
+// get data length from can_dlc with sanitized can_dlc 
 unsigned char canal_dlc2len(unsigned char can_dlc)
 {
 	return canal_tbldlc2len[can_dlc & 0x0F];
 }
 
 static const unsigned char canal_tbllen2dlc[] = {
-                    0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
-					9, 9, 9, 9,				            /* 9 - 12 */
-					10, 10, 10, 10,				        /* 13 - 16 */
-					11, 11, 11, 11,				        /* 17 - 20 */
-					12, 12, 12, 12,				        /* 21 - 24 */
-					13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
-					14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
-					14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
-					15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
-					15, 15, 15, 15, 15, 15, 15, 15 };	/* 57 - 64 */
+    0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
+	9, 9, 9, 9,				            /* 9 - 12 */
+	10, 10, 10, 10,				        /* 13 - 16 */
+	11, 11, 11, 11,				        /* 17 - 20 */
+	12, 12, 12, 12,				        /* 21 - 24 */
+	13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
+	14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
+	14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
+	15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
+	15, 15, 15, 15, 15, 15, 15, 15 };	/* 57 - 64 */
 
-/* map the sanitized data length to an appropriate data length code */
+// map the sanitized data length to an appropriate data length code 
 unsigned char canal_len2dlc(unsigned char len)
 {
 	if (len > 64) {
@@ -133,12 +133,14 @@ vscpClientSocketCan::~vscpClientSocketCan()
 // init
 //
 
-int vscpClientSocketCan::init(const std::string &interface,
-                                unsigned long flags)
+int vscpClientSocketCan::init(const std::string &interface, 
+                                unsigned long flags,
+                                uint32_t timeout)
 {
     m_interface = interface;
-    m_flags = flags;  
-    return VSCP_ERROR_SUCCESS;  
+    m_flags = flags;
+    setResponseTimeout(DEAULT_RESPONSE_TIMEOUT);  // Response timeout 3 ms
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

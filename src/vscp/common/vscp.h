@@ -229,7 +229,6 @@ extern "C"
 
     typedef struct
     {
-
         uint8_t filter_priority; /* Priority  */
         uint8_t mask_priority;
 

@@ -45,8 +45,10 @@ public:
     vscpClientSocketCan();
     ~vscpClientSocketCan();
 
-    const uint32_t FLAG_ENABLE_DEBUG = 0x80000000;  // Debug mode
-    const uint32_t FLAG_FD_MODE      = 0x4000000;   // Enable FD mode
+    static const uint32_t FLAG_ENABLE_DEBUG = 0x80000000;  // Debug mode
+    static const uint32_t FLAG_FD_MODE      = 0x4000000;   // Enable FD mode
+
+    static const uint32_t DEAULT_RESPONSE_TIMEOUT = 3;     // In ms
 
     /*!
         Initialize the CANAL client
@@ -54,7 +56,9 @@ public:
         @param flags Driver configuration flags. See m_flags below.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    int init(const std::string &interface, unsigned long flags); 
+    int init(const std::string &interface, 
+                unsigned long flags,
+                uint32_t timeout = DEAULT_RESPONSE_TIMEOUT); 
 
     // Run wizard
     int runWizard(void);
