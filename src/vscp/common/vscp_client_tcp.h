@@ -168,6 +168,21 @@ public:
     virtual void setResponseTimeout(uint32_t timeout);
     virtual uint32_t getResponseTimeout(void);
 
+    // Init MQTT CaFile
+    void setMqttCaFile(const std::string cafile) { m_bTLS = true; m_cafile = cafile; };
+
+    // Init MQTT CaPath
+    void setMqttCaPath(const std::string capath) { m_bTLS = true; m_capath = capath; };
+
+    // Init MQTT CertFile
+    void setMqttCertFile(const std::string certfile) { m_bTLS = true; m_certfile = certfile; };
+
+    // Init MQTT KeyFile
+    void setMqttKeyFile(const std::string keyfile) { m_bTLS = true; m_keyfile = keyfile; };
+
+    // Init MQTT PwKeyFile
+    void setMqttPwKeyFile(const std::string pwkeyfile) { m_bTLS = true; m_pwKeyfile = pwkeyfile; };
+
 private:
 
     VscpRemoteTcpIf m_tcp;
@@ -177,6 +192,34 @@ private:
     short m_port;
     std::string m_strUsername;
     std::string m_strPassword;
+
+    // ------------------------------------------------------------------------
+    //                                 TLS / SSL
+    // ------------------------------------------------------------------------
+
+    /// Enable TLS/SSL 
+    bool m_bTLS;
+
+    /*!
+        the server certificate will be verified and the connection 
+        aborted if the verification fails.
+    */
+    bool m_bVerifyPeer;
+
+    /// CA file
+    std::string m_cafile;
+
+    /// Path to CA file (can hold filename also)
+    std::string m_capath;    
+
+    /// Path to CERT file
+    std::string m_certfile; 
+
+    /// Key file
+    std::string m_keyfile;
+
+    /// Password keyfile
+    std::string m_pwKeyfile;
 };
 
 #endif

@@ -27,7 +27,7 @@
 #define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include <vscp_client_base.h>
 #include "vscpcanaldeviceif.h"
 
 

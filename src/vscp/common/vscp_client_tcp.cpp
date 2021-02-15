@@ -74,6 +74,22 @@ bool vscpClientTcp::fromJSON(const std::string& config)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+int vscpClientTcp::init(const std::string &strHostname,
+                        short port,
+                        const std::string &strUsername,
+                        const std::string &strPassword)
+{
+    m_strHostname = strHostname;
+    m_port = port;
+    m_strUsername = strUsername;
+    m_strPassword = strPassword;
+    return VSCP_ERROR_SUCCESS;
+}                
+
+///////////////////////////////////////////////////////////////////////////////
 // connect
 //
 
@@ -177,7 +193,8 @@ int vscpClientTcp::getversion(uint8_t *pmajor,
                                 uint8_t *prelease,
                                 uint8_t *pbuild)
 {
-    return VSCP_ERROR_SUCCESS;
+    *pbuild = 0;
+    return m_tcp.doCmdVersion(pmajor, pminor, prelease);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1610,8 +1610,9 @@ VscpRemoteTcpIf::doCmdInterfaceList(std::deque<std::string>& strarray)
         return VSCP_ERROR_ERROR;
     }
 
-    if (getInputQueueCount() < 2)
+    if (getInputQueueCount() < 2) {
         return VSCP_ERROR_ERROR;
+    }
 
     // Handle the data (if any)
     for (unsigned int i = 0; i < getInputQueueCount(); i++) {
