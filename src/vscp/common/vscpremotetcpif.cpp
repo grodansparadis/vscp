@@ -45,6 +45,8 @@
 #include "vscpdatetime.h"
 #include "vscpremotetcpif.h"
 
+#include <iostream>
+
 // Undef to get extra debug info
 //#define DEBUG_INNER_COMMUNICATION
 
@@ -99,7 +101,11 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 
         memset(buf, 0, sizeof(buf));
         int nRead = stcp_read(m_conn, buf, sizeof(buf), m_innerResponseTimeout);
-
+#ifdef  DEBUG_INNER_COMMUNICATION
+        if (nRead) {
+            std::cout << "[" << buf << "]" << std::endl;
+        }
+#endif 
         if (nRead < 0) {
             if (STCP_ERROR_TIMEOUT == nRead) {
                 // rv = VSCP_ERROR_TIMEOUT;
@@ -115,6 +121,9 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
             m_lastResponseTime =
               vscp_getMsTimeStamp(); // Save last response time
             m_strResponse += std::string(buf, nRead);
+#ifdef  DEBUG_INNER_COMMUNICATION
+            std::cout << "[ [m_strResponse]=" << m_strResponse << "]" << std::endl;
+#endif             
         }
 
         // if err abort
@@ -159,7 +168,7 @@ VscpRemoteTcpIf::doCommand(const char* cmd)
     bool ret = false;
 
 #ifdef DEBUG_INNER_COMMUNICATION
-    VSCP_LOG_DEBUG( "doCommand: " + cmd );
+    std::cout << "doCommand: " << cmd  << std::endl;
 #endif
 
     doClrInputQueue();
@@ -174,18 +183,18 @@ cmd.Length() ) ) || n != cmd.Length() ) { return VSCP_ERROR_ERROR;
     addInputStringArrayFromReply();
 
 #ifdef DEBUG_INNER_COMMUNICATION
-    VSCP_LOG_DEBUG(
+    std::cout << (
 "------------------------------------------------------------" );
-    VSCP_LOG_DEBUG( "checkReturnValue:  Queue before. Responsetime = %u. ",
+    std::cout << ( "checkReturnValue:  Queue before. Responsetime = %u. ",
 m_responseTimeOut ); for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
-        VSCP_LOG_DEBUG( "***** {" + m_inputStrArray[ i ] + "} *****" );
+        std::cout << ( "***** {" + m_inputStrArray[ i ] + "} *****" );
     }
-    VSCP_LOG_DEBUG(
+    std::cout << (
 "------------------------------------------------------------" ); #endif
 
     if ( !ret ) {
 #ifdef DEBUG_INNER_COMMUNICATION
-        VSCP_LOG_DEBUG( "doCommand: checkReturnValue failed" );
+        std::cout << ( "doCommand: checkReturnValue failed" );
 #endif
         return VSCP_ERROR_ERROR;
     }
@@ -255,17 +264,14 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
     // in the read buffer.
 
     // Get rest string that should not be handled now
-    // std::string tempStr = m_strResponse.AfterLast('\n');
-    size_t fpos = m_strResponse.find_first_of('\n');
-    if (fpos == m_strResponse.npos) {
-        tempStr = m_strResponse;
+    size_t fpos = m_strResponse.find_last_of('\n');
+    if (std::string::npos == fpos) {
+        tempStr = m_strResponse;                    // first CR not found at end of input
     } else {
-        tempStr = m_strResponse.substr(fpos + 1);
+        tempStr = m_strResponse.substr(fpos + 1);   // "+OK - Success" or other command response
     }
 
     // Get the string that should be parsed for inclusion in the string array
-    // std::string strToArray = m_strResponse.Left( m_strResponse.Length() -
-    // tempStr.Length() );
     std::string strToArray =
       m_strResponse.substr(0, m_strResponse.length() - tempStr.length());
 
@@ -276,10 +282,16 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
     std::deque<std::string> tokens;
     vscp_split(tokens, strToArray, "\n");
     while (tokens.size()) {
+        // Get line
         std::string str = tokens.front();
-        vscp_trim(str);
         tokens.pop_front();
-        m_inputStrArray.push_back(str);
+        
+        vscp_trim(str);
+         
+        // Save line of not just whitespace
+        if (str.length()) {
+            m_inputStrArray.push_back(str);
+        }
     }
 
     return m_inputStrArray.size();
@@ -300,8 +312,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strInterface, uint32_t flags)
     TCPIP_UNUSED(flags);
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("strInterface = ");
-    VSCP_LOG_DEBUG(strInterface);
+    std::cout << "strInterface = " << strInterface << std::endl;
 #endif
 
     // Interface can be given as
@@ -321,8 +332,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strInterface, uint32_t flags)
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("strHostname = ");
-    VSCP_LOG_DEBUG(strHostname);
+    std::cout << "strHostname = " << strHostname << std::endl;
 #endif
 
     // Username
@@ -332,8 +342,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strInterface, uint32_t flags)
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("strUsername = ");
-    VSCP_LOG_DEBUG(strUsername);
+    std::cout << "strUsername = " << strUsername << std::endl;
 #endif
 
     // Password
@@ -343,8 +352,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strInterface, uint32_t flags)
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("strPassword = ");
-    VSCP_LOG_DEBUG(strPassword);
+    std::cout << "strPassword = " << strPassword << std::endl;
 #endif
 
     return doCmdOpen(strHostname, strUsername, strPassword);
@@ -365,11 +373,9 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strHostname,
     int port;
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG(
-      "============================================================");
-    VSCP_LOG_DEBUG("Connect in progress with server " + strHostname);
-    VSCP_LOG_DEBUG(
-      "============================================================");
+    std::cout << "============================================================" << std::endl;
+    std::cout << "Connect in progress with server " << strHostname << std::endl;
+    std::cout << "============================================================" << std::endl;
 #endif
 
     std::string strHost = vscp_lower(strHostname);
@@ -390,19 +396,19 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strHostname,
     if (NULL == m_conn) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-        VSCP_LOG_DEBUG("Connection failed." + strHostname);
+        std::cout << "Connection failed." << strHostname << std::endl;
 #endif
         return VSCP_ERROR_TIMEOUT;
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("Checking server response");
+    std::cout << "Checking server response" << std::endl;
 #endif
 
     if (!checkReturnValue(true)) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-        VSCP_LOG_DEBUG(_ "No +OK found " + strHostname);
+        std::cout <<  "No +OK found " << strHostname << std::endl;
 #endif
 
         stcp_close_connection(m_conn);
@@ -576,10 +582,10 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx* pEventEx)
     if (pEventEx->sizeData > VSCP_MAX_DATA)
         return VSCP_ERROR_PARAMETER;
 
-    // VSCP_LOG_DEBUG( std::string::Format("%p crc=%p obid=%p year=%p month=%p
+    // std::cout << ( std::string::Format("%p crc=%p obid=%p year=%p month=%p
     // day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc),
     // (void*)&(pEventEx->obid), (void*)&(pEventEx->year),
-    // (void*)&(pEventEx->month), (void*)&(pEventEx->day) )); VSCP_LOG_DEBUG(
+    // (void*)&(pEventEx->month), (void*)&(pEventEx->day) )); std::cout << (
     // std::string::Format("vscpclass=%d vscptype=%d"),
     // (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
 
@@ -1222,7 +1228,7 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter* pFilter)
                       pFilter->mask_GUID[2],
                       pFilter->mask_GUID[1],
                       pFilter->mask_GUID[0]);
-    // VSCP_LOG_DEBUG( strCmd );
+    // std::cout << ( strCmd );
 
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
@@ -1801,7 +1807,7 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
                       (e.data[17] << 8) + e.data[18], // page
                       e.data[19],                     // register
                       e.data[20]);                    // content
-                    VSCP_LOG_DEBUG(str);
+                    std::cout << (str) << std::endl;
                 }
 #endif
 
@@ -2005,14 +2011,14 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
     /*
     #ifdef DEBUG_LIB_VSCP_HELPER
-        VSCP_LOG_DEBUG("readLevel2Registers: Start");
+        std::cout << "readLevel2Registers: Start" << std::endl;
     #endif
 
         for ( int i=0; i<100; i++ ) {
             doCmdNOOP();
         }
     #ifdef DEBUG_LIB_VSCP_HELPER
-        VSCP_LOG_DEBUG("readLevel2Registers: NOOP - End");
+        std::cout << "readLevel2Registers: NOOP - End" << std::endl;;
     #endif
     */
 
@@ -2046,7 +2052,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
                     for (int i = 0; i < e.sizeData; i++) {
                         str += vscp_str_format("%02X ", e.data[i]);
                     }
-                    VSCP_LOG_DEBUG(str);
+                    std::cout << (str);
                 }
 #endif
 
@@ -2144,7 +2150,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
         if ((vscp_getMsTimeStamp() - startTime) > m_registerOpErrorTimeout) {
             rv = CANAL_ERROR_TIMEOUT;
 #ifdef DEBUG_LIB_VSCP_HELPER
-            VSCP_LOG_DEBUG("readLevel2Registers: Timeout");
+            std::cout << "readLevel2Registers: Timeout" << std::endl;
 #endif
             break;
         } else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
@@ -2152,7 +2158,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
             doCmdSendEx(&e);
             resendTime += m_registerOpResendTimeout * (1 + nPages);
 #ifdef DEBUG_LIB_VSCP_HELPER
-            VSCP_LOG_DEBUG("readLevel2Registers: Resend ");
+            std::cout << "readLevel2Registers: Resend " << std::endl;
 #endif
         }
 
@@ -2161,7 +2167,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     } // while
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    VSCP_LOG_DEBUG("readLevel2Registers: End");
+    std::cout << "readLevel2Registers: End" << std::endl;
 #endif
 
     // Copy data on success
