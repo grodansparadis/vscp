@@ -239,7 +239,7 @@ int vscpClientMqtt::init(const std::string &strHost,
         m_mosq = mosquitto_new(m_clientId.c_str(), m_bCleanSession, this);
     }
     else {
-        m_mosq = mosquitto_new(NULL, m_bCleanSession, this);
+        m_mosq = mosquitto_new(NULL, true, this);
     }
 
     //  mosquitto_log_callback_set(m_mosq, my_log_callback);
