@@ -7031,40 +7031,40 @@ address family: IPv6
 address: 260527000000000300000000471393E3
 port: 80
 */
-if (0) {
-    void test_parse_address(const char* input) {
-        printf("input: %s\n", input);
-        ip_address_t result;
-        if (parse_address(input, &result)) {
-            printf("address family: %s\n",
-                result.family == AF_INET ? "IPv4" : "IPv6");
-            if (result.family == AF_INET)
-                printf("address: %X", result.address.address_v4);
-            else if (result.family == AF_INET6) {
-                printf("address: ");
-                for (int i = 0; i < 16; ++i)
-                    printf("%02X", (unsigned int)result.address.address_v6[i]);
-            }
-            printf("\n");
-            if (result.port > 0)
-                printf("port: %hu\n", result.port);
-            else
-                printf("port not specified\n");
-        } else {
-            printf("Parsing failed.\n");
-        }
-        printf("\n");
-    }
+// if (0) {
+//     void test_parse_address(const char* input) {
+//         printf("input: %s\n", input);
+//         ip_address_t result;
+//         if (parse_address(input, &result)) {
+//             printf("address family: %s\n",
+//                 result.family == AF_INET ? "IPv4" : "IPv6");
+//             if (result.family == AF_INET)
+//                 printf("address: %X", result.address.address_v4);
+//             else if (result.family == AF_INET6) {
+//                 printf("address: ");
+//                 for (int i = 0; i < 16; ++i)
+//                     printf("%02X", (unsigned int)result.address.address_v6[i]);
+//             }
+//             printf("\n");
+//             if (result.port > 0)
+//                 printf("port: %hu\n", result.port);
+//             else
+//                 printf("port not specified\n");
+//         } else {
+//             printf("Parsing failed.\n");
+//         }
+//         printf("\n");
+//     }
     
-    int main() {
-        test_parse_address("127.0.0.1");
-        test_parse_address("127.0.0.1:80");
-        test_parse_address("::ffff:127.0.0.1");
-        test_parse_address("::1");
-        test_parse_address("[::1]:80");
-        test_parse_address("1::80");
-        test_parse_address("2605:2700:0:3::4713:93e3");
-        test_parse_address("[2605:2700:0:3::4713:93e3]:80");
-        return 0;
-    }
-}
+//     int main() {
+//         test_parse_address("127.0.0.1");
+//         test_parse_address("127.0.0.1:80");
+//         test_parse_address("::ffff:127.0.0.1");
+//         test_parse_address("::1");
+//         test_parse_address("[::1]:80");
+//         test_parse_address("1::80");
+//         test_parse_address("2605:2700:0:3::4713:93e3");
+//         test_parse_address("[2605:2700:0:3::4713:93e3]:80");
+//         return 0;
+//     }
+// }
