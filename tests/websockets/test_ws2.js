@@ -6,7 +6,7 @@
   Copyright 2020 Ake Hedman, Grodans Paradis AB - MIT license
 */
 
-const WebSocket = require('ws');
+WebSocket = require('ws');
 
 const ws = new WebSocket('ws://localhost:8884/ws2', {
   perMessageDeflate: false
