@@ -29,7 +29,6 @@
 
 #include <limits.h>
 #include <math.h>
-#include <semaphore.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
