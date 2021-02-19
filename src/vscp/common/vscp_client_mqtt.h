@@ -349,7 +349,9 @@ public:
     bool m_bConnected;
 
     // Mutex that protect CANAL interface when callbacks are defined
+#ifndef WIN32
     pthread_mutex_t m_mutexif;
+#endif
 
     enumMqttMsgFormat m_format;         // Format for mqtt events (JSON/XML)
 
@@ -393,7 +395,9 @@ private:
     int m_mid;
     
     // Worker thread id
+#ifndef WIN32
     pthread_t m_tid;
+#endif
 
 };
 

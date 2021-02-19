@@ -195,7 +195,7 @@ long CanalOpen( const char *pDevice, unsigned long flags );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalClose( long handle );
+int EXPORT CanalClose( long handle );
 #else
 int CanalClose( long handle );
 #endif
@@ -206,7 +206,7 @@ int CanalClose( long handle );
     @return level for CANAL dll implementation.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetLevel( long handle );
+unsigned long EXPORT CanalGetLevel( long handle );
 #else
 unsigned long CanalGetLevel( long handle );
 #endif
@@ -222,7 +222,7 @@ unsigned long CanalGetLevel( long handle );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSend( long handle, const PCANALMSG pCanalMsg );
+int EXPORT CanalSend( long handle, const PCANALMSG pCanalMsg );
 #else
 int CanalSend( long handle, PCANALMSG pCanalMsg );
 #endif
@@ -240,7 +240,7 @@ int CanalSend( long handle, PCANALMSG pCanalMsg );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
+int EXPORT CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
 #else
 int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
 #endif
@@ -259,7 +259,7 @@ int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout )
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalReceive( long handle, PCANALMSG pCanalMsg );
+int EXPORT CanalReceive( long handle, PCANALMSG pCanalMsg );
 #else
 int CanalReceive( long handle, PCANALMSG pCanalMsg );
 #endif
@@ -280,7 +280,7 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalBlockingReceive( long handle,
+int EXPORT CanalBlockingReceive( long handle,
                                             PCANALMSG pCanalMsg,
                                             unsigned long timeout );
 #else
@@ -297,7 +297,7 @@ int CanalBlockingReceive( long handle,
     there are messages waiting to be received.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalDataAvailable( long handle );
+int  EXPORT CanalDataAvailable( long handle );
 #else
 int CanalDataAvailable( long handle );
 #endif
@@ -310,7 +310,7 @@ int CanalDataAvailable( long handle );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
+int EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
 #else
 int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
 #endif
@@ -323,7 +323,7 @@ int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalGetStatistics( long handle,
+int EXPORT CanalGetStatistics( long handle,
                                         PCANALSTATISTICS pCanalStatistics  );
 #else
 int CanalGetStatistics( long handle,
@@ -338,7 +338,7 @@ int CanalGetStatistics( long handle,
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetFilter( long handle, unsigned long filter );
+int EXPORT CanalSetFilter( long handle, unsigned long filter );
 #else
 int CanalSetFilter( long handle, unsigned long filter );
 #endif
@@ -351,7 +351,7 @@ int CanalSetFilter( long handle, unsigned long filter );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetMask( long handle, unsigned long mask );
+int EXPORT CanalSetMask( long handle, unsigned long mask );
 #else
 int CanalSetMask( long handle, unsigned long mask );
 #endif
@@ -364,7 +364,7 @@ int CanalSetMask( long handle, unsigned long mask );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetBaudrate( long handle, unsigned long baudrate );
+int EXPORT CanalSetBaudrate( long handle, unsigned long baudrate );
 #else
 int CanalSetBaudrate( long handle, unsigned long baudrate );
 #endif
@@ -375,7 +375,7 @@ int CanalSetBaudrate( long handle, unsigned long baudrate );
     @return version for CANAL i/f.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetVersion( void );
+unsigned long EXPORT CanalGetVersion( void );
 #else
 unsigned long CanalGetVersion( void );
 #endif
@@ -386,7 +386,7 @@ unsigned long CanalGetVersion( void );
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetDllVersion( void );
+unsigned long EXPORT CanalGetDllVersion( void );
 #else
 unsigned long CanalGetDllVersion( void );
 #endif
@@ -397,7 +397,7 @@ unsigned long CanalGetDllVersion( void );
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-const char * WINAPI EXPORT CanalGetVendorString( void );
+const char * EXPORT CanalGetVendorString( void );
 #else
 const char * CanalGetVendorString( void );
 #endif
@@ -406,7 +406,7 @@ const char * CanalGetVendorString( void );
     Get CANAL driver properties
 */
 #ifdef WIN32
-const char * WINAPI EXPORT CanalGetDriverInfo( void );
+const char * EXPORT CanalGetDriverInfo( void );
 #else
 const char * CanalGetDriverInfo( void );
 #endif

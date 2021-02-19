@@ -37,21 +37,27 @@
 #if !defined(VSCPREMOTETCPIF_H__INCLUDED_)
 #define VSCPREMOTETCPIF_H__INCLUDED_
 
+#ifndef WIN32
 #include <arpa/inet.h>
-#include <inttypes.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <semaphore.h>
-#include <sockettcp.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#else
+#include <winsock2.h>
+#endif
+#include <inttypes.h>
+
+#include <sockettcp.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 
 #include <canal.h>
 #include <guid.h>

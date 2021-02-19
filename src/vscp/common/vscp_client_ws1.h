@@ -26,7 +26,11 @@
 #if !defined(VSCPCLIENTWS1_H__INCLUDED_)
 #define VSCPCLIENTWS1_H__INCLUDED_
 
+#ifndef WIN32
 #include <semaphore.h>
+#else
+#include <winSock2.h>
+#endif
 
 #include "vscp.h"
 #include "vscp_client_base.h"
@@ -206,7 +210,9 @@ public:
     struct mg_connection *m_conn;
 
     // Semaphore for message receive queue
+#ifndef WIN32
     sem_t m_sem_msg;
+#endif
 
     // JSON message receive queue
     std::deque<std::string> m_msgReceiveQueue;
