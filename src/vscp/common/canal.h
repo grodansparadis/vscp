@@ -182,7 +182,7 @@ typedef long CANHANDLE;
   @return Handle of device or -1 if error.
 */
 #ifdef WIN32
-long WINAPI EXPORT CanalOpen( const char *pDevice, unsigned long flags );
+long EXPORT CanalOpen( const char *pDevice, unsigned long flags );
 #else
 long CanalOpen( const char *pDevice, unsigned long flags );
 #endif
