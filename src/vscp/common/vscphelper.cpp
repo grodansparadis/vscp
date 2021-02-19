@@ -42,11 +42,14 @@
 #include <string.h>
 
 #include <netdb.h>	
-#include <arpa/inet.h>
+
 
 #ifdef _WIN32
 #include <io.h>
+#include <winsock2.h>
 #define access _access_s
+#else
+#include <arpa/inet.h>
 #endif
 
 #include <algorithm>
