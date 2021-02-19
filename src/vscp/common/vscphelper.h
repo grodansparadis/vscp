@@ -40,6 +40,7 @@
 
 #ifndef WIN32
 #include <sys/times.h>
+#include <semaphore.h>
 #endif
 
 #include <algorithm>
@@ -51,7 +52,6 @@
 #include <vector>
 
 #include <float.h>
-#include <semaphore.h>
 
 #include <byteswap.h>
 
@@ -191,6 +191,7 @@ extern "C"
     void vscp_mem_usage(double& vm_usage, double& resident_set);
 #endif
 
+#ifndef WIN32
     /*!
         Wait a number of milliseconds for semaphore
 
@@ -200,6 +201,7 @@ extern "C"
         is set accordingly. ETIMEDOUT is returned for timeout.
     */
     int vscp_sem_wait(sem_t* sem, uint32_t waitms);
+#endif
 
     /*
      * Check two floats for equality

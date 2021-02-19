@@ -261,6 +261,7 @@ vscp_mem_usage(double& vm_usage, double& resident_set)
 // vscp_sem_wait
 //
 
+#ifndef WIN32
 int
 vscp_sem_wait(sem_t* sem, uint32_t waitms)
 {
@@ -282,6 +283,7 @@ vscp_sem_wait(sem_t* sem, uint32_t waitms)
 
     return sem_timedwait(sem, &ts);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_almostEqualRelativeFloat
