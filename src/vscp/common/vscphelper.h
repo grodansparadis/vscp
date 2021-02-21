@@ -617,6 +617,14 @@ extern "C"
     */
     int vscp_hostname_to_ip( char *ip, const char *hostname);
 
+
+    /*!
+        Get port from interface string on form host:port
+        @param interface on prefix:\\host:port form
+        @return port number if any
+    */
+    int vscp_getPortFromInterface(const std::string& interface);
+
     /*!
         vscp_getHostFromInterface
 
