@@ -28,7 +28,7 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
-#include "mosquitto.h"
+#include <mosquitto.h>
 
 #include <queue>
 #include <list>

@@ -628,7 +628,7 @@ extern "C"
 
     */
     std::string
-    vscp_getHostFromInterface(std::string interface);
+    vscp_getHostFromInterface(const std::string& interface);
 
     /*!
      * Parse IPv4 address and return net part and mask part
