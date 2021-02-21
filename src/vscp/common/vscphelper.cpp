@@ -981,7 +981,7 @@ int vscp_hostname_to_ip(char *ip, const char *hostname)
 //
 
 int
-vscp_getPortFromInterface(std::string interface)
+vscp_getPortFromInterface(const std::string& interface)
 {
     int port;
     size_t pos;
