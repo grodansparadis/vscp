@@ -67,6 +67,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include <expat.h>
 #include <json.hpp> // Needs C++11  -std=c++11
@@ -979,7 +980,7 @@ int vscp_hostname_to_ip(char *ip, const char *hostname)
 //
 
 int
-vscp_getPortFromInterface(const std::string& interface)
+vscp_getPortFromInterface(std::string& interface)
 {
     int port;
     size_t pos;
@@ -5373,10 +5374,17 @@ vscp_makeTimeStamp(void)
     time_t s;    // Seconds
     struct timespec spec;
 
+#ifdef WIN32
+    us = (double(std::chrono::duration_cast<std::chrono::microseconds>(
+                     std::chrono::system_clock::now().time_since_epoch())
+                     .count()) /
+            double(1000000));
+#else
     clock_gettime(CLOCK_REALTIME, &spec);
 
     s  = spec.tv_sec;
     us = round(s * 1000 + spec.tv_nsec / 1000); // Convert to microseconds
+#endif
     return us;
 }
 
