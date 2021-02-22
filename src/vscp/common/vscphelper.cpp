@@ -6193,7 +6193,7 @@ vscp_writeEventToFrame(uint8_t* frame,
     // Frame type
     frame[VSCP_MULTICAST_PACKET0_POS_PKTTYPE] = pkttype;
 
-    // Packet type
+    // Header
     frame[VSCP_MULTICAST_PACKET0_POS_HEAD_MSB] = (pEvent->head >> 8) & 0xff;
     frame[VSCP_MULTICAST_PACKET0_POS_HEAD_LSB] = pEvent->head & 0xff;
 
@@ -6329,7 +6329,7 @@ vscp_getEventFromFrame(vscpEvent* pEvent, const uint8_t* buf, size_t len)
     //  7           Year MSB
     //  8           Year LSB
     //  9           Month
-    //  10           Day
+    //  10          Day
     //  11          Hour
     //  12          Minute
     //  13          Second

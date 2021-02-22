@@ -26,8 +26,10 @@
 #if !defined(VSCPCLIENTMQTT_H__INCLUDED_)
 #define VSCPCLIENTMQTT_H__INCLUDED_
 
-#include "vscp.h"
+#include <vscp.h>
+#include <vscphelper.h>
 #include "vscp_client_base.h"
+
 #include "MQTTClient.h"
 
 #include <string>
@@ -145,12 +147,8 @@ public:
                 int qos = 0);
 
     // Init MQTT host
-    void setMqttHost(const std::string host = "127.0.0.1") 
+    void setMqttHost(const std::string host = "tcp://localhost:1883") 
             { strncpy(m_host, host.c_str(), sizeof(m_host)); };
-
-    // Init MQTT port
-    void setMqttPort(const short port = 1883) 
-            { m_port = port; };
 
     // Init MQTT user
     void setMqttUser(const std::string user) 
@@ -393,7 +391,8 @@ public:
     */
     std::string getHost(void) 
     {
-        return vscp_getPortFromInterface(m_host);
+        std::string str = m_host;
+        return vscp_getHostFromInterface(str);
     }
 
     /*!
@@ -402,7 +401,8 @@ public:
     */
     unsigned short getPort(void) 
     {
-        return vscp_getPortFromInterface(m_host);
+        std::string str = m_host;
+        return vscp_getPortFromInterface(str);
     }
 
 public:   
@@ -439,6 +439,8 @@ private:
 
     std::list<subscribeTopic> m_listTopicSub;   // Subscribe topic templates
     std::list<publishTopic> m_listTopicPub;     // Publish topic templates
+
+    vscpEventFilter m_filter;   // Receive filter
 
     char m_host[256];           // MQTT broker
     char m_clientid[256];       // Client id

@@ -749,7 +749,7 @@ note: This is a note <br>
     "}"
 
 // MQTT message formats
-enum enumMqttMsgFormat {jsonfmt,xmlfmt,strfmt,binfmt};
+enum enumMqttMsgFormat {jsonfmt,xmlfmt,strfmt,binfmt,autofmt};
 
 #ifdef __cplusplus
 }
