@@ -368,20 +368,17 @@ extern "C"
     // trim from start (in place)
     static inline void vscp_ltrim(std::string& s)
     {
-        s.erase(s.begin(),
-                std::find_if(s.begin(),
-                             s.end(),
-                             std::not1(std::ptr_fun<int, int>(std::isspace))));
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }));
     }
 
     // trim from end (in place)
     static inline void vscp_rtrim(std::string& s)
     {
-        s.erase(std::find_if(s.rbegin(),
-                             s.rend(),
-                             std::not1(std::ptr_fun<int, int>(std::isspace)))
-                  .base(),
-                s.end());
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
     }
 
     // trim from both ends (in place)
@@ -620,6 +617,14 @@ extern "C"
     */
     int vscp_hostname_to_ip( char *ip, const char *hostname);
 
+
+    /*!
+        Get port from interface string on form host:port
+        @param interface on prefix:\\host:port form
+        @return port number if any
+    */
+    int vscp_getPortFromInterface(const std::string& interface);
+
     /*!
         vscp_getHostFromInterface
 
@@ -631,7 +636,7 @@ extern "C"
 
     */
     std::string
-    vscp_getHostFromInterface(std::string interface);
+    vscp_getHostFromInterface(const std::string& interface);
 
     /*!
      * Parse IPv4 address and return net part and mask part

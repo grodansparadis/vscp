@@ -39,7 +39,6 @@
 #include <string.h>
 
 #ifdef _WIN32
-#include <windows.h>
 #include <io.h>
 #include <winsock2.h>
 #define access _access_s
@@ -49,7 +48,12 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>	
+#include <dirent.h>
+#include <grp.h>
+#include <pwd.h>
+#include <unistd.h>
 #endif
+
 
 #include <algorithm>
 #include <cctype>
@@ -63,6 +67,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include <expat.h>
 #include <json.hpp> // Needs C++11  -std=c++11
@@ -80,18 +85,28 @@
 #include <vscp.h>
 #include <vscphelper.h>
 
-#ifdef WIN32
-#include <dirent.h>
-#include <grp.h>
-#include <pwd.h>
-#include <unistd.h>
-#else
-#endif
-
 #define UNUSED(expr)                                                           \
     do {                                                                       \
         (void)(expr);                                                          \
     } while (0)
+
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
 
 #define vsnprintf_impl vsnprintf
 
@@ -112,23 +127,7 @@ using json = nlohmann::json;
      (((val) << 40) & 0x00FF000000000000) |                                    \
      (((val) << 56) & 0xFF00000000000000))
 
-// Check windows
-#if _WIN32 || _WIN64
-#if _WIN64
-#define ENVIRONMENT64
-#else
-#define ENVIRONMENT32
-#endif
-#endif
 
-// Check GCC
-#if __GNUC__
-#if __x86_64__ || __ppc64__
-#define ENVIRONMENT64
-#else
-#define ENVIRONMENT32
-#endif
-#endif
 
 // ***************************************************************************
 //                              General Helpers
@@ -981,7 +980,7 @@ int vscp_hostname_to_ip(char *ip, const char *hostname)
 //
 
 int
-vscp_getPortFromInterface(std::string interface)
+vscp_getPortFromInterface(std::string& interface)
 {
     int port;
     size_t pos;
@@ -5375,10 +5374,17 @@ vscp_makeTimeStamp(void)
     time_t s;    // Seconds
     struct timespec spec;
 
+#ifdef WIN32
+    us = (double(std::chrono::duration_cast<std::chrono::microseconds>(
+                     std::chrono::system_clock::now().time_since_epoch())
+                     .count()) /
+            double(1000000));
+#else
     clock_gettime(CLOCK_REALTIME, &spec);
 
     s  = spec.tv_sec;
     us = round(s * 1000 + spec.tv_nsec / 1000); // Convert to microseconds
+#endif
     return us;
 }
 
