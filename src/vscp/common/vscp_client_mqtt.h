@@ -28,13 +28,90 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
-#include "mosquitto.h"
+#include "MQTTClient.h"
 
+#include <string>
 #include <queue>
 #include <list>
 
 // Max number of events in inqueue
 #define MQTT_MAX_INQUEUE_SIZE   2000
+
+class publishTopic 
+{
+
+ public:
+    publishTopic(const std::string& topic = "", int qos = 0, bool bretain = false);
+    ~publishTopic();
+
+    /// Getters/Setters for topic
+    std::string getTopic(void) { return m_topic; };
+    void setTopic(const std::string topic) { m_topic=topic; };
+
+    /// Getters/setters for qos
+    int getQos(void) { return m_qos; };
+    void setQos(int qos) { m_qos = qos; };
+
+    /// getters/&Setters for retain
+    bool getRetain(void) { return m_bRetain; };
+    bool isRetain(void) { return m_bRetain; };
+    void setRetain(bool bRetain) { m_bRetain = bRetain; };
+
+ private:
+    
+    /// Publish topic
+    std::string m_topic;
+
+    /* 
+        Quality of service for messages published
+        on this topic
+    */
+    int m_qos;
+
+    /// publish topic message retain flag
+    bool m_bRetain;
+
+};
+
+
+// ----------------------------------------------------------------------------
+
+
+
+class subscribeTopic 
+{
+
+ public:
+    subscribeTopic(const std::string& topic = "", int qos = 0);
+    ~subscribeTopic();
+
+    /// Getters/Setters for topic
+    std::string getTopic(void) { return m_topic; };
+    void setTopic(const std::string topic) { m_topic=topic; };
+
+    /// Getters/setters for qos
+    int getQos(void) { return m_qos; };
+    void setQos(int qos) { m_qos = qos; };
+
+ private:
+    
+    /// Publish topic
+    std::string m_topic;
+
+    /* 
+        Quality of service for messages published
+        on this topic
+    */
+    int m_qos;
+
+    /// publish topic message retain flag
+    bool m_bRetain;
+
+};
+
+
+// ----------------------------------------------------------------------------
+
 
 // MQTT message formats - Moved to vscp.h
 // enum enumMqttMsgFormat {jsonfmt,xmlfmt,strfmt};
@@ -50,15 +127,7 @@ public:
     /*!
         Set init. information for this client
 
-        @param strHost MQTT broker to connect to. Defaults to "localhost"
-        @param port Port of MQTT broker. Default is 1883        
-        @param strTopicSub Subscription topic. Default is "vscp/#"
-        @param strTopicPub Publishing topic. Escapes can be used
-            %guid% of event
-            %class% VSCP event class
-            %type% VSCP event type
-            %dt% VSCP event date/time
-            Default is "vscp/%guid%/->/%class%/%type%/"
+        @param strHost MQTT broker to connect to. Defaults to "localhost"       
         @param clientId Client id to use. If empty string is supplied
                             a random client id will be set.  
         @param strUserName Username for connection session. If none is set
@@ -68,26 +137,28 @@ public:
         @return VSCP_ERROR_SUCCESS on success
     */
     int init(const std::string &strHost,
-                unsigned short port = 1883,
-                const std::string &strTopicSub = "vscp/#",
-                const std::string &strTopicPub = "vscp/%guid%/->/%class%/%type%/",
                 const std::string &clientId = "",
                 const std::string &strUserName = "",
                 const std::string &strPassword = "",
+                int keepAliveInterval = 20,
                 bool bCleanSession = false,
                 int qos = 0);
 
     // Init MQTT host
-    void setMqttHost(const std::string host = "127.0.0.1") { m_strHost = host; };
+    void setMqttHost(const std::string host = "127.0.0.1") 
+            { strncpy(m_host, host.c_str(), sizeof(m_host)); };
 
     // Init MQTT port
-    void setMqttPort(const short port = 1883) { m_port = port; };
+    void setMqttPort(const short port = 1883) 
+            { m_port = port; };
 
     // Init MQTT user
-    void setMqttUser(const std::string user) { m_strUserName = user; };
+    void setMqttUser(const std::string user) 
+            { strncpy(m_username, user.c_str(), sizeof(m_username)); };
 
     // Init MQTT password
-    void setMqttPassword(const std::string password) { m_strPassword = password; };
+    void setMqttPassword(const std::string password) 
+            { strncpy(m_password, password.c_str(), sizeof(m_password)); };
 
     // Init MQTT password
     void setMqttQos(const int qos = 0) { m_qos = qos; };
@@ -128,9 +199,12 @@ public:
         Add publishing item
 
         @param strTopicPub Publishing topic. Escapes can be used
+        @param qos Quality of service 0-3
+        @param bRetain Set to true for events published on this topic to be
+                    retained.
         @return VSCP_ERROR_SUCCESS on success
     */
-    int addPublish(const std::string strTopicPub);
+    int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false);
 
     /*!
         Set retain. Should be called before connect. Default is false.
@@ -319,17 +393,16 @@ public:
     */
     std::string getHost(void) 
     {
-        return m_strHost;
+        return vscp_getPortFromInterface(m_host);
     }
 
     /*!
         Getter for remote port
-
         @return remote host port.
     */
     unsigned short getPort(void) 
     {
-        return m_port;
+        return vscp_getPortFromInterface(m_host);
     }
 
 public:   
@@ -364,21 +437,21 @@ public:
 
 private:
 
-    std::string m_strHost;      // MQTT broker
-    unsigned short m_port;      // MQTT broker port
-    std::list<std::string> m_listTopicSub;  // Subscribe topic templates
-    std::list<std::string> m_listTopicPub;  // Publish topic templates
+    std::list<subscribeTopic> m_listTopicSub;   // Subscribe topic templates
+    std::list<publishTopic> m_listTopicPub;     // Publish topic templates
 
-    std::string m_clientId;     // Client id
-    std::string m_strUserName;  // Username
-    std::string m_strPassword;  // Password
+    char m_host[256];           // MQTT broker
+    char m_clientid[256];       // Client id
+    char m_username[128];       // Username
+    char m_password[128];       // Password
+
     int m_qos;                  // Quality of service (0/1/2)
     bool m_bRetain;             // Enable retain
     int m_keepalive;            // Keep alive in seconds
     bool m_bCleanSession;       // Clean session on disconnect if true
 
     // SSL/TSL
-    bool m_bTLS;                // True of a TLS/SSL connection should be done
+    bool m_bTLS;                // True of a TLS/SSL connection should be active
 
     std::string m_cafile;	    // path to a file containing the PEM encoded trusted CA certificate files.  
                                 // Either cafile or capath must not be NULL.
@@ -391,8 +464,11 @@ private:
 
     std::string m_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
 
-    struct mosquitto *m_mosq;   // Handel for connection
+    //struct mosquitto *m_mosq;   // Handel for connection
     int m_mid;
+
+    /// Paho client
+    MQTTClient m_pahoClient;
     
     // Worker thread id
 #ifndef WIN32
