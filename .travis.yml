@@ -35,6 +35,9 @@ before_script:
   - sudo apt-get install -y libsystemd-dev
   - sudo apt-get install -y libexpat-dev
   - sudo apt-get install -y libmosquitto-dev
+  - sudo apt-get install -y libpaho-mqtt-dev
+  - sudo apt-get install -y libpaho-mqtt1.3
+
   - g++ --version
 
 script: ./configure && make && sudo make install
