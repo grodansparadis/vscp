@@ -111,14 +111,14 @@ ws2_client_data_handler(struct mg_connection *conn,
                 if ( NULL == pev ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev);
+                pObj->m_evcallback(pev, pObj->m_callbackObject);
             }   
             else if (pObj->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
-                pObj->m_excallback(pex);
+                pObj->m_excallback(pex, pObj->m_callbackObject);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -128,6 +128,7 @@ ws2_client_data_handler(struct mg_connection *conn,
                 // Add to event queue
                 pObj->m_eventReceiveQueue.push_back(pev);
             }
+            
         }
         else {
             pObj->m_msgReceiveQueue.push_back(j);

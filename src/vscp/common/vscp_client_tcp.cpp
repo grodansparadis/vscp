@@ -25,7 +25,7 @@
 
 #include "vscp_client_tcp.h"
 
-
+void workerThread(vscpClientTcp *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -34,11 +34,15 @@
 vscpClientTcp::vscpClientTcp() 
 {
     m_type = CVscpClient::connType::TCPIP;
+    m_pworkerthread = nullptr;
     
     // Default connect parameters
     m_strHostname = "tcp://localhost:9598";
     m_strUsername = "admin";
     m_strPassword = "secret";
+    memset(m_interfaceGuid, 0, 16);
+    m_bPolling = false;
+    m_obid = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,7 +51,15 @@ vscpClientTcp::vscpClientTcp()
 
 vscpClientTcp::~vscpClientTcp() 
 {
-    
+    // Just to be sure
+    disconnect();
+
+    // Clear the input queue (if needed)
+    // while (m_inputQue.size()) {
+    //     vscpEvent *pev = m_inputQue.front();
+    //     m_inputQue.pop_front();
+    //     vscp_deleteEvent(pev);
+    // } 
 }
 
 
@@ -69,6 +81,115 @@ std::string vscpClientTcp::toJSON(void)
 
 bool vscpClientTcp::fromJSON(const std::string& config)
 {
+    json j;
+
+    try {
+        j = json::parse(config);
+
+        if (j.contains("host")) {
+            m_strHostname = j["host"].get<std::string>();
+        }
+
+        if (j.contains("user")) {
+            m_strUsername = j["user"].get<std::string>();
+        }
+
+        if (j.contains("password")) {
+            m_strPassword = j["password"].get<std::string>();
+        }
+
+        if (j.contains("pool")) {
+            m_bPolling = j["pool"].get<bool>();
+        }
+
+        if (j.contains("connection-timeout")) {
+            m_bPolling = j["connection-timeout"].get<int>();
+        }
+
+        if (j.contains("response-timeout")) {
+            m_bPolling = j["response-timeout"].get<int>();
+        }
+
+        if (j.contains("bfull-l2")) {
+            m_bPolling = j["bfull-l2"].get<bool>();
+        }
+
+        if (j.contains("selected-interface")) {
+            std::string str = j["selected-interface"].get<std::string>();
+            vscp_getGuidFromStringToArray(m_interfaceGuid, str);
+        }
+
+        // TLS
+
+        if (j.contains("btls")) {
+            m_bTLS = j["btls"].get<bool>();
+        }
+
+        if (j.contains("bverifypeer")) {
+            m_bVerifyPeer = j["bverifypeer"].get<bool>();
+        }
+
+        if (j.contains("cafile")) {
+            m_cafile = j["cafile"].get<std::string>();
+        }
+
+        if (j.contains("capath")) {
+            m_capath = j["capath"].get<std::string>();        
+        }
+
+        if (j.contains("certfile")) {
+            m_certfile = j["certfile"].get<std::string>();
+        }
+
+        if (j.contains("keyfile")) {
+            m_keyfile = j["keyfile"].get<std::string>();    
+        }
+
+        if (j.contains("pwkeyfile")) {
+            m_pwKeyfile = j["pwkeyfile"].get<std::string>();
+        }
+
+        // Filter
+
+        if (j.contains("priority-filter")) {
+            m_filter.filter_priority = j["priority-filter"].get<int>();
+        }
+
+        if (j.contains("priority-mask")) {
+            m_filter.mask_priority = j["priority-mask"].get<int>();
+        }
+
+        if (j.contains("class-filter")) {
+            m_filter.filter_class = j["class-filter"].get<int>();
+        }
+
+        if (j.contains("class-mask")) {
+            m_filter.mask_class = j["class-mask"].get<int>();
+        }
+
+        if (j.contains("type-filter")) {
+            m_filter.filter_type = j["type-filter"].get<int>();
+        }
+
+        if (j.contains("type-mask")) {
+            m_filter.mask_type = j["type-mask"].get<int>();
+        }
+
+        if (j.contains("guid-filter")) {
+            std::string str = j["type-filter"].get<std::string>();
+            vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
+        }
+
+        if (j.contains("guid-mask")) {
+            std::string str = j["type-mask"].get<std::string>();
+            vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
+        }
+
+    }
+    catch (...) {
+        return false;
+    }
+
     return true;
 }
 
@@ -78,11 +199,13 @@ bool vscpClientTcp::fromJSON(const std::string& config)
 
 int vscpClientTcp::init(const std::string &strHostname,
                         const std::string &strUsername,
-                        const std::string &strPassword)
+                        const std::string &strPassword,
+                        bool bPolling)
 {
     m_strHostname = strHostname;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
+    m_bPolling = bPolling;
     return VSCP_ERROR_SUCCESS;
 }                
 
@@ -92,9 +215,42 @@ int vscpClientTcp::init(const std::string &strHostname,
 
 int vscpClientTcp::connect(void) 
 {
-    return m_tcp.doCmdOpen(m_strHostname,
-                            m_strUsername,
-                            m_strPassword);
+    int rv;
+
+    if (m_bPolling) {
+        return m_tcp.doCmdOpen(m_strHostname,
+                                m_strUsername,
+                                m_strPassword);
+    }
+    else {
+        // Open main interface
+        if ( VSCP_ERROR_SUCCESS != 
+                    ( rv = m_tcp.doCmdOpen(m_strHostname,
+                                            m_strUsername,
+                                            m_strPassword ))) {
+            return rv;                                       
+        }
+
+        // Get channel id
+        // Received canm check obid in received events to see if they 
+        // are sent from ourself and if so skip them
+        m_tcp.doCmdGetChannelID(&m_obid);
+
+        // Open receive interface
+        if ( VSCP_ERROR_SUCCESS != 
+                    ( rv = m_tcpReceive.doCmdOpen(m_strHostname,
+                                                    m_strUsername,
+                                                    m_strPassword ))) {
+            m_tcp.doCmdClose();
+            return rv;                                       
+        }
+
+        // Create receive worker thread
+        m_bRun = true;
+        m_pworkerthread = new std::thread(workerThread, this);
+    }
+
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,7 +259,29 @@ int vscpClientTcp::connect(void)
 
 int vscpClientTcp::disconnect(void)
 {
-    return m_tcp.doCmdClose();
+    int rv;
+
+    if (m_bPolling) {
+        return m_tcp.doCmdClose();
+    }
+    else {
+
+        if (nullptr != m_pworkerthread) {
+            m_bRun = false;
+            m_pworkerthread->join();
+            m_pworkerthread = nullptr;
+        }
+
+        // Close receive connection
+        if ( VSCP_ERROR_SUCCESS != 
+                ( rv = m_tcpReceive.doCmdClose() ) ) {
+            m_tcp.doCmdClose();        
+            return rv;   
+        }
+
+        // Close main connection
+        return m_tcp.doCmdClose();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,7 +290,12 @@ int vscpClientTcp::disconnect(void)
 
 bool vscpClientTcp::isConnected(void)
 {
-    return m_tcp.isConnected();
+    if (m_bPolling) {
+        return m_tcp.isConnected();
+    }
+    else {
+        return (m_tcp.isConnected() && m_tcpReceive.isConnected());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,7 +331,7 @@ int vscpClientTcp::receive(vscpEvent &ev)
 
 int vscpClientTcp::receive(vscpEventEx &ex)
 {
-    return m_tcp.doCmdReceiveEx(&ex);
+    return m_tcp.doCmdReceiveEx(&ex);       
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,7 +340,14 @@ int vscpClientTcp::receive(vscpEventEx &ex)
 
 int vscpClientTcp::setfilter(vscpEventFilter &filter)
 {
-    return m_tcp.doCmdFilter(&filter);
+    if (m_bPolling) {
+        return m_tcp.doCmdFilter(&filter);
+    }
+    else {
+        m_mutexReceive.lock();
+        return m_tcpReceive.doCmdFilter(&filter);
+        m_mutexReceive.unlock();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,4 +436,59 @@ void vscpClientTcp::setResponseTimeout(uint32_t timeout)
 uint32_t vscpClientTcp::getResponseTimeout(void)
 {
     return m_tcp.getResponseTimeout();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendToCallbacks
+//
+
+void vscpClientTcp::sendToCallbacks(vscpEvent *pev)
+{
+    if (nullptr != m_evcallback) {
+        m_evcallback(pev, m_callbackObject);
+    }
+
+    if (nullptr != m_excallback) {
+        vscpEventEx ex;
+        vscp_convertEventToEventEx(&ex, pev);
+        m_excallback(&ex, m_callbackObject);
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------
+//                            Receive worker thread
+// ----------------------------------------------------------------------------
+
+
+
+
+void workerThread(vscpClientTcp *pObj)
+{
+    vscpEvent ev;
+    
+    ev.sizeData = 0;
+    ev.pdata = NULL;
+
+    // Check pointer
+    if (pObj) return;
+
+    VscpRemoteTcpIf *m_pif = pObj->getTcpReceive();
+
+    while (pObj->m_bRun) {
+
+        pObj->m_mutexReceive.lock();
+        if ( VSCP_ERROR_SUCCESS == m_pif->doCmdBlockingReceive(&ev) ) {
+            pObj->sendToCallbacks(&ev);
+            vscp_deleteEvent(&ev);
+        }
+        
+        if ( !m_pif->isConnected() ) {
+            pObj->m_bRun = false;
+        }
+
+        pObj->m_mutexReceive.unlock();
+
+    }       
 }

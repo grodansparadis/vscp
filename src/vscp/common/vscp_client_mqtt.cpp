@@ -136,10 +136,10 @@ on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
 
         // If callback is defined send event
         if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev);
+            pobj->m_evcallback(&ev, pobj->m_callbackObject);
         }
         else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex);
+            pobj->m_excallback(&ex, pobj->m_callbackObject);
         }
         else {
             // Put event in input queue
@@ -169,10 +169,10 @@ on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
 
         // If callback is defined send event
         if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev);
+            pobj->m_evcallback(&ev, pobj->m_callbackObject);
         }
         else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex);
+            pobj->m_excallback(&ex, pobj->m_callbackObject);
         }
         else {
             // Put event in input queue
@@ -202,10 +202,10 @@ on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
 
         // If callback is defined send event
         if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev);
+            pobj->m_evcallback(&ev, pobj->m_callbackObject);
         }
         else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex);
+            pobj->m_excallback(&ex, pobj->m_callbackObject);
         }
         else {
             // Put event in input queue
@@ -239,10 +239,10 @@ on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
 
         // If callback is defined send event
         if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev);
+            pobj->m_evcallback(&ev, pobj->m_callbackObject);
         }
         else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex);
+            pobj->m_excallback(&ex, pobj->m_callbackObject);
         }
         else {
             // Put event in input queue

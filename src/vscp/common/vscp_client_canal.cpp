@@ -409,7 +409,7 @@ static void *workerThread(void *pObj)
                         if (vscp_convertCanalToEvent(&ev,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_evcallback(&ev);
+                            pClient->m_evcallback(&ev, pClient->m_callbackObject);
                         }
                     }
                     if ( NULL != pClient->m_excallback ) {
@@ -417,7 +417,7 @@ static void *workerThread(void *pObj)
                         if (vscp_convertCanalToEventEx(&ex,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_excallback(&ex);
+                            pClient->m_excallback(&ex, pClient->m_callbackObject);
                         }
                     }
                 }

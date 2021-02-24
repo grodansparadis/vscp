@@ -102,13 +102,13 @@ ws1_client_data_handler(struct mg_connection *conn,
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
                 if ( !vscp_convertStringToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev);
+                pObj->m_evcallback(pev, pObj->m_callbackObject);
             }   
             else if (pObj->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 if ( !vscp_convertStringToEventEx(pex, str) ) return 1;
-                pObj->m_excallback(pex);
+                pObj->m_excallback(pex, pObj->m_callbackObject);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;

@@ -37,12 +37,16 @@
 // for convenience
 using json = nlohmann::json;
 
+// Callback to application if used. None, one or both can be used.
+// The second argument is a pointer tha application can set and use
+// as it wants.
+
 #ifdef WIN32
-typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev );
-typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx &ex );
+typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev, void *pobj );
+typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx &ex, void *pobj );
 #else
-typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev );     // Event callback
-typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex );   // Event ex callback
+typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev, void *pobj );     // Event callback
+typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex, void *pobj );   // Event ex callback
 #endif
 
 class CVscpClient
