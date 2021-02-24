@@ -982,7 +982,7 @@ int vscp_hostname_to_ip(char *ip, const char *hostname)
 int
 vscp_getPortFromInterface(std::string& interface)
 {
-    int port;
+    int port = 0;
     size_t pos;
     std::string str = interface;
     vscp_trim(str);

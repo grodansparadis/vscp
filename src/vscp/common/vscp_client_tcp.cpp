@@ -36,8 +36,7 @@ vscpClientTcp::vscpClientTcp()
     m_type = CVscpClient::connType::TCPIP;
     
     // Default connect parameters
-    m_strHostname = "localhost";
-    m_port = VSCP_DEFAULT_TCP_PORT;
+    m_strHostname = "tcp://localhost:9598";
     m_strUsername = "admin";
     m_strPassword = "secret";
 }
@@ -78,12 +77,10 @@ bool vscpClientTcp::fromJSON(const std::string& config)
 //
 
 int vscpClientTcp::init(const std::string &strHostname,
-                        short port,
                         const std::string &strUsername,
                         const std::string &strPassword)
 {
     m_strHostname = strHostname;
-    m_port = port;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
     return VSCP_ERROR_SUCCESS;
@@ -96,7 +93,6 @@ int vscpClientTcp::init(const std::string &strHostname,
 int vscpClientTcp::connect(void) 
 {
     return m_tcp.doCmdOpen(m_strHostname,
-                            m_port,
                             m_strUsername,
                             m_strPassword);
 }

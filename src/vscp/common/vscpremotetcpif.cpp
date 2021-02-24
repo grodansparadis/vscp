@@ -93,8 +93,7 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
     bool rv = false;
     char buf[8192];
 
-    if (bClear)
-        doClrInputQueue();
+    if (bClear) doClrInputQueue();
 
     uint32_t start = vscp_getMsTimeStamp();
     while (((vscp_getMsTimeStamp() - start) < m_responseTimeOut)) {
@@ -111,13 +110,15 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
                 // rv = VSCP_ERROR_TIMEOUT;
                 rv = false;
                 break;
-            } else if (STCP_ERROR_STOPPED == nRead) {
+            } 
+            else if (STCP_ERROR_STOPPED == nRead) {
                 // rv = VSCP_ERROR_STOPPED;
                 rv = false;
                 break;
             }
             break;
-        } else if (nRead > 0) {
+        } 
+        else if (nRead > 0) {
             m_lastResponseTime =
               vscp_getMsTimeStamp(); // Save last response time
             m_strResponse += std::string(buf, nRead);
@@ -159,48 +160,6 @@ VscpRemoteTcpIf::doCommand(const char* cmd)
     return doCommand(strCmd);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//  doCommand
-//
-
-/*int VscpRemoteTcpIf::doCommand( const std::string& cmd )
-{
-    bool ret = false;
-
-#ifdef DEBUG_INNER_COMMUNICATION
-    std::cout << "doCommand: " << cmd  << std::endl;
-#endif
-
-    doClrInputQueue();
-
-    int n;
-    if ( 0 == ( n = stcp_write( m_conn, (const char *)cmd.mbc_str(),
-cmd.Length() ) ) || n != cmd.Length() ) { return VSCP_ERROR_ERROR;
-    }
-
-    ret = checkReturnValue( true );
-
-    addInputStringArrayFromReply();
-
-#ifdef DEBUG_INNER_COMMUNICATION
-    std::cout << (
-"------------------------------------------------------------" );
-    std::cout << ( "checkReturnValue:  Queue before. Responsetime = %u. ",
-m_responseTimeOut ); for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
-        std::cout << ( "***** {" + m_inputStrArray[ i ] + "} *****" );
-    }
-    std::cout << (
-"------------------------------------------------------------" ); #endif
-
-    if ( !ret ) {
-#ifdef DEBUG_INNER_COMMUNICATION
-        std::cout << ( "doCommand: checkReturnValue failed" );
-#endif
-        return VSCP_ERROR_ERROR;
-    }
-
-    return VSCP_ERROR_SUCCESS;
-}*/
 
 int
 VscpRemoteTcpIf::doCommand(const std::string& cmd)
@@ -267,7 +226,8 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
     size_t fpos = m_strResponse.find_last_of('\n');
     if (std::string::npos == fpos) {
         tempStr = m_strResponse;                    // first CR not found at end of input
-    } else {
+    } 
+    else {
         tempStr = m_strResponse.substr(fpos + 1);   // "+OK - Success" or other command response
     }
 
@@ -384,8 +344,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strHostname,
 
     std::deque<std::string> tokens;
     vscp_split(tokens, strHost, ":");
-    if (tokens.size() < 2)
-        return VSCP_ERROR_PARAMETER;
+    if (tokens.size() < 2) return VSCP_ERROR_PARAMETER;
     host = tokens.front();
     tokens.pop_front();
     port = (int)vscp_readStringValue(tokens.front());
@@ -495,12 +454,10 @@ VscpRemoteTcpIf::doCmdClose(void)
 int
 VscpRemoteTcpIf::doCmdNOOP(void)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     return doCommand("NOOP\r\n");
 }
@@ -512,12 +469,10 @@ VscpRemoteTcpIf::doCmdNOOP(void)
 int
 VscpRemoteTcpIf::doCmdClear(void)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     return doCommand("CLRA\r\n");
 }
@@ -529,22 +484,22 @@ VscpRemoteTcpIf::doCmdClear(void)
 int
 VscpRemoteTcpIf::doCmdSend(const vscpEvent* pEvent)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strBuf, strWrk, strGUID;
 
     // Must be a valid data pointer if data
-    if ((pEvent->sizeData > 0) && (NULL == pEvent->pdata))
+    if ((pEvent->sizeData > 0) && (NULL == pEvent->pdata)) {
         return VSCP_ERROR_PARAMETER;
+    }
 
     // Validate datasize
-    if (pEvent->sizeData > VSCP_MAX_DATA)
+    if (pEvent->sizeData > VSCP_MAX_DATA) {
         return VSCP_ERROR_PARAMETER;
+    }
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
     if (!vscp_convertEventToString(strBuf, pEvent)) {
@@ -568,26 +523,17 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx* pEventEx)
 {
     std::string strBuf, strWrk, strGUID;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
-    if (NULL == pEventEx)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pEventEx) return VSCP_ERROR_PARAMETER;
 
     // Validate datasize
-    if (pEventEx->sizeData > VSCP_MAX_DATA)
+    if (pEventEx->sizeData > VSCP_MAX_DATA) {
         return VSCP_ERROR_PARAMETER;
-
-    // std::cout << ( std::string::Format("%p crc=%p obid=%p year=%p month=%p
-    // day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc),
-    // (void*)&(pEventEx->obid), (void*)&(pEventEx->year),
-    // (void*)&(pEventEx->month), (void*)&(pEventEx->day) )); std::cout << (
-    // std::string::Format("vscpclass=%d vscptype=%d"),
-    // (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
+    }
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
     if (!vscp_convertEventExToString(strBuf, pEventEx)) {
@@ -609,15 +555,12 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg* pCanalMsg)
 {
     vscpEventEx event;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
-    if (NULL == pCanalMsg)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pCanalMsg) return VSCP_ERROR_PARAMETER;
 
     event.vscp_class = (unsigned short)(0x1ff & (pCanalMsg->id >> 16));
     event.vscp_type = (unsigned char)(0xff & (pCanalMsg->id >> 8));
@@ -630,8 +573,9 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg* pCanalMsg)
     event.GUID[0] = pCanalMsg->id & 0xff;
 
     // Protect event.data for out ouf bounce access
-    if (sizeof(event.data) < pCanalMsg->sizeData)
+    if (sizeof(event.data) < pCanalMsg->sizeData) {
         return VSCP_ERROR_PARAMETER;
+    }
 
     event.sizeData = pCanalMsg->sizeData;
     memcpy(event.data, pCanalMsg->data, pCanalMsg->sizeData);
@@ -647,12 +591,12 @@ bool
 VscpRemoteTcpIf::getEventFromLine(vscpEvent* pEvent, const std::string& strLine)
 {
     // Check pointer
-    if (NULL == pEvent)
-        return false;
+    if (NULL == pEvent) return false;
 
     // Read event from string
-    if (!vscp_convertStringToEvent(pEvent, strLine))
+    if (!vscp_convertStringToEvent(pEvent, strLine)) {
         return false;
+    }
 
     return true;
 }
@@ -664,21 +608,19 @@ VscpRemoteTcpIf::getEventFromLine(vscpEvent* pEvent, const std::string& strLine)
 int
 VscpRemoteTcpIf::doCmdReceive(vscpEvent* pEvent)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
-    if (NULL == pEvent)
-        return VSCP_ERROR_PARAMETER;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
+    if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     if (VSCP_ERROR_SUCCESS != doCommand("RETR 1\r\n")) {
         return VSCP_ERROR_ERROR;
     }
 
-    if (!getEventFromLine(pEvent, m_inputStrArray[0]))
+    if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
         return VSCP_ERROR_PARAMETER;
+    }
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -690,25 +632,22 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent* pEvent)
 int
 VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx* pEventEx)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
-    if (NULL == pEventEx)
-        return VSCP_ERROR_PARAMETER;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
+    if (NULL == pEventEx) return VSCP_ERROR_PARAMETER;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     if (VSCP_ERROR_SUCCESS != doCommand("RETR 1\r\n")) {
         return VSCP_ERROR_ERROR;
     }
 
     vscpEvent* pEvent = new vscpEvent;
-    if (NULL == pEvent)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
-    if (!getEventFromLine(pEvent, m_inputStrArray[0]))
+    if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
         return VSCP_ERROR_PARAMETER;
+    }
 
     if (vscp_convertEventToEventEx(pEventEx, pEvent)) {
         vscp_deleteEvent(pEvent);
@@ -729,24 +668,21 @@ VscpRemoteTcpIf::doCmdReceiveLevel1(canalMsg* pCanalMsg)
 {
     vscpEventEx event;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // Must have a valid pointer
-    if (NULL == pCanalMsg)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pCanalMsg) return VSCP_ERROR_PARAMETER;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     // Fetch event
-    if (VSCP_ERROR_SUCCESS != doCmdReceiveEx(&event))
+    if (VSCP_ERROR_SUCCESS != doCmdReceiveEx(&event)) {
         return VSCP_ERROR_GENERIC;
+    }
 
     // No CAN or Level I event if data is > 8
-    if (event.sizeData > 8)
-        return VSCP_ERROR_GENERIC;
+    if (event.sizeData > 8) return VSCP_ERROR_GENERIC;
 
     pCanalMsg->id = (unsigned long)((event.head >> 5) << 20) |
                     ((unsigned long)event.vscp_class << 16) |
@@ -770,12 +706,10 @@ VscpRemoteTcpIf::doCmdReceiveLevel1(canalMsg* pCanalMsg)
 int
 VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If in receive loop terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_SUCCESS;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_SUCCESS;
 
     // Prevent false timeouts when starting up
     m_lastResponseTime = vscp_getMsTimeStamp();
@@ -783,8 +717,6 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
     if (VSCP_ERROR_SUCCESS != doCommand("RCVLOOP\r\n")) {
         return VSCP_ERROR_ERROR;
     }
-
-    // m_inputStrArray.Clear();
 
     m_bModeReceiveLoop = true;
 
@@ -798,12 +730,10 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
 int
 VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If **not** in receive loop terminate
-    if (!m_bModeReceiveLoop)
-        return VSCP_ERROR_SUCCESS;
+    if (!m_bModeReceiveLoop) return VSCP_ERROR_SUCCESS;
 
     if (VSCP_ERROR_SUCCESS != doCommand("QUITLOOP\r\n")) {
         return VSCP_ERROR_TIMEOUT;
@@ -828,16 +758,13 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent* pEvent, uint32_t mstimeout)
     int nRead;
 
     // Check pointer
-    if (NULL == pEvent)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
     // Must be connected
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If **not** in receive loop terminate
-    if (!m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (!m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     // If array already contains lines check if one of them is an event
     while (m_inputStrArray.size()) {
@@ -918,16 +845,13 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx* pEventEx, uint32_t timeout)
     vscpEvent e;
 
     // Check pointer
-    if (NULL == pEventEx)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pEventEx) return VSCP_ERROR_PARAMETER;
 
     // Must be connected
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If not receive loop active terminate
-    if (!m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (!m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     if (VSCP_ERROR_SUCCESS != (rv = doCmdBlockingReceive(&e, timeout))) {
         return rv;
@@ -962,12 +886,10 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
     std::string strLine;
     int nMsg = 0;
 
-    if (!isConnected())
-        return VSCP_ERROR_ERROR;
+    if (!isConnected()) return VSCP_ERROR_ERROR;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_ERROR;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_ERROR;
 
     if (VSCP_ERROR_SUCCESS != doCommand("CDTA\r\n")) {
         return VSCP_ERROR_ERROR;
@@ -989,12 +911,10 @@ VscpRemoteTcpIf::doCmdStatus(canalStatus* pStatus)
     std::string strWrk;
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("INFO\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1006,20 +926,17 @@ VscpRemoteTcpIf::doCmdStatus(canalStatus* pStatus)
     m_inputStrArray.pop_front();
 
     // lasterrorcode
-    if (tokens.empty())
-        return VSCP_ERROR_GENERIC;
+    if (tokens.empty()) return VSCP_ERROR_GENERIC;
     pStatus->lasterrorcode = vscp_readStringValue(tokens.front());
     tokens.pop_front();
 
     // lasterrorsubcode
-    if (tokens.empty())
-        return VSCP_ERROR_GENERIC;
+    if (tokens.empty()) return VSCP_ERROR_GENERIC;
     pStatus->lasterrorsubcode = vscp_readStringValue(tokens.front());
     tokens.pop_front();
 
     // lasterrorsubcode
-    if (tokens.empty())
-        return VSCP_ERROR_GENERIC;
+    if (tokens.empty()) return VSCP_ERROR_GENERIC;
     strWrk = tokens.front();
     tokens.pop_front();
     strncpy(pStatus->lasterrorstr, strWrk.c_str(), strWrk.length());
@@ -1058,12 +975,10 @@ VscpRemoteTcpIf::doCmdStatistics(VSCPStatistics* pStatistics)
     std::string strWrk;
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("STAT\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1087,14 +1002,6 @@ VscpRemoteTcpIf::doCmdStatistics(VSCPStatistics* pStatistics)
 
     // Undefined - Not defined on server side
     pStatistics->z = 0;
-    /*if ( !tokens.empty() ) {
-        if ( ( tokens.front() ).ToLong( &val ) ) {
-            pStatistics->z = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
-    }*/
 
     // Overruns
     pStatistics->cntOverruns = 0;
@@ -1139,8 +1046,7 @@ VscpRemoteTcpIf::doCmdStatistics(canalStatistics* pStatistics)
     int rv;
     VSCPStatistics vscpstat;
 
-    if (NULL == pStatistics)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pStatistics) return VSCP_ERROR_PARAMETER;
 
     if (VSCP_ERROR_SUCCESS != (rv = doCmdStatistics(&vscpstat))) {
         return rv;
@@ -1168,12 +1074,10 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter* pFilter)
 {
     std::string strCmd;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     // filter-priority, filter-class, filter-type, filter-GUID
     strCmd =
@@ -1246,12 +1150,10 @@ VscpRemoteTcpIf::doCmdFilter(const std::string& filter, const std::string& mask)
 {
     std::string strCmd;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     // Set filter
     strCmd = "SFLT ";
@@ -1283,12 +1185,10 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t* pMajorVer,
 {
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("VERS\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1304,7 +1204,8 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t* pMajorVer,
         m_version_major = *pMajorVer =
           (uint8_t)vscp_readStringValue(tokens.front());
         tokens.pop_front();
-    } else {
+    } 
+    else {
         return VSCP_ERROR_ERROR;
     }
 
@@ -1314,7 +1215,8 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t* pMajorVer,
         m_version_minor = *pMinorVer =
           (uint8_t)vscp_readStringValue(tokens.front());
         tokens.pop_front();
-    } else {
+    } 
+    else {
         return VSCP_ERROR_ERROR;
     }
 
@@ -1324,7 +1226,8 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t* pMajorVer,
         m_version_release = *pSubMinorVer =
           (uint8_t)vscp_readStringValue(tokens.front());
         tokens.pop_front();
-    } else {
+    } 
+    else {
         return VSCP_ERROR_ERROR;
     }
 
@@ -1398,20 +1301,17 @@ VscpRemoteTcpIf::doCmdGetGUID(unsigned char* pGUID)
 {
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("GGID\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
     }
 
-    if (getInputQueueCount() < 2)
-        return VSCP_ERROR_ERROR;
+    if (getInputQueueCount() < 2) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
     std::deque<std::string> tokens;
@@ -1425,7 +1325,8 @@ VscpRemoteTcpIf::doCmdGetGUID(unsigned char* pGUID)
             return VSCP_ERROR_GENERIC;
         }
 
-    } else {
+    } 
+    else {
         return VSCP_ERROR_GENERIC;
     }
 
@@ -1441,20 +1342,17 @@ VscpRemoteTcpIf::doCmdGetGUID(cguid& ifguid)
 {
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("GGID\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
     }
 
-    if (getInputQueueCount() < 2)
-        return VSCP_ERROR_ERROR;
+    if (getInputQueueCount() < 2) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
     ifguid.getFromString(strLine);
@@ -1472,15 +1370,12 @@ VscpRemoteTcpIf::doCmdSetGUID(const unsigned char* pGUID)
     std::string strLine;
     std::string strCmd;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
-    if (NULL == pGUID)
-        return VSCP_ERROR_GENERIC;
+    if (NULL == pGUID) return VSCP_ERROR_GENERIC;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     strCmd = vscp_str_format("SGID "
                              "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%"
@@ -1531,24 +1426,20 @@ VscpRemoteTcpIf::doCmdGetChannelInfo(VSCPChannelInfo* pChannelInfo)
     int rv;
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // Must have a valid pointer
-    if (NULL == pChannelInfo)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pChannelInfo) return VSCP_ERROR_PARAMETER;
 
     // If receive loop active terminate
-    if (m_bModeReceiveLoop)
-        return VSCP_ERROR_PARAMETER;
+    if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("INFO\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
     }
 
-    if (getInputQueueCount() < 2)
-        return VSCP_ERROR_ERROR;
+    if (getInputQueueCount() < 2) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
     std::deque<std::string> tokens;
@@ -1558,7 +1449,8 @@ VscpRemoteTcpIf::doCmdGetChannelInfo(VSCPChannelInfo* pChannelInfo)
     if (!tokens.empty()) {
         pChannelInfo->channel = (uint16_t)vscp_readStringValue(tokens.front());
         tokens.pop_front();
-    } else {
+    } 
+    else {
         return VSCP_ERROR_GENERIC;
     }
 
@@ -1580,20 +1472,17 @@ VscpRemoteTcpIf::doCmdGetChannelID(uint32_t* pChannelID)
 {
     std::string strLine;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // Check pointer
-    if (NULL == pChannelID)
-        return VSCP_ERROR_PARAMETER;
+    if (NULL == pChannelID) return VSCP_ERROR_PARAMETER;
 
     std::string strCmd("CHID\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
     }
 
-    if (getInputQueueCount() < 2)
-        return VSCP_ERROR_ERROR;
+    if (getInputQueueCount() < 2) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
     *pChannelID = stoul(strLine);
@@ -1608,8 +1497,7 @@ VscpRemoteTcpIf::doCmdGetChannelID(uint32_t* pChannelID)
 int
 VscpRemoteTcpIf::doCmdInterfaceList(std::deque<std::string>& strarray)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     std::string strCmd("INTERFACE LIST\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1638,8 +1526,7 @@ int VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
 {
     if ( NULL == pwcyd ) return VSCP_ERROR_INVALID_POINTER;
 
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     std::string strCmd("wcyd\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1676,8 +1563,7 @@ int VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
 int
 VscpRemoteTcpIf::doCmdShutDown(void)
 {
-    if (!isConnected())
-        return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     std::string strCmd("SHUTDOWN\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1709,10 +1595,8 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
     vscpEventEx e;
 
     // Check pointers
-    if (NULL == pval)
-        return false;
-    if (NULL == pdestGUID)
-        return false;
+    if (NULL == pval) return false;
+    if (NULL == pdestGUID) return false;
 
     e.head = VSCP_PRIORITY_NORMAL;
     e.timestamp = 0;
@@ -1736,7 +1620,8 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
         e.data[19] = reg;                 // Register to read
         e.data[20] = 1;                   // Number of registers to read
 
-    } else {
+    } 
+    else {
 
         // Event should be sent to all interfaces
 
@@ -1760,7 +1645,8 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
             e.data[20] = 0x00; // Read one register
             e.data[21] = 0x01;
 
-        } else {
+        } 
+        else {
 
             // Level I over CLASS2 to all interfaces
             e.head = VSCP_PRIORITY_NORMAL;
@@ -1885,7 +1771,8 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
         if ((vscp_getMsTimeStamp() - startTime) > m_registerOpErrorTimeout) {
             rv = CANAL_ERROR_TIMEOUT;
             break;
-        } else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
+        } 
+        else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
             // Send again
             e.timestamp = 0;
             doCmdSendEx(&e);
@@ -1918,14 +1805,11 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     uint8_t data[256]; // This makes range checking simpler
 
     // Max 128 bytes can be read in one go
-    if (count > 128)
-        return CANAL_ERROR_PARAMETER;
+    if (count > 128) return CANAL_ERROR_PARAMETER;
 
     // Check pointers
-    if (NULL == pval)
-        return CANAL_ERROR_PARAMETER;
-    if (NULL == pdestGUID)
-        return CANAL_ERROR_PARAMETER;
+    if (NULL == pval) return CANAL_ERROR_PARAMETER;
+    if (NULL == pdestGUID) return CANAL_ERROR_PARAMETER;
 
     e.head = VSCP_PRIORITY_NORMAL;
     e.timestamp = 0;
@@ -1949,7 +1833,8 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
         e.data[19] = reg;                 // Register to read
         e.data[20] = count;               // Read count registers
 
-    } else {
+    } 
+    else {
 
         // Event should be sent to all interfaces
 
@@ -1973,7 +1858,8 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
             e.data[20] = 0; // Read count registers
             e.data[21] = count;
 
-        } else {
+        } 
+        else {
 
             // Level I over CLASS2 to all interfaces
             e.head = VSCP_PRIORITY_NORMAL;
@@ -2002,8 +1888,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     unsigned long receive_flags = 0;
     unsigned char nPages = count / 4;
     unsigned char lastpageCnt = count % 4;
-    if (lastpageCnt)
-        nPages++;
+    if (lastpageCnt) nPages++;
     unsigned long allRcvValue = pow(2.0, nPages) - 1;
 
     unsigned long resendTime = m_registerOpResendTimeout * (1 + nPages);
@@ -2032,8 +1917,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
             while (CANAL_ERROR_SUCCESS == doCmdReceiveEx(&e)) { // Valid event
 
                 // Quit if done?
-                if ((allRcvValue == (receive_flags & 0xffffffff)))
-                    break;
+                if ((allRcvValue == (receive_flags & 0xffffffff))) break;
 
                     // Check for correct reply event
 #ifdef DEBUG_LIB_VSCP_HELPER
@@ -2074,7 +1958,8 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
                                 for (int i = 0; i < lastpageCnt; i++) {
                                     data[e.data[0] * 4 + i] = e.data[4 + i];
                                 }
-                            } else {
+                            } 
+                            else {
                                 for (int i = 0; i < 4; i++) {
                                     data[e.data[0] * 4 + i] = e.data[4 + i];
                                 }
@@ -2106,7 +1991,8 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
                                     data[e.data[16] * 4 + i] =
                                       e.data[16 + 4 + i];
                                 }
-                            } else {
+                            } 
+                            else {
                                 for (int i = 0; i < 4; i++) {
                                     data[e.data[16] * 4 + i] =
                                       e.data[16 + 4 + i];
@@ -2153,7 +2039,8 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
             std::cout << "readLevel2Registers: Timeout" << std::endl;
 #endif
             break;
-        } else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
+        } 
+        else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
             // Send again
             doCmdSendEx(&e);
             resendTime += m_registerOpResendTimeout * (1 + nPages);
@@ -2196,8 +2083,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
     vscpEventEx e;
 
     // Check pointers
-    if (NULL == pval)
-        return CANAL_ERROR_PARAMETER;
+    if (NULL == pval) return CANAL_ERROR_PARAMETER;
 
     if (!ifGUID.isNULL()) {
 
@@ -2216,7 +2102,8 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
         e.data[19] = reg;   // Register to write
         e.data[20] = *pval; // value to write
 
-    } else {
+    } 
+    else {
 
         if (bLevel2) {
 
@@ -2234,7 +2121,8 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
             e.data[19] = reg & 0xff;
             e.data[20] = *pval; // Data to write
 
-        } else {
+        } 
+        else {
 
             // Level I over CLASS2 to all interfaces
 
@@ -2340,7 +2228,8 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
                     }
                 }
             }
-        } else {
+        } 
+        else {
 
             usleep(2000);
         }
@@ -2348,7 +2237,8 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
         if ((vscp_getMsTimeStamp() - startTime) > m_registerOpErrorTimeout) {
             rv = CANAL_ERROR_TIMEOUT;
             break;
-        } else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
+        } 
+        else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
             // Send again
             doCmdSendEx(&e);
             resendTime += m_registerOpResendTimeout;
@@ -2392,7 +2282,8 @@ VscpRemoteTcpIf::getMDFUrlFromLevel2Device(cguid& ifGUID,
             }
         }
 
-    } else {
+    } 
+    else {
 
         // Level 1 device
         uint8_t* p = (uint8_t*)url;
@@ -2500,248 +2391,9 @@ VscpRemoteTcpIf::fetchIterfaceGUID(const std::string& ifName, cguid& guid)
         }
 
         // Give up after tree tries
-        if (cnt > 3)
-            break;
+        if (cnt > 3) break;
     }
 
     return VSCP_ERROR_OPERATION_FAILED;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//                         T H R E A D   H E L P E R S
-////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-// Constructor
-//
-
-ctrlObjVscpTcpIf::ctrlObjVscpTcpIf()
-{
-    m_strUsername = "admin";
-    m_strPassword = "secret";
-    m_strHost = "localhost";
-    m_port = 9598; // VSCP_LEVEL2_TCP_PORT;
-    m_rxState = RX_TREAD_STATE_NONE;
-    m_bQuit = false;          // Don't even think of quiting yet...
-    m_rxChannelID = 0;        // No receive channel
-    m_txChannelID = 0;        // No transmit channel
-    m_bFilterOwnTx = false;   // Don't filter TX
-    m_bUseRXTXEvents = false; // No events
-    m_wndID = 0;              // No message window id
-    m_maxRXqueue = MAX_TREAD_RECEIVE_EVENTS;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Destructor
-//
-
-ctrlObjVscpTcpIf::~ctrlObjVscpTcpIf() {}
-
-////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipRxObj
-//
-
-remotetcpipRxObj::remotetcpipRxObj()
-{
-    m_pCtrlObject = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipRxObj
-//
-
-remotetcpipRxObj::~remotetcpipRxObj()
-{
-    ;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipRxThread
-//
-// Is there any messages to send from Level II clients. Send it/them to all
-// devices/clients except for itself.
-//
-
-/*
-void *remotetcpipRxThread(void *pDate)
-{
-    int rv;
-    VscpRemoteTcpIf tcpifReceive; // TODO
-
-    // Must be a valid control object pointer
-    if ( NULL == m_pCtrlObject ) return NULL;
-
-    //xxCommandEvent eventReceive( xxVSCPTCPIF_RX_EVENT, m_pCtrlObject->m_wndID
-);
-    //xxCommandEvent eventConnectionLost( xxVSCPTCPIF_CONNECTION_LOST_EVENT,
-m_pCtrlObject->m_wndID );
-
-    // Connect to the server with the control interface
-    if ( VSCP_ERROR_SUCCESS !=
-        tcpifReceive.doCmdOpen( m_pCtrlObject->m_strHost,
-                                    m_pCtrlObject->m_strUsername,
-                                    m_pCtrlObject->m_strPassword ) ) {
-        if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent(
-m_pCtrlObject->m_pWnd, eventConnectionLost );
-        }
-
-        m_pCtrlObject->m_rxState = RX_TREAD_STATE_FAIL_DISCONNECTED;
-
-        return NULL;
-
-    }
-
-    m_pCtrlObject->m_rxState = RX_TREAD_STATE_CONNECTED;
-
-    // Find the channel id
-    tcpifReceive.doCmdGetChannelID( &m_pCtrlObject->m_rxChannelID );
-
-    // Start Receive Loop
-    tcpifReceive.doCmdEnterReceiveLoop();
-
-
-    while ( !TestDestroy() && !m_pCtrlObject->m_bQuit ) {
-
-        vscpEvent *pEvent = new vscpEvent;
-        if ( NULL == pEvent ) break;
-
-        if ( VSCP_ERROR_SUCCESS ==
-            ( rv = tcpifReceive.doCmdBlockingReceive( pEvent ) ) ) {
-
-            if ( m_pCtrlObject->m_bFilterOwnTx && ( m_pCtrlObject->m_txChannelID
-== pEvent->obid ) )  { vscp_deleteEvent( pEvent ); continue;
-            }
-
-            if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-                //eventReceive.SetClientData( pEvent );
-                //if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent(
-m_pCtrlObject->m_pWnd, eventReceive );
-            }
-            else {
-                if ( m_pCtrlObject->m_rxQueue.GetCount() <=
-m_pCtrlObject->m_maxRXqueue ) {
-                    // Add the event to the in queue
-                    m_pCtrlObject->m_mutexRxQueue.Lock();
-                    m_pCtrlObject->m_rxQueue.Append( pEvent );
-                    m_pCtrlObject->m_semRxQueue.Post();
-                    m_pCtrlObject->m_mutexRxQueue.Unlock();
-                }
-                else {
-                    delete pEvent;
-                }
-            }
-        }
-        else {
-            delete pEvent;
-            if ( VSCP_ERROR_COMMUNICATION == rv ) {
-                m_pCtrlObject->m_rxState = RX_TREAD_STATE_FAIL_DISCONNECTED;
-                m_pCtrlObject->m_bQuit = true;
-            }
-        }
-    } // while
-
-    // Close the interface
-    tcpifReceive.doCmdClose();
-
-    if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent(
-m_pCtrlObject->m_pWnd, eventConnectionLost );
-    }
-
-    if ( m_pCtrlObject->m_rxState != RX_TREAD_STATE_FAIL_DISCONNECTED ) {
-        m_pCtrlObject->m_rxState = RX_TREAD_STATE_DISCONNECTED;
-    }
-
-    return NULL;
-
-}
-*/
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipTxObj
-//
-
-remotetcpipTxObj::remotetcpipTxObj()
-{
-    m_pCtrlObject = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipTxObj
-//
-
-remotetcpipTxObj::~remotetcpipTxObj()
-{
-    ;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// remotetcpipTxThread
-//
-// Is there any messages to send from Level II clients. Send it/them to all
-// devices/clients except for itself.
-//
-
-/* TODO future
-void *remotetcpipTxThread( void *pDate )
-{
-    VscpRemoteTcpIf tcpifTransmit;
-
-    // Must be a valid control object pointer
-    if ( NULL == m_pCtrlObject ) return NULL;
-
-    //xxCommandEvent eventConnectionLost( xxVSCPTCPIF_CONNECTION_LOST_EVENT,
-m_pCtrlObject->m_wndID );
-
-    // Connect to the server with the control interface
-    if ( VSCP_ERROR_SUCCESS !=
-        tcpifTransmit.doCmdOpen( m_pCtrlObject->m_strHost,
-                                        m_pCtrlObject->m_strUsername,
-                                        m_pCtrlObject->m_strPassword ) ) {
-        if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent(
-m_pCtrlObject->m_pWnd, eventConnectionLost );
-        }
-
-        m_pCtrlObject->m_rxState = RX_TREAD_STATE_FAIL_DISCONNECTED;
-        return NULL;
-    }
-
-    m_pCtrlObject->m_rxState = RX_TREAD_STATE_CONNECTED;
-
-    // Find the channel id
-    tcpifTransmit.doCmdGetChannelID( &m_pCtrlObject->m_txChannelID );
-
-    EVENT_TX_QUEUE::compatibility_iterator node;
-    vscpEvent *pEvent;
-
-    while ( !TestDestroy() && !m_pCtrlObject->m_bQuit ) {
-
-        if ( xxSEMA_TIMEOUT == m_pCtrlObject->m_semTxQueue.WaitTimeout( 500 ) )
-continue; m_pCtrlObject->m_mutexTxQueue.Lock(); node =
-m_pCtrlObject->m_txQueue.GetFirst(); pEvent = node->GetData();
-        tcpifTransmit.doCmdSend( pEvent );
-        m_pCtrlObject->m_mutexTxQueue.Unlock();
-
-    } // while
-
-    // Close the interface
-    tcpifTransmit.doCmdClose();
-
-    if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent(
-m_pCtrlObject->m_pWnd, eventConnectionLost );
-    }
-
-    if ( m_pCtrlObject->m_rxState != RX_TREAD_STATE_FAIL_DISCONNECTED ) {
-        m_pCtrlObject->m_rxState = RX_TREAD_STATE_DISCONNECTED;
-    }
-
-    return NULL;
-
-}
-*/

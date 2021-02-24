@@ -163,15 +163,19 @@ public:
 
     /*!
         Set (and enable) receive callback for events
+        @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+        @param pData User defined data to pass in callback call
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback);
+    virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData=nullptr);
 
     /*!
         Set (and enable) receive callback ex events
+        @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+        @param pData User defined data to pass in callback call
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData=nullptr);
 
     /*!
         Getter/setters for connection timeout
@@ -241,6 +245,12 @@ public:
         Callback for ex events
     */
     LPFNDLL_EX_CALLBACK m_excallback;
+
+    /*!
+        This data pointer is set by the callback
+        setter and is sent with the callback call
+    */
+   void *m_callbackObject;
 
     // Type of connection object
     connType m_type = CVscpClient::connType::NONE;

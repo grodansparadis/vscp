@@ -143,8 +143,7 @@ public:
                 const std::string &strUserName = "",
                 const std::string &strPassword = "",
                 int keepAliveInterval = 20,
-                bool bCleanSession = false,
-                int qos = 0);
+                bool bCleanSession = false);
 
     // Init MQTT host
     void setMqttHost(const std::string host = "tcp://localhost:1883") 
@@ -158,14 +157,8 @@ public:
     void setMqttPassword(const std::string password) 
             { strncpy(m_password, password.c_str(), sizeof(m_password)); };
 
-    // Init MQTT password
-    void setMqttQos(const int qos = 0) { m_qos = qos; };
-
     // Init MQTT cleansession 
     void setMqttCleanSession(const bool bCleanSession = true) { m_bCleanSession = bCleanSession; };
-
-    // Init MQTT retain
-    void setMqttRetain(const bool bRetain) { m_bTLS = true; m_bRetain = bRetain; };
 
     // Init MQTT keepalive
     void setMqttKeepAlive(const int keepalive) { m_bTLS = true; m_keepalive = keepalive; };
@@ -447,8 +440,8 @@ private:
     char m_username[128];       // Username
     char m_password[128];       // Password
 
-    int m_qos;                  // Quality of service (0/1/2)
-    bool m_bRetain;             // Enable retain
+    //int m_qos;                  // Quality of service (0/1/2)
+    //bool m_bRetain;             // Enable retain
     int m_keepalive;            // Keep alive in seconds
     bool m_bCleanSession;       // Clean session on disconnect if true
 

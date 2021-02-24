@@ -228,7 +228,7 @@ on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
 
         // Binary frame starts offset one in payload (after zero marker byte)
         if (!vscp_getEventFromFrame( &ev,
-                                        (const uint8_t*)(pmsg->payload + 1),
+                                        (const uint8_t*)pmsg->payload + 1,
                                         pmsg->payloadlen)) {
             return 0;
         }
@@ -330,8 +330,6 @@ vscpClientMqtt::vscpClientMqtt()
     memset(m_clientid, 0, sizeof(m_clientid));
     memset(m_username, 0, sizeof(m_username));
     memset(m_password, 0, sizeof(m_password));
-    m_qos           = 0;
-    m_bRetain       = false;
     m_keepalive     = 30;
     m_bTLS          = false;
     m_bCleanSession = false;
@@ -394,8 +392,7 @@ vscpClientMqtt::init(const std::string& strHost,
                      const std::string& strUserName,
                      const std::string& strPassword,
                      int keepAliveInterval,
-                     bool bCleanSession,
-                     int qos)
+                     bool bCleanSession)
 {
     int rv;
     strncpy(m_host, strHost.c_str(), sizeof(m_host));             // MQTT broker
@@ -403,7 +400,6 @@ vscpClientMqtt::init(const std::string& strHost,
     strncpy(m_username, strUserName.c_str(), sizeof(m_username)); // Username
     strncpy(m_password, strPassword.c_str(), sizeof(m_password)); // Password 
     m_keepalive     = keepAliveInterval; // Save keep alive setting
-    m_qos           = qos;               // Quality of service
     m_bCleanSession = bCleanSession;     // Clean session on disconnect if true
 
     return VSCP_ERROR_SUCCESS;

@@ -39,15 +39,13 @@ public:
 
     /*!
         Initialize the tcp client
-        @param strHostname Hostname for remote host. Can be prefixed with
+        @param strHostname Hostname and port for remote host. Can be prefixed with
             tcp:// or stcp:// (SSL connection)
-        @param port Port to connect to on remote host.
         @param strUsername Username used to login on remote host.
         @param strPassword Password used to login on remote host.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    int init(const std::string &strHostname = "localhost",
-                short port = VSCP_DEFAULT_TCP_PORT,
+    int init(const std::string &strHostname = "tcp://localhost:9598",
                 const std::string &strUsername = "admin",
                 const std::string &strPassword = "secret");                  
 
