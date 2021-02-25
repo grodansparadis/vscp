@@ -69,9 +69,44 @@ vscpClientTcp::~vscpClientTcp()
 
 std::string vscpClientTcp::toJSON(void) 
 {
-    std::string rv;
+    std::string str;
+    json j;
 
-    return rv;
+    j["host"] = m_strHostname;
+    j["user"] = m_strUsername;
+    j["password"] = m_strPassword;
+    j["pool"] = m_bPolling;
+    j["connection-timeout"] = 0;
+    j["response-timeout"] = 0;
+    //j["bfull-l2"] = xxx;
+    vscp_writeGuidArrayToString(str, m_interfaceGuid);
+    j["selected-interface"] = str;
+
+    // TLS
+
+    j["btls"] = m_bTLS;
+    j["bverifypeer"] = m_bVerifyPeer;
+    j["cafile"] = m_cafile;
+    j["capath"] = m_capath;
+    j["certfile"] = m_certfile;
+    j["keyfile"] = m_keyfile;
+    j["pwkeyfile"] = m_pwKeyfile;
+
+    // Filter
+
+    j["priority-filter"] = m_filter.filter_priority;
+    j["priority-mask"] = m_filter.mask_priority;
+    j["class-filter"] = m_filter.filter_class;
+    j["class-mask"] = m_filter.mask_class;
+    j["type-filter"] = m_filter.filter_type;
+    j["type-mask"] = m_filter.mask_type;
+    vscp_writeGuidArrayToString(str,m_filter.filter_GUID);
+    j["guid-filter"] = str;
+    vscp_writeGuidArrayToString(str,m_filter.mask_GUID);
+    j["guid-mask"] = str;
+
+    return j.dump()
+    ;
 }
 
 
@@ -110,9 +145,9 @@ bool vscpClientTcp::fromJSON(const std::string& config)
             m_bPolling = j["response-timeout"].get<int>();
         }
 
-        if (j.contains("bfull-l2")) {
-            m_bPolling = j["bfull-l2"].get<bool>();
-        }
+        // if (j.contains("bfull-l2")) {
+        //     xxx = j["bfull-l2"].get<bool>();
+        // }
 
         if (j.contains("selected-interface")) {
             std::string str = j["selected-interface"].get<std::string>();
@@ -176,12 +211,12 @@ bool vscpClientTcp::fromJSON(const std::string& config)
         }
 
         if (j.contains("guid-filter")) {
-            std::string str = j["type-filter"].get<std::string>();
+            std::string str = j["guid-filter"].get<std::string>();
             vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
         }
 
         if (j.contains("guid-mask")) {
-            std::string str = j["type-mask"].get<std::string>();
+            std::string str = j["guid-mask"].get<std::string>();
             vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
         }
 
