@@ -44,10 +44,10 @@ vscpClientRs485::~vscpClientRs485()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientRs485::toJSON(void) 
+std::string vscpClientRs485::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientRs485::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientRs485::fromJSON(const std::string& config)
+bool vscpClientRs485::initFromJson(const std::string& config)
 {
     return true;
 }

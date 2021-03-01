@@ -199,10 +199,10 @@ vscpClientWs2::~vscpClientWs2()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientWs2::toJSON(void) 
+std::string vscpClientWs2::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -211,10 +211,10 @@ std::string vscpClientWs2::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientWs2::fromJSON(const std::string& config)
+bool vscpClientWs2::initFromJson(const std::string& config)
 {
     return true;
 }

@@ -361,11 +361,11 @@ vscpClientMqtt::~vscpClientMqtt()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
 std::string
-vscpClientMqtt::toJSON(void)
+vscpClientMqtt::getConfigAsJson(void)
 {
     std::string rv;
 
@@ -373,11 +373,11 @@ vscpClientMqtt::toJSON(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
 bool
-vscpClientMqtt::fromJSON(const std::string& config)
+vscpClientMqtt::initFromJson(const std::string& config)
 {
     return true;
 }

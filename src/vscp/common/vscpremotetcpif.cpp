@@ -150,6 +150,35 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  loopRead
+//
+
+int VscpRemoteTcpIf::rcvloopRead(int timeout) 
+{
+    bool rv = false;
+    char buf[8192];
+
+    memset(buf, 0, sizeof(buf));
+    int nRead = stcp_read(m_conn, buf, sizeof(buf), timeout);
+
+    if (nRead < 0) {
+        if (STCP_ERROR_TIMEOUT == nRead) {
+            return VSCP_ERROR_TIMEOUT;
+        } 
+        else if (STCP_ERROR_STOPPED == nRead) {
+            return VSCP_ERROR_STOPPED;
+        }
+        return VSCP_ERROR_ERROR;
+    } 
+    else if (nRead > 0) {
+        m_strResponse += std::string(buf, nRead);
+        addInputStringArrayFromReply();         
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  doCommand
 //
 
@@ -748,7 +777,7 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdBlockingReceive
 //
-// Just works if in receive loop
+// Warning! Just works if in receive loop
 //
 
 int

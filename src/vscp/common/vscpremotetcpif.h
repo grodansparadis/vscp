@@ -211,6 +211,14 @@ class VscpRemoteTcpIf
     bool checkReturnValue(bool bClear = false);
 
     /*!
+        ReceiveLoop reader
+        Intended for thread loop workerthread
+        @param timout Timeout in milliseconds to wait for event
+        @return VSCP_ERROR_SUCCESS on success, otherise errorcode
+    */
+    int rcvloopRead(int timeout);
+
+    /*!
         Clear the input queue
      */
     void doClrInputQueue(void);

@@ -44,10 +44,10 @@ vscpClientLocal::~vscpClientLocal()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientLocal::toJSON(void) 
+std::string vscpClientLocal::getConfigAsJson(void) 
 {
     json j;
     std::string rv;    
@@ -60,10 +60,10 @@ std::string vscpClientLocal::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientLocal::fromJSON(const std::string& config)
+bool vscpClientLocal::initFromJson(const std::string& config)
 {
     json j;
     try {

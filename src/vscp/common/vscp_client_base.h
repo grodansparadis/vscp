@@ -211,14 +211,14 @@ public:
         Return a JSON representation of connection
         @return JSON representation as string
     */
-    virtual std::string toJSON(void) = 0;
+    virtual std::string getConfigAsJson(void) = 0;
 
     /*!
         Set member variables from JSON representation of connection
         @param config JSON representation as string
         @return True on success, false on failure.
     */
-    virtual bool fromJSON(const std::string& config) = 0;
+    virtual bool initFromJson(const std::string& config) = 0;
 
     // ------------------------------------------------------------------------
     

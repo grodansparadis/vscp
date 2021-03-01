@@ -75,10 +75,10 @@ int vscpClientCanal::init(const std::string &strPath,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientCanal::toJSON(void) 
+std::string vscpClientCanal::getConfigAsJson(void) 
 {
     json j;
     std::string rv;    
@@ -93,10 +93,10 @@ std::string vscpClientCanal::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientCanal::fromJSON(const std::string& config)
+bool vscpClientCanal::initFromJson(const std::string& config)
 {
     json j;
     try {

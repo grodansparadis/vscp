@@ -44,10 +44,10 @@ vscpClientMulticast::~vscpClientMulticast()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientMulticast::toJSON(void) 
+std::string vscpClientMulticast::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientMulticast::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientMulticast::fromJSON(const std::string& config)
+bool vscpClientMulticast::initFromJson(const std::string& config)
 {
     return true;
 }

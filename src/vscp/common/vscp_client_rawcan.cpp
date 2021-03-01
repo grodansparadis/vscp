@@ -44,10 +44,10 @@ vscpClientRawCan::~vscpClientRawCan()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientRawCan::toJSON(void) 
+std::string vscpClientRawCan::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientRawCan::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientRawCan::fromJSON(const std::string& config)
+bool vscpClientRawCan::initFromJson(const std::string& config)
 {
     return true;
 }

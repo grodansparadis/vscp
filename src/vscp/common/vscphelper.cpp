@@ -5650,7 +5650,7 @@ vscp_convertStringToEvent(vscpEvent* pEvent, const std::string& strEvent)
     // Get GUID
     std::string strGUID;
     if (!tokens.empty()) {
-        str = tokens.front();
+        strGUID = tokens.front();
         tokens.pop_front();
         vscp_setEventGuidFromString(pEvent, strGUID);
     }

@@ -44,10 +44,10 @@ vscpClientRest::~vscpClientRest()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientRest::toJSON(void) 
+std::string vscpClientRest::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientRest::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientRest::fromJSON(const std::string& config)
+bool vscpClientRest::initFromJson(const std::string& config)
 {
     return true;
 }

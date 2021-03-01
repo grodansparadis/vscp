@@ -144,10 +144,10 @@ int vscpClientSocketCan::init(const std::string &interface,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientSocketCan::toJSON(void) 
+std::string vscpClientSocketCan::getConfigAsJson(void) 
 {
     json j;
     std::string rv;
@@ -161,10 +161,10 @@ std::string vscpClientSocketCan::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientSocketCan::fromJSON(const std::string& config)
+bool vscpClientSocketCan::initFromJson(const std::string& config)
 {
     return true;
 }

@@ -44,10 +44,10 @@ vscpClientUdp::~vscpClientUdp()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientUdp::toJSON(void) 
+std::string vscpClientUdp::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientUdp::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientUdp::fromJSON(const std::string& config)
+bool vscpClientUdp::initFromJson(const std::string& config)
 {
     return true;
 }

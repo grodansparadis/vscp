@@ -44,10 +44,10 @@ vscpClientRs232::~vscpClientRs232()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientRs232::toJSON(void) 
+std::string vscpClientRs232::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientRs232::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientRs232::fromJSON(const std::string& config)
+bool vscpClientRs232::initFromJson(const std::string& config)
 {
     return true;
 }

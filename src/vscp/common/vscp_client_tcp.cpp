@@ -64,10 +64,10 @@ vscpClientTcp::~vscpClientTcp()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientTcp::toJSON(void) 
+std::string vscpClientTcp::getConfigAsJson(void) 
 {
     std::string str;
     json j;
@@ -75,7 +75,7 @@ std::string vscpClientTcp::toJSON(void)
     j["host"] = m_strHostname;
     j["user"] = m_strUsername;
     j["password"] = m_strPassword;
-    j["pool"] = m_bPolling;
+    j["bpoll"] = m_bPolling;
     j["connection-timeout"] = 0;
     j["response-timeout"] = 0;
     //j["bfull-l2"] = xxx;
@@ -111,10 +111,10 @@ std::string vscpClientTcp::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientTcp::fromJSON(const std::string& config)
+bool vscpClientTcp::initFromJson(const std::string& config)
 {
     json j;
 
@@ -133,16 +133,16 @@ bool vscpClientTcp::fromJSON(const std::string& config)
             m_strPassword = j["password"].get<std::string>();
         }
 
-        if (j.contains("pool")) {
-            m_bPolling = j["pool"].get<bool>();
+        if (j.contains("bpoll")) {
+            m_bPolling = j["bpoll"].get<bool>();
         }
 
         if (j.contains("connection-timeout")) {
-            m_bPolling = j["connection-timeout"].get<int>();
+            //m_bPolling = j["connection-timeout"].get<int>();
         }
 
         if (j.contains("response-timeout")) {
-            m_bPolling = j["response-timeout"].get<int>();
+            //m_bPolling = j["response-timeout"].get<int>();
         }
 
         // if (j.contains("bfull-l2")) {
@@ -283,6 +283,7 @@ int vscpClientTcp::connect(void)
         // Create receive worker thread
         m_bRun = true;
         m_pworkerthread = new std::thread(workerThread, this);
+        m_bRun = true;
     }
 
     return VSCP_ERROR_SUCCESS;
@@ -507,19 +508,23 @@ void workerThread(vscpClientTcp *pObj)
     ev.pdata = NULL;
 
     // Check pointer
-    if (pObj) return;
+    if (nullptr == pObj) return;
 
-    VscpRemoteTcpIf *m_pif = pObj->getTcpReceive();
+    VscpRemoteTcpIf *m_pifReceive = pObj->getTcpReceive();
+
+    m_pifReceive->doCmdEnterReceiveLoop();
 
     while (pObj->m_bRun) {
 
         pObj->m_mutexReceive.lock();
-        if ( VSCP_ERROR_SUCCESS == m_pif->doCmdBlockingReceive(&ev) ) {
+
+        // m_pif->rcvloopRead(500);
+        if ( VSCP_ERROR_SUCCESS == m_pifReceive->doCmdBlockingReceive(&ev) ) {
             pObj->sendToCallbacks(&ev);
             vscp_deleteEvent(&ev);
         }
         
-        if ( !m_pif->isConnected() ) {
+        if ( !m_pifReceive->isConnected() ) {
             pObj->m_bRun = false;
         }
 

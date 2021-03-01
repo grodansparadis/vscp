@@ -44,10 +44,10 @@ vscpClientRawMqtt::~vscpClientRawMqtt()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// toJSON
+// getConfigAsJson
 //
 
-std::string vscpClientRawMqtt::toJSON(void) 
+std::string vscpClientRawMqtt::getConfigAsJson(void) 
 {
     std::string rv;
 
@@ -56,10 +56,10 @@ std::string vscpClientRawMqtt::toJSON(void)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// fromJSON
+// initFromJson
 //
 
-bool vscpClientRawMqtt::fromJSON(const std::string& config)
+bool vscpClientRawMqtt::initFromJson(const std::string& config)
 {
     return true;
 }
