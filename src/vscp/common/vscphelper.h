@@ -1186,10 +1186,13 @@ extern "C"
 
         @param strGUID Reference to string that will get GUID on string form
         @param pGUID Pointer to VSCP GUID array.
+        @param bUseComma Use comma as a separator instead of colon with 
+                            values in decimal.
         @return True on success, false on failure.
     */
     bool vscp_writeGuidArrayToString(std::string& strGUID,
-                                     const unsigned char* pGUID);
+                                     const unsigned char* pGUID,
+                                     bool bUseComma = false);
 
     /*!
         Write out GUID to string

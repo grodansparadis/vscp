@@ -3304,29 +3304,51 @@ vscp_writeGuidToString4RowsEx(std::string& strGUID, const vscpEventEx* pEvent)
 //
 
 bool
-vscp_writeGuidArrayToString(std::string& strGUID, const unsigned char* pGUID)
+vscp_writeGuidArrayToString(std::string& strGUID, const unsigned char* pGUID, bool bUseComma)
 {
     // Check pointer
     if (NULL == pGUID) return false;
 
-    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
-                              "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                              pGUID[0],
-                              pGUID[1],
-                              pGUID[2],
-                              pGUID[3],
-                              pGUID[4],
-                              pGUID[5],
-                              pGUID[6],
-                              pGUID[7],
-                              pGUID[8],
-                              pGUID[9],
-                              pGUID[10],
-                              pGUID[11],
-                              pGUID[12],
-                              pGUID[13],
-                              pGUID[14],
-                              pGUID[15]);
+    if (bUseComma) {
+        strGUID = vscp_str_format("%d,%d,%d,%d,%d,%d,%d,%d,%"
+                                "d,%d,%d,%d,%d,%d,%d,%d",
+                                pGUID[0],
+                                pGUID[1],
+                                pGUID[2],
+                                pGUID[3],
+                                pGUID[4],
+                                pGUID[5],
+                                pGUID[6],
+                                pGUID[7],
+                                pGUID[8],
+                                pGUID[9],
+                                pGUID[10],
+                                pGUID[11],
+                                pGUID[12],
+                                pGUID[13],
+                                pGUID[14],
+                                pGUID[15]);
+    }
+    else {
+        strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
+                                "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+                                pGUID[0],
+                                pGUID[1],
+                                pGUID[2],
+                                pGUID[3],
+                                pGUID[4],
+                                pGUID[5],
+                                pGUID[6],
+                                pGUID[7],
+                                pGUID[8],
+                                pGUID[9],
+                                pGUID[10],
+                                pGUID[11],
+                                pGUID[12],
+                                pGUID[13],
+                                pGUID[14],
+                                pGUID[15]);
+    }
 
     return true;
 }
