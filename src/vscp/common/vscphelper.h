@@ -747,12 +747,28 @@ extern "C"
     int vscp_getMeasurementUnit(const vscpEvent* pEvent);
 
     /*!
+     * Get measurement unit for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement unit or -1 for error (event that is not a
+     * measurement).
+     */
+    int vscp_getMeasurementUnitEx(const vscpEventEx* pEventEx);
+
+    /*!
      * Get measurement sensor index for any of the valid measurement events.
      * @param pEvent Pointer to VSCP event.
      * @return Measurement sensor index or -1 for error or for event that is not
      * a measurement or measurement event that does not have a sensor index.
      */
     int vscp_getMeasurementSensorIndex(const vscpEvent* pEvent);
+
+    /*!
+     * Get measurement sensor index for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement sensor index or -1 for error or for event that is not
+     * a measurement or measurement event that does not have a sensor index.
+     */
+    int vscp_getMeasurementSensorIndexEx(const vscpEvent* pEventEx);
 
     /*!
      * Get measurement zone for any of the valid measurement events.
@@ -763,6 +779,14 @@ extern "C"
     int vscp_getMeasurementZone(const vscpEvent* pEvent);
 
     /*!
+     * Get measurement zone for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement zone or 0 for error or event that is not a
+     * measurement or measurement event that does not have a zone).
+     */
+    int vscp_getMeasurementZoneEx(const vscpEventEx* pEventEx);
+
+    /*!
      * Get measurement subzone for any of the valid measurement events.
      * @param pEvent Pointer to VSCP event.
      * @return Measurement subzone or -1 for error or for event that is not a
@@ -771,11 +795,26 @@ extern "C"
     int vscp_getMeasurementSubZone(const vscpEvent* pEvent);
 
     /*!
+     * Get measurement subzone for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement subzone or -1 for error or for event that is not a
+     * measurement or measurement event that does not have a subzone.
+     */
+    int vscp_getMeasurementSubZoneEx(const vscpEventEx* pEventEx);
+
+    /*!
      * Check if event is a measurement
      * @param pEvent Pointer to VSCP event.
      * @return Return true if the event is a measurement.
      */
     bool vscp_isMeasurement(const vscpEvent* pEvent);
+
+    /*!
+     * Check if event is a measurement
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Return true if the event is a measurement.
+     */
+    bool vscp_isMeasurementEx(const vscpEventEx* pEventEx);
 
     /*!
         Get data in the VSCP data coding format to a string. Works for

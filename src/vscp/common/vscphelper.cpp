@@ -1676,6 +1676,29 @@ vscp_getMeasurementUnit(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementUnitEx
+//
+
+int 
+vscp_getMeasurementUnitEx(const vscpEventEx* pEventEx)
+{
+    vscpEvent *pev = new vscpEvent;
+    if (NULL == pev) return false;
+    pev->pdata = NULL;
+    pev->sizeData = 0;
+
+    if ( !vscp_convertEventExToEvent(pev, pEventEx) ) {
+        vscp_deleteEvent(pev);
+        return false;
+    }
+
+    int rv = vscp_getMeasurementUnit(pev);
+    vscp_deleteEvent(pev);
+
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_getMeasurementSensorIndex
 //
 
@@ -1733,6 +1756,29 @@ vscp_getMeasurementSensorIndex(const vscpEvent* pEvent)
     }
 
     return VSCP_ERROR_ERROR;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementSensorIndexEx
+//
+
+int 
+vscp_getMeasurementSensorIndexEx(const vscpEventEx* pEventEx)
+{
+    vscpEvent *pev = new vscpEvent;
+    if (NULL == pev) return false;
+    pev->pdata = NULL;
+    pev->sizeData = 0;
+
+    if ( !vscp_convertEventExToEvent(pev, pEventEx) ) {
+        vscp_deleteEvent(pev);
+        return false;
+    }
+
+    int rv = vscp_getMeasurementSensorIndex(pev);
+    vscp_deleteEvent(pev);
+
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1796,6 +1842,29 @@ vscp_getMeasurementZone(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementZoneEx
+//
+
+int 
+vscp_getMeasurementZoneEx(const vscpEventEx* pEventEx)
+{
+    vscpEvent *pev = new vscpEvent;
+    if (NULL == pev) return false;
+    pev->pdata = NULL;
+    pev->sizeData = 0;
+
+    if ( !vscp_convertEventExToEvent(pev, pEventEx) ) {
+        vscp_deleteEvent(pev);
+        return false;
+    }
+
+    int rv = vscp_getMeasurementZone(pev);
+    vscp_deleteEvent(pev);
+
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_getMeasurementSubZone
 //
 
@@ -1854,6 +1923,29 @@ vscp_getMeasurementSubZone(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementSubZoneEx
+//
+
+int 
+vscp_getMeasurementSubZoneEx(const vscpEventEx* pEventEx)
+{
+    vscpEvent *pev = new vscpEvent;
+    if (NULL == pev) return false;
+    pev->pdata = NULL;
+    pev->sizeData = 0;
+
+    if ( !vscp_convertEventExToEvent(pev, pEventEx) ) {
+        vscp_deleteEvent(pev);
+        return false;
+    }
+
+    int rv = vscp_getMeasurementSubZone(pev);
+    vscp_deleteEvent(pev);
+
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // vscp_isMeasurement
 //
 
@@ -1867,56 +1959,79 @@ vscp_isMeasurement(const vscpEvent* pEvent)
         (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class) ||
         (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
-        /*(VSCP_CLASS2_LEVEL1_MEASUREMENTX1 == pEvent->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_MEASUREMENTX1 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENTX2 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENTX3 == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_MEASUREMENTX4 == pEvent->vscp_class) ||*/
+        (VSCP_CLASS2_LEVEL1_MEASUREMENTX4 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREZONEX1 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-        /*(VSCP_CLASS2_LEVEL1_MEASUREZONEX1 == pEvent->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_MEASUREZONEX1 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREZONEX2 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREZONEX3 == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_MEASUREZONEX4 == pEvent->vscp_class) ||*/
+        (VSCP_CLASS2_LEVEL1_MEASUREZONEX4 == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONEX1 == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class) ||
-        /*(VSCP_CLASS2_LEVEL1_SETVALUEZONEX1 == pEvent->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_SETVALUEZONEX1 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_SETVALUEZONEX2 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_SETVALUEZONEX3 == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_SETVALUEZONEX4 == pEvent->vscp_class) ||*/
+        (VSCP_CLASS2_LEVEL1_SETVALUEZONEX4 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT32X1 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT32X2 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class) ||
-        /*(VSCP_CLASS2_LEVEL1_MEASUREMENT32X1 == pEvent->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_MEASUREMENT32X1 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT32X2 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT32X3 == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_MEASUREMENT32X4 == pEvent->vscp_class) ||*/
+        (VSCP_CLASS2_LEVEL1_MEASUREMENT32X4 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT64X1 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT64X2 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT64X3 == pEvent->vscp_class) ||
         (VSCP_CLASS1_MEASUREMENT64X4 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class) ||
-        /*(VSCP_CLASS2_LEVEL1_MEASUREMENT64X1 == pEvent->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_MEASUREMENT64X1 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT64X2 == pEvent->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREMENT64X3 == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_MEASUREMENT64X4 == pEvent->vscp_class) ||*/
+        (VSCP_CLASS2_LEVEL1_MEASUREMENT64X4 == pEvent->vscp_class) ||
         (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) ||
         (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
-        return true;
+            return true;
     }
 
     return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_isMeasurementEx
+//
+
+bool 
+vscp_isMeasurementEx(const vscpEventEx* pEventEx)
+{
+    vscpEvent *pev = new vscpEvent;
+    if (NULL == pev) return false;
+    pev->pdata = NULL;
+    pev->sizeData = 0;
+
+    if ( !vscp_convertEventExToEvent(pev, pEventEx) ) {
+        vscp_deleteEvent(pev);
+        return false;
+    }
+
+    bool rv = vscp_isMeasurement(pev);
+    vscp_deleteEvent(pev);
+
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
