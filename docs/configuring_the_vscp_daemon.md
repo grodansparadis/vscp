@@ -299,6 +299,24 @@ Define a VSCP daemon level I driver. If disabled the driver will be loaded.
 
 Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers.
 
+### Assigning GUID's to the interfaces of a VSCP daemon
+
+You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the nodes IP address. That is
+
+IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
+
+YY... is the IP address. 
+
+For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
+
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:00:00:00
+
+and driver 2
+
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:01:00:00
+
+and so on.
+
 ```json
 "drivers" : {
     "level1" : [
@@ -395,7 +413,25 @@ The _subscribe_ and _publish_ array's are the only parts that **must be preset**
 
 ## Level II drivers :id=config-level2-driver
 
-Level II drivers can handle the full VSCP abstraction and don't have the small payload size and other limitations of the Level I drivers. 
+Level II drivers can handle the full VSCP abstraction and don't have the small payload size and other limitations of the Level I drivers.
+
+### Assigning GUID's to the interfaces of a VSCP daemon
+
+You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the nodes IP address. That is
+
+IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
+
+YY... is the IP address. 
+
+For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
+
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:00:00:00
+
+and driver 2
+
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:01:00:00
+
+and so on.
 
 ```json
 "drivers" : {

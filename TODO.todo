@@ -1,0 +1,9 @@
+
+MQTT
+====
+TODO Replace libmosquitto with Paho
+
+Drivers
+=======
+TODO A driver without GUID assigned should use machine IP address + index.
+
