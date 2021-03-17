@@ -7035,10 +7035,10 @@ vscp_getSaltHex(std::string& strSalt, size_t len)
 //
 
 std::string
-vscp_getHostFromInterface(std::string interface)
+vscp_getHostFromInterface(const std::string& iface)
 {
     size_t pos;
-    std::string str = interface;
+    std::string str = iface;
     vscp_trim(str);
 
     // tcp:// stcp:// udp:// sudp:// ....

@@ -623,7 +623,7 @@ extern "C"
         @param interface on prefix:\\host:port form
         @return port number if any
     */
-    int vscp_getPortFromInterface(const std::string& interface);
+    int vscp_getPortFromInterface(const std::string& iface);
 
     /*!
         vscp_getHostFromInterface
@@ -636,7 +636,7 @@ extern "C"
 
     */
     std::string
-    vscp_getHostFromInterface(const std::string& interface);
+    vscp_getHostFromInterface(const std::string& iface);
 
     /*!
      * Parse IPv4 address and return net part and mask part
