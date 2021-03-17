@@ -980,11 +980,11 @@ int vscp_hostname_to_ip(char *ip, const char *hostname)
 //
 
 int
-vscp_getPortFromInterface(const std::string& interface)
+vscp_getPortFromInterface(const std::string& if)
 {
     int port = 0;
     size_t pos;
-    std::string str = interface;
+    std::string str = if;
     vscp_trim(str);
 
     // tcp:// stcp:// udp:// sudp:// ....
