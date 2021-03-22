@@ -80,32 +80,32 @@ public:
         Send VSCP event to remote host.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int send(vscpEvent &ev);
+    virtual int send(vscpEvent& ev);
 
     /*!
         Send VSCP event to remote host.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int send(vscpEventEx &ex);
+    virtual int send(vscpEventEx& ex);
 
     /*!
         Receive VSCP event from remote host
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int receive(vscpEvent &ev);
+    virtual int receive(vscpEvent& ev);
 
     /*!
         Receive VSCP event ex from remote host
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int receive(vscpEventEx &ex);
+    virtual int receive(vscpEventEx& ex);
 
     /*!
         Set interface filter
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter);
+    virtual int setfilter(vscpEventFilter& filter);
 
     /*!
         Get number of events waiting to be received on remote
