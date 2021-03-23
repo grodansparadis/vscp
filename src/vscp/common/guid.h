@@ -87,7 +87,8 @@ class cguid
     /*!
         Get GUID at pos
     */
-    uint8_t operator[](uint8_t pos);
+    uint8_t operator[](uint8_t pos) const;  // a[i]
+    uint8_t& operator[](uint8_t pos);       // a[i] = x
 
     /*!
         Nill the GUID

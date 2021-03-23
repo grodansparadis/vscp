@@ -113,10 +113,20 @@ cguid::operator!=(const cguid &guid)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// operator[]
+// operator[] - a[i] 
 //
 
-uint8_t 
+uint8_t
+cguid::operator[](uint8_t pos) const
+{
+    return m_id[pos & 0x0f];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator[] - a[i] = x
+//
+
+uint8_t& 
 cguid::operator[](uint8_t pos)
 {
     return m_id[pos & 0x0f];
