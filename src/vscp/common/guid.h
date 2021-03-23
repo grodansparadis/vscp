@@ -85,6 +85,11 @@ class cguid
     bool operator!=(const cguid &guid);
 
     /*!
+        Get GUID at pos
+    */
+    uint8_t operator[](uint8_t pos);
+
+    /*!
         Nill the GUID
     */
     void clear(void) { memset(&m_id, 0, 16); };

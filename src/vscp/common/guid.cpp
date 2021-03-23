@@ -112,6 +112,19 @@ cguid::operator!=(const cguid &guid)
     return !(*this == guid);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// operator[]
+//
+
+uint8_t 
+cguid::operator[](uint8_t pos)
+{
+    return m_id[pos & 0x0f];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getFromString
+//
 
 void
 cguid::getFromString(const std::string &strGUID)
