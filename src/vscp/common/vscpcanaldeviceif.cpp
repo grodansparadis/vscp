@@ -26,12 +26,12 @@
 // SOFTWARE.
 
 #include <string>
-
 #include <dlfcn.h>
-#include <syslog.h>
 #include <stdlib.h>
+
 #ifndef WIN32
 #include <unistd.h>
+#include <syslog.h>
 #endif
 
 #include <expat.h>
@@ -52,7 +52,10 @@ using json = nlohmann::json;
 VscpCanalDeviceIf::VscpCanalDeviceIf()
 {
     // Open syslog
+ #ifdef WIN32
+ #else
     openlog("node-canal", LOG_CONS, LOG_LOCAL0);
+ #endif   
 
     m_strPath.clear();
     m_strParameter.clear();
@@ -66,7 +69,10 @@ VscpCanalDeviceIf::VscpCanalDeviceIf()
 VscpCanalDeviceIf::~VscpCanalDeviceIf()
 {
     // Close syslog
+ #ifdef WIN32
+ #else    
     closelog();
+ #endif   
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,14 +89,20 @@ VscpCanalDeviceIf::init()
     // Load dynamic library
     m_hdll = dlopen(m_strPath.c_str(), RTLD_LAZY);
     if (!m_hdll) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "Devicethread: Unable to load dynamic library. path = %s",
                m_strPath.c_str());
+#endif               
         return CANAL_ERROR_PARAMETER;
     }
 
     // Now find methods in library
+#ifdef WIN32
+#else    
     syslog(LOG_INFO, "Loading level I driver: %s", m_strPath.c_str());
+#endif    
 
     // * * * * CANAL OPEN * * * *
     m_proc_CanalOpen = (LPFNDLL_CANALOPEN)dlsym(m_hdll, "CanalOpen");
@@ -98,9 +110,12 @@ VscpCanalDeviceIf::init()
 
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG,
                "%s : Unable to get dl entry for CanalOpen.",
                m_strPath.c_str());
+#endif               
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -109,9 +124,12 @@ VscpCanalDeviceIf::init()
     dlsym_error       = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalClose.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -122,9 +140,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetLevel.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -134,9 +155,12 @@ VscpCanalDeviceIf::init()
     dlsym_error      = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalSend.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -147,9 +171,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalDataAvailable.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -159,9 +186,12 @@ VscpCanalDeviceIf::init()
     dlsym_error         = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalReceive.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -172,9 +202,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetStatus.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -185,9 +218,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetStatistics.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -198,9 +234,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalSetFilter.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -210,9 +249,12 @@ VscpCanalDeviceIf::init()
     dlsym_error         = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalSetMask.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -223,9 +265,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetVersion.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -236,9 +281,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetDllVersion.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -249,9 +297,12 @@ VscpCanalDeviceIf::init()
     dlsym_error = dlerror();
     if (dlsym_error) {
         // Free the library
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetVendorString.",
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_LIBRARY;
     }
@@ -265,10 +316,13 @@ VscpCanalDeviceIf::init()
       (LPFNDLL_CANALBLOCKINGSEND)dlsym(m_hdll, "CanalBlockingSend");
     dlsym_error = dlerror();
     if (dlsym_error) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalBlockingSend. Probably "
                "Generation 1 driver.",
                m_strPath.c_str());
+#endif               
         m_proc_CanalBlockingSend = NULL;
         m_bGenerationOne = true;
     }
@@ -278,10 +332,13 @@ VscpCanalDeviceIf::init()
       (LPFNDLL_CANALBLOCKINGRECEIVE)dlsym(m_hdll, "CanalBlockingReceive");
     dlsym_error = dlerror();
     if (dlsym_error) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalBlockingReceive. "
                "Probably Generation 1 driver.",
                m_strPath.c_str());
+#endif               
         m_proc_CanalBlockingReceive = NULL;
         m_bGenerationOne = true;
     }
@@ -291,10 +348,13 @@ VscpCanalDeviceIf::init()
       (LPFNDLL_CANALGETDRIVERINFO)dlsym(m_hdll, "CanalGetDriverInfo");
     dlsym_error = dlerror();
     if (dlsym_error) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "%s: Unable to get dl entry for CanalGetDriverInfo. "
                "Probably Generation 1 driver.",
                m_strPath.c_str());
+#endif               
         m_proc_CanalGetdriverInfo = NULL;
         m_bGenerationOne = true;
     }
@@ -435,10 +495,13 @@ VscpCanalDeviceIf::CanalOpen()
 
     // Check if the driver opened properly
     if (m_openHandle <= 0) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "Failed to open driver. Will not use it! %ld [%s] ",
                m_openHandle,
                m_strPath.c_str());
+#endif               
         dlclose(m_hdll);
         return CANAL_ERROR_NOT_OPEN;
     }

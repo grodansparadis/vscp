@@ -40,7 +40,7 @@
 
 #ifndef WIN32
 #include <sys/times.h>
-#include <semaphore.h>
+#include <byteswap.h>
 #else
 //#include <windows.h>
 #endif
@@ -53,9 +53,8 @@
 #include <string>
 #include <vector>
 
+#include <semaphore.h>
 #include <float.h>
-
-#include <byteswap.h>
 
 #include <canal.h>
 #include <vscp.h>
