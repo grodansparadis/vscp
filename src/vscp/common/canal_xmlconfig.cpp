@@ -26,7 +26,9 @@
 // SOFTWARE.
 
 #include <stdio.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -1408,7 +1410,7 @@ bool canalXmlConfig::canalXmlConfig::parseXML(const std::string& xmlcfg)
     bytes_read = strlen(XML_CONFIG);
 #else
     strncpy( (char *)buff, xmlcfg.c_str(), xmlcfg.length() );
-    bytes_read = xmlcfg.length();
+    bytes_read = (int)xmlcfg.length();
 #endif    
 
     

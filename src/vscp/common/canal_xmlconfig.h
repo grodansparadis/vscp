@@ -737,7 +737,7 @@ public:
         Get set pos
         @return Set pos
     */
-    uint8_t getPos(void) { return m_pos; };
+    uint16_t getPos(void) { return m_pos; };
 
     /*!
         Set bitfield width in flags integer (Must be in range 0-31)

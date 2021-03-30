@@ -23,7 +23,12 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifndef WIN32
 #include <unistd.h>
+#else
+#include <windows.h>
+#endif
+
 #include <pthread.h> 
 
 #include "vscp_client_canal.h"
@@ -40,7 +45,7 @@ vscpClientCanal::vscpClientCanal()
 {
     m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
-    m_tid = 0;
+    //m_tid = 0;
     m_bRun = false;
     pthread_mutex_init(&m_mutexif,NULL);
 }
@@ -377,6 +382,21 @@ int vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
     return VSCP_ERROR_SUCCESS;
 }
 
+#ifdef WIN32
+static void 
+win_usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
+
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Callback workerthread
@@ -427,7 +447,11 @@ static void *workerThread(void *pObj)
         }
 
         //pthread_mutex_unlock(&pif->m_mutexif);
+#ifndef WIN32        
         usleep(200);
+#else
+        win_usleep(200);
+#endif        
     }
 
     return NULL;

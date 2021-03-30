@@ -23,10 +23,16 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include "vscp_client_mqtt.h"
 
 #include <pthread.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <vscphelper.h>
 
 #include <deque>
@@ -321,10 +327,10 @@ vscpClientMqtt::vscpClientMqtt()
 {
     m_pahoClient = NULL;
     m_type = CVscpClient::connType::MQTT;
-    m_format == jsonfmt;
+    m_format = jsonfmt;
     // m_mosq = NULL;
     m_bConnected = false; // Not connected
-    m_tid        = 0;
+    //m_tid        = 0;
     m_bRun       = false;
     strcpy(m_host, "tcp://localhost:1883");
     memset(m_clientid, 0, sizeof(m_clientid));
@@ -394,7 +400,7 @@ vscpClientMqtt::init(const std::string& strHost,
                      int keepAliveInterval,
                      bool bCleanSession)
 {
-    int rv;
+    //int rv;
     strncpy(m_host, strHost.c_str(), sizeof(m_host));             // MQTT broker
     strncpy(m_clientid, clientId.c_str(), sizeof(m_clientid));    // Client id
     strncpy(m_username, strUserName.c_str(), sizeof(m_username)); // Username
@@ -472,7 +478,7 @@ int
 vscpClientMqtt::connect(void)
 {
     int rv;
-    int ch;
+    //int ch;
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     conn_opts.keepAliveInterval         = m_keepalive;
@@ -651,7 +657,7 @@ vscpClientMqtt::send(vscpEvent& ev)
         if (MQTTCLIENT_SUCCESS != 
                 (rv = MQTTClient_publish(m_pahoClient,
                                             publish.getTopic().c_str(),
-                                            lenPayload,
+                                            (int)lenPayload,
                                             payload,
                                             publish.getQos(),
                                             publish.getRetain(),
@@ -728,7 +734,7 @@ vscpClientMqtt::send(vscpEventEx& ex)
         if (MQTTCLIENT_SUCCESS != 
                 (rv = MQTTClient_publish(m_pahoClient,
                                             publish.getTopic().c_str(),
-                                            lenPayload,
+                                            (int)lenPayload,
                                             payload,
                                             publish.getQos(),
                                             publish.getRetain(),
@@ -748,7 +754,7 @@ vscpClientMqtt::send(vscpEventEx& ex)
 int
 vscpClientMqtt::receive(vscpEvent& ev)
 {
-    int rv;
+    //int rv;
     vscpEvent* pev = NULL;
 
     if (m_receiveQueue.size()) {
@@ -775,7 +781,7 @@ vscpClientMqtt::receive(vscpEvent& ev)
 int
 vscpClientMqtt::receive(vscpEventEx& ex)
 {
-    int rv;
+    //int rv;
     vscpEvent* pev = NULL;
 
     if (m_receiveQueue.size()) {
@@ -816,7 +822,7 @@ int
 vscpClientMqtt::getcount(uint16_t* pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-    *pcount = m_receiveQueue.size();
+    *pcount = (uint16_t)m_receiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -923,6 +929,22 @@ vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
     return VSCP_ERROR_SUCCESS;
 }
 
+#ifdef WIN32
+static void 
+win_usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
+
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Callback workerthread
 //
@@ -941,7 +963,7 @@ workerThread(void* pObj)
         //  pthread_mutex_lock(&pif->m_mutexif);
 
         // Check if there are events to fetch
-        int cnt;
+        //int cnt;
         /* if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
 
             while (cnt) {
@@ -968,7 +990,11 @@ workerThread(void* pObj)
         } */
 
         //  pthread_mutex_unlock(&pif->m_mutexif);
+#ifndef WIN32        
         usleep(200);
+#else
+        win_usleep(200);
+#endif        
     }
 
     return NULL;

@@ -26,8 +26,11 @@
 #if !defined(VSCPCLIENTWS1_H__INCLUDED_)
 #define VSCPCLIENTWS1_H__INCLUDED_
 
-#ifndef WIN32
+#include <pthread.h>
 #include <semaphore.h>
+
+#ifndef WIN32
+
 #else
 #include <winSock2.h>
 #endif
@@ -210,9 +213,7 @@ public:
     struct mg_connection *m_conn;
 
     // Semaphore for message receive queue
-#ifndef WIN32
     sem_t m_sem_msg;
-#endif
 
     // JSON message receive queue
     std::deque<std::string> m_msgReceiveQueue;

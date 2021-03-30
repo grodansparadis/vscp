@@ -147,8 +147,9 @@
 #if defined(_WIN32)
 
 #include <winsock2.h> /* DTL add for SO_EXCLUSIVE */
-#include <windows.h>
 #include <ws2tcpip.h>
+#include <windows.h>
+
 
 typedef const char *SOCK_OPT_TYPE;
 

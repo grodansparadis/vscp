@@ -45,7 +45,7 @@
 	#include <sys/socket.h>
 	#include <netinet/in.h>
 #else
-	#include <winsock.h>
+	#include <winsock2.h>
 #endif
 
 

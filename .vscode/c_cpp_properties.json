@@ -55,11 +55,11 @@
                     "/usr/include",
                     "/usr/local/include",
                     "${workspaceRoot}",
-                    "/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux",                    
+                    "/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux",
                     "/home/akhe/development/VSCP/vscp/src/common",
                     "/home/akhe/development/VSCP/vscp/src/vscp/common",
                     "/home/akhe/development/VSCP/vscp/src/common/third_party/",
-                    "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann",
+                    "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
@@ -87,7 +87,8 @@
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

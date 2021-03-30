@@ -26,18 +26,10 @@
 
 #ifdef WIN32
 #include <winsock2.h>
-#include <wx/msw/winundef.h>    // https://wiki.wxwidgets.org/WxMSW_Issues
+#include <windows.h>    
 #endif
 
 #include <signal.h>
-
-//#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include "wx/cmdline.h"
-#include "wx/tokenzr.h"
-#include <wx/stdpaths.h>
  
 #include <canal_macro.h>
 #include <controlobject.h>

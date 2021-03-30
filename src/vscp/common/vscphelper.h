@@ -41,6 +41,8 @@
 #ifndef WIN32
 #include <sys/times.h>
 #include <semaphore.h>
+#else
+//#include <windows.h>
 #endif
 
 #include <algorithm>
@@ -134,10 +136,12 @@
 // Forward declaration
 class CMDF;
 
+/*
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+*/
 
     /*!
         \union vscp_value
@@ -2083,9 +2087,10 @@ extern "C"
 
 
     
-
+/*
 #ifdef __cplusplus
 }
 #endif
+*/
 
 #endif // #if !defined(VSCPHELPER_H__INCLUDED_)

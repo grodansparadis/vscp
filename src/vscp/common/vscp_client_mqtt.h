@@ -30,7 +30,13 @@
 #include <vscphelper.h>
 #include "vscp_client_base.h"
 
+#include <pthread.h>
+
+#ifdef WIN32
+#include "paho-mqtt/MQTTClient.h"
+#else
 #include "MQTTClient.h"
+#endif
 
 #include <string>
 #include <queue>
@@ -415,9 +421,7 @@ public:
     bool m_bConnected;
 
     // Mutex that protect CANAL interface when callbacks are defined
-#ifndef WIN32
     pthread_mutex_t m_mutexif;
-#endif
 
     enumMqttMsgFormat m_format;         // Format for mqtt events (JSON/XML)
 
@@ -466,9 +470,7 @@ private:
     MQTTClient m_pahoClient;
     
     // Worker thread id
-#ifndef WIN32
     pthread_t m_tid;
-#endif
 
 };
 

@@ -587,9 +587,9 @@ vscpdatetime::setFromJulian(const long ljd)
     c       = (long)((b - 122.1) / 365.25);
     d       = (long)(365.25 * c);
     e       = (long)((b - d) / 30.6001);
-    m_day   = (int)b - d - (long)(30.6001 * e);
-    m_month = (int)(e < 13.5) ? e - 1 : e - 13;
-    m_year  = (int)(m_month > 2.5) ? (c - 4716) : c - 4715;
+    m_day   = (uint8_t)((int)b - d - (long)(30.6001 * e));
+    m_month = (uint8_t)((int)(e < 13.5) ? e - 1 : e - 13);
+    m_year  = (uint16_t)((int)(m_month > 2.5) ? (c - 4716) : c - 4715);
     if (m_year <= 0) {
         m_year -= 1;
     }
@@ -613,7 +613,7 @@ ymdToJd(const int iYear, const int iMonth, const int iDay)
 
     int a, b;
     int year = iYear, month = iMonth, day = iDay;
-    float year_corr;
+    double year_corr;
 
     if (year < 0) year++;
     year_corr = (year > 0 ? 0.0 : 0.75);

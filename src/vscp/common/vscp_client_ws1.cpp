@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
+// Copyright:   (C) 2007-2021
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <pthread.h> 
 #include <semaphore.h> 
-#include <unistd.h> 
+#ifndef WIN32
+#include <unistd.h>
+#endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
 extern "C" {
@@ -588,7 +590,7 @@ int vscpClientWs1::setfilter(vscpEventFilter &filter)
 int vscpClientWs1::getcount(uint16_t *pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-    *pcount = m_eventReceiveQueue.size();
+    *pcount = (uint16_t)m_eventReceiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -781,7 +783,7 @@ int vscpClientWs1::encrypt_password(std::string& strout,
 	AES_CBC_encrypt_buffer(AES128, 
 							buf,
 							(uint8_t *)strCombined.c_str(), 
-							strCombined.length(), 
+							(uint32_t)strCombined.length(), 
 							vscpkey, 
 							iv);	
     

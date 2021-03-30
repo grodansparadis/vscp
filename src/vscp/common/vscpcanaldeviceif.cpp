@@ -30,7 +30,9 @@
 #include <dlfcn.h>
 #include <syslog.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 #include <expat.h>
 #include <json.hpp> // Needs C++11  -std=c++11
@@ -356,7 +358,7 @@ VscpCanalDeviceIf::init(std::string objInit, uint8_t nFormat)
 
         strncpy((char *)buf, objInit.c_str(), objInit.length());
 
-        bytes_read = objInit.length();
+        bytes_read = (int)objInit.length();
         if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
             return false;
         }
@@ -568,7 +570,7 @@ endCanalXMLParser(void *data, const char *name)
 // Construct CANAL msg from CANAL XML/JSON or VSCP XML/JSON
 //
 
-bool
+int
 VscpCanalDeviceIf::constructCanalMsg( canalMsg *pmsg,
                                         std::string& strObj,
                                         uint8_t nFormat )
@@ -594,7 +596,7 @@ VscpCanalDeviceIf::constructCanalMsg( canalMsg *pmsg,
 
         strncpy((char *)buf, strObj.c_str(), strObj.length());
 
-        bytes_read = strObj.length();
+        bytes_read = (int)strObj.length();
         if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
             return false;
         }
@@ -645,25 +647,25 @@ VscpCanalDeviceIf::constructCanalMsg( canalMsg *pmsg,
             }
 
         } catch (...) {
-            return false;
+            return VSCP_ERROR_ERROR;
         }
     }
     else if ( CANAL_FORMAT_VSCP_XML == nFormat ) {
 
         if ( !vscp_convertXMLToEventEx(&ex,strObj) ) {
-            return false;
+            return VSCP_ERROR_ERROR;
         }
 
     }
     else if ( CANAL_FORMAT_VSCP_JSON == nFormat ) {
 
         if ( !vscp_convertJSONToEventEx(&ex,strObj) ) {
-            return false;
+            return VSCP_ERROR_ERROR;
         }
 
     }
 
-    return true;
+    return VSCP_ERROR_SUCCESS;
 }
 
 int

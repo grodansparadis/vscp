@@ -521,9 +521,10 @@ mg_static_assert(sizeof(size_t) == 4 || sizeof(size_t) == 8,
 #include <malloc.h> /* *alloc( */
 #include <stdlib.h> /* *alloc( */
 #include <time.h>   /* struct timespec */
-#include <windows.h>
 #include <winsock2.h> /* DTL add for SO_EXCLUSIVE */
 #include <ws2tcpip.h>
+#include <windows.h>
+
 
 typedef const char *SOCK_OPT_TYPE;
 

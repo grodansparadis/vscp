@@ -37,6 +37,12 @@
 #if !defined(VSCPREMOTETCPIF_H__INCLUDED_)
 #define VSCPREMOTETCPIF_H__INCLUDED_
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <sockettcp.h>
+
 #ifndef WIN32
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -51,10 +57,12 @@
 #include <unistd.h>
 #else
 #include <winsock2.h>
+#include <windows.h>
+#include <pthread.h>
+#include <semaphore.h>
 #endif
-#include <inttypes.h>
 
-#include <sockettcp.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
 

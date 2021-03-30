@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <pthread.h> 
 #include <semaphore.h> 
-#include <unistd.h> 
+#ifndef WIN32
+#include <unistd.h>
+#endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
 #include "civetweb.h"
@@ -435,7 +437,7 @@ int vscpClientWs2::send(vscpEvent &ev)
 
     if ((NULL != ev.pdata) && ev.sizeData) {
         std::deque<uint8_t> data;
-        for ( int i; i<ev.sizeData; i++ ) {
+        for ( int i=0; i<ev.sizeData; i++ ) {
             data.push_back(ev.pdata[i]);
         }
         cmd["event"]["data"] = data;        
@@ -489,7 +491,7 @@ int vscpClientWs2::send(vscpEventEx &ex)
 
     if (ex.sizeData) {
         std::deque<uint8_t> data;
-        for ( int i; i<ex.sizeData; i++ ) {
+        for ( int i=0; i<ex.sizeData; i++ ) {
             data.push_back(ex.data[i]);
         }
         cmd["event"]["data"] = data;        
@@ -631,7 +633,7 @@ int vscpClientWs2::setfilter(vscpEventFilter &filter)
 int vscpClientWs2::getcount(uint16_t *pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-    *pcount = m_eventReceiveQueue.size();
+    *pcount = (uint16_t)m_eventReceiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -797,7 +799,7 @@ int vscpClientWs2::encrypt_password(std::string& strout,
 	AES_CBC_encrypt_buffer(AES128, 
 							buf,
 							(uint8_t *)strCombined.c_str(), 
-							strCombined.length(), 
+							(uint32_t)strCombined.length(), 
 							vscpkey, 
 							iv);	
     

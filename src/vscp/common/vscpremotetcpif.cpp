@@ -38,7 +38,9 @@
 #include <math.h>
 #include <semaphore.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 #include "version.h"
 #include "vscp.h"
@@ -52,6 +54,24 @@
 
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
+
+
+#ifdef WIN32
+static void
+win_usleep(__int64 usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative
+                                // value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -718,7 +738,7 @@ VscpRemoteTcpIf::doCmdReceiveLevel1(canalMsg* pCanalMsg)
                     ((unsigned long)event.vscp_type << 8) | event.GUID[15];
 
     pCanalMsg->obid = event.obid;
-    pCanalMsg->sizeData = event.sizeData;
+    pCanalMsg->sizeData = (uint8_t)event.sizeData;
     if (pCanalMsg->sizeData) {
         memcpy(pCanalMsg->data, event.data, event.sizeData);
     }
@@ -824,8 +844,10 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent* pEvent, uint32_t mstimeout)
                 stcp_close_connection(m_conn);
                 return VSCP_ERROR_STOPPED;
             }
-
+#ifndef WIN32
             usleep(100);
+#else
+#endif
             continue;
         }
 
@@ -1808,7 +1830,11 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
             resendTime += m_registerOpResendTimeout;
         }
 
+#ifndef WIN32
         usleep(2000);
+#else
+        win_usleep(2000);
+#endif
 
     } // while
 
@@ -1918,7 +1944,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     unsigned char nPages = count / 4;
     unsigned char lastpageCnt = count % 4;
     if (lastpageCnt) nPages++;
-    unsigned long allRcvValue = pow(2.0, nPages) - 1;
+    unsigned long allRcvValue = (unsigned long)pow(2.0, nPages) - 1;
 
     unsigned long resendTime = m_registerOpResendTimeout * (1 + nPages);
     uint32_t startTime = vscp_getMsTimeStamp();
@@ -2078,7 +2104,11 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 #endif
         }
 
+#ifndef WIN32
         usleep(2000);
+#else
+        win_usleep(2000);
+#endif
 
     } // while
 
@@ -2259,8 +2289,11 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
             }
         } 
         else {
-
+#ifndef WIN32
             usleep(2000);
+#else
+            win_usleep(2000);
+#endif
         }
 
         if ((vscp_getMsTimeStamp() - startTime) > m_registerOpErrorTimeout) {

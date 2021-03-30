@@ -26,6 +26,8 @@
 #if !defined(VSCPCLIENTSOCKETCAN_H__INCLUDED_)
 #define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
+#ifndef WIN32
+
 #include "vscp.h"
 #include <vscp_client_base.h>
 #include "vscpcanaldeviceif.h"
@@ -238,5 +240,6 @@ private:
 #endif
 };
 
+#endif  // WIN32
 
 #endif

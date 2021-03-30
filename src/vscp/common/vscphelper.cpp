@@ -40,6 +40,7 @@
 
 #ifdef _WIN32
 #include <io.h>
+#include <ws2tcpip.h>
 #include <winsock2.h>
 #define access _access_s
 #else
@@ -219,7 +220,7 @@ vscp_isLittleEndian(void)
 int
 vscp_isBigEndian(void)
 {
-    return !vscp_isLittleEndian();
+    return ~vscp_isLittleEndian();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,7 +418,7 @@ vscp_lowercase(const char* s)
 int
 vscp_strcasecmp(const char* s1, const char* s2)
 {
-    int diff;
+    int diff = 0;
 
     do {
         diff = vscp_lowercase(s1++) - vscp_lowercase(s2++);
@@ -621,6 +622,7 @@ vscp_rstrstr(const char* s1, const char* s2)
 std::string
 vscp_str_format(const std::string& fmt_str, ...)
 {
+    std::string fmtstr = fmt_str;   // Reference does to work on Windows
     int final_n,
       n = ((int)fmt_str.size()) *
           2; /* Reserve two times as much as the length of the fmt_str */
@@ -630,8 +632,8 @@ vscp_str_format(const std::string& fmt_str, ...)
         formatted.reset(
           new char[n]); /* Wrap the plain char array into the unique_ptr */
         strcpy(&formatted[0], fmt_str.c_str());
-        va_start(ap, fmt_str);
-        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
+        va_start(ap, fmtstr);
+        final_n = vsnprintf(&formatted[0], n, fmtstr.c_str(), ap);
         va_end(ap);
         if (final_n < 0 || final_n >= n) {
             n += abs(final_n - n + 1);
@@ -873,7 +875,7 @@ vscp_base64_std_decode(std::string& str)
     memset(pbuf, 0, bufferSize);
 
     vscp_base64_decode((const unsigned char*)((const char*)str.c_str()),
-                       str.length(),
+                       (int)str.length(),
                        pbuf,
                        &dest_len);
     str = pbuf;
@@ -896,7 +898,7 @@ vscp_base64_std_encode(std::string& str)
     memset(pbuf, 0, bufferSize);
 
     vscp_base64_encode((const unsigned char*)((const char*)str.c_str()),
-                       strlen((const char*)str.c_str()),
+                       (int)strlen((const char*)str.c_str()),
                        pbuf);
 
     str = pbuf;
@@ -1178,7 +1180,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
             value = *((int64_t*)valarray);
 #else
             value64 = Swap8Bytes(*((int64_t*)valarray));
-            value   = value64;
+            value   = (double)value64;
 #endif
             break;
 
@@ -1193,7 +1195,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
             value = *((int64_t*)valarray);
 #else
             value64 = Swap8Bytes(*((int64_t*)valarray));
-            value   = value64;
+            value   = (double)value64;
 #endif
             break;
     }
@@ -1480,7 +1482,7 @@ vscp_getMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
             case 5: // Floating point value
             {
                 float val =
-                  vscp_getMeasurementAsFloat(pEvent->pdata, pEvent->sizeData);
+                  vscp_getMeasurementAsFloat(pEvent->pdata, (uint8_t)pEvent->sizeData);
                 strValue = vscp_str_format("%g", val);
             } break;
 
@@ -1606,6 +1608,8 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent* pEvent,
 
     // We mimic a standard measurement
     vscpEvent eventMimic;
+    memset(&eventMimic, 0, sizeof(eventMimic));
+
     eventMimic.pdata      = new uint8_t[pEvent->sizeData - offset - 3];
     eventMimic.vscp_class = pEvent->vscp_class;
     eventMimic.vscp_type  = pEvent->vscp_type;
@@ -2070,12 +2074,12 @@ vscp_convertFloatToNormalizedEventData(uint8_t* pdata,
 #endif
     char* pos = strchr(buf, '.');
     if (NULL != pos) {
-        ndigits = strlen(pos) - 1;
+        ndigits = (int)strlen(pos) - 1;
     }
     else {
         pos = strchr(buf, ',');
         if (NULL != pos) {
-            ndigits = strlen(pos) - 1;
+            ndigits = (int)strlen(pos) - 1;
         }
         else {
             ndigits = 0;
@@ -2321,7 +2325,7 @@ vscp_makeStringMeasurementEvent(vscpEvent* pEvent,
     sensoridx &= 7; // Mask of invalid bits
 
     strValue         = vscp_str_format("%f", value);
-    pEvent->sizeData = (strValue.length() > 7) ? 8 : (strValue.length() + 1);
+    pEvent->sizeData = (strValue.length() > 7) ? 8 : (uint16_t)(strValue.length() + 1);
 
     // Allocate data if needed
     if ((NULL == pEvent->pdata) &&
@@ -2481,7 +2485,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent* pEvent,
     pEvent->timestamp  = 0;
     memset(pEvent->GUID, 0, 16);
     pEvent->sizeData =
-      4 + strlen(strData.c_str()) + 1; // Include null termination
+      4 + (uint16_t)strlen(strData.c_str()) + 1; // Include null termination
 
     pEvent->pdata = new uint8_t[pEvent->sizeData];
     if (NULL == pEvent->pdata) {
@@ -2589,7 +2593,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                 p[3] = (pEvent->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
 
                 // Floating point value
-                val64 = VSCP_UINT64_SWAP_ON_LE(val64);
+                val64 = (double)VSCP_UINT64_SWAP_ON_LE(val64);
                 memcpy(p + 4, (uint8_t*)&val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
@@ -2607,7 +2611,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 
                 // Index = 0, Unit = 0, Zone = 0, Subzone = 0
                 // Floating point value
-                val64 = VSCP_UINT64_SWAP_ON_LE(val64);
+                val64 = (double)VSCP_UINT64_SWAP_ON_LE(val64);
                 memcpy(p + 4, &val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
@@ -2625,7 +2629,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
 
                 // Index = 0, Unit = 0, Zone = 0, Subzone = 0
                 // Floating point value
-                val64 = VSCP_UINT64_SWAP_ON_LE(val64);
+                val64 = (double)VSCP_UINT64_SWAP_ON_LE(val64);
                 memcpy(p + 4, &val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
@@ -2650,7 +2654,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                 // Subzone
                 p[2] = pEvent->pdata[2];
 
-                val64 = VSCP_UINT64_SWAP_ON_LE(val64);
+                val64 = (double)VSCP_UINT64_SWAP_ON_LE(val64);
                 memcpy(p + 4, &val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
@@ -2675,7 +2679,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
                 // Subzone
                 p[2] = pEvent->pdata[2];
 
-                val64 = VSCP_UINT64_SWAP_ON_LE(val64);
+                val64 = (double)VSCP_UINT64_SWAP_ON_LE(val64);
                 memcpy(p + 4, &val64, sizeof(val64));
 
                 delete[] pEvent->pdata;
@@ -2759,7 +2763,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
             (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class)) {
 
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-            pEvent->sizeData   = 4 + strval.length();
+            pEvent->sizeData   = 4 + (uint16_t)strval.length();
 
             // Sensor index
             p[0] = pEvent->pdata[0] & VSCP_MASK_DATACODING_INDEX;
@@ -2784,7 +2788,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREMENT64X4 == pEvent->vscp_class)) {
 
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-            pEvent->sizeData   = 4 + strval.length();
+            pEvent->sizeData   = 4 + (uint16_t)strval.length();
 
             // Index = 0, Unit = 0, Zone = 0, Subzone = 0
             // Floating point value
@@ -2802,7 +2806,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class)) {
 
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-            pEvent->sizeData   = 4 + strval.length();
+            pEvent->sizeData   = 4 + (uint16_t)strval.length();
 
             // Index = 0, Unit = 0, Zone = 0, Subzone = 0
             // Floating point value
@@ -2820,7 +2824,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
 
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-            pEvent->sizeData   = 4 + strval.length();
+            pEvent->sizeData   = 4 + (uint16_t)strval.length();
 
             // Sensor index
             p[0] = pEvent->pdata[0];
@@ -2845,7 +2849,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
                  (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class)) {
 
             pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-            pEvent->sizeData   = 4 + strval.length();
+            pEvent->sizeData   = 4 + (uint16_t)strval.length();
 
             // Sensor index
             p[0] = pEvent->pdata[0];
@@ -3909,7 +3913,7 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
         if (data_array.size() > VSCP_MAX_DATA)
             return false;
 
-        pEvent->sizeData = data_array.size();
+        pEvent->sizeData = (uint16_t)data_array.size();
         if (0 == pEvent->sizeData) {
             pEvent->pdata = NULL;
         }
@@ -4046,7 +4050,7 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
             if (data_array.size() > VSCP_MAX_DATA)
                 return false;
 
-            pEventEx->sizeData = data_array.size();
+            pEventEx->sizeData = (uint16_t)data_array.size();
             if (0 == pEventEx->sizeData) {
                 memset(pEventEx->data, 0, sizeof(pEventEx->data));
             }
@@ -4192,7 +4196,7 @@ vscp_convertXMLToEvent(vscpEvent* pEvent, std::string& strXML)
 
     strncpy((char*)buf, strXML.c_str(), strXML.length());
 
-    bytes_read = strXML.length();
+    bytes_read = (int)strXML.length();
     if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
         return false;
     }
@@ -4331,7 +4335,7 @@ vscp_convertXMLToEventEx(vscpEventEx* pEventEx, std::string& strXML)
 
     strncpy((char*)buf, strXML.c_str(), strXML.length());
 
-    bytes_read = strXML.length();
+    bytes_read = (int)strXML.length();
     if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
         return false;
     }
@@ -4993,7 +4997,7 @@ vscp_readFilterMaskFromXML(vscpEventFilter* pFilter,
 
     strncpy((char*)buf, strFilter.c_str(), strFilter.length());
 
-    bytes_read = strFilter.length();
+    bytes_read = (int)strFilter.length();
     if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
         return false;
     }
@@ -5509,11 +5513,11 @@ unsigned long
 vscp_makeTimeStamp(void)
 {
     uint32_t us; // Microseconds
-    time_t s;    // Seconds
-    struct timespec spec;
+    //time_t s;    // Seconds
+    //struct timespec spec;
 
 #ifdef WIN32
-    us = (double(std::chrono::duration_cast<std::chrono::microseconds>(
+    us = (uint32_t)(double(std::chrono::duration_cast<std::chrono::microseconds>(
                      std::chrono::system_clock::now().time_since_epoch())
                      .count()) /
             double(1000000));
@@ -6511,7 +6515,7 @@ vscp_getEventFromFrame(vscpEvent* pEvent, const uint8_t* buf, size_t len)
 #endif
 
         // Calculate & check CRC
-        crcnew = crcFast((unsigned char const*)buf + 1, calcFrameSize - 1);
+        crcnew = crcFast((unsigned char const*)buf + 1, (int)calcFrameSize - 1);
         // CRC is zero if calculated over itself
         if (crcnew) return false;
     }
@@ -6680,7 +6684,7 @@ vscp_encryptFrame(uint8_t* output,
             AES_CBC_encrypt_buffer(AES192,
                                    output + 1,
                                    input + 1, // Not Packet type byte
-                                   padlen,
+                                   (uint32_t)padlen,
                                    key,
                                    (const uint8_t*)generated_iv);
             // Append iv
@@ -6692,7 +6696,7 @@ vscp_encryptFrame(uint8_t* output,
             AES_CBC_encrypt_buffer(AES256,
                                    output + 1,
                                    input + 1, // Not Packet type byte
-                                   padlen,
+                                   (uint32_t)padlen,
                                    key,
                                    (const uint8_t*)generated_iv);
             // Append iv
@@ -6704,7 +6708,7 @@ vscp_encryptFrame(uint8_t* output,
             AES_CBC_encrypt_buffer(AES128,
                                    output + 1,
                                    input + 1, // Not Packet type byte
-                                   padlen,
+                                   (uint32_t)padlen,
                                    key,
                                    (const uint8_t*)generated_iv);
             // Append iv
@@ -6773,7 +6777,7 @@ vscp_decryptFrame(uint8_t* output,
             AES_CBC_decrypt_buffer(AES256,
                                    output + 1,
                                    input + 1,
-                                   real_len - 1,
+                                   (uint32_t)real_len - 1,
                                    key,
                                    (const uint8_t*)appended_iv);
             break;
@@ -6782,7 +6786,7 @@ vscp_decryptFrame(uint8_t* output,
             AES_CBC_decrypt_buffer(AES192,
                                    output + 1,
                                    input + 1,
-                                   real_len - 1,
+                                   (uint32_t)real_len - 1,
                                    key,
                                    (const uint8_t*)appended_iv);
             break;
@@ -6792,7 +6796,7 @@ vscp_decryptFrame(uint8_t* output,
             AES_CBC_decrypt_buffer(AES128,
                                    output + 1,
                                    input + 1,
-                                   real_len - 1,
+                                   (uint32_t)real_len - 1,
                                    key,
                                    (const uint8_t*)appended_iv);
             break;
@@ -6849,7 +6853,7 @@ vscp_byteArray2HexStr(char* to, const unsigned char* p, size_t len)
 size_t
 vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 {
-    int slen = strlen(hexstr);
+    int slen = (int)strlen(hexstr);
     int i = 0, j = 0;
 
     // The output array size is half the hex_str length (rounded up)
@@ -7112,10 +7116,14 @@ bool parse_address(const char* input, ip_address_t* result) {
         uint16_t port = parse_port_number(ptr + 1);
         if (port > 0) {
             bool success = false;
+#ifdef WIN32
+            char* copy = _strdup(input);
+#else            
             char* copy = strdup(input);
+#endif            
             if (copy == NULL)
                 return false;
-            int index = ptr - input;
+            int index = (int)(ptr - input);
             copy[index] = '\0';
             if (copy[index - 1] == ']' && copy[0] == '[') {
                 copy[index - 1] = '\0';

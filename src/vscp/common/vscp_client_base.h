@@ -42,8 +42,8 @@ using json = nlohmann::json;
 // as it wants.
 
 #ifdef WIN32
-typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev, void *pobj );
-typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx &ex, void *pobj );
+typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent *pev, void *pobj );     // Event callback
+typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx *pex, void *pobj );   // Event ex callbac
 #else
 typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev, void *pobj );     // Event callback
 typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex, void *pobj );   // Event ex callback

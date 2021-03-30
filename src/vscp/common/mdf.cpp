@@ -37,7 +37,9 @@
 #include <canal.h>
 #include <mdf.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <vscp.h>
 #include <vscphelper.h>
 
@@ -2810,7 +2812,7 @@ CMDF::getPages(std::set<long> &pages)
         }
     }
 
-    return pages.size();
+    return (uint32_t)pages.size();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,8 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifndef WIN32
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -35,21 +37,19 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-
 #include <linux/can.h>
 #include <linux/can/raw.h>
-
 #include <ctype.h>
 #include <errno.h>
 #include <libgen.h>
-#include <signal.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/uio.h>
-#include <time.h>
-
 #include <net/if.h>
 #include <sys/ioctl.h>
+
+#include <signal.h>
+#include <sys/types.h>
+#include <time.h>
 #include <sys/socket.h>
 
 #include <linux/can/raw.h>
@@ -752,3 +752,5 @@ void *workerThread(void *pData)
 
     return NULL;
 }
+
+#endif

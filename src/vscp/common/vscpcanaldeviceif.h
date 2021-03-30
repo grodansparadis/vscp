@@ -71,7 +71,7 @@ class VscpCanalDeviceIf
         @param nFormat Format for the data object
         @return CANAL_ERROR_SUCCESS on success, CANAL error code on failure
     */
-    bool
+    int
     constructCanalMsg( canalMsg *pmsg,
                         std::string& strObj,
                         uint8_t nFormat = CANAL_FORMAT_CAN_XML );

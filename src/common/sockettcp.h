@@ -33,6 +33,10 @@
 #ifndef __sockettcp_h
 #define __sockettcp_h
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <stdio.h>
 #include <stddef.h>
 
@@ -42,7 +46,9 @@ extern "C" {
 
 #include <sys/types.h>
 #if defined(_WIN32)
+#include <ws2def.h>
 #include <Ws2ipdef.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/ip.h>

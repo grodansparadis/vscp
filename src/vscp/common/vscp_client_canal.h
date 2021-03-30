@@ -30,6 +30,8 @@
 #include "vscp_client_base.h"
 #include "vscpcanaldeviceif.h"
 
+#include <pthread.h>
+
 // When a callback is set and connect is called this object is shared
 // with a workerthread that 
 
@@ -194,9 +196,7 @@ public:
     bool m_bRun;
 
     // Mutex that protect CANAL interface when callbacks are defined
-#ifndef WIN32
     pthread_mutex_t m_mutexif;
-#endif
 
     // CANAL functionality
     VscpCanalDeviceIf m_canalif;
@@ -212,9 +212,7 @@ private:
     bool m_bConnected;
 
     // Worker thread id
-#ifndef WIN32
     pthread_t m_tid;
-#endif
 };
 
 
