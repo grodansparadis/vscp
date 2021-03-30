@@ -620,20 +620,19 @@ vscp_rstrstr(const char* s1, const char* s2)
 //
 
 std::string
-vscp_str_format(const std::string& fmt_str, ...)
+vscp_str_format(std::string fstr, ...)
 {
-    std::string fmtstr = fmt_str;   // Reference does to work on Windows
     int final_n,
-      n = ((int)fmt_str.size()) *
+      n = ((int)fstr.size()) *
           2; /* Reserve two times as much as the length of the fmt_str */
     std::unique_ptr<char[]> formatted;
     va_list ap;
     while (1) {
         formatted.reset(
           new char[n]); /* Wrap the plain char array into the unique_ptr */
-        strcpy(&formatted[0], fmt_str.c_str());
-        va_start(ap, fmtstr);
-        final_n = vsnprintf(&formatted[0], n, fmtstr.c_str(), ap);
+        strcpy(&formatted[0], fstr.c_str());
+        va_start(ap, fstr);
+        final_n = vsnprintf(&formatted[0], n, fstr.c_str(), ap);
         va_end(ap);
         if (final_n < 0 || final_n >= n) {
             n += abs(final_n - n + 1);
@@ -5512,9 +5511,7 @@ vscp_setDataArrayFromString(uint8_t* pData,
 unsigned long
 vscp_makeTimeStamp(void)
 {
-    uint32_t us; // Microseconds
-    //time_t s;    // Seconds
-    //struct timespec spec;
+    uint32_t us; // Microseconds        
 
 #ifdef WIN32
     us = (uint32_t)(double(std::chrono::duration_cast<std::chrono::microseconds>(
@@ -5522,6 +5519,9 @@ vscp_makeTimeStamp(void)
                      .count()) /
             double(1000000));
 #else
+    time_t s;    // Seconds
+    struct timespec spec;
+
     clock_gettime(CLOCK_REALTIME, &spec);
 
     s  = spec.tv_sec;

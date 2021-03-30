@@ -300,12 +300,14 @@ extern "C"
     /*!
         vscp_str_format
 
+        Note! Putting the format string as a reference does dot work on window.
+
         https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf/49812018
         @param format string
         @param Variables part of resulting string
         @return formated string
     */
-    std::string vscp_str_format(const std::string& fmt_str, ...);
+    std::string vscp_str_format(std::string fstr, ...);
 
     /*!
         vscp_startsWith

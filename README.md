@@ -14,7 +14,13 @@ many platforms that have a webserver/websocket/rest/driver and tcp/ip interface 
 
 Documentation for VSCP is available at [https://docs.vscp.org](https://docs.vscp.org)
 
-<p>A short introduction is available
+Checkout with
+
+```bash
+git clone --recurse-submodules -j8 https://github.com/grodansparadis/vscp.git
+```
+
+<p>A short introduction to VSCP is available
 <a href="https://www.slideshare.net/keHedman/2014-01-33087344">here</a> and
 <a href="https://www.slideshare.net/keHedman/vscp-presentation-eindhoven">here</a>.</p>
 </p>
