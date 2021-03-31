@@ -1244,14 +1244,18 @@ __attribute__((unused)) static pthread_mutexattr_t pthread_mutex_attr;
 
 
 /* mg_init_library counter */
-//__attribute__((unused)) static int mg_init_library_called = 0;
+#ifndef WIN32
+__attribute__((unused)) static int mg_init_library_called = 0;
+#endif
 
 #if !defined(NO_SSL)
 static int mg_ssl_initialized = 0;
 #endif
 
 // static pthread_key_t sTlsKey; /* Thread local storage index */
-// static int thread_idx_max = 0;
+#ifndef WIN32
+static int thread_idx_max = 0;
+#endif
 
 #if defined(MG_LEGACY_INTERFACE)
 #define MG_ALLOW_USING_GET_REQUEST_INFO_FOR_RESPONSE
@@ -1301,7 +1305,9 @@ static pthread_mutex_t global_lock_mutex;
 // stcp_global_lock
 //
 
-//static void stcp_global_lock(void) __attribute__ ((unused));
+#ifndef WIN32
+static void stcp_global_lock(void) __attribute__ ((unused));
+#endif
 static void
 stcp_global_lock(void)
 {
@@ -1312,7 +1318,9 @@ stcp_global_lock(void)
 // stcp_global_unlock
 //
 
-//static void stcp_global_unlock(void) __attribute__ ((unused));
+#ifndef WIN32
+static void stcp_global_unlock(void) __attribute__ ((unused));
+#endif
 static void
 stcp_global_unlock(void)
 {
@@ -1384,7 +1392,9 @@ atomic_dec(volatile int *addr)
 // CRYPTO_set_id_callback
 //
 
-//static unsigned long stcp_current_thread_id( void ) __attribute__((unused));
+#ifndef WIN32
+static unsigned long stcp_current_thread_id( void ) __attribute__((unused));
+#endif
 static unsigned long
 stcp_current_thread_id( void )
 {
@@ -1472,7 +1482,9 @@ static void strlcpy( register char *dst, register const char *src, size_t n )
 // stcp_strndup
 //
 
-//static char *stcp_strndup( const char *ptr, size_t len ) __attribute__ ((unused));
+#ifndef WIN32
+static char *stcp_strndup( const char *ptr, size_t len ) __attribute__ ((unused));
+#endif
 static char *stcp_strndup( const char *ptr, size_t len )
 {
     char *p;
@@ -1488,10 +1500,16 @@ static char *stcp_strndup( const char *ptr, size_t len )
 // stcp_strdup
 //
 
-//static char *stcp_strdup( const char *str ) __attribute__ ((unused));
+#ifndef WIN32
+static char *stcp_strdup( const char *str ) __attribute__ ((unused));
+#endif
 static char *stcp_strdup( const char *str )
 {
+#ifndef WIN32
+    return strndup(str, strlen(str));
+#else    
     return __strndup(str, strlen(str));
+#endif    
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1897,10 +1915,17 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
 		                                malloc( sizeof( struct stcp_srv_client_cert ) );
 
         if ( client_cert ) {
+#ifndef WIN32
+            client_cert->subject = strdup( str_subject );
+            client_cert->issuer = strdup( str_issuer );
+            client_cert->serial = strdup( str_serial );
+            client_cert->finger = strdup( str_finger );
+#else            
             client_cert->subject = __strdup( str_subject );
             client_cert->issuer = __strdup( str_issuer );
             client_cert->serial = __strdup( str_serial );
             client_cert->finger = __strdup( str_finger );
+#endif            
         }
         else {
             stcp_report_error( "Out of memory: Cannot allocate memory for client "
@@ -2091,16 +2116,22 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 int
 stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 {
-    //__attribute__((unused))int callback_ret;
+#ifndef WIN32    
+    __attribute__((unused))int callback_ret;
+#endif    
     int should_verify_peer;
     int peer_certificate_optional;
     int use_default_verify_paths;
-    //__attribute__((unused))int verify_depth;
+#ifndef WIN32    
+    __attribute__((unused))int verify_depth;
+#endif    
     time_t now_rt = time(NULL);
     struct timespec now_mt;
     md5_byte_t ssl_context_id[16];
     md5_state_t md5state;
-    //__attribute__((unused))int protocol_ver;
+ #ifndef WIN32   
+    __attribute__((unused))int protocol_ver;
+ #endif   
     
     /* Must have secure options */
     if ( NULL == secure_opts ) {
@@ -2452,7 +2483,11 @@ stcp_connect_socket( const char *hostip,
         // While getaddrinfo on Windows will work with [::1],
         // getaddrinfo on Linux only works with ::1 (without []).
         size_t l = strlen(hostip + 1);
+#ifndef WIN32
+        char *h = (l > 1) ? strdup(hostip + 1) : NULL;
+#else        
         char *h = (l > 1) ? __strdup(hostip + 1) : NULL;
+#endif        
         if ( h ) {
             h[l - 1] = 0;
             if ( stcp_inet_pton(AF_INET6, h, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr
