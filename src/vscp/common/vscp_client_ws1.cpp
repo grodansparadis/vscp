@@ -33,9 +33,9 @@
 #endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
-extern "C" {
+//extern "C" {
 #include "civetweb.h"
-}
+//}
 
 #include "vscp_client_ws1.h"
 

@@ -79,6 +79,7 @@
 #endif
 
 #if defined(_WIN32)
+#include "stdafx.h"
 #if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
 #endif
@@ -150,6 +151,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 
+#include <pthread.h>
 
 typedef const char *SOCK_OPT_TYPE;
 
@@ -247,14 +249,14 @@ typedef const char *SOCK_OPT_TYPE;
 #define fileno(x) (_fileno(x))
 #endif /* !fileno MINGW #defines fileno */
 
-typedef HANDLE pthread_mutex_t;
-typedef DWORD pthread_key_t;
-typedef HANDLE pthread_t;
+// typedef HANDLE pthread_mutex_t;
+// typedef DWORD pthread_key_t;
+// typedef HANDLE pthread_t;
 
-typedef struct {
-    CRITICAL_SECTION threadIdSec;
-    struct mg_workerTLS *waiting_thread; /* The chain of threads */
-} pthread_cond_t;
+// typedef struct {
+//     CRITICAL_SECTION threadIdSec;
+//     struct mg_workerTLS *waiting_thread; /* The chain of threads */
+// } pthread_cond_t;
 
 #ifndef __clockid_t_defined
 typedef DWORD clockid_t;
@@ -388,8 +390,8 @@ clock_gettime(clockid_t clk_id, struct timespec *tp)
 
 #define pid_t HANDLE /* MINGW typedefs pid_t to int. Using #define here. */
 
-static int pthread_mutex_lock(pthread_mutex_t *);
-static int pthread_mutex_unlock(pthread_mutex_t *);
+// static int pthread_mutex_lock(pthread_mutex_t *);
+// static int pthread_mutex_unlock(pthread_mutex_t *);
 static void path_to_unicode(const struct mg_connection *conn,
     const char *path,
     wchar_t *wbuf,
@@ -505,8 +507,8 @@ typedef const void *SOCK_OPT_TYPE;
 
 #define pid_t HANDLE /* MINGW typedefs pid_t to int. Using #define here. */
 
-static int pthread_mutex_lock(pthread_mutex_t *);
-static int pthread_mutex_unlock(pthread_mutex_t *);
+//static int pthread_mutex_lock(pthread_mutex_t *);
+//static int pthread_mutex_unlock(pthread_mutex_t *);
 
 
 static void path_to_unicode( const struct mg_connection *conn,
@@ -530,9 +532,6 @@ struct pollfd {
 #if defined(_MSC_VER)
 #pragma comment(lib, "Ws2_32.lib")
 #endif
-
-
-
 
 #else  /* defined(_WIN32)  WINDOWS / UNIX include block */
 
@@ -641,10 +640,12 @@ typedef int SOCKET;
 #define SHUTDOWN_WR (1)
 #define SHUTDOWN_BOTH (2)
 
+#ifndef WIN32
 // stcp_init_library counter
 __attribute__((unused)) static int stcp_init_called = 0;
 
 __attribute__((unused)) static int stcp_ssl_initialized = 0;
+#endif
 
 static pthread_key_t sTlsKey; // Thread local storage index
 
@@ -677,6 +678,8 @@ stcp_get_current_time_ns( void )
 
 #if defined(_WIN32)
 
+
+
 #if defined(_WIN32) && !defined(POLLIN)
 #ifndef HAVE_POLL
 struct pollfd {
@@ -702,10 +705,32 @@ void usleep(__int64 usec)
     CloseHandle(timer);
 }
 
+static char *__strdup(const char *s) {
+    size_t size = strlen(s) + 1;
+    char *p = malloc(size);
+    if (p != NULL) {
+        memcpy(p, s, size);
+    }
+    return p;
+}
+
+static char *__strndup(const char *s, size_t n) {
+    char *p;
+    size_t n1;
+
+    for (n1 = 0; n1 < n && s[n1] != '\0'; n1++)
+        continue;
+    p = malloc(n + 1);
+    if (p != NULL) {
+        memcpy(p, s, n1);
+        p[n1] = '\0';
+    }
+    return p;
+}
 
 #ifndef HAVE_POLL
 static int
-stcp_poll(struct pollfd *pfd, unsigned int n, int milliseconds)
+stcp_poll(struct pollfd *pfd, unsigned int n, int milliseconds, volatile int *stop_server)
 {
     struct timeval tv;
     fd_set set;
@@ -769,7 +794,7 @@ set_non_blocking_mode(int sock)
 //                                 PTHREAD
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 ////////////////////////////////////////////////////////////////////////////////
 // pthread_mutex_init
 //
@@ -992,6 +1017,7 @@ pthread_cond_destroy( pthread_cond_t *cv )
 
     return 0;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // event_create
@@ -1163,41 +1189,41 @@ set_blocking_mode( int sock )
 
 static CRITICAL_SECTION global_log_file_lock;
 
-static DWORD
-pthread_self(void)
-{
-    return GetCurrentThreadId();
-}
+// static DWORD
+// pthread_self(void)
+// {
+//     return GetCurrentThreadId();
+// }
 
 
-static int
-pthread_key_create(
-    pthread_key_t *key,
-    void(*_ignored)(void *) /* destructor not supported for Windows */
-)
-{
-    (void)_ignored;
+// static int
+// pthread_key_create(
+//     pthread_key_t *key,
+//     void(*_ignored)(void *) /* destructor not supported for Windows */
+// )
+// {
+//     (void)_ignored;
 
-    if ((key != 0)) {
-        *key = TlsAlloc();
-        return (*key != TLS_OUT_OF_INDEXES) ? 0 : -1;
-    }
-    return -2;
-}
-
-
-static int
-pthread_key_delete(pthread_key_t key)
-{
-    return TlsFree(key) ? 0 : 1;
-}
+//     if ((key != 0)) {
+//         *key = TlsAlloc();
+//         return (*key != TLS_OUT_OF_INDEXES) ? 0 : -1;
+//     }
+//     return -2;
+// }
 
 
-static int
-pthread_setspecific(pthread_key_t key, void *value)
-{
-    return TlsSetValue(key, value) ? 0 : 1;
-}
+// static int
+// pthread_key_delete(pthread_key_t key)
+// {
+//     return TlsFree(key) ? 0 : 1;
+// }
+
+
+// static int
+// pthread_setspecific(pthread_key_t key, void *value)
+// {
+//     return TlsSetValue(key, value) ? 0 : 1;
+// }
 
 
 /*static void *
@@ -1218,14 +1244,14 @@ __attribute__((unused)) static pthread_mutexattr_t pthread_mutex_attr;
 
 
 /* mg_init_library counter */
-__attribute__((unused)) static int mg_init_library_called = 0;
+//__attribute__((unused)) static int mg_init_library_called = 0;
 
 #if !defined(NO_SSL)
 static int mg_ssl_initialized = 0;
 #endif
 
-static pthread_key_t sTlsKey; /* Thread local storage index */
-static int thread_idx_max = 0;
+// static pthread_key_t sTlsKey; /* Thread local storage index */
+// static int thread_idx_max = 0;
 
 #if defined(MG_LEGACY_INTERFACE)
 #define MG_ALLOW_USING_GET_REQUEST_INFO_FOR_RESPONSE
@@ -1266,9 +1292,8 @@ static pthread_mutex_t global_lock_mutex;
 
 #if defined(_WIN32)
 // Forward declaration for Windows
-static int pthread_mutex_lock(pthread_mutex_t *mutex);
-
-static int pthread_mutex_unlock(pthread_mutex_t *mutex);
+//static int pthread_mutex_lock(pthread_mutex_t *mutex);
+//static int pthread_mutex_unlock(pthread_mutex_t *mutex);
 #endif
 
 
@@ -1276,7 +1301,7 @@ static int pthread_mutex_unlock(pthread_mutex_t *mutex);
 // stcp_global_lock
 //
 
-static void stcp_global_lock(void) __attribute__ ((unused));
+//static void stcp_global_lock(void) __attribute__ ((unused));
 static void
 stcp_global_lock(void)
 {
@@ -1287,7 +1312,7 @@ stcp_global_lock(void)
 // stcp_global_unlock
 //
 
-static void stcp_global_unlock(void) __attribute__ ((unused));
+//static void stcp_global_unlock(void) __attribute__ ((unused));
 static void
 stcp_global_unlock(void)
 {
@@ -1359,7 +1384,7 @@ atomic_dec(volatile int *addr)
 // CRYPTO_set_id_callback
 //
 
-static unsigned long stcp_current_thread_id( void ) __attribute__((unused));
+//static unsigned long stcp_current_thread_id( void ) __attribute__((unused));
 static unsigned long
 stcp_current_thread_id( void )
 {
@@ -1447,7 +1472,7 @@ static void strlcpy( register char *dst, register const char *src, size_t n )
 // stcp_strndup
 //
 
-static char *stcp_strndup( const char *ptr, size_t len ) __attribute__ ((unused));
+//static char *stcp_strndup( const char *ptr, size_t len ) __attribute__ ((unused));
 static char *stcp_strndup( const char *ptr, size_t len )
 {
     char *p;
@@ -1463,10 +1488,10 @@ static char *stcp_strndup( const char *ptr, size_t len )
 // stcp_strdup
 //
 
-static char *stcp_strdup( const char *str ) __attribute__ ((unused));
+//static char *stcp_strdup( const char *str ) __attribute__ ((unused));
 static char *stcp_strdup( const char *str )
 {
-    return strndup( str, strlen( str ) );
+    return __strndup(str, strlen(str));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1872,10 +1897,10 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
 		                                malloc( sizeof( struct stcp_srv_client_cert ) );
 
         if ( client_cert ) {
-            client_cert->subject = strdup( str_subject );
-            client_cert->issuer = strdup( str_issuer );
-            client_cert->serial = strdup( str_serial );
-            client_cert->finger = strdup( str_finger );
+            client_cert->subject = __strdup( str_subject );
+            client_cert->issuer = __strdup( str_issuer );
+            client_cert->serial = __strdup( str_serial );
+            client_cert->finger = __strdup( str_finger );
         }
         else {
             stcp_report_error( "Out of memory: Cannot allocate memory for client "
@@ -2066,16 +2091,16 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 int
 stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 {
-    __attribute__((unused))int callback_ret;
+    //__attribute__((unused))int callback_ret;
     int should_verify_peer;
     int peer_certificate_optional;
     int use_default_verify_paths;
-    __attribute__((unused))int verify_depth;
+    //__attribute__((unused))int verify_depth;
     time_t now_rt = time(NULL);
     struct timespec now_mt;
     md5_byte_t ssl_context_id[16];
     md5_state_t md5state;
-    __attribute__((unused))int protocol_ver;
+    //__attribute__((unused))int protocol_ver;
     
     /* Must have secure options */
     if ( NULL == secure_opts ) {
@@ -2427,7 +2452,7 @@ stcp_connect_socket( const char *hostip,
         // While getaddrinfo on Windows will work with [::1],
         // getaddrinfo on Linux only works with ::1 (without []).
         size_t l = strlen(hostip + 1);
-        char *h = (l > 1) ? strdup(hostip + 1) : NULL;
+        char *h = (l > 1) ? __strdup(hostip + 1) : NULL;
         if ( h ) {
             h[l - 1] = 0;
             if ( stcp_inet_pton(AF_INET6, h, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr

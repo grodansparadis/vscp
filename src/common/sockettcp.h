@@ -352,7 +352,7 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout );
  */
 
 int
-stcp_write( struct stcp_connection *conn, const void *buf, size_t len );
+stcp_write(struct stcp_connection *conn, const void *buf, size_t len );
 
 
 /*!
@@ -360,15 +360,15 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len );
  * @param pfd Array with socket descriptors
  * @param n number of descriptors
  * @param mstimeout Number of milliseconds to wait or action
- * @stop_server Pointer to variable that if set to non zero will return
+ * @param stop_server Pointer to variable that if set to non zero will return
  *              immediately.
  * @return >0 success (descriptor causing action), -1 timeout, -2 stopped
  */
 int
-stcp_poll( struct pollfd *pfd,
+stcp_poll(struct pollfd *pfd,
                 unsigned int n,
                 int mstimeout,
-                volatile int *stop_server );
+                volatile int *stop_server);
 
 
 
@@ -383,8 +383,8 @@ stcp_poll( struct pollfd *pfd,
 */
 
 int
-stcp_listening( struct server_context *srv_ctx, 
-                    const char *str_listening_port );
+stcp_listening(struct server_context *srv_ctx, 
+                    const char *str_listening_port);
 
 /*!
  * Accept new connection (called after poll)
@@ -397,9 +397,9 @@ stcp_listening( struct server_context *srv_ctx,
  */
 
 int
-stcp_accept( struct server_context *srv_ctx,
+stcp_accept(struct server_context *srv_ctx,
                 const struct socket *listener, 
-                struct socket *psocket );               
+                struct socket *psocket);               
 
 /*!
  * Close all listening sockets
@@ -408,7 +408,7 @@ stcp_accept( struct server_context *srv_ctx,
  */
 void
 
-stcp_close_all_listening_sockets( struct server_context *srv_ctx );
+stcp_close_all_listening_sockets(struct server_context *srv_ctx);
 
 /*!
     INit data for a connected client (after accept)
