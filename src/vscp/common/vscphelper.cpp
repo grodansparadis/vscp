@@ -1713,6 +1713,11 @@ vscp_getMeasurementSensorIndex(const vscpEvent* pEvent)
 {
     int offset = 0;
 
+    // Must have valid event and data
+    if ((NULL == pEvent) || (NULL == pEvent->pdata) || !pEvent->sizeData) {
+        return -1;
+    }
+
     // If class >= 512 and class < 1024 we
     // have GUID in front of data.
     if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) &&
@@ -1731,8 +1736,9 @@ vscp_getMeasurementSensorIndex(const vscpEvent* pEvent)
              (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
              (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
 
-        if ((NULL == pEvent->pdata) || (pEvent->sizeData >= (offset + 3)))
-            return 0;
+        if ((NULL == pEvent->pdata) || (pEvent->sizeData >= (offset + 3))) {
+            return -1;
+        }
 
         return pEvent->pdata[offset + 0];
     }
@@ -1795,6 +1801,11 @@ int
 vscp_getMeasurementZone(const vscpEvent* pEvent)
 {
     int offset = 0;
+
+    // Must have valid event and data
+    if ((NULL == pEvent) || (NULL == pEvent->pdata) || !pEvent->sizeData) {
+        return -1;
+    }
 
     // If class >= 512 and class < 1024 we
     // have GUID in front of data.
@@ -1878,6 +1889,11 @@ int
 vscp_getMeasurementSubZone(const vscpEvent* pEvent)
 {
     int offset = 0;
+
+    // Must have valid event and data
+    if ((NULL == pEvent) || (NULL == pEvent->pdata) || !pEvent->sizeData) {
+        return -1;
+    }
 
     // If class >= 512 and class < 1024 we
     // have GUID in front of data.
