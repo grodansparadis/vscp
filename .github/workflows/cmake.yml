@@ -18,6 +18,15 @@ jobs:
     # https://github.com/actions/checkout  
     - uses: actions/checkout@v2
 
+    - name: Checkout eclipse paho repo
+      uses: actions/checkout@v2
+      with:
+        repository: eclipse/paho.mqtt.c
+        path: paho
+
+    - name: Install paho manually
+      run: cd paho && mkdir build && cd build && sudo cmake -DPAHO_WITH_SSL=true .. && sudo make install
+           
     - name: Checkout google test repo
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo mkdir build && cd build && sudo cmake .. && sudo make DESTDIR=/usr/lib
 
@@ -28,8 +37,9 @@ jobs:
     - name: Install libmosuitto-dev manually
       run: sudo apt install libmosquitto-dev
     
-    - name: Install libpaho-mqtt-dev manually
-      run: sudo apt install libpaho-mqtt-dev
+    # not in Ubuntu 20.4  
+    # - name: Install libpaho-mqtt-dev manually
+    #   run: sudo apt install libpaho-mqtt-dev
 
     - name: Install libexpat-dev manually
       run: sudo apt install libexpat-dev
