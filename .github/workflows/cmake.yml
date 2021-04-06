@@ -19,13 +19,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Checkout google test repo
-      run: |
-        sudo apt-get install libgtest-dev
-        cd /usr/src/gtest
-        sudo mkdir build
-        cd build 
-        sudo cmake ..
-        sudo make DESTDIR=/usr/lib
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo mkdir build && cd build && sudo cmake .. && sudo make DESTDIR=/usr/lib
     # sudo cp *.a /usr/lib
     # sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a
     # sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
