@@ -40,7 +40,7 @@ CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -D_POSIX_SOURCE -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party/sqlite3-3.34.0/ \
+	-I../../../common/third_party/sqlite3-3.35.4/ \
 	-I../../../common/third_party
 CFLAGS += $(CIVETWEB_FLAGS) 
 CXXFLAGS = -std=c++11 @CXXFLAGS@ ${WARNINGS}
@@ -49,7 +49,7 @@ CPPFLAGS = @CPPFLAGS@ ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../../common \
 	-I../../../common \
 	-I../../../common/third_party/nlohmann \
-	-I../../../common/third_party/sqlite3-3.34.0/ \
+	-I../../../common/third_party/sqlite3-3.35.4/ \
 	-I../../../common/third_party
 CPPFLAGS += $(CIVETWEB_FLAGS) 
 
@@ -162,8 +162,8 @@ fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-sqlite3.o: ../../../common/third_party/sqlite3-3.34.0/sqlite3.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3-3.34.0/sqlite3.c -o $@
+sqlite3.o: ../../../common/third_party/sqlite3-3.35.4/sqlite3.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3-3.35.4/sqlite3.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
