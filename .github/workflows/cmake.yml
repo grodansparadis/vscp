@@ -33,6 +33,9 @@ jobs:
     - name: Update before installing packages
       run: sudo apt-get update
 
+    - name: INstall support libssl
+      run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
+
     # Will be replaced with paho
     - name: Install libmosuitto-dev manually
       run: sudo apt install libmosquitto-dev
