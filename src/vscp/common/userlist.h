@@ -323,7 +323,7 @@ class CUserItem
     void setNote(const std::string& note) { m_note = note; };
 
     // User rights
-    uint32_t getUserRights(void) { return m_userRights; };
+    uint64_t getUserRights(void) { return m_userRights; };
 
     void setUserRights(const uint32_t rights) { m_userRights = rights; };
     std::string getUserRightsAsString(void);
@@ -680,7 +680,7 @@ class CUserList
      * Get number of users on the system
      * @return number of users.
      */
-    uint32_t getUserCount(void) { return m_userhashmap.size(); };
+    size_t getUserCount(void) { return m_userhashmap.size(); };
 
     /*!
      * Get user info as string

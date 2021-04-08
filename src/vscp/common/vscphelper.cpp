@@ -27,7 +27,7 @@
 //
 
 #ifdef WIN32
-#include "StdAfx.h"
+#include <StdAfx.h>
 #endif
 
 #include <limits.h>

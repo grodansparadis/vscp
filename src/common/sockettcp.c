@@ -729,7 +729,7 @@ static char *__strndup(const char *s, size_t n) {
 }
 
 #ifndef HAVE_POLL
-static int
+int
 stcp_poll(struct pollfd *pfd, unsigned int n, int milliseconds, volatile int *stop_server)
 {
     struct timeval tv;
