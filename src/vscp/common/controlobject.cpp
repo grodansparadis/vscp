@@ -313,7 +313,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    //                         Read XML configuration
+    //                           Read configuration
     ////////////////////////////////////////////////////////////////////////////
 
     // Read XML configuration
@@ -321,21 +321,16 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         syslog(LOG_DEBUG, "Reading configuration file");
     }
 
-    // Read XML configuration
-    //try {
-        if (!readConfiguration(strcfgfile)) {
-            fprintf(stderr,"vscpd:  Unable to open/parse/read configuration file. Can't initialize! See syslog - ");
-            syslog(LOG_ERR,
-                   "vscpd:  Unable to open/parse/read configuration file. Can't initialize! "
-                   "Path =%s",
-                   strcfgfile.c_str());
-            return FALSE;
-        }
-    // }
-    // catch (...) {
-    //     syslog(LOG_ERR, "Exception when reading configuration file");
-    //     return FALSE;
-    // }
+    // Read configuration
+    if (!readConfiguration(strcfgfile)) {
+        fprintf(stderr,"vscpd:  Unable to open/parse/read configuration file. Can't initialize! See syslog - ");
+        syslog(LOG_ERR,
+                "vscpd:  Unable to open/parse/read configuration file. Can't initialize! "
+                "Path =%s",
+                strcfgfile.c_str());
+        return FALSE;
+    }
+
 
 #ifndef WIN32
     if (m_runAsUser.length()) {
@@ -370,8 +365,6 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "vscpd:  Using configuration file: %s", strcfgfile.c_str());
     }
-
-
 
     // Get GUID
     if (m_guid.isNULL()) {
@@ -825,9 +818,6 @@ CControlObject::run(void)
 
     return true;
 }
-
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////
