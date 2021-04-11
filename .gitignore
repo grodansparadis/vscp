@@ -323,3 +323,4 @@ src/vscp/relayd/a.out
 src/vscp/relayd/relayd
 tests/helperlib/unittest
 googletest
+build
