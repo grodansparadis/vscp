@@ -208,7 +208,7 @@ add_definitions(-DUSE_WEBSOCKET)
 add_definitions(-DUSE_IPV6)
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_IPV6 -DUSE_WEBSOCKET ")
 string(FIND "${OPENSSL_VERSION}" "1.1." SSL_VER_POS)
-if(${SSL_VER_POS})
+if (${SSL_VER_POS})
     #set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_0")
     add_definitions(-DOPENSSL_API_1_0)
 else()
@@ -216,65 +216,121 @@ else()
     add_definitions(-DOPENSSL_API_1_1)
 endif()
 
-add_executable(vscpd
-    src/vscp/daemon/linux/vscpd.cpp
-    src/vscp/common/version.h
-    src/vscp/common/vscp.h
-    src/vscp/common/controlobject.h
-    src/vscp/common/controlobject.cpp
-    src/vscp/common/devicethread.h
-    src/vscp/common/devicethread.cpp
-    src/vscp/common/devicelist.h
-    src/vscp/common/devicelist.cpp
-    src/vscp/common/vscpremotetcpif.h
-    src/vscp/common/vscpremotetcpif.cpp
-    src/vscp/common/vscpdatetime.h
-    src/vscp/common/vscpdatetime.cpp
-    src/vscp/common/guid.h
-    src/vscp/common/guid.cpp
-    src/vscp/common/mdf.h
-    src/vscp/common/mdf.cpp
-    src/vscp/common/vscphelper.h
-    src/vscp/common/vscphelper.cpp
-    src/vscp/common/canal.h
-    src/vscp/common/canaldlldef.h
-    src/vscp/common/vscpcanaldeviceif.h
-    src/vscp/common/vscpcanaldeviceif.cpp
-    src/vscp/common/canal_xmlconfig.h
-    src/vscp/common/canal_xmlconfig.cpp
-    src/vscp/common/register.h
-    src/vscp/common/register.cpp
-    src/common/third_party/mustache.hpp
-    src/common/third_party/civetweb-1.14/include/civetweb.h
-    src/common/third_party/civetweb-1.14/src/civetweb.c
-    src/common/third_party/sqlite3-3.35.4/sqlite3.h
-    src/common/third_party/sqlite3-3.35.4/sqlite3.c
-    src/common/configfile.h
-    src/common/configfile.cpp
-    src/common/sockettcp.h
-    src/common/sockettcp.c
-    src/common/vscpbase64.h
-    src/common/vscpbase64.c
-    src/common/vscp_aes.h
-    src/common/vscp_aes.c
-    src/common/crc.h
-    src/common/crc.c
-    src/common/crc8.h
-    src/common/crc8.c
-    src/common/vscpmd5.h
-    src/common/vscpmd5.c
-    src/common/fastpbkdf2.h
-    src/common/fastpbkdf2.c  
-    src/common/randpassword.h
-    src/common/randpassword.cpp     
-  )
+if (WIN32)
+    add_executable(vscpd
+        src/vscp/daemon/win32/vscpd.cpp
+        src/vscp/common/version.h
+        src/vscp/common/vscp.h
+        src/vscp/common/controlobject.h
+        src/vscp/common/controlobject.cpp
+        src/vscp/common/devicethread.h
+        src/vscp/common/devicethread.cpp
+        src/vscp/common/devicelist.h
+        src/vscp/common/devicelist.cpp
+        src/vscp/common/vscpremotetcpif.h
+        src/vscp/common/vscpremotetcpif.cpp
+        src/vscp/common/vscpdatetime.h
+        src/vscp/common/vscpdatetime.cpp
+        src/vscp/common/guid.h
+        src/vscp/common/guid.cpp
+        src/vscp/common/mdf.h
+        src/vscp/common/mdf.cpp
+        src/vscp/common/vscphelper.h
+        src/vscp/common/vscphelper.cpp
+        src/vscp/common/canal.h
+        src/vscp/common/canaldlldef.h
+        src/vscp/common/vscpcanaldeviceif.h
+        src/vscp/common/vscpcanaldeviceif.cpp
+        src/vscp/common/canal_xmlconfig.h
+        src/vscp/common/canal_xmlconfig.cpp
+        src/vscp/common/register.h
+        src/vscp/common/register.cpp
+        src/common/third_party/mustache.hpp
+        src/common/third_party/civetweb-1.14/include/civetweb.h
+        src/common/third_party/civetweb-1.14/src/civetweb.c
+        src/common/third_party/sqlite3-3.35.4/sqlite3.h
+        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        src/common/configfile.h
+        src/common/configfile.cpp
+        src/common/sockettcp.h
+        src/common/sockettcp.c
+        src/common/vscpbase64.h
+        src/common/vscpbase64.c
+        src/common/vscp_aes.h
+        src/common/vscp_aes.c
+        src/common/crc.h
+        src/common/crc.c
+        src/common/crc8.h
+        src/common/crc8.c
+        src/common/vscpmd5.h
+        src/common/vscpmd5.c
+        src/common/fastpbkdf2.h
+        src/common/fastpbkdf2.c  
+        src/common/randpassword.h
+        src/common/randpassword.cpp     
+    )
+else()
+    add_executable(vscpd
+        src/vscp/daemon/linux/vscpd.cpp
+        src/vscp/common/version.h
+        src/vscp/common/vscp.h
+        src/vscp/common/controlobject.h
+        src/vscp/common/controlobject.cpp
+        src/vscp/common/devicethread.h
+        src/vscp/common/devicethread.cpp
+        src/vscp/common/devicelist.h
+        src/vscp/common/devicelist.cpp
+        src/vscp/common/vscpremotetcpif.h
+        src/vscp/common/vscpremotetcpif.cpp
+        src/vscp/common/vscpdatetime.h
+        src/vscp/common/vscpdatetime.cpp
+        src/vscp/common/guid.h
+        src/vscp/common/guid.cpp
+        src/vscp/common/mdf.h
+        src/vscp/common/mdf.cpp
+        src/vscp/common/vscphelper.h
+        src/vscp/common/vscphelper.cpp
+        src/vscp/common/canal.h
+        src/vscp/common/canaldlldef.h
+        src/vscp/common/vscpcanaldeviceif.h
+        src/vscp/common/vscpcanaldeviceif.cpp
+        src/vscp/common/canal_xmlconfig.h
+        src/vscp/common/canal_xmlconfig.cpp
+        src/vscp/common/register.h
+        src/vscp/common/register.cpp
+        src/common/third_party/mustache.hpp
+        src/common/third_party/civetweb-1.14/include/civetweb.h
+        src/common/third_party/civetweb-1.14/src/civetweb.c
+        src/common/third_party/sqlite3-3.35.4/sqlite3.h
+        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        src/common/configfile.h
+        src/common/configfile.cpp
+        src/common/sockettcp.h
+        src/common/sockettcp.c
+        src/common/vscpbase64.h
+        src/common/vscpbase64.c
+        src/common/vscp_aes.h
+        src/common/vscp_aes.c
+        src/common/crc.h
+        src/common/crc.c
+        src/common/crc8.h
+        src/common/crc8.c
+        src/common/vscpmd5.h
+        src/common/vscpmd5.c
+        src/common/fastpbkdf2.h
+        src/common/fastpbkdf2.c  
+        src/common/randpassword.h
+        src/common/randpassword.cpp     
+    )
+ endif() 
 
 #     * * * Includes * * *
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (WIN32)
     #find_path(PTHREAD_INCLUDE_DIR pthread.h)
-    include_directories( PUBLIC ./src/common 
+    include_directories( PUBLIC ./src/vscp/daemon/linux
+                            ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann

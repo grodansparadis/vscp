@@ -37,8 +37,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifndef WIN32
 #include <syslog.h>
 #include <unistd.h>
+#endif
 
 #include <mosquitto.h>
 

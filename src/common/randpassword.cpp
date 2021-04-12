@@ -66,7 +66,7 @@ randPassword::~randPassword()
 void randPassword::generatePassword( unsigned char length, char *pPassword )
 {
     static int seed = 8;
-    int UNUSED(len) = strlen( m_pool );
+    int UNUSED(len) = (int)strlen(m_pool);
     int cnt = 0;
     memset( pPassword, 0, length );
     srand( (unsigned)time( NULL ) + seed++ );

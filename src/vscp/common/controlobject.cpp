@@ -32,8 +32,8 @@
 
 #include <controlobject.h>
 
+#ifndef WIN32
 #include <arpa/inet.h>
-#include <errno.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
 #include <linux/sockios.h>
@@ -41,14 +41,18 @@
 #include <net/if_arp.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <pthread.h>
 #include <pwd.h>
+#include <sys/ioctl.h>
+#endif
+
+#include <errno.h>
+#include <pthread.h>
+
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <sys/msg.h>
 #include <sys/socket.h>
 #include <sys/time.h>

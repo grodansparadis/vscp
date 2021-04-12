@@ -86,5 +86,12 @@
         "akhe"
     ],
     "editor.dragAndDrop": false,
-    "diffEditor.codeLens": true
+    "diffEditor.codeLens": true,
+    "cmake.configureSettings": {
+        "VCPKG_TARGET_TRIPLET" : "x64-windows",
+        "CMAKE_BUILD_TYPE" : "${buildType}",
+        "CMAKE_TOOLCHAIN_FILE" : "E:/development/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    "cmake.generator": "Visual Studio 16 2019",
+    "cSpell.language": "sv,en"
 }

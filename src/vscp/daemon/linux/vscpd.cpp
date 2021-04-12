@@ -26,11 +26,15 @@
 // SOFTWARE.
 //
 
+#include "StdAfx.h"
+
 #include <deque>
 #include <string>
 
 #include <errno.h>
 #include <fcntl.h>
+
+#ifndef WIN32
 #include <getopt.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
@@ -38,19 +42,22 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <netdb.h>
+#include <sys/ioctl.h>
+#include <sys/msg.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <syslog.h>
+#include <unistd.h>
+#endif
+
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/msg.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <syslog.h>
-#include <unistd.h>
+
 
 #include "canal_macro.h"
 #include "vscpd.h"
@@ -85,7 +92,10 @@ void
 _sighandlerStop(int sig)
 {
     fprintf(stderr, "vscpd: signal received, forced to stop.\n");
+#ifdef WIN32
+#else    
     syslog(LOG_ERR, "vscpd: signal received, forced to stop.: %m");
+#endif    
     gpobj->m_bQuit = true;
     gbStopDaemon   = true;
     gbRestart      = false;
@@ -94,8 +104,15 @@ _sighandlerStop(int sig)
 void
 _sighandlerRestart(int sig)
 {
+#ifdef WIN32
+    fprintf(stderr, "vscpd: signal received, restart. %s\n", strerror(errno));
+#else    
     fprintf(stderr, "vscpd: signal received, restart. %m\n");
+#endif    
+#ifdef WIN32
+#else    
     syslog(LOG_ERR, "vscpd: signal received, restart.: %m");
+#endif    
     gpobj->m_bQuit = true;
     gbStopDaemon   = false;
     gbRestart      = true;
@@ -114,19 +131,28 @@ main(int argc, char** argv)
     std::string strcfgfile; // Points to XML configuration file
 
     fprintf(stderr, "Prepare to start vscpd...\n");
-
+#ifdef WIN32
+#else
     openlog("vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON);
+#endif    
+#ifdef WIN32
+#else    
     syslog(LOG_INFO, "Starting the VSCP daemon...");
+#endif    
 
     // Ignore return value from defunct processes d
+#ifdef WIN32
+#else    
     signal(SIGCHLD, SIG_IGN);
-
+#endif
     crcInit();
 
     rootFolder   = "/var/lib/vscp/";
     strcfgfile   = "/etc/vscp/vscpd.json";
     gbStopDaemon = false;
 
+#ifdef WIN32
+#else
     while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
 
         switch (opt) {
@@ -145,9 +171,12 @@ main(int argc, char** argv)
             case 'r':
                 rootFolder = optarg;
                 fprintf(stderr, "Will use rootfolder = %s", rootFolder.c_str());
+#ifdef WIN32
+#else                
                 syslog(LOG_INFO,
                        "Will use rootfolder = %s",
                        rootFolder.c_str());
+#endif                       
                 break;
 
             case 'k':
@@ -157,7 +186,10 @@ main(int argc, char** argv)
             case 'd':
                 gDebugLevel =  std::stoull(optarg);     //atoi(optarg);
                 fprintf(stderr, "Debug flags=%s\n", optarg);
+#ifdef WIN32
+#else                
                 syslog(LOG_INFO, "Debug flags=%s\n", optarg);
+#endif                
                 break;
 
             case 'g':
@@ -171,18 +203,25 @@ main(int argc, char** argv)
                 exit(-1);
         }
     }
+#endif
 
     fprintf(stderr,
             "[vscpd] Configfile = %s\n",
             (const char*)strcfgfile.c_str());
 
     if (!init(strcfgfile, rootFolder)) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "[vscpd] Failed to configure. Terminating.\n");
+#endif        
         fprintf(stderr, "vscpd: Failed to configure. Terminating.\n");
         exit(-1);
     }
 
+#ifdef WIN32
+#else
     closelog();     // Close syslog
+#endif    
 
     fprintf(stderr, "vscpd: Bye, bye.\n");
     exit(EXIT_SUCCESS);
@@ -201,7 +240,10 @@ init(std::string& strcfgfile, std::string& rootFolder)
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "Failed to fork.\n");
+#endif            
             return -1;
         } else if (0 != pid) {
             exit(0);    // Parent goes by by.
@@ -210,7 +252,10 @@ init(std::string& strcfgfile, std::string& rootFolder)
         sid = setsid();     // Become session leader
         if (sid < 0) {
             // Failure
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "Failed to become session leader.\n");
+#endif            
             return -1;
         }
 
@@ -222,7 +267,10 @@ init(std::string& strcfgfile, std::string& rootFolder)
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "vscpd: open / not 0: %m");
+#endif            
         }
 
         dup2(0, 1);
@@ -237,19 +285,28 @@ init(std::string& strcfgfile, std::string& rootFolder)
     FILE* pFile;
     pFile = fopen("/var/run/vscpd.pid", "w");
     if (NULL == pFile) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "Writing pid file failed.\n");
+#endif        
         fprintf(stderr, "Writing pid file failed.\n");
     } else {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%u\n", sid);
+#endif        
         fprintf(pFile, "%u\n", sid);
         fclose(pFile);
     }
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "vscpd: Folder structure is not in place (You may need to run "
                "as root).");
+#endif               
         fprintf(stderr,
                 "vscpd: Folder structure is not in place (You may need to run "
                 "as root).");
@@ -259,14 +316,20 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
     // Change working directory to root folder
     if (chdir((const char*)rootFolder.c_str())) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
+#endif        
         fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd.pid");
         if (-1 == chdir("/var/lib/vscp/vscpd")) {
+#ifdef WIN32
+#else            
             syslog(
               LOG_ERR,
               "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
               errno);
+#endif              
         }
 
         return -1;
@@ -322,7 +385,10 @@ init(std::string& strcfgfile, std::string& rootFolder)
         fprintf(stderr, "vscpd: init.\n");
         if (!gpobj->init(strcfgfile, rootFolder)) {
             fprintf(stderr, "Can't initialize daemon. Exiting.\n");
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
+#endif            
             unlink("/var/run/vscpd.pid");
             return FALSE;
         }
@@ -335,7 +401,10 @@ init(std::string& strcfgfile, std::string& rootFolder)
         if (!gpobj->run()) {
             fprintf(stderr,
                     "Unable to start the vscpd application. Exiting.\n");
+#ifdef WIN32
+#else                    
             syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
+#endif            
             unlink("/var/run/vscpd.pid");
             return FALSE;
         }
@@ -344,17 +413,26 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
         if (!gpobj->cleanup()) {
             fprintf(stderr, "Unable to clean up the vscpd application.\n");
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "Unable to clean up the vscpd application.");
+#endif            
             return FALSE;
         }
 
         fprintf(stderr, "vscpd: cleanup done.\n");
 
         if (gbRestart) {
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "vscpd: Will try to restart.\n");
+#endif            
             fprintf(stderr, "vscpd: Will try to restart.\n");
         } else {
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "vscpd: Will end things.\n");
+#endif            
             fprintf(stderr, "vscpd: Will end things.\n");
         }
 
@@ -453,7 +531,10 @@ createFolder(const char* folder)
     if (0 == vscp_dirExists(folder)) {
         if (-1 == mkdir(folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
             fprintf(stderr, "Failed to create folder %s\n", folder);
+#ifdef WIN32
+#else            
             syslog(LOG_ERR, "Failed to create folder %s\n", folder);
+#endif            
             return false;
         }
     }

@@ -31,15 +31,18 @@
 #include "devicethread.h"
 
 #include <dlfcn.h>
+#ifndef WIN32
 #include <netdb.h>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#endif
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 #ifndef DWORD
 #define DWORD unsigned long

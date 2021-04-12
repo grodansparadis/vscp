@@ -34,12 +34,14 @@
 #include <vscphelper.h>
 #include <vscp_client_mqtt.h>
 
-#include <arpa/inet.h>
 #include <stdlib.h>
+#include <string>
+
+#ifndef WIN32
+#include <arpa/inet.h>
 #include <syslog.h>
 #include <unistd.h>
-
-#include <string>
+#endif
 
 // Prototypes
 void*

@@ -36,7 +36,7 @@
 #if !defined(VSCPHELPER_H__INCLUDED_)
 #define VSCPHELPER_H__INCLUDED_
 
-#include <config.h> // autoconf
+//#include <config.h> // autoconf
 
 #ifndef WIN32
 #include <sys/times.h>
