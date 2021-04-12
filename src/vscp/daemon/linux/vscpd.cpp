@@ -26,7 +26,6 @@
 // SOFTWARE.
 //
 
-#include "StdAfx.h"
 
 #include <deque>
 #include <string>
