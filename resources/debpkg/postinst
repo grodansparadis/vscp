@@ -1,0 +1,79 @@
+#!/bin/sh
+# postinst script for vscpd
+#
+# see: dh_installdeb(1)
+
+set -e
+
+VSCPD_DEFAULT_FILE=/etc/default/vscpd
+
+setup_vscp_config() {
+	
+    if ! getent passwd vscpd >/dev/null; then
+        adduser --disabled-password --quiet --system \
+                --home /nonexistent --no-create-home --group vscpd \
+                --shell /bin/false
+    fi
+    mkdir -p -m 3777 /var/crash
+    chmod g+s /var/crash
+    chgrp vscpd /var/crash
+    chgrp vscpd /var/crash/*.crash >/dev/null 2>&1 || true
+    chmod 0640 /var/crash/*.crash >/dev/null 2>&1 || true
+
+    mkdir -p -m 3777 /var/metrics
+    chmod g+s /var/metrics
+    chgrp vscpd /var/metrics
+
+    if [ -f /etc/vscp ]; then
+        # neither report_crashes nor report_metrics is used by vscpd
+        rm /etc/vscp/vscpd.json
+    fi
+}
+
+setup_vscpd_user() {
+	if ! getent group vscp >/dev/null; then
+		addgroup --quiet --system vscp
+	fi
+
+	if ! getent passwd vscp >/dev/null; then
+		adduser --quiet --system --no-create-home --ingroup vscp --home /var/lib/vscp/vscpd --shell /usr/sbin/nologin vscp vscp
+	fi
+}
+
+fix_permissions() {
+	chown vscp /var/lib/vscp
+	chgrp vscp /var/lib/vscp
+   	chown vscp /var/lib/vscp/drivers
+	chgrp vscp /var/lib/vscp/drivers
+	chown vscp /var/lib/vscp/drivers/level1
+	chgrp vscp /var/lib/vscp/drivers/level1
+	chown vscp /var/lib/vscp/drivers/level2
+	chgrp vscp /var/lib/vscp/drivers/level2
+	chown vscp /var/lib/vscp/vscpd
+	chgrp vscp /var/lib/vscp/vscpd
+	chown vscp /etc/vscp/certs
+	chgrp vscp /etc/vscp/certs
+	chmod 700 /etc/vscp/certs
+	test ! -e /var/log/vscpd || chown vscp /var/log/vscpd
+	test ! -e /var/log/vscpd/vscpd.log || chown vscp /var/log/vscpd/vscpd.log
+}
+
+case "$1" in
+	configure)
+		setup_vscp_config
+		setup_vscpd_user
+		fix_permissions
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -29,6 +29,57 @@
 cmake_minimum_required(VERSION 3.5)
 project(vscpd LANGUAGES CXX C)
 
+# Version settings
+if(NOT DEFINED MAJOR_VERSION)
+    SET(MAJOR_VERSION "15")
+endif()
+if(NOT DEFINED MINOR_VERSION)
+    SET(MINOR_VERSION "0")
+endif()
+if(NOT DEFINED PATCH_VERSION)
+    SET(PATCH_VERSION "0")
+endif()
+
+SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic controller for a VSCP based system. It is"
+                                      "possible to add drivers to physical devices, interface external nodes over"
+                                      "tcp/ip, websockets and to perform other higher end functionality.")
+SET(CPACK_PACKAGE_VENDOR "Grodans Paradis AB")
+SET(CPACK_PACKAGE_CONTACT "info@grodansparadis.com")
+set(CPACK_PACKAGE_NAME ${APP_LOW_NAME})
+set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY ${APP_NAME})
+SET(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_MINOR "${MINOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_PATCH "${PATCH_VERSION}")
+SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(CPACK_IGNORE_FILES "\\.psd$;/CVS/;/\\.svn/;/\\.git/;\\.swp$;/CMakeLists.txt.user;\\.#;/#;\\.tar.gz$;/CMakeFiles/;CMakeCache.txt;\\.qm$;/build/;\\.diff$;.DS_Store'")
+set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
+SET(CPACK_NSIS_HELP_LINK ${APP_URL})
+SET(CPACK_NSIS_URL_INFO_ABOUT ${APP_URL})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+
+if(NOT DEFINED APP_LOW_NAME)
+set(APP_LOW_NAME "vscpd")
+endif()
+
+if(NOT DEFINED APP_NAME)
+set(APP_NAME "VSCPD")
+endif()
+
+if(NOT DEFINED APP_URL)
+set(APP_URL "https://github.com/grodansparadis/vscp")
+endif()
+
+if(NOT DEFINED APP_VERSION)
+set(APP_VERSION, "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}")
+endif()
+
+# Man build and install
+if(NOT DEFINED WIN32)
+    add_subdirectory(man)
+endif()
+
 option(USE_SSL "Use SSL" TRUE)
 
 ## --- C++11 build flags ---
@@ -36,11 +87,58 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Build locations
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
 # Generate position-independent code (-fPIC on UNIX)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # --- System Libraries ---
 include(GNUInstallDirs)
+
+INCLUDE(InstallRequiredSystemLibraries)
+
+#   * * * * CPACK * * * *
+
+if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/folders;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postinst;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/logrotate;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/prerm;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postrm" )
+
+    IF(WIN32)
+        SET(CPACK_GENERATOR "NSIS" "ZIP")
+    ELSE(WIN32)
+        SET(CPACK_GENERATOR "DEB" "RPM" "TGZ" "ZIP")
+    ENDIF(WIN32)
+
+    SET(CPACK_COMPONENTS_ALL Libraries ApplicationData)
+
+    # Configure file with custom definitions for NSIS.
+    if(WIN32 AND NOT UNIX) 
+        configure_file(
+            ${PROJECT_SOURCE_DIR}/resources/nsis/NSIS.definitions.nsh.in
+            ${CMAKE_CURRENT_BINARY_DIR}/resources/nsis/NSIS.definitions.nsh
+        )
+    else()
+        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto1 libsystem0")
+        SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+        SET(CPACK_DEBIAN_PACKAGE_SECTION "network")
+        SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+        set(CPACK_STRIP_FILES "bin/vscpd")
+        set(CPACK_SOURCE_STRIP_FILES "")      
+    endif()
+
+    set(CPACK_PACKAGE_EXECUTABLES "vscpd")
+ 
+    # Load packaging facilities.
+    include(CPack)
+
+endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
 if(WIN32)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -50,17 +148,15 @@ if(WIN32)
     add_definitions(-DVCPKG_TARGET_TRIPLET=x64-windows)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     set(LIBS_SYSTEM ws2_32)
+    if (MSVC)
+        #     # use precompiled headers
+        #     set (CMAKE_AUTOMOC_MOC_OPTIONS "-bstdafx.h" "-fstdafx.h")
+        set (CMAKE_AUTOMOC_MOC_OPTIONS "-bstdafx.h ")
+    endif()    
 elseif(UNIX)
     set(LIBS_SYSTEM c stdc++)
 endif()
 
-if (MSVC)
-#     # use precompiled headers
-#     set (CMAKE_AUTOMOC_MOC_OPTIONS "-bstdafx.h" "-fstdafx.h")
-    set (CMAKE_AUTOMOC_MOC_OPTIONS "-bstdafx.h ")
-endif()
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # set the module path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
@@ -74,8 +170,9 @@ find_package(OpenSSL REQUIRED)
 
 # Windows Libs
 if (WIN32)
-    # Paho MQTT
+    # Paho pthread
     find_package(pthread REQUIRED)
+    # Paho MQTT
     #find_package(eclipse-paho-mqtt-c CONFIG REQUIRED)
     #get_target_property(PAHO_INCLUDE_DIR eclipse-paho-mqtt-c::paho-mqtt3cs INTERFACE_INCLUDE_DIRECTORIES)
     #get_target_property(PAHO_LIBRARIES eclipse-paho-mqtt-c::paho-mqtt3cs INTERFACE_LINK_LIBRARIES)
@@ -103,7 +200,8 @@ else()
     # paho
     #include(Findpaho-mqtt)
     #find_package(paho-mqtt REQUIRED)
-endif()
+    include(FindPahoMqttC)
+endif(WIN32)
 
 # Set civetweb build flags
 add_definitions(-DUSE_WEBSOCKET)
@@ -169,7 +267,10 @@ add_executable(vscpd
     src/common/fastpbkdf2.c  
     src/common/randpassword.h
     src/common/randpassword.cpp     
-  ) 
+  )
+
+#     * * * Includes * * *
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (WIN32)
     #find_path(PTHREAD_INCLUDE_DIR pthread.h)
@@ -195,13 +296,13 @@ else()
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
+                            ${PAHO_MQTT_C_INCLUDE_DIRS}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
  endif()   
 
-if (WIN32)
-
+if(WIN32)
     target_link_libraries(vscpd PRIVATE     
         PThreads4W::PThreads4W_CXXEXC
         OpenSSL::SSL 
@@ -210,21 +311,43 @@ if (WIN32)
         ${MOSQUITTO_LIBRARIES}
         expat::expat
         dlfcn-win32::dl)
-    else()
+else()
     target_link_libraries(vscpd PRIVATE     
         m
         dl
+        systemd
         Threads::Threads
         OpenSSL::SSL 
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
+        ${PAHO_MQTT_C_LIBRARIES}
         ${EXPAT_LIBRARIES}
-        ${DLFCN_LIBS})
+    )
 endif()
 
-
+if(WIN32)
+else()
+# The VSCP daemon executable
 install(TARGETS vscpd
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+        RUNTIME DESTINATION 	
+        ${CMAKE_INSTALL_SBINDIR})
 
+# Default configuration file
+install(FILES resources/unix/vscpd.json     
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(FILES resources/unix/vscpd.json resources/vscp.key     
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
+            PERMISSIONS OWNER_READ OWNER_WRITE)            
+install(FILES resources/README-certs      
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs
+            PERMISSIONS OWNER_READ OWNER_WRITE)
+install(FILES resources/README-ca-certificates      
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates
+            PERMISSIONS OWNER_READ OWNER_WRITE)
+install(FILES resources/vscp_events.sqlite3      
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd
+            PERMISSIONS OWNER_READ OWNER_WRITE)      
 
+endif()
