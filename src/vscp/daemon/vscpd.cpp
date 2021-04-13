@@ -26,15 +26,22 @@
 // SOFTWARE.
 //
 
-
-#include <deque>
-#include <string>
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifndef WIN32
-#include <getopt.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
 #include <linux/sockios.h>
@@ -47,16 +54,9 @@
 #include <sys/time.h>
 #include <syslog.h>
 #include <unistd.h>
+#else
+
 #endif
-
-#include <pthread.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 
 #include "canal_macro.h"
 #include "vscpd.h"
@@ -65,13 +65,18 @@
 #include <version.h>
 #include <vscphelper.h>
 
+#include <deque>
+#include <string>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
 //#define DEBUG
 
 // Globals for the daemon
 int gbStopDaemon;
 uint64_t gDebugLevel  = 0;
 bool gbDontRunAsDaemon = false;
-bool gbRestart         = false;
 std::string systemKey;
 
 // Control object
@@ -97,7 +102,6 @@ _sighandlerStop(int sig)
 #endif    
     gpobj->m_bQuit = true;
     gbStopDaemon   = true;
-    gbRestart      = false;
 }
 
 void
@@ -114,7 +118,6 @@ _sighandlerRestart(int sig)
 #endif    
     gpobj->m_bQuit = true;
     gbStopDaemon   = false;
-    gbRestart      = true;
 }
 
 
@@ -150,8 +153,6 @@ main(int argc, char** argv)
     strcfgfile   = "/etc/vscp/vscpd.json";
     gbStopDaemon = false;
 
-#ifdef WIN32
-#else
     while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
 
         switch (opt) {
@@ -202,36 +203,11 @@ main(int argc, char** argv)
                 exit(-1);
         }
     }
-#endif
 
     fprintf(stderr,
             "[vscpd] Configfile = %s\n",
             (const char*)strcfgfile.c_str());
 
-    if (!init(strcfgfile, rootFolder)) {
-#ifdef WIN32
-#else        
-        syslog(LOG_ERR, "[vscpd] Failed to configure. Terminating.\n");
-#endif        
-        fprintf(stderr, "vscpd: Failed to configure. Terminating.\n");
-        exit(-1);
-    }
-
-#ifdef WIN32
-#else
-    closelog();     // Close syslog
-#endif    
-
-    fprintf(stderr, "vscpd: Bye, bye.\n");
-    exit(EXIT_SUCCESS);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// initialisation
-
-int
-init(std::string& strcfgfile, std::string& rootFolder)
-{
     pid_t pid, sid;
 
     if (!gbDontRunAsDaemon) {
@@ -239,20 +215,21 @@ init(std::string& strcfgfile, std::string& rootFolder)
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-#ifdef WIN32
-#else            
+            fprintf(stderr, "Failed to fork.\n");
+#ifndef WIN32            
             syslog(LOG_ERR, "Failed to fork.\n");
 #endif            
             return -1;
-        } else if (0 != pid) {
+        } 
+        else if (0 != pid) {
             exit(0);    // Parent goes by by.
         }
 
         sid = setsid();     // Become session leader
         if (sid < 0) {
             // Failure
-#ifdef WIN32
-#else            
+            fprintf(stderr, "Failed to become session leader.\n");
+#ifndef WIN32
             syslog(LOG_ERR, "Failed to become session leader.\n");
 #endif            
             return -1;
@@ -266,32 +243,28 @@ init(std::string& strcfgfile, std::string& rootFolder)
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
-#ifdef WIN32
-#else            
+            fprintf(stderr, "vscpd: open / not 0: %m");
+#ifndef WIN32            
             syslog(LOG_ERR, "vscpd: open / not 0: %m");
 #endif            
         }
 
         dup2(0, 1);
         dup2(0, 2);
-    }
 
-    // signal(SIGHUP, _sighandlerStop);
-    // signal(SIGUSR1, _sighandlerStop);
-    // signal(SIGUSR2, _sighandlerRestart);
+    }  // gbDontRunAsDaemon
 
     // Write pid to file
     FILE* pFile;
     pFile = fopen("/var/run/vscpd.pid", "w");
     if (NULL == pFile) {
-#ifdef WIN32
-#else        
-        syslog(LOG_ERR, "Writing pid file failed.\n");
-#endif        
         fprintf(stderr, "Writing pid file failed.\n");
-    } else {
-#ifdef WIN32
-#else        
+#ifndef WIN32        
+        syslog(LOG_ERR, "Writing pid file failed.\n");
+#endif                
+    } 
+    else {
+#ifndef WIN32       
         syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%u\n", sid);
 #endif        
         fprintf(pFile, "%u\n", sid);
@@ -300,34 +273,32 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
-#ifdef WIN32
-#else        
+        fprintf(stderr,
+                "vscpd: Folder structure is not in place (You may need to run "
+                "as root).");
+#ifndef WIN32        
         syslog(LOG_ERR,
                "vscpd: Folder structure is not in place (You may need to run "
                "as root).");
 #endif               
-        fprintf(stderr,
-                "vscpd: Folder structure is not in place (You may need to run "
-                "as root).");
+        
         unlink("/var/run/vscpd.pid");
         return -1;
     }
 
     // Change working directory to root folder
     if (chdir((const char*)rootFolder.c_str())) {
-#ifdef WIN32
-#else        
+        fprintf(stderr, "vscpd: Failed to change dir to rootdir");
+#ifndef WIN32     
         syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
 #endif        
-        fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd.pid");
         if (-1 == chdir("/var/lib/vscp/vscpd")) {
-#ifdef WIN32
-#else            
-            syslog(
-              LOG_ERR,
-              "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
-              errno);
+#ifndef WIN32           
+        syslog(
+            LOG_ERR,
+            "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
+            errno);
 #endif              
         }
 
@@ -366,79 +337,69 @@ init(std::string& strcfgfile, std::string& rootFolder)
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGHUP, &my_action, NULL);
 
-    do {
+    // Create the control object
+    gpobj = new CControlObject();
 
-        gbRestart = false;
+    // Set system key
+    vscp_hexStr2ByteArray(gpobj->m_systemKey,
+                            32,
+                            (const char*)systemKey.c_str());
 
-        // Create the control object
-        gpobj = new CControlObject();
+    // Tansfer read debug parameters if set
+    gpobj->m_debugFlags = gDebugLevel;
 
-        // Set system key
-        vscp_hexStr2ByteArray(gpobj->m_systemKey,
-                              32,
-                              (const char*)systemKey.c_str());
-
-        // Tansfer read debug parameters if set
-        gpobj->m_debugFlags = gDebugLevel;
-
-        fprintf(stderr, "vscpd: init.\n");
-        if (!gpobj->init(strcfgfile, rootFolder)) {
-            fprintf(stderr, "Can't initialize daemon. Exiting.\n");
-#ifdef WIN32
-#else            
-            syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
+    fprintf(stderr, "vscpd: init.\n");
+    if (!gpobj->init(strcfgfile, rootFolder)) {
+        fprintf(stderr, "Can't initialize daemon. Exiting.\n");
+#ifndef WIN32           
+        syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
 #endif            
-            unlink("/var/run/vscpd.pid");
-            return FALSE;
-        }
+        unlink("/var/run/vscpd.pid");
+        return FALSE;
+    }
 
-        // *******************************
-        //    Main loop is entered here
-        // *******************************
+    // Create a file rotating logger with 5mb size max and 3 rotated files
+    auto max_size = 1048576 * 5;
+    auto max_files = 3;
+    auto logger = spdlog::rotating_logger_mt("VSCP Daemon log file", "/var/log/logs/vscp/vscpd.log", max_size, max_files);
 
-        fprintf(stderr, "vscpd: run.\n");
-        if (!gpobj->run()) {
-            fprintf(stderr,
-                    "Unable to start the vscpd application. Exiting.\n");
+    // *******************************
+    //    Main loop is entered here
+    // *******************************
+
+    fprintf(stderr, "vscpd: run.\n");
+    if (!gpobj->run()) {
+        fprintf(stderr,
+                "Unable to start the vscpd application. Exiting.\n");
 #ifdef WIN32
 #else                    
-            syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
+        syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
 #endif            
-            unlink("/var/run/vscpd.pid");
-            return FALSE;
-        }
+        unlink("/var/run/vscpd.pid");
+        return FALSE;
+    }
 
-        fprintf(stderr, "vscpd: cleanup.\n");
+    fprintf(stderr, "vscpd: cleanup.\n");
 
-        if (!gpobj->cleanup()) {
-            fprintf(stderr, "Unable to clean up the vscpd application.\n");
+    if (!gpobj->cleanup()) {
+        fprintf(stderr, "Unable to clean up the vscpd application.\n");
 #ifdef WIN32
 #else            
-            syslog(LOG_ERR, "Unable to clean up the vscpd application.");
+        syslog(LOG_ERR, "Unable to clean up the vscpd application.");
 #endif            
-            return FALSE;
-        }
+        return FALSE;
+    }
 
-        fprintf(stderr, "vscpd: cleanup done.\n");
+    fprintf(stderr, "vscpd: cleanup done.\n");
 
-        if (gbRestart) {
 #ifdef WIN32
 #else            
-            syslog(LOG_ERR, "vscpd: Will try to restart.\n");
+        syslog(LOG_ERR, "vscpd: Will end things.\n");
 #endif            
-            fprintf(stderr, "vscpd: Will try to restart.\n");
-        } else {
-#ifdef WIN32
-#else            
-            syslog(LOG_ERR, "vscpd: Will end things.\n");
-#endif            
-            fprintf(stderr, "vscpd: Will end things.\n");
-        }
+        fprintf(stderr, "vscpd: Will end things.\n");
 
-        fprintf(stderr, "vscpd: Deleting the control object.\n");
-        delete gpobj;
-
-    } while (gbRestart);
+    fprintf(stderr, "vscpd: Deleting the control object.\n");
+    delete gpobj;
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd.pid");
@@ -446,6 +407,23 @@ init(std::string& strcfgfile, std::string& rootFolder)
     fprintf(stderr, "vscpd: ending...\n");
 
     gpobj = NULL;
+
+#ifdef WIN32
+#else
+    closelog();     // Close syslog
+#endif    
+
+    fprintf(stderr, "vscpd: Bye, bye.\n");
+    exit(EXIT_SUCCESS);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// initialisation
+
+int
+init(std::string& strcfgfile, std::string& rootFolder)
+{
+    
 
     return TRUE;
 }

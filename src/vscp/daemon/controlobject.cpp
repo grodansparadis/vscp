@@ -68,9 +68,6 @@
 
 #include <mosquitto.h>
 #include <sqlite3.h>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/cfg/env.h> // support for loading levels from the environment variable
 
 #include <crc.h>
 #include <devicelist.h>
@@ -93,6 +90,9 @@
 
 #include <json.hpp>         // Needs C++11  -std=c++11
 #include <mustache.hpp>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -252,6 +252,11 @@ CControlObject::CControlObject()
     m_rootFolder = "/var/lib/vscp/vscpd/";
     m_vscptoken = "Carpe diem quam minimum credula postero";
     m_pathClassTypeDefinitionDb = "/var/lib/vscp/vscpd/vscp_events.sqlite3";
+
+    // Logging defaults
+    m_path_to_log_file = "/var/log/vscp/vscp.log";
+    m_max_log_size = 5242880;
+    m_max_log_files = 7;
 
     // Nill the GUID
     m_guid.clear();
@@ -1686,6 +1691,25 @@ CControlObject::readJSON(const json& j)
     }
 
 
+    try {
+        if (j.contains("logging")) {
+            m_path_to_log_file = j["logging"]["path"].get<std::string>();
+        } 
+        else {
+            syslog(LOG_ERR, "ReadConfig: 'Failed to read in path to logfile key %s", m_path_to_log_file.c_str());
+            return false;
+        }
+
+        if (m_debugFlags & VSCP_DEBUG_CONFIG) {
+            syslog(LOG_DEBUG, "ReadConfig: 'path to vscp key' set to %s", m_path_to_log_file.c_str());
+        }
+    }
+    catch (...) {
+        syslog(LOG_ERR, "ReadConfig: Failed to read 'logging/path to log file'. Must be present.");
+        return false;
+    }
+
+
     // ********************************************************************************
     //                                     Main MQTT
     // ********************************************************************************
@@ -2697,7 +2721,7 @@ CControlObject::readJSON(const json& j)
 ///////////////////////////////////////////////////////////////////////////////
 // readConfiguration
 //
-// Read the configuration XML file
+// Read the configuration JSON file
 //
 
 bool
@@ -2705,7 +2729,7 @@ CControlObject::readConfiguration(const std::string& strcfgfile)
 {
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG,
-               "Reading full XML configuration from [%s]",
+               "Reading full JSON configuration from [%s]",
                (const char*)strcfgfile.c_str());
     }
 
@@ -2725,7 +2749,7 @@ CControlObject::readConfiguration(const std::string& strcfgfile)
     return readJSON(j);
 
 
-}   // XML config
+}   // JSON config
 
 
 

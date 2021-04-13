@@ -1,5 +1,0 @@
-Remove for development files on the WIN32 platform.
-
-Just copy filter into search and delete the resulting files..
-
-debug;release;*.clw;*.aps;*.plg;*.dep;*.scc;*.exp;*.log;*.opt;*.ncb;*.exp;*.o;*.so;*.d

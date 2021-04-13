@@ -7,6 +7,11 @@
     "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
     "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
     "vscpkey" : "/var/vscp/vscp.key",
+    "logging" : {
+        "path" : "var/log/vscp/vscpd.log",
+        "max-size" : 5242880,
+        "max-files" : 7
+    },
 
     "mqtt" : {
         "host" : "192.168.1.7",

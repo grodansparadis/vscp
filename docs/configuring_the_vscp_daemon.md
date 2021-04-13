@@ -38,7 +38,13 @@ In the general section you find settings that are common to all components of th
 "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
 "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
 "vscpkey" : "/var/vscp/vscp.key",
-"debug" : 0
+"debug" : 0,
+"logging" : {
+    "path" : "var/log/vscp/vscpd.log",
+    "max-size" : 104857600,
+    "max-files" : 7,
+    "syslog" : true
+},
 ```
 
 
@@ -92,15 +98,41 @@ cd /var/lib/vscp
 sudo wget https://www.vscp.org/events/vscp_events.sqlite3
 ```
 
-### classtypedb :id=config-general-maindb
+### maindb :id=config-general-maindb
 
 THis is the main database file for the VSCP daemon. It's main content is the discovery database which is used to collect information about nodes in the system. 
 
 This entry must point to a named file in a location that is writable (default is _/var/lib/vscp/vscpd/vscp.sqlite3_)
 
-### classtypedb :id=config-general-vscpkey
+### vscpkey :id=config-general-vscpkey
 
 This is the path to a security key that the VSCP daemon use to encrypt/decrypt information with. The default is _/var/vscp/vscp.key_ This file should only be editable by the root user and also not be possible to read by any one else.
+
+### debuglevel :id=config-general-debug-level
+
+This is the debug level. Zero is no debugging. A higher number is different levels of debugging detail.
+
+### logging :id=config-general-logging
+
+This is the log file settings. 
+
+#### path :id=config-general-logging-path
+
+Path to log file. Default is on Linux is */var/log/vscp/vscpd.log*
+
+#### max-size :id=config-general-logging-max-size
+
+Max size for log file. It will be rotated if over this value. Default is 5 Mb.
+
+#### max-files :id=config-general-logging-max-files
+
+Maximum number of log files to keep. Default is 7.
+
+#### syslog :id=config-general-logging-syslog
+
+**Only valid on Linux**
+
+If set to **true** logging will also be done to syslog.
 
 ----
 ##  MQTT :id=config-mqtt

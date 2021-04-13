@@ -206,7 +206,7 @@ else()
     include(FindPahoMqttC)
 
     # Logger
-    find_package(spdlog REQUIRED)
+    find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 
@@ -225,11 +225,11 @@ endif()
 
 if (WIN32)
     add_executable(vscpd
-        src/vscp/daemon/win32/vscpd.cpp
+        src/vscp/daemon/vscpd.cpp
+        src/vscp/daemon/controlobject.h
+        src/vscp/daemon/controlobject.cpp
         src/vscp/common/version.h
-        src/vscp/common/vscp.h
-        src/vscp/common/controlobject.h
-        src/vscp/common/controlobject.cpp
+        src/vscp/common/vscp.h        
         src/vscp/common/devicethread.h
         src/vscp/common/devicethread.cpp
         src/vscp/common/devicelist.h
@@ -279,11 +279,11 @@ if (WIN32)
     )
 else()
     add_executable(vscpd
-        src/vscp/daemon/linux/vscpd.cpp
+        src/vscp/daemon/vscpd.cpp
+        src/vscp/daemon/controlobject.h
+        src/vscp/daemon/controlobject.cpp
         src/vscp/common/version.h
         src/vscp/common/vscp.h
-        src/vscp/common/controlobject.h
-        src/vscp/common/controlobject.cpp
         src/vscp/common/devicethread.h
         src/vscp/common/devicethread.cpp
         src/vscp/common/devicelist.h
@@ -337,7 +337,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if (WIN32)
     #find_path(PTHREAD_INCLUDE_DIR pthread.h)
-    include_directories( PUBLIC ./src/vscp/daemon/linux
+    include_directories( PUBLIC ./src/vscp/daemon
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
@@ -353,10 +353,10 @@ if (WIN32)
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
 else()
-    include_directories( PUBLIC ./src/common 
+    include_directories( PUBLIC ./src/vscp/daemon
+                            ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/spdlog
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
                             ${PThreads4W_INCLUDE_DIR}
@@ -366,7 +366,6 @@ else()
                             ${PAHO_MQTT_C_INCLUDE_DIRS}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
-                            ${LOG4CPP_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
  endif()   
 
