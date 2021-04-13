@@ -43,6 +43,13 @@
 #include <netinet/in.h>
 #include <pwd.h>
 #include <sys/ioctl.h>
+#include <sys/msg.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <syslog.h>
+#include <unistd.h>
+#else
+
 #endif
 
 #include <errno.h>
@@ -53,18 +60,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/msg.h>
-#include <sys/socket.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <syslog.h>
-#include <unistd.h>
+
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
 
 #include <mosquitto.h>
 #include <sqlite3.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/cfg/env.h> // support for loading levels from the environment variable
 
 #include <crc.h>
 #include <devicelist.h>
@@ -85,7 +91,7 @@
 #include <set>
 #include <string>
 
-#include <json.hpp>  // Needs C++11  -std=c++11
+#include <json.hpp>         // Needs C++11  -std=c++11
 #include <mustache.hpp>
 
 // https://github.com/nlohmann/json
@@ -128,7 +134,10 @@ static void mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, co
         time(&tm);
         vscp_getTimeString(buf, sizeof(buf), &tm);
         printf("SRV LOG: (%s) %s\n", buf, logmsg);
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  MQTT log : %s\n", logmsg);
+#endif        
     }
 }
 
@@ -143,7 +152,10 @@ static void mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
         printf("SRV CONNECT:\n");
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  MQTT connect");
+#endif        
     }
 }
 
@@ -158,7 +170,10 @@ static void mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
         printf("SRV DISCONNECT:\n");
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  MQTT disconnect");
+#endif        
     }
 }
 
@@ -175,7 +190,10 @@ static void mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mo
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
         printf("SRV: Message: [topic = %s]: Payload: %s\n", pMsg->topic, payload.c_str());
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  MQTT message [%s]", payload.c_str());
+#endif        
     }
 }
 
@@ -190,7 +208,10 @@ static void mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
 
     if (pObj->m_debugFlags & VSCP_DEBUG_MQTT_PUBLISH) {
         printf("SRV PUBLISH:\n");
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  MQTT disconnect");
+#endif        
     }
 }
 
@@ -207,14 +228,23 @@ CControlObject::CControlObject()
     m_debugFlags = 0;
 
     // Open syslog
+#ifdef WIN32
+#else    
     openlog("vscpd", LOG_CONS, LOG_DAEMON);
+#endif    
 
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  Starting the vscpd daemon");
+#endif        
     }
 
     if (0 != pthread_mutex_init(&m_mutex_DeviceList, NULL)) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "vscpd:  Unable to init m_mutex_DeviceList");
+#endif        
         return;
     }
 
@@ -253,7 +283,10 @@ CControlObject::CControlObject()
 
     // Initialize MQTT
     if ( MOSQ_ERR_SUCCESS != mosquitto_lib_init() ) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "vscpd:  Unable to initialize mosquitto library.");
+#endif        
         return;
     }
 }
@@ -265,23 +298,35 @@ CControlObject::CControlObject()
 CControlObject::~CControlObject()
 {
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  Cleaning up");
+#endif        
     }
 
     if (0 != pthread_mutex_destroy(&m_mutex_DeviceList)) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "vscpd:  Unable to destroy m_mutex_DeviceList");
+#endif        
         return;
     }
 
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  Terminating the vscpd daemon");
+#endif        
     }
 
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
     // Close syslog
+#ifdef WIN32
+#else    
     closelog();
+#endif    
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -298,9 +343,12 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
     // Root folder must exist
     if (!vscp_fileExists(m_rootFolder.c_str())) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "vscpd:  The specified rootfolder does not exist (%s).",
                (const char*)m_rootFolder.c_str());
+#endif               
         return false;
     }
 
@@ -310,9 +358,12 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // A configuration file must be available
     if (!vscp_fileExists(strcfgfile.c_str())) {
         perror("No configuration file. Can't initialize!.");
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                "vscpd:  No configuration file. Can't initialize!. Path=%s",
                strcfgfile.c_str());
+#endif               
         return false;
     }
 
@@ -322,16 +373,22 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
     // Read XML configuration
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "Reading configuration file");
+#endif        
     }
 
     // Read configuration
     if (!readConfiguration(strcfgfile)) {
         fprintf(stderr,"vscpd:  Unable to open/parse/read configuration file. Can't initialize! See syslog - ");
+#ifdef WIN32
+#else        
         syslog(LOG_ERR,
                 "vscpd:  Unable to open/parse/read configuration file. Can't initialize! "
-                "Path =%s",
+                "Path =%s",                
                 strcfgfile.c_str());
+#endif                
         return FALSE;
     }
 
@@ -367,7 +424,10 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 #endif
 
     if (m_debugFlags & VSCP_DEBUG_EXTRA) {
+#ifdef WIN32
+#else        
         syslog(LOG_DEBUG, "vscpd:  Using configuration file: %s", strcfgfile.c_str());
+#endif        
     }
 
     // Get GUID
@@ -384,13 +444,19 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     str += VSCPD_DISPLAY_VERSION;
     str += " - ";
     str += VSCPD_COPYRIGHT;
+#ifdef WIN32
+#else    
     syslog(LOG_INFO, "%s", str.c_str());
+#endif    
 
     // Load class/type definitions from database if they should be loaded
 
     // Initialize the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
+#ifdef WIN32
+#else        
         syslog(LOG_ERR, "vscpd:  Unable to initialize SQLite library.");
+#endif        
         return false;
     }
 
@@ -408,7 +474,10 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                                     -1,
                                     &ppStmt,
                                     NULL) )  {
+#ifdef WIN32
+#else                                        
                 syslog(LOG_ERR, "vscpd:  Failed to prepare class fetch from class & type database.");
+#endif                
             }
 
             while (SQLITE_ROW == sqlite3_step(ppStmt)) {
@@ -421,7 +490,10 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 }
                 m_map_class_token2Id[token] = vscp_class;
                 if (m_debugFlags & VSCP_DEBUG_EVENT_DATABASE) {
+#ifdef WIN32
+#else                    
                     syslog(LOG_DEBUG, "vscpd:  Id = %d\n", m_map_class_token2Id[token]);
+#endif                    
                 }
             }
             sqlite3_finalize(ppStmt);

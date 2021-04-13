@@ -39,8 +39,11 @@
 #include <set>
 #include <map>
 
-#include <json.hpp>  // Needs C++11  -std=c++11
+#include <json.hpp>             // Needs C++11  -std=c++11
 #include <mustache.hpp>
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -283,10 +286,17 @@ class CControlObject {
     pthread_mutex_t m_mutex_deviceList;
 
 
+    //**************************************************************************
+    //                            LOGGER (SPDLOG)
+    //**************************************************************************
+
+    std::string m_path_to_log_file;
+    uint32_t m_max_log_size;
+    uint16_t m_max_log_files;
 
     //**************************************************************************
     //                                  MQTT 
-    //*************************************************************************
+    //**************************************************************************
 
     std::string m_mqtt_strHost;     // MQTT broker
     unsigned short m_mqtt_port;     // MQTT broker port    

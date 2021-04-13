@@ -125,7 +125,7 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
             ${CMAKE_CURRENT_BINARY_DIR}/resources/nsis/NSIS.definitions.nsh
         )
     else()
-        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto1 libsystem0")
+        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto1 libsystem0 libspdlog-dev")
         SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
         SET(CPACK_DEBIAN_PACKAGE_SECTION "network")
         SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
@@ -181,13 +181,16 @@ if (WIN32)
     #find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
     # Mosquitto lib
-    find_package(mosquitto REQUIRED)
+    find_package(mosquitto CONFIG REQUIRED)
 
     # Expat C library
     find_package(expat CONFIG REQUIRED)
 
     # dlfcn
     find_package(dlfcn-win32 CONFIG REQUIRED)
+
+    # Logging
+    find_package(spdlog CONFIG REQUIRED)
 else()
     # expat
     include(FindEXPAT)
@@ -201,6 +204,10 @@ else()
     #include(Findpaho-mqtt)
     #find_package(paho-mqtt REQUIRED)
     include(FindPahoMqttC)
+
+    # Logger
+    find_package(spdlog REQUIRED)
+    
 endif(WIN32)
 
 # Set civetweb build flags
@@ -250,6 +257,7 @@ if (WIN32)
         src/common/third_party/civetweb-1.14/src/civetweb.c
         src/common/third_party/sqlite3-3.35.4/sqlite3.h
         src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        src/common/windows/getopt.c
         src/common/configfile.h
         src/common/configfile.cpp
         src/common/sockettcp.h
@@ -333,8 +341,10 @@ if (WIN32)
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
+                            ./src/common/third_party/spdlog
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
+                            ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
@@ -346,6 +356,7 @@ else()
     include_directories( PUBLIC ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
+                            ./src/common/third_party/spdlog
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
                             ${PThreads4W_INCLUDE_DIR}
@@ -355,6 +366,7 @@ else()
                             ${PAHO_MQTT_C_INCLUDE_DIRS}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
+                            ${LOG4CPP_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
  endif()   
 
@@ -366,7 +378,9 @@ if(WIN32)
         OpenSSL::SSL OpenSSL::Crypto
         ${MOSQUITTO_LIBRARIES}
         expat::expat
-        dlfcn-win32::dl)
+        dlfcn-win32::dl
+        spdlog::spdlog spdlog::spdlog_header_only
+    )
 else()
     target_link_libraries(vscpd PRIVATE     
         m
@@ -379,6 +393,7 @@ else()
         ${MOSQUITTO_LIBRARIES}
         ${PAHO_MQTT_C_LIBRARIES}
         ${EXPAT_LIBRARIES}
+        spdlog::spdlog spdlog::spdlog_header_only
     )
 endif()
 
