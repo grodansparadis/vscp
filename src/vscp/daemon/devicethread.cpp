@@ -28,25 +28,24 @@
 
 #define _POSIX
 
-#include "devicethread.h"
+#ifndef DWORD
+#define DWORD unsigned long
+#endif
 
-#include <dlfcn.h>
 #ifndef WIN32
 #include <netdb.h>
 #include <netinet/in.h>
-#include <syslog.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #endif
+
+#include <dlfcn.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
-#ifndef DWORD
-#define DWORD unsigned long
-#endif
+#include "devicethread.h"
 
 #include <canal_macro.h>
 #include <level2drvdef.h>
@@ -84,8 +83,7 @@ static void mqtt_drv_log_callback(struct mosquitto *mosq, void *pData, int level
         time_t tm;
         time(&tm);
         vscp_getTimeString(buf, sizeof(buf), &tm);
-        printf("DRV LOG: (%s) %s\n", buf, logmsg);
-        syslog(LOG_DEBUG, "Driver  %s MQTT log : %s\n",  pDeviceItem->m_strName.c_str(), logmsg);
+        spdlog::get("logger")->trace("Driver {} MQTT log : {}",  pDeviceItem->m_strName.c_str(), logmsg);
     }
 }
 
@@ -101,8 +99,7 @@ static void mqtt_drv_on_connect(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
     if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
-        printf("DRV CONNECT:\n");
-        syslog(LOG_DEBUG, "Driver %s MQTT connect", pDeviceItem->m_strName.c_str());
+        spdlog::get("logger")->trace("Driver {} MQTT connect", pDeviceItem->m_strName);
     }
 
 }
@@ -119,8 +116,7 @@ static void mqtt_drv_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
     if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_CONNECT) {
-        printf("DRV DISCONNECT:\n");
-        syslog(LOG_DEBUG, "Driver %s MQTT disconnect", pDeviceItem->m_strName.c_str());
+        spdlog::get("logger")->trace("Driver {} MQTT disconnect", pDeviceItem->m_strName);
     }
 
 }
@@ -150,7 +146,8 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         if (!vscp_convertJSONToEvent(&ev, strPayload)) {
             // This is not a JSON formated event - we skip it
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
-                syslog(LOG_ERR, "Driver: %s: Failed to convert event to JSON", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("Driver: {}: Failed to convert event to JSON", 
+                            pDeviceItem->m_strName);
             }
             return;
         }
@@ -158,7 +155,8 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
-                syslog(LOG_ERR, "Driver: %s: Failed to convert event to XML", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("Driver: {}: Failed to convert event to XML", 
+                            pDeviceItem->m_strName);
             }
             return;
         }
@@ -167,7 +165,8 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertStringToEvent(&ev, strPayload) ) {
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
-                syslog(LOG_ERR, "Driver: %s: Failed to convert event to STRING", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("Driver: {}: Failed to convert event to STRING", 
+                            pDeviceItem->m_strName);
             }
             return;
         }
@@ -175,13 +174,15 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
     else if (pDeviceItem->m_mqtt_format == binfmt) {
         if (!vscp_getEventFromFrame( &ev, (const uint8_t *)pMsg->payload, pMsg->payloadlen) ) {
             if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
-                syslog(LOG_ERR, "Driver: %s: Failed to convert event to BINARY", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("Driver: {}: Failed to convert event to BINARY", 
+                            pDeviceItem->m_strName);
             }
             return;
         }
     }
     else {
-        syslog(LOG_ERR, "Driver: %s: Failed to convert event (invalid format)", pDeviceItem->m_strName.c_str());
+        spdlog::get("logger")->error("Driver: {}: Failed to convert event (invalid format)", 
+                            pDeviceItem->m_strName);
         return;
     }
 
@@ -195,23 +196,25 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
             if (CANAL_ERROR_SUCCESS == (rv = pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle,
                                                         &msg,
                                                         300))) {
-                syslog( LOG_ERR, "driver: %s: mqtt_on_message - Failed to send event (m_proc_CanalBlockingSend) rv=%d", pDeviceItem->m_strName.c_str(), rv);
+                spdlog::get("logger")->error("driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalBlockingSend) rv={1}", 
+                            pDeviceItem->m_strName.c_str(), rv);
             }
         }
         else {
             if (CANAL_ERROR_SUCCESS != (rv = pDeviceItem->m_proc_CanalSend(pDeviceItem->m_openHandle, &msg))) {
-                syslog( LOG_ERR, "driver: %s: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv=%d", pDeviceItem->m_strName.c_str(), rv);
+                spdlog::get("logger")->error("driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv={1}", 
+                            pDeviceItem->m_strName.c_str(), rv);
             }
         }
 
     }
     else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
         if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 500)) {
-            syslog( LOG_ERR, "driver: mqtt_on_message - Failed to send level II event.");
+            spdlog::get("logger")->error("driver: mqtt_on_message - Failed to send level II event.");
         }
     }
     else {
-        syslog( LOG_ERR, "driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2).");
+        spdlog::get("logger")->error("driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2).");
     }
 
 }
@@ -228,7 +231,7 @@ static void mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
 
     CDeviceItem *pItem = (CDeviceItem *)pData;
     if (pItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_PUBLISH) {
-        syslog(LOG_DEBUG, "Driver: MQTT Publish");
+        spdlog::get("logger")->debug("Driver: MQTT Publish");
     }
 }
 
@@ -254,7 +257,7 @@ deviceThread(void* pData)
 {
     CDeviceItem* pDeviceItem = (CDeviceItem*)pData;
     if (NULL == pDeviceItem) {
-        syslog(LOG_ERR, "No device item defined. Aborting device thread!");
+        spdlog::get("logger")->error("No device item defined. Aborting device thread!");
         return NULL;
     }
 
@@ -263,9 +266,9 @@ deviceThread(void* pData)
     // Load dynamic library
     hdll = dlopen(pDeviceItem->m_strPath.c_str(), RTLD_LAZY);
     if (!hdll) {
-        syslog(LOG_ERR,
-               "Devicethread: Unable to load dynamic library. path = %s  [%s]",
-               pDeviceItem->m_strPath.c_str(),
+        spdlog::get("logger")->error(
+               "Devicethread: Unable to load dynamic library. path = {}  {}",
+               pDeviceItem->m_strPath,
                dlerror() );
         return NULL;
     }
@@ -277,9 +280,9 @@ deviceThread(void* pData)
 
         // Now find methods in library
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-            syslog(LOG_DEBUG,
-                   "Loading level I driver: %s",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "Loading level I driver: {}",
+                   pDeviceItem->m_strName);
         }
 
         // * * * * CANAL OPEN * * * *
@@ -289,9 +292,9 @@ deviceThread(void* pData)
 
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s : Unable to get dl entry for CanalOpen.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->critical(
+                   "{} : Unable to get dl entry for CanalOpen.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
@@ -301,9 +304,9 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalClose.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalClose.",
+                   pDeviceItem->m_strName);
             dlclose(hdll);
             return NULL;
         }
@@ -314,9 +317,9 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetLevel.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetLevel.",
+                   pDeviceItem->m_strName);
             dlclose(hdll);
             return NULL;
         }
@@ -327,8 +330,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalSend.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalSend.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -340,8 +343,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalDataAvailable.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalDataAvailable.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -353,8 +356,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalReceive.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalReceive.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -366,8 +369,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetStatus.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetStatus.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -379,8 +382,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetStatistics.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetStatistics.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -392,8 +395,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalSetFilter.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalSetFilter.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -405,8 +408,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalSetMask.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalSetMask.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -418,8 +421,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetVersion.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetVersion.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -431,8 +434,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetDllVersion.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetDllVersion.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -444,8 +447,8 @@ deviceThread(void* pData)
         dlsym_error = dlerror();
         if (dlsym_error) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalGetVendorString.",
+            spdlog::get("logger")->critical(
+                   "{}: Unable to get dl entry for CanalGetVendorString.",
                    pDeviceItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -460,8 +463,8 @@ deviceThread(void* pData)
           (LPFNDLL_CANALBLOCKINGSEND)dlsym(hdll, "CanalBlockingSend");
         dlsym_error = dlerror();
         if (dlsym_error) {
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalBlockingSend. Probably "
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for CanalBlockingSend. Probably "
                    "Generation 1 driver.",
                    pDeviceItem->m_strName.c_str());
             pDeviceItem->m_proc_CanalBlockingSend = NULL;
@@ -472,8 +475,8 @@ deviceThread(void* pData)
           (LPFNDLL_CANALBLOCKINGRECEIVE)dlsym(hdll, "CanalBlockingReceive");
         dlsym_error = dlerror();
         if (dlsym_error) {
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for CanalBlockingReceive. "
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for CanalBlockingReceive. "
                    "Probably Generation 1 driver.",
                    pDeviceItem->m_strName.c_str());
             pDeviceItem->m_proc_CanalBlockingReceive = NULL;
@@ -484,8 +487,8 @@ deviceThread(void* pData)
           (LPFNDLL_CANALGETDRIVERINFO)dlsym(hdll, "CanalGetDriverInfo");
         dlsym_error = dlerror();
         if (dlsym_error) {
-            syslog(LOG_ERR,
-                    "%s: Unable to get dl entry for CanalGetDriverInfo. "
+            spdlog::get("logger")->error(
+                    "{}: Unable to get dl entry for CanalGetDriverInfo. "
                     "Probably Generation 1 driver.",
                     pDeviceItem->m_strName.c_str());
             pDeviceItem->m_proc_CanalGetdriverInfo = NULL;
@@ -498,16 +501,16 @@ deviceThread(void* pData)
 
         // Check if the driver opened properly
         if (pDeviceItem->m_openHandle <= 0) {
-            syslog(LOG_ERR,
-                   "Failed to open driver. Will not use it! %ld [%s] ",
+            spdlog::get("logger")->error(
+                   "Failed to open driver. Will not use it! {} [{}] ",
                    pDeviceItem->m_openHandle,
-                   pDeviceItem->m_strName.c_str());
+                   pDeviceItem->m_strName);
             dlclose(hdll);
             return NULL;
         }
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-            syslog(LOG_DEBUG,
+            spdlog::get("logger")->debug(
                    "%s: [Device tread] Level I Driver open.",
                    pDeviceItem->m_strName.c_str());
         }
@@ -531,10 +534,10 @@ deviceThread(void* pData)
         if (NULL == pDeviceItem->m_mosq) {
                 
             if (ENOMEM == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
+                spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
             }
             else if (EINVAL == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+                spdlog::get("logger")->error("Failed to create new mosquitto session (invalid parameters).");
             }
 
             dlclose(hdll);
@@ -556,10 +559,10 @@ deviceThread(void* pData)
                                                                         pDeviceItem->m_mqtt_strUserName.c_str(),
                                                                         pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
                 if (MOSQ_ERR_INVAL == rv) {
-                    syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
+                    spdlog::get("logger")->error("Failed to set mosquitto username/password (invalid parameter(s)).");
                 }
                 else if (MOSQ_ERR_NOMEM == rv) {
-                    syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
+                    spdlog::get("logger")->error("Failed to set mosquitto username/password (out of memory).");
                 }
             }
         }
@@ -572,10 +575,10 @@ deviceThread(void* pData)
         if ( MOSQ_ERR_SUCCESS != rv ) {
             
             if (MOSQ_ERR_INVAL == rv) {
-                syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
+                spdlog::get("logger")->error("Failed to connect to mosquitto server (invalid parameter(s)).");
             }
             else if (MOSQ_ERR_ERRNO == rv) {
-                syslog(LOG_ERR, "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
+                spdlog::get("logger")->error("Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
             }
 
             dlclose(hdll);
@@ -614,16 +617,21 @@ deviceThread(void* pData)
 
             switch (rv) {
                 case MOSQ_ERR_INVAL:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - input parameters were invalid.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - input parameters were invalid.",
+                        subscribe_topic.c_str());
                 case MOSQ_ERR_NOMEM:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - out of memory condition occurred.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - out of memory condition occurred.",
+                        subscribe_topic.c_str());
                 case MOSQ_ERR_NO_CONN:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.",
+                        subscribe_topic.c_str());
                 case MOSQ_ERR_MALFORMED_UTF8:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - topic is not valid UTF-8.",
+                        subscribe_topic.c_str());
 #if defined(MOSQ_ERR_OVERSIZE_PACKET)
                 case MOSQ_ERR_OVERSIZE_PACKET:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - resulting packet would be larger than supported by the broker.",
+                        subscribe_topic.c_str());
 #endif                    
             }
         }
@@ -643,7 +651,8 @@ deviceThread(void* pData)
             // * * * * Blocking version * * * *
 
             if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-                syslog(LOG_DEBUG, "%s: [Device tread] Level I blocking version.", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->debug("{}: [Device tread] Level I blocking version.", 
+                        pDeviceItem->m_strName.c_str());
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -671,7 +680,8 @@ deviceThread(void* pData)
 
                     // Convert CANAL message to VSCP event
                     if (!vscp_convertCanalToEvent(&ev, &msg, (unsigned char *)pDeviceItem->m_guid.getGUID()) ) {
-                        syslog(LOG_ERR,"Driver L1: %s Failed to convet CANAL to event.\n", pDeviceItem->m_strName.c_str());
+                        spdlog::get("logger")->error("Driver L1: {} Failed to convet CANAL to event.", 
+                                pDeviceItem->m_strName);
                         break;
                     }
                     ev.obid = 0;
@@ -707,7 +717,8 @@ deviceThread(void* pData)
                     }
 
                     if (!pDeviceItem->sendEvent(&ev) ) {
-                        syslog(LOG_ERR,"Driver L1: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                        spdlog::get("logger")->error("Driver L1: {} Failed to send event to broker.", 
+                                pDeviceItem->m_strName);
                         continue;
                     } 
                                                          
@@ -719,7 +730,8 @@ deviceThread(void* pData)
             pDeviceItem->m_bQuit = true;
 
             if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-                syslog(LOG_DEBUG, "%s: [Device tread] Level I work loop ended.", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("{}: [Device tread] Level I work loop ended.", 
+                        pDeviceItem->m_strName);
             }
 
         }
@@ -728,7 +740,8 @@ deviceThread(void* pData)
             // * * * * Non blocking version * * * *
 
             if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-                syslog(LOG_DEBUG, "%s: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("{}: [Device tread] Level I NON Blocking version.", 
+                        pDeviceItem->m_strName);
             }
             
             while (!pDeviceItem->m_bQuit) {
@@ -756,7 +769,8 @@ deviceThread(void* pData)
 
                             // Convert CANAL message to VSCP event
                             if (!vscp_convertCanalToEvent(pev, &msg, (unsigned char *)pDeviceItem->m_guid.getGUID())) {
-                                syslog(LOG_ERR, "Driver L1: %s Failed to convet CANAL to event.\n", pDeviceItem->m_strName.c_str());
+                                spdlog::get("logger")->error("Driver L1: {} Failed to convet CANAL to event.", 
+                                        pDeviceItem->m_strName);
                                 break;
                             }
                             pev->obid = 0;
@@ -792,7 +806,8 @@ deviceThread(void* pData)
                             }
 
                             if (!pDeviceItem->sendEvent(pev) ) {
-                                syslog(LOG_ERR,"Driver L1: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                                spdlog::get("logger")->error("Driver L1: {} Failed to send event to broker.", 
+                                        pDeviceItem->m_strName);
                                 if (NULL == pev) {
                                     vscp_deleteEvent_v2(&pev);
                                 }
@@ -804,7 +819,8 @@ deviceThread(void* pData)
                             }
                         }
                         else {
-                            syslog(LOG_ERR,"Driver L1: %s Memory problem.\n", pDeviceItem->m_strName.c_str());
+                            spdlog::get("logger")->error("Driver L1: {} Memory problem.\n", 
+                                    pDeviceItem->m_strName);
                             break;
                         }
                         
@@ -823,18 +839,18 @@ deviceThread(void* pData)
         } // if blocking/non blocking
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level I Work loop ended.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level I Work loop ended.",
+                   pDeviceItem->m_strName);
         }
 
         // Close CANAL channel
         pDeviceItem->m_proc_CanalClose(pDeviceItem->m_openHandle);
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level I Closed.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level I Closed.",
+                   pDeviceItem->m_strName);
         }
 
         pDeviceItem->m_bQuit = true;
@@ -851,17 +867,17 @@ deviceThread(void* pData)
     else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
 
         // Now find methods in library
-        syslog(LOG_INFO,
-               "Loading level II driver: <%s>",
-               pDeviceItem->m_strName.c_str());
+        spdlog::get("logger")->info(
+               "Loading level II driver: <{}>",
+               pDeviceItem->m_strName);
 
         // * * * * VSCP OPEN * * * *
         if (NULL == (pDeviceItem->m_proc_VSCPOpen =
                        (LPFNDLL_VSCPOPEN)dlsym(hdll, "VSCPOpen"))) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPOpen.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for VSCPOpen.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
@@ -869,9 +885,9 @@ deviceThread(void* pData)
         if (NULL == (pDeviceItem->m_proc_VSCPClose =
                        (LPFNDLL_VSCPCLOSE)dlsym(hdll, "VSCPClose"))) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPClose.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for VSCPClose.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
@@ -879,9 +895,9 @@ deviceThread(void* pData)
         if (NULL == (pDeviceItem->m_proc_VSCPWrite =
                        (LPFNDLL_VSCPWRITE)dlsym(hdll, "VSCPWrite"))) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPWrite.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for VSCPWrite.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
@@ -889,9 +905,9 @@ deviceThread(void* pData)
         if (NULL == (pDeviceItem->m_proc_VSCPRead =
                        (LPFNDLL_VSCPREAD)dlsym(hdll, "VSCPRead"))) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPBlockingReceive.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for VSCPBlockingReceive.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
@@ -899,16 +915,16 @@ deviceThread(void* pData)
         if (NULL == (pDeviceItem->m_proc_VSCPGetVersion =
                        (LPFNDLL_VSCPGETVERSION)dlsym(hdll, "VSCPGetVersion"))) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetVersion.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->error(
+                   "{}: Unable to get dl entry for VSCPGetVersion.",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: Discovered all methods\n",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "{}: Discovered all methods\n",
+                   pDeviceItem->m_strName);
         }
 
 
@@ -931,10 +947,10 @@ deviceThread(void* pData)
         if (NULL == pDeviceItem->m_mosq) {
                 
             if (ENOMEM == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (out of memory).");
+                spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
             }
             else if (EINVAL == errno) {
-                syslog(LOG_ERR, "Failed to create new mosquitto session (invalid parameters).");
+                spdlog::get("logger")->error("Failed to create new mosquitto session (invalid parameters).");
             }
 
             dlclose(hdll);
@@ -953,7 +969,7 @@ deviceThread(void* pData)
    	                                                            pDeviceItem->m_mqtt_reconnect_delay,
    	                                                            pDeviceItem->m_mqtt_reconnect_delay_max,
    		                                                        pDeviceItem->m_mqtt_reconnect_exponential_backoff)) {
-            syslog(LOG_ERR, "[Controlobject] Failed to set reconnect settings.");                                 
+            spdlog::get("logger")->error("Failed to set reconnect settings.");                                 
         }
 
         // Set username/password if defined
@@ -963,10 +979,10 @@ deviceThread(void* pData)
                                                                         pDeviceItem->m_mqtt_strUserName.c_str(),
                                                                         pDeviceItem->m_mqtt_strPassword.c_str() ) ) ) {
                 if (MOSQ_ERR_INVAL == rv) {
-                    syslog(LOG_ERR, "Failed to set mosquitto username/password (invalid parameter(s)).");
+                    spdlog::get("logger")->error("Failed to set mosquitto username/password (invalid parameter(s)).");
                 }
                 else if (MOSQ_ERR_NOMEM == rv) {
-                    syslog(LOG_ERR, "Failed to set mosquitto username/password (out of memory).");
+                    spdlog::get("logger")->error("Failed to set mosquitto username/password (out of memory).");
                 }
             }
         }
@@ -979,10 +995,10 @@ deviceThread(void* pData)
         if ( MOSQ_ERR_SUCCESS != rv ) {
             
             if (MOSQ_ERR_INVAL == rv) {
-                syslog(LOG_ERR, "Failed to connect to mosquitto server (invalid parameter(s)).");
+                spdlog::get("logger")->error("Failed to connect to mosquitto server (invalid parameter(s)).");
             }
             else if (MOSQ_ERR_ERRNO == rv) {
-                syslog(LOG_ERR, "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
+                spdlog::get("logger")->error("Failed to connect to mosquitto server. System returned error (errno = %d).", errno);
             }
 
             dlclose(hdll);
@@ -1021,16 +1037,21 @@ deviceThread(void* pData)
 
             switch (rv) {
                 case MOSQ_ERR_INVAL:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - input parameters were invalid.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - input parameters were invalid.",
+                            subscribe_topic);
                 case MOSQ_ERR_NOMEM:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - out of memory condition occurred.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - out of memory condition occurred.",
+                            subscribe_topic);
                 case MOSQ_ERR_NO_CONN:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.",
+                            subscribe_topic);
                 case MOSQ_ERR_MALFORMED_UTF8:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - topic is not valid UTF-8.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - topic is not valid UTF-8.",
+                            subscribe_topic);
 #if defined(MOSQ_ERR_OVERSIZE_PACKET)
                 case MOSQ_ERR_OVERSIZE_PACKET:
-                    syslog(LOG_ERR, "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.",subscribe_topic.c_str());
+                    spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - resulting packet would be larger than supported by the broker.",
+                            subscribe_topic);
 #endif                    
             }
         }
@@ -1048,19 +1069,19 @@ deviceThread(void* pData)
 
         if (0 == pDeviceItem->m_openHandle) {
             // Free the library
-            syslog(LOG_ERR,
-                   "%s: [Device tread] Unable to open VSCP "
+            spdlog::get("logger")->error(
+                   "{}: [Device tread] Unable to open VSCP "
                    " level II driver (path, config file access rights)."
                    " There may be additional info from driver "
-                   "in syslog. If not enable debug flag in drivers config file",
-                   pDeviceItem->m_strName.c_str());
+                   "in log. If not enable debug flag in drivers config file",
+                   pDeviceItem->m_strName);
             return NULL;
         }
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Open.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level II Open.",
+                   pDeviceItem->m_strName);
         }
 
 
@@ -1087,25 +1108,26 @@ deviceThread(void* pData)
             // Publish to MQTT broker
 
             if (!pDeviceItem->sendEvent(&ev)) {
-                syslog(LOG_ERR, "Driver L2: %s Failed to send event to broker.\n", pDeviceItem->m_strName.c_str());
+                spdlog::get("logger")->error("Driver L2: {} Failed to send event to broker.", 
+                        pDeviceItem->m_strName.c_str());
                 continue;
             }
 
         }
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Closing.",
-                   pDeviceItem->m_strName.c_str());
+           spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level II Closing.",
+                   pDeviceItem->m_strName);
         }
 
         // Close channel
         pDeviceItem->m_proc_VSCPClose(pDeviceItem->m_openHandle);
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Closed.",
-                   pDeviceItem->m_strName.c_str());
+            spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level II Closed.",
+                   pDeviceItem->m_strName);
         }
 
         pDeviceItem->m_bQuit = true;
@@ -1115,8 +1137,8 @@ deviceThread(void* pData)
         dlclose(hdll);
 
         if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
-            syslog(LOG_DEBUG,
-                   "%s: [Device tread] Level II Done waiting for threads.",
+            spdlog::get("logger")->debug(
+                   "{}: [Device tread] Level II Done waiting for threads.",
                    pDeviceItem->m_strName.c_str());
         }
     }

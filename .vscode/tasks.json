@@ -2,64 +2,20 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "build all",
+            "taskName": "build vscpd",
             "type": "shell",
-            "command": "rm -rf dist; make",
+            "command": "cd build; make",
             "args": [],
             "group": {
                 "kind": "build",
                 "isDefault": false
             },
             "problemMatcher": "$gcc"
-        },
-        {
-            "taskName": "clean & build all",
-            "type": "shell",
-            "command": "rm -rf dist; make clean; make",
-            "args": [],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": {
-                "owner": "cpp",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": {
-                  "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                  "file": 1,
-                  "line": 2,
-                  "column": 3,
-                  "severity": 4,
-                  "message": 5
-                }
-            }
-        },
-        {
-            "taskName": "build vscpd",
-            "type": "shell",
-            "command": "cd src/vscp/daemon/linux; make all",
-            "args": [],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": {
-                "owner": "cpp",
-                "fileLocation": ["relative", "${workspaceFolder}"],
-                "pattern": {
-                  "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                  "file": 1,
-                  "line": 2,
-                  "column": 3,
-                  "severity": 4,
-                  "message": 5
-                }
-            }
         },
         {
             "taskName": "clean & build vscpd",
             "type": "shell",
-            "command": "cd src/vscp/daemon/linux; make clean; make",
+            "command": "mkdir build; cd build; rm -rf *; cmake .. -DCMAKE_BUILD_TYPE=Debug; make",
             "args": [],
             "group": {
                 "kind": "build",
@@ -79,27 +35,16 @@
             }
         },
         {
-            "taskName": "build debian package",
+            "taskName": "build package",
             "type": "shell",
-            "command": "./build_debian_package.sh",
+            "command": "cd build; cpack",
             "args": [],
             "group": {
                 "kind": "build",
                 "isDefault": false
             },
             "problemMatcher": "$gcc"
-        },
-        {
-            "taskName": "build ubuntu trusty",
-            "type": "shell",
-            "command": "cd dist;sudo OS=ubuntu DIST=trusty ARCH=amd64 pbuilder build *.dsc",
-            "args": [],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": "$gcc"
-        },
+        }
         {
             "taskName": "build vscphelper unittest",
             "type": "shell",

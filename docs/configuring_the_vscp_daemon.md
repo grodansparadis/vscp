@@ -114,7 +114,35 @@ This is the debug level. Zero is no debugging. A higher number is different leve
 
 ### logging :id=config-general-logging
 
-This is the log file settings. 
+This is the log console and file settings. Default is to log to the logfile */var/log/vscp/vscpd.log* on Linux and *\program files (x86)\vscp\vscp.log* on Windows. The exception is at during vscpd start up, before the configuration file is read and the configured location for the log file is unknown, here logging is done to the console and on Linux also to the syslog.
+
+Modes for logging can be set as of below. In debug/trace mode the debug flag above defines how much info is logged.
+
+#### log-level-file :id=config-general-logging-log-level-file
+
+Log level for file log. Default is "info".
+
+| Level | Description |
+| ----- | ----------- |
+| "trace" | Everything is logged |
+| "debug" | Everything except trace is logged |
+| "info" | info and above is logged |
+| "err" | Errors and above is logged |
+| "critical" | Only critical messages are logged |
+| "off" | No logging |
+
+#### log-level-console :id=config-general-logging-log-level-consol
+
+Log level for console log. Default is "info".
+
+| Level | Description |
+| ----- | ----------- |
+| "trace" | Everything is logged |
+| "debug" | Everything except trace is logged |
+| "info" | info and above is logged |
+| "err" | Errors and above is logged |
+| "critical" | Only critical messages are logged |
+| "off" | No logging |
 
 #### path :id=config-general-logging-path
 
@@ -128,11 +156,17 @@ Max size for log file. It will be rotated if over this value. Default is 5 Mb.
 
 Maximum number of log files to keep. Default is 7.
 
-#### syslog :id=config-general-logging-syslog
+#### format-file :id=config-general-logging-console-file
 
-**Only valid on Linux**
+Format for file log.
 
-If set to **true** logging will also be done to syslog.
+#### console :id=config-general-logging-console
+
+If set to **true** logging will also be done to the console.
+
+#### format-console :id=config-general-logging-console-format
+
+Format for consol log.
 
 ----
 ##  MQTT :id=config-mqtt

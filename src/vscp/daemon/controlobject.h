@@ -92,8 +92,17 @@ class CControlObject {
 
     /*!
         General initialisation
+        @param strcfgfile Path to configuration file location
+        @param rootFolder Path to VSCP system root folder
+        @return True on success, false on failure
      */
     bool init(std::string& strcfgfile, std::string& rootFolder);
+
+    /*!
+        Initialize MQTT sub system
+        @return True on success, false on failure
+    */
+    bool init_mqtt(void);
 
     /*!
         Clean up used resources
@@ -122,13 +131,13 @@ class CControlObject {
 
     /*!
         Start worker threads for devices
-        @return true on success
+        @return true on success, false on failure
      */
     bool startDeviceWorkerThreads(void);
 
     /*!
         Stop worker threads for devices
-        @return true on success
+        @return true on success, false on failure
      */
     bool stopDeviceWorkerThreads(void);
 
@@ -137,6 +146,7 @@ class CControlObject {
         Get device address for primary ethernet adapter
 
         @param guid class
+        @return true on success, false on failure
      */
     bool getMacAddress(cguid& guid);
 
@@ -144,6 +154,7 @@ class CControlObject {
         Get the first IP address computer is known under
 
         @param pGUID Pointer to GUID class
+        @return true on success, false on failure
      */
     bool getIPAddress(cguid& guid);
 
@@ -195,7 +206,8 @@ class CControlObject {
         @param tid VSCP class 
         @return VSCP class token as string
     */
-    std::string getTokenFromTypeId(uint16_t cid, uint16_t tid) { return m_map_type_id2Token[((cid << 16) + tid)]; }
+    std::string getTokenFromTypeId(uint16_t cid, uint16_t tid) 
+            { return m_map_type_id2Token[((cid << 16) + tid)]; }
 
  public:
 
@@ -290,9 +302,16 @@ class CControlObject {
     //                            LOGGER (SPDLOG)
     //**************************************************************************
 
+    bool m_bEnableFileLog;
+    spdlog::level::level_enum m_fileLogLevel;
+    std::string m_fileLogPattern;
     std::string m_path_to_log_file;
     uint32_t m_max_log_size;
     uint16_t m_max_log_files;
+
+    bool m_bEnableConsoleLog;
+    spdlog::level::level_enum m_consoleLogLevel;
+    std::string m_consoleLogPattern;
 
     //**************************************************************************
     //                                  MQTT 

@@ -23,7 +23,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build all",
+            "preLaunchTask": "build vscpd",
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {

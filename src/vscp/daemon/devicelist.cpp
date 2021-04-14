@@ -30,6 +30,10 @@
 
 #define _POSIX
 
+#ifndef WIN32
+#include <unistd.h>
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -37,11 +41,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#ifndef WIN32
-#include <syslog.h>
-#include <unistd.h>
-#endif
 
 #include <mosquitto.h>
 
@@ -209,9 +208,9 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
 {
     // Just start if enabled
     if (!m_bEnable) {
-        syslog(LOG_INFO,
-               "[Driver %s] Start - VSCP driver is disabled.",
-               m_strName.c_str());
+        spdlog::get("logger")->info(
+               "[Driver {}] Start - VSCP driver is disabled.",
+               m_strName);
         return true;
     }
 
@@ -220,15 +219,13 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     // *****************************************
 
     if (pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
-        syslog(LOG_ERR,
-               "[Driver %s] - Unable to start the device thread.",
+        spdlog::get("logger")->error(
+               "[Driver {}] - Unable to start the device thread.",
                m_strName.c_str());
         return false;
     }
 
-    syslog(
-      LOG_INFO, "[Driver %s] - Started VSCP device driver.", m_strName.c_str());
-
+    spdlog::get("logger")->info("[Driver {}] - Started VSCP device driver.", m_strName);
     return true;
 }
 
@@ -241,22 +238,22 @@ CDeviceItem::stopDriver()
 {
     if (m_bEnable) {
         m_bQuit = true;
-        syslog(LOG_INFO,
-               "Driver %s: Driver asked to stop operation.",
-               m_strName.c_str());
+        spdlog::get("logger")->info(
+               "Driver {}: Driver asked to stop operation.",
+               m_strName);
 
         pthread_mutex_lock(&m_mutexdeviceThread);
         pthread_join(m_deviceThreadHandle, NULL);
         pthread_mutex_unlock(&m_mutexdeviceThread);
 
-        syslog(LOG_ERR,
-               "CDeviceItem: Driver stopping. [%s]\n",
-               (const char *)m_strName.c_str());
+        spdlog::get("logger")->error(
+               "CDeviceItem: Driver stopping. {}\n",
+               m_strName);
     } else {
         if (!m_bEnable) {
-            syslog(LOG_INFO,
-                   "[Driver %s] Stop - VSCP driver is disabled.",
-                   m_strName.c_str());
+            spdlog::get("logger")->info(
+                   "[Driver {}] Stop - VSCP driver is disabled.",
+                   m_strName);
             return true;
         }
     }
@@ -299,7 +296,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
 
     // Check pointer
     if (NULL == pev) {
-        syslog(LOG_ERR, "ControlObject: sendEvent: Event is NULL pointer");
+        spdlog::get("logger")->error("ControlObject: sendEvent: Event is NULL pointer");
         return false;
     }
 
@@ -311,7 +308,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
     if ( m_mqtt_format == jsonfmt ) {
 
         if ( !vscp_convertEventToJSON(strPayload, pev) ) {
-            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to JSON");
+            spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to JSON");
             return false;
         }
 
@@ -331,8 +328,9 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
 
             double value = 0;
             if (!vscp_getMeasurementAsDouble(&value, pev)) {
-                syslog(LOG_ERR, "Driver: sendEvent: Failed to convert event to value.");
-            } else {
+                spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to value.");
+            } 
+            else {
                 try {
                     auto j = json::parse(strPayload);
 
@@ -349,7 +347,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                     strPayload = j.dump();
                 }
                 catch (...) {
-                    syslog(LOG_ERR, "Driver: sendEvent: Failed to add measurement info to event.");
+                    spdlog::get("logger")->error("Driver: sendEvent: Failed to add measurement info to event.");
                 }
             }
         } else  if (bJsonMeasurementAdd) {
@@ -358,12 +356,12 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
 
     } else if (m_mqtt_format == xmlfmt) {
         if ( !vscp_convertEventToXML(strPayload, pev) ) {
-            syslog(LOG_ERR, "Driver: sendEvent: Failed to convert event to XML");
+            spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to XML");
             return false;
         }
     } else if (m_mqtt_format == strfmt) {
         if ( !vscp_convertEventToString(strPayload, pev) ) {
-            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to STRING");
+            spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to STRING");
             return false;
         }
     } else if (m_mqtt_format == binfmt) {
@@ -376,7 +374,7 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
                                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
                                     VSCP_MULTICAST_TYPE_EVENT,
                                     pev) ) {
-            syslog(LOG_ERR, "ControlObject: sendEvent: Failed to convert event to BINARY");
+            spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to BINARY");
             return false;
         }
     }
@@ -472,38 +470,38 @@ bool CDeviceItem::sendEvent(vscpEvent *pev)
         // Translate mosquitto error code to VSCP error code
         switch (rv) {
             case MOSQ_ERR_INVAL:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error Parameter");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error Parameter");
                 rv = false;
                 break;
             case MOSQ_ERR_NOMEM:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error Memory");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error Memory");
                 rv = false;
                 break;
             case MOSQ_ERR_NO_CONN:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error Connection");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error Connection");
                 rv = false;
                 break;
             case MOSQ_ERR_PROTOCOL:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error protocol");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error protocol");
                 rv = false;
                 return false;
             case MOSQ_ERR_PAYLOAD_SIZE:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error payload size");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error payload size");
                 rv = false;
                 break;
             case MOSQ_ERR_MALFORMED_UTF8:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error malformed utf8");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error malformed utf8");
                 rv = false;
                 break;
 #if defined(MOSQ_ERR_QOS_NOT_SUPPORTED)                  
             case MOSQ_ERR_QOS_NOT_SUPPORTED:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error QOS not supported");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error QOS not supported");
                 rv = false;
                 break;
 #endif                
 #if defined(MOSQ_ERR_OVERSIZE_PACKET)                
             case MOSQ_ERR_OVERSIZE_PACKET:
-                syslog(LOG_ERR, "ControlObject: sendEvent: Error Oversized package");
+                spdlog::get("logger")->error("ControlObject: sendEvent: Error Oversized package");
                 rv = false;
                 break;
 #endif                
@@ -593,10 +591,10 @@ CDeviceList::addItem(CControlObject *pCtrlObj,
             pDeviceItem->m_DeviceFlags = flags;
 
         } else {
-            syslog(LOG_ERR,
-                    "Driver '%s' is not available at this path %s. Dropped!",
-                    strName.c_str(),
-                    strPath.c_str() );
+            spdlog::get("logger")->error(
+                    "Driver '{}' is not available at this path {}. Dropped!",
+                    strName,
+                    strPath );
 
             // Driver does not exist at this path
             delete pDeviceItem;

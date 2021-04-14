@@ -52,7 +52,6 @@
 #include <sys/msg.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <syslog.h>
 #include <unistd.h>
 #else
 
@@ -69,7 +68,10 @@
 #include <string>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 //#define DEBUG
 
@@ -83,23 +85,13 @@ std::string systemKey;
 CControlObject* gpobj;
 
 // Forward declarations
-int
-init(std::string& strcfgfile, std::string& rootFolder);
-void
-copyleft(void);
-void
-help(char* szPrgname);
-bool
-createFolderStuct(std::string& rootFolder);
+void copyleft(void);
+void help(char* szPrgname);
 
 void
 _sighandlerStop(int sig)
 {
-    fprintf(stderr, "vscpd: signal received, forced to stop.\n");
-#ifdef WIN32
-#else    
-    syslog(LOG_ERR, "vscpd: signal received, forced to stop.: %m");
-#endif    
+    fprintf(stderr, "vscpd: signal received, forced to stop.\n");  
     gpobj->m_bQuit = true;
     gbStopDaemon   = true;
 }
@@ -107,15 +99,7 @@ _sighandlerStop(int sig)
 void
 _sighandlerRestart(int sig)
 {
-#ifdef WIN32
-    fprintf(stderr, "vscpd: signal received, restart. %s\n", strerror(errno));
-#else    
-    fprintf(stderr, "vscpd: signal received, restart. %m\n");
-#endif    
-#ifdef WIN32
-#else    
-    syslog(LOG_ERR, "vscpd: signal received, restart.: %m");
-#endif    
+    fprintf(stderr, "vscpd: signal received, restart. %s\n", strerror(errno));      
     gpobj->m_bQuit = true;
     gbStopDaemon   = false;
 }
@@ -132,19 +116,22 @@ main(int argc, char** argv)
     std::string rootFolder; // Folder where VSCP files & folders will be located
     std::string strcfgfile; // Points to XML configuration file
 
-    fprintf(stderr, "Prepare to start vscpd...\n");
-#ifdef WIN32
-#else
-    openlog("vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON);
-#endif    
-#ifdef WIN32
-#else    
-    syslog(LOG_INFO, "Starting the VSCP daemon...");
-#endif    
+    // Init pool
+    spdlog::init_thread_pool(8192, 1);
 
-    // Ignore return value from defunct processes d
-#ifdef WIN32
-#else    
+    // Flush log every five seconds
+    spdlog::flush_every(std::chrono::seconds(5));
+
+    auto console = spdlog::stdout_color_mt("console");
+    // Start out with level=info. Config may change this
+    console->set_level(spdlog::level::info);
+    console->set_pattern("[vscp] [%^%l%$] %v");
+    spdlog::set_default_logger(console);
+
+    console->info("Starting the VSCP daemon...");
+
+    // Ignore return value from defunct processes id
+#ifndef WIN32  
     signal(SIGCHLD, SIG_IGN);
 #endif
     crcInit();
@@ -157,11 +144,9 @@ main(int argc, char** argv)
 
         switch (opt) {
 
-            case 's':
-                fprintf(stderr,
-                        "I will ***NOT*** run as daemon! "
-                        "(ctrl+c to terminate)\n");
+            case 's':                
                 gbDontRunAsDaemon = true;
+                console->info("I will ***NOT*** run as daemon! (use ctrl+c to terminate)");
                 break;
 
             case 'c':
@@ -170,13 +155,7 @@ main(int argc, char** argv)
 
             case 'r':
                 rootFolder = optarg;
-                fprintf(stderr, "Will use rootfolder = %s", rootFolder.c_str());
-#ifdef WIN32
-#else                
-                syslog(LOG_INFO,
-                       "Will use rootfolder = %s",
-                       rootFolder.c_str());
-#endif                       
+                console->info("Will use rootfolder = %s", rootFolder.c_str());                     
                 break;
 
             case 'k':
@@ -184,12 +163,8 @@ main(int argc, char** argv)
                 break;
 
             case 'd':
-                gDebugLevel =  std::stoull(optarg);     //atoi(optarg);
-                fprintf(stderr, "Debug flags=%s\n", optarg);
-#ifdef WIN32
-#else                
-                syslog(LOG_INFO, "Debug flags=%s\n", optarg);
-#endif                
+                gDebugLevel =  std::stoull(optarg);     
+                console->info("Debug flags=%s\n", optarg);             
                 break;
 
             case 'g':
@@ -204,9 +179,10 @@ main(int argc, char** argv)
         }
     }
 
-    fprintf(stderr,
-            "[vscpd] Configfile = %s\n",
-            (const char*)strcfgfile.c_str());
+    // * * * init * * *
+
+    console->info("Configfile = %s\n",
+                    (const char*)strcfgfile.c_str());            
 
     pid_t pid, sid;
 
@@ -215,10 +191,7 @@ main(int argc, char** argv)
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            fprintf(stderr, "Failed to fork.\n");
-#ifndef WIN32            
-            syslog(LOG_ERR, "Failed to fork.\n");
-#endif            
+            console->error("Failed to fork.");           
             return -1;
         } 
         else if (0 != pid) {
@@ -228,10 +201,7 @@ main(int argc, char** argv)
         sid = setsid();     // Become session leader
         if (sid < 0) {
             // Failure
-            fprintf(stderr, "Failed to become session leader.\n");
-#ifndef WIN32
-            syslog(LOG_ERR, "Failed to become session leader.\n");
-#endif            
+            console->error("Failed to become session leader.");           
             return -1;
         }
 
@@ -243,10 +213,7 @@ main(int argc, char** argv)
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
-            fprintf(stderr, "vscpd: open / not 0: %m");
-#ifndef WIN32            
-            syslog(LOG_ERR, "vscpd: open / not 0: %m");
-#endif            
+            console->warn("Open / not 0: %m.");          
         }
 
         dup2(0, 1);
@@ -258,48 +225,21 @@ main(int argc, char** argv)
     FILE* pFile;
     pFile = fopen("/var/run/vscpd.pid", "w");
     if (NULL == pFile) {
-        fprintf(stderr, "Writing pid file failed.\n");
-#ifndef WIN32        
-        syslog(LOG_ERR, "Writing pid file failed.\n");
-#endif                
+        console->warn("Writing pid file failed (access rights?).");              
     } 
     else {
-#ifndef WIN32       
-        syslog(LOG_ERR, "Writing pid file [/var/run/vscpd.pid] sid=%u\n", sid);
-#endif        
+        console->debug("Writing pid file [/var/run/vscpd.pid] sid=%u\n", sid);      
         fprintf(pFile, "%u\n", sid);
         fclose(pFile);
     }
 
-    // Create folder structure
-    if (!createFolderStuct(rootFolder)) {
-        fprintf(stderr,
-                "vscpd: Folder structure is not in place (You may need to run "
-                "as root).");
-#ifndef WIN32        
-        syslog(LOG_ERR,
-               "vscpd: Folder structure is not in place (You may need to run "
-               "as root).");
-#endif               
-        
-        unlink("/var/run/vscpd.pid");
-        return -1;
-    }
-
     // Change working directory to root folder
     if (chdir((const char*)rootFolder.c_str())) {
-        fprintf(stderr, "vscpd: Failed to change dir to rootdir");
-#ifndef WIN32     
-        syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
-#endif        
+        console->error("Failed to change dir to rootdir.");      
         unlink("/var/run/vscpd.pid");
         if (-1 == chdir("/var/lib/vscp/vscpd")) {
-#ifndef WIN32           
-        syslog(
-            LOG_ERR,
-            "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
-            errno);
-#endif              
+            console->error("Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
+                            errno);             
         }
 
         return -1;
@@ -347,85 +287,95 @@ main(int argc, char** argv)
 
     // Tansfer read debug parameters if set
     gpobj->m_debugFlags = gDebugLevel;
+    console->info("Debugflags: 0x{0:x}", gpobj->m_debugFlags);
 
-    fprintf(stderr, "vscpd: init.\n");
     if (!gpobj->init(strcfgfile, rootFolder)) {
-        fprintf(stderr, "Can't initialize daemon. Exiting.\n");
-#ifndef WIN32           
-        syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
-#endif            
+        console->critical("Can't initialize daemon. Exiting.\n");            
         unlink("/var/run/vscpd.pid");
+        spdlog::drop_all();
         return FALSE;
     }
 
-    // Create a file rotating logger with 5mb size max and 3 rotated files
-    auto max_size = 1048576 * 5;
-    auto max_files = 3;
-    auto logger = spdlog::rotating_logger_mt("VSCP Daemon log file", "/var/log/logs/vscp/vscpd.log", max_size, max_files);
+    // auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    // console_sink->set_level(spdlog::level::warn);
+    // console_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
+    spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");    
+
+    // Console log
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
+    if (gpobj->m_bEnableConsoleLog) {
+        console_sink->set_level(gpobj->m_consoleLogLevel);
+        console_sink->set_pattern(gpobj->m_consoleLogPattern);            
+    }
+    else {
+        // If disabled set to off
+        console_sink->set_level(spdlog::level::off);
+    }
+
+    auto rotating = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("log_filename", 1024*1024, 5, false);
+    auto rotating_file_sink = 
+            std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+                                                    gpobj->m_path_to_log_file.c_str(), 
+                                                    gpobj->m_max_log_size, 
+                                                    gpobj->m_max_log_files);
+
+    if (gpobj->m_bEnableFileLog) {
+        rotating_file_sink->set_level(gpobj->m_fileLogLevel);
+        rotating_file_sink->set_pattern(gpobj->m_fileLogPattern);            
+    }
+    else {
+        // If disabled set to off
+        rotating_file_sink->set_level(spdlog::level::off);
+    }    
+
+    std::vector<spdlog::sink_ptr> sinks {console_sink, rotating_file_sink};
+    auto logger = std::make_shared<spdlog::async_logger>("logger", 
+                                                            sinks.begin(), 
+                                                            sinks.end(), 
+                                                            spdlog::thread_pool(), 
+                                                            spdlog::async_overflow_policy::block);
+    // The seperate sub loggers will handle trace levels
+    logger->set_level(spdlog::level::trace);                                                            
+    spdlog::register_logger(logger);
+
 
     // *******************************
     //    Main loop is entered here
     // *******************************
 
-    fprintf(stderr, "vscpd: run.\n");
+    // * * * RUN * * *
+
+    console->debug("vscpd: run.");
+
     if (!gpobj->run()) {
-        fprintf(stderr,
-                "Unable to start the vscpd application. Exiting.\n");
-#ifdef WIN32
-#else                    
-        syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
-#endif            
+        console->critical("vscpd: Unable to start the vscpd application. Exiting.");           
         unlink("/var/run/vscpd.pid");
+        spdlog::drop_all();
         return FALSE;
     }
 
-    fprintf(stderr, "vscpd: cleanup.\n");
+    // * * * CLEAN UP * * *
+
+    console->debug("vscpd: cleanup.");
 
     if (!gpobj->cleanup()) {
-        fprintf(stderr, "Unable to clean up the vscpd application.\n");
-#ifdef WIN32
-#else            
-        syslog(LOG_ERR, "Unable to clean up the vscpd application.");
-#endif            
+        console->critical("vscpd: Unable to clean up the vscpd application.");        
+        spdlog::drop_all();    
         return FALSE;
-    }
+    }           
 
-    fprintf(stderr, "vscpd: cleanup done.\n");
-
-#ifdef WIN32
-#else            
-        syslog(LOG_ERR, "vscpd: Will end things.\n");
-#endif            
-        fprintf(stderr, "vscpd: Will end things.\n");
-
-    fprintf(stderr, "vscpd: Deleting the control object.\n");
+    console->debug("vscpd: Deleting the control object.");
     delete gpobj;
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd.pid");
-
-    fprintf(stderr, "vscpd: ending...\n");
-
     gpobj = NULL;
 
-#ifdef WIN32
-#else
-    closelog();     // Close syslog
-#endif    
-
-    fprintf(stderr, "vscpd: Bye, bye.\n");
-    exit(EXIT_SUCCESS);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// initialisation
-
-int
-init(std::string& strcfgfile, std::string& rootFolder)
-{
+    console->info("vscpd: Bye, bye.");
+    spdlog::drop_all(); 
+    spdlog::shutdown();
     
-
-    return TRUE;
+    exit(EXIT_SUCCESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,72 +448,4 @@ help(char* szPrgname)
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// createFolder
-//
 
-bool
-createFolder(const char* folder)
-{
-    if (0 == vscp_dirExists(folder)) {
-        if (-1 == mkdir(folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", folder);
-#ifdef WIN32
-#else            
-            syslog(LOG_ERR, "Failed to create folder %s\n", folder);
-#endif            
-            return false;
-        }
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// createFolderStuct
-//
-
-bool
-createFolderStuct(std::string& rootFolder)
-{
-    std::string path;
-
-    if (!createFolder(rootFolder.c_str())) {
-        return false;
-    }
-
-    if (!createFolder("/etc/vscp/certs")) {
-        return false;
-    }
-
-    if (!createFolder("/etc/vscp/ca_certificates")) {
-        return false;
-    }
-
-    path = rootFolder + "/web";
-    if (!createFolder(path.c_str())) {
-        return false;
-    }
-
-    path = rootFolder + "/web/html";
-    if (!createFolder(path.c_str())) {
-        return false;
-    }
-
-    path = rootFolder + "/web/html/images";
-    if (!createFolder(path.c_str())) {
-        return false;
-    }
-
-    path = rootFolder + "/web/html/js";
-    if (!createFolder(path.c_str())) {
-        return false;
-    }
-
-    path = rootFolder + "/web/html/css";
-    if (!createFolder(path.c_str())) {
-        return false;
-    }
-
-    return true;
-}

@@ -6,6 +6,17 @@
     "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
     "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
     "vscpkey" : "/var/vscp/vscp.key",
+    "logging" : {
+        "file-enable-log": true,
+        "file-log-level" : "info",
+        "file-pattern" : "[vscp] [%^%l%$] %v",
+        "file-path" : "/tmp/vscpd.log",
+        "file-max-size" : 5242880,
+        "file-max-files" : 7,
+        "console-enable-log": true,
+        "console-log-level" : "trace",
+        "console-pattern" : "[vscp] [%^%l%$] %v"
+    },
 
     "mqtt" : {
         "host" : "192.168.1.7",

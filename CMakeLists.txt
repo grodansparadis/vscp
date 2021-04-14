@@ -85,7 +85,7 @@ option(USE_SSL "Use SSL" TRUE)
 ## --- C++11 build flags ---
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 # Build locations
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
@@ -228,12 +228,12 @@ if (WIN32)
         src/vscp/daemon/vscpd.cpp
         src/vscp/daemon/controlobject.h
         src/vscp/daemon/controlobject.cpp
+        src/vscp/daemon/devicethread.h
+        src/vscp/daemon/devicethread.cpp
+        src/vscp/daemon/devicelist.h
+        src/vscp/daemon/devicelist.cpp
         src/vscp/common/version.h
         src/vscp/common/vscp.h        
-        src/vscp/common/devicethread.h
-        src/vscp/common/devicethread.cpp
-        src/vscp/common/devicelist.h
-        src/vscp/common/devicelist.cpp
         src/vscp/common/vscpremotetcpif.h
         src/vscp/common/vscpremotetcpif.cpp
         src/vscp/common/vscpdatetime.h
@@ -282,12 +282,12 @@ else()
         src/vscp/daemon/vscpd.cpp
         src/vscp/daemon/controlobject.h
         src/vscp/daemon/controlobject.cpp
+        src/vscp/daemon/devicethread.h
+        src/vscp/daemon/devicethread.cpp
+        src/vscp/daemon/devicelist.h
+        src/vscp/daemon/devicelist.cpp
         src/vscp/common/version.h
         src/vscp/common/vscp.h
-        src/vscp/common/devicethread.h
-        src/vscp/common/devicethread.cpp
-        src/vscp/common/devicelist.h
-        src/vscp/common/devicelist.cpp
         src/vscp/common/vscpremotetcpif.h
         src/vscp/common/vscpremotetcpif.cpp
         src/vscp/common/vscpdatetime.h
