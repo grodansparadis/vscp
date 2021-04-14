@@ -30,6 +30,11 @@
 
 #define _POSIX
 
+#ifdef WIN32
+#include <stdAfx.h>
+#include <nb30.h>
+#endif
+
 #include <controlobject.h>
 
 #ifndef WIN32
@@ -86,6 +91,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include <strstream>
+
 
 #include <json.hpp>         // Needs C++11  -std=c++11
 #include <mustache.hpp>
@@ -764,7 +771,7 @@ CControlObject::init_mqtt()
     rv = mosquitto_loop_start(m_mosq);
     if (MOSQ_ERR_SUCCESS != rv) {
         mosquitto_disconnect(m_mosq);
-        return VSCP_ERROR_ERROR;
+        return false;
     }
 
     for (std::list<std::string>::const_iterator
@@ -829,13 +836,91 @@ CControlObject::init_mqtt()
     rv = mosquitto_publish(m_mosq,
                             NULL,
                             strTopic.c_str(),
-                            strPayload.length(),
+                            (int)strPayload.length(),
                             strPayload.c_str(),
                             m_mqtt_qos,
                             true);
 
     return true;                            
 }
+
+#ifdef WIN32
+
+#define CLOCK_REALTIME  0   // dummy
+
+static LARGE_INTEGER
+getFILETIMEoffset()
+{
+    SYSTEMTIME s;
+    FILETIME f;
+    LARGE_INTEGER t;
+
+    s.wYear = 1970;
+    s.wMonth = 1;
+    s.wDay = 1;
+    s.wHour = 0;
+    s.wMinute = 0;
+    s.wSecond = 0;
+    s.wMilliseconds = 0;
+    SystemTimeToFileTime(&s, &f);
+    t.QuadPart = f.dwHighDateTime;
+    t.QuadPart <<= 32;
+    t.QuadPart |= f.dwLowDateTime;
+    return (t);
+}
+
+static int
+clock_gettime(int X, struct timeval *tv)
+{
+    LARGE_INTEGER           t;
+    FILETIME                f;
+    double                  microseconds;
+    static LARGE_INTEGER    offset;
+    static double           frequencyToMicroseconds;
+    static int              initialized = 0;
+    static BOOL             usePerformanceCounter = 0;
+
+    if (!initialized) {
+        LARGE_INTEGER performanceFrequency;
+        initialized = 1;
+        usePerformanceCounter = QueryPerformanceFrequency(&performanceFrequency);
+        if (usePerformanceCounter) {
+            QueryPerformanceCounter(&offset);
+            frequencyToMicroseconds = (double)performanceFrequency.QuadPart / 1000000.;
+        } else {
+            offset = getFILETIMEoffset();
+            frequencyToMicroseconds = 10.;
+        }
+    }
+    if (usePerformanceCounter) QueryPerformanceCounter(&t);
+    else {
+        GetSystemTimeAsFileTime(&f);
+        t.QuadPart = f.dwHighDateTime;
+        t.QuadPart <<= 32;
+        t.QuadPart |= f.dwLowDateTime;
+    }
+
+    t.QuadPart -= offset.QuadPart;
+    microseconds = (double)t.QuadPart / frequencyToMicroseconds;
+    t.QuadPart = microseconds;
+    tv->tv_sec = t.QuadPart / 1000000;
+    tv->tv_usec = t.QuadPart % 1000000;
+    return (0);
+}
+
+static void usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
+
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // run - Program main loop
@@ -884,9 +969,13 @@ CControlObject::run(void)
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
 
+#ifdef WIN32
+    struct timeval now, old_now;
+#else
     struct timespec now, old_now;
+#endif    
     clock_gettime(CLOCK_REALTIME, &old_now);
-    old_now.tv_sec -= 60;  // Do first send right away
+    old_now.tv_sec -= 60;   // Do first send right away
 
     while (true) {
 
@@ -1026,7 +1115,7 @@ CControlObject::sendEvent(vscpEventEx *pex)
             rv = mosquitto_publish(m_mosq,
                                     NULL,
                                     strTopic.c_str(),
-                                    strPayload.length(),
+                                    (int)strPayload.length(),
                                     strPayload.c_str(),
                                     m_mqtt_qos,
                                     FALSE);
@@ -1133,8 +1222,12 @@ CControlObject::periodicEvents(void)
 
     memset(ex.data, 0, sizeof(ex.data));
     memcpy(ex.data,
-           m_strServerName.c_str(),
-           std::min((int)strlen(m_strServerName.c_str()), 64));
+            m_strServerName.c_str(),
+#ifdef WIN32
+            min((int)strlen(m_strServerName.c_str()), 64));
+#else
+            std::min((int)strlen(m_strServerName.c_str()), 64));
+#endif           
 
     if (!sendEvent(&ex)) {
          spdlog::get("logger")->error("Controlobject: Failed to send Class2 heartbeat");
@@ -1196,7 +1289,11 @@ CControlObject::periodicEvents(void)
     // Server name
     memcpy(ex.data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
             (const char*)m_strServerName.c_str(),
+#ifdef WIN32
+            min((int)strlen((const char*)m_strServerName.c_str()), 64));
+#else            
             std::min((int)strlen((const char*)m_strServerName.c_str()), 64));
+#endif            
 
     // Capabilities array
     getVscpCapabilities(ex.data);
@@ -1353,6 +1450,63 @@ CControlObject::stopDeviceWorkerThreads(void)
     return true;
 }
 
+
+// ----------------------------------------------------------------------------
+
+
+#ifdef WIN32
+static bool GetAdapterInfo(int nAdapterNum, std::string &sMAC)
+{
+    // Reset the LAN adapter so that we can begin querying it 
+    NCB Ncb;
+    memset(&Ncb, 0, sizeof(Ncb));
+    Ncb.ncb_command = NCBRESET;
+    Ncb.ncb_lana_num = nAdapterNum;
+    if (Netbios(&Ncb) != NRC_GOODRET) {
+        char acTemp[80];
+        std::ostrstream outs(acTemp, sizeof(acTemp));
+        outs << "error " << Ncb.ncb_retcode << " on reset" << std::ends;
+        sMAC = acTemp;
+        return false;
+    }
+    
+    // Prepare to get the adapter status block 
+    memset(&Ncb, 0, sizeof(Ncb));
+    Ncb.ncb_command = NCBASTAT;
+    Ncb.ncb_lana_num = nAdapterNum;
+    strcpy((char *) Ncb.ncb_callname, "*");
+    struct ASTAT {
+        ADAPTER_STATUS adapt;
+        NAME_BUFFER NameBuff[30];
+    } Adapter;
+    memset(&Adapter, 0, sizeof(Adapter));
+    Ncb.ncb_buffer = (unsigned char *)&Adapter;
+    Ncb.ncb_length = sizeof(Adapter);
+    
+    // Get the adapter's info and, if this works, return it in standard,
+    // colon-delimited form.
+    if (Netbios(&Ncb) == 0) {
+        char acMAC[18];
+        sprintf(acMAC, "%02X:%02X:%02X:%02X:%02X:%02X",
+                int (Adapter.adapt.adapter_address[0]),
+                int (Adapter.adapt.adapter_address[1]),
+                int (Adapter.adapt.adapter_address[2]),
+                int (Adapter.adapt.adapter_address[3]),
+                int (Adapter.adapt.adapter_address[4]),
+                int (Adapter.adapt.adapter_address[5]));
+        sMAC = acMAC;
+        return true;
+    }
+    else {
+        char acTemp[80];
+        std::ostrstream outs(acTemp, sizeof(acTemp));
+        outs << "error " << Ncb.ncb_retcode << " on ASTAT" << std::ends;
+        sMAC = acTemp;
+        return false;
+    }
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //  getMacAddress
 //
@@ -1361,57 +1515,71 @@ bool
 CControlObject::getMacAddress(cguid& guid)
 {
 #ifdef WIN32
-
+    // https://tangentsoft.net/wskfaq/examples/getmac-netbios.html
     bool rv = false;
-    NCB Ncb;
-    UCHAR uRetCode;
-    LANA_ENUM lenum;
-    int i;
+    std::string strMac;
+    if (!GetAdapterInfo(0, strMac)) {
+        return false;
+    }
 
-    // Clear the GUID
-    guid.clear();
+    // Construct MAC GUID
+    strMac = "FF:FF:FF:FF:FF:FF:FF:FE:" + strMac + ":00:00";
 
-    memset(&Ncb, 0, sizeof(Ncb));
-    Ncb.ncb_command = NCBENUM;
-    Ncb.ncb_buffer  = (UCHAR*)&lenum;
-    Ncb.ncb_length  = sizeof(lenum);
-    uRetCode        = Netbios(&Ncb);
-    // printf( "The NCBENUM return code is: 0x%x ", uRetCode );
 
-    for (i = 0; i < lenum.length; i++) {
-        memset(&Ncb, 0, sizeof(Ncb));
-        Ncb.ncb_command  = NCBRESET;
-        Ncb.ncb_lana_num = lenum.lana[i];
+    // NCB Ncb;
+    // UCHAR uRetCode;
+    // LANA_ENUM lenum;
+    // int i;
 
-        uRetCode = Netbios(&Ncb);
+    // // Clear the GUID
+    // guid.clear();
 
-        memset(&Ncb, 0, sizeof(Ncb));
-        Ncb.ncb_command  = NCBASTAT;
-        Ncb.ncb_lana_num = lenum.lana[i];
+    // memset(&Ncb, 0, sizeof(Ncb));
+    // Ncb.ncb_command = NCBENUM;
+    // Ncb.ncb_buffer  = (UCHAR*)&lenum;
+    // Ncb.ncb_length  = sizeof(lenum);
+    // uRetCode        = Netbios(&Ncb);
+    // // printf( "The NCBENUM return code is: 0x%x ", uRetCode );
 
-        strcpy((char*)Ncb.ncb_callname, "*               ");
-        Ncb.ncb_buffer = (unsigned char*)&Adapter;
-        Ncb.ncb_length = sizeof(Adapter);
+    // for (i = 0; i < lenum.length; i++) {
+    //     memset(&Ncb, 0, sizeof(Ncb));
+    //     Ncb.ncb_command  = NCBRESET;
+    //     Ncb.ncb_lana_num = lenum.lana[i];
 
-        uRetCode = Netbios(&Ncb);
+    //     uRetCode = Netbios(&Ncb);
 
-        if (uRetCode == 0) {
-            guid.setAt(0, 0xff);
-            guid.setAt(1, 0xff);
-            guid.setAt(2, 0xff);
-            guid.setAt(3, 0xff);
-            guid.setAt(4, 0xff);
-            guid.setAt(5, 0xff);
-            guid.setAt(6, 0xff);
-            guid.setAt(7, 0xfe);
-            guid.setAt(8, Adapter.adapt.adapter_address[0]);
-            guid.setAt(9, Adapter.adapt.adapter_address[1]);
-            guid.setAt(10, Adapter.adapt.adapter_address[2]);
-            guid.setAt(11, Adapter.adapt.adapter_address[3]);
-            guid.setAt(12, Adapter.adapt.adapter_address[4]);
-            guid.setAt(13, Adapter.adapt.adapter_address[5]);
-            guid.setAt(14, 0);
-            guid.setAt(15, 0);
+    //     memset(&Ncb, 0, sizeof(Ncb));
+    //     Ncb.ncb_command  = NCBASTAT;
+    //     Ncb.ncb_lana_num = lenum.lana[i];
+
+    //     strcpy((char*)Ncb.ncb_callname, "*               ");
+    //     struct ASTAT {
+    //         ADAPTER_STATUS adapt;
+    //         NAME_BUFFER NameBuff[30];
+    //     } Adapter;
+    //     memset(&Adapter, 0, sizeof(Adapter));
+    //     Ncb.ncb_buffer = (unsigned char*)&Adapter;
+    //     Ncb.ncb_length = sizeof(Adapter);
+
+    //     uRetCode = Netbios(&Ncb);
+
+    //     if (uRetCode == 0) {
+    //         guid.setAt(0, 0xff);
+    //         guid.setAt(1, 0xff);
+    //         guid.setAt(2, 0xff);
+    //         guid.setAt(3, 0xff);
+    //         guid.setAt(4, 0xff);
+    //         guid.setAt(5, 0xff);
+    //         guid.setAt(6, 0xff);
+    //         guid.setAt(7, 0xfe);
+    //         guid.setAt(8, Adapter.adapt.adapter_address[0]);
+    //         guid.setAt(9, Adapter.adapt.adapter_address[1]);
+    //         guid.setAt(10, Adapter.adapt.adapter_address[2]);
+    //         guid.setAt(11, Adapter.adapt.adapter_address[3]);
+    //         guid.setAt(12, Adapter.adapt.adapter_address[4]);
+    //         guid.setAt(13, Adapter.adapt.adapter_address[5]);
+    //         guid.setAt(14, 0);
+    //         guid.setAt(15, 0);
 #ifdef DEBUG__
             char buf[256];
             sprintf(buf,
@@ -1426,9 +1594,9 @@ CControlObject::getMacAddress(cguid& guid)
             std::string str = std::string(buf);
 #endif
 
-            rv = true;
-        }
-    }
+    //         rv = true;
+    //     }
+    // }
 
     return rv;
 

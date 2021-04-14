@@ -370,7 +370,8 @@ else()
  endif()   
 
 if(WIN32)
-    target_link_libraries(vscpd PRIVATE     
+    target_link_libraries(vscpd PRIVATE 
+        netapi32.lib                   
         PThreads4W::PThreads4W_CXXEXC
         OpenSSL::SSL 
         OpenSSL::Crypto

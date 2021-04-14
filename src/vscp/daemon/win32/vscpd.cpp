@@ -21,7 +21,9 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "StdAfx.h"
+#ifdef WIN32
+#include <stdAfx.h>
+#endif
 
 #include <iostream>
 #include <string>

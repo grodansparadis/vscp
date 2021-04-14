@@ -28,6 +28,10 @@
 
 #define _POSIX
 
+#ifdef WIN32
+#include <stdAfx.h>
+#endif
+
 #ifndef DWORD
 #define DWORD unsigned long
 #endif
@@ -37,13 +41,13 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #endif
 
 #include <dlfcn.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #include "devicethread.h"
 
@@ -241,7 +245,20 @@ static void mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
 // ----------------------------------------------------------------------------
 
 
+#ifdef WIN32
+static void usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
 
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread
@@ -641,7 +658,7 @@ deviceThread(void* pData)
         bool bActivity;
 
         // Get Driver Level
-        pDeviceItem->m_driverLevel = pDeviceItem->m_proc_CanalGetLevel(pDeviceItem->m_openHandle);
+        pDeviceItem->m_driverLevel = (uint8_t)pDeviceItem->m_proc_CanalGetLevel(pDeviceItem->m_openHandle);
 
         //  * * * Level I Driver * * *
 

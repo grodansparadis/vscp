@@ -27,6 +27,8 @@
 //
 
 #ifdef WIN32
+// For getopt
+#define __GNU_LIBRARY__
 #include <StdAfx.h>
 #endif
 
@@ -183,9 +185,11 @@ main(int argc, char** argv)
 
     console->info("Configfile = %s\n",
                     (const char*)strcfgfile.c_str());            
-
+#ifndef WIN32
     pid_t pid, sid;
+ #endif // WIN32   
 
+#ifndef WIN32
     if (!gbDontRunAsDaemon) {
 
         // Fork child
@@ -220,7 +224,9 @@ main(int argc, char** argv)
         dup2(0, 2);
 
     }  // gbDontRunAsDaemon
+#endif // WIN32    
 
+#ifndef WIN32
     // Write pid to file
     FILE* pFile;
     pFile = fopen("/var/run/vscpd.pid", "w");
@@ -232,7 +238,9 @@ main(int argc, char** argv)
         fprintf(pFile, "%u\n", sid);
         fclose(pFile);
     }
+#endif // WIN32   
 
+#ifndef WIN32
     // Change working directory to root folder
     if (chdir((const char*)rootFolder.c_str())) {
         console->error("Failed to change dir to rootdir.");      
@@ -276,6 +284,7 @@ main(int argc, char** argv)
     my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGHUP, &my_action, NULL);
+#endif // WIN32    
 
     // Create the control object
     gpobj = new CControlObject();
@@ -290,8 +299,10 @@ main(int argc, char** argv)
     console->info("Debugflags: 0x{0:x}", gpobj->m_debugFlags);
 
     if (!gpobj->init(strcfgfile, rootFolder)) {
-        console->critical("Can't initialize daemon. Exiting.\n");            
+        console->critical("Can't initialize daemon. Exiting.\n");  
+#ifndef WIN32                  
         unlink("/var/run/vscpd.pid");
+#endif        
         spdlog::drop_all();
         return FALSE;
     }
@@ -348,8 +359,10 @@ main(int argc, char** argv)
     console->debug("vscpd: run.");
 
     if (!gpobj->run()) {
-        console->critical("vscpd: Unable to start the vscpd application. Exiting.");           
+        console->critical("vscpd: Unable to start the vscpd application. Exiting."); 
+#ifndef WIN32                  
         unlink("/var/run/vscpd.pid");
+#endif        
         spdlog::drop_all();
         return FALSE;
     }
@@ -368,7 +381,9 @@ main(int argc, char** argv)
     delete gpobj;
 
     // Remove the pid file
+#ifndef WIN32    
     unlink("/var/run/vscp/vscpd.pid");
+#endif    
     gpobj = NULL;
 
     console->info("vscpd: Bye, bye.");
