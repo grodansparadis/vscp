@@ -48,7 +48,8 @@ jobs:
     - name: Install libssl-dev manually
       run: sudo apt-get install libssl-dev
 
-    - name: Install libspdlog-dev manually
+    # only dev version on older ubuntu    
+    - name: Install libspdlog manually
       run: sudo apt-get install libspdlog-dev 
 
     - name: Create Build Environment

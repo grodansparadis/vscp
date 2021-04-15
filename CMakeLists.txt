@@ -22,9 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# VSCP_PATH - set to path to local vscp repository. Default is "../vscp". Set with
-# -DVSCP_PATH="path"
-#
 
 cmake_minimum_required(VERSION 3.5)
 project(vscpd LANGUAGES CXX C)
