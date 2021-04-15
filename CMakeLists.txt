@@ -203,7 +203,7 @@ else()
     include(FindPahoMqttC)
 
     # Logger
-    find_package(spdlog CONFIG REQUIRED)
+    #find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 
@@ -341,6 +341,7 @@ if (WIN32)
                             ./src/common/third_party/spdlog
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
+                            ./src/common/third_party/spdlog-1.8.5/include
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -356,6 +357,7 @@ else()
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
+                            ./src/common/third_party/spdlog-1.8.5/include
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
@@ -390,7 +392,7 @@ else()
         ${MOSQUITTO_LIBRARIES}
         ${PAHO_MQTT_C_LIBRARIES}
         ${EXPAT_LIBRARIES}
-        spdlog::spdlog spdlog::spdlog_header_only
+#        spdlog::spdlog spdlog::spdlog_header_only
     )
 endif()
 
