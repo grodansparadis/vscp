@@ -26,7 +26,6 @@
 
 #include <list>
 
-#include <devicelist.h>
 #include <vscpdatetime.h>
 #include <guid.h>
 #include <userlist.h>
