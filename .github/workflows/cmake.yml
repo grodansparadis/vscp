@@ -8,11 +8,10 @@ env:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:  
+      matrix:
+        os: [ubuntu-18.04, ubuntu-latest]
 
     steps:
     # https://github.com/actions/checkout  
@@ -33,16 +32,15 @@ jobs:
     - name: Update before installing packages
       run: sudo apt-get update
 
-    - name: INstall support libssl
+    - name: Install libexpat-dev manually
+      run: sudo apt-get install libexpat-dev
+      
+    - name: Install support libssl
       run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
 
     # Will be replaced with paho
     - name: Install libmosuitto-dev manually
       run: sudo apt install libmosquitto-dev
-    
-    # not in Ubuntu 20.4  
-    # - name: Install libpaho-mqtt-dev manually
-    #   run: sudo apt install libpaho-mqtt-dev
 
     - name: Install libexpat-dev manually
       run: sudo apt install libexpat-dev
@@ -50,39 +48,25 @@ jobs:
     - name: Install libssl-dev manually
       run: sudo apt-get install libssl-dev
 
-    # - name: Create Build Environment
-    #   # Some projects don't allow in-source building, so create a separate build directory
-    #   # We'll use this as our working directory for all subsequent commands
-    #   run: cmake -E make_directory ${{github.workspace}}/build
+    - name: Create Build Environment
+      # Some projects don't allow in-source building, so create a separate build directory
+      # We'll use this as our working directory for all subsequent commands
+      run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure
-      run: ./configure --enable-debug
+    - name: Configure CMake
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DVSCP_PATH=vscp/
 
-    - name: build
-      run: make  
-
-    # - name: Configure CMake
-    #   # Use a bash shell so we can use the same syntax for environment variable
-    #   # access regardless of the host operating system
-    #   shell: bash
-    #   working-directory: ${{github.workspace}}/build
-    #   # Note the current convention is to use the -S and -B options here to specify source 
-    #   # and build directories, but this is only available with CMake 3.13 and higher.  
-    #   # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-    #   run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-
-    # - name: Build
-    #   working-directory: ${{github.workspace}}/build
-    #   shell: bash
-    #   # Execute the build.  You can specify a specific target with "--target <NAME>"
-    #   run: cmake --build . --config $BUILD_TYPE
-
-    # - name: Run Test
-    #   run: /home/runner/work/github_actions_gtest_example/github_actions_gtest_example/build/test/github_actions_gtest_example.test  
-
-    # - name: Test
-    #   working-directory: ${{github.workspace}}/build
-    #   shell: bash
-    #   # Execute tests defined by the CMake configuration.  
-    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #   run: ctest -C $BUILD_TYPE
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: |
+        make -j$(nproc)
+        make install DESTDIR=AppDir
