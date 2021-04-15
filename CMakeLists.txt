@@ -338,7 +338,6 @@ if (WIN32)
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/spdlog
                             ./src/common/third_party/nlohmann
                             ./src/common/third_party/civetweb-1.14/include
                             ./src/common/third_party/spdlog-1.8.5/include

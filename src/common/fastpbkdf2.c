@@ -1,6 +1,7 @@
 /*
  * fast-pbkdf2 - Optimal PBKDF2-HMAC calculation
  * Written in 2015 by Joseph Birr-Pixton <jpixton@gmail.com>
+ * https://github.com/ctz/fastpbkdf2
  *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the

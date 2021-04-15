@@ -73,7 +73,7 @@
 #include <spdlog/async.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 //#define DEBUG
 
@@ -250,7 +250,9 @@ main(int argc, char** argv)
                             errno);             
         }
 
-        return -1;
+        spdlog::drop_all(); 
+        spdlog::shutdown();
+        exit(EXIT_FAILURE);
     }
 
     struct sigaction my_action;
@@ -303,13 +305,11 @@ main(int argc, char** argv)
 #ifndef WIN32                  
         unlink("/var/run/vscpd.pid");
 #endif        
-        spdlog::drop_all();
-        return FALSE;
+        spdlog::drop_all(); 
+        spdlog::shutdown();
+        exit(EXIT_FAILURE);
     }
 
-    // auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    // console_sink->set_level(spdlog::level::warn);
-    // console_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
     spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");    
 
     // Console log
@@ -363,8 +363,9 @@ main(int argc, char** argv)
 #ifndef WIN32                  
         unlink("/var/run/vscpd.pid");
 #endif        
-        spdlog::drop_all();
-        return FALSE;
+        spdlog::drop_all(); 
+        spdlog::shutdown();
+        exit(EXIT_FAILURE);
     }
 
     // * * * CLEAN UP * * *
@@ -373,8 +374,9 @@ main(int argc, char** argv)
 
     if (!gpobj->cleanup()) {
         console->critical("vscpd: Unable to clean up the vscpd application.");        
-        spdlog::drop_all();    
-        return FALSE;
+        spdlog::drop_all(); 
+        spdlog::shutdown();    
+        exit(EXIT_FAILURE);
     }           
 
     console->debug("vscpd: Deleting the control object.");

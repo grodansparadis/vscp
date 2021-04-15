@@ -53,7 +53,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #else
-
+#include <strstream>
 #endif
 
 #include <errno.h>
@@ -91,7 +91,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <strstream>
 
 
 #include <json.hpp>         // Needs C++11  -std=c++11
