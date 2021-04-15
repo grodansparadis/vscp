@@ -402,10 +402,10 @@ install(TARGETS vscpd
         ${CMAKE_INSTALL_SBINDIR})
 
 # Default configuration file
-install(FILES resources/unix/vscpd.json     
+install(FILES resources/linux/vscpd.json     
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-install(FILES resources/unix/vscpd.json resources/vscp.key     
+install(FILES resources/linux/vscpd.json resources/vscp.key     
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
             PERMISSIONS OWNER_READ OWNER_WRITE)            
 install(FILES resources/README-certs      
