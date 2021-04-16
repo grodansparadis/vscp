@@ -179,7 +179,7 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 
 int VscpRemoteTcpIf::rcvloopRead(int timeout) 
 {
-    bool rv = false;
+    //bool rv = false;
     char buf[8192];
 
     memset(buf, 0, sizeof(buf));

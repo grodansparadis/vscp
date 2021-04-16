@@ -6880,7 +6880,7 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 
     if (size < nhexsize) {
         // Too big for the output array - truncate it        
-        size = nhexsize;
+        nhexsize = size;
     }
 
     if (slen % 2 == 1) {
