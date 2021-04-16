@@ -176,7 +176,8 @@ class CControlObject {
 
     /*!
         Read the encryption key from a safe location
-        @param path Path to file containg the +128 byte key
+        @param path Path to file containing the 256 byte key as a 
+            comma separated value list
         @return true on success, false on failure.
     */
     bool readEncryptionKey(const std::string& path);
@@ -221,7 +222,8 @@ class CControlObject {
     std::string m_rootFolder;
 
     // Secret key
-    uint8_t m_systemKey[32];
+    //uint8_t m_systemKey[32];
+    
 
     // VSCP encryption token
     std::string m_vscptoken;

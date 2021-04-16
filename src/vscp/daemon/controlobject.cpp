@@ -118,6 +118,9 @@ foo(const int i)
 
 #define XML_BUFF_SIZE 0xffff
 
+// From vscp.cpp (256 bytes)
+extern uint8_t __vscp_key;
+
 // Prototypes
 
 

@@ -6872,6 +6872,7 @@ vscp_byteArray2HexStr(char* to, const unsigned char* p, size_t len)
 size_t
 vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 {
+    char *localHexStr = hexstr;
     int slen = (int)strlen(hexstr);
     int i = 0, j = 0;
 
@@ -6880,12 +6881,13 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 
     if (size < nhexsize) {
         // Too big for the output array
-        return 0;
+        // truncate it        
+        size = nhexsize;
     }
 
     if (slen % 2 == 1) {
         // hex_str is an odd length, so assume an implicit "0" prefix
-        if (sscanf(&(hexstr[0]), "%1hhx", &(array[0])) != 1) {
+        if (sscanf(&(localHexStr[0]), "%1hhx", &(array[0])) != 1) {
             return 0;
         }
 
@@ -6893,7 +6895,7 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
     }
 
     for (; i < slen; i += 2, j++) {
-        if (sscanf(&(hexstr[i]), "%2hhx", &(array[j])) != 1) {
+        if (sscanf(&(localHexStr[i]), "%2hhx", &(array[j])) != 1) {
             return 0;
         }
     }
