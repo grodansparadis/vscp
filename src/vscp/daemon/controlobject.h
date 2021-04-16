@@ -226,7 +226,7 @@ class CControlObject {
     
 
     // VSCP encryption token
-    std::string m_vscptoken;
+    //std::string m_vscptoken;
 
     /*!
         User to run as for Unix

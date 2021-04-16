@@ -119,7 +119,7 @@ foo(const int i)
 #define XML_BUFF_SIZE 0xffff
 
 // From vscp.cpp (256 bytes)
-extern uint8_t __vscp_key;
+extern uint8_t *__vscp_key;
 
 // Prototypes
 
@@ -259,7 +259,7 @@ CControlObject::CControlObject()
 
     m_strServerName = "VSCP Daemon";
     m_rootFolder = "/var/lib/vscp/vscpd/";
-    m_vscptoken = "Carpe diem quam minimum credula postero";
+    
     m_pathClassTypeDefinitionDb = "/var/lib/vscp/vscpd/vscp_events.sqlite3";
 
     // Logging defaults
@@ -1723,20 +1723,22 @@ CControlObject::getIPAddress(cguid& guid)
 bool
 CControlObject::readEncryptionKey(const std::string& path)
 {
+    bool rv = true;
     try {
         std::ifstream in(path, std::ifstream::in);
         std::stringstream strStream;
         strStream << in.rdbuf();
-        m_vscptoken = strStream.str();
+        std::string hexstr = strStream.str();
+        rv = (256 == vscp_hexStr2ByteArray(__vscp_key, 256, hexstr.c_str()));
     }
     catch (...) {
         spdlog::get("logger")->error(
                 "[vscpl2drv-tcpipsrv] Failed to read encryption key file {}",
                 path.c_str());
-        return false;
+        rv = false;
     }
 
-    return true;
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
