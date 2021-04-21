@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-03-15 09:19:12.905292
+                        Generated: 2021-04-21 07:24:33.754745
 */
  
 #ifndef VSCP_TYPE_H
@@ -224,6 +224,8 @@
 #define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ     61  /* Radiation dose (equivalent) */
 #define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE 62 /* Radiation dose (exposure) */
 #define VSCP_TYPE_MEASUREMENT_POWER_FACTOR          63  /* Power factor */
+#define VSCP_TYPE_MEASUREMENT_REACTIVE_POWER        64  /* Reactive Power */
+#define VSCP_TYPE_MEASUREMENT_REACTIVE_ENERGY       65  /* Reactive Energy */
     
 /*  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
 #define VSCP_TYPE_MEASUREMENTX1_GENERAL             0   /* General event */
@@ -335,6 +337,7 @@
 #define VSCP_TYPE_INFORMATION_EXIT                  85  /* Exit */
 #define VSCP_TYPE_INFORMATION_INCREMENTED           86  /* Incremented */
 #define VSCP_TYPE_INFORMATION_DECREMENTED           87  /* Decremented */
+#define VSCP_TYPE_INFORMATION_PROXIMITY_DETECTED    88  /* Proximity detected */
     
 /*  CLASS1.CONTROL = 30  -  Control */
 #define VSCP_TYPE_CONTROL_GENERAL                   0   /* General event */
