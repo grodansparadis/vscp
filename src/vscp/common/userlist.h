@@ -281,7 +281,7 @@ class CUserItem
     // User rights
     uint64_t getUserRights(void) { return m_userRights; };
 
-    void setUserRights(const uint32_t rights) { m_userRights = rights; };
+    void setUserRights(const uint64_t rights) { m_userRights = rights; };
     std::string getUserRightsAsString(void);
 
     // --------------------------------
