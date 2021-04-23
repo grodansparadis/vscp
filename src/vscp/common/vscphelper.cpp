@@ -4641,14 +4641,7 @@ vscp_clearVSCPFilter(vscpEventFilter* pFilter)
     // Validate pointer
     if (NULL == pFilter) return;
 
-    pFilter->filter_priority = 0x00;
-    pFilter->mask_priority   = 0x00;
-    pFilter->filter_class    = 0x00;
-    pFilter->mask_class      = 0x00;
-    pFilter->filter_type     = 0x00;
-    pFilter->mask_type       = 0x00;
-    memset(pFilter->filter_GUID, 0x00, 16);
-    memset(pFilter->mask_GUID, 0x00, 16);
+    memset(pFilter,0, sizeof(vscpEventFilter));
 }
 
 //////////////////////////////////////////////////////////////////////////////

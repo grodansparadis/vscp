@@ -30,8 +30,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef WIN32
+#else
 #include <syslog.h>
 #include <unistd.h>
+#endif
+
 
 #include <canal_macro.h>
 #include <vscp.h>
@@ -336,7 +340,9 @@ CClientList::removeClient(CClientItem* pClientItem)
 {
     // Must be a valid pointer
     if (NULL == pClientItem) {
+#ifndef WIN32        
         syslog(LOG_ERR,"removeClient in clientlist but clinet obj is NULL");
+#endif        
         return false;
     }
      

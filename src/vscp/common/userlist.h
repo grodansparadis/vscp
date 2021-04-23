@@ -25,15 +25,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
+// user 
+// password
+//   hash: user:password
+//   
 
-#if !defined(USERLIST__INCLUDED_)
-#define USERLIST__INCLUDED_
-
-#include <iostream>
-#include <map>
+#if !defined(VSCPL2_USERLIST_H__INCLUDED_)
+#define VSCPL2_USERLIST_H__INCLUDED_
 
 #include <vscp.h>
 #include <vscphelper.h>
+
+#include <iostream>
+#include <map>
 
 // User rights bit array
 // "admin" has all rights.
@@ -80,16 +84,16 @@
 #define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFF    // Can do everything (and more)
 
 #define VSCP_USER_DEFAULT_RIGHTS                                               \
-    VSCP_USER_RIGHT_ALLOW_TCPIP |                                              \
-      VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
-      VSCP_USER_RIGHT_ALLOW_WEB |                                              \
-      VSCP_USER_RIGHT_ALLOW_REST |                                             \
-      VSCP_USER_RIGHT_ALLOW_UDP |                                              \
-      VSCP_USER_RIGHT_ALLOW_MQTT |                                             \
-      VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
-      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
-      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
-      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
+        VSCP_USER_RIGHT_ALLOW_TCPIP |                                              \
+        VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
+        VSCP_USER_RIGHT_ALLOW_WEB |                                              \
+        VSCP_USER_RIGHT_ALLOW_REST |                                             \
+        VSCP_USER_RIGHT_ALLOW_UDP |                                              \
+        VSCP_USER_RIGHT_ALLOW_MQTT |                                             \
+        VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
+        VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+        VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+        VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
 
 #define VSCP_DRIVER_DEFAULT_RIGHTS                                             \
       VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
@@ -186,7 +190,7 @@ class CUserItem
         connect.
 
         An Access Control List (ACL) allows restrictions to be put on the list
-        of IP addresses which have access to the web server. The ACL is a comma
+        of IP addresses which have access to the server. The ACL is a comma
         separated list of IP subnets, where each subnet is pre-pended by either
         a - or a + sign. A plus sign means allow, where a minus sign means deny.
         If a subnet mask is omitted, such as -1.2.3.4, this means to deny only
@@ -239,34 +243,6 @@ class CUserItem
     bool setAllowedRemotesFromString(const std::string& strConnect);
 
     /*!
-     * Save record to database
-     * @return true on success.
-     */
-    bool saveToDatabase(void);
-
-    /*!
-     * Read record to database
-     * @return true on success.
-     */
-    bool readBackIndexFromDatabase(void);
-
-    /*!
-     * Check if a user is with a specific userid is available in the db
-     * @param userid userid to look for
-     * @return true on success
-     */
-    static bool isUserInDB(const unsigned long userid);
-
-    /*!
-     * Check if a user is with a specific username is available in the db
-     * @param user username to look for.
-     * @param pid  Optional Pointer to integer that receives id for the record
-     * if the user is found.
-     * @return true on success
-     */
-    static bool isUserInDB(const std::string& user, long* pid = NULL);
-
-    /*!
         Check password for user
         @param password Password to check
         @return true If password is correct
@@ -276,15 +252,6 @@ class CUserItem
         return (getPassword() == password);
     };
 
-    /*!
-        Check combined password domain for user
-        @param passworddomain Password domain to check
-        @return true If password domain is correct
-    */
-    bool checkPasswordDomain(const std::string& md5password)
-    {
-        return (getPasswordDomain() == md5password);
-    };
 
     // * * * Getters/Setters * * *
 
@@ -301,17 +268,6 @@ class CUserItem
     void setPassword(const std::string& strPassword)
     {
         m_password = strPassword;
-    };
-
-    // PasswordDomain
-    std::string getPasswordDomain(void)
-    {
-        return vscp_lower(m_md5PasswordDomain);
-    };
-
-    void setPasswordDomain(const std::string& strPassword)
-    {
-        m_md5PasswordDomain = vscp_lower(strPassword);
     };
 
     // Full name
@@ -551,48 +507,35 @@ class CUserItem
     vscpEventFilter m_filterVSCP;
 };
 
+
+// ----------------------------------------------------------------------------
+
+
 class CUserList
 {
   public:
     /// Constructor
-    CUserList(void);
+    CUserList();
 
     /// Destructor
-    virtual ~CUserList(void);
+    virtual ~CUserList(void);     
 
     /*!
-     * Load users from database
+     * Load users from JSON file on disc
+     * @param path Path to file containing user information
+     * @param key Key of 256 bits to unlock password
      * @return true on success
      */
-    bool loadUsers(void);
-
-    /*!
-     * Add the super (admin) user. This can only be the user setup in the
-     * configuration file..
-     * @param user Username for user.
-     * @param password Password.
-     * @param strDomain Authentication domain
-     * @param allowedRemotes of allowed remote locations from which the
-     *          super user is allowed to connect to this system. If empty
-     *          the super user can connect form all remote locations.
-     * @param bFlags
-       @return true on success. false on failure.
-     */
-    bool addSuperUser(const std::string& user,
-                      const std::string& password,
-                      const std::string& strDomain,
-                      const std::string& allowedRemotes = "",
-                      uint32_t bFlags                   = 0);
+    bool loadUsersFromFile(const std::string& path);
 
     /*!
         Add a user to the in memory list. Must saved to database to make
        persistent. The configuration set username is not a valid username.
         @param user Username for user.
-        @param password Password.
+        @param password Password (encrypted:iv)
         @param fullname Fullname for user.
         @param strNote An arbitrary note about the user
-        @param strDomain Authentication domain
-        @param Pointer to a VSCP filter associated with this user.
+        @param pFilter to a VSCP filter associated with this user.
         @param userRights list with user rights on the form
        right1,right2,right3.... admin - all rights user - standard user rights
                     or an unsigned long value
@@ -600,30 +543,24 @@ class CUserList
        connect. Empty list is no restrictions.
         @param allowedEvents List with allowed events that a remote user is
        allowed to send.
-        @param bSystemUser If true this user is a user that should not be saved
-       to the DB
         @return true on success. false on failure.
     */
     bool addUser(const std::string& user,
                  const std::string& password,
                  const std::string& fullname,
                  const std::string& strNote,
-                 const std::string& strDomain,
                  const vscpEventFilter* pFilter    = NULL,
                  const std::string& userRights     = "",
                  const std::string& allowedRemotes = "",
-                 const std::string& allowedEvents  = "",
-                 uint32_t bFlags                   = 0);
+                 const std::string& allowedEvents  = "");
 
     /*!
      * Add user from comma separated string data
      * @param strUser Comma separated list with user information.
-     *      name;password;fullname;filtermask;rights;remotes;events;note
-     * @param strDomain Authentication domain
+     *      name;password;fullname;filter;mask;rights;remotes;events;note
      * @return true on success. false on failure.
      */
     bool addUser(const std::string& strUser,
-                 const std::string& strDomain,
                  bool bUnpackNote = false);
 
     /*!
@@ -666,15 +603,6 @@ class CUserList
     */
     CUserItem* validateUser(const std::string& user,
                             const std::string& password);
-
-    /*!
-        Validate a username using the user domain. (WEB/WEBSOCKETS)
-        @param user Username to test.
-        @param md5password MD5(user;domain;password)
-        @return Pointer to useritem if valid, NULL if not.
-    */
-    CUserItem* validateUserDomain(const std::string& user,
-                                  const std::string& md5password);
 
     /*!
      * Get number of users on the system
@@ -729,7 +657,7 @@ class CUserList
 
   protected:
     /*!
-        hash with user items
+        hash list with user items
     */
     std::map<std::string, CUserItem*> m_userhashmap;
 
@@ -739,7 +667,9 @@ class CUserList
     std::map<std::string, CGroupItem*> m_grouphashmap;
 
   private:
-    unsigned short m_cntLocaluser; // Counter for local user id's
+
+    // Counter for user id's
+    unsigned short m_cntUsers; 
 };
 
 #endif
