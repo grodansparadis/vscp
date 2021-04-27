@@ -45,26 +45,26 @@
 // "driver" can send and receive events and log in to tcp/ip through local host
 
 // Rights nibble 7
-#define VSCP_USER_RIGHT_ALLOW_TEST      0x10000000
-#define VSCP_USER_RIGHT_ALLOW_INTERFACE 0x20000000
-#define VSCP_USER_RIGHT_ALLOW_RESTART   0x40000000
-#define VSCP_USER_RIGHT_ALLOW_SHUTDOWN  0x80000000
+#define VSCP_USER_RIGHT_ALLOW_TEST          0x0000000010000000
+#define VSCP_USER_RIGHT_ALLOW_INTERFACE     0x0000000020000000
+#define VSCP_USER_RIGHT_ALLOW_RESTART       0x0000000040000000
+#define VSCP_USER_RIGHT_ALLOW_SHUTDOWN      0x0000000080000000
 
 // Rights nibble 6
-#define VSCP_USER_RIGHT_ALLOW_SETFILTER 0x04000000
-#define VSCP_USER_RIGHT_ALLOW_SETGUID   0x08000000
+#define VSCP_USER_RIGHT_ALLOW_SETFILTER     0x0000000004000000
+#define VSCP_USER_RIGHT_ALLOW_SETGUID       0x0000000008000000
 
 // Rights nibble 5
-#define VSCP_USER_RIGHT_ALLOW_RCV_EVENT     0x00100000  // Allowed to receive events
+#define VSCP_USER_RIGHT_ALLOW_RCV_EVENT     0x0000000000100000  // Allowed to receive events
 
 // Rights nibble 4
-#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT    0x00010000  // Allowed to send events
+#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT    0x0000000000010000  // Allowed to send events
 #define VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT                                \
-    0x00020000 // Allowed to send Level I protocol events
+    0x0000000000020000 // Allowed to send Level I protocol events
 #define VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT                                \
-    0x00040000 // Allowed to send Level 2 protocol events
+    0x0000000000040000 // Allowed to send Level 2 protocol events
 #define VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT                                   \
-    0x00080000 // Allowed to send HLO event(s)
+    0x0000000000080000 // Allowed to send HLO event(s)
 
 // Rights nibble 3
 
@@ -73,26 +73,26 @@
 
 
 // Rights nibble 0/1
-#define VSCP_USER_RIGHT_ALLOW_TCPIP     0x00000001
-#define VSCP_USER_RIGHT_ALLOW_WEBSOCKET 0x00000002  // ws1/ws2
-#define VSCP_USER_RIGHT_ALLOW_WEB       0x00000004  // Web interface
-#define VSCP_USER_RIGHT_ALLOW_REST      0x00000008  // REST
-#define VSCP_USER_RIGHT_ALLOW_UDP       0x00000010  // UDP clienty
-#define VSCP_USER_RIGHT_ALLOW_MQTT      0x00000020  // MQTT
+#define VSCP_USER_RIGHT_ALLOW_TCPIP      0x0000000000000001
+#define VSCP_USER_RIGHT_ALLOW_WEBSOCKETS 0x0000000000000002  // ws1/ws2
+#define VSCP_USER_RIGHT_ALLOW_WEB        0x0000000000000004  // Web interface
+#define VSCP_USER_RIGHT_ALLOW_REST       0x0000000000000008  // REST
+#define VSCP_USER_RIGHT_ALLOW_UDP        0x0000000000000010  // UDP clienty
+#define VSCP_USER_RIGHT_ALLOW_MQTT       0x0000000000000020  // MQTT
 
 // Default user privilege
-#define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFF    // Can do everything (and more)
+#define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFFFFFFFFFF    // Can do everything (and more)
 
 #define VSCP_USER_DEFAULT_RIGHTS                                               \
-        VSCP_USER_RIGHT_ALLOW_TCPIP |                                              \
-        VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
-        VSCP_USER_RIGHT_ALLOW_WEB |                                              \
-        VSCP_USER_RIGHT_ALLOW_REST |                                             \
-        VSCP_USER_RIGHT_ALLOW_UDP |                                              \
-        VSCP_USER_RIGHT_ALLOW_MQTT |                                             \
-        VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
-        VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
-        VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+        VSCP_USER_RIGHT_ALLOW_TCPIP |                                          \
+        VSCP_USER_RIGHT_ALLOW_WEBSOCKETS |                                     \
+        VSCP_USER_RIGHT_ALLOW_WEB |                                            \
+        VSCP_USER_RIGHT_ALLOW_REST |                                           \
+        VSCP_USER_RIGHT_ALLOW_UDP |                                            \
+        VSCP_USER_RIGHT_ALLOW_MQTT |                                           \
+        VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                     \
+        VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                      \
+        VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                              \
         VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
 
 #define VSCP_DRIVER_DEFAULT_RIGHTS                                             \
@@ -102,7 +102,7 @@
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT
 
-#define VSCP_TCP_DEFAULT_RIGHTS                                                \
+#define VSCP_TCPIP_DEFAULT_RIGHTS                                              \
       VSCP_USER_RIGHT_ALLOW_TCPIP |                                            \
       VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
@@ -110,8 +110,8 @@
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT 
 
-#define VSCP_WEBSOCKET_DEFAULT_RIGHTS                                          \
-      VSCP_USER_RIGHT_ALLOW_WEBSOCKET |                                        \
+#define VSCP_WEBSOCKETS_DEFAULT_RIGHTS                                         \
+      VSCP_USER_RIGHT_ALLOW_WEBSOCKETS |                                       \
       VSCP_USER_RIGHT_ALLOW_SEND_EVENT |                                       \
       VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
       VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
@@ -150,12 +150,16 @@
       VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
       VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT
 
-#define VSCP_ADD_USER_UNINITIALISED -1
+#define VSCP_ADD_USER_UNINITIALISED     -1
 
-#define USER_PRIVILEGE_MASK  0x0f
-#define USER_PRIVILEGE_BYTES 8
+#define USER_PRIVILEGE_MASK             0x0f
+#define USER_PRIVILEGE_BYTES            8
 
-#define USER_ID_ADMIN 0x00 // The one and only admin user
+#define USER_ID_ADMIN                   0x00 // The one and only admin user
+
+
+// ----------------------------------------------------------------------------
+
 
 class CGroupItem
 {
@@ -169,6 +173,14 @@ class CGroupItem
 
   private:
 };
+
+
+
+
+// ----------------------------------------------------------------------------
+
+
+
 
 class CUserItem
 {
@@ -224,14 +236,38 @@ class CUserItem
                                   const uint32_t vscp_type);
 
     /*!
-     * Set user rights from a comma separated string. The string can have
+     * Add user rights from a comma separated string. The string can have
      * up to eight comma separated bit field octets.
      *
      * As an alternative one can use mnemonics
      *
-     * admin    - user get full access.
-     * user     - user get standard user rights.
-     * driver   - user get standard driver rights.
+     * admin           - User get full access.
+     * user            - User get standard user rights.
+     * driver          - User get standard driver rights.
+     * web             - User get web access.
+     * rest            - User get rest access.
+     * tcp             - User get tcp/ip access.
+     * websockets      - User get websocket access.
+     * mqtt            - User get mqtt access.
+     * udp             - User get UDP access.
+     * send-events     - User can send events.
+     * receive-events  - User can receive events.
+     * l1ctrl-events   - User can send level I control events (type=0)
+     * l2ctrl-events   - User can send level II control events (type=1024)
+     * hlo-events      - User can send HLO events.
+     * set-filter      - User can set filter(s).
+     * set-guid        - User can set interface GUID.
+     * shutdown        - User can do "shutdown".
+     * restart         - User can do "restart".
+     * interface       - User can do "interface list/..."
+     * test            - User can do "test".
+     * 
+     */
+    bool addUserRightsFromString(const std::string &strRights);
+
+    /*!
+     * Set user rights from a comma separated string with right
+     * mnemonics (see addUserRightsFromString) or bit values
      */
     bool setUserRightsFromString(const std::string& strRights);
 
@@ -245,7 +281,7 @@ class CUserItem
     /*!
         Check password for user
         @param password Password to check
-        @return true If password is correct
+        @return true ff password is correct
     */
     bool checkPassword(const std::string& password)
     {
@@ -263,12 +299,37 @@ class CUserItem
     std::string getUserName(void) { return m_user; };
     void setUserName(const std::string& strUser) { m_user = strUser; };
 
-    // Password
-    std::string getPassword(void) { return m_password; };
-    void setPassword(const std::string& strPassword)
-    {
-        m_password = strPassword;
-    };
+    /*! 
+        Get Password
+        @return Return password hash on hex form (iv(16);pw(32))
+    */
+    std::string getPassword(void);
+
+    /*!
+        Set password
+        Set password. It is hashed with vscp_makePasswordHash
+        over "username:passpword" 
+        @param password Clear text password to set
+        @return true on success, false on failure.
+    */
+    bool setPassword(const std::string& strPassword);
+
+    /*!
+        Set (already) hashed password. Typically used
+        when loading user data from file. The hash should
+        be done over "user:password"
+        @param password on (iv(16);pw(32)) hex form
+        @return true on success, false on failure.
+    */
+    void setHashedPassword(const std::string& strPassword)
+            { m_password = strPassword; };
+
+    /*!
+        Validate user password
+        @param password Clear text password to validate
+        @return true if user is a valied user
+    */
+    bool validateUser(const std::string &password);            
 
     // Full name
     std::string getFullname(void) { return m_fullName; };
@@ -294,6 +355,15 @@ class CUserItem
     void clearAllowedEventList(void) { m_listAllowedEvents.clear(); };
 
     /*!
+        Set allowed event
+
+        @param n Ordinal for event.
+        @param event Allowed event if success.
+        @return True on success, false on failure
+    */
+    bool setAllowedEvent(size_t n, const std::string& strEvent);
+
+    /*!
         Add one allowed event
         @param strEvent Event to add on the form "class:type" where
         any of class/type can be a wildcard '*'
@@ -308,15 +378,6 @@ class CUserItem
         @return True on success, false on failure
     */
     bool getAllowedEvent(size_t n, std::string& event);
-
-    /*!
-        Set allowed event
-
-        @param n Ordinal for event.
-        @param event Allowed event if success.
-        @return True on success, false on failure
-    */
-    bool setAllowedEvent(size_t n, std::string& event);
 
     /*!
         Get all allowed events as a comma separated string
@@ -461,6 +522,7 @@ class CUserItem
     bool getAsMap(std::map<std::string, std::string>& mapUser);
 
   protected:
+  
     // System assigned ID for user (-1 -  for system users (not in DB), 0 for
     // admin user )
     long m_userID;
@@ -468,7 +530,10 @@ class CUserItem
     /// Username
     std::string m_user;
 
-    /// Password
+    /*!
+        Password (iv(16);pw(32))
+            vscp_makePasswordHash(pw, password, NULL);
+     */
     std::string m_password;
 
     /// MD5 of user:domain:password (h1)

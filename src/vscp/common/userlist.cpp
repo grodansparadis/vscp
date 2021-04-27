@@ -81,7 +81,8 @@ void vscp_md5(char *digest, const unsigned char *buf, size_t len);
 // Constructor
 //
 
-CUserItem::CUserItem(void) {
+CUserItem::CUserItem(void) 
+{
   m_userID = VSCP_ADD_USER_UNINITIALISED;
 
   // Accept all events
@@ -95,16 +96,57 @@ CUserItem::CUserItem(void) {
 // Destructor
 //
 
-CUserItem::~CUserItem(void) {
+CUserItem::~CUserItem(void) 
+{
   m_listAllowedRemotes.clear();
   m_listAllowedEvents.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setPassword
+//
+
+bool CUserItem::setPassword(const std::string& strPassword)
+{
+  std::string result;
+  std::string combined = m_user + ":" + strPassword;
+  if (!vscp_makePasswordHash(result, combined)) {
+    return false;
+  }
+  m_password = result;
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getPassword
+//
+
+std::string CUserItem::getPassword(void) 
+{ 
+  return m_password; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// validateUser
+//
+
+bool CUserItem::validateUser(const std::string &password) 
+{
+  std::string result;
+  std::string combined = m_user + ":" + password;
+  if (!vscp_makePasswordHash(result, combined)) {
+    return false;
+  } 
+
+  return  vscp_isPasswordValid(m_password, password);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // fixName
 //
 
-void CUserItem::fixName(void) {
+void CUserItem::fixName(void) 
+{
   vscp_trim(m_user);
 
   // Works only for ASCII names. Should be fixed so
@@ -112,6 +154,7 @@ void CUserItem::fixName(void) {
   for (size_t i = 0; i < m_user.length(); i++) {
     switch ((const char)m_user[i]) {
     case ';':
+    case ':':
     case '\'':
     case '\"':
     case ',':
@@ -128,7 +171,8 @@ void CUserItem::fixName(void) {
 // name;password;fullname;filtermask;rights;remotes;events;note
 //
 
-bool CUserItem::setFromString(const std::string &userSettings) {
+bool CUserItem::setFromString(const std::string &userSettings) 
+{
   std::string strToken;
   std::deque<std::string> tokens;
   vscp_split(tokens, userSettings, ";");
@@ -230,7 +274,8 @@ bool CUserItem::setFromString(const std::string &userSettings) {
 // userid;name;password;fullname;filter;mask;rights;remotes;events;note
 //
 
-bool CUserItem::getAsString(std::string &strUser) {
+bool CUserItem::getAsString(std::string &strUser) 
+{
   std::string str;
   strUser.clear();
 
@@ -272,7 +317,8 @@ bool CUserItem::getAsString(std::string &strUser) {
 // userid;name;password;fullname;filter;mask;rights;remotes;events;note
 //
 
-bool CUserItem::getAsMap(std::map<std::string, std::string> &mapUser) {
+bool CUserItem::getAsMap(std::map<std::string, std::string> &mapUser) 
+{
   std::string str, wstr;
 
   mapUser["userid"] = vscp_str_format("%ld;", getUserID());
@@ -304,14 +350,13 @@ bool CUserItem::getAsMap(std::map<std::string, std::string> &mapUser) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setUserRightsFromString
+// addUserRightsFromString
 //
 
-bool CUserItem::setUserRightsFromString(const std::string &strRights) {
+bool CUserItem::addUserRightsFromString(const std::string &strRights) 
+{
   // Privileges
   if (strRights.length()) {
-
-    m_userRights = 0;
 
     std::deque<std::string> tokens;
     vscp_split(tokens, strRights, "/");
@@ -324,49 +369,73 @@ bool CUserItem::setUserRightsFromString(const std::string &strRights) {
       if (0 == strcasecmp(str.c_str(), "admin")) {
         // All rights
         m_userRights |= VSCP_ADMIN_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "user")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "user")) {
         // A standard user
         m_userRights |= VSCP_USER_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "web")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "web")) {
         // A standard driver
         m_userRights |= VSCP_WEB_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "rest")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "rest")) {
         // A standard driver
         m_userRights |= VSCP_REST_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "tcp")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "tcp")) {
         // A standard driver
-        m_userRights |= VSCP_TCP_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "websocket")) {
+        m_userRights |= VSCP_TCPIP_DEFAULT_RIGHTS;
+      } 
+      else if (0 == strcasecmp(str.c_str(), "websockets")) {
         // A standard driver
-        m_userRights |= VSCP_WEBSOCKET_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "mqtt")) {
+        m_userRights |= VSCP_WEBSOCKETS_DEFAULT_RIGHTS;
+      } 
+      else if (0 == strcasecmp(str.c_str(), "mqtt")) {
         // A standard driver
         m_userRights |= VSCP_MQTT_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "udp")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "udp")) {
         // A standard driver
         m_userRights |= VSCP_UDP_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "driver")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "driver")) {
         // A standard driver
         m_userRights |= VSCP_DRIVER_DEFAULT_RIGHTS;
-      } else if (0 == strcasecmp(str.c_str(), "send-events")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "send-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_EVENT;
-      } else if (0 == strcasecmp(str.c_str(), "receive-events")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "receive-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_RCV_EVENT;
-      } else if (0 == strcasecmp(str.c_str(), "l1ctrl-events")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "l1ctrl-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT;
-      } else if (0 == strcasecmp(str.c_str(), "l2ctrl-events")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "l2ctrl-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT;
-      } else if (0 == strcasecmp(str.c_str(), "hlo-events")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "hlo-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT;
-      } else if (0 == strcasecmp(str.c_str(), "shutdown")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "set-filter")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_SETFILTER;
+      } 
+      else if (0 == strcasecmp(str.c_str(), "set-guid")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_SETGUID;
+      } 
+      else if (0 == strcasecmp(str.c_str(), "shutdown")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SHUTDOWN;
-      } else if (0 == strcasecmp(str.c_str(), "restart")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "restart")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_RESTART;
-      } else if (0 == strcasecmp(str.c_str(), "interface")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "interface")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_INTERFACE;
-      } else if (0 == strcasecmp(str.c_str(), "test")) {
+      } 
+      else if (0 == strcasecmp(str.c_str(), "test")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_TEST;
-      } else {
+      } 
+      else {
         // Numerical
         uint32_t val = vscp_readStringValue(str);
         m_userRights |= val;
@@ -378,10 +447,21 @@ bool CUserItem::setUserRightsFromString(const std::string &strRights) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setUserRightsFromString
+//
+
+bool CUserItem::setUserRightsFromString(const std::string &strRights) 
+{
+  m_userRights = 0;
+  return addUserRightsFromString(strRights);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getAllowedEvent
 //
 
-bool CUserItem::getAllowedEvent(size_t n, std::string &event) {
+bool CUserItem::getAllowedEvent(size_t n, std::string &event) 
+{
   if (!m_listAllowedEvents.size()) {
     return false;
   }
@@ -398,7 +478,8 @@ bool CUserItem::getAllowedEvent(size_t n, std::string &event) {
 // setAllowedEvent
 //
 
-bool CUserItem::setAllowedEvent(size_t n, std::string &event) {
+bool CUserItem::setAllowedEvent(size_t n, const std::string &strEvent) 
+{
   if (!m_listAllowedEvents.size()) {
     return false;
   }
@@ -407,22 +488,64 @@ bool CUserItem::setAllowedEvent(size_t n, std::string &event) {
     return false;
   }
 
-  m_listAllowedEvents[n] = event;
-  return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// addAllowedEvent
-//
-
-bool CUserItem::addAllowedEvent(const std::string &strEvent) {
   std::string str = strEvent;
   uint16_t vscp_class = 0;
   uint16_t vscp_type = 0;
 
   vscp_trim(str);
 
-  // We want to store in standard for "%04X:%04X" so we
+  // We want to store in standard form "%04X:%04X" so we
+  // need to extract the values or wildcards
+  if ("*:*" == str) {
+    m_listAllowedEvents[n] = str;
+    return true;
+  }
+
+  // Left wildcard
+  if ('*' == strEvent[0]) {
+    str = vscp_str_right(str, str.length() - 2);
+    vscp_type = vscp_readStringValue(str);
+    str = vscp_str_format("*:%04X", vscp_type);
+    m_listAllowedEvents[n] = str;
+    return true;
+  }
+
+  // Right wildcard
+  if ('*' == str[str.length() - 1]) {
+    str = vscp_str_left(str, str.length() - 2);
+    vscp_class = vscp_readStringValue(str);
+    str = vscp_str_format("%04X:*", vscp_class);
+    m_listAllowedEvents[n] = str;
+    return true;
+  }
+
+  // class:type
+  vscp_class = vscp_readStringValue(str);
+  size_t pos;
+  if (std::string::npos != (pos = str.find(':'))) {
+    str = vscp_str_right(str, str.length() - pos - 1);
+    vscp_type = vscp_readStringValue(str);
+    str = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
+    m_listAllowedEvents[n] = str;
+    return true;
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addAllowedEvent
+//
+
+bool CUserItem::addAllowedEvent(const std::string &strEvent) 
+{
+  std::string str = strEvent;
+  uint16_t vscp_class = 0;
+  uint16_t vscp_type = 0;
+
+  vscp_trim(str);
+
+  // We want to store in standard form "%04X:%04X" so we
   // need to extract the values or wildcards
   if ("*:*" == str) {
     m_listAllowedEvents.push_back(str);
@@ -466,7 +589,8 @@ bool CUserItem::addAllowedEvent(const std::string &strEvent) {
 //
 
 bool CUserItem::setAllowedEventsFromString(const std::string &strEvents,
-                                           bool bClear) {
+                                           bool bClear) 
+{
   std::string str;
 
   // Privileges
@@ -495,7 +619,8 @@ bool CUserItem::setAllowedEventsFromString(const std::string &strEvents,
 // getAllowedEventsAsString
 //
 
-std::string CUserItem::getAllowedEventsAsString(void) {
+std::string CUserItem::getAllowedEventsAsString(void) 
+{
   std::string strAllowedEvents;
 
   for (size_t i = 0; i < m_listAllowedEvents.size(); i++) {
@@ -514,7 +639,8 @@ std::string CUserItem::getAllowedEventsAsString(void) {
 // setAllowedRemotesFromString
 //
 
-bool CUserItem::setAllowedRemotesFromString(const std::string &strConnect) {
+bool CUserItem::setAllowedRemotesFromString(const std::string &strConnect) 
+{
   // Privileges
   if (strConnect.length()) {
 
@@ -538,7 +664,8 @@ bool CUserItem::setAllowedRemotesFromString(const std::string &strConnect) {
 // getAllowedRemotesAsString
 //
 
-std::string CUserItem::getAllowedRemotesAsString(void) {
+std::string CUserItem::getAllowedRemotesAsString(void) 
+{
   size_t i;
   std::string strAllowedRemotes;
 
@@ -558,7 +685,8 @@ std::string CUserItem::getAllowedRemotesAsString(void) {
 // getAllowedRemote
 //
 
-bool CUserItem::getAllowedRemote(size_t n, std::string &remote) {
+bool CUserItem::getAllowedRemote(size_t n, std::string &remote) 
+{
   if (!m_listAllowedRemotes.size()) {
     return false;
   }
@@ -575,7 +703,8 @@ bool CUserItem::getAllowedRemote(size_t n, std::string &remote) {
 // setAllowedRemote
 //
 
-bool CUserItem::setAllowedRemote(size_t n, std::string &remote) {
+bool CUserItem::setAllowedRemote(size_t n, std::string &remote) 
+{
   if (!m_listAllowedRemotes.size()) {
     return false;
   }
@@ -593,7 +722,8 @@ bool CUserItem::setAllowedRemote(size_t n, std::string &remote) {
 // getUserRightsAsString
 //
 
-std::string CUserItem::getUserRightsAsString(void) {
+std::string CUserItem::getUserRightsAsString(void) 
+{
   std::string strRights;
 
   for (int i = 0; i < 32; i++) {
@@ -609,7 +739,8 @@ std::string CUserItem::getUserRightsAsString(void) {
 //
 //
 
-int CUserItem::isAllowedToConnect(uint32_t remote_ip) {
+int CUserItem::isAllowedToConnect(uint32_t remote_ip) 
+{
   int allowed = '+';
   int flag;
   uint32_t net, mask;
@@ -641,9 +772,44 @@ int CUserItem::isAllowedToConnect(uint32_t remote_ip) {
 //
 
 bool CUserItem::isUserAllowedToSendEvent(const uint32_t vscp_class,
-                                         const uint32_t vscp_type) {
+                                         const uint32_t vscp_type) 
+{
   unsigned int i;
   std::string str;
+
+  // User must be allowed to send events
+  if (!(VSCP_USER_RIGHT_ALLOW_SEND_EVENT & m_userRights)) {
+    spdlog::error("userlist: [isUserAllowedToSendEvent] User not allowed to send events.");
+    return false;
+  }
+
+  // Must be allowed to send Level I protocol events
+  if ( ( VSCP_CLASS1_PROTOCOL == vscp_class) && 
+       !(VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT & m_userRights)) {
+      spdlog::debug("userlist: [isUserAllowedToSendEvent] User not allowed to send level I protocol events.");         
+    return false;         
+  }
+
+  // Must be allowed to send Level II protocol events
+  if ( ( VSCP_CLASS2_LEVEL1_PROTOCOL == vscp_class) && 
+       !(VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT & m_userRights)) {
+      spdlog::debug("userlist: [isUserAllowedToSendEvent] User not allowed to send level II protocol events.");         
+    return false;         
+  }
+
+  // Must be allowed to send Level I protocol events
+  if ( ( VSCP_CLASS2_PROTOCOL == vscp_class) && 
+       !(VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT & m_userRights)) {
+      spdlog::debug("userlist: [isUserAllowedToSendEvent] User not allowed to send level I protocol events.");         
+    return false;         
+  }
+
+  // Must be allowed to send HLO events
+  if ( ( VSCP_CLASS2_HLO == vscp_class) && 
+       !(VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT & m_userRights)) {
+      spdlog::debug("userlist: [isUserAllowedToSendEvent] User not allowed to send HLO events.");         
+    return false;         
+  }
 
   // If empty all events allowed
   if (m_listAllowedEvents.empty())
@@ -656,12 +822,6 @@ bool CUserItem::isUserAllowedToSendEvent(const uint32_t vscp_class,
       return true;
   }
 
-  str = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
-  for (i = 0; i < m_listAllowedEvents.size(); i++) {
-    if (m_listAllowedEvents[i] == str)
-      return true;
-  }
-
   // test wildcard class.*
   str = vscp_str_format("%04X:*", vscp_class);
   for (i = 0; i < m_listAllowedEvents.size(); i++) {
@@ -669,15 +829,30 @@ bool CUserItem::isUserAllowedToSendEvent(const uint32_t vscp_class,
       return true;
   }
 
-  spdlog::error(
-      "userlist: [isUserAllowedToSendEvent] Not allowed to send event.");
+  str = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
+  for (i = 0; i < m_listAllowedEvents.size(); i++) {
+    if (m_listAllowedEvents[i] == str)
+      return true;
+  }
 
+  spdlog::debug("userlist: [isUserAllowedToSendEvent] Not allowed to send event.");
   return false;
 }
+
+
+
+
+// ----------------------------------------------------------------------------
+
+
+
 
 //*****************************************************************************
 //                              CUserList
 //*****************************************************************************
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -691,7 +866,8 @@ CUserList::CUserList() {
 // Destructor
 //
 
-CUserList::~CUserList(void) {
+CUserList::~CUserList(void) 
+{
   {
     for (std::map<std::string, CGroupItem *>::iterator it =
              m_grouphashmap.begin();
@@ -806,13 +982,15 @@ bool CUserList::loadUsersFromFile(const std::string &path)
                 }
             }
 
-        } else {
+        } 
+        else {
         spdlog::error("userlist: Failed to read 'users'. Must be present.");
         return false;
         }
 
     // spdlog::debug("userlist: 'runasuser' set to %s", m_runAsUser.c_str());
-    } catch (...) {
+    } 
+    catch (...) {
         spdlog::error("userlist: Failed to read 'runasuser'. Must be present.");
         return false;
     }
@@ -820,352 +998,364 @@ bool CUserList::loadUsersFromFile(const std::string &path)
     return rv;
 }
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // addUser
-  //
+///////////////////////////////////////////////////////////////////////////////
+// addUser
+//
 
-  bool CUserList::addUser(const std::string &user, 
-                            const std::string &password,
-                            const std::string &fullname, 
-                            const std::string &strNote, 
-                            const vscpEventFilter *pFilter,
-                            const std::string &userRights, 
-                            const std::string &allowedRemotes,
-                            const std::string &allowedEvents ) {
-    // Cant add user with name that is already defined.
-    if (NULL != m_userhashmap[user]) {
-      spdlog::error("userlist: "
-                    "addUser: Failed to add user - "
-                    "user is already defined.");
-      return false;
-    }
-
-    // // New user item
-    CUserItem *pItem = new CUserItem;
-    if (NULL == pItem) {
-      spdlog::error("userlist: addUser: Failed to add user - "
-                    "Memory problem (CUserItem).");
-      return false;
-    }
-
-    pItem->setUserID(m_cntUsers);
-    m_cntUsers++; // Update user id counter
-
-    pItem->setUserName(user);
-    pItem->fixName();
-    pItem->setPassword(password);
-    pItem->setFullname(fullname);
-    pItem->setNote(strNote);
-    pItem->setFilter(pFilter);
-    pItem->setUserRightsFromString(userRights);
-    pItem->setAllowedRemotesFromString(allowedRemotes);
-    pItem->setAllowedEventsFromString(allowedEvents);
-
-    // Add to the map
-    m_userhashmap[user] = pItem;
-
-    // Set filter filter
-    if (NULL != pFilter) {
-      pItem->setFilter(pFilter);
-    }
-
-    return true;
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // addUser
-  //
-  // name;password;fullname;filter;mask;rights;remotes;events;note
-  //
-
-  bool CUserList::addUser(const std::string &strUser, 
-                            bool bUnpackNote) {
-    std::string strToken;
-    std::string user;
-    std::string password;
-    std::string fullname;
-    std::string strNote;
-    vscpEventFilter filter;
-    std::string userRights;
-    std::string allowedRemotes;
-    std::string allowedEvents;
-
-    std::deque<std::string> tokens;
-    vscp_split(tokens, strUser, ";");
-
-    // user
-    if (!tokens.empty()) {
-      user = tokens.front();
-      tokens.pop_front();
-    }
-
-    // password
-    if (!tokens.empty()) {
-      password = tokens.front();
-      tokens.pop_front();
-    }
-
-    // fullname
-    if (!tokens.empty()) {
-      fullname = tokens.front();
-      tokens.pop_front();
-    }
-
-    // filter
-    if (!tokens.empty()) {
-      vscp_readFilterFromString(&filter, tokens.front());
-      tokens.pop_front();
-    }
-
-    // mask
-    if (!tokens.empty()) {
-      vscp_readMaskFromString(&filter, tokens.front());
-      tokens.pop_front();
-    }
-
-    // user rights
-    if (!tokens.empty()) {
-      userRights = tokens.front();
-      tokens.pop_front();
-    }
-
-    // allowed remotes
-    if (!tokens.empty()) {
-      allowedRemotes = tokens.front();
-      tokens.pop_front();
-    }
-
-    // allowed events
-    if (!tokens.empty()) {
-      allowedEvents = tokens.front();
-      tokens.pop_front();
-    }
-
-    // note
-    if (!tokens.empty()) {
-      if (bUnpackNote) {
-        strNote = tokens.front();
-        tokens.pop_front();
-        vscp_base64_std_decode(strNote);
-      } 
-      else {
-        strNote = tokens.front();
-        tokens.pop_front();
-      }
-    }
-
-    return addUser(user, 
-                    password, 
-                    fullname, 
-                    strNote, 
-                    &filter,
-                    userRights, 
-                    allowedRemotes, 
-                    allowedEvents);
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // deleteUser
-  //
-
-  bool CUserList::deleteUser(const std::string &user) {
-    CUserItem *pUser = getUser(user);
-    if (NULL == pUser) {
-      spdlog::error("userlist :"
-                    "deleteUser: Failed to delete user - "
-                    "User is not defined.");
-      return false;
-    }
-
-    // Remove also from internal table
-    m_userhashmap.erase(user);
-
-    return true;
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // deleteUser
-  //
-
-  bool CUserList::deleteUser(const long userid) {
-    CUserItem *pUser = getUser(userid);
-    if (NULL == pUser) {
-      spdlog::error("userlist :"
-                    "deleteUser: Failed to delete user - "
-                    "User is not defined.");
-      return false;
-    }
-
-    return deleteUser(pUser->getUserName());
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // getUser
-  //
-
-  CUserItem *CUserList::getUser(const std::string &user) {
-    return m_userhashmap[user];
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // getUser
-  //
-
-  CUserItem *CUserList::getUser(const long userid) {
-    std::map<std::string, CUserItem *>::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-      std::string key = it->first;
-      CUserItem *pUserItem = it->second;
-      if (userid == pUserItem->getUserID()) {
-        return pUserItem;
-      }
-    }
-    spdlog::error("userlist :"
-                  "getUser: Failed to get user - "
-                  "User is not found.");
-    return NULL;
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // validateUser
-  //
-
-  CUserItem *CUserList::validateUser(const std::string &user,
-                                     const std::string &password) {
-    CUserItem *pUserItem;
-
-    pUserItem = m_userhashmap[user];
-    if (NULL == pUserItem) {
-      spdlog::error("userlist: "
-                    "validateUser: Failed to validate user - "
-                    "User is not defined.");
-      return NULL;
-    }
-
-    if (!vscp_isPasswordValid(pUserItem->getPassword(), password)) {
-      spdlog::error("userlist :"
-                    "validateUser: Failed to validate user - "
-                    "Check username/password.");
-      return NULL;
-    }
-
-    return pUserItem;
-  }
-
-  
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // getUserAsString
-  //
-  // userid;name;password;fullname;filter;mask;rights;remotes;events;note
-  //
-
-  bool CUserList::getUserAsString(CUserItem * pUserItem,
-                                  std::string & strUser) {
-    std::string str;
-    strUser.clear();
-
-    // Check pointer
-    if (NULL == pUserItem) {
-      spdlog::error("userlist: "
-                    "getUserAsString: Failed to get user - "
-                    "Invalid user item.");
-      return false;
-    }
-
-    return pUserItem->getAsString(strUser);
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // getUserAsString
-  //
-  // userid;name;password;fullname;filter;mask;rights;remotes;events;note
-  //
-
-  bool CUserList::getUserAsString(uint32_t idx, std::string & strUser) {
-    std::string str;
-    uint32_t i = 0;
-
-    std::map<std::string, CUserItem *>::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-
-      if (i == idx) {
-        std::string key = it->first;
-        CUserItem *pUserItem = it->second;
-        if (getUserAsString(pUserItem, strUser)) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-
-      i++;
-    }
-
+bool CUserList::addUser(const std::string &user, 
+                          const std::string &password,
+                          const std::string &fullname, 
+                          const std::string &strNote, 
+                          const vscpEventFilter *pFilter,
+                          const std::string &userRights, 
+                          const std::string &allowedRemotes,
+                          const std::string &allowedEvents ) 
+{
+  // Cant add user with name that is already defined.
+  if (NULL != m_userhashmap[user]) {
+    spdlog::error("userlist: "
+                  "addUser: Failed to add user - "
+                  "user is already defined.");
     return false;
   }
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // getAllUsers
-  //
-  // userid;name;password;fullname;filter;mask;rights;remotes;events;note
-  //
-
-  bool CUserList::getAllUsers(std::string & strAllusers) {
-    std::string str;
-    strAllusers.clear();
-
-    std::map<std::string, CUserItem *>::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-      std::string key = it->first;
-      CUserItem *pUserItem = it->second;
-      if (getUserAsString(pUserItem, str)) {
-        strAllusers += str;
-        strAllusers += "\r\n";
-      }
-    }
-
-    return true;
+  // // New user item
+  CUserItem *pItem = new CUserItem;
+  if (NULL == pItem) {
+    spdlog::error("userlist: addUser: Failed to add user - "
+                  "Memory problem (CUserItem).");
+    return false;
   }
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // getAllUsers
-  //
-  //
+  pItem->setUserID(m_cntUsers);
+  m_cntUsers++;   // Update user id counter
 
-  bool CUserList::getAllUsers(std::deque<std::string> & arrayUsers) {
-    std::string str;
+  pItem->setUserName(user);
+  pItem->fixName();
+  pItem->setPassword(password);
+  pItem->setFullname(fullname);
+  pItem->setNote(strNote);
+  pItem->setFilter(pFilter);
+  pItem->setUserRightsFromString(userRights);
+  pItem->setAllowedRemotesFromString(allowedRemotes);
+  pItem->setAllowedEventsFromString(allowedEvents);
 
-    std::map<std::string, CUserItem *>::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-      std::string key = it->first;
-      // CUserItem* pUserItem = it->second;
-      arrayUsers.push_back(key);
-    }
+  // Add to the map
+  m_userhashmap[user] = pItem;
 
-    return true;
+  // Set filter filter
+  if (NULL != pFilter) {
+    pItem->setFilter(pFilter);
   }
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // getUserItemFromOrdinal
-  //
-  //
+  return true;
+}
 
-  CUserItem *CUserList::getUserItemFromOrdinal(uint32_t idx) {
-    std::string str;
-    uint32_t i = 0;
+///////////////////////////////////////////////////////////////////////////////
+// addUser
+//
+// name;password;fullname;filter;mask;rights;remotes;events;note
+//
 
-    std::map<std::string, CUserItem *>::iterator it;
-    for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+bool CUserList::addUser(const std::string &strUser, 
+                          bool bUnpackNote) 
+{
+  std::string strToken;
+  std::string user;
+  std::string password;
+  std::string fullname;
+  std::string strNote;
+  vscpEventFilter filter;
+  std::string userRights;
+  std::string allowedRemotes;
+  std::string allowedEvents;
 
-      if (i == idx) {
-        std::string key = it->first;
-        CUserItem *pUserItem = it->second;
-        return pUserItem;
-      }
+  std::deque<std::string> tokens;
+  vscp_split(tokens, strUser, ";");
 
-      i++;
+  // user
+  if (!tokens.empty()) {
+    user = tokens.front();
+    tokens.pop_front();
+  }
+
+  // password
+  if (!tokens.empty()) {
+    password = tokens.front();
+    tokens.pop_front();
+  }
+
+  // fullname
+  if (!tokens.empty()) {
+    fullname = tokens.front();
+    tokens.pop_front();
+  }
+
+  // filter
+  if (!tokens.empty()) {
+    vscp_readFilterFromString(&filter, tokens.front());
+    tokens.pop_front();
+  }
+
+  // mask
+  if (!tokens.empty()) {
+    vscp_readMaskFromString(&filter, tokens.front());
+    tokens.pop_front();
+  }
+
+  // user rights
+  if (!tokens.empty()) {
+    userRights = tokens.front();
+    tokens.pop_front();
+  }
+
+  // allowed remotes
+  if (!tokens.empty()) {
+    allowedRemotes = tokens.front();
+    tokens.pop_front();
+  }
+
+  // allowed events
+  if (!tokens.empty()) {
+    allowedEvents = tokens.front();
+    tokens.pop_front();
+  }
+
+  // note
+  if (!tokens.empty()) {
+    if (bUnpackNote) {
+      strNote = tokens.front();
+      tokens.pop_front();
+      vscp_base64_std_decode(strNote);
+    } 
+    else {
+      strNote = tokens.front();
+      tokens.pop_front();
     }
+  }
 
+  return addUser(user, 
+                  password, 
+                  fullname, 
+                  strNote, 
+                  &filter,
+                  userRights, 
+                  allowedRemotes, 
+                  allowedEvents);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteUser
+//
+
+bool CUserList::deleteUser(const std::string &user) 
+{
+  CUserItem *pUser = getUser(user);
+  if (NULL == pUser) {
+    spdlog::error("userlist :"
+                  "deleteUser: Failed to delete user - "
+                  "User is not defined.");
+    return false;
+  }
+
+  // Remove also from internal table
+  m_userhashmap.erase(user);
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteUser
+//
+
+bool CUserList::deleteUser(const long userid) 
+{
+  CUserItem *pUser = getUser(userid);
+  if (NULL == pUser) {
+    spdlog::error("userlist :"
+                  "deleteUser: Failed to delete user - "
+                  "User is not defined.");
+    return false;
+  }
+
+  return deleteUser(pUser->getUserName());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getUser
+//
+
+CUserItem *CUserList::getUser(const std::string &user)
+{
+  return m_userhashmap[user];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getUser
+//
+
+CUserItem *CUserList::getUser(const long userid) {
+  std::map<std::string, CUserItem *>::iterator it;
+  for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+    std::string key = it->first;
+    CUserItem *pUserItem = it->second;
+    if (userid == pUserItem->getUserID()) {
+      return pUserItem;
+    }
+  }
+  spdlog::error("userlist :"
+                "getUser: Failed to get user - "
+                "User is not found.");
+  return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// validateUser
+//
+
+CUserItem *CUserList::validateUser(const std::string &user,
+                                    const std::string &password) 
+{
+  CUserItem *pUserItem;
+
+  pUserItem = m_userhashmap[user];
+  if (NULL == pUserItem) {
+    spdlog::error("userlist: "
+                  "validateUser: Failed to validate user - "
+                  "User is not defined.");
     return NULL;
   }
+
+  if (!vscp_isPasswordValid(pUserItem->getPassword(), password)) {
+    spdlog::error("userlist :"
+                  "validateUser: Failed to validate user - "
+                  "Check username/password.");
+    return NULL;
+  }
+
+  return pUserItem;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getUserAsString
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserList::getUserAsString(CUserItem *pUserItem,
+                                std::string & strUser) 
+{
+  std::string str;
+  strUser.clear();
+
+  // Check pointer
+  if (NULL == pUserItem) {
+    spdlog::error("userlist: "
+                  "getUserAsString: Failed to get user - "
+                  "Invalid user item.");
+    return false;
+  }
+
+  return pUserItem->getAsString(strUser);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getUserAsString
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserList::getUserAsString(uint32_t idx, std::string & strUser) 
+{
+  std::string str;
+  uint32_t i = 0;
+
+  std::map<std::string, CUserItem *>::iterator it;
+  for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+
+    if (i == idx) {
+      std::string key = it->first;
+      CUserItem *pUserItem = it->second;
+      if (getUserAsString(pUserItem, strUser)) {
+        return true;
+      } 
+      else {
+        return false;
+      }
+    }
+
+    i++;
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllUsers
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool CUserList::getAllUsers(std::string & strAllusers) 
+{
+  std::string str;
+  strAllusers.clear();
+
+  std::map<std::string, CUserItem *>::iterator it;
+  for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+    std::string key = it->first;
+    CUserItem *pUserItem = it->second;
+    if (getUserAsString(pUserItem, str)) {
+      strAllusers += str;
+      strAllusers += "\r\n";
+    }
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllUsers
+//
+//
+
+bool CUserList::getAllUsers(std::deque<std::string> & arrayUsers) 
+{
+  std::string str;
+
+  std::map<std::string, CUserItem *>::iterator it;
+  for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+    std::string key = it->first;
+    // CUserItem* pUserItem = it->second;
+    arrayUsers.push_back(key);
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getUserItemFromOrdinal
+//
+//
+
+CUserItem *CUserList::getUserItemFromOrdinal(uint32_t idx) 
+{
+  std::string str;
+  uint32_t i = 0;
+
+  std::map<std::string, CUserItem *>::iterator it;
+  for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
+
+    if (i == idx) {
+      std::string key = it->first;
+      CUserItem *pUserItem = it->second;
+      return pUserItem;
+    }
+
+    i++;
+  }
+
+  return NULL;
+}

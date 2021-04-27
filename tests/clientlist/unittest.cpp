@@ -12,10 +12,10 @@
 //-----------------------------------------------------------------------------
 TEST(ClientList, getter_setters) 
 { 
-    CUserItem item;
+    CClientItem item;
 
-    item.setUserName("KalleMero");
-    ASSERT_EQ("KalleMero_", item.getUserName());
+    item.setDeviceName("testDevice");
+    ASSERT_EQ("testDevice", item.getDeviceName());
     
     // uint8_t iv4[5] = {0xae,0xC6,0xA7,0xE2,0xA4};
     // ASSERT_EQ(-21489.320312f, vscp_getMeasurementAsFloat(iv4, 5));

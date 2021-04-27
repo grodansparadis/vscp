@@ -90,6 +90,27 @@ class CClientItem
     ~CClientItem();
 
   public:
+
+    // Getters/Setters
+
+    /*!
+        Set device name
+        @param name Name to set
+    */
+    void setDeviceName(const std::string &name);
+
+    /*!
+        Get device name
+    */
+   std::string getDeviceName(void)
+        { return m_strDeviceName; };
+
+    /*!
+        Get input que list
+    */
+    std::deque<vscpEvent*> getInputQue(void) 
+        { return m_clientInputQueue; };    
+
     /*!
         Check if the command line start with the command
         The command is checked case insensitive
@@ -97,13 +118,7 @@ class CClientItem
         @param bFix The command string have the command removed.
         @return true if command is found
      */
-    bool CommandStartsWith(const std::string &cmd, bool bFix = true);
-
-    /*!
-        Set device name
-        @param name Name to set
-    */
-    void setDeviceName(const std::string &name);
+    bool CommandStartsWith(const std::string &cmd, bool bFix = true);    
 
     /*!
         Get client on string form
@@ -113,6 +128,7 @@ class CClientItem
     std::string getAsString(void);
 
   public:
+
     // Input Queue
     std::deque<vscpEvent*> m_clientInputQueue;
 

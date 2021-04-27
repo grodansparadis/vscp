@@ -6957,9 +6957,9 @@ vscp_makePasswordHash(std::string& result,
         return false;
     }
 
-    memcpy(p,
-           (const char*)password.c_str(),
-           strlen((const char*)password.c_str()));
+    memcpy(p, 
+            (const char*)password.c_str(),
+            strlen((const char*)password.c_str()));
 
     fastpbkdf2_hmac_sha256(p,
                            strlen((const char*)password.c_str()),
@@ -6970,11 +6970,11 @@ vscp_makePasswordHash(std::string& result,
                            32);
     delete[] p;
 
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i<16; i++) {
         result += vscp_str_format("%02X", salt[i]);
     }
     result += (";");
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i<32; i++) {
         result += vscp_str_format("%02X", buf[i]);
     }
 

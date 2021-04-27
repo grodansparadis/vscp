@@ -36,13 +36,20 @@
 #include <unistd.h>
 #endif
 
-
 #include <canal_macro.h>
 #include <vscp.h>
 #include <vscpdatetime.h>
 #include <vscphelper.h>
 
 #include "clientlist.h"
+
+#include <json.hpp> // Needs C++11  -std=c++11
+#include <mustache.hpp>
+
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 const char* interface_description[] = { "Unknown (you should not see this).",
                                         "Internal VSCP server client.",
@@ -144,7 +151,8 @@ CClientItem::CommandStartsWith(const std::string& cmd, bool bFix)
             m_currentCommand =
               vscp_str_right(m_currentCommand,
                              m_currentCommand.length() - cmd.length() - 1);
-        } else {
+        } 
+        else {
             m_currentCommand.clear();
         }
         vscp_trim(m_currentCommand);
@@ -239,8 +247,9 @@ CClientList::findFreeId(uint16_t* pid)
     std::deque<CClientItem*>::iterator it;
 
     // Check pointer
-    if (NULL == pid)
+    if (NULL == pid) {
         return false;
+    }
 
     // Find next free id
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
@@ -415,10 +424,13 @@ CClientList::getClientFromId(uint16_t id)
 CClientItem*
 CClientList::getClientFromOrdinal(uint16_t ordinal)
 {
-    if (!m_itemList.size())
+    if (!m_itemList.size()) {
         return NULL;
-    if (ordinal > (m_itemList.size() - 1))
+    }
+    
+    if (ordinal > (m_itemList.size() - 1)) {
         return NULL;
+    }
 
     return m_itemList[ordinal];
 }
@@ -458,7 +470,6 @@ CClientList::getAllClientsAsString(void)
 
     std::deque<CClientItem*>::iterator it;
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-
         CClientItem* pItem = *it;
         str += pItem->getAsString();
         str += "\r\n";
@@ -476,14 +487,19 @@ CClientList::getAllClientsAsString(void)
 bool
 CClientList::getClient(uint16_t n, std::string& client)
 {
-    if (!m_itemList.size())
+    if (!m_itemList.size()) {
         return false;
-    if (n > (m_itemList.size() - 1))
+    }
+    
+    if (n > (m_itemList.size() - 1)) {
         return false;
+    }
 
     CClientItem* pClient = m_itemList[n];
-    if (NULL == pClient)
+    if (NULL == pClient) {
         return false;
+    }
+    
     client = pClient->getAsString();
 
     return true;

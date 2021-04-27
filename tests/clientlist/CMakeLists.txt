@@ -57,7 +57,7 @@ target_include_directories(unittest PUBLIC
     ${PROJECT_SOURCE_DIR}/../../googletest/googletest/include
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
-    )
+)
 
 target_link_libraries(unittest PRIVATE m
     dl
@@ -67,8 +67,6 @@ target_link_libraries(unittest PRIVATE m
     ${EXPAT_LIBRARIES}
     gtest
     gtest_main
-#    ${PROJECT_SOURCE_DIR}/../../googletest/build/lib/gtest 
-#    ${PROJECT_SOURCE_DIR}/../../googletest/build/lib/gtest_main 
-    )    
+)    
 
 #add_library(MathFunctions mysqrt.cxx)
