@@ -3073,7 +3073,7 @@ CControlObject::readJSON(const json& j)
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                                         spdlog::debug( 
                                                     "ReadConfig: mqtt.subscription {}.", 
-                                                    subsub.get<std::string>());                                          
+                                                    (*it2).get<std::string>());                                          
                                         }
                                     }
                                 }
@@ -3091,7 +3091,7 @@ CControlObject::readJSON(const json& j)
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                                         spdlog::debug( 
                                                     "ReadConfig: mqtt.publish {}.", 
-                                                    subsub.get<std::string>());                                            
+                                                    (*it2).get<std::string>());                                            
                                         }
                                     }
                                 }
@@ -3513,12 +3513,12 @@ CControlObject::readJSON(const json& j)
                                 } 
                                 else {
                                     json subsub = (*it)["mqtt"]["subscribe"];
-                                    for (json::iterator it = subsub.begin(); it != subsub.end(); ++it) {
-                                        pDriver->m_mqtt_subscriptions.push_back((*it).get<std::string>());
+                                    for (json::iterator it2 = subsub.begin(); it2 != subsub.end(); ++it2) {
+                                        pDriver->m_mqtt_subscriptions.push_back((*it2).get<std::string>());
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                                             spdlog::debug(                                             
                                                     "ReadConfig: mqtt.subscription {}.", 
-                                                    subsub.get<std::string>());                                            
+                                                    (*it2).get<std::string>());                                            
                                         }
                                     }
                                 }
@@ -3532,12 +3532,12 @@ CControlObject::readJSON(const json& j)
                                 } 
                                 else {
                                     json subsub = (*it)["mqtt"]["publish"];
-                                    for (json::iterator it = subsub.begin(); it != subsub.end(); ++it) {
-                                        pDriver->m_mqtt_publish.push_back((*it).get<std::string>());
+                                    for (json::iterator it2 = subsub.begin(); it2 != subsub.end(); ++it2) {
+                                        pDriver->m_mqtt_publish.push_back((*it2).get<std::string>());
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                                             spdlog::debug(                                              
                                                     "ReadConfig: mqtt.publish {}.", 
-                                                    subsub.get<std::string>());                                           
+                                                    (*it2).get<std::string>());                                           
                                         }
                                     }
                                 }
