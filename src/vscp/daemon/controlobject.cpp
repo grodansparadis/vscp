@@ -543,7 +543,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                     std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
                     m_map_discoveryGuidToName[guid] = name;
                     if (gDebugLevel & VSCP_DEBUG_MAIN_DATABASE) {
-                        spdlog::error("controlobject:  guid={} - name={} ", guid, name);                                
+                        spdlog::error("controlobject: Read in discovered nodes: guid={} - name={} ", guid, name);                                
                     }
                 }
 

@@ -313,7 +313,7 @@ main(int argc, char** argv)
     gpobj = new CControlObject();    
 
     // Tansfer read debug parameters if set
-    console->info("Debugflags: 0x{0:x}", gDebugLevel);
+    console->info("Debugflags (cmdline): 0x{0:x}", gDebugLevel);
 
     if (!gpobj->init(strcfgfile, rootFolder)) {
         console->critical("Can't initialize daemon. Exiting.\n");  
