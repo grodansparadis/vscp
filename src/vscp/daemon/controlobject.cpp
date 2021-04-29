@@ -411,8 +411,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 #endif
 
     if (gDebugLevel & VSCP_DEBUG_EXTRA) {
-        spdlog::debug("Using configuration file: %s", 
-                                        strcfgfile.c_str());               
+        spdlog::debug("Using configuration file: {}", 
+                                        strcfgfile);               
     }
 
     // Get GUID
@@ -463,11 +463,11 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
                 m_map_class_id2Token[vscp_class] = token;
                 if (gDebugLevel & VSCP_DEBUG_EVENT_DATABASE) {
-                    spdlog::debug("Class = %s - ", m_map_class_id2Token[vscp_class].c_str());                           
+                    spdlog::debug("Class = {} - ", m_map_class_id2Token[vscp_class]);
                 }
                 m_map_class_token2Id[token] = vscp_class;
                 if (gDebugLevel & VSCP_DEBUG_EVENT_DATABASE) {
-                    spdlog::debug("Id = %d\n", m_map_class_token2Id[token]);                                           
+                    spdlog::debug("Id = {}", m_map_class_token2Id[token]);                                           
                 }
             }
             sqlite3_finalize(ppStmt);
@@ -489,12 +489,12 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 std::string token = (const char *)sqlite3_column_text(ppStmt, 2);
                 m_map_type_id2Token[(link_to_class << 16) + vscp_type] = token;
                 if (gDebugLevel & VSCP_DEBUG_EVENT_DATABASE) {
-                    spdlog::debug("Token = %s ", 
-                                    m_map_type_id2Token[(link_to_class << 16) + vscp_type].c_str());                                            
+                    spdlog::debug("Token = {} ", 
+                                    m_map_type_id2Token[(link_to_class << 16) + vscp_type]);                                            
                 }
                 m_map_type_token2Id[token] = (link_to_class << 16) + vscp_type;
                 if (gDebugLevel & VSCP_DEBUG_EVENT_DATABASE) {
-                    spdlog::debug("Id = %d\n", m_map_type_token2Id[token]);
+                    spdlog::debug("Id = {}", m_map_type_token2Id[token]);
                 }
             }
             sqlite3_finalize(ppStmt);
@@ -502,8 +502,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
             sqlite3_close(db_vscp_classtype);
         } else {
             spdlog::error(           
-                    "controlobject:  Failed to open VSCP class & type definition database %s. [%s]",
-                    m_pathClassTypeDefinitionDb.c_str(),
+                    "controlobject:  Failed to open VSCP class & type definition database {}. [{}]",
+                    m_pathClassTypeDefinitionDb,
                     sqlite3_errmsg(db_vscp_classtype));                    
         }
 
@@ -520,8 +520,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
                 // Failed to open/create the database file
                 spdlog::error( 
-                        "controlobject:  VSCP Daemon database could not be opened/created. - Path=%s error=%s",
-                                        m_pathMainDb.c_str(),
+                        "controlobject:  VSCP Daemon database could not be opened/created. - Path={} error={}",
+                                        m_pathMainDb,
                                         sqlite3_errmsg(m_db_vscp_daemon));                                       
                 m_db_vscp_daemon = NULL;
             } 
@@ -543,8 +543,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                     std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
                     m_map_discoveryGuidToName[guid] = name;
                     if (gDebugLevel & VSCP_DEBUG_MAIN_DATABASE) {
-                        spdlog::error(                       
-                                "controlobject:  guid = %s - name = %s ", guid.c_str(), name.c_str() );                                
+                        spdlog::error("controlobject:  guid={} - name={} ", guid, name);                                
                     }
                 }
 
@@ -560,15 +559,15 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
                 // Failed to open/create the database file
                 spdlog::error(                  
-                        "controlobject:  VSCP Daemon database could not be opened/created. - Path=%s error=%s",
-                                        m_pathMainDb.c_str(),
+                        "controlobject:  VSCP Daemon database could not be opened/created. - Path={} error={}",
+                                        m_pathMainDb,
                                         sqlite3_errmsg(m_db_vscp_daemon));                                       
             }
 
             // We will try to create it
             spdlog::info(            
-                    "controlobject:  Will try to create VSCP Daemon database here %s.", 
-                    m_pathMainDb.c_str());                     
+                    "controlobject:  Will try to create VSCP Daemon database here {}.", 
+                    m_pathMainDb);                     
 
             // Create settings db
             char *pErrMsg = 0;
@@ -584,7 +583,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
             if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
                 spdlog::error(                
-                        "controlobject:  Creation of the VSCP database failed with message %s",
+                        "controlobject:  Creation of the VSCP database failed with message {}",
                         pErrMsg);                        
                 return false;
             }
@@ -593,7 +592,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
             if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
                 spdlog::error(                
-                        "controlobject:  Creation of the VSCP database index idxguid failed with message %s",
+                        "controlobject:  Creation of the VSCP database index idxguid failed with message {}",
                         pErrMsg);                       
                 return false;
             }
@@ -602,7 +601,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
             if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
                 spdlog::error(               
-                        "controlobject:  Creation of the VSCP database index idxname failed with message %s",
+                        "controlobject:  Creation of the VSCP database index idxname failed with message {}",
                         pErrMsg);
                 return false;
             }
@@ -622,7 +621,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
             if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, sql.c_str(), NULL, NULL, &pErrMsg)) {
                 spdlog::error(                
-                        "controlobject:  Creation of the VSCP database index idxname failed with message %s",
+                        "controlobject:  Creation of the VSCP database index idxname failed with message {}",
                         pErrMsg);                         
                 return false;
             }
@@ -764,7 +763,7 @@ CControlObject::init_mqtt()
                         "Failed to connect to mosquitto server (invalid parameter(s)).");                    
         } else if (MOSQ_ERR_ERRNO == rv) {
                 spdlog::error( 
-                        "Failed to connect to mosquitto server. System returned error (errno = %d).", errno);                     
+                        "Failed to connect to mosquitto server. System returned error (errno = {}).", errno);                     
         }
 
         return false;
@@ -799,29 +798,29 @@ CControlObject::init_mqtt()
         switch (rv) {
             case MOSQ_ERR_INVAL:
                 spdlog::error( 
-                        "Failed to subscribed to specified topic [%s] - input parameters were invalid.", 
-                        subscribe_topic.c_str());
+                        "Failed to subscribed to specified topic [{}] - input parameters were invalid.", 
+                        subscribe_topic);
                        
             case MOSQ_ERR_NOMEM:
                 spdlog::error( 
-                        "Failed to subscribed to specified topic [%s] - out of memory condition occurred.", 
-                        subscribe_topic.c_str());
+                        "Failed to subscribed to specified topic [{}] - out of memory condition occurred.", 
+                        subscribe_topic);
                       
             case MOSQ_ERR_NO_CONN:
                 spdlog::error( 
-                        "controlobject:  Failed to subscribed to specified topic [%s] - client isn’t connected to a broker.", 
-                        subscribe_topic.c_str());
+                        "controlobject:  Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.", 
+                        subscribe_topic);
                         
             case MOSQ_ERR_MALFORMED_UTF8:
                 spdlog::error( 
-                        "Failed to subscribed to specified topic [%s] - resulting packet would be larger than supported by the broker.", 
-                        subscribe_topic.c_str());
+                        "Failed to subscribed to specified topic [{}] - resulting packet would be larger than supported by the broker.", 
+                        subscribe_topic);
                        
 #if defined(MOSQ_ERR_OVERSIZE_PACKET)
             case MOSQ_ERR_OVERSIZE_PACKET:
                 spdlog::error( 
                         "controlobject:  Failed to subscribed to specified topic {} - resulting packet would be larger than supported by the broker.", 
-                        subscribe_topic.c_str());                      
+                        subscribe_topic);                      
 #endif
         }
     }
@@ -1404,8 +1403,8 @@ CControlObject::startDeviceWorkerThreads(void)
 
             if (gDebugLevel & VSCP_DEBUG_EXTRA) {
                 spdlog::get("logger")->debug(
-                       "Controlobject: [Driver] - Preparing: %s ",
-                       pDeviceItem->m_strName.c_str());
+                       "Controlobject: [Driver] - Preparing: {} ",
+                       pDeviceItem->m_strName);
             }
 
             // Just start if enabled
@@ -1414,8 +1413,8 @@ CControlObject::startDeviceWorkerThreads(void)
 
             if (gDebugLevel & VSCP_DEBUG_EXTRA) {
                 spdlog::get("logger")->debug(
-                       "Controlobject: [Driver] - Starting: %s ",
-                       pDeviceItem->m_strName.c_str());
+                       "Controlobject: [Driver] - Starting: {} ",
+                       pDeviceItem->m_strName);
             }
 
             // Start  the driver logic
@@ -1448,8 +1447,8 @@ CControlObject::stopDeviceWorkerThreads(void)
         if (NULL != pDeviceItem) {
             if (gDebugLevel & VSCP_DEBUG_EXTRA) {
                 spdlog::get("logger")->debug(
-                       "Controlobject: [Driver] - Stopping: %s ",
-                       pDeviceItem->m_strName.c_str());
+                       "Controlobject: [Driver] - Stopping: {} ",
+                       pDeviceItem->m_strName);
             }
             pDeviceItem->stopDriver();
         }
@@ -1771,7 +1770,7 @@ CControlObject::readJSON(const json& j)
 
         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
             spdlog::debug(            
-                    "ReadConfig: 'runasuser' set to %s", 
+                    "ReadConfig: 'runasuser' set to {}", 
                     m_runAsUser.c_str());            
         }
     }
@@ -1897,8 +1896,8 @@ CControlObject::readJSON(const json& j)
         } 
         else {
             spdlog::error(            
-                    "ReadConfig: 'Failed to read in encryption key %s", 
-                    pathvscpkey.c_str());            
+                    "ReadConfig: 'Failed to read in encryption key {}", 
+                    pathvscpkey);            
         }
 
         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
@@ -2350,8 +2349,8 @@ CControlObject::readJSON(const json& j)
                 m_mqtt_format = jsonfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                 spdlog::debug(                    
-                            "ReadConfig: MQTT format set to 'JSON' (%s)\n", 
-                            format.c_str());                   
+                            "ReadConfig: MQTT format set to 'JSON' ({})\n", 
+                            format);                   
                 }
             } 
             else if (0 == vscp_strcasecmp(format.c_str(), "XML")) {
@@ -2366,8 +2365,8 @@ CControlObject::readJSON(const json& j)
                 m_mqtt_format = strfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                 spdlog::debug(                   
-                            "ReadConfig: MQTT format set to 'STRING' (%s)\n", 
-                            format.c_str());                    
+                            "ReadConfig: MQTT format set to 'STRING' ({})\n", 
+                            format);                    
                 }
             } 
             else if (0 == vscp_strcasecmp(format.c_str(), "BINARY")) {
@@ -2436,7 +2435,7 @@ CControlObject::readJSON(const json& j)
             m_mqtt_bRetain = j["mqtt"]["bretain"].get<bool>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                 spdlog::debug(             
-                        "ReadConfig: MQTT 'bretain' set to %d", 
+                        "ReadConfig: MQTT 'bretain' set to {}", 
                         m_mqtt_bRetain);                
             }
         } 
@@ -2452,7 +2451,7 @@ CControlObject::readJSON(const json& j)
             m_mqtt_keepalive = j["mqtt"]["keepalive"].get<int>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                 spdlog::debug(               
-                        "ReadConfig: MQTT 'keepalive' set to %d", 
+                        "ReadConfig: MQTT 'keepalive' set to {}", 
                         m_mqtt_keepalive);                
             }
         } 
@@ -2744,7 +2743,7 @@ CControlObject::readJSON(const json& j)
                                     pDriver->m_mqtt_port = (*it)["mqtt"]["port"].get<int>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
                                         spdlog::debug(                                       
-                                                "ReadConfig: MQTT 'port' set to %d", 
+                                                "ReadConfig: MQTT 'port' set to {}", 
                                                 pDriver->m_mqtt_port);
                                     }
                                 } 
