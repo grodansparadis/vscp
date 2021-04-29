@@ -6,7 +6,7 @@
     "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
     "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
     "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
-    "vscpkey" : "/var/vscp/vscp.key",
+    "vscpkey" : "/etc/vscp/vscp.key",
     "logging" : {
         "file-enable-log": true,
         "file-log-level" : "info",

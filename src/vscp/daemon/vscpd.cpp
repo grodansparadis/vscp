@@ -205,8 +205,7 @@ main(int argc, char** argv)
 
     // * * * init * * *
 
-    console->info("Configfile = %s\n",
-                    (const char*)strcfgfile.c_str());            
+    console->info("Configfile = {}", strcfgfile);            
 #ifndef WIN32
     pid_t pid, sid;
  #endif // WIN32   
@@ -314,8 +313,7 @@ main(int argc, char** argv)
     gpobj = new CControlObject();    
 
     // Tansfer read debug parameters if set
-    gpobj->m_debugFlags = gDebugLevel;
-    console->info("Debugflags: 0x{0:x}", gpobj->m_debugFlags);
+    console->info("Debugflags: 0x{0:x}", gDebugLevel);
 
     if (!gpobj->init(strcfgfile, rootFolder)) {
         console->critical("Can't initialize daemon. Exiting.\n");  

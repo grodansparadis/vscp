@@ -221,13 +221,6 @@ class CControlObject {
     // VSCP daemon root folder
     std::string m_rootFolder;
 
-    // Secret key
-    //uint8_t m_systemKey[32];
-    
-
-    // VSCP encryption token
-    //std::string m_vscptoken;
-
     /*!
         User to run as for Unix
         if not ""
@@ -260,7 +253,9 @@ class CControlObject {
      * Debug flags
      * See vscp_debug.h for possible flags.
      */
-    uint64_t m_debugFlags;
+    //uint64_t m_debugFlags;  
+    
+    // replaces with gDebugLevel
 
 
     //**************************************************************************

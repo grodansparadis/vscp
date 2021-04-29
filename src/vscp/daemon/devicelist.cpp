@@ -590,11 +590,20 @@ CDeviceList::addItem(CControlObject *pCtrlObj,
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
-        } else {
-            spdlog::get("logger")->error(
-                    "Driver '{}' is not available at this path {}. Dropped!",
-                    strName,
-                    strPath );
+        } 
+        else {
+            if (nullptr == spdlog::get("logger")) {
+                fprintf(stderr, 
+                        "Driver '%s' is not available at this path %s. Dropped!",
+                        strName.c_str(),
+                        strPath.c_str());
+            }
+            else {
+                spdlog::get("logger")->error(
+                        "Driver '{}' is not available at this path {}. Dropped!",
+                        strName,
+                        strPath );
+            }
 
             // Driver does not exist at this path
             delete pDeviceItem;

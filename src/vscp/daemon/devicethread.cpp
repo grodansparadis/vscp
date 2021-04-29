@@ -60,10 +60,13 @@
 #include <controlobject.h>
 
 #include <mosquitto.h>
-
 #include <mustache.hpp>
-
 using namespace kainjow::mustache;
+
+// From vscp.cpp 
+extern uint8_t *__vscp_key; // (256 bits)
+extern uint64_t gDebugLevel;
+
 
 //////////////////////////////////////////////////////////////////////
 //                         Callbacks
@@ -82,7 +85,7 @@ static void mqtt_drv_log_callback(struct mosquitto *mosq, void *pData, int level
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
 
-    if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_LOG) {
+    if (gDebugLevel & VSCP_DEBUG_MQTT_LOG) {
         char buf[80];
         time_t tm;
         time(&tm);
@@ -102,7 +105,7 @@ static void mqtt_drv_on_connect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == pData) return;
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
-    if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_CONNECT) {
+    if (gDebugLevel & VSCP_DEBUG_MQTT_CONNECT) {
         spdlog::get("logger")->trace("Driver {} MQTT connect", pDeviceItem->m_strName);
     }
 
@@ -119,7 +122,7 @@ static void mqtt_drv_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == pData) return;
 
     CDeviceItem *pDeviceItem = (CDeviceItem *)pData;
-    if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_CONNECT) {
+    if (gDebugLevel  & VSCP_DEBUG_MQTT_CONNECT) {
         spdlog::get("logger")->trace("Driver {} MQTT disconnect", pDeviceItem->m_strName);
     }
 
@@ -149,7 +152,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         printf("DRV: Message: [topic = %s]: Payload: %s\n", pMsg->topic, strPayload.c_str());
         if (!vscp_convertJSONToEvent(&ev, strPayload)) {
             // This is not a JSON formated event - we skip it
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+            if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
                 spdlog::get("logger")->error("Driver: {}: Failed to convert event to JSON", 
                             pDeviceItem->m_strName);
             }
@@ -158,7 +161,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
     } else if (pDeviceItem->m_mqtt_format == xmlfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+            if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
                 spdlog::get("logger")->error("Driver: {}: Failed to convert event to XML", 
                             pDeviceItem->m_strName);
             }
@@ -168,7 +171,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
     else if (pDeviceItem->m_mqtt_format == strfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertStringToEvent(&ev, strPayload) ) {
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+            if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
                 spdlog::get("logger")->error("Driver: {}: Failed to convert event to STRING", 
                             pDeviceItem->m_strName);
             }
@@ -177,7 +180,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
     }
     else if (pDeviceItem->m_mqtt_format == binfmt) {
         if (!vscp_getEventFromFrame( &ev, (const uint8_t *)pMsg->payload, pMsg->payloadlen) ) {
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags & VSCP_DEBUG_MQTT_MSG) {
+            if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
                 spdlog::get("logger")->error("Driver: {}: Failed to convert event to BINARY", 
                             pDeviceItem->m_strName);
             }
@@ -233,8 +236,8 @@ static void mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
     if (NULL == mosq) return;
     if (NULL == pData) return;
 
-    CDeviceItem *pItem = (CDeviceItem *)pData;
-    if (pItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_MQTT_PUBLISH) {
+    //CDeviceItem *pItem = (CDeviceItem *)pData;
+    if (gDebugLevel  & VSCP_DEBUG_MQTT_PUBLISH) {
         spdlog::get("logger")->debug("Driver: MQTT Publish");
     }
 }
@@ -296,7 +299,7 @@ deviceThread(void* pData)
     if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
 
         // Now find methods in library
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
             spdlog::get("logger")->debug(
                    "Loading level I driver: {}",
                    pDeviceItem->m_strName);
@@ -526,7 +529,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
             spdlog::get("logger")->debug(
                    "%s: [Device tread] Level I Driver open.",
                    pDeviceItem->m_strName.c_str());
@@ -667,7 +670,7 @@ deviceThread(void* pData)
 
             // * * * * Blocking version * * * *
 
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+            if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
                 spdlog::get("logger")->debug("{}: [Device tread] Level I blocking version.", 
                         pDeviceItem->m_strName.c_str());
             }
@@ -746,7 +749,7 @@ deviceThread(void* pData)
             // Signal worker threads to quit
             pDeviceItem->m_bQuit = true;
 
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+            if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
                 spdlog::get("logger")->error("{}: [Device tread] Level I work loop ended.", 
                         pDeviceItem->m_strName);
             }
@@ -756,7 +759,7 @@ deviceThread(void* pData)
 
             // * * * * Non blocking version * * * *
 
-            if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+            if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
                 spdlog::get("logger")->error("{}: [Device tread] Level I NON Blocking version.", 
                         pDeviceItem->m_strName);
             }
@@ -855,7 +858,7 @@ deviceThread(void* pData)
 
         } // if blocking/non blocking
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
             spdlog::get("logger")->debug(
                    "{}: [Device tread] Level I Work loop ended.",
                    pDeviceItem->m_strName);
@@ -864,7 +867,7 @@ deviceThread(void* pData)
         // Close CANAL channel
         pDeviceItem->m_proc_CanalClose(pDeviceItem->m_openHandle);
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL1) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL1) {
             spdlog::get("logger")->debug(
                    "{}: [Device tread] Level I Closed.",
                    pDeviceItem->m_strName);
@@ -938,7 +941,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL2) {
             spdlog::get("logger")->debug(
                    "{}: Discovered all methods\n",
                    pDeviceItem->m_strName);
@@ -1095,7 +1098,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL2) {
             spdlog::get("logger")->debug(
                    "{}: [Device tread] Level II Open.",
                    pDeviceItem->m_strName);
@@ -1132,7 +1135,7 @@ deviceThread(void* pData)
 
         }
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL2) {
            spdlog::get("logger")->debug(
                    "{}: [Device tread] Level II Closing.",
                    pDeviceItem->m_strName);
@@ -1141,7 +1144,7 @@ deviceThread(void* pData)
         // Close channel
         pDeviceItem->m_proc_VSCPClose(pDeviceItem->m_openHandle);
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL2) {
             spdlog::get("logger")->debug(
                    "{}: [Device tread] Level II Closed.",
                    pDeviceItem->m_strName);
@@ -1153,7 +1156,7 @@ deviceThread(void* pData)
         // Unload dll
         dlclose(hdll);
 
-        if (pDeviceItem->m_pCtrlObj->m_debugFlags  & VSCP_DEBUG_DRIVERL2) {
+        if (gDebugLevel  & VSCP_DEBUG_DRIVERL2) {
             spdlog::get("logger")->debug(
                    "{}: [Device tread] Level II Done waiting for threads.",
                    pDeviceItem->m_strName.c_str());
