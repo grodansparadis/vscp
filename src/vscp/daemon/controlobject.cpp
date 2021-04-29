@@ -119,7 +119,7 @@ foo(const int i)
 #define XML_BUFF_SIZE 0xffff
 
 // From vscp.cpp 
-extern uint8_t *__vscp_key; // (256 bits)
+extern uint8_t *__vscp_key; // (256 bits / 32 bytes)
 extern uint64_t gDebugLevel;
 
 
@@ -1734,7 +1734,7 @@ CControlObject::readEncryptionKey(const std::string& path)
         std::stringstream strStream;
         strStream << in.rdbuf();
         std::string hexstr = strStream.str();
-        rv = (256 == vscp_hexStr2ByteArray(__vscp_key, 256, hexstr.c_str()));
+        rv = (32 == vscp_hexStr2ByteArray(__vscp_key, 32, hexstr.c_str()));
     }
     catch (...) {
         spdlog::get("logger")->error(
