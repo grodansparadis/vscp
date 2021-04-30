@@ -903,6 +903,8 @@ bool CUserList::loadUsersFromFile(const std::string &path)
 {
   json j;
 
+  spdlog::debug("[loadUsersFromFile] Reading in users from '{}'.", path);
+
   try {         
       std::ifstream in(path, std::ifstream::in);
       in >> j;
@@ -914,7 +916,7 @@ bool CUserList::loadUsersFromFile(const std::string &path)
 
   // Add users
   if (!j["users"].is_array()) {      
-      spdlog::debug("[loadUsersFromFile] Failed to parse JSON configuration.");     
+      spdlog::critical("[loadUsersFromFile] 'users' must be valid JSON array.");     
       return false;
   }
 
@@ -1243,15 +1245,15 @@ CUserItem *CUserList::validateUser(const std::string &user,
   pUserItem = m_userhashmap[user];
   if (NULL == pUserItem) {
     spdlog::error("userlist: "
-                  "validateUser: Failed to validate user - "
-                  "User is not defined.");
+                  "validateUser: Failed to validate user '{}' - "
+                  "User is not defined.", user);
     return NULL;
   }
 
   if (!vscp_isPasswordValid(pUserItem->getPassword(), password)) {
     spdlog::error("userlist :"
-                  "validateUser: Failed to validate user - "
-                  "Check username/password.");
+                  "validateUser: Failed to validate user '{}' - "
+                  "Check username/password.", user);
     return NULL;
   }
 

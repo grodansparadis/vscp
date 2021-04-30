@@ -498,9 +498,9 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                 }
             }
             sqlite3_finalize(ppStmt);
-
             sqlite3_close(db_vscp_classtype);
-        } else {
+        } 
+        else {
             spdlog::error(           
                     "controlobject:  Failed to open VSCP class & type definition database {}. [{}]",
                     m_pathClassTypeDefinitionDb,
@@ -543,7 +543,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                     std::string name = (const char *)sqlite3_column_text(ppStmt, 1);
                     m_map_discoveryGuidToName[guid] = name;
                     if (gDebugLevel & VSCP_DEBUG_MAIN_DATABASE) {
-                        spdlog::error("controlobject: Read in discovered nodes: guid={} - name={} ", guid, name);                                
+                        spdlog::info("controlobject: Read in discovered nodes: guid={} - name={} ", guid, name);                                
                     }
                 }
 
@@ -2308,8 +2308,8 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("password") ) {
             m_mqtt_strPassword = j["mqtt"]["password"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                 "ReadConfig: MQTT 'password' set to {}", 
-                        m_mqtt_strPassword);                
+                spdlog::debug("ReadConfig: MQTT 'password' set to {}", 
+                                m_mqtt_strPassword);                
             }
         } 
         else  {
@@ -2323,9 +2323,8 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("clientid") ) {
             m_mqtt_strClientId = j["mqtt"]["clientid"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'clientid' set to {}", 
-                        m_mqtt_strClientId);                
+                spdlog::debug("ReadConfig: MQTT 'clientid' set to {}", 
+                                m_mqtt_strClientId);                
             }
         } 
         else  {
@@ -2339,57 +2338,50 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("format") ) {
             std::string format = j["mqtt"]["format"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                        "ReadConfig: MQTT 'format' set to {}", 
-                        format);                
+                spdlog::debug("ReadConfig: MQTT 'format' set to {}", 
+                                format);                
             }
             
             vscp_makeUpper(format);
             if (0 == vscp_strcasecmp(format.c_str(), "JSON")) {
                 m_mqtt_format = jsonfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                    
-                            "ReadConfig: MQTT format set to 'JSON' ({})\n", 
-                            format);                   
+                spdlog::debug("ReadConfig: MQTT format set to 'JSON' ({})\n", 
+                                format);                   
                 }
             } 
             else if (0 == vscp_strcasecmp(format.c_str(), "XML")) {
                 m_mqtt_format = xmlfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                   
-                            "ReadConfig: MQTT format set to 'XML' ({})\n", 
-                            format);                    
+                spdlog::debug("ReadConfig: MQTT format set to 'XML' ({})\n", 
+                                format);                    
                 }
             } 
             else if (0 == vscp_strcasecmp(format.c_str(), "STRING")) {
                 m_mqtt_format = strfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                   
-                            "ReadConfig: MQTT format set to 'STRING' ({})\n", 
-                            format);                    
+                spdlog::debug("ReadConfig: MQTT format set to 'STRING' ({})\n", 
+                                format);                    
                 }
             } 
             else if (0 == vscp_strcasecmp(format.c_str(), "BINARY")) {
                 m_mqtt_format = binfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                            "ReadConfig: MQTT format set to 'BINARY' ({})\n", 
-                            format);                    
+                spdlog::debug("ReadConfig: MQTT format set to 'BINARY' ({})\n", 
+                                format);                    
                 }
             } 
             else {
                 m_mqtt_format = jsonfmt;
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                   
-                            "ReadConfig: Unknown format: MQTT format set to 'JSON' ({})\n", 
-                            format);                    
+                spdlog::debug("ReadConfig: Unknown format: MQTT format set to 'JSON' ({})\n", 
+                                format);                    
                 }
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(              
-                        "ReadConfig: Failed to read MQTT 'format'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'format'. Defaults will be used.");                
             }
         }
 
@@ -2397,13 +2389,11 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("qos")) {
             m_mqtt_qos = j["mqtt"]["qos"].get<int>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'qos' set to {}", 
-                        m_mqtt_qos);                
+                spdlog::debug("ReadConfig: MQTT 'qos' set to {}", 
+                                m_mqtt_qos);                
             }
             if (m_mqtt_qos > 2) {
-                spdlog::warn(               
-                        "ReadConfig: MQTT qos > 2. Set to 0.");                
+                spdlog::warn("ReadConfig: MQTT qos > 2. Set to 0.");                
                 m_mqtt_qos = 0;
             }
         } 
@@ -2418,15 +2408,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("bcleansession")) {
             m_mqtt_bCleanSession = j["mqtt"]["bcleansession"].get<bool>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(              
-                        "ReadConfig: MQTT 'bcleansession' set to {}", 
-                        m_mqtt_bCleanSession);                
+                spdlog::debug("ReadConfig: MQTT 'bcleansession' set to {}", 
+                                m_mqtt_bCleanSession);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'bcleansession'. Defaults will be used.");
+                spdlog::debug("ReadConfig: Failed to read MQTT 'bcleansession'. Defaults will be used.");
             }
         }
 
@@ -2434,15 +2422,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("bretain")) {
             m_mqtt_bRetain = j["mqtt"]["bretain"].get<bool>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(             
-                        "ReadConfig: MQTT 'bretain' set to {}", 
-                        m_mqtt_bRetain);                
+                spdlog::debug("ReadConfig: MQTT 'bretain' set to {}", 
+                                m_mqtt_bRetain);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                
             }
         }
 
@@ -2450,15 +2436,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("keepalive")) {
             m_mqtt_keepalive = j["mqtt"]["keepalive"].get<int>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'keepalive' set to {}", 
-                        m_mqtt_keepalive);                
+                spdlog::debug("ReadConfig: MQTT 'keepalive' set to {}", 
+                                m_mqtt_keepalive);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'keepalive'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'keepalive'. Defaults will be used.");                
             }
         }
 
@@ -2466,15 +2450,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("reconnect-delay")) {
             m_mqtt_reconnect_delay = j["mqtt"]["reconnect-delay"].get<int>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                            "ReadConfig: MQTT 'reconnect-delay' set to {}", 
-                            m_mqtt_reconnect_delay);                
+                spdlog::debug("ReadConfig: MQTT 'reconnect-delay' set to {}", 
+                                m_mqtt_reconnect_delay);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                        "ReadConfig: Failed to read MQTT 'reconnect-delay'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'reconnect-delay'. Defaults will be used.");                
             }
         }
 
@@ -2482,15 +2464,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("reconnect-delay-max")) {
             m_mqtt_reconnect_delay_max = j["mqtt"]["reconnect-delay-max"].get<int>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(
-                        "ReadConfig: MQTT 'reconnect-delay-max' set to {}", 
-                        m_mqtt_reconnect_delay);                
+                spdlog::debug("ReadConfig: MQTT 'reconnect-delay-max' set to {}", 
+                                m_mqtt_reconnect_delay);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'm_mqtt_reconnect_delay_max'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'm_mqtt_reconnect_delay_max'. Defaults will be used.");                
             }
         }
 
@@ -2499,15 +2479,13 @@ CControlObject::readJSON(const json& j)
             m_mqtt_reconnect_exponential_backoff = j["mqtt"]["reconnect-exponential-backoff"].get<bool>();
     
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'reconnect-exponential-backoff' set to {}", 
-                        m_mqtt_reconnect_exponential_backoff);                
+                spdlog::debug("ReadConfig: MQTT 'reconnect-exponential-backoff' set to {}", 
+                                m_mqtt_reconnect_exponential_backoff);                
             }
         } 
         else {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'reconnect_exponential_backoff'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'reconnect_exponential_backoff'. Defaults will be used.");                
             }
         }
 
@@ -2515,15 +2493,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("cafile")) {
             m_mqtt_cafile = j["mqtt"]["cafile"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'cafile' set to {}", 
-                        m_mqtt_cafile);                
+                spdlog::debug("ReadConfig: MQTT 'cafile' set to {}", 
+                                m_mqtt_cafile);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: Failed to read MQTT 'cafile'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'cafile'. Defaults will be used.");                
             }
         }
 
@@ -2531,9 +2507,8 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("capath")) {
             m_mqtt_capath = j["mqtt"]["capath"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'capath' set to {}", 
-                        m_mqtt_capath);                
+                spdlog::debug("ReadConfig: MQTT 'capath' set to {}", 
+                                m_mqtt_capath);                
             }
         } 
         else  {
@@ -2547,15 +2522,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("certfile")) {
             m_mqtt_capath = j["mqtt"]["certfile"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                        "ReadConfig: MQTT 'certfile' set to {}", 
-                        m_mqtt_capath);                
+                spdlog::debug("ReadConfig: MQTT 'certfile' set to {}", 
+                                m_mqtt_capath);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                        "ReadConfig: Failed to read MQTT 'certfile'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'certfile'. Defaults will be used.");                
             }
         }
 
@@ -2563,15 +2536,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("keyfile")) {
             m_mqtt_keyfile = j["mqtt"]["keyfile"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'keyfile' set to {}", 
-                        m_mqtt_keyfile);                
+                spdlog::debug("ReadConfig: MQTT 'keyfile' set to {}", 
+                                m_mqtt_keyfile);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                            "ReadConfig: Failed to read MQTT 'keyfile'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'keyfile'. Defaults will be used.");                
             }
         }
 
@@ -2579,15 +2550,13 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("pwkeyfile")) {
             m_mqtt_pwKeyfile = j["mqtt"]["pwkeyfile"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(               
-                        "ReadConfig: MQTT 'pwkeyfile' set to {}", 
-                        m_mqtt_pwKeyfile);                
+                spdlog::debug("ReadConfig: MQTT 'pwkeyfile' set to {}", 
+                                m_mqtt_pwKeyfile);                
             }
         } 
         else  {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug(                
-                        "ReadConfig: Failed to read MQTT 'pwkeyfile'. Defaults will be used.");                
+                spdlog::debug("ReadConfig: Failed to read MQTT 'pwkeyfile'. Defaults will be used.");                
             }
         }
 
@@ -2595,9 +2564,8 @@ CControlObject::readJSON(const json& j)
         if (j["mqtt"].contains("topic-interfaces")) {
             m_topicInterfaces = j["mqtt"]["topic-interfaces"].get<std::string>();
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                spdlog::debug( 
-                        "ReadConfig: MQTT 'topic-interfaces' set to {}", 
-                        m_topicInterfaces);                
+                spdlog::debug("ReadConfig: MQTT 'topic-interfaces' set to {}", 
+                                m_topicInterfaces);                
             }
         } 
         else {
@@ -2610,8 +2578,7 @@ CControlObject::readJSON(const json& j)
         // subscribe
         if (!(j["mqtt"].contains("subscribe") && j["mqtt"]["subscribe"].is_array())) {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                
-                        "ReadConfig: mqtt.subscribe object. Defaults will be used.");                
+                spdlog::debug("ReadConfig: mqtt.subscribe object. Defaults will be used.");                
             }
         } 
         else {
@@ -2619,9 +2586,8 @@ CControlObject::readJSON(const json& j)
             for (json::iterator it = sub.begin(); it != sub.end(); ++it) {
                 m_mqtt_subscriptions.push_back((*it).get<std::string>());
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                    
-                            "ReadConfig: mqtt.subscription {}.", 
-                            (*it).get<std::string>());                    
+                    spdlog::debug("ReadConfig: mqtt.subscription {}.", 
+                                    (*it).get<std::string>());                    
                 }
             }
         }
@@ -2629,8 +2595,7 @@ CControlObject::readJSON(const json& j)
         // publish
         if (!(j["mqtt"].contains("publish") && j["mqtt"]["publish"].is_array())) {
             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                
-                        "ReadConfig: mqtt.publish object. Defaults will be used.");                
+                spdlog::debug("ReadConfig: mqtt.publish object. Defaults will be used.");                
             }
         } 
         else {
@@ -2638,9 +2603,8 @@ CControlObject::readJSON(const json& j)
             for (json::iterator it = sub.begin(); it != sub.end(); ++it) {
                 m_mqtt_publish.push_back((*it).get<std::string>());
                 if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                    
-                            "ReadConfig: mqtt.publish {}.", 
-                            (*it).get<std::string>());                    
+                    spdlog::debug("ReadConfig: mqtt.publish {}.", 
+                                    (*it).get<std::string>());                    
                 }
             }
         }
@@ -2709,16 +2673,14 @@ CControlObject::readJSON(const json& j)
 
                         if (!((*it).contains("mqtt") && (*it)["mqtt"].is_object())) {
                             if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                 
-                                        "ReadConfig: mqtt object. Defaults will be used.");                                
+                                spdlog::debug("ReadConfig: mqtt object. Defaults will be used.");                                
                             }
                         } 
                         else {
 
                             CDeviceItem *pDriver = m_deviceList.getDeviceItemFromName((*it)["name"]);
                             if ( NULL == pDriver ) {
-                                        spdlog::debug(                               
-                                        "ReadConfig: Driver MQTT info can not be added. Driver not found.");                                
+                                spdlog::debug("ReadConfig: Driver MQTT info can not be added. Driver not found.");                                
                             } 
                             else {
 
@@ -2726,15 +2688,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("host") ) {
                                     pDriver->m_mqtt_strHost = (*it)["mqtt"]["host"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: MQTT 'host' set to {}", 
-                                                pDriver->m_mqtt_strHost);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'host' set to {}", 
+                                                        pDriver->m_mqtt_strHost);                                        
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                       
-                                                "ReadConfig: Failed to read MQTT 'host'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'host'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2742,15 +2702,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("port") ) {
                                     pDriver->m_mqtt_port = (*it)["mqtt"]["port"].get<int>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                       
-                                                "ReadConfig: MQTT 'port' set to {}", 
-                                                pDriver->m_mqtt_port);
+                                        spdlog::debug("ReadConfig: MQTT 'port' set to {}", 
+                                                        pDriver->m_mqtt_port);
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: Failed to read MQTT 'port'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'port'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2758,15 +2716,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("user") ) {
                                     pDriver->m_mqtt_strUserName = (*it)["mqtt"]["user"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: MQTT 'user' set to {}", 
-                                                pDriver->m_mqtt_strUserName);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'user' set to {}", 
+                                                        pDriver->m_mqtt_strUserName);                                        
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: Failed to read MQTT 'user'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'user'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2774,9 +2730,8 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("password") ) {
                                     pDriver->m_mqtt_strPassword = (*it)["mqtt"]["password"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: MQTT 'password' set to {}", 
-                                                pDriver->m_mqtt_strPassword);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'password' set to {}", 
+                                                        pDriver->m_mqtt_strPassword);                                        
                                     }
                                 } 
                                 else  {
@@ -2790,15 +2745,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("clientid") ) {
                                     pDriver->m_mqtt_strClientId = (*it)["mqtt"]["clientid"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: MQTT 'clientid' set to {}", 
-                                                pDriver->m_mqtt_strClientId);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'clientid' set to {}", 
+                                                        pDriver->m_mqtt_strClientId);                                        
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: Failed to read MQTT 'clientid'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'clientid'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2806,57 +2759,50 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("format")) {
                                     std::string format = (*it)["mqtt"]["format"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: MQTT 'format' set to {}", 
-                                                format);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'format' set to {}", 
+                                                        format);                                        
                                     }
 
                                     vscp_makeUpper(format);
                                     if (0 == vscp_strcasecmp(format.c_str(), "JSON")) {
                                         pDriver->m_mqtt_format = jsonfmt;
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                            
-                                                    "ReadConfig: MQTT format set to 'JSON' ({})\n", 
-                                                    format);                                            
+                                        spdlog::debug("ReadConfig: MQTT format set to 'JSON' ({})\n", 
+                                                        format);                                            
                                         }
                                     } 
                                     else if (0 == vscp_strcasecmp(format.c_str(), "XML")) {
                                         pDriver->m_mqtt_format = xmlfmt;
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                             
-                                                    "ReadConfig: MQTT format set to 'XML' ({})\n", 
-                                                    format);                                            
+                                        spdlog::debug("ReadConfig: MQTT format set to 'XML' ({})\n", 
+                                                        format);                                            
                                         }
                                     } 
                                     else if (0 == vscp_strcasecmp(format.c_str(), "STRING")) {
                                         pDriver->m_mqtt_format = strfmt;
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                            
-                                                    "ReadConfig: MQTT format set to 'STRING' ({})\n", 
-                                                    format);                                            
+                                        spdlog::debug("ReadConfig: MQTT format set to 'STRING' ({})\n", 
+                                                        format);                                            
                                         }
                                     } 
                                     else if (0 == vscp_strcasecmp(format.c_str(), "BINARY")) {
                                         pDriver->m_mqtt_format = binfmt;
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                              
-                                                    "ReadConfig: MQTT format set to 'BINARY' ({})\n", 
-                                                    format);                                            
+                                        spdlog::debug("ReadConfig: MQTT format set to 'BINARY' ({})\n", 
+                                                        format);                                            
                                         }
                                     } 
                                     else {
                                         pDriver->m_mqtt_format = jsonfmt;
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                            
-                                                    "ReadConfig: Unknown format: MQTT format set to 'JSON' ({})\n", 
-                                                    format);                                            
+                                        spdlog::debug("ReadConfig: Unknown format: MQTT format set to 'JSON' ({})\n", 
+                                                        format);                                            
                                         }
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                       
-                                                "ReadConfig: Failed to read MQTT 'format'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'format'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2864,20 +2810,17 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("qos")) {
                                     pDriver->m_mqtt_qos = (*it)["mqtt"]["qos"].get<int>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                       
-                                                "ReadConfig: MQTT 'qos' set to {}", 
-                                                pDriver->m_mqtt_qos);                                        
+                                        spdlog::debug("ReadConfig: MQTT 'qos' set to {}", 
+                                                        pDriver->m_mqtt_qos);                                        
                                     }
                                     if (pDriver->m_mqtt_qos > 2) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: MQTT qos > 2. Set to 0.");                                        
+                                        spdlog::debug("ReadConfig: MQTT qos > 2. Set to 0.");                                        
                                         pDriver->m_mqtt_qos = 0;
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: Failed to read MQTT 'qos'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'qos'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2885,15 +2828,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("bcleansession")) {
                                     pDriver->m_mqtt_bCleanSession = (*it)["mqtt"]["bcleansession"].get<bool>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                      
-                                                "ReadConfig: MQTT 'bcleansession' set to {}", 
+                                        spdlog::debug("ReadConfig: MQTT 'bcleansession' set to {}", 
                                                 pDriver->m_mqtt_bCleanSession);                                        
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                    "ReadConfig: Failed to read MQTT 'bcleansession'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'bcleansession'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2901,15 +2842,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("bretain")) {
                                     pDriver->m_mqtt_bRetain = (*it)["mqtt"]["bretain"].get<bool>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                       
-                                                "ReadConfig: MQTT 'bretain' set to {}", 
+                                        spdlog::debug("ReadConfig: MQTT 'bretain' set to {}", 
                                                 pDriver->m_mqtt_bRetain);                                        
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                      
-                                                "ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                                        
                                     }
                                 }
 
@@ -2917,8 +2856,7 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("keepalive")) {
                                     pDriver->m_mqtt_keepalive = (*it)["mqtt"]["keepalive"].get<int>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                        
-                                                "ReadConfig: MQTT 'keepalive' set to {}", 
+                                        spdlog::debug("ReadConfig: MQTT 'keepalive' set to {}", 
                                                 pDriver->m_mqtt_keepalive);                                       
                                     }
                                 } 
@@ -3348,15 +3286,13 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("bretain")) {
                                     pDriver->m_mqtt_bRetain = (*it)["mqtt"]["bretain"].get<bool>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: MQTT 'bretain' set to {}", 
-                                                pDriver->m_mqtt_bRetain);                                       
+                                        spdlog::debug("ReadConfig: MQTT 'bretain' set to {}", 
+                                                        pDriver->m_mqtt_bRetain);                                       
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                                
+                                        spdlog::debug("ReadConfig: Failed to read MQTT 'bretain'. Defaults will be used.");                                
                                     }
                                 }
 
@@ -3364,9 +3300,8 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("keepalive")) {
                                     pDriver->m_mqtt_keepalive = (*it)["mqtt"]["keepalive"].get<int>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::error(                                         
-                                                "ReadConfig: MQTT 'keepalive' set to {}", 
-                                                pDriver->m_mqtt_keepalive);                                       
+                                        spdlog::debug("ReadConfig: MQTT 'keepalive' set to {}", 
+                                                        pDriver->m_mqtt_keepalive);                                       
                                     }
                                 } 
                                 else  {
@@ -3492,23 +3427,20 @@ CControlObject::readJSON(const json& j)
                                 if ((*it)["mqtt"].contains("pwkeyfile")) {
                                     pDriver->m_mqtt_pwKeyfile = (*it)["mqtt"]["pwkeyfile"].get<std::string>();
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::error(                                          
-                                                "ReadConfig: MQTT 'pwkeyfile' set to {}", 
-                                                pDriver->m_mqtt_pwKeyfile);                                       
+                                        spdlog::debug("ReadConfig: MQTT 'pwkeyfile' set to {}", 
+                                                        pDriver->m_mqtt_pwKeyfile);                                       
                                     }
                                 } 
                                 else  {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::error(                                         
-                                                "ReadConfig: Failed to read MQTT 'pwkeyfile'. Defaults will be used.");                                        
+                                        spdlog::error("ReadConfig: Failed to read MQTT 'pwkeyfile'. Defaults will be used.");                                        
                                     }
                                 }
 
                                 // subscribe
                                 if (!((*it)["mqtt"].contains("subscribe") && (*it)["mqtt"]["subscribe"].is_array())) {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::debug(                                         
-                                                "ReadConfig: mqtt.subscribe object. Defaults will be used.");                                        
+                                        spdlog::debug("ReadConfig: mqtt.subscribe object. Defaults will be used.");                                        
                                     }
                                 } 
                                 else {
@@ -3516,9 +3448,8 @@ CControlObject::readJSON(const json& j)
                                     for (json::iterator it2 = subsub.begin(); it2 != subsub.end(); ++it2) {
                                         pDriver->m_mqtt_subscriptions.push_back((*it2).get<std::string>());
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                            spdlog::debug(                                             
-                                                    "ReadConfig: mqtt.subscription {}.", 
-                                                    (*it2).get<std::string>());                                            
+                                            spdlog::debug("ReadConfig: mqtt.subscription {}.", 
+                                                            (*it2).get<std::string>());                                            
                                         }
                                     }
                                 }
@@ -3526,8 +3457,7 @@ CControlObject::readJSON(const json& j)
                                 // publish
                                 if (!((*it)["mqtt"].contains("publish") && (*it)["mqtt"]["publish"].is_array())) {
                                     if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                        spdlog::error(                                          
-                                                "ReadConfig: mqtt.publish object. Defaults will be used.");                                       
+                                        spdlog::error("ReadConfig: mqtt.publish object. Defaults will be used.");                                       
                                     }
                                 } 
                                 else {
@@ -3535,9 +3465,8 @@ CControlObject::readJSON(const json& j)
                                     for (json::iterator it2 = subsub.begin(); it2 != subsub.end(); ++it2) {
                                         pDriver->m_mqtt_publish.push_back((*it2).get<std::string>());
                                         if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-                                            spdlog::debug(                                              
-                                                    "ReadConfig: mqtt.publish {}.", 
-                                                    (*it2).get<std::string>());                                           
+                                            spdlog::debug("ReadConfig: mqtt.publish {}.", 
+                                                            (*it2).get<std::string>());                                           
                                         }
                                     }
                                 }

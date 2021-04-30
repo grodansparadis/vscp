@@ -1,7 +1,7 @@
 
 # We'll use defaults from the LLVM style, but with 4 columns indentation.
 BasedOnStyle: Mozilla
-IndentWidth: 4
+IndentWidth: 2
 
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
