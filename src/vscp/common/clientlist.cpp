@@ -46,10 +46,21 @@
 #include <json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
 
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
+using namespace kainjow::mustache;
+
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+
+#include <iostream>
+#include <fstream>      
+#include <list>
+#include <map>
+#include <string>
 
 const char* interface_description[] = { "Unknown (you should not see this).",
                                         "Internal VSCP server client.",
@@ -504,3 +515,4 @@ CClientList::getClient(uint16_t n, std::string& client)
 
     return true;
 }
+

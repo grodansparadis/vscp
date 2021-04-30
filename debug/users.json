@@ -1,0 +1,47 @@
+{
+	"users" : [
+		{
+			"name" : "admin",
+			"password" : "D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE",
+			"fullname" : "Miss. Super user",
+			"rights" : "admin",
+			"remotes" : [
+				"+127.0.0.1",
+				"+192.168.0.0/16",
+                "+fe80::/64"
+			],
+			"events" : "",
+			"filter" : "",
+			"mask" : "",						
+			"note" : "A normal user. username='admin' password='secret'"
+		},
+		{
+			"name" : "user",
+			"password" : "D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE",
+			"fullname" : "Mr. Sample user",
+			"rights" : "user",
+			"remotes" : "",
+			"events" : "",
+			"filter" : "",
+			"mask" : "",						
+			"note" : "A normal user. username='user' password='secret'"
+		},
+		{
+			"name" : "special1",
+			"password" : "D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE",
+			"fullname" : "Mrs. Special user",
+			"rights" : [
+				"user",
+				""
+			],
+			"remotes" : "+127.0.0.1",
+			"events" : [
+				"10:*",
+				"30:9"
+			],
+			"filter" : "",
+			"mask" : "",
+			"note" : "A normal user. username='user' password='secret'"
+		}
+	]
+}

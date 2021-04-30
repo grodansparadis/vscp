@@ -322,6 +322,7 @@ class CClientList
     */
     bool getClient(uint16_t n, std::string &client);
 
+
   public:
 
     // List with clients

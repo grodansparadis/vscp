@@ -901,101 +901,123 @@ CUserList::~CUserList(void)
 
 bool CUserList::loadUsersFromFile(const std::string &path) 
 {
-    json j;
-    bool rv = true;
+  json j;
 
-    spdlog::error("userlist: Reading full JSON configuration from {}", path);
+  try {         
+      std::ifstream in(path, std::ifstream::in);
+      in >> j;
+  }
+  catch (json::parse_error) {
+      spdlog::critical("[loadUsersFromFile] Failed to load/parse JSON user list.");     
+      return false;
+  }
 
-    try {
-        std::ifstream in(path, std::ifstream::in);
-        in >> j;
+  // Add users
+  if (!j["users"].is_array()) {      
+      spdlog::debug("[loadUsersFromFile] Failed to parse JSON configuration.");     
+      return false;
+  }
+
+  for (json::iterator it = j["users"].begin(); it != j["users"].end(); ++it) {
+
+    try {  
+      //std::cout << (*it).dump() << '\n';
+
+      std::string name = (*it).value("name", "");
+      std::string password = (*it).value("password", "");
+      std::string fullname = (*it).value("full-name", "");
+      std::string note = (*it).value("note", "");
+
+      vscp_trim(name);
+      if (!name.length()) {
+          spdlog::warn("[vscpl2drv-tcpipsrv] Invalid username ('user' record skiped).");
+          continue;
+      }
+
+      vscp_trim(password);
+      if (!password.length()) {
+          spdlog::warn("[loadUsersFromFile] Invalid password for user '{}' ('user' record skiped).", name);
+          continue;
+      }
+
+      vscpEventFilter receive_filter;
+      memset(&receive_filter, 0, sizeof(vscpEventFilter));
+      if ((*it).contains("filter")) {
+          vscp_readFilterFromString(&receive_filter, (*it).value("filter", ""));
+      }
+      if ((*it).contains("mask")) {
+          vscp_readMaskFromString(&receive_filter, (*it).value("mask", ""));
+      }
+
+      // Rights
+      std::string rights;
+      if ((*it)["rights"].is_array()) {
+          for (json::iterator it_rights = (*it)["rights"].begin(); it_rights != (*it)["rights"].end(); ++it_rights) {
+              std::cout << (*it_rights).dump() << '\n';
+              if (rights.length()) rights += ",";
+              rights += (*it_rights).get<std::string>();
+          }
+      }
+      else if ((*it)["rights"].is_string()) {
+          rights = (*it).value("rights", "user");
+      }
+      else {
+          spdlog::debug("[loadUsersFromFile] rights tag is missing for user (set to 'user').");
+          rights = "user";
+      }
+
+      // ACL remotes
+      std::string remotes;
+      if ((*it)["remotes"].is_array()) {
+          for (json::iterator it_remotes = (*it)["remotes"].begin(); it_remotes != (*it)["remotes"].end(); ++it_remotes) {
+              std::cout << (*it_remotes).dump() << '\n';
+              if (remotes.length()) remotes += ",";
+              remotes += (*it_remotes).get<std::string>();
+          }
+      }
+      else if ((*it)["remotes"].is_string()) {
+          remotes = (*it).value("remotes", "");
+      }
+      else {
+          spdlog::debug("[loadUsersFromFile] remotes tag is missing for user. All client hosts can connect.");
+      }
+
+      // Allowed events
+      std::string events;
+      if ((*it)["allow-events"].is_array()) {
+          for (json::iterator it_events = (*it)["allow-events"].begin(); 
+                  it_events != (*it)["allow-events"].end(); 
+                  ++it_events) {
+              std::cout << (*it_events).dump() << '\n';
+              if (events.length()) events += ",";
+              events += (*it_events).get<std::string>();
+          }
+      }
+      else if ((*it)["allow-events"].is_string()) {
+          events = (*it).value("allow-events", "");
+      }
+      else {
+          spdlog::debug("[loadUsersFromFile] allow-events tag is missing for user. All events can be sent.");
+      }
+
+      if (!addUser(name,
+                      password,
+                      fullname,
+                      note,
+                      &receive_filter,
+                      rights,
+                      remotes,
+                      events)) {                                       
+          spdlog::debug("[userlist::loadUsersFromFile] Failed to add user {}.",(*it).dump());
+      }
+
     } catch (...) {
-        spdlog::error("userlist: Failed to parse JSON configuration.");
-        return false;
+      spdlog::debug("[userlist::loadUsersFromFile] Failed to read user data from file {}.",(*it).dump());
     }
 
-    try {
-        if (j.contains("users") && j["users"].is_array()) {
+  }  // for
 
-            for (json::iterator it = j["users"].begin(); it != j["users"].end();
-                ++it) {
-
-                std::string user;
-                std::string fullname;
-                std::string note;
-                std::string password;
-                std::string rights;
-                std::string remotes;
-                std::string events;
-                vscpEventFilter vscp_filter;
-
-                memset(&vscp_filter, 0, sizeof(vscpEventFilter));
-
-                if ((*it)["user"].is_string()) {
-                user = (*it)["user"];
-                }
-
-                if ((*it)["fullname"].is_string()) {
-                fullname = (*it)["fullname"];
-                }
-
-                if ((*it)["note"].is_string()) {
-                note = (*it)["note"];
-                }
-
-                // credentials is created with vscp_makePasswordHash
-                // so here pw:iv
-                if ((*it)["credentials"].is_string()) {
-                    password = (*it)["credentials"];
-                }
-
-                // priority,class,type,guid,priority,class,type,guid,
-                if ((*it)["filter"].is_string()) {
-                    std::string str = (*it)["filter"];
-                    if (!vscp_readFilterMaskFromString(&vscp_filter,
-                                                    (*it)["filter"])) {
-                        spdlog::error("userlist: Failed to set user filter for user {}.", user);                                                
-                    }
-                }
-
-                if ((*it)["rights"].is_string()) {
-                rights = (*it)["rights"];
-                }
-
-                if ((*it)["remotes"].is_string()) {
-                remotes = (*it)["remotes"];
-                }
-
-                if ((*it)["events"].is_string()) {
-                events = (*it)["events"];
-                }
-
-                if (!addUser(user, 
-                        password,
-                        fullname,
-                        note, 
-                        &vscp_filter, 
-                        rights,
-                        remotes,
-                        events)) {
-                    spdlog::error("userlist: Failed to add user {}.", user);        
-                }
-            }
-
-        } 
-        else {
-        spdlog::error("userlist: Failed to read 'users'. Must be present.");
-        return false;
-        }
-
-    // spdlog::debug("userlist: 'runasuser' set to %s", m_runAsUser.c_str());
-    } 
-    catch (...) {
-        spdlog::error("userlist: Failed to read 'runasuser'. Must be present.");
-        return false;
-    }
-
-    return rv;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
