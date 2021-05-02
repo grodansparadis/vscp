@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@
 #ifndef WIN32
 #include <sys/times.h>
 #include <byteswap.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #else
+//#include <winsock2.h>
 //#include <windows.h>
 #endif
 
@@ -60,6 +64,7 @@
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
+#include <sockettcp.h>
 
 /*  byte swapping */
 
@@ -644,14 +649,23 @@ extern "C"
     vscp_getHostFromInterface(const std::string& iface);
 
     /*!
-     * Parse IPv4 address and return net part and mask part
-     *
-     * @param addr ipv4 address to parse (a.b.c.d/m)
-     * @param net Network part of address
-     * @param mask Mask part of address
-     * return 0 on error,
+        Parse IPv4 address and return
+
+        @param addr ipv4 address to parse (a.b.c.d/m)
+        @param net Network part of address
+        @param mask Mask part of address
+        @return 0 on error,
      */
     int vscp_parse_ipv4_addr(const char* addr, uint32_t* net, uint32_t* mask);
+
+    /*!
+        Parse IPv4/IPv6 address 
+        @param addr IPv4 (a.b.c.d/x) or IPv6 () net.
+        @param sa Structure holding address to check 
+        @param no_strict Set to zero to disable strict control for IPv6
+        @return TRUE if addr is OK
+    */
+    int vscp_parse_match_net(const char* addr, const union usa *sa, int no_strict);
 
     // ***************************************************************************
     //                             Measurement Helpers

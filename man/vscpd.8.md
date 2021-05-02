@@ -12,7 +12,7 @@ vscpd [*options*]
 
 # DESCRIPTION
 
-The VSCP daemon is an open source daemon/server program that is part of VSCP & Friends and is built and maintained by Åke Hedman, [the VSCP project](https://www.grodansparadis.com). The server act as a hub and collects information from different sources and let clients collect this information over a TCP/IP, websocket, REST interface etc and makes it easy to present or work on this date in real time. The daemon also has an internal scheduler that makes it possible to control different scenarios such as simple tasks like to automatically turn on a group of lamps at a specific time of the day or do complex industrial control tasks.
+The VSCP daemon is an open source daemon/server program that is part of VSCP & Friends and is built and maintained by Åke Hedman, [the VSCP project](https://www.vscp.org). The server act as a hub and collects information from different sources and let clients collect this information over a TCP/IP, websocket, REST interface etc and makes it easy to present or work on this date in real time. The daemon also has an internal scheduler that makes it possible to control different scenarios such as simple tasks like to automatically turn on a group of lamps at a specific time of the day or do complex industrial control tasks.
 
 On Unix systems the daemon is a standard server application that is started in the background. It is possible also to compile it to start as a standard application if that way of running it is preferred.
 

@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -306,13 +306,13 @@ class CUserItem
     std::string getPassword(void);
 
     /*!
-        Set password
-        Set password. It is hashed with vscp_makePasswordHash
+        Set clear text password
+        Password is hashed with vscp_makePasswordHash
         over "username:passpword" 
         @param password Clear text password to set
         @return true on success, false on failure.
     */
-    bool setPassword(const std::string& strPassword);
+    bool setPasswordFromClearText(const std::string& strPassword);
 
     /*!
         Set (already) hashed password. Typically used
@@ -321,7 +321,7 @@ class CUserItem
         @param password on (iv(16);pw(32)) hex form
         @return true on success, false on failure.
     */
-    void setHashedPassword(const std::string& strPassword)
+    void setPassword(const std::string& strPassword)
             { m_password = strPassword; };
 
     /*!
@@ -523,15 +523,14 @@ class CUserItem
 
   protected:
   
-    // System assigned ID for user (-1 -  for system users (not in DB), 0 for
-    // admin user )
+    // System assigned ID for user
     long m_userID;
 
     /// Username
     std::string m_user;
 
     /*!
-        Password (iv(16);pw(32))
+        Password (iv(16);pw(32))  (user:password)
             vscp_makePasswordHash(pw, password, NULL);
      */
     std::string m_password;

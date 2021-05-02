@@ -465,7 +465,7 @@ It would have been very nice to show them on a web page. The best way to do this
 
 We can do this in two variants to show the power of this interface. First we show values in widgets that really looks like a thermometer and is dynamically updated and the as a textual representation that can be anywhere in the flow of a web-page and still be dynamic, live and nice.
 
-A simple exeample is [here](https://youtu.be/qV41vWt5toE) that show one of the temperaturewidgets show temperature from a [Kelvin NTC10KA Module](https://www.grodansparadis.com/kelvinntc10k/kelvin_ntc10ka.html).
+A simple exeample is [here](https://youtu.be/qV41vWt5toE) that show one of the temperaturewidgets show temperature from a [Kelvin NTC10KA Module](https://www.vscp.org/kelvinntc10k/kelvin_ntc10ka.html).
 
 ##### Step 1
 

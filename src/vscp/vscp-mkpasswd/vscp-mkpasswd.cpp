@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     uint8_t salt[16];
     uint8_t buf[32];
 
-    if ( argc < 2 ) {
+    if (argc < 2) {
         printf("Make storable password hash for VSCP & Friends.\n");
         printf("Format is \n");
         printf("    mkpasswd 'password'\n");
@@ -51,17 +51,17 @@ int main(int argc, char **argv)
     }
 
     password = argv[1];
-    if ( password.size() < 12 ) {
+    if (password.size() < 12) {
         printf("It is encouraged to use passwords with a length > 12 bytes.\n");
     }
 
     // Get random IV
-    if ( 16 != getRandomIV( salt, 16 ) ) {
+    if (16 != getRandomIV(salt, 16)) {
         printf("Unable to generate IV. Terminating.\n");
         return -1;
     }
 
-    fastpbkdf2_hmac_sha256( (const uint8_t *)argv[1], strlen( argv[1] ),
+    fastpbkdf2_hmac_sha256((const uint8_t *)argv[1], strlen(argv[1]),
                             salt, 16,
                             70000,
                             buf, 32 );
@@ -70,10 +70,12 @@ int main(int argc, char **argv)
     for ( i=0; i<16; i++ ) {
         printf("%02X", salt[i]);
     }
+
     printf(";");
     for ( i=0; i<32; i++ ) {
         printf("%02X", buf[i]);
     }
+    
     printf("\n");
 
 

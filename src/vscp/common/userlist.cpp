@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@
 #include <string.h>
 
 #ifdef WIN32
-
 #else
 #include <arpa/inet.h>
 #endif
@@ -103,10 +102,10 @@ CUserItem::~CUserItem(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setPassword
+// setPasswordFromClearText
 //
 
-bool CUserItem::setPassword(const std::string& strPassword)
+bool CUserItem::setPasswordFromClearText(const std::string& strPassword)
 {
   std::string result;
   std::string combined = m_user + ":" + strPassword;
@@ -114,7 +113,7 @@ bool CUserItem::setPassword(const std::string& strPassword)
     return false;
   }
   m_password = result;
-  return true;
+  return true; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -748,7 +747,7 @@ int CUserItem::isAllowedToConnect(uint32_t remote_ip)
   remote_ip = htonl(remote_ip);
 
   // If the list is empty - allow all
-  // if (0 == m_listAllowedRemotes.size()) return 1;
+  if (0 == m_listAllowedRemotes.size()) return 1;
 
   for (size_t i = 0; i < m_listAllowedRemotes.size(); i++) {
 
@@ -1250,7 +1249,8 @@ CUserItem *CUserList::validateUser(const std::string &user,
     return NULL;
   }
 
-  if (!vscp_isPasswordValid(pUserItem->getPassword(), password)) {
+  std::string testpw = pUserItem->getUserName() + ":" + password;
+  if (!vscp_isPasswordValid(pUserItem->getPassword(), testpw)) {
     spdlog::error("userlist :"
                   "validateUser: Failed to validate user '{}' - "
                   "Check username/password.", user);

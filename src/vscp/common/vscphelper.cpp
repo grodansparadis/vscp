@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,6 @@
 #include <dirent.h>
 #include <grp.h>
 #include <pwd.h>
-#include <unistd.h>
 #endif
 
 
@@ -1026,6 +1025,113 @@ vscp_parse_ipv4_addr(const char* addr, uint32_t* net, uint32_t* mask)
     }
 
     return len;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_parse_match_net
+//
+
+int
+vscp_parse_match_net(const char* addr, const union usa *sa, int no_strict)
+{
+	int n;
+	unsigned int a, b, c, d, slash;
+
+	if (sscanf(addr, "%u.%u.%u.%u/%u%n", &a, &b, &c, &d, &slash, &n) != 5) {
+		slash = 32;
+		if (sscanf(addr, "%u.%u.%u.%u%n", &a, &b, &c, &d, &n) != 4) {
+			n = 0;
+		}
+	}
+
+	if ((n > 0) && ((size_t)n == strlen(addr))) {
+		if ((a < 256) && (b < 256) && (c < 256) && (d < 256) && (slash < 33)) {
+			// IPv4 format 
+			if (sa->sa.sa_family == AF_INET) {
+				uint32_t ip = (uint32_t)ntohl(sa->sin.sin_addr.s_addr);
+				uint32_t net = ((uint32_t)a << 24) | ((uint32_t)b << 16)
+				               | ((uint32_t)c << 8) | (uint32_t)d;
+				uint32_t mask = slash ? (0xFFFFFFFFu << (32 - slash)) : 0;
+				return (ip & mask) == net;
+			}
+			return 0;
+		}
+	}
+	else {
+		char ad[50];
+		const char *p;
+
+		if (sscanf(addr, "[%49[^]]]/%u%n", ad, &slash, &n) != 2) {
+			slash = 128;
+			if (sscanf(addr, "[%49[^]]]%n", ad, &n) != 1) {
+				n = 0;
+			}
+		}
+
+		if ((n <= 0) && no_strict) {
+			// no square brackets? 
+			p = strchr(addr, '/');
+			if (p && (p < (addr + strlen(addr)))) {
+				if (((size_t)(p - addr) < sizeof(ad))
+				    && (sscanf(p, "/%u%n", &slash, &n) == 1)) {
+					n += (int)(p - addr);
+					vscp_strlcpy(ad, addr, (size_t)(p - addr) + 1);
+				} 
+                else {
+					n = 0;
+				}
+			} 
+            else if (strlen(addr) < sizeof(ad)) {
+				n = (int)strlen(addr);
+				slash = 128;
+				vscp_strlcpy(ad, addr, strlen(addr) + 1);
+			}
+		}
+
+		if ((n > 0) && ((size_t)n == strlen(addr)) && (slash < 129)) {
+			p = ad;
+			c = 0;
+			/* zone indexes are unsupported, at least two colons are needed */
+			while (isxdigit((unsigned char)*p) || (*p == '.') || (*p == ':')) {
+				if (*(p++) == ':') {
+					c++;
+				}
+			}
+			if ((*p == '\0') && (c >= 2)) {
+				struct sockaddr_in6 sin6;
+				unsigned int i;
+
+				// for strict validation, an actual IPv6 argument is needed 
+				if (sa->sa.sa_family != AF_INET6) {
+					return 0;
+				}
+
+				if (inet_pton(AF_INET6, ad, &sin6)) {
+					// IPv6 format 
+					for (i = 0; i < 16; i++) {
+						uint8_t ip = sa->sin6.sin6_addr.s6_addr[i];
+						uint8_t net = sin6.sin6_addr.s6_addr[i];
+						uint8_t mask = 0;
+
+						if (8 * i + 8 < slash) {
+							mask = 0xFFu;
+						} 
+                        else if (8 * i < slash) {
+							mask = (uint8_t)(0xFFu << (8 * i + 8 - slash));
+						}
+
+						if ((ip & mask) != net) {
+							return 0;
+						}
+					}
+					return 1;
+				}
+			}
+		}
+	}
+
+	/* malformed */
+	return -1;
 }
 
 // ***************************************************************************

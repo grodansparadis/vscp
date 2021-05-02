@@ -41,11 +41,11 @@
 
 #define VSCPD_COPYRIGHT                                                        \
     "Copyright © 2000-2021 Ake Hedman, the VSCP project, "                   \
-    "https://www.grodansparadis.com"
+    "https://www.vscp.org"
 #define VSCPD_COPYRIGHT_HTML                                                   \
     "Copyright Ⓒ 2000-2021 Ake Hedman, <a "                                   \
     "href=\"mailto:info@grodansparadis.com\">the VSCP project</a>, <a "      \
-    "href=\"https://www.grodansparadis.com\">https://"                         \
+    "href=\"https://www.vscp.org\">https://"                         \
     "www.grodansparadis.com</a>"
 
 #define VSCP_VERSION(major, minor, release)                                    \
