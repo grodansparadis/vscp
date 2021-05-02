@@ -6,7 +6,7 @@
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
 // Copyright:   © 2007-2021
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Ake Hedman, the VSCP project, <akhe@vscp.org>
 //              (C) 2012 Dinesh Guleria
 // Licence:
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 //  this file might be covered by the GNU General Public License.
 //
 //  Alternative licenses for VSCP & Friends may be arranged by contacting
-//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
+//  the VSCP project at info@grodansparadis.com, http://www.grodansparadis.com
 ///
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)

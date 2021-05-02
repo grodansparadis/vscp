@@ -1,7 +1,7 @@
 /**
  * @brief           VSCP Level I/II class definition file
  * @file            vscp_class.h
- * @author          Ake Hedman, Grodans Paradis AB, www.vscp.org
+ * @author          Ake Hedman, the VSCP project, www.vscp.org
  *
  * @section description Description
  **********************************
@@ -16,7 +16,7 @@
  * The MIT License (MIT)
  *
  * Copyright (C) 2000-2021 Ake Hedman, 
- * Grodans Paradis AB <info@grodansparadis.com>
+ * the VSCP project <info@grodansparadis.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

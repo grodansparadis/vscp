@@ -82,7 +82,7 @@ BEGIN
             VALUE "FileDescription", "VSCP Service Application\0"
             VALUE "FileVersion", "0, 2, 7, 0\0"
             VALUE "InternalName", "VSCP Service\0"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2010 Ake Hedman, Grodans Paradis AB\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2010 Ake Hedman, the VSCP project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "vscpservice.exe\0"
             VALUE "PrivateBuild", "\0"

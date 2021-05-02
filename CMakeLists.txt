@@ -2,7 +2,7 @@
 #
 # Build instructions for the VSCP daemon.
 #
-# Copyright (c) 2000-2021 Åke Hedman, Grodans Paradis AB
+# Copyright (c) 2000-2021 Åke Hedman, the VSCP project
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic controller for a VSCP based system. It is"
                                       "possible to add drivers to physical devices, interface external nodes over"
                                       "tcp/ip, websockets and to perform other higher end functionality.")
-SET(CPACK_PACKAGE_VENDOR "Grodans Paradis AB")
+SET(CPACK_PACKAGE_VENDOR "the VSCP project")
 SET(CPACK_PACKAGE_CONTACT "info@grodansparadis.com")
 set(CPACK_PACKAGE_NAME ${APP_LOW_NAME})
 set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY ${APP_NAME})

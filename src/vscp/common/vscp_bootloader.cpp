@@ -6,7 +6,7 @@
 // Created:     Thu 25 Oct 2007 22:32:58 CEST
 // RCS-ID:
 // Copyright:   © 2007-2021
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Ake Hedman, the VSCP project, <akhe@vscp.org>
 //				(C) 2012 Dinesh Guleria
 // Licence:
 // This program is free software; you can redistribute it and/or

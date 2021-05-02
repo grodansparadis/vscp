@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -110,7 +110,7 @@
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string
  */
-#define TCPIP_VENDOR_STRING "Grodans Paradis AB, Sweden"
+#define TCPIP_VENDOR_STRING "the VSCP project, Sweden"
 
 #define DRIVER_INFO_STRING ""
 

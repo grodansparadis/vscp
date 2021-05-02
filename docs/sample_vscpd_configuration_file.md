@@ -5,4 +5,4 @@ You can fins sample files [here](https://github.com/grodansparadis/vscp/tree/mas
 
 \\ 
 ----
-Copyright (c) 2000-2014 [Åke Hedman](mailto/akhe@grodansparadis.com), [Paradise of the Frog / Grodans Paradis AB](http://www.grodansparadis.com)
+Copyright (c) 2000-2014 [Åke Hedman](mailto/akhe@vscp.org), [Paradise of the Frog / the VSCP project](http://www.grodansparadis.com)

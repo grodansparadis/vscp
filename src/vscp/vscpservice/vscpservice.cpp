@@ -1,4 +1,4 @@
-// vscpservice (C) 2001-2011 Grodans Paradis AB
+// vscpservice (C) 2001-2011 the VSCP project
 // changes and adoptions Ake Hedman, akhe@vscp.org
 // 
 // From Microsoft example built by Dave McPherson (davemm)   11-March-98

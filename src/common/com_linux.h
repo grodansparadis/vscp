@@ -2,7 +2,7 @@
  *	\file com.h
  *  \brief interface for the Linux comm class.
  *
-// Copyright © 2000-2021 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project, <akhe@vscp.org>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
