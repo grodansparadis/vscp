@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -153,16 +153,17 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         if (!vscp_convertJSONToEvent(&ev, strPayload)) {
             // This is not a JSON formated event - we skip it
             if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-                spdlog::get("logger")->error("Driver: {}: Failed to convert event to JSON", 
+                spdlog::get("logger")->error("Driver: {}: Failed to convert to event from JSON (check format)", 
                             pDeviceItem->m_strName);
             }
             return;
         }
-    } else if (pDeviceItem->m_mqtt_format == xmlfmt) {
+    } 
+    else if (pDeviceItem->m_mqtt_format == xmlfmt) {
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertXMLToEvent(&ev, strPayload) ) {
             if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-                spdlog::get("logger")->error("Driver: {}: Failed to convert event to XML", 
+                spdlog::get("logger")->error("Driver: {}: Failed to convert to event from XML (check format)", 
                             pDeviceItem->m_strName);
             }
             return;
@@ -172,7 +173,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
         std::string strPayload((const char *)pMsg->payload, pMsg->payloadlen);
         if ( !vscp_convertStringToEvent(&ev, strPayload) ) {
             if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-                spdlog::get("logger")->error("Driver: {}: Failed to convert event to STRING", 
+                spdlog::get("logger")->error("Driver: {}: Failed to convert to event from STRING (check format)", 
                             pDeviceItem->m_strName);
             }
             return;
@@ -181,7 +182,7 @@ static void mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struc
     else if (pDeviceItem->m_mqtt_format == binfmt) {
         if (!vscp_getEventFromFrame( &ev, (const uint8_t *)pMsg->payload, pMsg->payloadlen) ) {
             if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-                spdlog::get("logger")->error("Driver: {}: Failed to convert event to BINARY", 
+                spdlog::get("logger")->error("Driver: {}: Failed to convert to event from BINARY (check format)", 
                             pDeviceItem->m_strName);
             }
             return;

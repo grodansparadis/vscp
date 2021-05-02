@@ -37,7 +37,7 @@
 //  this file might be covered by the GNU General Public License.
 //
 //  Alternative licenses for VSCP & Friends may be arranged by contacting
-//  the VSCP project at info@grodansparadis.com, http://www.grodansparadis.com
+//  the VSCP project at akhe@vscp.org, http://www.grodansparadis.com
 //
 
 #pragma once

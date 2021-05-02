@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <info@grodansparadis.com>
+// <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -415,7 +415,7 @@ copyleft(void)
       "The MIT License (MIT)"
       "\n"
       "Copyright © 2000-2021 Ake Hedman, the VSCP project\n"
-      "<info@grodansparadis.com>\n"
+      "<akhe@vscp.org>\n"
       "\n"
       "Permission is hereby granted, free of charge, to any person obtaining a "
       "copy\n"

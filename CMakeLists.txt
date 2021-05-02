@@ -42,7 +42,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic cont
                                       "possible to add drivers to physical devices, interface external nodes over"
                                       "tcp/ip, websockets and to perform other higher end functionality.")
 SET(CPACK_PACKAGE_VENDOR "the VSCP project")
-SET(CPACK_PACKAGE_CONTACT "info@grodansparadis.com")
+SET(CPACK_PACKAGE_CONTACT "akhe@vscp.org")
 set(CPACK_PACKAGE_NAME ${APP_LOW_NAME})
 set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY ${APP_NAME})
 SET(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR_VERSION}")

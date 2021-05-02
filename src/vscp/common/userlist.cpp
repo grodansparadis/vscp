@@ -750,17 +750,19 @@ int CUserItem::isAllowedToConnect(uint32_t remote_ip)
   if (0 == m_listAllowedRemotes.size()) return 1;
 
   for (size_t i = 0; i < m_listAllowedRemotes.size(); i++) {
-
     flag = m_listAllowedRemotes[i].at(0);
     if ((flag != '+' && flag != '-') ||
-        (0 == vscp_parse_ipv4_addr(m_listAllowedRemotes[i].substr(1).c_str(),
-                                   &net, &mask))) {
+        (0 == vscp_parse_ipv4_addr(m_listAllowedRemotes[i].substr(1).c_str(),&net, &mask))) {
       return -1;
     }
 
     if (net == (remote_ip & mask)) {
       allowed = flag;
     }
+
+    // TODO replace with this method to enable IPv6 checks
+    //vscp_parse_match_net(const char* addr, const union usa *sa, 0);
+
   }
 
   return ('+' == allowed) ? 1 : 0;

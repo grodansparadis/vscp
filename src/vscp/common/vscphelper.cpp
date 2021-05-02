@@ -762,6 +762,10 @@ vscp_parseISOCombined(struct tm* ptm, std::string& dt)
     size_t pos;
     std::string isodt = dt.c_str();
 
+    // If date is nilled no date/time to parse
+    vscp_trim(dt);
+    if (!dt.length()) return false;
+
     // Check pointer
     if (NULL == ptm) return false;
 
@@ -4120,7 +4124,7 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
     if (NULL == pEventEx) return false;
 
     try {
-
+        
         auto j = json::parse(strJSON);
 
         // Head
@@ -4185,6 +4189,10 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
                 memcpy(pEventEx->data, data_array.data(), data_array.size());
             }
         }
+    }
+    catch(json::parse_error) {
+        fprintf(stderr,"Parse error");
+        return false;
     }
     catch (...) {
         return false;
