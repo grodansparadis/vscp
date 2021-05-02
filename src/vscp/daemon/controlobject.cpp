@@ -1353,9 +1353,8 @@ void CControlObject::discovery(vscpEvent *pev)
         sql += guid.getAsString();
         sql += "','discovered','');";
 
-        if (SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, sql.c_str(), NULL, NULL, &pErrMsg)) {
-            spdlog::get("logger")->error("Creation of the VSCP database index idxname failed with message {}",
-                    pErrMsg);
+        if (SQLITE_OK != sqlite3_exec(m_db_vscp_daemon, sql.c_str(), NULL, NULL, &pErrMsg)) {
+            spdlog::get("logger")->info("Failed to add discovery record [{}] Error msg: {}", sql, pErrMsg);
             return;
         }
 
