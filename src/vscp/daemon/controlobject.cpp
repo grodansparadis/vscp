@@ -705,21 +705,19 @@ CControlObject::init_mqtt()
 
     if (m_mqtt_strClientId.length()) {
         m_mosq = mosquitto_new(m_mqtt_strClientId.c_str(), m_mqtt_bCleanSession, this);
-    } 
-    else {
+    } else {
         m_mqtt_bCleanSession = true;    // Must be true without id
         m_mosq = mosquitto_new(NULL, m_mqtt_bCleanSession, this);
     }
 
     if (NULL == m_mosq) {
-        if (ENOMEM == errno) {
-            spdlog::error( 
-                        "Failed to create new mosquitto session (out of memory).");                    
-        } else if (EINVAL == errno) {
-            spdlog::error( 
-                        "Failed to create new mosquitto session (invalid parameters).");                    
-        }
-        return false;
+      if (ENOMEM == errno) {
+        spdlog::error("Failed to create new mosquitto session (out of memory).");
+      } 
+      else if (EINVAL == errno) {
+        spdlog::error("Failed to create new mosquitto session (invalid parameters).");
+      }
+      return false;
     }
 
     mosquitto_log_callback_set(m_mosq, mqtt_log_callback);
@@ -738,9 +736,10 @@ CControlObject::init_mqtt()
     // Set username/password if defined
     if (m_mqtt_strUserName.length()) {
         int rv;
-        if ( MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set(m_mosq,
-                                                                    m_mqtt_strUserName.c_str(),
-                                                                    m_mqtt_strPassword.c_str()) ) ) {
+        if ( MOSQ_ERR_SUCCESS != 
+            (rv = mosquitto_username_pw_set(m_mosq,
+                                            m_mqtt_strUserName.c_str(),
+                                            m_mqtt_strPassword.c_str()) ) ) {
             if (MOSQ_ERR_INVAL == rv) {
                 spdlog::error( 
                         "Failed to set mosquitto username/password (invalid parameter(s)).");                        
@@ -759,11 +758,9 @@ CControlObject::init_mqtt()
     if (MOSQ_ERR_SUCCESS != rv) {
 
         if (MOSQ_ERR_INVAL == rv) {
-                spdlog::error( 
-                        "Failed to connect to mosquitto server (invalid parameter(s)).");                    
+            spdlog::error("Failed to connect to mosquitto server (invalid parameter(s)).");                    
         } else if (MOSQ_ERR_ERRNO == rv) {
-                spdlog::error( 
-                        "Failed to connect to mosquitto server. System returned error (errno = {}).", errno);                     
+            spdlog::error("Failed to connect to mosquitto server. System returned error (errno = {}).", errno);                     
         }
 
         return false;
@@ -1004,7 +1001,6 @@ CControlObject::run(void)
 
     }  // while
 
-
     // Clean up is called in main file
 
     if (gDebugLevel & VSCP_DEBUG_EXTRA) {
@@ -1038,17 +1034,20 @@ CControlObject::sendEvent(vscpEventEx *pex)
             spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to JSON");
             return false;
         }
-    } else if ( m_mqtt_format == xmlfmt ) {
+    } 
+    else if ( m_mqtt_format == xmlfmt ) {
         if ( !vscp_convertEventExToXML(strPayload, pex) ) {
             spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to XML");
             return false;
         }
-    } else if ( m_mqtt_format == strfmt ) {
+    } 
+    else if ( m_mqtt_format == strfmt ) {
         if ( !vscp_convertEventExToString(strPayload, pex) ) {
             spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to STRING");
             return false;
         }
-    } else if ( m_mqtt_format == binfmt ) {
+    } 
+    else if ( m_mqtt_format == binfmt ) {
         pbuf = new uint8_t[VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pex->sizeData];
         if (NULL == pbuf) {
             return false;
@@ -1061,7 +1060,8 @@ CControlObject::sendEvent(vscpEventEx *pex)
             spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to BINARY");
             return false;
         }
-    } else {
+    } 
+    else {
         return VSCP_ERROR_NOT_SUPPORTED;
     }
 
@@ -1126,7 +1126,8 @@ CControlObject::sendEvent(vscpEventEx *pex)
                                     strPayload.c_str(),
                                     m_mqtt_qos,
                                     FALSE);
-        } else {
+        } 
+        else {
             rv = mosquitto_publish(m_mosq,
                                     NULL,
                                     strTopic.c_str(),

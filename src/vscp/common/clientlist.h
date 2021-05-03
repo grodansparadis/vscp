@@ -156,7 +156,7 @@ class CClientItem
         The GUID for a client have the following form MSB -> LSB
 
         0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFD ip-address ip-address ip-address
-       ip-address Client-ID Client-ID 0 0
+        ip-address Client-ID Client-ID 0 0
 
         ip-address ver 4 interface IP address
         Client-ID mapped id for this client

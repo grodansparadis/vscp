@@ -4109,7 +4109,7 @@ stcp_accept( struct server_context *srv_ctx,
        ( psocket->sock = accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
         stcp_report_error( "accept() failed: %s",
                             strerror( ERRNO ) ) ;
-        return 0;                                    
+        return 0;
     }
     /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&psocket->rsa.sin.sin_addr ) ) ) {
         sockaddr_to_string(src_addr, sizeof (src_addr), &psocket->rsa);

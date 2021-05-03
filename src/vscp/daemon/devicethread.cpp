@@ -1086,7 +1086,7 @@ deviceThread(void* pData)
         // Open up the L2 driver
         pDeviceItem->m_openHandle =
           pDeviceItem->m_proc_VSCPOpen(pDeviceItem->m_strParameter.c_str(),
-                                    pDeviceItem->m_guid.getGUID());
+                                        pDeviceItem->m_guid.getGUID());
 
         if (0 == pDeviceItem->m_openHandle) {
             // Free the library

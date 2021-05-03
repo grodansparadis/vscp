@@ -355,7 +355,7 @@ main(int argc, char** argv)
     //    Main loop is entered here
     // *******************************
 
-    // * * * RUN * * *
+    //         * * * RUN * * *
 
     console->debug("vscpd: run.");
 
