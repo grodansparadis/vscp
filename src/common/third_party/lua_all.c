@@ -15,82 +15,82 @@
 #define luaall_c
 
 /* core -- used by all */
-#include "lua-5.4.0/src/lapi.c"
-#include "lua-5.4.0/src/lcode.c"
-#include "lua-5.4.0/src/ldebug.c"
-#include "lua-5.4.0/src/ldo.c"
-#include "lua-5.4.0/src/ldump.c"
-#include "lua-5.4.0/src/lfunc.c"
-#include "lua-5.4.0/src/lgc.c"
-#include "lua-5.4.0/src/llex.c"
-#include "lua-5.4.0/src/lmem.c"
-#include "lua-5.4.0/src/lobject.c"
-#include "lua-5.4.0/src/lopcodes.c"
-#include "lua-5.4.0/src/lparser.c"
-#include "lua-5.4.0/src/lstate.c"
-#include "lua-5.4.0/src/lstring.c"
-#include "lua-5.4.0/src/ltable.c"
-#include "lua-5.4.0/src/ltm.c"
-#include "lua-5.4.0/src/lundump.c"
-#include "lua-5.4.0/src/lvm.c"
-#include "lua-5.4.0/src/lzio.c"
+#include "lua-5.4.3/src/lapi.c"
+#include "lua-5.4.3/src/lcode.c"
+#include "lua-5.4.3/src/ldebug.c"
+#include "lua-5.4.3/src/ldo.c"
+#include "lua-5.4.3/src/ldump.c"
+#include "lua-5.4.3/src/lfunc.c"
+#include "lua-5.4.3/src/lgc.c"
+#include "lua-5.4.3/src/llex.c"
+#include "lua-5.4.3/src/lmem.c"
+#include "lua-5.4.3/src/lobject.c"
+#include "lua-5.4.3/src/lopcodes.c"
+#include "lua-5.4.3/src/lparser.c"
+#include "lua-5.4.3/src/lstate.c"
+#include "lua-5.4.3/src/lstring.c"
+#include "lua-5.4.3/src/ltable.c"
+#include "lua-5.4.3/src/ltm.c"
+#include "lua-5.4.3/src/lundump.c"
+#include "lua-5.4.3/src/lvm.c"
+#include "lua-5.4.3/src/lzio.c"
 
-#include "lua-5.4.0/src/lauxlib.c"
-#include "lua-5.4.0/src/lbaselib.c"
-#include "lua-5.4.0/src/ldblib.c"
-#include "lua-5.4.0/src/liolib.c"
-#include "lua-5.4.0/src/linit.c"
-#include "lua-5.4.0/src/lmathlib.c"
-#include "lua-5.4.0/src/loadlib.c"
-#include "lua-5.4.0/src/loslib.c"
-#include "lua-5.4.0/src/lstrlib.c"
-#include "lua-5.4.0/src/ltablib.c"
+#include "lua-5.4.3/src/lauxlib.c"
+#include "lua-5.4.3/src/lbaselib.c"
+#include "lua-5.4.3/src/ldblib.c"
+#include "lua-5.4.3/src/liolib.c"
+#include "lua-5.4.3/src/linit.c"
+#include "lua-5.4.3/src/lmathlib.c"
+#include "lua-5.4.3/src/loadlib.c"
+#include "lua-5.4.3/src/loslib.c"
+#include "lua-5.4.3/src/lstrlib.c"
+#include "lua-5.4.3/src/ltablib.c"
 
-#include "lua-5.4.0/src/lcorolib.c"   // AKHE
-#include "lua-5.4.0/src/lutf8lib.c"   // AKHE
-//#include "lua-5.4.0/src/linit.c"      // AKHE
-#include "lua-5.4.0/src/lctype.c"
+#include "lua-5.4.3/src/lcorolib.c"   // AKHE
+#include "lua-5.4.3/src/lutf8lib.c"   // AKHE
+//#include "lua-5.4.3/src/linit.c"      // AKHE
+#include "lua-5.4.3/src/lctype.c"
 
-//#include "lua-5.4.0/src/lua.c"
+//#include "lua-5.4.3/src/lua.c"
 
 
-// #include "lua-5.4.0/src/lctype.c"
-// #include "lua-5.4.0/src/lapi.c"
-// #include "lua-5.4.0/src/lcode.c"
-// #include "lua-5.4.0/src/ldebug.c"
-// #include "lua-5.4.0/src/ldo.c"
-// #include "lua-5.4.0/src/ldump.c"
-// #include "lua-5.4.0/src/lfunc.c"
-// #include "lua-5.4.0/src/lgc.c"
-// #include "lua-5.4.0/src/llex.c"
-// #include "lua-5.4.0/src/lmem.c"
-// #include "lua-5.4.0/src/lobject.c"
-// #include "lua-5.4.0/src/lopcodes.c"
-// #include "lua-5.4.0/src/lparser.c"
-// #include "lua-5.4.0/src/lstate.c"
-// #include "lua-5.4.0/src/lstring.c"
-// #include "lua-5.4.0/src/ltable.c"
-// #include "lua-5.4.0/src/ltm.c"
-// #include "lua-5.4.0/src/lundump.c"
-// #include "lua-5.4.0/src/lvm.c"
-// #include "lua-5.4.0/src/lzio.c"
-// #include "lua-5.4.0/src/lcorolib.c"   // AKHE
-// #include "lua-5.4.0/src/lutf8lib.c"   // AKHE
-// #include "lua-5.4.0/src/linit.c"      // AKHE
+// #include "lua-5.4.3/src/lctype.c"
+// #include "lua-5.4.3/src/lapi.c"
+// #include "lua-5.4.3/src/lcode.c"
+// #include "lua-5.4.3/src/ldebug.c"
+// #include "lua-5.4.3/src/ldo.c"
+// #include "lua-5.4.3/src/ldump.c"
+// #include "lua-5.4.3/src/lfunc.c"
+// #include "lua-5.4.3/src/lgc.c"
+// #include "lua-5.4.3/src/llex.c"
+// #include "lua-5.4.3/src/lmem.c"
+// #include "lua-5.4.3/src/lobject.c"
+// #include "lua-5.4.3/src/lopcodes.c"
+// #include "lua-5.4.3/src/lparser.c"
+// #include "lua-5.4.3/src/lstate.c"
+// #include "lua-5.4.3/src/lstring.c"
+// #include "lua-5.4.3/src/ltable.c"
+// #include "lua-5.4.3/src/ltm.c"
+// #include "lua-5.4.3/src/lundump.c"
+// #include "lua-5.4.3/src/lvm.c"
+// #include "lua-5.4.3/src/lzio.c"
+// #include "lua-5.4.3/src/lcorolib.c"   // AKHE
+// #include "lua-5.4.3/src/lutf8lib.c"   // AKHE
+// #include "lua-5.4.3/src/linit.c"      // AKHE
 
 // /* auxiliary library -- used by all */
-// #include "lua-5.4.0/src/lauxlib.c"
+// #include "lua-5.4.3/src/lauxlib.c"
 
 // /* standard library  -- not used by luac */
 // #ifndef MAKE_LUAC
-// #include "lua-5.4.0/src/lbaselib.c"
-// #include "lua-5.4.0/src/ldblib.c"
-// #include "lua-5.4.0/src/liolib.c"
-// #include "lua-5.4.0/src/lmathlib.c"
-// #include "lua-5.4.0/src/loadlib.c"
-// #include "lua-5.4.0/src/loslib.c"
-// #include "lua-5.4.0/src/lstrlib.c"
-// #include "lua-5.4.0/src/ltablib.c"
+// #include "lua-5.4.3/src/lbaselib.c"
+// #include "lua-5.4.3/src/ldblib.c"
+// #include "lua-5.4.3/src/liolib.c"
+// #include "lua-5.4.3/src/lmathlib.c"
+// #include "lua-5.4.3/src/loadlib.c"
+// #include "lua-5.4.3/src/loslib.c"
+// #include "lua-5.4.3/src/lstrlib.c"
+// #include "lua-5.4.3/src/ltablib.c"
 // #endif
 
 // /* lua */
