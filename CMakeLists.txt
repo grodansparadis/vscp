@@ -230,7 +230,7 @@ if (WIN32)
         src/vscp/daemon/devicelist.h
         src/vscp/daemon/devicelist.cpp
         src/vscp/common/version.h
-        src/vscp/common/vscp.h        
+        src/vscp/common/vscp.h
         src/vscp/common/vscpremotetcpif.h
         src/vscp/common/vscpremotetcpif.cpp
         src/vscp/common/vscpdatetime.h

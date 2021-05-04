@@ -30,7 +30,7 @@
 #define WEBSOCKET_H__INCLUDED_
 
 #include <vscp.h>
-//#include <controlobject.h>
+#include <clientlist.h>
 
 //******************************************************************************
 //                                WEBSOCKETS
@@ -56,18 +56,17 @@ enum
 
 enum
 {
-    WEBSOCK_ERROR_NO_ERROR          = 0, // Everything is OK.
-    WEBSOCK_ERROR_SYNTAX_ERROR      = 1, // Syntax error.
-    WEBSOCK_ERROR_UNKNOWN_COMMAND   = 2, // Unknown command.
-    WEBSOCK_ERROR_TX_BUFFER_FULL    = 3, // Transmit buffer full.
-    WEBSOCK_ERROR_MEMORY_ALLOCATION = 4, // Problem allocating memory.
-    WEBSOCK_ERROR_NOT_AUTHORISED    = 5, // Not authorised-
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT =
-      6,                                      // Not authorized to send events.
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT = 7, // Not allowed to do that.
-    WEBSOCK_ERROR_PARSE_FORMAT            = 8, // Parse error, invalid format.
-    WEBSOCK_ERROR_UNKNOWN_TYPE = 9, // Unkown object type
-    WEBSOCK_ERROR_GENERAL = 10, // General errors and exceptions
+    WEBSOCK_ERROR_NO_ERROR          = 0,            // Everything is OK.
+    WEBSOCK_ERROR_SYNTAX_ERROR      = 1,            // Syntax error.
+    WEBSOCK_ERROR_UNKNOWN_COMMAND   = 2,            // Unknown command.
+    WEBSOCK_ERROR_TX_BUFFER_FULL    = 3,            // Transmit buffer full.
+    WEBSOCK_ERROR_MEMORY_ALLOCATION = 4,            // Problem allocating memory.
+    WEBSOCK_ERROR_NOT_AUTHORISED    = 5,            // Not authorised-
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT = 6,    // Not authorized to send events.
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT = 7,       // Not allowed to do that.
+    WEBSOCK_ERROR_PARSE_FORMAT            = 8,      // Parse error, invalid format.
+    WEBSOCK_ERROR_UNKNOWN_TYPE = 9,                 // Unkown object type
+    WEBSOCK_ERROR_GENERAL = 10,                     // General errors and exceptions
 };
 
 #define WEBSOCK_STR_ERROR_NO_ERROR        "Everything is OK."
@@ -129,7 +128,7 @@ class websock_session
     // Concatenated message receive
     std::string m_strConcatenated;
 
-    // Client structure for websocket
+    // Client structure for websocket 
     CClientItem* m_pClientItem;
 };
 

@@ -68,8 +68,8 @@
 #include <json.hpp> // Needs C++11  -std=c++11
 
 #include <actioncodes.h>
-#include <controlobject.h>
-#include <devicelist.h>
+//#include <controlobject.h>
+//#include <devicelist.h>
 #include <mdf.h>
 #include <remotevariablecodes.h>
 #include <version.h>
@@ -94,29 +94,28 @@ using json = nlohmann::json;
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject* gpobj;
+// // Webserver
+// extern struct mg_mgr gmgr;
 
-// Webserver
-extern struct mg_mgr gmgr;
+// // Linked list of all active sessions. (webserv.h)
+// extern struct websrv_Session* gp_websrv_sessions;
 
-// Linked list of all active sessions. (webserv.h)
-extern struct websrv_Session* gp_websrv_sessions;
-
-// Session structure for REST API
-extern struct websrv_rest_session* gp_websrv_rest_sessions;
+// // Session structure for REST API
+// extern struct websrv_rest_session* gp_websrv_rest_sessions;
 
 // Prototypes
 int
 webserv_url_decode(const char* src,
-                   int src_len,
-                   char* dst,
-                   int dst_len,
-                   int is_form_url_encoded);
+                    int src_len,
+                    char* dst,
+                    int dst_len,
+                    int is_form_url_encoded);
 
 void
 webserv_util_sendheader(struct mg_connection* nc,
-                        const int returncode,
-                        const char* content);
+                            const int returncode,
+                            const char* content);
+
 
 ////////////////////////////////////////////////////
 //            Forward declarations
@@ -226,7 +225,7 @@ websock_authentication(struct mg_connection* conn,
     }
 
     memset(buf, 0, sizeof(buf));
-    AES_CBC_decrypt_buffer(AES128, buf, secret, len, gpobj->m_systemKey, iv);
+    AES_CBC_decrypt_buffer(AES128, buf, secret, len, pSession->m_systemKey, iv);
 
     std::string str = std::string((const char*)buf);
     std::deque<std::string> tokens;
@@ -257,7 +256,7 @@ websock_authentication(struct mg_connection* conn,
     vscp_trim(strPassword);
 
     // Check if user is valid
-    CUserItem* pUserItem = gpobj->m_userList.getUser(strUser);
+    CUserItem* pUserItem = pSession->m_userList.getUser(strUser);
     if (NULL == pUserItem) {
         syslog(LOG_ERR,
                "[Websocket Client] Authentication: CUserItem "
@@ -378,21 +377,21 @@ websock_new_session(const struct mg_connection* conn)
     pSession->m_pClientItem->m_strDeviceName = ("Internal websocket client.");
 
     // Add the client to the Client List
-    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
-    if (!gpobj->addClient(pSession->m_pClientItem)) {
+    pthread_mutex_lock(&pSession->m_clientList.m_mutexItemList);
+    if (!pSession->addClient(pSession->m_pClientItem)) {
         // Failed to add client
         delete pSession->m_pClientItem;
         pSession->m_pClientItem = NULL;
-        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                ("Websocket server: Failed to add client. Terminating thread."));
         return NULL;
     }
-    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
-    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
-    gpobj->m_websocketSessions.push_back(pSession);
-    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_lock(&pSession->m_mutex_websocketSession);
+    pSession->m_websocketSessions.push_back(pSession);
+    pthread_mutex_unlock(&pSession->m_mutex_websocketSession);
 
     // Use the session object as user data
     mg_set_user_connection_data(pSession->m_conn, (void*)pSession);
@@ -408,8 +407,8 @@ websock_new_session(const struct mg_connection* conn)
 
 bool
 websock_sendevent(struct mg_connection* conn,
-                  websock_session* pSession,
-                  vscpEventEx* pex)
+                    websock_session* pSession,
+                    vscpEventEx* pex)
 {
     // Check pointer
     if (NULL == conn) {
@@ -427,7 +426,7 @@ websock_sendevent(struct mg_connection* conn,
         return false;
     }
 
-    return gpobj->sendEvent(pSession->m_pClientItem, pex );
+    return pSession->sendEvent(pSession->m_pClientItem, pex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -437,11 +436,11 @@ websock_sendevent(struct mg_connection* conn,
 void
 websock_post_incomingEvents(void)
 {
-    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_lock(&pSession->m_mutex_websocketSession);
 
     std::list<websock_session*>::iterator iter;
-    for (iter = gpobj->m_websocketSessions.begin();
-         iter != gpobj->m_websocketSessions.end();
+    for (iter = pSession->m_websocketSessions.begin();
+         iter != pSession->m_websocketSessions.end();
          ++iter) {
 
         websock_session* pSession = *iter;
@@ -522,7 +521,7 @@ websock_post_incomingEvents(void)
 
     } // for
 
-    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_unlock(&pSession->m_mutex_websocketSession);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -589,14 +588,14 @@ ws1_closeHandler(const struct mg_connection* conn, void* cbdata)
 
     pSession->m_conn_state = WEBSOCK_CONN_STATE_NULL;
     pSession->m_conn       = NULL;
-    gpobj->m_clientList.removeClient(pSession->m_pClientItem);
+    m_clientList.removeClient(pSession->m_pClientItem);
     pSession->m_pClientItem = NULL;
 
-    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_lock(&pSession->m_mutex_websocketSession);
     // Remove session
-    gpobj->m_websocketSessions.remove(pSession);
+    pSession->m_websocketSessions.remove(pSession);
     delete pSession;
-    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_unlock(&pSession->m_mutex_websocketSession);
 
     mg_unlock_context(ctx);
 }
@@ -1367,10 +1366,10 @@ ws1_command(struct mg_connection* conn,
         strResult += VSCPD_DISPLAY_VERSION;
         strResult += (";");
         strResult += vscp_str_format(("%d.%d.%d.%d"),
-                                     VSCPD_MAJOR_VERSION,
-                                     VSCPD_MINOR_VERSION,
-                                     VSCPD_RELEASE_VERSION,
-                                     VSCPD_BUILD_VERSION);
+                                     MAJOR_VERSION,
+                                     MINOR_VERSION,
+                                     RELEASE_VERSION,
+                                     BUILD_VERSION);
         // Positive reply
         mg_websocket_write(conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
@@ -1405,11 +1404,11 @@ ws1_command(struct mg_connection* conn,
         std::string strResult = ("+;INTERFACES;");
  
         // Display Interface List
-        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
+        pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
         std::deque<CClientItem*>::iterator it;
-        for (it = gpobj->m_clientList.m_itemList.begin();
-            it != gpobj->m_clientList.m_itemList.end();
+        for (it = m_clientList.m_itemList.begin();
+            it != m_clientList.m_itemList.end();
             ++it) {
 
             CClientItem* pItem = *it;
@@ -1426,7 +1425,7 @@ ws1_command(struct mg_connection* conn,
             strResult += std::string(";");
         }
 
-        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
         // Positive reply
         mg_websocket_write(conn,
@@ -1444,7 +1443,7 @@ ws1_command(struct mg_connection* conn,
         std::string strResult = ("+;WCYD;");;
         uint8_t capabilities[8];
 
-        gpobj->getVscpCapabilities(capabilities);
+        pSession->getVscpCapabilities(capabilities);
         strResult = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
                                         capabilities[7],
                                         capabilities[6],
@@ -1532,13 +1531,13 @@ ws2_closeHandler(const struct mg_connection* conn, void* cbdata)
 
     pSession->m_conn_state = WEBSOCK_CONN_STATE_NULL;
     pSession->m_conn       = NULL;
-    gpobj->m_clientList.removeClient(pSession->m_pClientItem);
+    m_clientList.removeClient(pSession->m_pClientItem);
     pSession->m_pClientItem = NULL;
 
-    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
-    gpobj->m_websocketSessions.remove(pSession);
+    pthread_mutex_lock(&pSession->m_mutex_websocketSession);
+    pSession->m_websocketSessions.remove(pSession);
     delete pSession;
-    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
+    pthread_mutex_unlock(&pSession->m_mutex_websocketSession);
 
     mg_unlock_context(ctx);
 }
@@ -2548,11 +2547,11 @@ ws2_command(struct mg_connection* conn,
         std::deque<std::string> iflist;
 
         // Display Interface List
-        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
+        pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
         std::deque<CClientItem*>::iterator it;
-        for (it = gpobj->m_clientList.m_itemList.begin();
-            it != gpobj->m_clientList.m_itemList.end();
+        for (it = m_clientList.m_itemList.begin();
+            it != m_clientList.m_itemList.end();
             ++it) {
 
             CClientItem* pItem = *it;
@@ -2570,7 +2569,7 @@ ws2_command(struct mg_connection* conn,
             iflist.push_back(str);
         }
 
-        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
         json j;
         j["type"] = "+";
@@ -2592,7 +2591,7 @@ ws2_command(struct mg_connection* conn,
         std::string strResult;
         uint8_t capabilities[8];
 
-        gpobj->getVscpCapabilities(capabilities);
+        pSession->getVscpCapabilities(capabilities);
         strResult = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
                                         capabilities[7],
                                         capabilities[6],

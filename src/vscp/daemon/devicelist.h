@@ -34,7 +34,7 @@
 
 #include <vscp.h>
 #include <canaldlldef.h>
-#include <devicethread.h>
+//#include <devicethread.h>
 #include <guid.h>
 #include <level2drvdef.h>
 
