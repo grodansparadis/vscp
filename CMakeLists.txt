@@ -339,6 +339,7 @@ if (WIN32)
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
+                            ./src/common/third_party/civetweb-1.14/
                             ./src/common/third_party/civetweb-1.14/include
                             ./src/common/third_party/spdlog-1.8.5/include
                             ./src/common/windows
@@ -355,6 +356,7 @@ else()
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
+                            ./src/common/third_party/civetweb-1.14/
                             ./src/common/third_party/civetweb-1.14/include
                             ./src/common/third_party/spdlog-1.8.5/include
                             ${PThreads4W_INCLUDE_DIR}
