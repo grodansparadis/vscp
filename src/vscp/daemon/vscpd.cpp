@@ -311,7 +311,7 @@ main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");    
+    //spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");    
 
     // Console log
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
