@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // noop.cpp
 //
-// https://www.vscp.org   the VSCP project   akhe@vscp.org
+// https://www.vscp.org   the VSCP project   info@vscp.org
 //https://www.vscp.org/docs/vscphelper/doku.php?id=classes_vscpremotetcpipif_metods
 
 #include <stdio.h>

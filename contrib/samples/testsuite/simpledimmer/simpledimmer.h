@@ -2,7 +2,7 @@
 //
 // Define a new application type
 //
-// Copyright (C) 2002-2012 Ake Hedman akhe@vscp.org 
+// Copyright (C) 2002-2012 Ake Hedman info@vscp.org 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

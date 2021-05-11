@@ -14,4 +14,4 @@ vscpd(8), uvscpd(8), vscpmkpasswd(8)
 .SH BUGS
 No known bugs.
 .SH AUTHOR
-Ake Hedman, the VSCP project (akhe@vscp.org)
+Ake Hedman, the VSCP project (info@vscp.org)

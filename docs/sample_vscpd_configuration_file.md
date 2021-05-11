@@ -1,8 +1,8 @@
 # Sample vscpd configuration file
 
  
-You can fins sample files [here](https://github.com/grodansparadis/vscp/tree/master/install_files)
+You can find sample files [here](https://github.com/grodansparadis/vscp/tree/master/install_files)
 
 \\ 
 ----
-Copyright (c) 2000-2014 [Åke Hedman](mailto/akhe@vscp.org), [Paradise of the Frog / the VSCP project](http://www.grodansparadis.com)
+Copyright (c) 2000-2014 [Åke Hedman](mailto/info@vscp.org), [the VSCP project](https://www.vscp.org)

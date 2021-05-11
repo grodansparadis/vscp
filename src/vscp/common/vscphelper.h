@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <akhe@vscp.org>
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -2075,7 +2075,7 @@ extern "C"
      * Validate password
      *
      * @param stored_pw Stored password on the form "salt;hash"
-     * @param password Password to test.
+     * @param password Password to test (clear text).
      * @return true on success, false otherwise.
      */
 

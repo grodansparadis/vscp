@@ -6,4 +6,4 @@ vscpd (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; u
        All level I events over level II was converted incorrectly.
   * Fixed deadlock.      
 
- -- Ake Hedman <akhe@vscp.org>  %DATENOW
+ -- Ake Hedman <info@vscp.org>  %DATENOW

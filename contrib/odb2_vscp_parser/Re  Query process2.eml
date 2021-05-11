@@ -18,9 +18,9 @@ Received: from mail-ig0-f181.google.com (mail-ig0-f181.google.com [209.85.213.18
 	(using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
 	(No client certificate requested)
 	by smtp08.citynetwork.se (Postfix) with ESMTPS id 56117E08B4
-	for <akhe@vscp.org>; Mon, 11 Aug 2014 20:56:46 +0200 (CEST)
+	for <info@vscp.org>; Mon, 11 Aug 2014 20:56:46 +0200 (CEST)
 Received: by mail-ig0-f181.google.com with SMTP id h3so4761125igd.8
-        for <akhe@vscp.org>; Mon, 11 Aug 2014 11:56:10 -0700 (PDT)
+        for <info@vscp.org>; Mon, 11 Aug 2014 11:56:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
@@ -44,7 +44,7 @@ From: Arpad Toth <mrx23dot@gmail.com>
 Date: Mon, 11 Aug 2014 20:55:49 +0200
 Message-ID: <CAGuhpmzysHkAcXKRmZoNJVrim=wnEi826OrxMxX7fUFmtYQG8Q@mail.gmail.com>
 Subject: Re: Query process
-To: "Ake Hedman, the VSCP project" <akhe@vscp.org>
+To: "Ake Hedman, the VSCP project" <info@vscp.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-Antivirus: avast! (VPS 141111-0, 2014-11-11), Inbound message
@@ -71,7 +71,7 @@ T=C3=B3th =C3=81rp=C3=A1d
 
 
 On Mon, Aug 11, 2014 at 8:45 PM, Ake Hedman, the VSCP project
-<akhe@vscp.org> wrote:
+<info@vscp.org> wrote:
 > HI,
 >
 > have yo looked inside it?  If so what uP does it use and chip for BT?
@@ -120,7 +120,7 @@ On Mon, Aug 11, 2014 at 8:45 PM, Ake Hedman, the VSCP project
 >>
 >>
 >> On Mon, Aug 11, 2014 at 5:27 PM, Ake Hedman, the VSCP project
->> <akhe@vscp.org> wrote:
+>> <info@vscp.org> wrote:
 >>>
 >>> Hi again,
 >>>
@@ -163,7 +163,7 @@ r
 >>> =C3=85ke Hedman, the VSCP project
 >>> Brattbergav=C3=A4gen 17, 82050 LOS, SWEDEN
 >>> Phone: +46 (0)840011835 CellPhone: +46 (0)730-533146
->>> http://www.grodansparadis.com https://www.vscp.org
+>>> https://www.vscp.org https://www.vscp.org
 >>>
 >
 > --
@@ -171,5 +171,5 @@ r
 > =C3=85ke Hedman, the VSCP project
 > Brattbergav=C3=A4gen 17, 82050 LOS, SWEDEN
 > Phone: +46 (0)840011835 CellPhone: +46 (0)730-533146
-> http://www.grodansparadis.com https://www.vscp.org
+> https://www.vscp.org https://www.vscp.org
 >

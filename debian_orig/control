@@ -1,7 +1,7 @@
 Source: vscpd
 Section: net
 Priority: optional
-Maintainer: Ake Hedman <akhe@vscp.org>
+Maintainer: Ake Hedman <info@vscp.org>
 Build-Depends: debhelper (>= %COMPAT), 
                libssl-dev (>=1.0.0),
                libsystemd-dev, 

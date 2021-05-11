@@ -43,4 +43,4 @@ Not used at the moment.
 ----
 {{  ::copyright.png?600  |}}
 
-`<HTML>``<p style="color:red;text-align:center;">``<a href="http://www.grodansparadis.com">`the VSCP project`</a>``</p>``</HTML>`
+`<HTML>``<p style="color:red;text-align:center;">``<a href="https://www.vscp.org">`the VSCP project`</a>``</p>``</HTML>`

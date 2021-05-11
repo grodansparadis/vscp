@@ -50,7 +50,7 @@ This is an optional baudrate code. If not given the dafault 115200 will be used.
  | 38400    | 11   | 0,16%  | yes     | yes   |
  | 57600    | 12   | 0.94%  | yes     | yes   |
 
-Tests on Windows and Linux has been done on a Windows 10 machine and on a Ubuntu machine with the USB serial adapter that ship with [Frankfurt RS-232](http://www.grodansparadis.com/frankfurt/rs232/frankfurt-rs232.html).
+Tests on Windows and Linux has been done on a Windows 10 machine and on a Ubuntu machine with the USB serial adapter that ship with [Frankfurt RS-232](https://www.vscp.org/frankfurt/rs232/frankfurt-rs232.html).
 
 Typical settings for VSCP daemon config
 

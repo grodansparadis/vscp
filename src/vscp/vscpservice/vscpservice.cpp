@@ -1,5 +1,5 @@
 // vscpservice (C) 2001-2011 the VSCP project
-// changes and adoptions Ake Hedman, akhe@vscp.org
+// changes and adoptions Ake Hedman, info@vscp.org
 // 
 // From Microsoft example built by Dave McPherson (davemm)   11-March-98
 // and MSDN code.

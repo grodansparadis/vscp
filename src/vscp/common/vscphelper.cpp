@@ -5,7 +5,7 @@
 // The MIT License (MIT)
 //
 // Copyright © 2000-2021 Ake Hedman, the VSCP project
-// <akhe@vscp.org>
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,6 +64,7 @@
 #include <fstream>
 #include <functional>
 #include <ios>
+#include <sstream>
 #include <iostream>
 #include <locale>
 #include <memory>
@@ -6982,6 +6983,8 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
     int slen = (int)strlen(hexstr);
     int i = 0, j = 0;
 
+    fprintf(stderr,"[%s]", hexstr);
+
     // The output array size is half the hex_str length (rounded up)
     size_t nhexsize = (slen + 1) / 2;
 
@@ -6992,6 +6995,7 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 
     if (slen % 2 == 1) {
         // hex_str is an odd length, so assume an implicit "0" prefix
+
         if (sscanf(&(hexstr[0]), "%1hhx", &(array[0])) != 1) {
             return 0;
         }
@@ -7004,7 +7008,6 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
             return 0;
         }
     }
-
     return nhexsize;
 }
 
