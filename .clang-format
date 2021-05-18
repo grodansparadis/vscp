@@ -1,14 +1,16 @@
 
-# We'll use defaults from the LLVM style, but with 4 columns indentation.
 BasedOnStyle: Mozilla
 IndentWidth: 2
+TabWidth: 2
+ColumnLimit: 120
+AllowShortBlocksOnASingleLine: true
 
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
 # Force pointers to the type for C++.
 AlignAfterOpenBracket: Align
 DerivePointerAlignment: false
-PointerAlignment: Left
+PointerAlignment: Right
 AlignConsecutiveAssignments: true
 AlignConsecutiveMacros: true
 AlignEscapedNewlines: Right
@@ -16,5 +18,9 @@ AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 BreakBeforeBraces: Stroustrup
+SpaceAfterCStyleCast: true
+AllowShortFunctionsOnASingleLine: Inline
+BreakBeforeBinaryOperators: None
+AllowShortBlocksOnASingleLine: true
 
 # google-readability-braces-around-statements

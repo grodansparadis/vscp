@@ -750,9 +750,12 @@ int CUserItem::isAllowedToConnect(uint32_t remote_ip)
   if (0 == m_listAllowedRemotes.size()) return 1;
 
   for (size_t i = 0; i < m_listAllowedRemotes.size(); i++) {
+    spdlog::debug("userlist: [isAllowedToConnect] Checking {}.", m_listAllowedRemotes[i]);
+    //fprintf(stderr,"%s\n",m_listAllowedRemotes[i].c_str());
     flag = m_listAllowedRemotes[i].at(0);
     if ((flag != '+' && flag != '-') ||
         (0 == vscp_parse_ipv4_addr(m_listAllowedRemotes[i].substr(1).c_str(),&net, &mask))) {
+      spdlog::debug("userlist: [isAllowedToConnect] Format error {}.", m_listAllowedRemotes[i]);    
       return -1;
     }
 

@@ -42,5 +42,4 @@ deviceLevel2ReceiveThread(void *pData);
 void *
 deviceLevel2WriteThread(void *pData);
 
-
 #endif

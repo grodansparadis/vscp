@@ -5,4 +5,4 @@ You can find sample files [here](https://github.com/grodansparadis/vscp/tree/mas
 
 \\ 
 ----
-Copyright (c) 2000-2014 [Åke Hedman](mailto/info@vscp.org), [the VSCP project](https://www.vscp.org)
+Copyright (c) 2000-2021 [Åke Hedman](mailto/info@vscp.org), [the VSCP project](https://www.vscp.org)
