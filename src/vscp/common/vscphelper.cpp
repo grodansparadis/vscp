@@ -4056,6 +4056,13 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
             memcpy(pEvent->pdata, data_array.data(), data_array.size());
         }
     }
+    catch (json::parse_error& e)
+    {
+        // output exception information
+        std::cout << "message: " << e.what() << '\n'
+                  << "exception id: " << e.id << '\n'
+                  << "byte position of error: " << e.byte << std::endl;
+    }
     catch (...) {
         return false;
     }
