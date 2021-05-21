@@ -79,9 +79,9 @@ static void
 mqtt_drv_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 {
   // Check pointers
-  if (NULL == mosq)
+  if (nullptr == mosq)
     return;
-  if (NULL == pData)
+  if (nullptr == pData)
     return;
 
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
@@ -103,9 +103,9 @@ static void
 mqtt_drv_on_connect(struct mosquitto *mosq, void *pData, int rv)
 {
   // Check pointers
-  if (NULL == mosq)
+  if (nullptr == mosq)
     return;
-  if (NULL == pData)
+  if (nullptr == pData)
     return;
 
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
@@ -122,9 +122,9 @@ static void
 mqtt_drv_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 {
   // Check pointers
-  if (NULL == mosq)
+  if (nullptr == mosq)
     return;
-  if (NULL == pData)
+  if (nullptr == pData)
     return;
 
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
@@ -144,12 +144,17 @@ mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_
   vscpEvent ev;
 
   // Check pointers
-  if (NULL == mosq)
+  if (nullptr == mosq) {
     return;
-  if (NULL == pData)
+  }
+
+  if (nullptr == pData) {
     return;
-  if (NULL == pMsg)
+  }
+
+  if (nullptr == pMsg) {
     return;
+  }
 
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
 
@@ -220,7 +225,7 @@ mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_
     vscp_convertEventToCanal(&msg, &ev);
 
     // Use blocking method if available
-    if (NULL == pDeviceItem->m_proc_CanalBlockingSend) {
+    if (nullptr == pDeviceItem->m_proc_CanalBlockingSend) {
       if (CANAL_ERROR_SUCCESS == (rv = pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle, &msg, 300))) {
         spdlog::get("logger")->error(
           "driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalBlockingSend) rv={1}",
@@ -254,9 +259,9 @@ static void
 mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
 {
   // Check pointers
-  if (NULL == mosq)
+  if (nullptr == mosq)
     return;
-  if (NULL == pData)
+  if (nullptr == pData)
     return;
 
   // CDeviceItem *pItem = (CDeviceItem *)pData;
@@ -296,7 +301,7 @@ void *
 deviceThread(void *pData)
 {
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
-  if (NULL == pDeviceItem) {
+  if (nullptr == pDeviceItem) {
     spdlog::get("logger")->error("No device item defined. Aborting device thread!");
     return NULL;
   }
@@ -521,7 +526,7 @@ deviceThread(void *pData)
       pDeviceItem->m_mosq               = mosquitto_new(NULL, pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
     }
 
-    if (NULL == pDeviceItem->m_mosq) {
+    if (nullptr == pDeviceItem->m_mosq) {
 
       if (ENOMEM == errno) {
         spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
@@ -779,13 +784,13 @@ deviceThread(void *pData)
 
               if (!pDeviceItem->sendEvent(pev)) {
                 spdlog::get("logger")->error("Driver L1: {} Failed to send event to broker.", pDeviceItem->m_strName);
-                if (NULL == pev) {
+                if (nullptr == pev) {
                   vscp_deleteEvent_v2(&pev);
                 }
                 continue;
               }
 
-              if (NULL == pev) {
+              if (nullptr == pev) {
                 vscp_deleteEvent_v2(&pev);
               }
             }
@@ -835,35 +840,35 @@ deviceThread(void *pData)
     spdlog::get("logger")->info("Loading level II driver: <{}>", pDeviceItem->m_strName);
 
     // * * * * VSCP OPEN * * * *
-    if (NULL == (pDeviceItem->m_proc_VSCPOpen = (LPFNDLL_VSCPOPEN) dlsym(hdll, "VSCPOpen"))) {
+    if (nullptr == (pDeviceItem->m_proc_VSCPOpen = (LPFNDLL_VSCPOPEN) dlsym(hdll, "VSCPOpen"))) {
       // Free the library
       spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPOpen.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCP CLOSE * * * *
-    if (NULL == (pDeviceItem->m_proc_VSCPClose = (LPFNDLL_VSCPCLOSE) dlsym(hdll, "VSCPClose"))) {
+    if (nullptr == (pDeviceItem->m_proc_VSCPClose = (LPFNDLL_VSCPCLOSE) dlsym(hdll, "VSCPClose"))) {
       // Free the library
       spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPClose.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCPWRITE * * * *
-    if (NULL == (pDeviceItem->m_proc_VSCPWrite = (LPFNDLL_VSCPWRITE) dlsym(hdll, "VSCPWrite"))) {
+    if (nullptr == (pDeviceItem->m_proc_VSCPWrite = (LPFNDLL_VSCPWRITE) dlsym(hdll, "VSCPWrite"))) {
       // Free the library
       spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPWrite.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCPREAD * * * *
-    if (NULL == (pDeviceItem->m_proc_VSCPRead = (LPFNDLL_VSCPREAD) dlsym(hdll, "VSCPRead"))) {
+    if (nullptr == (pDeviceItem->m_proc_VSCPRead = (LPFNDLL_VSCPREAD) dlsym(hdll, "VSCPRead"))) {
       // Free the library
       spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPBlockingReceive.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCP GET VERSION * * * *
-    if (NULL == (pDeviceItem->m_proc_VSCPGetVersion = (LPFNDLL_VSCPGETVERSION) dlsym(hdll, "VSCPGetVersion"))) {
+    if (nullptr == (pDeviceItem->m_proc_VSCPGetVersion = (LPFNDLL_VSCPGETVERSION) dlsym(hdll, "VSCPGetVersion"))) {
       // Free the library
       spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPGetVersion.", pDeviceItem->m_strName);
       return NULL;
@@ -886,7 +891,7 @@ deviceThread(void *pData)
       pDeviceItem->m_mosq               = mosquitto_new(NULL, pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
     }
 
-    if (NULL == pDeviceItem->m_mosq) {
+    if (nullptr == pDeviceItem->m_mosq) {
 
       if (ENOMEM == errno) {
         spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
