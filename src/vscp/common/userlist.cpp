@@ -82,7 +82,7 @@ void vscp_md5(char *digest, const unsigned char *buf, size_t len);
 
 CUserItem::CUserItem(void) 
 {
-  m_userID = VSCP_ADD_USER_UNINITIALISED;
+  m_userID = VSCP_ADD_USER_UNINITIALIZED;
 
   // Accept all events
   vscp_clearVSCPFilter(&m_filterVSCP);
@@ -401,6 +401,36 @@ bool CUserItem::addUserRightsFromString(const std::string &strRights)
         // A standard driver
         m_userRights |= VSCP_DRIVER_DEFAULT_RIGHTS;
       } 
+      else if (0 == strcasecmp(str.c_str(), "tcpip")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_TCPIP;
+      }
+      else if (0 == strcasecmp(str.c_str(), "websockets")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_WEBSOCKETS;
+      }
+      else if (0 == strcasecmp(str.c_str(), "ws")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_WEBSOCKETS;
+      }
+      else if (0 == strcasecmp(str.c_str(), "ws1")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_WEBSOCKETS;
+      }
+      else if (0 == strcasecmp(str.c_str(), "ws2")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_WEBSOCKETS;
+      }
+      else if (0 == strcasecmp(str.c_str(), "web")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_WEB;
+      }
+      else if (0 == strcasecmp(str.c_str(), "rest")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_REST;
+      }
+      else if (0 == strcasecmp(str.c_str(), "mqtt")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_MQTT;
+      }
+      else if (0 == strcasecmp(str.c_str(), "udp")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_UDP;
+      }
+      else if (0 == strcasecmp(str.c_str(), "multicast")) {
+        m_userRights |= VSCP_USER_RIGHT_ALLOW_MULTICAST;
+      }
       else if (0 == strcasecmp(str.c_str(), "send-events")) {
         m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_EVENT;
       } 
