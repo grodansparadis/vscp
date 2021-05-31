@@ -2,7 +2,7 @@
 /*                                                      */
 /*   FUZZ TEST for civetweb.c                           */
 /*                                                      */
-/*   Copyright (c) 2015-2020 the CivetWeb developers    */
+/*   Copyright (c) 2015-2021 the CivetWeb developers    */
 /*                                                      */
 /*   This file contains test code for fuzz tests.       */
 /*   It should not be used in production code.          */

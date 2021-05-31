@@ -1,6 +1,6 @@
 /*
 ** LuaFileSystem
-** Copyright Kepler Project 2003 - 2020
+** Copyright Kepler Project 2003 -2021
 ** (http://keplerproject.github.io/luafilesystem)
 */
 

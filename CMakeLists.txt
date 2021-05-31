@@ -167,7 +167,7 @@ find_package(OpenSSL REQUIRED)
 
 # Windows Libs
 if (WIN32)
-    # Paho pthread
+    # pthread
     find_package(pthread REQUIRED)
     # Paho MQTT
     #find_package(eclipse-paho-mqtt-c CONFIG REQUIRED)
@@ -200,7 +200,7 @@ else()
     # paho
     #include(Findpaho-mqtt)
     #find_package(paho-mqtt REQUIRED)
-    include(FindPahoMqttC)
+    #include(FindPahoMqttC)
 
     # Logger
     #find_package(spdlog CONFIG REQUIRED)
@@ -365,7 +365,7 @@ else()
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
-                            ${PAHO_MQTT_C_INCLUDE_DIRS}
+#                            ${PAHO_MQTT_C_INCLUDE_DIRS}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
@@ -393,7 +393,7 @@ else()
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
-        ${PAHO_MQTT_C_LIBRARIES}
+#        ${PAHO_MQTT_C_LIBRARIES}
         ${EXPAT_LIBRARIES}
 #        spdlog::spdlog spdlog::spdlog_header_only
     )

@@ -213,7 +213,7 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
     return;
 
   CControlObject *pObj = reinterpret_cast<CControlObject *>(pData);
-  std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
+  std::string payload((const char *) pMsg->payload, pMsg->payloadlen);  // String payload
 
   if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
     if (spdlog::get("logger") != nullptr) {

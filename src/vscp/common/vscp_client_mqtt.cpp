@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2021
+// Copyright © 2007-2021
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -51,228 +51,357 @@ workerThread(void* pObj);
 // * * * * Callbacks * * * *
 
 
-// void on_disconnect(struct mosquitto *mosq, void *pData, int rv)
-void
-on_disconnect(void* pContext, char* pcause)
-{
-    // Check pointers
-    if (NULL == pContext) return;
-    if (NULL == pcause) return;
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_log_callback
+//
 
-    vscpClientMqtt* pObj = (vscpClientMqtt*)pContext;
-    pObj->m_bConnected   = false;
-};
+static void
+mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
+{
+  // Check pointers
+  if (NULL == mosq) {
+    return;
+  }
+  if (NULL == pData) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (gDebugLevel & VSCP_DEBUG_MQTT_LOG) {
+    char buf[80];
+    time_t tm;
+    time(&tm);
+    vscp_getTimeString(buf, sizeof(buf), &tm);
+
+    if (spdlog::get("logger") != nullptr) {
+      spdlog::get("logger")->trace("MQTT log: {}", logmsg);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_on_connect
+//
+
+static void
+mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
+{
+  // Check pointers
+  if (NULL == mosq) {
+    return;
+  }
+  if (NULL == pData) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (gDebugLevel & VSCP_DEBUG_MQTT_CONNECT) {
+    if (spdlog::get("logger") != nullptr) {
+      spdlog::get("logger")->debug("MQTT connect:");
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_on_disconnect
+//
+
+static void
+mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
+{
+  // Check pointers
+  if (NULL == mosq) {
+    return;
+  }
+  if (NULL == pData) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (gDebugLevel & VSCP_DEBUG_MQTT_CONNECT) {
+    if (spdlog::get("logger") != nullptr) {
+      spdlog::get("logger")->debug("MQTT disconnect:");
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_on_message
+//
+
+static void
+mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
+{
+  // Check pointers
+  if (NULL == mosq) {
+    return;
+  }
+  if (NULL == pData) {
+    return;
+  }
+  if (NULL == pMsg) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
+
+  if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
+    if (spdlog::get("logger") != nullptr) {
+      spdlog::get("logger")->trace("MQTT Message: Topic = [{}] - Payload: [{}]", pMsg->topic, payload);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_on_publish
+//
+
+static void
+mqtt_on_publish(struct mosquitto *mosq, void *pData, int rv)
+{
+  // Check pointers
+  if (NULL == mosq) {
+    return;
+  }
+  if (NULL == pData) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (gDebugLevel & VSCP_DEBUG_MQTT_PUBLISH) {
+    if (spdlog::get("logger") != nullptr) {
+      spdlog::get("logger")->trace("MQTT Publish:");
+    }
+  }
+}
+
+// void on_disconnect(struct mosquitto *mosq, void *pData, int rv)
+// void
+// on_disconnect(void* pContext, char* pcause)
+// {
+//     // Check pointers
+//     if (NULL == pContext) return;
+//     if (NULL == pcause) return;
+
+//     vscpClientMqtt* pObj = (vscpClientMqtt*)pContext;
+//     pObj->m_bConnected   = false;
+// };
 
 // ----------------------------------------------------------------------------
 
 // void on_publish(struct mosquitto *mosq, void *pData, int rv)
-void
-on_publish(void* pContext, MQTTClient_deliveryToken dt)
-{
-    // Check pointers
-    if (NULL == pContext) return;
+// void
+// on_publish(void* pContext, MQTTClient_deliveryToken dt)
+// {
+//     // Check pointers
+//     if (NULL == pContext) return;
 
-    vscpClientMqtt* pObj = (vscpClientMqtt*)pContext;
+//     vscpClientMqtt* pObj = (vscpClientMqtt*)pContext;
 
-    // Currently we do nothing
-};
+//     // Currently we do nothing
+// };
 
 // ----------------------------------------------------------------------------
 
 // void on_message(struct mosquitto *mosq, void *pData, const struct
 // mosquitto_message *pMsg)
-int
-on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
-{
-    enumMqttMsgFormat format;
-    vscpEvent ev;
-    vscpEventEx ex;
+// int
+// on_message(void* pContext, char* pTopic, int topicLen, MQTTClient_message* pmsg)
+// {
+//     enumMqttMsgFormat format;
+//     vscpEvent ev;
+//     vscpEventEx ex;
 
-    // Check pointers
-    if (NULL == pContext) return 0;
-    if (NULL == pTopic) return 0;
-    if (NULL == pmsg) return 0;
+//     // Check pointers
+//     if (NULL == pContext) return 0;
+//     if (NULL == pTopic) return 0;
+//     if (NULL == pmsg) return 0;
 
-    vscpClientMqtt* pobj = (vscpClientMqtt*)pContext;
+//     vscpClientMqtt* pobj = (vscpClientMqtt*)pContext;
 
-    // Should be a payload
-    if (!pmsg->payloadlen) return 0;
+//     // Should be a payload
+//     if (!pmsg->payloadlen) return 0;
 
-    if (autofmt == pobj->m_format) {
+//     if (autofmt == pobj->m_format) {
 
-        // If First char of payload...
-        //     ...is zero - Binary payload
-        //     ...is "{"  - JSON payload
-        //     ...is "<"  - XML payload
-        //     else string payload
-        if (0 == ((uint8_t *)pmsg->payload)[0]) {
-            // Binary
-            format = binfmt;
-        }
-        else if ('{' == ((char *)pmsg->payload)[0]) {
-            // JSON
-            format = jsonfmt;
-        }
-        else if ('<' == ((char *)pmsg->payload)[0]) {
-            // XML
-            format = xmlfmt;
-        }
-        else {
-            // String
-            format = strfmt;
-        }
-    }
-    else {
-        format = pobj->m_format;
-    }
-
-    
-    std::string payload((const char*)pmsg->payload, pmsg->payloadlen);
+//         // If First char of payload...
+//         //     ...is zero - Binary payload
+//         //     ...is "{"  - JSON payload
+//         //     ...is "<"  - XML payload
+//         //     else string payload
+//         if (0 == ((uint8_t *)pmsg->payload)[0]) {
+//             // Binary
+//             format = binfmt;
+//         }
+//         else if ('{' == ((char *)pmsg->payload)[0]) {
+//             // JSON
+//             format = jsonfmt;
+//         }
+//         else if ('<' == ((char *)pmsg->payload)[0]) {
+//             // XML
+//             format = xmlfmt;
+//         }
+//         else {
+//             // String
+//             format = strfmt;
+//         }
+//     }
+//     else {
+//         format = pobj->m_format;
+//     }
 
     
-    if (jsonfmt == format) {
+//     std::string payload((const char*)pmsg->payload, pmsg->payloadlen);
 
-        if (!vscp_convertJSONToEvent(&ev, payload)) {
-            return 0;
-        }
-
-        if (!vscp_convertEventToEventEx(&ex, &ev)) {
-            return 0;
-        }
-
-        // If callback is defined send event
-        if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev, pobj->m_callbackObject);
-        }
-        else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex, pobj->m_callbackObject);
-        }
-        else {
-            // Put event in input queue
-            vscpEvent* pEvent = new vscpEvent;
-            if (NULL == pEvent) return 0;
-            pEvent->pdata = NULL;
-
-            if (!vscp_copyEvent(pEvent, &ev)) {
-                delete pEvent;
-                return 0;
-            }
-
-            // Save event in incoming queue
-            if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-                pobj->m_receiveQueue.push_back(pEvent);
-            }
-        }
-    }
-    else if (xmlfmt == format) {
-        if (!vscp_convertXMLToEvent(&ev, payload)) {
-            return 0;
-        }
-
-        if (!vscp_convertEventToEventEx(&ex, &ev)) {
-            return 0;
-        }
-
-        // If callback is defined send event
-        if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev, pobj->m_callbackObject);
-        }
-        else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex, pobj->m_callbackObject);
-        }
-        else {
-            // Put event in input queue
-            vscpEvent* pEvent = new vscpEvent;
-            if (NULL == pEvent) return 0;
-            pEvent->pdata = NULL;
-
-            if (!vscp_copyEvent(pEvent, &ev)) {
-                delete pEvent;
-                return 0;
-            }
-
-            // Save event in incoming queue
-            if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-                pobj->m_receiveQueue.push_back(pEvent);
-            }
-        }
-    }
-    else if (strfmt == format) {
-        if (!vscp_convertStringToEvent(&ev, payload)) {
-            return 0;
-        }
-
-        if (!vscp_convertEventToEventEx(&ex, &ev)) {
-            return 0;
-        }
-
-        // If callback is defined send event
-        if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev, pobj->m_callbackObject);
-        }
-        else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex, pobj->m_callbackObject);
-        }
-        else {
-            // Put event in input queue
-            vscpEvent* pEvent = new vscpEvent;
-            if (NULL == pEvent) return 0;
-            pEvent->pdata = NULL;
-
-            if (!vscp_copyEvent(pEvent, &ev)) {
-                delete pEvent;
-                return 0;
-            }
-
-            // Save event in incoming queue
-            if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-                pobj->m_receiveQueue.push_back(pEvent);
-            }
-        }
-    }
-    else if (binfmt == format) {
-
-        // Binary frame starts offset one in payload (after zero marker byte)
-        if (!vscp_getEventFromFrame( &ev,
-                                        (const uint8_t*)pmsg->payload + 1,
-                                        pmsg->payloadlen)) {
-            return 0;
-        }
-
-        if (!vscp_convertEventToEventEx(&ex, &ev)) {
-            return 0;
-        }
-
-        // If callback is defined send event
-        if (NULL != pobj->m_evcallback) {
-            pobj->m_evcallback(&ev, pobj->m_callbackObject);
-        }
-        else if (NULL != pobj->m_excallback) {
-            pobj->m_excallback(&ex, pobj->m_callbackObject);
-        }
-        else {
-            // Put event in input queue
-            vscpEvent* pEvent = new vscpEvent;
-            if (NULL == pEvent) return 0;
-            pEvent->pdata = NULL;
-
-            if (!vscp_copyEvent(pEvent, &ev)) {
-                delete pEvent;
-                return 0;
-            }
-
-            // Save event in incoming queue
-            if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-                pobj->m_receiveQueue.push_back(pEvent);
-            }
-        }
-    }
     
-    MQTTClient_freeMessage(&pmsg);
-    MQTTClient_free(pTopic);
+//     if (jsonfmt == format) {
 
-    return 1;
-};
+//         if (!vscp_convertJSONToEvent(&ev, payload)) {
+//             return 0;
+//         }
+
+//         if (!vscp_convertEventToEventEx(&ex, &ev)) {
+//             return 0;
+//         }
+
+//         // If callback is defined send event
+//         if (NULL != pobj->m_evcallback) {
+//             pobj->m_evcallback(&ev, pobj->m_callbackObject);
+//         }
+//         else if (NULL != pobj->m_excallback) {
+//             pobj->m_excallback(&ex, pobj->m_callbackObject);
+//         }
+//         else {
+//             // Put event in input queue
+//             vscpEvent* pEvent = new vscpEvent;
+//             if (NULL == pEvent) return 0;
+//             pEvent->pdata = NULL;
+
+//             if (!vscp_copyEvent(pEvent, &ev)) {
+//                 delete pEvent;
+//                 return 0;
+//             }
+
+//             // Save event in incoming queue
+//             if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
+//                 pobj->m_receiveQueue.push_back(pEvent);
+//             }
+//         }
+//     }
+//     else if (xmlfmt == format) {
+//         if (!vscp_convertXMLToEvent(&ev, payload)) {
+//             return 0;
+//         }
+
+//         if (!vscp_convertEventToEventEx(&ex, &ev)) {
+//             return 0;
+//         }
+
+//         // If callback is defined send event
+//         if (NULL != pobj->m_evcallback) {
+//             pobj->m_evcallback(&ev, pobj->m_callbackObject);
+//         }
+//         else if (NULL != pobj->m_excallback) {
+//             pobj->m_excallback(&ex, pobj->m_callbackObject);
+//         }
+//         else {
+//             // Put event in input queue
+//             vscpEvent* pEvent = new vscpEvent;
+//             if (NULL == pEvent) return 0;
+//             pEvent->pdata = NULL;
+
+//             if (!vscp_copyEvent(pEvent, &ev)) {
+//                 delete pEvent;
+//                 return 0;
+//             }
+
+//             // Save event in incoming queue
+//             if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
+//                 pobj->m_receiveQueue.push_back(pEvent);
+//             }
+//         }
+//     }
+//     else if (strfmt == format) {
+//         if (!vscp_convertStringToEvent(&ev, payload)) {
+//             return 0;
+//         }
+
+//         if (!vscp_convertEventToEventEx(&ex, &ev)) {
+//             return 0;
+//         }
+
+//         // If callback is defined send event
+//         if (NULL != pobj->m_evcallback) {
+//             pobj->m_evcallback(&ev, pobj->m_callbackObject);
+//         }
+//         else if (NULL != pobj->m_excallback) {
+//             pobj->m_excallback(&ex, pobj->m_callbackObject);
+//         }
+//         else {
+//             // Put event in input queue
+//             vscpEvent* pEvent = new vscpEvent;
+//             if (NULL == pEvent) return 0;
+//             pEvent->pdata = NULL;
+
+//             if (!vscp_copyEvent(pEvent, &ev)) {
+//                 delete pEvent;
+//                 return 0;
+//             }
+
+//             // Save event in incoming queue
+//             if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
+//                 pobj->m_receiveQueue.push_back(pEvent);
+//             }
+//         }
+//     }
+//     else if (binfmt == format) {
+
+//         // Binary frame starts offset one in payload (after zero marker byte)
+//         if (!vscp_getEventFromFrame( &ev,
+//                                         (const uint8_t*)pmsg->payload + 1,
+//                                         pmsg->payloadlen)) {
+//             return 0;
+//         }
+
+//         if (!vscp_convertEventToEventEx(&ex, &ev)) {
+//             return 0;
+//         }
+
+//         // If callback is defined send event
+//         if (NULL != pobj->m_evcallback) {
+//             pobj->m_evcallback(&ev, pobj->m_callbackObject);
+//         }
+//         else if (NULL != pobj->m_excallback) {
+//             pobj->m_excallback(&ex, pobj->m_callbackObject);
+//         }
+//         else {
+//             // Put event in input queue
+//             vscpEvent* pEvent = new vscpEvent;
+//             if (NULL == pEvent) return 0;
+//             pEvent->pdata = NULL;
+
+//             if (!vscp_copyEvent(pEvent, &ev)) {
+//                 delete pEvent;
+//                 return 0;
+//             }
+
+//             // Save event in incoming queue
+//             if (pobj->m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
+//                 pobj->m_receiveQueue.push_back(pEvent);
+//             }
+//         }
+//     }
+    
+//     MQTTClient_freeMessage(&pmsg);
+//     MQTTClient_free(pTopic);
+
+//     return 1;
+// };
 
 // ----------------------------------------------------------------------------
 
@@ -328,7 +457,7 @@ vscpClientMqtt::vscpClientMqtt()
     m_pahoClient = NULL;
     m_type = CVscpClient::connType::MQTT;
     m_format = jsonfmt;
-    // m_mosq = NULL;
+    m_mosq = NULL;
     m_bConnected = false; // Not connected
     //m_tid        = 0;
     m_bRun       = false;
@@ -340,9 +469,9 @@ vscpClientMqtt::vscpClientMqtt()
     m_bTLS          = false;
     m_bCleanSession = false;
 
-    // MQTTClient_init_options init = MQTTClient_init_options_initializer;
-    // init.do_openssl_init = 0;
-    // MQTTClient_global_init(&init);
+    MQTTClient_init_options init = MQTTClient_init_options_initializer;
+    init.do_openssl_init = 0;
+    MQTTClient_global_init(&init);
 
     pthread_mutex_init(&m_mutexif, NULL);
 }
@@ -354,8 +483,8 @@ vscpClientMqtt::vscpClientMqtt()
 vscpClientMqtt::~vscpClientMqtt()
 {
     disconnect();
-    // mosquitto_lib_cleanup();
-    MQTTClient_destroy(&m_pahoClient);
+    mosquitto_lib_cleanup();
+    
     pthread_mutex_destroy(&m_mutexif);
 
     vscpEvent* pev = NULL;
@@ -386,6 +515,142 @@ bool
 vscpClientMqtt::initFromJson(const std::string& config)
 {
     return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// init_mqtt
+//
+// Initialize MQTT sub system
+//
+
+int
+CControlvscpClientMqtt::Object::init_mqtt()
+{
+  // Setup MQTT for server
+
+  if (m_mqtt_strClientId.length()) {
+    m_mosq = mosquitto_new(m_mqtt_strClientId.c_str(), m_mqtt_bCleanSession, this);
+  }
+  else {
+    m_mqtt_bCleanSession = true; // Must be true without id
+    m_mosq               = mosquitto_new(NULL, m_mqtt_bCleanSession, this);
+  }
+
+  if (NULL == m_mosq) {
+    if (ENOMEM == errno) {
+      spdlog::error("Failed to create new mosquitto session (out of memory).");
+    }
+    else if (EINVAL == errno) {
+      spdlog::error("Failed to create new mosquitto session (invalid parameters).");
+    }
+    return false;
+  }
+
+  mosquitto_log_callback_set(m_mosq, mqtt_log_callback);
+  mosquitto_connect_callback_set(m_mosq, mqtt_on_connect);
+  mosquitto_disconnect_callback_set(m_mosq, mqtt_on_disconnect);
+  mosquitto_message_callback_set(m_mosq, mqtt_on_message);
+  mosquitto_publish_callback_set(m_mosq, mqtt_on_publish);
+
+  if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(m_mosq,
+                                                        m_mqtt_reconnect_delay,
+                                                        m_mqtt_reconnect_delay_max,
+                                                        m_mqtt_reconnect_exponential_backoff)) {
+    spdlog::error("Failed to set reconnect settings.");
+  }
+
+  // Set username/password if defined
+  if (m_mqtt_strUserName.length()) {
+    int rv;
+    if (MOSQ_ERR_SUCCESS !=
+        (rv = mosquitto_username_pw_set(m_mosq, m_mqtt_strUserName.c_str(), m_mqtt_strPassword.c_str()))) {
+      if (MOSQ_ERR_INVAL == rv) {
+        spdlog::error("Failed to set mosquitto username/password (invalid parameter(s)).");
+      }
+      else if (MOSQ_ERR_NOMEM == rv) {
+        spdlog::error("Failed to set mosquitto username/password (out of memory).");
+      }
+    }
+  }
+
+  int rv = mosquitto_connect(m_mosq, m_mqtt_strHost.c_str(), m_mqtt_port, m_mqtt_keepalive);
+
+  if (MOSQ_ERR_SUCCESS != rv) {
+
+    if (MOSQ_ERR_INVAL == rv) {
+      spdlog::error("Failed to connect to mosquitto server (invalid parameter(s)).");
+    }
+    else if (MOSQ_ERR_ERRNO == rv) {
+      spdlog::error("Failed to connect to mosquitto server. System returned error (errno = {}).", errno);
+    }
+
+    return false;
+  }
+
+  // Start the worker loop
+  rv = mosquitto_loop_start(m_mosq);
+  if (MOSQ_ERR_SUCCESS != rv) {
+    mosquitto_disconnect(m_mosq);
+    return false;
+  }
+
+  for (std::list<std::string>::const_iterator it = m_mqtt_subscriptions.begin(); it != m_mqtt_subscriptions.end();
+       ++it) {
+
+    std::string topic = *it;
+
+    // Fix subscribe/publish topics
+    mustache subtemplate{ topic };
+    data data;
+    data.set("guid", m_guid.getAsString());
+    std::string subscribe_topic = subtemplate.render(data);
+
+    // Subscribe to specified topic
+    rv = mosquitto_subscribe(m_mosq,
+                             /*m_mqtt_id*/ NULL,
+                             subscribe_topic.c_str(),
+                             m_mqtt_qos);
+
+    switch (rv) {
+      case MOSQ_ERR_INVAL:
+        spdlog::error("Failed to subscribed to specified topic [{}] - input parameters were invalid.", subscribe_topic);
+
+      case MOSQ_ERR_NOMEM:
+        spdlog::error("Failed to subscribed to specified topic [{}] - out of memory condition occurred.",
+                      subscribe_topic);
+
+      case MOSQ_ERR_NO_CONN:
+        spdlog::error(
+          "controlobject:  Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.",
+          subscribe_topic);
+
+      case MOSQ_ERR_MALFORMED_UTF8:
+        spdlog::error("Failed to subscribed to specified topic [{}] - resulting packet would be larger than supported "
+                      "by the broker.",
+                      subscribe_topic);
+
+#if defined(MOSQ_ERR_OVERSIZE_PACKET)
+      case MOSQ_ERR_OVERSIZE_PACKET:
+        spdlog::error("controlobject:  Failed to subscribed to specified topic {} - resulting packet would be larger "
+                      "than supported by the broker.",
+                      subscribe_topic);
+#endif
+    }
+  }
+
+  // Publish interfaces (retained)
+  // default topic "vscp/{{guid}}/interfaces"
+  // Fix publish topics
+  mustache subtemplate{ m_topicInterfaces };
+  data data;
+  data.set("guid", m_guid.getAsString());
+  std::string strTopic   = subtemplate.render(data);
+  std::string strPayload = m_deviceList.getAllAsJSON();
+
+  rv =
+    mosquitto_publish(m_mosq, NULL, strTopic.c_str(), (int) strPayload.length(), strPayload.c_str(), m_mqtt_qos, true);
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -572,12 +837,34 @@ vscpClientMqtt::disconnect(void)
 
     pthread_join(m_tid, NULL);
 
-    if ((NULL != m_pahoClient) && MQTTClient_isConnected(m_pahoClient)) {
-        if (MQTTCLIENT_SUCCESS !=
-            (rv = MQTTClient_disconnect(m_pahoClient, 5000))) {
-            return rv;
-        }
+    // if ((NULL != m_pahoClient) && MQTTClient_isConnected(m_pahoClient)) {
+    //     if (MQTTCLIENT_SUCCESS !=
+    //         (rv = MQTTClient_disconnect(m_pahoClient, 5000))) {
+    //         return rv;
+    //     }
+    // }
+
+    // Disconnect from MQTT broker}
+  int rv = mosquitto_disconnect(m_mosq);
+  if (MOSQ_ERR_SUCCESS != rv) {
+    if (MOSQ_ERR_INVAL == rv) {
+      spdlog::error("ControlObject: mosquitto_disconnect: input parameters were invalid.");
     }
+    else if (MOSQ_ERR_NO_CONN == rv) {
+      spdlog::error("ControlObject: mosquitto_disconnect: client isn’t connected to a broker.");
+    }
+  }
+
+  // stop the worker loop
+  rv = mosquitto_loop_stop(m_mosq, false);
+  if (MOSQ_ERR_SUCCESS != rv) {
+    if (MOSQ_ERR_INVAL == rv) {
+      spdlog::error("ControlObject: mosquitto_loop_stop: input parameters were invalid.");
+    }
+    else if (MOSQ_ERR_NOT_SUPPORTED == rv) {
+      spdlog::error("ControlObject: mosquitto_loop_stop: thread support is not available.");
+    }
+  }
 
     return VSCP_ERROR_SUCCESS;
 }

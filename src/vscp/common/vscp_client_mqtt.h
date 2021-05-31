@@ -31,12 +31,7 @@
 #include "vscp_client_base.h"
 
 #include <pthread.h>
-
-#ifdef WIN32
-#include "paho-mqtt/MQTTClient.h"
-#else
-#include "MQTTClient.h"
-#endif
+#include <mosquitto.h>
 
 #include <string>
 #include <queue>
@@ -444,8 +439,8 @@ private:
     char m_username[128];       // Username
     char m_password[128];       // Password
 
-    //int m_qos;                  // Quality of service (0/1/2)
-    //bool m_bRetain;             // Enable retain
+    int m_qos;                  // Quality of service (0/1/2)
+    bool m_bRetain;             // Enable retain
     int m_keepalive;            // Keep alive in seconds
     bool m_bCleanSession;       // Clean session on disconnect if true
 
@@ -463,12 +458,9 @@ private:
 
     std::string m_pwKeyfile;    // Password for keyfile (set only if it is encrypted on disc)
 
-    //struct mosquitto *m_mosq;   // Handel for connection
+    struct mosquitto *m_mosq;   // Handel for connection
     int m_mid;
 
-    /// Paho client
-    MQTTClient m_pahoClient;
-    
     // Worker thread id
     pthread_t m_tid;
 

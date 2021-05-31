@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2020 the Civetweb developers
+/* Copyright (c) 2015-2021 the Civetweb developers
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -604,7 +604,7 @@ END_TEST
 START_TEST(test_parse_port_string)
 {
 	/* Adapted from unit_test.c */
-	/* Copyright (c) 2013-2020 the Civetweb developers */
+	/* Copyright (c) 2013-2021 the Civetweb developers */
 	/* Copyright (c) 2004-2013 Sergey Lyubka */
 	struct t_test_parse_port_string {
 		const char *port_string;

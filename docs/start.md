@@ -6,7 +6,7 @@
 **Doc update:** ${/var/creation-time}       
 [history](./history.md)
 
-Author 2000-2020 Åke Hedman, [the VSCP project](https://www.vscp.org), [info@vscp.org](info@vscp.org)  
+Author 2000-2021 Åke Hedman, [the VSCP project](https://www.vscp.org), [info@vscp.org](info@vscp.org)  
 
 This document is licensed under [Creative Commons BY 4.0](https://creativecommons.org/licenses/by/4.0/) and can be freely copied, redistributed, remixed, transformed, built upon as long as you give credits to the author.
 
