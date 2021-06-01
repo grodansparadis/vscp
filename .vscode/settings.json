@@ -1,6 +1,6 @@
 {
     // Whether git is enabled.
-    "git.enabled": false,
+    "git.enabled": true,
 
     "files.associations": {
         "*.tcc": "cpp",
@@ -78,12 +78,19 @@
         "stop_token": "cpp"
     },
     "cSpell.words": [
-        "Grodans",
-        "Hedman",
+        "Grodans Paradis",
         "MQTT",
-        "Paradis",
         "VSCP",
-        "akhe"
+        "b",
+        "bretain",
+        "config",
+        "debug",
+        "m",
+        "retain",
+        "set",
+        "spdlog",
+        "to",
+        "Åke Hedman"
     ],
     "editor.dragAndDrop": false,
     "diffEditor.codeLens": true,
@@ -93,5 +100,10 @@
         "CMAKE_TOOLCHAIN_FILE" : "E:/development/vcpkg/scripts/buildsystems/vcpkg.cmake"
     },
     "cmake.generator": "Visual Studio 16 2019",
-    "cSpell.language": "sv,en"
+    "cSpell.language": "sv,en",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true
+    } 
 }

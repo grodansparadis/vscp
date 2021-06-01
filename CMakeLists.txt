@@ -169,10 +169,6 @@ find_package(OpenSSL REQUIRED)
 if (WIN32)
     # pthread
     find_package(pthread REQUIRED)
-    # Paho MQTT
-    #find_package(eclipse-paho-mqtt-c CONFIG REQUIRED)
-    #get_target_property(PAHO_INCLUDE_DIR eclipse-paho-mqtt-c::paho-mqtt3cs INTERFACE_INCLUDE_DIRECTORIES)
-    #get_target_property(PAHO_LIBRARIES eclipse-paho-mqtt-c::paho-mqtt3cs INTERFACE_LINK_LIBRARIES)
 
     # SQLite3
     #find_package(unofficial-sqlite3 CONFIG REQUIRED)
@@ -196,11 +192,6 @@ else()
 
     # Mosquitto lib
     include(FindMosquitto)
-    #find_package(mosquitto REQUIRED)
-    # paho
-    #include(Findpaho-mqtt)
-    #find_package(paho-mqtt REQUIRED)
-    #include(FindPahoMqttC)
 
     # Logger
     #find_package(spdlog CONFIG REQUIRED)
@@ -365,7 +356,6 @@ else()
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
-#                            ${PAHO_MQTT_C_INCLUDE_DIRS}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
@@ -393,7 +383,6 @@ else()
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
-#        ${PAHO_MQTT_C_LIBRARIES}
         ${EXPAT_LIBRARIES}
 #        spdlog::spdlog spdlog::spdlog_header_only
     )

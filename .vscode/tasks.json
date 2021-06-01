@@ -103,7 +103,7 @@
         {
             "taskName": "clean & build unittest userlist",
             "type": "shell",
-            "command": "cd tests/userlist; mkdir build; cd build; cmake ..; make",
+            "command": "cd tests/userlist; mkdir build; cd build; cmake ..; make clean; make",
             "args": [],
             "group": {
                 "kind": "build",
@@ -125,7 +125,29 @@
         {
             "taskName": "clean & build unittest clientlist",
             "type": "shell",
-            "command": "cd tests/clientlist; mkdir build; cd build; cmake ..; make",
+            "command": "cd tests/clientlist; mkdir build; cd build; cmake ..; make clean; make",
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "taskName": "build unittest vscp-client-mqtt",
+            "type": "shell",
+            "command": "cd tests/vscp-client-mqtt/build; make",
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "taskName": "clean & build unittest vscp-client-mqtt",
+            "type": "shell",
+            "command": "cd tests/vscp-client-mqtt; mkdir build; cd build; cmake ..; make clean; make",
             "args": [],
             "group": {
                 "kind": "build",

@@ -60,7 +60,9 @@ add_executable(test
 target_include_directories(test PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/spdlog-1.8.5/include/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}
