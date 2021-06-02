@@ -7,11 +7,11 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party/nlohmann -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party/spdlog-1.8.5/include
 
-C_FLAGS =  -DOPENSSL_API_1_1
+C_FLAGS =  -DOPENSSL_API_1_1 -g
 
 CXX_DEFINES = 
 
 CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/vscp/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party/nlohmann -I/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/../../src/common/third_party/spdlog-1.8.5/include
 
-CXX_FLAGS =  -DOPENSSL_API_1_1 -std=gnu++11
+CXX_FLAGS =  -DOPENSSL_API_1_1 -g -std=gnu++11
 

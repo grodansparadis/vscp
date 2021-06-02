@@ -1,6 +1,6 @@
 {
     // Whether git is enabled.
-    "git.enabled": true,
+    "git.enabled": false,
 
     "files.associations": {
         "*.tcc": "cpp",
@@ -83,13 +83,20 @@
         "VSCP",
         "b",
         "bretain",
+        "callback",
         "config",
         "debug",
         "m",
+        "mosq",
+        "mosquitto",
+        "mqtt",
+        "on",
         "retain",
         "set",
         "spdlog",
+        "subscribe",
         "to",
+        "unsubscribe",
         "Åke Hedman"
     ],
     "editor.dragAndDrop": false,

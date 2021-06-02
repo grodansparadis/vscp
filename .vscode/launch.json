@@ -87,6 +87,27 @@
             ],
             "preLaunchTask": "build all",
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "(gdb) vscp-client-mqtt",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build test code for vscp-client-mqtt",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }

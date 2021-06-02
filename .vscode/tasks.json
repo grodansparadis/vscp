@@ -44,7 +44,7 @@
                 "isDefault": false
             },
             "problemMatcher": "$gcc"
-        }
+        },
         {
             "taskName": "build vscphelper unittest",
             "type": "shell",
@@ -134,7 +134,7 @@
             "problemMatcher": "$gcc"
         },
         {
-            "taskName": "build unittest vscp-client-mqtt",
+            "taskName": "build test code for vscp-client-mqtt",
             "type": "shell",
             "command": "cd tests/vscp-client-mqtt/build; make",
             "args": [],
@@ -145,9 +145,9 @@
             "problemMatcher": "$gcc"
         },
         {
-            "taskName": "clean & build unittest vscp-client-mqtt",
+            "taskName": "clean & build test code for vscp-client-mqtt",
             "type": "shell",
-            "command": "cd tests/vscp-client-mqtt; mkdir build; cd build; cmake ..; make clean; make",
+            "command": "cd tests/vscp-client-mqtt; mkdir build; cd build; cmake .. -DCMAKE_BUILD_TYPE=Debug; make clean; make",
             "args": [],
             "group": {
                 "kind": "build",

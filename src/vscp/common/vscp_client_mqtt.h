@@ -141,6 +141,13 @@ public:
            int keepAliveInterval          = 20,
            bool bCleanSession             = false);
 
+  /*!
+      Handle incoming message
+      @param pmsg Incoming MQTT message
+      @return true on success, false on failure.
+  */
+  bool handleMessage(const struct mosquitto_message *pmsg);
+
   // Init MQTT host
   // void setMqttHost(const std::string host = "tcp://localhost:1883")
   //         { strncpy(m_host, host.c_str(), sizeof(m_host)); };
@@ -528,25 +535,66 @@ private:
   // SSL/TLS
   bool m_bTLS; // True of a TLS/SSL connection should be active
 
-  std::string m_cafile;   // path to a file containing the PEM encoded trusted CA certificate files.
-                          // Either cafile or capath must not be NULL.
-  std::string m_capath;   // path to a directory containing the PEM encoded trusted CA certificate files.
-                          // See mosquitto.conf for more details on configuring this directory.
-                          // Either cafile or capath must not be NULL.
-  std::string m_certfile; // path to a file containing the PEM encoded certificate file for this client.
-                          // If NULL, keyfile must also be NULL and no client certificate will be used.
-  std::string m_keyfile;
+  /*!
+    mosquitto_tls_insecure_set
+    if set to false, the default, certificate hostname checking is performed.
+    If set to true, no hostname checking is performed and the connection is insecure.
+  */
+  bool m_tls_bNoHostNameCheck;
 
-  std::string m_pwKeyfile; // Password for keyfile (set only if it is encrypted on disc)
+  /*!
+    SSL_VERIFY_NONE (0): the server will not be verified in any way.
+    SSL_VERIFY_PEER (1): the server certificate will be verified and the connection aborted 
+        if the verification fails.  The default and recommended value is SSL_VERIFY_PEER.  
+        Using SSL_VERIFY_NONE provides no security.
+  */
+  int m_tls_cert_reqs;
 
+  std::string m_tls_cafile;   // path to a file containing the PEM encoded trusted CA certificate files.
+                              // Either cafile or capath must not be NULL.
+  std::string m_tls_capath;   // path to a directory containing the PEM encoded trusted CA certificate files.
+                              // See mosquitto.conf for more details on configuring this directory.
+                              // Either cafile or capath must not be NULL.
+  std::string m_tls_certfile; // path to a file containing the PEM encoded certificate file for this client.
+                              // If NULL, keyfile must also be NULL and no client certificate will be used.
+  std::string m_tls_keyfile;
+
+  std::string m_tls_pwKeyfile; // Password for keyfile (set only if it is encrypted on disc)
+
+  /*!
+    The version of the SSL/TLS protocol to use as a string.  If NULL, the default value is used.
+    The default value and the available values depend on the version of openssl that the library
+    was compiled against.  For openssl >= 1.0.1, the available options are tlsv1.2, tlsv1.1 and tlsv1,
+    with tlv1.2 as the default.  For openssl < 1.0.1, only tlsv1 is available.
+  */
+  std::string m_tls_version;
+
+  /*!
+    A string describing the ciphers available for use.  See the “openssl ciphers” tool for more information.
+    If NULL, the default ciphers will be used.
+  */
+  std::string m_tls_ciphers;
+
+  /*!
+    pre-shared-key in hex format with no leading “0x”.
+  */
+  std::string m_tls_psk;
+
+  /*!
+    the identity of this client.  
+    May be used as the username depending on the server settings.
+  */
+  std::string m_tls_identity;
+
+  // Last Will setting
   bool m_bWill;               // Set to true to specify last will
   std::string m_will_topic;   // Topic for last will
-  std::string m_will_qos;     // qos for last will
-  std::string m_will_bretain; // Enable retain for last will
+  int m_will_qos;             // qos for last will
+  bool m_will_bretain;        // Enable retain for last will
   std::string m_will_payload; // Payload for last will
 
   struct mosquitto *m_mosq; // Handel for connection
-  int m_mid;
+  int m_mid;                // Message id
 
   // Worker thread id
   pthread_t m_tid;
