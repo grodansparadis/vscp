@@ -1,6 +1,6 @@
 {
   "bind" : "",   
-  "host" : "tcp://192.168.1.7:1883",
+  "host" : "test.mosquitto.org",
   "port" : 1883,
   "mqtt-options" : {
       "tcp-nodelay" : true,
@@ -45,8 +45,10 @@
       "payload": "string/json/xml"
   },
   "subscribe": [
-      "subscribe/topic/A",
-      "subscribe/topic/B"          
+      "vscp/topic/A",
+      "vscp/topic/B",
+      "vscp/#",
+      "vscp2/#"
   ],
   "publish": [
       "publish/topic/A",

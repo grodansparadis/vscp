@@ -23,6 +23,96 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// JSON configuration
+
+/*
+{
+      "bind" : "interface",
+      "host" : "[s]tcp://192.168.1.7:1883",
+      "port" : 1883,
+      "mqtt-options" : {
+          "tcp-nodelay" : true,
+          "protocol-version": 500,
+          "receive-maximum": 20,
+          "send-maximum": 20,
+          "ssl-ctx-with-defaults": 0,
+          "tls-ocsp-required": 0,
+          "tls-use-os-certs" : 0
+      },
+      "user" : "vscp",
+      "password": "secret",
+      "clientid" : "mosq-vscp-daemon-000001",
+      "publish-format" : "json",
+      "subscribe-format" : "auto",
+      "qos" : 1,
+      "bcleansession" : false,
+      "bretain" : false,
+      "keepalive" : 60,
+      "reconnect" : {
+        "delay" : 2,
+        "delay-max" : 10,
+        "exponential-backoff" : false
+      },
+      "filter": {
+        "priority-filter": 0,
+        "priority-mask": 0,
+        "class-filter": 0,
+        "class-mask": 0,
+        "type-filter": 0,
+        "type-mask": 0,
+        "guid-filter": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+        "guid-mask": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+      },
+      "tls" : {
+          "cafile" : "",
+          "capath" : "",
+          "certfile" : "",
+          "keyfile" : "",
+          "pwkeyfile" : "",
+          "no-hostname-checking" : true,
+          "cert-reqs" : 0,
+          "version": "",
+          "ciphers": "",
+          "psk": "",
+          "psk-identity" : ""
+      },
+      "will": {
+          "topic": "topic",
+          "qos": 0,
+          "retain": true,
+          "payload": "string/json/xml"
+      },
+      "subscribe": [
+          "subscribe/topic/A",
+          "subscribe/topic/B"
+      ],
+      "publish": [
+          "publish/topic/A",
+          "publish/topic/B"
+      ],
+      "v5" : {
+          "user-properties": {
+              "prop1" : "value",
+              "prop2" : "value"
+          },
+          "subscribe-options": [
+                "NO_LOCAL",
+                "RETAIN_AS_PUBLISHED",
+                "SEND_RETAIN_ALWAYS",
+                "SEND_RETAIN_NEW",
+                "SEND_RETAIN_NEVER"
+          ]
+      }
+}
+
+bind - Optional. If use set ip-address
+host - If starts with stcp:\\ secure connection is expected. If no prefix or tcp:\\
+        unsecure connection.
+port - is host contains server port then a separate define of port is not needed.
+mqtt-options/tcp-nodelay is true by default disabling nigles algorithm.
+mqtt-options/protocol-version can be set to 310/311/500
+*/
+
 #if !defined(VSCPCLIENTMQTT_H__INCLUDED_)
 #define VSCPCLIENTMQTT_H__INCLUDED_
 
@@ -44,7 +134,7 @@
 class publishTopic {
 
 public:
-  publishTopic(const std::string &topic = "", int qos = 0, bool bretain = false);
+  publishTopic(const std::string &topic, int qos = 0, bool bretain = false, mosquitto_property *properties = NULL);
   ~publishTopic();
 
   /// Getters/Setters for topic
@@ -72,6 +162,9 @@ private:
 
   /// publish topic message retain flag
   bool m_bRetain;
+
+  /// Version 5 property list
+  mosquitto_property *m_properties;
 };
 
 // ----------------------------------------------------------------------------
@@ -79,7 +172,7 @@ private:
 class subscribeTopic {
 
 public:
-  subscribeTopic(const std::string &topic = "", int qos = 0);
+  subscribeTopic(const std::string &topic, int qos=0, int v5_options=0, mosquitto_property *properties = NULL);
   ~subscribeTopic();
 
   /// Getters/Setters for topic
@@ -91,17 +184,20 @@ public:
   void setQos(int qos) { m_qos = qos; };
 
 private:
-  /// Publish topic
+  /// Subscribe topic
   std::string m_topic;
 
   /*
-      Quality of service for messages published
+      Quality of service for messages subscribe
       on this topic
   */
   int m_qos;
 
-  /// publish topic message retain flag
-  bool m_bRetain;
+  /// version 5 options
+  int m_v5_options; 
+  
+  /// Version 5 property list
+  mosquitto_property *m_properties;
 
   // v5 subscription options
   bool m_bSubOptNoLocal;
@@ -119,27 +215,8 @@ private:
 class vscpClientMqtt : public CVscpClient {
 
 public:
-  vscpClientMqtt(uint16_t requested_mqtt_version = 311, const std::string &bindInterface = "");
+  vscpClientMqtt();
   ~vscpClientMqtt();
-
-  /*!
-      Set init. information for this client
-
-      @param strHost MQTT broker to connect to. Defaults to "localhost"
-      @param clientId Client id to use. If empty string is supplied
-                          a random client id will be set.
-      @param strUserName Username for connection session. If none is set
-          no username/password will be used.
-      @param strPassword Password for connection session.
-      @param qos Quality of service (0/1/2). Default to 0.
-      @return VSCP_ERROR_SUCCESS on success
-  */
-  int init(const std::string &strHost,
-           const std::string &clientId    = "",
-           const std::string &strUserName = "",
-           const std::string &strPassword = "",
-           int keepAliveInterval          = 20,
-           bool bCleanSession             = false);
 
   /*!
       Handle incoming message
@@ -147,97 +224,6 @@ public:
       @return true on success, false on failure.
   */
   bool handleMessage(const struct mosquitto_message *pmsg);
-
-  // Init MQTT host
-  // void setMqttHost(const std::string host = "tcp://localhost:1883")
-  //         { strncpy(m_host, host.c_str(), sizeof(m_host)); };
-
-  // // Init MQTT user
-  // void setMqttUser(const std::string user)
-  //         { strncpy(m_username, user.c_str(), sizeof(m_username)); };
-
-  // // Init MQTT password
-  // void setMqttPassword(const std::string password)
-  //         { strncpy(m_password, password.c_str(), sizeof(m_password)); };
-
-  // Init MQTT cleansession
-  // void setMqttCleanSession(const bool bCleanSession = true) { m_bCleanSession = bCleanSession; };
-
-  // // Init MQTT keepalive
-  // void setMqttKeepAlive(const int keepalive) { m_bTLS = true; m_keepalive = keepalive; };
-
-  // // Init MQTT CaFile
-  // void setMqttCaFile(const std::string cafile) { m_bTLS = true; m_cafile = cafile; };
-
-  // // Init MQTT CaPath
-  // void setMqttCaPath(const std::string capath) { m_bTLS = true; m_capath = capath; };
-
-  // // Init MQTT CertFile
-  // void setMqttCertFile(const std::string certfile) { m_bTLS = true; m_certfile = certfile; };
-
-  // // Init MQTT KeyFile
-  // void setMqttKeyFile(const std::string keyfile) { m_bTLS = true; m_keyfile = keyfile; };
-
-  // // Init MQTT PwKeyFile
-  // void setMqttPwKeyFile(const std::string pwkeyfile) { m_bTLS = true; m_pwKeyfile = pwkeyfile; };
-
-  /*!
-      Add subscription item
-
-      @param strTopicSub Subscription topic. Default is "vscp/#"
-      @return VSCP_ERROR_SUCCESS on success
-  */
-  int addSubscription(const std::string strTopicSub);
-
-  /*!
-      Add publishing item
-
-      @param strTopicPub Publishing topic. Escapes can be used
-      @param qos Quality of service 0-3
-      @param bRetain Set to true for events published on this topic to be
-                  retained.
-      @return VSCP_ERROR_SUCCESS on success
-  */
-  int addPublish(const std::string strTopicPub, int qos = 0, bool bRetain = false);
-
-  /*!
-      Set retain. Should be called before connect. Default is false.
-      @param bRetain Set to true to enable retain.
-      @return VSCP_ERROR_SUCCESS on success
-  */
-  int setRetain(bool bRetain);
-
-  /*!
-      Set keepalive. Should be called before connect. Default is 30.
-      @param keepAlive Keep alive value.
-      @return VSCP_ERROR_SUCCESS on success
-  */
-  int setKeepAlive(int keepAlive);
-
-  /*!
-      Configure the client for certificate based SSL/TLS support. Must be called before connect.
-      All parameters here are sent to the mosquitto sub system.
-
-      @param cafile	path to a file containing the PEM encoded trusted CA certificate files.
-                      Either cafile or capath must not be NULL.
-      @param capath	path to a directory containing the PEM encoded trusted CA certificate files.
-                      See mosquitto.conf for more details on configuring this directory.
-                      Either cafile or capath must not be NULL.
-      @param certfile	path to a file containing the PEM encoded certificate file for this client.
-                      If NULL, keyfile must also be NULL and no client certificate will be used.
-      @param keyfile	path to a file containing the PEM encoded private key for this client.
-                      If NULL, certfile must also be NULL and no client certificate will be used.
-      @param password	if keyfile is encrypted, password is used to decrypt the file.
-
-      @return VSCP_ERROR_SUCCESS is returned if OK and error code else.
-  */
-  int set_tls(const std::string &cafile,
-              const std::string &capath,
-              const std::string &certfile,
-              const std::string &keyfile,
-              const std::string &password);
-
-  // TODO set will
 
   /*!
       Connect to remote host
@@ -351,6 +337,24 @@ public:
   virtual bool initFromJson(const std::string &config);
 
   /*!
+      Initialize MQTT
+  */
+  bool init(void);
+
+  /*!
+    Add subscription
+    @param strTopicSub Topic to subscribe to
+    @param qos The requested Quality of Service for this subscription.
+    @return Return VSCP_ERROR_SUCCESS if all goes well. Error code if not.
+  */
+  int addSubscription(const std::string strTopicSub, int qos=0, int v5_options=0, mosquitto_property *properties=NULL);
+
+  /*
+      Add publish
+  */
+  int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false, mosquitto_property *properties=NULL);
+
+  /*!
       Getter/setters for connection timeout
       Time is in milliseconds
   */
@@ -401,37 +405,37 @@ public:
   */
   bool m_bConnected;
 
-  // Mutex that protect CANAL interface when callbacks are defined
+  /*!
+    Mutex that protect CANAL interface when callbacks are defined
+  */
   pthread_mutex_t m_mutexif;
 
-  // enumMqttMsgFormat m_format;         // Format for mqtt events (JSON/XML)
-
-  LPFNDLL_EV_CALLBACK m_evcallback; // Event callback
-  LPFNDLL_EX_CALLBACK m_excallback; // Event ex callback
-
-  // If no callback is defined received events are connected in
-  // this queue
+  /*!
+    If no callback is defined received events are connected in
+    this queue
+  */
   std::deque<vscpEvent *> m_receiveQueue;
 
 private:
   /*!
-      Initialize MQTT
+      Subscribe topic templates
   */
-  int init_mqtt();
-
-  std::list<subscribeTopic> m_mqtt_subscribe; // Subscribe topic templates
-  std::list<publishTopic> m_mqtt_publish;     // Publish topic templates
-
-  vscpEventFilter m_filter; // Receive filter
+  std::list<subscribeTopic *> m_mqtt_subscribe;
 
   /*!
-      MQTT version
-      ------------
-      Version 3.10 - 310
-      Version 3.11 - 311
-      Version 5 - 500
+    Publish topic templates
   */
-  uint16_t m_mqtt_version;
+  std::list<publishTopic *> m_mqtt_publish;
+
+  /*!
+    Receive filter
+  */
+  vscpEventFilter m_filter;
+
+  /*!
+    Saved JSON configuration
+  */
+  json m_json;
 
   /*!
       Map for MQTT integer options
@@ -544,8 +548,8 @@ private:
 
   /*!
     SSL_VERIFY_NONE (0): the server will not be verified in any way.
-    SSL_VERIFY_PEER (1): the server certificate will be verified and the connection aborted 
-        if the verification fails.  The default and recommended value is SSL_VERIFY_PEER.  
+    SSL_VERIFY_PEER (1): the server certificate will be verified and the connection aborted
+        if the verification fails.  The default and recommended value is SSL_VERIFY_PEER.
         Using SSL_VERIFY_NONE provides no security.
   */
   int m_tls_cert_reqs;
@@ -581,7 +585,7 @@ private:
   std::string m_tls_psk;
 
   /*!
-    the identity of this client.  
+    the identity of this client.
     May be used as the username depending on the server settings.
   */
   std::string m_tls_identity;

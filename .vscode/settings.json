@@ -112,5 +112,7 @@
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/node_modules/*/**": true
-    } 
+    },
+    "editor.tabSize": 2,
+    "markdown-table-formatter.globalColumnSizes": "Same Table Size"
 }

@@ -191,27 +191,27 @@ bool vscpClientTcp::initFromJson(const std::string& config)
         // Filter
 
         if (j.contains("priority-filter")) {
-            m_filter.filter_priority = j["priority-filter"].get<int>();
+            m_filter.filter_priority = j["priority-filter"].get<uint8_t>();
         }
 
         if (j.contains("priority-mask")) {
-            m_filter.mask_priority = j["priority-mask"].get<int>();
+            m_filter.mask_priority = j["priority-mask"].get<uint8_t>();
         }
 
         if (j.contains("class-filter")) {
-            m_filter.filter_class = j["class-filter"].get<int>();
+            m_filter.filter_class = j["class-filter"].get<uint16_t>();
         }
 
         if (j.contains("class-mask")) {
-            m_filter.mask_class = j["class-mask"].get<int>();
+            m_filter.mask_class = j["class-mask"].get<uint16_t>();
         }
 
         if (j.contains("type-filter")) {
-            m_filter.filter_type = j["type-filter"].get<int>();
+            m_filter.filter_type = j["type-filter"].get<uint16_t>();
         }
 
         if (j.contains("type-mask")) {
-            m_filter.mask_type = j["type-mask"].get<int>();
+            m_filter.mask_type = j["type-mask"].get<uint16_t>();
         }
 
         if (j.contains("guid-filter")) {

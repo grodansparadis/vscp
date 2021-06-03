@@ -57,6 +57,26 @@ public:
     CVscpClient();
     ~CVscpClient();
 
+/*!
+    vscp-client class types
+    =======================
+    - NONE - Undefined
+    - LOCAL - No connection, can handle files, logs etc 
+    - TCPIP - VSCP tcp/ip link protocol.
+    - CANAL - The CANAL protocol. This is the same as a VSCP level I driver.
+    - SOCKETCAN - VSCP events sent ovr socketcan.
+    - WS1 - VSCP websocket ws1 protocol.
+    - WS2 - VSCP websocket ws2 protocol.
+    - MQTT - VSCP over MQTT.
+    - UDP - VSCP over UDP.
+    - MULTICAST - VSCP multicast protocol.
+    - REST - VSCP REST interface.
+    - RS232 - VSCP over serial link.
+    - RS485 - VSCP over multidrop serial link.
+    - RAWCAN - Handle standard CAN and CANFD.
+    - RAWMQTT - Handle standard MQTT. 
+*/
+
     enum class connType {
         NONE=0, 
         LOCAL, 
@@ -179,7 +199,7 @@ public:
         @param pData User defined data to pass in callback call
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData=nullptr);
+    virtual int setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData=nullptr);
 
     /*!
         Getter/setters for connection timeout
@@ -234,7 +254,7 @@ public:
     virtual void setName(const std::string& name) { m_name = name; };
 
     /*!
-        Set name for communication object
+        Get name for communication object
     */
     virtual std::string getName(void) { return m_name; };
 
