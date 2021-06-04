@@ -134,7 +134,12 @@ mqtt-options/protocol-version can be set to 310/311/500
 class publishTopic {
 
 public:
+
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
   publishTopic(const std::string &topic, int qos = 0, bool bretain = false, mosquitto_property *properties = NULL);
+#else
+  publishTopic(const std::string &topic, int qos = 0, bool bretain = false);
+#endif  
   ~publishTopic();
 
   /// Getters/Setters for topic
@@ -164,7 +169,9 @@ private:
   bool m_bRetain;
 
   /// Version 5 property list
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)    
   mosquitto_property *m_properties;
+#endif  
 };
 
 // ----------------------------------------------------------------------------
@@ -172,7 +179,12 @@ private:
 class subscribeTopic {
 
 public:
+
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6) 
   subscribeTopic(const std::string &topic, int qos=0, int v5_options=0, mosquitto_property *properties = NULL);
+#else
+    subscribeTopic(const std::string &topic, int qos=0, int v5_options=0);
+#endif  
   ~subscribeTopic();
 
   /// Getters/Setters for topic
@@ -197,7 +209,9 @@ private:
   int m_v5_options; 
   
   /// Version 5 property list
+  #if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
   mosquitto_property *m_properties;
+  #endif
 
   // v5 subscription options
   bool m_bSubOptNoLocal;

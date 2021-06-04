@@ -375,12 +375,18 @@ mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosqu
 // CTor
 //
 
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)  
 publishTopic::publishTopic(const std::string &topic, int qos, bool bretain, mosquitto_property *properties)
+#else
+publishTopic::publishTopic(const std::string &topic, int qos, bool bretain)
+#endif 
 {
   m_topic   = topic;
   m_qos     = qos;
   m_bRetain = bretain;
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)   
   m_properties = properties;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -389,7 +395,9 @@ publishTopic::publishTopic(const std::string &topic, int qos, bool bretain, mosq
 
 publishTopic::~publishTopic()
 {
-  ;
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)   
+  mosquitto_property_free_all(&m_properties);
+#endif   
 }
 
 // ----------------------------------------------------------------------------
@@ -398,12 +406,18 @@ publishTopic::~publishTopic()
 // CTor
 //
 
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)  
 subscribeTopic::subscribeTopic(const std::string &topic, int qos, int v5_options, mosquitto_property *properties)
+#else
+subscribeTopic::subscribeTopic(const std::string &topic, int qos, int v5_options)
+#endif
 {
   m_topic      = topic;
   m_qos        = qos;
   m_v5_options = v5_options;
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)    
   m_properties = properties;
+#endif  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -412,7 +426,9 @@ subscribeTopic::subscribeTopic(const std::string &topic, int qos, int v5_options
 
 subscribeTopic::~subscribeTopic()
 {
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)   
   mosquitto_property_free_all(&m_properties);
+#endif  
 }
 
 // ----------------------------------------------------------------------------
@@ -1302,7 +1318,11 @@ vscpClientMqtt::init(void)
 int
 vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_options, mosquitto_property *properties)
 {
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)    
   subscribeTopic *pTopic = new subscribeTopic(strTopicSub, qos, v5_options, properties);
+#else
+  subscribeTopic *pTopic = new subscribeTopic(strTopicSub, qos, v5_options);
+#endif  
   m_mqtt_subscribe.push_back(pTopic);
   return VSCP_ERROR_SUCCESS;
 }
@@ -1314,7 +1334,11 @@ vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_o
 int
 vscpClientMqtt::addPublish(const std::string strTopicPub, int qos, bool bRetain, mosquitto_property *properties)
 {
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)    
   publishTopic *pTopic = new publishTopic(strTopicPub, qos, bRetain, properties);
+#else
+  publishTopic *pTopic = new publishTopic(strTopicPub, qos, bRetain);
+#endif  
   m_mqtt_publish.push_back(pTopic);
   return VSCP_ERROR_SUCCESS;
 }
