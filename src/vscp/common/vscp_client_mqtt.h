@@ -361,12 +361,20 @@ public:
     @param qos The requested Quality of Service for this subscription.
     @return Return VSCP_ERROR_SUCCESS if all goes well. Error code if not.
   */
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
   int addSubscription(const std::string strTopicSub, int qos=0, int v5_options=0, mosquitto_property *properties=NULL);
+#else
+    int addSubscription(const std::string strTopicSub, int qos=0, int v5_options=0);
+#endif  
 
   /*
       Add publish
   */
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
   int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false, mosquitto_property *properties=NULL);
+#else
+    int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false);
+#endif  
 
   /*!
       Getter/setters for connection timeout

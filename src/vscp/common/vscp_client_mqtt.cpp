@@ -400,7 +400,11 @@ publishTopic::~publishTopic()
 #endif   
 }
 
+
+
 // ----------------------------------------------------------------------------
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTor
@@ -431,7 +435,11 @@ subscribeTopic::~subscribeTopic()
 #endif  
 }
 
+
+
 // ----------------------------------------------------------------------------
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -1316,7 +1324,11 @@ vscpClientMqtt::init(void)
 //
 
 int
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6) 
 vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_options, mosquitto_property *properties)
+#else
+vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_options)
+#endif
 {
 #if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)    
   subscribeTopic *pTopic = new subscribeTopic(strTopicSub, qos, v5_options, properties);
@@ -1332,7 +1344,11 @@ vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_o
 //
 
 int
+#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6) 
 vscpClientMqtt::addPublish(const std::string strTopicPub, int qos, bool bRetain, mosquitto_property *properties)
+#else
+vscpClientMqtt::addPublish(const std::string strTopicPub, int qos, bool bRetain)
+#endif
 {
 #if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR==1 && LIBMOSQUITTO_MINOR>=6)    
   publishTopic *pTopic = new publishTopic(strTopicPub, qos, bRetain, properties);
