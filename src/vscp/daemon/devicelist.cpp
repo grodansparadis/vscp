@@ -338,6 +338,7 @@ CDeviceItem::sendEvent(vscpEvent *pev)
       }
     }
     else if (bJsonMeasurementAdd) {
+      // TODO
     }
   }
   else if (m_mqtt_format == xmlfmt) {
@@ -447,7 +448,6 @@ CDeviceItem::sendEvent(vscpEvent *pev)
                              pbuf,
                              m_mqtt_qos,
                              true);
-      // mosquitto_loop(m_mosq, 0, 1);
     }
 
     // Translate mosquitto error code to VSCP error code
