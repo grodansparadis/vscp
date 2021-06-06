@@ -412,6 +412,12 @@ public:
     return vscp_getPortFromInterface(str);
   }
 
+  /*!
+    Get Mosquitto connection handle
+    @return Pointe rto mosquitto connection handle
+  */
+  struct mosquitto *getMqttHandle(void) { return m_mosq; };
+
 public:
   // Timeout in milliseconds for host connection.
   uint32_t m_timeoutConnection;
@@ -442,12 +448,12 @@ private:
   /*!
       Subscribe topic templates
   */
-  std::list<subscribeTopic *> m_mqtt_subscribe;
+  std::list<subscribeTopic *> m_mqtt_subscribeTopicList;
 
   /*!
     Publish topic templates
   */
-  std::list<publishTopic *> m_mqtt_publish;
+  std::list<publishTopic *> m_mqtt_publishTopicList;
 
   /*!
     Receive filter
