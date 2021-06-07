@@ -1,6 +1,6 @@
 {
   "bind" : "",   
-  "host" : "test.mosquitto.org",
+  "host" : "192.168.1.7",
   "port" : 1883,
   "mqtt-options" : {
       "tcp-nodelay" : true,
@@ -42,29 +42,52 @@
       "topic": "topic",
       "qos": 0,
       "retain": true,
-      "payload": "string/json/xml"
+      "payload": "This is the end"
   },
-  "subscribe": [
-      "vscp/topic/A",
-      "vscp/topic/B",
-      "vscp/#",
-      "vscp2/#"
-  ],
-  "publish": [
-      "publish/topic/A",
-      "publish/topic/B"
-  ],      
-  "v5" : {
-      "user-properties": {
-          "prop1" : "value",
-          "prop2" : "value"    
-      },
-      "subscribe-options": [
-            "NO_LOCAL",
-            "RETAIN_AS_PUBLISHED",
-            "SEND_RETAIN_ALWAYS",
-            "SEND_RETAIN_NEW",
-            "SEND_RETAIN_NEVER"
-      ]  
-  }
+    "subscribe": [
+        {
+            "topic": "test/topic/A",
+            "qos": 0,
+            "v5-options": 0
+        },
+        {
+            "topic": "test/topic/B",
+            "qos": 0,
+            "v5-options": 0
+        },
+        {
+            "topic": "test/#",
+            "qos": 0,
+            "v5-options": 0
+        },
+        {
+            "topic": "test2/#",
+            "qos": 0,
+            "v5-options": 0
+        }
+    ],
+    "bescape-pub-topics": true,
+    "publish": [
+        {
+            "topic" : "publish/topic/A",
+            "qos" : 0,
+            "retain" : false
+        },
+        {
+            "topic" : "publish/topic/B",
+            "qos" : 0,
+            "retain" : false
+        },
+        {
+            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+            "qos" : 0,
+            "retain" : false
+        }    
+    ],      
+    "v5" : {
+        "user-properties": {
+            "prop1" : "value",
+            "prop2" : "value"    
+        } 
+    }
 }

@@ -33,6 +33,11 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
+
+#include <mosquitto.h>
+#include <mqtt_protocol.h>
+
+#include <guid.h>
 #include <vscphelper.h>
 
 #include <deque>
@@ -250,11 +255,13 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
     return;
   }
 
-  vscpClientMqtt *pObj = reinterpret_cast<vscpClientMqtt *>(pData);
-  if (!pObj->handleMessage(pMsg)) {}
-
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::error("MQTT Message: Topic = [{}] - Payload: [{}]", pMsg->topic, payload);
+  spdlog::error("MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  if (!pClient->handleMessage(pMsg)) {
+    spdlog::error("MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,10 +289,13 @@ mqtt_on_message_v5(struct mosquitto *mosq,
     return;
   }
 
-  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
+  spdlog::error("MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
-  spdlog::error("MQTT Message: Topic = [{}] - Payload: [{}]", pMsg->topic, payload);
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  if (!pClient->handleMessage(pMsg)) {
+    spdlog::error("MQTT v5 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -476,6 +486,13 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_tls_psk              = "";
   m_tls_identity         = "";
 
+  // Publish token escapes disabled
+  m_bEscapesPubTopics = true;
+
+  // No token maps defined
+  m_pmap_class = nullptr;
+  m_pmap_type  = nullptr;
+
   // delay=2, delay_max=10, exponential_backoff=False Delays would be: 2, 4, 6, 8, 10, 10, ...
   m_reconnect_delay               = 2;
   m_reconnect_delay_max           = 10;
@@ -515,14 +532,18 @@ vscpClientMqtt::~vscpClientMqtt()
   }
 
   // Delete subscription objects
-  for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin(); it != m_mqtt_subscribeTopicList.end(); ++it) {
+  for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin();
+       it != m_mqtt_subscribeTopicList.end();
+       ++it) {
     delete (*it);
   }
 
   m_mqtt_subscribeTopicList.clear();
 
   // Delete publish objects
-  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin(); it != m_mqtt_publishTopicList.end(); ++it) {
+  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin();
+       it != m_mqtt_publishTopicList.end();
+       ++it) {
     delete (*it);
   }
 
@@ -914,18 +935,132 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("subscribe") && j["subscribe"].is_array()) {
 
       json jj = j["subscribe"];
-      for (std::string str : j["subscribe"]) {
-        addSubscription(str, 0);
-      }
+      
+      for (auto const& subobj : jj) {
+
+        if (subobj.is_object()) {
+
+          std::string topic = "";
+          int qos           = m_qos;
+          int v5_options    = 0;
+
+          if (subobj.contains("topic") && subobj["topic"].is_string()) {
+            topic = subobj["topic"].get<std::string>();
+          }
+          else {
+            spdlog::error("config: Missing subscription topic. Will skip it");
+            continue;
+          }
+
+          if (subobj.contains("qos") && subobj["qos"].is_number_unsigned()) {
+            qos = subobj["qos"].get<uint8_t>();
+          }
+
+          // Numerically
+          if (subobj.contains("v5-options") && subobj["v5-options"].is_number_integer()) {
+            v5_options = subobj["v5-options"].get<int>();
+          }
+          // From token
+          else if (subobj.contains("v5-options") && subobj["v5-options"].is_string()) {
+            std::string str = subobj["v5-options"].get<std::string>();
+            vscp_makeUpper(str);
+            /*
+              0x04
+              with this option set, if this client publishes to a topic to which it is subscribed,
+              the broker will not publish the message back to the client.
+            */
+            if (std::string::npos != str.find("NO_LOCAL")) {
+              v5_options |= MQTT_SUB_OPT_NO_LOCAL;
+            }
+            /*
+              0x08
+              with this option set, messages published for this subscription will keep the retain
+              flag as was set by the publishing client.  The default behaviour without this option
+              set has the retain flag indicating whether a message is fresh/stale.
+            */
+            if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
+              v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
+            }
+            /*
+              0x00
+              with this option set, pre-existing retained messages are sent as soon as the subscription
+              is made, even if the subscription already exists.  This is the default behaviour, so it is
+              not necessary to set this option.
+            */
+            if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
+              v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
+            }
+            /*
+              0x10
+              with this option set, pre-existing retained messages for this subscription will be sent when
+              the subscription is made, but only if the subscription does not already exist.
+            */
+            if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
+              v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
+            }
+            /*
+              0x20
+              with this option set, pre-existing retained messages will never be sent for this subscription.
+            */
+            if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
+              v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
+            }
+          }
+
+          addSubscription(topic, qos, v5_options);
+
+        } // object
+      } // for
+    } // sub
+
+    if (j.contains("bescape-pub-topics") && j["bescape-pub-topics"].is_boolean()) {
+      m_bEscapesPubTopics = j["bescape-pub-topics"].get<bool>();
     }
 
     // Publish
     if (j.contains("publish") && j["publish"].is_array()) {
+      
       json jj = j["publish"];
-    }
+
+      for (auto const& pubobj : jj) {
+
+        if (pubobj.is_object()) {
+
+          std::string topic = "";
+          int qos           = m_qos;
+          bool bretain      = m_bRetain;
+
+          if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
+            topic = pubobj["topic"].get<std::string>();
+          }
+          else {
+            spdlog::error("config: Missing publish topic. Will skip it");
+            continue;
+          }
+
+          if (pubobj.contains("qos") && pubobj["qos"].is_number_unsigned()) {
+            qos = pubobj["qos"].get<uint8_t>();
+          }
+
+          if (pubobj.contains("bretain") && pubobj["bretain"].is_boolean()) {
+            bretain = pubobj["bretain"].get<bool>();
+          }
+
+          addPublish(topic, qos, bretain);
+
+        } // obj
+      } // for
+    } // pub
 
     // v5
-    if (j.contains("v5") && j["v5"].is_array()) {}
+    if (j.contains("v5") && j["v5"].is_object()) {
+      json jj = j.contains("v5");
+      if (jj.contains("user-properties") && jj["user-properties"].is_object()) {
+        for (auto it = j.begin(); it != j.end(); ++it) {
+          m_mapMqttProperties[it.key()] = it.value();
+        }
+      }
+    }
   }
   catch (...) {
     spdlog::error("config: JSON parsing error.");
@@ -1390,7 +1525,9 @@ vscpClientMqtt::connect(void)
   }
 
   // Only subscribe if subscription topic is defined
-  for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin(); it != m_mqtt_subscribeTopicList.end(); ++it) {
+  for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin();
+       it != m_mqtt_subscribeTopicList.end();
+       ++it) {
 
     subscribeTopic *psubtopic = (*it);
 
@@ -1465,15 +1602,17 @@ vscpClientMqtt::isConnected(void)
 int
 vscpClientMqtt::send(vscpEvent &ev)
 {
+  std::string str;
   uint8_t payload[1024];
   size_t lenPayload = 0;
   int rv;
 
-  // Only subscribe if subscription topic is defined
-  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin(); it != m_mqtt_publishTopicList.end(); ++it) {
+  // Publish to each defined topic
+  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin();
+       it != m_mqtt_publishTopicList.end();
+       ++it) {
 
     publishTopic *ppublish = (*it);
-
     memset(payload, 0, sizeof(payload));
 
     if (m_publish_format == jsonfmt) {
@@ -1501,7 +1640,6 @@ vscpClientMqtt::send(vscpEvent &ev)
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
     else if (m_publish_format == binfmt) {
-
       lenPayload = vscp_getFrameSizeFromEvent(&ev) + 1;
 
       // Write event to frame
@@ -1513,9 +1651,119 @@ vscpClientMqtt::send(vscpEvent &ev)
       return VSCP_ERROR_NOT_SUPPORTED;
     }
 
+    std::string strTopic = ppublish->getTopic();
+
+    // Fix publish topic escapes
+
+    if (m_bEscapesPubTopics) {
+      std::string topic_template = ppublish->getTopic();
+      mustache subtemplate{ topic_template };
+      data data;
+      cguid evguid(ev.GUID); // Event GUID
+      data.set("guid", evguid.getAsString());
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
+      }
+      data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
+      data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
+      data.set("ifguid", m_guid.getAsString());
+
+      if (NULL != ev.pdata) {
+        for (int i = 0; i < ev.sizeData; i++) {
+          data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", ev.pdata[i]));
+        }
+      }
+
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
+      }
+      data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
+      data.set("class", vscp_str_format("%d", ev.vscp_class));
+      data.set("type", vscp_str_format("%d", ev.vscp_type));
+
+      if (nullptr != m_pmap_class) {
+        data.set("class-token", (*m_pmap_class)[ev.vscp_class]);
+      }
+
+      if (nullptr != m_pmap_type) {
+        data.set("type-token", (*m_pmap_type)[((ev.vscp_class << 16) + ev.vscp_type)]);
+      }
+
+      data.set("head", vscp_str_format("%d", ev.head));
+      data.set("obid", vscp_str_format("%ul", ev.obid));
+      data.set("timestamp", vscp_str_format("%ul", ev.timestamp));
+
+      std::string dt;
+      vscp_getDateStringFromEvent(dt, &ev);
+      data.set("datetime", dt);
+      data.set("year", vscp_str_format("%d", ev.year));
+      data.set("month", vscp_str_format("%d", ev.month));
+      data.set("day", vscp_str_format("%d", ev.day));
+      data.set("hour", vscp_str_format("%d", ev.hour));
+      data.set("minute", vscp_str_format("%d", ev.minute));
+      data.set("second", vscp_str_format("%d", ev.second));
+
+      data.set("clientid", m_clientid);
+      data.set("user", m_username);
+      data.set("host", m_host);
+
+      switch (m_publish_format) {
+        case jsonfmt:
+          str = "json";
+          break;
+
+        case xmlfmt:
+          str = "xml";
+          break;
+
+        case strfmt:
+          str = "string";
+          break;
+
+        case binfmt:
+          str = "binary";
+          break;
+
+        case autofmt:
+          str = "auto";
+          break;
+      }
+      data.set("fmtpublish", str);
+
+      switch (m_subscribe_format) {
+        case jsonfmt:
+          str = "json";
+          break;
+
+        case xmlfmt:
+          str = "xml";
+          break;
+
+        case strfmt:
+          str = "string";
+          break;
+
+        case binfmt:
+          str = "binary";
+          break;
+
+        case autofmt:
+          str = "auto";
+          break;
+      }
+      data.set("fmtsubscribe", str);
+
+      // Add user escapes like "driver-name"= "some-driver";
+      for (auto const &item : m_mapPublishTopicPairs) {
+        data.set(item.first, item.second);
+      }
+
+      strTopic = subtemplate.render(data);
+    }
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
-                                                    ppublish->getTopic().c_str(),
+                                                    strTopic.c_str(),
                                                     (int) lenPayload,
                                                     payload,
                                                     ppublish->getQos(),
@@ -1535,12 +1783,15 @@ vscpClientMqtt::send(vscpEvent &ev)
 int
 vscpClientMqtt::send(vscpEventEx &ex)
 {
+  std::string str;
   uint8_t payload[1024];
   size_t lenPayload = 0;
   int rv;
 
   // Only subscribe if subscription topic is defined
-  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin(); it != m_mqtt_publishTopicList.end(); ++it) {
+  for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin();
+       it != m_mqtt_publishTopicList.end();
+       ++it) {
 
     publishTopic *ppublish = (*it);
 
@@ -1582,9 +1833,119 @@ vscpClientMqtt::send(vscpEventEx &ex)
       return VSCP_ERROR_NOT_SUPPORTED;
     }
 
+    std::string strTopic = ppublish->getTopic();
+
+    // Fix publish topic escapes
+
+    if (m_bEscapesPubTopics) {
+      std::string topic_template = ppublish->getTopic();
+      mustache subtemplate{ topic_template };
+      data data;
+      cguid evguid(ex.GUID); // Event GUID
+      data.set("guid", evguid.getAsString());
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
+      }
+      data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
+      data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
+      data.set("ifguid", m_guid.getAsString());
+
+      if (ex.sizeData) {
+        for (int i = 0; i < ex.sizeData; i++) {
+          data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", ex.data[i]));
+        }
+      }
+
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
+      }
+      data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
+      data.set("class", vscp_str_format("%d", ex.vscp_class));
+      data.set("type", vscp_str_format("%d", ex.vscp_type));
+
+      if (nullptr != m_pmap_class) {
+        data.set("class-token", (*m_pmap_class)[ex.vscp_class]);
+      }
+
+      if (nullptr != m_pmap_type) {
+        data.set("type-token", (*m_pmap_type)[((ex.vscp_class << 16) + ex.vscp_type)]);
+      }
+
+      data.set("head", vscp_str_format("%d", ex.head));
+      data.set("obid", vscp_str_format("%ul", ex.obid));
+      data.set("timestamp", vscp_str_format("%ul", ex.timestamp));
+
+      std::string dt;
+      vscp_getDateStringFromEventEx(dt, &ex);
+      data.set("datetime", dt);
+      data.set("year", vscp_str_format("%d", ex.year));
+      data.set("month", vscp_str_format("%d", ex.month));
+      data.set("day", vscp_str_format("%d", ex.day));
+      data.set("hour", vscp_str_format("%d", ex.hour));
+      data.set("minute", vscp_str_format("%d", ex.minute));
+      data.set("second", vscp_str_format("%d", ex.second));
+
+      data.set("clientid", m_clientid);
+      data.set("user", m_username);
+      data.set("host", m_host);
+
+      switch (m_publish_format) {
+        case jsonfmt:
+          str = "json";
+          break;
+
+        case xmlfmt:
+          str = "xml";
+          break;
+
+        case strfmt:
+          str = "string";
+          break;
+
+        case binfmt:
+          str = "binary";
+          break;
+
+        case autofmt:
+          str = "auto";
+          break;
+      }
+      data.set("fmtpublish", str);
+
+      switch (m_subscribe_format) {
+        case jsonfmt:
+          str = "json";
+          break;
+
+        case xmlfmt:
+          str = "xml";
+          break;
+
+        case strfmt:
+          str = "string";
+          break;
+
+        case binfmt:
+          str = "binary";
+          break;
+
+        case autofmt:
+          str = "auto";
+          break;
+      }
+      data.set("fmtsubscribe", str);
+
+      // Add user escapes like "driver-name"= "some-driver";
+      for (auto const &item : m_mapPublishTopicPairs) {
+        data.set(item.first, item.second);
+      }
+
+      strTopic = subtemplate.render(data);
+    }
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
-                                                    ppublish->getTopic().c_str(),
+                                                    strTopic.c_str(),
                                                     (int) lenPayload,
                                                     payload,
                                                     ppublish->getQos(),

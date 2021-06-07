@@ -60,7 +60,21 @@ main()
     spdlog::debug("Failed to conect to MQTT broker.");
   }
 
-  sleep(60);
+  for (int i=0; i<60; i++) {
+    vscpEventEx ex;
+    vscp_setEventExToNow(&ex);
+    for ( int i=0;i<16;i++) {
+      ex.GUID[i] = i*11;
+    }
+    ex.vscp_class = 10;
+    ex.vscp_type = 6;
+    ex.sizeData = 3;
+    ex.data[0] = 0x11;
+    ex.data[1] = 0x22;
+    ex.data[3] = 0x33;
+    client.send(ex);
+    sleep(1);
+  }
 
   if (VSCP_ERROR_SUCCESS != client.disconnect()) {
     spdlog::debug("Failed to init MQTT.");

@@ -75,7 +75,8 @@
         "compare": "cpp",
         "concepts": "cpp",
         "ranges": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "codecvt": "cpp"
     },
     "cSpell.words": [
         "Grodans Paradis",

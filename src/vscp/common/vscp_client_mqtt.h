@@ -83,25 +83,35 @@
           "payload": "string/json/xml"
       },
       "subscribe": [
-          "subscribe/topic/A",
-          "subscribe/topic/B"
+        {
+          "topic": "subscribe/topic/A",
+          "qos": 0,
+          "v5-options": 4
+        },
+        {
+          "topic":"subscribe/topic/B",
+          "qos": 0,
+          "v5-options": "NO_LOCAL, RETAIN_AS_PUBLISHED, SEND_RETAIN_ALWAYS, SEND_RETAIN_NEW, SEND_RETAIN_NEVER"
+        }
       ],
+      "bescape-pub-topics": true,
       "publish": [
-          "publish/topic/A",
-          "publish/topic/B"
+        {
+          "topic": "publish/topic/A",
+          "qos": 0,
+          "bretain": false
+        },
+        {
+          "topic": "publish/topic/B",
+          "qos": 0,
+          "bretain": false
+        }
       ],
       "v5" : {
           "user-properties": {
               "prop1" : "value",
               "prop2" : "value"
-          },
-          "subscribe-options": [
-                "NO_LOCAL",
-                "RETAIN_AS_PUBLISHED",
-                "SEND_RETAIN_ALWAYS",
-                "SEND_RETAIN_NEW",
-                "SEND_RETAIN_NEVER"
-          ]
+          }
       }
 }
 
@@ -117,6 +127,7 @@ mqtt-options/protocol-version can be set to 310/311/500
 #define VSCPCLIENTMQTT_H__INCLUDED_
 
 #include "vscp_client_base.h"
+#include <guid.h>
 #include <vscp.h>
 #include <vscphelper.h>
 
@@ -134,12 +145,11 @@ mqtt-options/protocol-version can be set to 310/311/500
 class publishTopic {
 
 public:
-
-#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   publishTopic(const std::string &topic, int qos = 0, bool bretain = false, mosquitto_property *properties = NULL);
 #else
   publishTopic(const std::string &topic, int qos = 0, bool bretain = false);
-#endif  
+#endif
   ~publishTopic();
 
   /// Getters/Setters for topic
@@ -169,9 +179,9 @@ private:
   bool m_bRetain;
 
   /// Version 5 property list
-#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)    
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   mosquitto_property *m_properties;
-#endif  
+#endif
 };
 
 // ----------------------------------------------------------------------------
@@ -179,12 +189,11 @@ private:
 class subscribeTopic {
 
 public:
-
-#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6) 
-  subscribeTopic(const std::string &topic, int qos=0, int v5_options=0, mosquitto_property *properties = NULL);
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+  subscribeTopic(const std::string &topic, int qos = 0, int v5_options = 0, mosquitto_property *properties = NULL);
 #else
-    subscribeTopic(const std::string &topic, int qos=0, int v5_options=0);
-#endif  
+  subscribeTopic(const std::string &topic, int qos = 0, int v5_options = 0);
+#endif
   ~subscribeTopic();
 
   /// Getters/Setters for topic
@@ -206,12 +215,12 @@ private:
   int m_qos;
 
   /// version 5 options
-  int m_v5_options; 
-  
-  /// Version 5 property list
-  #if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
+  int m_v5_options;
+
+/// Version 5 property list
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   mosquitto_property *m_properties;
-  #endif
+#endif
 
   // v5 subscription options
   bool m_bSubOptNoLocal;
@@ -259,12 +268,14 @@ public:
 
   /*!
       Send VSCP event to remote host.
+      @param ev VSCP event
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int send(vscpEvent &ev);
 
   /*!
       Send VSCP event to remote host.
+      @param ex VSCP event ex
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int send(vscpEventEx &ex);
@@ -361,20 +372,26 @@ public:
     @param qos The requested Quality of Service for this subscription.
     @return Return VSCP_ERROR_SUCCESS if all goes well. Error code if not.
   */
-#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
-  int addSubscription(const std::string strTopicSub, int qos=0, int v5_options=0, mosquitto_property *properties=NULL);
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+  int addSubscription(const std::string strTopicSub,
+                      int qos                        = 0,
+                      int v5_options                 = 0,
+                      mosquitto_property *properties = NULL);
 #else
-    int addSubscription(const std::string strTopicSub, int qos=0, int v5_options=0);
-#endif  
+  int addSubscription(const std::string strTopicSub, int qos = 0, int v5_options = 0);
+#endif
 
   /*
       Add publish
   */
-#if LIBMOSQUITTO_MAJOR>1 || (LIBMOSQUITTO_MAJOR== 1 && LIBMOSQUITTO_MINOR>=6)  
-  int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false, mosquitto_property *properties=NULL);
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+  int addPublish(const std::string strTopicPub,
+                 int qos                        = 0,
+                 bool bRetain                   = false,
+                 mosquitto_property *properties = NULL);
 #else
-    int addPublish(const std::string strTopicPub, int qos=0, bool bRetain=false);
-#endif  
+  int addPublish(const std::string strTopicPub, int qos = 0, bool bRetain = false);
+#endif
 
   /*!
       Getter/setters for connection timeout
@@ -413,10 +430,28 @@ public:
   }
 
   /*!
+    Set optional GUID
+    @param guid Guid to set
+  */
+  void setGuid(const cguid &guid) { m_guid = guid; };
+
+  /*!
     Get Mosquitto connection handle
     @return Pointe rto mosquitto connection handle
   */
   struct mosquitto *getMqttHandle(void) { return m_mosq; };
+
+  /*!
+    SetTokenMaps
+    Store pointers to maps that are used to get token from 
+    VSCP class or VSCP type codes. The tokens are used in 
+    the send routines to escape MQTT topics
+  */
+  void setTokeMaps(std::map<uint16_t, std::string> *pmap_class,
+              std::map<uint32_t, std::string> *pmap_type) {
+    m_pmap_class = pmap_class;
+    m_pmap_type = pmap_type;
+  }
 
 public:
   // Timeout in milliseconds for host connection.
@@ -432,6 +467,11 @@ public:
       True of dll connection is open
   */
   bool m_bConnected;
+
+  /*!
+    Enable publishing escapes.
+  */
+  bool m_bEscapesPubTopics;
 
   /*!
     Mutex that protect CANAL interface when callbacks are defined
@@ -486,6 +526,25 @@ private:
   std::map<std::string, std::string> m_mapMqttProperties;
 
   /*!
+      Map for publish topic escapes.
+      They are set in pairs like "drivername" = "xxxxxxxxxx"
+  */
+  std::map<std::string, std::string> m_mapPublishTopicPairs;
+
+  /*!
+    Pointer to map that maps a VSCP class code to it's string
+    token. This is used in send to escape MQTT topics.
+  */
+  std::map<uint16_t, std::string> *m_pmap_class;
+
+  /*!
+    Pointer to map that maps a VSCP type code to it's string
+    token. This is used in send to escape MQTT topics.
+    key: vscp_class << 16 + vscp_type
+  */
+  std::map<uint32_t, std::string> *m_pmap_type;
+
+  /*!
       Specific interface to bind to.
       Leave blank for all.
   */
@@ -497,6 +556,11 @@ private:
       stcp://192.168.1.8:8883
   */
   std::string m_host; // MQTT broker
+
+  /*!
+    Optional GUID for client
+  */
+  cguid m_guid;
 
   /*!
       Extracted from host address or set directly

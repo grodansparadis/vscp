@@ -4601,8 +4601,9 @@ vscp_setEventToNow(vscpEvent *pEvent)
 bool
 vscp_setEventExToNow(vscpEventEx *pEventEx)
 {
-  if (NULL == pEventEx)
+  if (NULL == pEventEx) {
     return false;
+  }
 
   time_t rawtime;
   struct tm *ptm;

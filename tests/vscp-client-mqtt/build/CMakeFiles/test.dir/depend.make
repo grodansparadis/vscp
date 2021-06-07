@@ -85,6 +85,7 @@ CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/common/third_party/spdlog-1.8.5/include/spdlog/tweakme.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/common/third_party/spdlog-1.8.5/include/spdlog/version.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/vscp/common/canal.h
+CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/vscp/common/guid.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/vscp/common/vscp.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/vscp/common/vscp_class.h
 CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_mqtt.cpp.o: ../../../src/vscp/common/vscp_type.h
@@ -174,6 +175,7 @@ CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/common/third_party
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/common/third_party/spdlog-1.8.5/include/spdlog/tweakme.h
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/common/third_party/spdlog-1.8.5/include/spdlog/version.h
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/vscp/common/canal.h
+CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/vscp/common/guid.h
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/vscp/common/vscp.h
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/vscp/common/vscp_class.h
 CMakeFiles/test.dir/test-vscp-client-mqtt.cpp.o: ../../../src/vscp/common/vscp_client_base.h
