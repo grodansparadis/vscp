@@ -14,17 +14,24 @@
 // printf( "%" PRIx64 "\n",wcyd);
 
 #define _XOPEN_SOURCE 700
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <string>
 #include <fstream>
 #include <streambuf>
-#include <string>
+#include <iostream>
 
 #include "spdlog/spdlog.h"
 #include "vscp_client_mqtt.h"
+
+void test_ev_callback( vscpEvent *pev, void *pobj )
+{
+  spdlog::info("VSCP Event received. class={0} type={1}",pev->vscp_class, pev->vscp_type);    
+}
 
 int
 main()
@@ -56,11 +63,14 @@ main()
     spdlog::debug("Failed to init from JSON.");
   }
 
+  client.setCallback(test_ev_callback);
+
   if (VSCP_ERROR_SUCCESS != client.connect()) {
     spdlog::debug("Failed to conect to MQTT broker.");
   }
 
-  for (int i=0; i<60; i++) {
+  //for (int i=0; i<60; i++) {
+  while (true) {  
     vscpEventEx ex;
     vscp_setEventExToNow(&ex);
     for ( int i=0;i<16;i++) {
@@ -73,11 +83,13 @@ main()
     ex.data[1] = 0x22;
     ex.data[3] = 0x33;
     client.send(ex);
+
+    std::cout << "* * * * ctrl + C to end * * * *\n";
     sleep(1);
   }
 
   if (VSCP_ERROR_SUCCESS != client.disconnect()) {
-    spdlog::debug("Failed to init MQTT.");
+    spdlog::error("Failed to disconnect MQTT.");
   }
 
   return 0;

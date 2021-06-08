@@ -256,7 +256,7 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
   }
 
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::error("MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  spdlog::trace("MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   if (!pClient->handleMessage(pMsg)) {
@@ -290,7 +290,7 @@ mqtt_on_message_v5(struct mosquitto *mosq,
   }
 
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::error("MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  spdlog::trace("MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   if (!pClient->handleMessage(pMsg)) {
@@ -386,14 +386,19 @@ mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosqu
 //
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-publishTopic::publishTopic(const std::string &topic, int qos, bool bretain, mosquitto_property *properties)
+publishTopic::publishTopic(const std::string &topic,
+                           enumMqttMsgFormat format,
+                           int qos,
+                           bool bretain,
+                           mosquitto_property *properties)
 #else
-publishTopic::publishTopic(const std::string &topic, int qos, bool bretain)
+publishTopic::publishTopic(const std::string &topic, enumMqttMsgFormat format, int qos, bool bretain)
 #endif
 {
   m_topic   = topic;
   m_qos     = qos;
   m_bRetain = bretain;
+  m_format  = format;
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   m_properties = properties;
 #endif
@@ -417,14 +422,19 @@ publishTopic::~publishTopic()
 //
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-subscribeTopic::subscribeTopic(const std::string &topic, int qos, int v5_options, mosquitto_property *properties)
+subscribeTopic::subscribeTopic(const std::string &topic,
+                               enumMqttMsgFormat format,
+                               int qos,
+                               int v5_options,
+                               mosquitto_property *properties)
 #else
-subscribeTopic::subscribeTopic(const std::string &topic, int qos, int v5_options)
+subscribeTopic::subscribeTopic(const std::string &topic, enumMqttMsgFormat format, int qos, int v5_options)
 #endif
 {
   m_topic      = topic;
   m_qos        = qos;
   m_v5_options = v5_options;
+  m_format     = format;
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   m_properties = properties;
 #endif
@@ -451,27 +461,26 @@ vscpClientMqtt::vscpClientMqtt(void)
 {
   spdlog::debug("constructor vscp_client_mqtt object.");
 
+  m_type = CVscpClient::connType::MQTT; // This is a MQTT client
+
   m_mapMqttIntOptions["tcp-nodelay"]      = 1;
   m_mapMqttIntOptions["protocol-version"] = 311;
   m_mapMqttIntOptions["receive-maximum"]  = 20;
   m_mapMqttIntOptions["send-maximum"]     = 20;
 
-  m_bConnected       = false;
-  m_bindInterface    = "";
-  m_mosq             = nullptr;
-  m_type             = CVscpClient::connType::MQTT;
-  m_publish_format   = jsonfmt;
-  m_subscribe_format = autofmt;
-  m_mosq             = nullptr;
-  m_bConnected       = false; // Not connected
-  m_bRun             = false;
-  m_host             = ""; // tcp://localhost:1883
-  m_port             = 1883;
-  m_clientid         = "";
-  m_username         = "";
-  m_password         = "";
-  m_keepalive        = 30;
-  m_bCleanSession    = false;
+  m_bConnected       = false;   // Not connected
+  m_bindInterface    = "";      // No bind interface
+  m_mosq             = nullptr; // No mosquitto conection
+  m_publish_format   = jsonfmt; // Publish inm JSON if not configured to do something else
+  m_subscribe_format = autofmt; // Automatically detect payload format
+  m_bRun             = true;    // Run to the Hills...
+  m_host             = "";      // tcp://localhost:1883
+  m_port             = 1883;    // Default port
+  m_clientid         = "";      // No client id set
+  m_username         = "";      // No username set
+  m_password         = "";      // No password set
+  m_keepalive        = 30;      // 30 seconds for keepalive
+  m_bCleanSession    = false;   // Do not start with a clean session
 
   m_bTLS                 = false;
   m_tls_cafile           = "";
@@ -516,8 +525,9 @@ vscpClientMqtt::~vscpClientMqtt()
   spdlog::debug("destructor vscp_client_mqtt object.");
 
   // Disconnect if we still are connected
-  if (isConnected())
+  if (isConnected()) {
     disconnect();
+  }
 
   // Clean up the lib
   mosquitto_lib_cleanup();
@@ -776,20 +786,19 @@ vscpClientMqtt::initFromJson(const std::string &config)
         m_reconnect_delay = jj["delay"].get<int>();
         spdlog::debug("config: 'reconnect delay' Set to {}.", m_reconnect_delay);
       }
-      else if (jj.contains("delay-max")) {
+
+      if (jj.contains("delay-max")) {
         m_reconnect_delay_max = jj["delay-max"].get<int>();
         spdlog::debug("config: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
       }
-      else if (jj.contains("exponential-backoff")) {
+
+      if (jj.contains("exponential-backoff")) {
         m_reconnect_exponential_backoff = jj["exponential-backoff"].get<bool>();
         spdlog::debug("config: 'reconnect exponential-backoff' Set to {}.", m_reconnect_exponential_backoff);
       }
-      else {
-        spdlog::debug("config: 'reconnect' Invalid token.");
-      }
     }
 
-    // Last will
+    // Filter
     if (j.contains("filter") && j["filter"].is_object()) {
 
       json jj = j["filter"];
@@ -839,48 +848,55 @@ vscpClientMqtt::initFromJson(const std::string &config)
         m_tls_cafile = jj["cafile"].get<std::string>();
         spdlog::debug("config: 'tls cafile' Set to {}.", m_tls_cafile);
       }
-      else if (jj.contains("capath")) {
+
+      if (jj.contains("capath")) {
         m_tls_capath = jj["capath"].get<std::string>();
         spdlog::debug("config: 'tls capath' Set to {}.", m_tls_capath);
       }
-      else if (jj.contains("certfile")) {
+
+      if (jj.contains("certfile")) {
         m_tls_certfile = jj["certfile"].get<std::string>();
         spdlog::debug("config: 'tls certfile' Set to {}.", m_tls_certfile);
       }
-      else if (jj.contains("keyfile")) {
+
+      if (jj.contains("keyfile")) {
         m_tls_keyfile = jj["keyfile"].get<std::string>();
         spdlog::debug("config: 'tls keyfile' Set to {}.", m_tls_keyfile);
       }
-      else if (jj.contains("pwkeyfile")) {
+
+      if (jj.contains("pwkeyfile")) {
         m_tls_pwKeyfile = jj["pwkeyfile"].get<std::string>();
         spdlog::debug("config: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
       }
-      else if (jj.contains("no-hostname-checking")) {
+
+      if (jj.contains("no-hostname-checking")) {
         m_tls_bNoHostNameCheck = jj["no-hostname-checking"].get<bool>();
         spdlog::debug("config: 'tls no-hostname-checking' Set to {}.", m_tls_bNoHostNameCheck);
       }
-      else if (jj.contains("cert-reqs")) {
+
+      if (jj.contains("cert-reqs")) {
         m_tls_cert_reqs = jj["cert-reqs"].get<int>();
         spdlog::debug("config: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
       }
-      else if (jj.contains("version")) {
+
+      if (jj.contains("version")) {
         m_tls_version = jj["version"].get<std::string>();
         spdlog::debug("config: 'tls version' Set to {}.", m_tls_version);
       }
-      else if (jj.contains("ciphers")) {
+
+      if (jj.contains("ciphers")) {
         m_tls_ciphers = jj["ciphers"].get<std::string>();
         spdlog::debug("config: 'tls ciphers' Set to {}.", m_tls_ciphers);
       }
-      else if (jj.contains("psk")) {
+
+      if (jj.contains("psk")) {
         m_tls_psk = jj["psk"].get<std::string>();
         spdlog::debug("config: 'tls psk' Set to {}.", m_tls_psk);
       }
-      else if (jj.contains("psk-identity")) {
+
+      if (jj.contains("psk-identity")) {
         m_tls_identity = jj["psk-identity"].get<std::string>();
         spdlog::debug("config: 'tls psk-identity' Set to {}.", m_tls_identity);
-      }
-      else {
-        spdlog::debug("config: 'TLS' Invalid token.");
       }
 
       // Both of cafile/capath can not be null
@@ -914,20 +930,20 @@ vscpClientMqtt::initFromJson(const std::string &config)
         m_will_topic = jj["topic"].get<std::string>();
         spdlog::debug("config: 'will topic' Set to {}.", m_will_topic);
       }
-      else if (jj.contains("qos")) {
+
+      if (jj.contains("qos")) {
         m_will_qos = jj["qos"].get<uint8_t>();
         spdlog::debug("config: 'will qos' Set to {}.", m_will_qos);
       }
-      else if (jj.contains("retain")) {
+
+      if (jj.contains("retain")) {
         m_will_bretain = jj["retain"].get<bool>();
         spdlog::debug("config: 'will retain' Set to {}.", m_will_bretain);
       }
-      else if (jj.contains("payload")) {
+
+      if (jj.contains("payload")) {
         m_will_payload = jj["payload"].get<std::string>();
         spdlog::debug("config: 'will payload' Set to {}.", m_will_payload);
-      }
-      else {
-        spdlog::debug("config: 'will' Invalid token.");
       }
     }
 
@@ -935,14 +951,15 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("subscribe") && j["subscribe"].is_array()) {
 
       json jj = j["subscribe"];
-      
-      for (auto const& subobj : jj) {
+
+      for (auto const &subobj : jj) {
 
         if (subobj.is_object()) {
 
-          std::string topic = "";
-          int qos           = m_qos;
-          int v5_options    = 0;
+          std::string topic        = "";
+          int qos                  = m_qos;
+          int v5_options           = 0;
+          enumMqttMsgFormat format = m_subscribe_format;
 
           if (subobj.contains("topic") && subobj["topic"].is_string()) {
             topic = subobj["topic"].get<std::string>();
@@ -1007,11 +1024,40 @@ vscpClientMqtt::initFromJson(const std::string &config)
             }
           }
 
-          addSubscription(topic, qos, v5_options);
+          if (subobj.contains("format") && subobj["format"].is_string()) {
+            std::string str = j["subscribe-format"].get<std::string>();
+            vscp_makeLower(str);
+            if (std::string::npos != str.find("binary")) {
+              spdlog::debug("config: 'subscribe obj format' Set to BINARY.");
+              m_subscribe_format = binfmt;
+            }
+            else if (std::string::npos != str.find("string")) {
+              spdlog::debug("config: 'subscribe obj format' Set to STRING.");
+              m_subscribe_format = strfmt;
+            }
+            else if (std::string::npos != str.find("json")) {
+              spdlog::debug("config: 'subscribe obj format' Set to JSON.");
+              m_subscribe_format = jsonfmt;
+            }
+            else if (std::string::npos != str.find("xml")) {
+              spdlog::debug("config: 'subscribe obj format' Set to XML.");
+              m_subscribe_format = xmlfmt;
+            }
+            else if (std::string::npos != str.find("auto")) {
+              spdlog::debug("config: 'subscribe obj format' Set to AUTO.");
+              m_subscribe_format = autofmt;
+            }
+            else {
+              spdlog::error("config: 'subscribe obj format' Ivalid value. Set to AUTO.");
+              m_subscribe_format = autofmt;
+            }
+          }
+
+          addSubscription(topic, format, qos, v5_options);
 
         } // object
-      } // for
-    } // sub
+      }   // for
+    }     // sub
 
     if (j.contains("bescape-pub-topics") && j["bescape-pub-topics"].is_boolean()) {
       m_bEscapesPubTopics = j["bescape-pub-topics"].get<bool>();
@@ -1019,16 +1065,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     // Publish
     if (j.contains("publish") && j["publish"].is_array()) {
-      
+
       json jj = j["publish"];
 
-      for (auto const& pubobj : jj) {
+      for (auto const &pubobj : jj) {
 
         if (pubobj.is_object()) {
 
-          std::string topic = "";
-          int qos           = m_qos;
-          bool bretain      = m_bRetain;
+          std::string topic        = "";
+          int qos                  = m_qos;
+          bool bretain             = m_bRetain;
+          enumMqttMsgFormat format = m_publish_format;
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
             topic = pubobj["topic"].get<std::string>();
@@ -1046,11 +1093,36 @@ vscpClientMqtt::initFromJson(const std::string &config)
             bretain = pubobj["bretain"].get<bool>();
           }
 
-          addPublish(topic, qos, bretain);
+          if (pubobj.contains("format") && pubobj["format"].is_string()) {
+            std::string str = j["format"].get<std::string>();
+            vscp_makeLower(str);
+            if (std::string::npos != str.find("binary")) {
+              spdlog::debug("config: 'publish obj format' Set to BINARY.");
+              m_subscribe_format = binfmt;
+            }
+            else if (std::string::npos != str.find("string")) {
+              spdlog::debug("config: 'publish obj format' Set to STRING.");
+              m_subscribe_format = strfmt;
+            }
+            else if (std::string::npos != str.find("json")) {
+              spdlog::debug("config: 'publish obj format' Set to JSON.");
+              m_subscribe_format = jsonfmt;
+            }
+            else if (std::string::npos != str.find("xml")) {
+              spdlog::debug("config: 'publish obj format' Set to XML.");
+              m_subscribe_format = xmlfmt;
+            }
+            else {
+              spdlog::error("config: 'publish obj format' Ivalid value. Set to JSON.");
+              m_subscribe_format = jsonfmt;
+            }
+          }
+
+          addPublish(topic, format, qos, bretain);
 
         } // obj
-      } // for
-    } // pub
+      }   // for
+    }     // pub
 
     // v5
     if (j.contains("v5") && j["v5"].is_object()) {
@@ -1452,15 +1524,15 @@ vscpClientMqtt::init(void)
 
 int
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_options, mosquitto_property *properties)
+vscpClientMqtt::addSubscription(const std::string strTopicSub, enumMqttMsgFormat format, int qos, int v5_options, mosquitto_property *properties)
 #else
-vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_options)
+vscpClientMqtt::addSubscription(const std::string strTopicSub, enumMqttMsgFormat format, int qos, int v5_options)
 #endif
 {
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-  subscribeTopic *pTopic = new subscribeTopic(strTopicSub, qos, v5_options, properties);
+  subscribeTopic *pTopic = new subscribeTopic(strTopicSub, format, qos, v5_options, properties);
 #else
-  subscribeTopic *pTopic = new subscribeTopic(strTopicSub, qos, v5_options);
+  subscribeTopic *pTopic = new subscribeTopic(strTopicSub, format, qos, v5_options);
 #endif
   m_mqtt_subscribeTopicList.push_back(pTopic);
   return VSCP_ERROR_SUCCESS;
@@ -1472,15 +1544,19 @@ vscpClientMqtt::addSubscription(const std::string strTopicSub, int qos, int v5_o
 
 int
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-vscpClientMqtt::addPublish(const std::string strTopicPub, int qos, bool bRetain, mosquitto_property *properties)
+vscpClientMqtt::addPublish(const std::string strTopicPub,
+                           enumMqttMsgFormat format,
+                           int qos,
+                           bool bRetain,
+                           mosquitto_property *properties)
 #else
-vscpClientMqtt::addPublish(const std::string strTopicPub, int qos, bool bRetain)
+vscpClientMqtt::addPublish(const std::string strTopicPub, enumMqttMsgFormat format, int qos, bool bRetain)
 #endif
 {
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-  publishTopic *pTopic = new publishTopic(strTopicPub, qos, bRetain, properties);
+  publishTopic *pTopic = new publishTopic(strTopicPub, format, qos, bRetain, properties);
 #else
-  publishTopic *pTopic = new publishTopic(strTopicPub, qos, bRetain);
+  publishTopic *pTopic = new publishTopic(strTopicPub, format, qos, bRetain);
 #endif
   m_mqtt_publishTopicList.push_back(pTopic);
   return VSCP_ERROR_SUCCESS;
@@ -1568,7 +1644,9 @@ vscpClientMqtt::disconnect(void)
 
   spdlog::debug("Enter disconnect.");
 
-  pthread_join(m_tid, nullptr);
+  if ((nullptr == m_evcallback) && (nullptr == m_excallback)) {
+    pthread_join(m_tid, nullptr);
+  }
 
   // Disconnect from MQTT broker}
   rv = mosquitto_disconnect(m_mosq);
@@ -1615,7 +1693,7 @@ vscpClientMqtt::send(vscpEvent &ev)
     publishTopic *ppublish = (*it);
     memset(payload, 0, sizeof(payload));
 
-    if (m_publish_format == jsonfmt) {
+    if (ppublish->getFormat() == jsonfmt) {
       std::string strPayload;
       if (!vscp_convertEventToJSON(strPayload, &ev)) {
         return VSCP_ERROR_PARAMETER;
@@ -1623,7 +1701,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == xmlfmt) {
+    else if (ppublish->getFormat() == xmlfmt) {
       std::string strPayload;
       if (!vscp_convertEventToXML(strPayload, &ev)) {
         return VSCP_ERROR_PARAMETER;
@@ -1631,7 +1709,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == strfmt) {
+    else if (ppublish->getFormat() == strfmt) {
       std::string strPayload;
       if (!vscp_convertEventToString(strPayload, &ev)) {
         return VSCP_ERROR_PARAMETER;
@@ -1639,7 +1717,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == binfmt) {
+    else if (ppublish->getFormat() == binfmt) {
       lenPayload = vscp_getFrameSizeFromEvent(&ev) + 1;
 
       // Write event to frame
@@ -1707,7 +1785,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       data.set("user", m_username);
       data.set("host", m_host);
 
-      switch (m_publish_format) {
+      switch (ppublish->getFormat()) {
         case jsonfmt:
           str = "json";
           break;
@@ -1797,7 +1875,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
 
     memset(payload, 0, sizeof(payload));
 
-    if (m_publish_format == jsonfmt) {
+    if (ppublish->getFormat() == jsonfmt) {
       std::string strPayload;
       if (!vscp_convertEventExToJSON(strPayload, &ex)) {
         return VSCP_ERROR_PARAMETER;
@@ -1805,7 +1883,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == xmlfmt) {
+    else if (ppublish->getFormat() == xmlfmt) {
       std::string strPayload;
       if (!vscp_convertEventExToXML(strPayload, &ex)) {
         return VSCP_ERROR_PARAMETER;
@@ -1813,7 +1891,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == strfmt) {
+    else if (ppublish->getFormat() == strfmt) {
       std::string strPayload;
       if (!vscp_convertEventExToString(strPayload, &ex)) {
         return VSCP_ERROR_PARAMETER;
@@ -1821,7 +1899,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
     }
-    else if (m_publish_format == binfmt) {
+    else if (ppublish->getFormat() == binfmt) {
       lenPayload = vscp_getFrameSizeFromEventEx(&ex) + 1;
 
       // Write event to frame
@@ -1889,7 +1967,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       data.set("user", m_username);
       data.set("host", m_host);
 
-      switch (m_publish_format) {
+      switch (ppublish->getFormat()) {
         case jsonfmt:
           str = "json";
           break;
@@ -2111,13 +2189,14 @@ vscpClientMqtt::getwcyd(uint64_t &wcyd)
 //
 
 int
-vscpClientMqtt::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
+vscpClientMqtt::setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData)
 {
   // Can not be called when connected
-  if (m_bConnected)
+  if (m_bConnected) {
     return VSCP_ERROR_ERROR;
+  }
 
-  setCallback(m_evcallback);
+  CVscpClient::setCallback(m_evcallback, pData);
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -2127,13 +2206,14 @@ vscpClientMqtt::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
 //
 
 int
-vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData)
 {
   // Can not be called when connected
-  if (m_bConnected)
+  if (m_bConnected) {
     return VSCP_ERROR_ERROR;
+  }
 
-  setCallback(m_excallback);
+  CVscpClient::setCallback(m_excallback, pData);
 
   return VSCP_ERROR_SUCCESS;
 }

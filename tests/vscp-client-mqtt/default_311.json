@@ -39,49 +39,68 @@
       "psk-identity" : ""
   },
   "will": {
-      "topic": "topic",
+      "topic": "Last Will",
       "qos": 0,
-      "retain": true,
+      "retain": false,
       "payload": "This is the end"
   },
     "subscribe": [
         {
-            "topic": "test/topic/A",
+            "topic": "test1/topic/A",
             "qos": 0,
-            "v5-options": 0
+            "v5-options": 0,
+            "format": "auto"
         },
         {
-            "topic": "test/topic/B",
+            "topic": "test2/topic/B",
             "qos": 0,
-            "v5-options": 0
+            "v5-options": 0,
+            "format": "auto"
         },
         {
             "topic": "test/#",
             "qos": 0,
-            "v5-options": 0
+            "v5-options": 0,
+            "format": "auto"
         },
         {
             "topic": "test2/#",
             "qos": 0,
-            "v5-options": 0
+            "v5-options": 0,
+            "format": "auto"
         }
     ],
     "bescape-pub-topics": true,
     "publish": [
         {
-            "topic" : "publish/topic/A",
+            "topic" : "publish/topic/json",
             "qos" : 0,
-            "retain" : false
+            "retain" : false,
+            "format": "json"
         },
         {
-            "topic" : "publish/topic/B",
+            "topic" : "publish/topic/xml",
             "qos" : 0,
-            "retain" : false
+            "retain" : false,
+            "format": "xml"
+        },
+        {
+            "topic" : "publish/topic/string",
+            "qos" : 0,
+            "retain" : false,
+            "format": "string"
+        },
+        {
+            "topic" : "publish/topic/binary",
+            "qos" : 0,
+            "retain" : false,
+            "format": "binary"
         },
         {
             "topic" : "publish/topic/{{datetime}}/{{user}}/C",
             "qos" : 0,
-            "retain" : false
+            "retain" : false,
+            "format": "json"
         }    
     ],      
     "v5" : {

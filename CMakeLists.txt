@@ -294,6 +294,10 @@ else()
         src/vscp/common/canal_xmlconfig.cpp
         src/vscp/common/register.h
         src/vscp/common/register.cpp
+        src/vscp/common/vscp_client_base.h
+        src/vscp/common/vscp_client_base.cpp
+        src/vscp/common/vscp_client_mqtt.h
+        src/vscp/common/vscp_client_mqtt.cpp
         src/common/third_party/mustache.hpp
         src/common/third_party/civetweb-1.14/include/civetweb.h
         src/common/third_party/civetweb-1.14/src/civetweb.c

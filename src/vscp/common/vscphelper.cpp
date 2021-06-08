@@ -4111,9 +4111,6 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
     }
 
     // VSCP type
-    if (j.find("vscpType") == j.end()) {
-      return false;
-    }
     pEvent->vscp_type = 0;
     if (j.contains("vscpType") && j["vscpType"].is_number_unsigned()) {
       pEvent->vscp_type = j.at("vscpType").get<uint16_t>();
