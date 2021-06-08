@@ -4373,6 +4373,11 @@ startEventXMLParser(void *data, const char *name, const char **attr)
     return;
   }
 
+  // Init event with defaults
+  memset(pev, 0, sizeof(vscpEvent));
+  vscp_setEventToNow(pev);
+  pev->timestamp = vscp_makeTimeStamp();
+
   if ((0 == strcmp(name, "event")) && (0 == depth_event_parser)) {
 
     for (int i = 0; attr[i]; i += 2) {
@@ -4515,6 +4520,11 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
     return;
   }
 
+  // Init event with defaults
+  memset(pex, 0, sizeof(vscpEvent));
+  vscp_setEventExToNow(pex);
+  pex->timestamp = vscp_makeTimeStamp();
+
   if ((0 == strcmp(name, "event")) && (0 == depth_eventex_parser)) {
 
     for (int i = 0; attr[i]; i += 2) {
@@ -4555,6 +4565,7 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
   }
 
   depth_eventex_parser++;
+  
 }
 
 static void
