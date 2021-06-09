@@ -1089,6 +1089,8 @@ mosquitto.h
 -
 mqtt_protocol.h
 -
+mqtt3_protocol.h
+-
 guid.h
 -
 vscphelper.h

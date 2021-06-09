@@ -35,9 +35,11 @@
 #endif
 
 #include <mosquitto.h>
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+
+#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 #include <mqtt_protocol.h>
-else 
+#else 
+// Name change from 1.6 (after 1.5.8)
 #include <mqtt3_protocol.h>
 #endif
 
@@ -130,7 +132,7 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv, int flags)
 // mqtt_on_connect_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const mosquitto_property *props)
 {
@@ -178,7 +180,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 // mqtt_on_disconnect_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquitto_property *props)
 {
@@ -224,7 +226,7 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
 // mqtt_on_publish_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code, const mosquitto_property *props)
 {
@@ -278,7 +280,7 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
 // mqtt_on_message_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_message_v5(struct mosquitto *mosq,
                    void *pData,
@@ -332,7 +334,7 @@ mqtt_on_subscribe(struct mosquitto *mosq, void *pData, int mid, int qos_count, c
 // mqtt_on_subscribe_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_subscribe_v5(struct mosquitto *mosq,
                      void *pData,
@@ -379,7 +381,7 @@ mqtt_on_unsubscribe(struct mosquitto *mosq, void *pData, int mid)
 // mqtt_on_unsubscribe_v5
 //
 
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
 mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosquitto_property *props)
 {
@@ -1421,7 +1423,7 @@ vscpClientMqtt::init(void)
   // Callbacks
   if (m_mapMqttIntOptions["protocol-version"] >= 500) {
     mosquitto_log_callback_set(m_mosq, mqtt_on_log);
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
     mosquitto_connect_v5_callback_set(m_mosq, mqtt_on_connect_v5);
     mosquitto_disconnect_v5_callback_set(m_mosq, mqtt_on_disconnect_v5);
     mosquitto_message_v5_callback_set(m_mosq, mqtt_on_message_v5);
@@ -1450,7 +1452,7 @@ vscpClientMqtt::init(void)
   // Set 'last will' if any is defined
   if (m_will_payload.length() && m_will_topic.length()) {
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
-#if #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)      
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)      
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
                                                     m_will_topic.c_str(),
                                                     m_will_payload.length(),
