@@ -1527,7 +1527,7 @@ vscpClientMqtt::init(void)
   //                          * * * Set options * * *
 
   // tcp-nodelay
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
+#if LIBMOSQUITTO_MAJOR >= 2
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_TCP_NODELAY, m_mapMqttIntOptions["tcp-nodelay"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_TCP_NODELAY. rv={0} {1}", rv, mosquitto_strerror(rv));
