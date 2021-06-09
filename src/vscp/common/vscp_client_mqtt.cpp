@@ -35,7 +35,9 @@
 #endif
 
 #include <mosquitto.h>
+#if (LIBMOSQUITTO_MAJOR > 1) 
 #include <mqtt_protocol.h>
+#endif
 
 #include <guid.h>
 #include <vscphelper.h>
@@ -987,7 +989,11 @@ vscpClientMqtt::initFromJson(const std::string &config)
               the broker will not publish the message back to the client.
             */
             if (std::string::npos != str.find("NO_LOCAL")) {
+#if (LIBMOSQUITTO_MAJOR > 1)
               v5_options |= MQTT_SUB_OPT_NO_LOCAL;
+#else
+              v5_options |= 0x04;
+#endif              
             }
             /*
               0x08
@@ -995,8 +1001,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
               flag as was set by the publishing client.  The default behaviour without this option
               set has the retain flag indicating whether a message is fresh/stale.
             */
+           
             if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
+#if (LIBMOSQUITTO_MAJOR > 1)              
               v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
+#else
+              v5_options |= 0x08;
+#endif              
             }
             /*
               0x00
@@ -1004,23 +1015,38 @@ vscpClientMqtt::initFromJson(const std::string &config)
               is made, even if the subscription already exists.  This is the default behaviour, so it is
               not necessary to set this option.
             */
+          
             if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
+#if (LIBMOSQUITTO_MAJOR > 1)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
+#else
+              v5_options |= 0x00;
+#endif              
             }
             /*
               0x10
               with this option set, pre-existing retained messages for this subscription will be sent when
               the subscription is made, but only if the subscription does not already exist.
             */
+          
             if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
+#if (LIBMOSQUITTO_MAJOR > 1)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
+#else
+              v5_options |= 0x10;
+#endif              
             }
             /*
               0x20
               with this option set, pre-existing retained messages will never be sent for this subscription.
             */
+          
             if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
+#if (LIBMOSQUITTO_MAJOR > 1)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
+#else
+              v5_options |= 0x20;
+#endif              
             }
           }
 
