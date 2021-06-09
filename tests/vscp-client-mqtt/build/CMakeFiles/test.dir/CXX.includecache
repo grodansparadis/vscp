@@ -1022,6 +1022,40 @@ vscp_type.h
 
 ../../../src/vscp/common/vscp_class.h
 
+../../../src/vscp/common/vscp_client_base.h
+vscp.h
+../../../src/vscp/common/vscp.h
+json.hpp
+-
+deque
+-
+list
+-
+string
+-
+
+../../../src/vscp/common/vscp_client_mqtt.h
+vscp_client_base.h
+../../../src/vscp/common/vscp_client_base.h
+guid.h
+-
+vscp.h
+-
+vscphelper.h
+-
+mosquitto.h
+-
+pthread.h
+-
+list
+-
+map
+-
+queue
+-
+string
+-
+
 ../../../src/vscp/common/vscp_type.h
 
 ../../../src/vscp/common/vscphelper.h
@@ -1125,4 +1159,26 @@ queue
 -
 string
 -
+
+/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/test-vscp-client-mqtt.cpp
+assert.h
+-
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+string
+-
+fstream
+-
+streambuf
+-
+iostream
+-
+spdlog/spdlog.h
+/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/spdlog/spdlog.h
+vscp_client_mqtt.h
+/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/vscp_client_mqtt.h
 

@@ -30,12 +30,16 @@
 // bionic (18.04LTS) (libs): MQTT version 3.1/3.1.1 client library [universe]
 // 1.4.15-2ubuntu0.18.04.3 [security]: amd64 i386
 // 1.4.15-2 [ports]: arm64 armhf ppc64el s390x
+
 // bionic-updates (libs): MQTT version 3.1/3.1.1 client library [universe]
 // 1.4.15-2ubuntu0.18.04.3: amd64 arm64 armhf i386 ppc64el s390x
+
 // focal (20.04LTS) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
 // 1.6.9-1: amd64 arm64 armhf ppc64el s390x
+
 // groovy (20.10) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
 // 1.6.12-1: amd64 arm64 armhf ppc64el s390x
+
 // hirsute (21.04) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
 // 2.0.10-3: amd64 arm64 armhf ppc64el s390x
 // impish (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
@@ -168,7 +172,11 @@ class publishTopic {
 
 public:
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-  publishTopic(const std::string &topic, enumMqttMsgFormat format = jsonfmt, int qos = 0, bool bretain = false, mosquitto_property *properties = NULL);
+  publishTopic(const std::string &topic,
+               enumMqttMsgFormat format       = jsonfmt,
+               int qos                        = 0,
+               bool bretain                   = false,
+               mosquitto_property *properties = NULL);
 #else
   publishTopic(const std::string &topic, enumMqttMsgFormat format = jsonfmt, int qos = 0, bool bretain = false);
 #endif
@@ -188,7 +196,7 @@ public:
   void setRetain(bool bRetain) { m_bRetain = bRetain; };
 
   /// getters/setter for format
-  void setFormat(enumMqttMsgFormat format) { m_format = format;};
+  void setFormat(enumMqttMsgFormat format) { m_format = format; };
   enumMqttMsgFormat getFormat(void) { return m_format; };
 
 private:
@@ -221,7 +229,11 @@ class subscribeTopic {
 
 public:
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-  subscribeTopic(const std::string &topic, enumMqttMsgFormat format = autofmt, int qos = 0, int v5_options = 0, mosquitto_property *properties = NULL);
+  subscribeTopic(const std::string &topic,
+                 enumMqttMsgFormat format       = autofmt,
+                 int qos                        = 0,
+                 int v5_options                 = 0,
+                 mosquitto_property *properties = NULL);
 #else
   subscribeTopic(const std::string &topic, enumMqttMsgFormat format = autofmt, int qos = 0, int v5_options = 0);
 #endif
@@ -236,7 +248,7 @@ public:
   void setQos(int qos) { m_qos = qos; };
 
   /// getters/setter for format
-  void setFormat(enumMqttMsgFormat format) { m_format = format;};
+  void setFormat(enumMqttMsgFormat format) { m_format = format; };
   enumMqttMsgFormat getFormat(void) { return m_format; };
 
 private:
@@ -382,15 +394,15 @@ public:
     @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData=nullptr);
+  virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData = nullptr);
 
   /*!
     Set (and enable) receive callback ex events
     @param m_evcallback Pointer to callback for VSCP event ex delivery
-    @param pData Pointer to optional user data.  
+    @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData=nullptr);
+  virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData = nullptr);
 
   /*!
       Return a JSON representation of connection
@@ -489,15 +501,26 @@ public:
 
   /*!
     SetTokenMaps
-    Store pointers to maps that are used to get token from 
-    VSCP class or VSCP type codes. The tokens are used in 
+    Store pointers to maps that are used to get token from
+    VSCP class or VSCP type codes. The tokens are used in
     the send routines to escape MQTT topics
   */
-  void setTokeMaps(std::map<uint16_t, std::string> *pmap_class,
-              std::map<uint32_t, std::string> *pmap_type) {
+  void setTokenMaps(std::map<uint16_t, std::string> *pmap_class, std::map<uint32_t, std::string> *pmap_type)
+  {
     m_pmap_class = pmap_class;
-    m_pmap_type = pmap_type;
+    m_pmap_type  = pmap_type;
   }
+
+  /*!
+    Define user escape.
+    If key is already defined it will get a new value.
+    @param key User escape key. Used as "{{key}} it will be replaced
+      by "value".
+    @param value The value for the user escape.  
+  */
+ void setUserEscape(const std::string key, const std::string value) 
+  { m_mapUserEscapes[key] = value; };
+
 
 public:
   // Timeout in milliseconds for host connection.
@@ -572,10 +595,10 @@ private:
   std::map<std::string, std::string> m_mapMqttProperties;
 
   /*!
-      Map for publish topic escapes.
+      Map for publish topic user escapes.
       They are set in pairs like "drivername" = "xxxxxxxxxx"
   */
-  std::map<std::string, std::string> m_mapPublishTopicPairs;
+  std::map<std::string, std::string> m_mapUserEscapes;
 
   /*!
     Pointer to map that maps a VSCP class code to it's string

@@ -1132,6 +1132,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
       m_bEscapesPubTopics = j["bescape-pub-topics"].get<bool>();
     }
 
+    // User escapes m_mapUserEscapes
+    if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
+      for (auto it = j.begin(); it != j.end(); ++it) {
+          m_mapUserEscapes[it.key()] = it.value();
+        }
+    }
+
     // Publish
     if (j.contains("publish") && j["publish"].is_array()) {
 
@@ -1191,13 +1198,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
         } // obj
       }   // for
-    }     // pub
+    }     // pub    
 
     // v5
     if (j.contains("v5") && j["v5"].is_object()) {
       json jj = j.contains("v5");
       if (jj.contains("user-properties") && jj["user-properties"].is_object()) {
-        for (auto it = j.begin(); it != j.end(); ++it) {
+        for (auto it = jj.begin(); it != jj.end(); ++it) {
           m_mapMqttProperties[it.key()] = it.value();
         }
       }
@@ -1564,7 +1571,7 @@ vscpClientMqtt::init(void)
     spdlog::error("Failed to set option MOSQ_OPT_RECEIVE_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
-  // sen-maximum
+  // send-maximum
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_SEND_MAXIMUM, m_mapMqttIntOptions["send-maximum"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_SEND_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
@@ -1926,7 +1933,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       data.set("fmtsubscribe", str);
 
       // Add user escapes like "driver-name"= "some-driver";
-      for (auto const &item : m_mapPublishTopicPairs) {
+      for (auto const &item : m_mapUserEscapes) {
         data.set(item.first, item.second);
       }
 
@@ -2108,7 +2115,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       data.set("fmtsubscribe", str);
 
       // Add user escapes like "driver-name"= "some-driver";
-      for (auto const &item : m_mapPublishTopicPairs) {
+      for (auto const &item : m_mapUserEscapes) {
         data.set(item.first, item.second);
       }
 
