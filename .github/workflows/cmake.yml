@@ -23,8 +23,8 @@ jobs:
     #     repository: gabime/spdlog
     #     path: spdlog    
 
-    - name: Build and install spdlog manually
-      run: cd spdlog && mkdir build && cd build && sudo cmake .. && sudo make install  
+    #- name: Build and install spdlog manually
+    #  run: cd spdlog && mkdir build && cd build && sudo cmake .. && sudo make install  
            
     - name: Checkout google test repo
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo mkdir build && cd build && sudo cmake .. && sudo make DESTDIR=/usr/lib
