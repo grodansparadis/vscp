@@ -35,7 +35,7 @@
 #endif
 
 #include <mosquitto.h>
-#if (LIBMOSQUITTO_MAJOR > 1) 
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 #include <mqtt_protocol.h>
 #endif
 
@@ -989,7 +989,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               the broker will not publish the message back to the client.
             */
             if (std::string::npos != str.find("NO_LOCAL")) {
-#if (LIBMOSQUITTO_MAJOR > 1)
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_NO_LOCAL;
 #else
               v5_options |= 0x04;
@@ -1003,7 +1003,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
            
             if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
-#if (LIBMOSQUITTO_MAJOR > 1)              
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)              
               v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
 #else
               v5_options |= 0x08;
@@ -1017,7 +1017,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
           
             if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
-#if (LIBMOSQUITTO_MAJOR > 1)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
 #else
               v5_options |= 0x00;
@@ -1030,7 +1030,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
           
             if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
-#if (LIBMOSQUITTO_MAJOR > 1)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
 #else
               v5_options |= 0x10;
@@ -1042,7 +1042,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
           
             if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
-#if (LIBMOSQUITTO_MAJOR > 1)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
 #else
               v5_options |= 0x20;
