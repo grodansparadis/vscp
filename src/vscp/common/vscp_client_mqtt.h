@@ -23,6 +23,24 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// libmosquitto should be >= 1.4.15
+
+// UBUNTU
+// ======
+// bionic (18.04LTS) (libs): MQTT version 3.1/3.1.1 client library [universe]
+// 1.4.15-2ubuntu0.18.04.3 [security]: amd64 i386
+// 1.4.15-2 [ports]: arm64 armhf ppc64el s390x
+// bionic-updates (libs): MQTT version 3.1/3.1.1 client library [universe]
+// 1.4.15-2ubuntu0.18.04.3: amd64 arm64 armhf i386 ppc64el s390x
+// focal (20.04LTS) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
+// 1.6.9-1: amd64 arm64 armhf ppc64el s390x
+// groovy (20.10) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
+// 1.6.12-1: amd64 arm64 armhf ppc64el s390x
+// hirsute (21.04) (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
+// 2.0.10-3: amd64 arm64 armhf ppc64el s390x
+// impish (libs): MQTT version 5.0/3.1.1/3.1 client library [universe]
+// 2.0.10-6: amd64 arm64 armhf ppc64el s390x
+
 // JSON configuration
 
 /*
