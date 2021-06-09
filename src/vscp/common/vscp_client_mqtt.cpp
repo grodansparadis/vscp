@@ -40,6 +40,7 @@
 #include <mqtt_protocol.h>
 #else 
 // Name change from 1.6 (after 1.5.8)
+// As it looks it is not installed by deb script
 //#include <mqtt3_protocol.h>
 #endif
 
@@ -107,9 +108,35 @@ mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 ///////////////////////////////////////////////////////////////////////////////
 // mqtt_on_connect
 //
+// Used for pre 1.6 mosquitto libs
+//
 
 static void
-mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv, int flags)
+mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
+{
+
+  // Check for valid handle
+  if (nullptr == mosq) {
+    return;
+  }
+
+  // Check for a valid object pointer
+  if (nullptr == pData) {
+    return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  pClient->m_bConnected   = true;
+
+  spdlog::trace("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mqtt_on_connect_flags
+//
+
+static void
+mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
 {
 
   // Check for valid handle
@@ -1406,9 +1433,11 @@ vscpClientMqtt::init(void)
   }
 
   // v5
+#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
   if (m_mapMqttIntOptions["protocol-version"] >= 500) {
     mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
   }
+#endif  
 
   if (nullptr == m_mosq) {
     if (ENOMEM == errno) {
@@ -1434,7 +1463,11 @@ vscpClientMqtt::init(void)
   }
   else {
     mosquitto_log_callback_set(m_mosq, mqtt_on_log);
-    mosquitto_connect_with_flags_callback_set(m_mosq, mqtt_on_connect);
+#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
+    mosquitto_connect_with_flags_callback_set(m_mosq, mqtt_on_connect_flags);
+#else
+    mosquitto_connect_callback_set(m_mosq, mqtt_on_connect);
+#endif    
     mosquitto_disconnect_callback_set(m_mosq, mqtt_on_disconnect);
     mosquitto_message_callback_set(m_mosq, mqtt_on_message);
     mosquitto_publish_callback_set(m_mosq, mqtt_on_publish);
@@ -1461,7 +1494,7 @@ vscpClientMqtt::init(void)
                                                     m_will_bretain,
                                                     nullptr)) {
 #else
-    if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
+    if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
                                                     m_will_topic.c_str(),
                                                     m_will_payload.length(),
                                                     m_will_payload.c_str(),
@@ -1494,12 +1527,15 @@ vscpClientMqtt::init(void)
   //                          * * * Set options * * *
 
   // tcp-nodelay
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_TCP_NODELAY, m_mapMqttIntOptions["tcp-nodelay"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_TCP_NODELAY. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
+#endif  
 
   // version
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
   {
     int ver;
     switch (m_mapMqttIntOptions["protocol-version"]) {
@@ -1521,7 +1557,7 @@ vscpClientMqtt::init(void)
       spdlog::error("Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
-
+ 
   // receive-maximum
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_RECEIVE_MAXIMUM, m_mapMqttIntOptions["receive-maximum"]))) {
@@ -1533,6 +1569,7 @@ vscpClientMqtt::init(void)
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_SEND_MAXIMUM, m_mapMqttIntOptions["send-maximum"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_SEND_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
+#endif 
 
   //                          * * * TLS * * *
 
@@ -1629,12 +1666,16 @@ vscpClientMqtt::connect(void)
   }
 
   if (m_bindInterface.length()) {
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
       rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str(), nullptr);
     }
     else {
       rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
     }
+#else
+    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());     
+#endif    
   }
   else {
     rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepalive);
