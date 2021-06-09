@@ -29,8 +29,8 @@ jobs:
         repository: gabime/spdlog
         path: spdlog    
 
-    - name: Build & install paho manually
-      run: cd paho && mkdir build && cd build && sudo cmake -DPAHO_WITH_SSL=true .. && sudo make install
+    #- name: Build & install paho manually
+    #  run: cd paho && mkdir build && cd build && sudo cmake -DPAHO_WITH_SSL=true .. && sudo make install
 
     - name: Build and install spdlog manually
       run: cd spdlog && mkdir build && cd build && sudo cmake .. && sudo make install  
@@ -48,7 +48,7 @@ jobs:
       run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
 
     # Will be replaced with paho
-    - name: Install libmosuitto-dev manually
+    - name: Install libmosquitto-dev manually
       run: sudo apt install libmosquitto-dev
 
     - name: Install libexpat-dev manually

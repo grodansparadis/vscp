@@ -40,7 +40,7 @@
 #include <mqtt_protocol.h>
 #else 
 // Name change from 1.6 (after 1.5.8)
-#include <mqtt3_protocol.h>
+//#include <mqtt3_protocol.h>
 #endif
 
 #include <guid.h>
