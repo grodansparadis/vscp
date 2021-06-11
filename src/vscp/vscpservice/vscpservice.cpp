@@ -1,5 +1,5 @@
-// vscpservice (C) 2001-2011 Grodans Paradis AB
-// changes and adoptions Ake Hedman, akhe@vscp.org
+// vscpservice (C) 2001-2011 the VSCP project
+// changes and adoptions Ake Hedman, info@vscp.org
 // 
 // From Microsoft example built by Dave McPherson (davemm)   11-March-98
 // and MSDN code.
@@ -12,8 +12,6 @@
 #include <winsock2.h>
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
     #pragma hdrstop
@@ -75,7 +73,7 @@ BOOL CVSCPService::OnInit()
     wxString strCfgFile;
    
     strCfgFile = wxStandardPaths::Get().GetConfigDir();
-    strCfgFile += _("/vscp/vscpd.conf");
+    strCfgFile += _("/vscp/vscpd.json");
 
 	rv = m_ctrlObj.init( strCfgFile );
 	 

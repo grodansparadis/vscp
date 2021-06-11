@@ -4,8 +4,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,9 @@
 #include <canal.h>
 #include <mdf.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <vscp.h>
 #include <vscphelper.h>
 
@@ -2810,7 +2812,7 @@ CMDF::getPages(std::set<long> &pages)
         }
     }
 
-    return pages.size();
+    return (uint32_t)pages.size();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

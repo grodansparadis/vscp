@@ -7,17 +7,13 @@ The folders VSCP files are installed to has changed extensively from version 14.
 | Folder      | Content | 
 | ------      | ------- | 
 | /usr/sbin   | The VSCP daemon is installed here. | 
-| /usr/lib | Level I/II drivers names as _vscpl1drv-xxxxx, vscpl2drv-xxxxx_ |
-| /etc/vscp | Configuration files are here. Ans especially vscpd.conf, thew VSCP daemon configuration file. |
-| /etc/ca_certificates  | Place your SSL/TLS Certificate Authority certificates in this directory. | 
-| /etc/certs  | Place your SSL/TLS server keys and certificates in this directory. **This directory should only be readable by the vscp user.** |
-| /var/lib/vscp | Persistent storage for vscpd and other software and tools related to VSCP. |
-| /var/log | web server logging if enabled. | 
+| _/var/lib/vscp/drivers/level1_ and _/var/lib/vscp/drivers/level1_ | Level I/II drivers names as _vscpl1drv-xxxxx, vscpl2drv-xxxxx. Level I drivers are installed in the level1 subfolder and level II drivers in the level2 sub folder_ |
+| /etc/vscp | Configuration files are here. And especially vscpd.json, thew VSCP daemon configuration file. |
+| /etc/vscp/ca_certificates  | Place your SSL/TLS Certificate Authority certificates in this directory. | 
+| /etc/vscp/certs  | Place your SSL/TLS server keys and certificates in this directory. **This directory should only be readable by the vscp user.** |
+| /var/lib/vscp | Persistent storage for vscpd and other software and tools related to VSCP. This is thed efault location for databases also. |
 | /run | lock file vscpd.lock |
 | /usr/share/vscp | Shared VSCP date such as config examples etc. | 
-
-
-
 
     
 [filename](./bottom_copyright.md ':include')

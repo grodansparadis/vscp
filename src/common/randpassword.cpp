@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -66,7 +66,7 @@ randPassword::~randPassword()
 void randPassword::generatePassword( unsigned char length, char *pPassword )
 {
     static int seed = 8;
-    int UNUSED(len) = strlen( m_pool );
+    int UNUSED(len) = (int)strlen(m_pool);
     int cnt = 0;
     memset( pPassword, 0, length );
     srand( (unsigned)time( NULL ) + seed++ );

@@ -1,13 +1,13 @@
 [Unit]
 Description=the vscp daemon
-Documentation=man:vscpd.conf(5) man:vscpd(8) https://docs.vscp.org/vscpd
+Documentation=man:vscpd.json(5) man:vscpd(8) https://docs.vscp.org/vscpd
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=notify
 NotifyAccess=main
-ExecStart=/usr/sbin/vscpd -s -c /etc/vscp/vscpd.conf
+ExecStart=/usr/sbin/vscpd -s -c /etc/vscp/vscpd.json
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 User=vscp

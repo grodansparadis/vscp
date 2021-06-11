@@ -32,7 +32,7 @@ This is the mac address used as the outgoing mac address when sending raw Ethern
  | _filter        | string | Standard VSCP filter in string from. *1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00* as // priority,class,type,GUID// Used to filter what is sent from VSCP out on Ethernet.                                                                     | 
  | _mask          | string | Standard VSCP mask in string form. *1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00* as *priority,class,type,GUID* Used to filter what is sent from VSCP out on Ethernet.                                                                        | 
  | **_subaddr**   | long   | This can be a value between 0x0000 - 0xfff (defaults to 0x0000) and is the two least significant bits of the GUID for a transmitted fram.                                                                                                                            | 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **raweth1** and the full variable name for the **_interface** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **raweth1** and the full variable name for the **_interface** will thus be
 
     raweth1_interface
 
@@ -40,7 +40,7 @@ If you have another diver and name it  **raweth2** it will therefore instead req
 
 If your driver name contains spaces, for example “name of driver” it will get a prefix that is “name_of_driver”. Leading and trailing spaces will be removed. 
 
-A typical configuration example settings for a Windows 7 machines *vscpd.conf* configuration file is 
+A typical configuration example settings for a Windows 7 machines *vscpd.json* configuration file is 
 
 ```xml
 <!-- Level II raw ethernet  -->

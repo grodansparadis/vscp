@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,6 +25,15 @@
 
 #if !defined(VSCPCLIENTWS1_H__INCLUDED_)
 #define VSCPCLIENTWS1_H__INCLUDED_
+
+#include <pthread.h>
+#include <semaphore.h>
+
+#ifndef WIN32
+
+#else
+#include <winSock2.h>
+#endif
 
 #include "vscp.h"
 #include "vscp_client_base.h"
@@ -149,6 +158,19 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getwcyd(uint64_t &wcyd);
+
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string getConfigAsJson(void);
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool initFromJson(const std::string& config);
 
 
     virtual void setConnectionTimeout(uint32_t timeout = WS1_CONNECTION_TIMEOUT) { m_timeout_connect = timeout; };

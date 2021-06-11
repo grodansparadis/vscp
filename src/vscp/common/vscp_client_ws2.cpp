@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <pthread.h> 
 #include <semaphore.h> 
-#include <unistd.h> 
+#ifndef WIN32
+#include <unistd.h>
+#endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
 #include "civetweb.h"
@@ -111,14 +113,14 @@ ws2_client_data_handler(struct mg_connection *conn,
                 if ( NULL == pev ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev);
+                pObj->m_evcallback(pev, pObj->m_callbackObject);
             }   
             else if (pObj->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
-                pObj->m_evcallback(pex);
+                pObj->m_excallback(pex, pObj->m_callbackObject);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -128,6 +130,7 @@ ws2_client_data_handler(struct mg_connection *conn,
                 // Add to event queue
                 pObj->m_eventReceiveQueue.push_back(pev);
             }
+            
         }
         else {
             pObj->m_msgReceiveQueue.push_back(j);
@@ -166,6 +169,7 @@ ws2_client_close_handler(const struct mg_connection *conn,
 
 vscpClientWs2::vscpClientWs2()
 {
+    m_type = CVscpClient::connType::WS2;
     m_bConnected = false;
     m_conn = NULL;
     m_host = "localhost";
@@ -194,6 +198,27 @@ vscpClientWs2::~vscpClientWs2()
     }
 
     sem_destroy(&m_sem_msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getConfigAsJson
+//
+
+std::string vscpClientWs2::getConfigAsJson(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// initFromJson
+//
+
+bool vscpClientWs2::initFromJson(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -412,7 +437,7 @@ int vscpClientWs2::send(vscpEvent &ev)
 
     if ((NULL != ev.pdata) && ev.sizeData) {
         std::deque<uint8_t> data;
-        for ( int i; i<ev.sizeData; i++ ) {
+        for ( int i=0; i<ev.sizeData; i++ ) {
             data.push_back(ev.pdata[i]);
         }
         cmd["event"]["data"] = data;        
@@ -466,7 +491,7 @@ int vscpClientWs2::send(vscpEventEx &ex)
 
     if (ex.sizeData) {
         std::deque<uint8_t> data;
-        for ( int i; i<ex.sizeData; i++ ) {
+        for ( int i=0; i<ex.sizeData; i++ ) {
             data.push_back(ex.data[i]);
         }
         cmd["event"]["data"] = data;        
@@ -608,7 +633,7 @@ int vscpClientWs2::setfilter(vscpEventFilter &filter)
 int vscpClientWs2::getcount(uint16_t *pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-    *pcount = m_eventReceiveQueue.size();
+    *pcount = (uint16_t)m_eventReceiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -774,7 +799,7 @@ int vscpClientWs2::encrypt_password(std::string& strout,
 	AES_CBC_encrypt_buffer(AES128, 
 							buf,
 							(uint8_t *)strCombined.c_str(), 
-							strCombined.length(), 
+							(uint32_t)strCombined.length(), 
 							vscpkey, 
 							iv);	
     
@@ -803,7 +828,7 @@ int vscpClientWs2::waitForResponse( uint32_t timeout )
 		switch(errno) {
 
 			case EINTR:
-				return VSCP_ERROR_INTERUPTED;
+				return VSCP_ERROR_INTERRUPTED;
 
 			case EINVAL:
 				return VSCP_ERROR_PARAMETER;

@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright: © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,8 +39,9 @@
 
 CVscpClient::CVscpClient()
 {
-    m_evcallback = NULL;
-    m_excallback = NULL;
+    m_evcallback = nullptr;
+    m_excallback = nullptr;
+    m_callbackObject = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,9 +57,11 @@ CVscpClient::~CVscpClient()
 // setCallback
 //
 
-int CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback) 
+int CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData) 
 { 
-    m_evcallback = evcallback; 
+    m_evcallback = evcallback;
+    m_callbackObject = pData;
+
     return VSCP_ERROR_SUCCESS;
 };
 
@@ -66,8 +69,9 @@ int CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback)
 // setCallback
 //
 
-int CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback) 
+int CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData) 
 { 
-    m_excallback = excallback; 
+    m_excallback = excallback;
+    m_callbackObject = pData;
     return VSCP_ERROR_SUCCESS;
 };

@@ -4,8 +4,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,51 +29,154 @@
 #if !defined(VSCP_HLO__INCLUDED_)
 #define VSCP_HLO__INCLUDED_
 
+#include <json.hpp>  // Needs C++11  -std=c++11
+#include <mustache.hpp>
+
 #include <string>
 
-#define HLO_CMD_COMMAND_TEMPLATE                                               \
-    "<vscp-cmd op=\"%s\" "                                                     \
-    "name=\"%s\" "                                                             \
-    "type=\"%s\" "                                                             \
-    "value=\"%s\" "                                                            \
-    "full=\"%s\" "                                                             \
-    " />"
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
 
-// All XML commands return this HLO content
-//     RESULT="OK"  - for success. Description can be used at will.
-//     RESULT="ERR" - for failure with cause of failure in description
-#define HLO_CMD_REPLY_TEMPLATE                                                 \
-    "<vscp-resp op=\"vscp-reply\" "                                            \
-    "name=\"%s\" "                                                             \
-    "result=\"%s\" "                                                           \
-    "description=\"%s\" "                                                      \
-    " />"
+// https://github.com/kainjow/Mustache
+using namespace kainjow::mustache;
 
-#define HLO_READ_VAR_REPLY_TEMPLATE                                            \
-    "<vscp-resp op=\"vscp-readvar\" "                                          \
-    "name=\"%s\" "                                                             \
-    "result=\"%s\" "                                                           \
-    "type=%d "                                                                 \
-    "value=\"%s\" />"
+/*!   
 
-#define HLO_READ_VAR_ERR_REPLY_TEMPLATE                                        \
-    "<vscp-resp op=\"vscp-readvar\" "                                          \
-    "name=\"%s\" "                                                             \
-    "result=\"ERR\" "                                                          \
-    "error-code=%d "                                                           \
-    "description=\"%s\" />"
+Command format
+--------------------------------------------
+{
+    "op" : "operation-token",
+    "arg" : "argument"
+}
+
+or
+
+{
+    "op" : "operation-token",
+    "arg" : {
+        "arg1" : "foo",
+        "arg2" : "bar"
+        ....
+    }
+}
+
+Commands
+--------
+NOOP 
+READVAR     full
+WRITEVAR
+DELVAR
+SAVE
+LOAD
+
+<cmd command="command" arg="argument" /> 
+
+Reply format
+------------
+Full format depends on command.
+
+{
+    "op" : "xxxx",	
+    "rv" : "OK|ERROR" 
+    "note" : "optional clear text message"
+}
+
+Remote Variable
+---------------
+{
+    "op" : "xxxx",
+    arg {
+    	"name" : "variable-name",
+    	"type" : n,
+    	"value" : "binhex encoded value" or numeric 
+    }
+}
+
+String format is always binhex encoded. A numeric value and 
+also be sent this way and also a bool.
+
+*/
+
 
 // ****************************************************************************
 //                        HLO Remote variable operations
+//
+// A remote variable is the same as an "abstraction" in an MDF
 // ****************************************************************************
 
-#define HLO_OP_NOOP         0   // No operation
-#define HLO_OP_READ_VAR     1   // Read variable
-#define HLO_OP_WRITE_VAR    2   // Write variable
-#define HLO_OP_SAVE         3   // Save configuration
-#define HLO_OP_LOAD         4   // Load configuration
-#define HLO_OP_USER_DEFINED 150 // From 150 - 254 user defined codes
-#define HLO_OP_UNKNOWN      255 // Unknow command
+/*
+{
+    "op" : "noop"
+}
+
+json j;
+j["op"] = "noop";
+
+*/
+#define HLO_OP_NOOP         "noop"      // No operation
+
+/*
+{
+    "op" : "readvar",
+    "arg" : {
+        "name" : "variable name",
+    }
+}
+
+{
+    "op" : "readvar",
+    "rv" : "ok",
+    "arg" : {
+        "name" : "variable name",
+        "value" : value
+    }
+}
+*/
+#define HLO_OP_READ_VAR     "readvar"   // Read variable
+
+/*
+{
+    "op" : "writevar",
+    "arg" : {
+        "name" : "variable name",
+        "type" : remote-variable-type,  (defaults to "string")
+        "value" : xxxx
+    }
+}
+
+{
+    "op" : "writevar",
+    "result" : "ok|error"
+}
+*/
+#define HLO_OP_WRITE_VAR    "writevar"  // Write variable
+
+/*
+{
+    "op" : "delvar",
+    "arg" : {
+        "name" : "variable delete",
+    }
+}
+*/
+#define HLO_OP_DELETE_VAR   "delvar"    // Delete variable
+
+/*
+{
+    "op" : "save",
+    "arg" : "path"   (if needed)
+}
+*/
+#define HLO_OP_SAVE         "save"      // Save configuration
+
+/*
+{
+    "op" : "load",
+    "arg" : "path"   (if needed)
+}
+*/
+#define HLO_OP_LOAD         "load"      // Load configuration
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCP automation HLO object
@@ -92,7 +195,7 @@ class CHLO
     // ---------------------------------------
 
     // HLO operation
-    uint8_t m_op;
+    std::string m_op;
 
     // HLO name (variable name/opt op. arg name)
     std::string m_name;

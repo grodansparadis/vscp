@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,14 +23,19 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifndef WIN32
 #include <unistd.h>
+#else
+#include <windows.h>
+#endif
+
 #include <pthread.h> 
 
 #include "vscp_client_canal.h"
 #include "vscphelper.h"
 
 // Forward declaration
-void *workerThread(void *pObj);
+static void *workerThread(void *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -38,8 +43,9 @@ void *workerThread(void *pObj);
 
 vscpClientCanal::vscpClientCanal() 
 {
+    m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
-    m_tid = 0;
+    //m_tid = 0;
     m_bRun = false;
     pthread_mutex_init(&m_mutexif,NULL);
 }
@@ -54,17 +60,85 @@ vscpClientCanal::~vscpClientCanal()
     pthread_mutex_destroy(&m_mutexif);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
 int vscpClientCanal::init(const std::string &strPath,
-                const std::string &strParameters,
-                unsigned long flags,
-                unsigned long baudrate)
+                            const std::string &strParameters,
+                            unsigned long flags,
+                            unsigned long datarate)
 {
-    m_canalif.CanalSetBaudrate(baudrate);   // Unusual implemention and return value may differ if
-                                            // not implemented so we do not check
-                                            // A standard implemention should return 
-                                            // CANAL_ERROR_NOT_SUPPORTED if this method is not
-                                            // implemented
-    return m_canalif.init(strPath,strParameters,flags);  
+    if (!datarate) {
+        m_canalif.CanalSetBaudrate(datarate);   // Unusual implemention and return value may differ if
+                                                // not implemented so we do not check
+                                                // A standard implemention should return 
+                                                // CANAL_ERROR_NOT_SUPPORTED if this method is not
+                                                // implemented
+    }
+    return (CANAL_ERROR_SUCCESS == m_canalif.init(strPath,strParameters,flags));  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getConfigAsJson
+//
+
+std::string vscpClientCanal::getConfigAsJson(void) 
+{
+    json j;
+    std::string rv;    
+
+    j["name"] = getName();
+    j["path"] = m_canalif.getPath();
+    j["config"] = m_canalif.getParameter();
+    j["flags"] = m_canalif.getDeviceFlags();
+
+    return j.dump();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// initFromJson
+//
+
+bool vscpClientCanal::initFromJson(const std::string& config)
+{
+    json j;
+    try {
+        j = json::parse(config);
+        
+        if (!j["name"].is_string()) return false;   // Must be set
+        if (!j["path"].is_string()) return false;   // Must be set
+
+        if (j.contains("config")) {
+            if (!j["config"].is_string()) return false;
+        }
+        else {
+            j["config"] = "";  // Set default
+        }
+
+        if (j.contains("flags")) {
+            if (!j["flags"].is_number()) return false;
+        }
+        else {
+            j["flags"] = 0;  // Set default
+        }
+
+        if (j.contains("datarate")) {
+            if (!j["datarate"].is_number()) return false;
+        }
+        else {
+            j["datarate"] = 0;  // Set default
+        }
+
+        setName(j["name"]);
+        return (VSCP_ERROR_SUCCESS == init(j["path"], j["config"], j["flags"], j["datarate"]));
+    }
+    catch (...) {
+        return false;
+    }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,6 +278,29 @@ int vscpClientCanal::getcount(uint16_t *pcount)
     return m_canalif.CanalDataAvailable();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// clear
+//
+
+int vscpClientCanal::clear()
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getversion
+//
+
+int vscpClientCanal::getversion(uint8_t *pmajor,
+                                    uint8_t *pminor,
+                                    uint8_t *prelease,
+                                    uint8_t *pbuild)
+{
+    uint32_t ver = m_canalif.CanalGetDllVersion();
+
+    return VSCP_ERROR_SUCCESS;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // getinterfaces
 //
@@ -223,6 +320,43 @@ int vscpClientCanal::getwcyd(uint64_t &wcyd)
     wcyd = VSCP_SERVER_CAPABILITY_NONE;   // No capabilities
     return VSCP_ERROR_SUCCESS;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// setConnectionTimeout
+//
+
+void vscpClientCanal::setConnectionTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getConnectionTimeout
+//
+
+uint32_t vscpClientCanal::getConnectionTimeout(void)
+{
+    return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setResponseTimeout
+//
+
+void vscpClientCanal::setResponseTimeout(uint32_t timeout)
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getResponseTimeout
+//
+
+uint32_t vscpClientCanal::getResponseTimeout(void)
+{
+    return 0;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
@@ -248,6 +382,21 @@ int vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
     return VSCP_ERROR_SUCCESS;
 }
 
+#ifdef WIN32
+static void 
+win_usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
+
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Callback workerthread
@@ -256,15 +405,17 @@ int vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 //
 
 
-void *workerThread(void *pObj)
+static void *workerThread(void *pObj)
 {
     uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     vscpClientCanal *pClient = (vscpClientCanal *)pObj;
+    VscpCanalDeviceIf *pif = (VscpCanalDeviceIf *)&(pClient->m_canalif);
+
     if (NULL == pif) return NULL;
 
     while (pClient->m_bRun) {
 
-        pthread_mutex_lock(&pif->m_mutexif);
+        //pthread_mutex_lock(&pif->m_mutexif);
         
         // Check if there are events to fetch
         int cnt;
@@ -278,7 +429,7 @@ void *workerThread(void *pObj)
                         if (vscp_convertCanalToEvent(&ev,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_evcallback(ev);
+                            pClient->m_evcallback(&ev, pClient->m_callbackObject);
                         }
                     }
                     if ( NULL != pClient->m_excallback ) {
@@ -286,7 +437,7 @@ void *workerThread(void *pObj)
                         if (vscp_convertCanalToEventEx(&ex,
                                                         &msg,
                                                         guid) ) {
-                            pClient->m_excallback(ex);
+                            pClient->m_excallback(&ex, pClient->m_callbackObject);
                         }
                     }
                 }
@@ -295,8 +446,12 @@ void *workerThread(void *pObj)
 
         }
 
-        pthread_mutex_unlock(&pif->m_mutexif);
+        //pthread_mutex_unlock(&pif->m_mutexif);
+#ifndef WIN32        
         usleep(200);
+#else
+        win_usleep(200);
+#endif        
     }
 
     return NULL;

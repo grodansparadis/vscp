@@ -56,8 +56,9 @@ crc  crcTable[256];
  * Returns:		The reflection of the original data.
  *
  *********************************************************************/
-
+#ifndef WIN32
 static unsigned long reflect(unsigned long data, unsigned char nBits) __attribute__((unused));
+#endif
 static unsigned long
 reflect(unsigned long data, unsigned char nBits)
 {

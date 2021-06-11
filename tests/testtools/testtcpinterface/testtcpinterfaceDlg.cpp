@@ -24,7 +24,7 @@
     #include  "wx/ownerdrw.h"
 #endif
 
-#include "winsock.h"
+#include "winsock2.h"
 
 #include "testtcpinterface.h"
 #include "testtcpinterfaceDlg.h"

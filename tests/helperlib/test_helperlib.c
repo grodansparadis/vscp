@@ -30,7 +30,7 @@
 //#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
-#define TEST_VARIABLE_HANDLING 
+//#define TEST_VARIABLE_HANDLING 
 
 // Uncomment to test helpers
 #define TEST_HELPERS

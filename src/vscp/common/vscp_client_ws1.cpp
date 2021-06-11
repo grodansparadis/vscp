@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   (C) 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,10 +28,14 @@
 #include <stdlib.h>
 #include <pthread.h> 
 #include <semaphore.h> 
-#include <unistd.h> 
+#ifndef WIN32
+#include <unistd.h>
+#endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
+//extern "C" {
 #include "civetweb.h"
+//}
 
 #include "vscp_client_ws1.h"
 
@@ -100,13 +104,13 @@ ws1_client_data_handler(struct mg_connection *conn,
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
                 if ( !vscp_convertStringToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev);
+                pObj->m_evcallback(pev, pObj->m_callbackObject);
             }   
             else if (pObj->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 if ( !vscp_convertStringToEventEx(pex, str) ) return 1;
-                pObj->m_excallback(pex);
+                pObj->m_excallback(pex, pObj->m_callbackObject);
             } 
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -154,6 +158,7 @@ ws1_client_close_handler(const struct mg_connection *conn,
 
 vscpClientWs1::vscpClientWs1()
 {
+    m_type = CVscpClient::connType::WS1;
     m_bConnected = false;
     m_conn = NULL;
     m_host = "localhost";
@@ -182,6 +187,27 @@ vscpClientWs1::~vscpClientWs1()
     }
 
     sem_destroy(&m_sem_msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getConfigAsJson
+//
+
+std::string vscpClientWs1::getConfigAsJson(void) 
+{
+    std::string rv;
+
+    return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// initFromJson
+//
+
+bool vscpClientWs1::initFromJson(const std::string& config)
+{
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,7 +590,7 @@ int vscpClientWs1::setfilter(vscpEventFilter &filter)
 int vscpClientWs1::getcount(uint16_t *pcount)
 {
     if (NULL == pcount) return VSCP_ERROR_INVALID_POINTER;
-    *pcount = m_eventReceiveQueue.size();
+    *pcount = (uint16_t)m_eventReceiveQueue.size();
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -757,7 +783,7 @@ int vscpClientWs1::encrypt_password(std::string& strout,
 	AES_CBC_encrypt_buffer(AES128, 
 							buf,
 							(uint8_t *)strCombined.c_str(), 
-							strCombined.length(), 
+							(uint32_t)strCombined.length(), 
 							vscpkey, 
 							iv);	
     
@@ -786,7 +812,7 @@ int vscpClientWs1::waitForResponse( uint32_t timeout )
 		switch(errno) {
 
 			case EINTR:
-				return VSCP_ERROR_INTERUPTED;
+				return VSCP_ERROR_INTERRUPTED;
 
 			case EINVAL:
 				return VSCP_ERROR_PARAMETER;

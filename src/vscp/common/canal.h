@@ -5,7 +5,7 @@
 
  The MIT License (MIT)
 
- Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+ Copyright © 2000-2021 Ake Hedman, the VSCP project <info@vscp.org>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -42,12 +42,16 @@
 #define EXPORT
 #endif
 
-#ifdef WIN32
-#ifndef WINAPI
-#define WINAPI __stdcall
+#ifndef WIN32
+#include <linux/can.h>
 #endif
-#else
 
+#ifndef CAN_MTU
+#define CAN_MTU 0
+#endif
+
+#ifndef CAN_MTU
+#define CANFD_MTU 1
 #endif
 
 
@@ -64,8 +68,8 @@
 */
 
 #define CANAL_MAIN_VERSION                      1
-#define CANAL_MINOR_VERSION                     0
-#define CANAL_SUB_VERSION                       6
+#define CANAL_MINOR_VERSION                     1
+#define CANAL_SUB_VERSION                       0
 
 
 /* Canal Levels */
@@ -116,7 +120,7 @@ typedef struct structCanalMsg {
     unsigned long obid;                 /* Used by driver for channel info etc. */
     unsigned long id;                   /* CAN id (11-bit or 29-bit) */
     unsigned char sizeData;             /* Data size 0-8 */
-    unsigned char data[8];              /* CAN Data	 */
+    unsigned char data[64];             /* CAN Data	 */
     unsigned long timestamp;            /* Relative time stamp for package in microseconds */
 } canalMsg;
 
@@ -178,7 +182,7 @@ typedef long CANHANDLE;
   @return Handle of device or -1 if error.
 */
 #ifdef WIN32
-long WINAPI EXPORT CanalOpen( const char *pDevice, unsigned long flags );
+long EXPORT CanalOpen( const char *pDevice, unsigned long flags );
 #else
 long CanalOpen( const char *pDevice, unsigned long flags );
 #endif
@@ -191,7 +195,7 @@ long CanalOpen( const char *pDevice, unsigned long flags );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalClose( long handle );
+int EXPORT CanalClose( long handle );
 #else
 int CanalClose( long handle );
 #endif
@@ -202,7 +206,7 @@ int CanalClose( long handle );
     @return level for CANAL dll implementation.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetLevel( long handle );
+unsigned long EXPORT CanalGetLevel( long handle );
 #else
 unsigned long CanalGetLevel( long handle );
 #endif
@@ -218,7 +222,7 @@ unsigned long CanalGetLevel( long handle );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSend( long handle, const PCANALMSG pCanalMsg );
+int EXPORT CanalSend( long handle, const PCANALMSG pCanalMsg );
 #else
 int CanalSend( long handle, PCANALMSG pCanalMsg );
 #endif
@@ -236,7 +240,7 @@ int CanalSend( long handle, PCANALMSG pCanalMsg );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
+int EXPORT CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
 #else
 int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
 #endif
@@ -255,7 +259,7 @@ int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout )
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalReceive( long handle, PCANALMSG pCanalMsg );
+int EXPORT CanalReceive( long handle, PCANALMSG pCanalMsg );
 #else
 int CanalReceive( long handle, PCANALMSG pCanalMsg );
 #endif
@@ -276,7 +280,7 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalBlockingReceive( long handle,
+int EXPORT CanalBlockingReceive( long handle,
                                             PCANALMSG pCanalMsg,
                                             unsigned long timeout );
 #else
@@ -293,7 +297,7 @@ int CanalBlockingReceive( long handle,
     there are messages waiting to be received.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalDataAvailable( long handle );
+int  EXPORT CanalDataAvailable( long handle );
 #else
 int CanalDataAvailable( long handle );
 #endif
@@ -306,7 +310,7 @@ int CanalDataAvailable( long handle );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
+int EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
 #else
 int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
 #endif
@@ -319,7 +323,7 @@ int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalGetStatistics( long handle,
+int EXPORT CanalGetStatistics( long handle,
                                         PCANALSTATISTICS pCanalStatistics  );
 #else
 int CanalGetStatistics( long handle,
@@ -334,7 +338,7 @@ int CanalGetStatistics( long handle,
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetFilter( long handle, unsigned long filter );
+int EXPORT CanalSetFilter( long handle, unsigned long filter );
 #else
 int CanalSetFilter( long handle, unsigned long filter );
 #endif
@@ -347,7 +351,7 @@ int CanalSetFilter( long handle, unsigned long filter );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetMask( long handle, unsigned long mask );
+int EXPORT CanalSetMask( long handle, unsigned long mask );
 #else
 int CanalSetMask( long handle, unsigned long mask );
 #endif
@@ -360,7 +364,7 @@ int CanalSetMask( long handle, unsigned long mask );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalSetBaudrate( long handle, unsigned long baudrate );
+int EXPORT CanalSetBaudrate( long handle, unsigned long baudrate );
 #else
 int CanalSetBaudrate( long handle, unsigned long baudrate );
 #endif
@@ -371,7 +375,7 @@ int CanalSetBaudrate( long handle, unsigned long baudrate );
     @return version for CANAL i/f.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetVersion( void );
+unsigned long EXPORT CanalGetVersion( void );
 #else
 unsigned long CanalGetVersion( void );
 #endif
@@ -382,7 +386,7 @@ unsigned long CanalGetVersion( void );
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-unsigned long WINAPI EXPORT CanalGetDllVersion( void );
+unsigned long EXPORT CanalGetDllVersion( void );
 #else
 unsigned long CanalGetDllVersion( void );
 #endif
@@ -393,7 +397,7 @@ unsigned long CanalGetDllVersion( void );
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-const char * WINAPI EXPORT CanalGetVendorString( void );
+const char * EXPORT CanalGetVendorString( void );
 #else
 const char * CanalGetVendorString( void );
 #endif
@@ -402,7 +406,7 @@ const char * CanalGetVendorString( void );
     Get CANAL driver properties
 */
 #ifdef WIN32
-const char * WINAPI EXPORT CanalGetDriverInfo( void );
+const char * EXPORT CanalGetDriverInfo( void );
 #else
 const char * CanalGetDriverInfo( void );
 #endif
@@ -422,6 +426,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IDFLAG_EXTENDED               0x00000001  /* Extended message id (29-bit) */
 #define CANAL_IDFLAG_RTR                    0x00000002  /* RTR-Frame */
 #define CANAL_IDFLAG_STATUS                 0x00000004  /* This package is a status indication (id holds error code) */
+#define CANAL_IDFLAG_FD                     0x00000008  /* This is a FD frame */
 #define CANAL_IDFLAG_SEND                   0x80000000  /* Reserved for use by application software to indicate send */
 
 /* Communication speeds */
@@ -504,6 +509,13 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_INTERNAL                36          /* Some kind of internal program error */
 #define CANAL_ERROR_COMMUNICATION           37          /* Some kind of communication error */
 #define CANAL_ERROR_USER                    38          /* Login error */
+// Version 1.1.0
+#define CANAL_ERROR_MTU                     39          /* Frame does not fit */
+#define CANAL_ERROR_FD_SUPPORT              40          /* Flexible data-rate is not supported on this interface */
+#define CANAL_ERROR_FD_SUPPORT_ENABLE       41          /* Error on enabling fexible-data-rate support */ 
+#define CANAL_ERROR_SOCKET_CREATE           42          /* Unable to create (socketcan) socket */
+#define CANAL_ERROR_CONVERT_NAME_TO_INDEX   43          /* Unable to convert (socketcan) name to index */
+#define CANAL_ERROR_SOCKET_BIND             44          /* Unable to bind to socket or equivalent */
 
 /* Filter mask settings */
 #define CANUSB_ACCEPTANCE_FILTER_ALL        0x00000000

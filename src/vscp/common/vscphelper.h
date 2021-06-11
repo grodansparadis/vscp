@@ -4,8 +4,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,17 @@
 #if !defined(VSCPHELPER_H__INCLUDED_)
 #define VSCPHELPER_H__INCLUDED_
 
-#include <config.h> // autoconf
+//#include <config.h> // autoconf
 
 #ifndef WIN32
 #include <sys/times.h>
+#include <byteswap.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#else
+//#include <winsock2.h>
+//#include <windows.h>
 #endif
 
 #include <algorithm>
@@ -50,15 +57,14 @@
 #include <string>
 #include <vector>
 
-#include <float.h>
 #include <semaphore.h>
-
-#include <byteswap.h>
+#include <float.h>
 
 #include <canal.h>
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
+#include <sockettcp.h>
 
 /*  byte swapping */
 
@@ -134,10 +140,12 @@
 // Forward declaration
 class CMDF;
 
+/*
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+*/
 
     /*!
         \union vscp_value
@@ -191,6 +199,7 @@ extern "C"
     void vscp_mem_usage(double& vm_usage, double& resident_set);
 #endif
 
+#ifndef WIN32
     /*!
         Wait a number of milliseconds for semaphore
 
@@ -200,6 +209,7 @@ extern "C"
         is set accordingly. ETIMEDOUT is returned for timeout.
     */
     int vscp_sem_wait(sem_t* sem, uint32_t waitms);
+#endif
 
     /*
      * Check two floats for equality
@@ -294,12 +304,14 @@ extern "C"
     /*!
         vscp_str_format
 
+        Note! Putting the format string as a reference does dot work on window.
+
         https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf/49812018
         @param format string
         @param Variables part of resulting string
         @return formated string
     */
-    std::string vscp_str_format(const std::string& fmt_str, ...);
+    std::string vscp_str_format(std::string fstr, ...);
 
     /*!
         vscp_startsWith
@@ -366,20 +378,17 @@ extern "C"
     // trim from start (in place)
     static inline void vscp_ltrim(std::string& s)
     {
-        s.erase(s.begin(),
-                std::find_if(s.begin(),
-                             s.end(),
-                             std::not1(std::ptr_fun<int, int>(std::isspace))));
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }));
     }
 
     // trim from end (in place)
     static inline void vscp_rtrim(std::string& s)
     {
-        s.erase(std::find_if(s.rbegin(),
-                             s.rend(),
-                             std::not1(std::ptr_fun<int, int>(std::isspace)))
-                  .base(),
-                s.end());
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
     }
 
     // trim from both ends (in place)
@@ -417,6 +426,10 @@ extern "C"
                                   const std::string& theDelimiter)
     {
         size_t start = 0, end = 0;
+
+        std::string str = theString;
+        vscp_trim(str);
+        if (!theString.length()) return;
 
         while (end != std::string::npos) {
             end = theString.find(theDelimiter, start);
@@ -614,6 +627,14 @@ extern "C"
     */
     int vscp_hostname_to_ip( char *ip, const char *hostname);
 
+
+    /*!
+        Get port from interface string on form host:port
+        @param interface on prefix:\\host:port form
+        @return port number if any
+    */
+    int vscp_getPortFromInterface(const std::string& iface);
+
     /*!
         vscp_getHostFromInterface
 
@@ -625,17 +646,27 @@ extern "C"
 
     */
     std::string
-    vscp_getHostFromInterface(std::string interface);
+    vscp_getHostFromInterface(const std::string& iface);
 
     /*!
-     * Parse IPv4 address and return net part and mask part
-     *
-     * @param addr ipv4 address to parse (a.b.c.d/m)
-     * @param net Network part of address
-     * @param mask Mask part of address
-     * return 0 on error,
+        Parse IPv4 address and return
+
+        @param addr ipv4 address to parse (a.b.c.d/m)
+        @param net Network part of address
+        @param mask Mask part of address
+        @return 0 on error,
      */
     int vscp_parse_ipv4_addr(const char* addr, uint32_t* net, uint32_t* mask);
+
+    /*!
+        Parse IPv4/IPv6 address 
+        @param addr IPv4 (+a.b.c.d/x) or IPv6 (+fe80::/64) address plus net. Firts char should
+            be plus or minus to indicate allow or diallow.
+        @param sa Structure holding address to check 
+        @param no_strict Set to zero to disable strict control for IPv6
+        @return TRUE if addr is OK
+    */
+    int vscp_parse_match_net(const char* addr, const union usa *sa, int no_strict);
 
     // ***************************************************************************
     //                             Measurement Helpers
@@ -728,12 +759,38 @@ extern "C"
     bool vscp_getMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent);
 
     /*!
+        Write data from event ex in the VSCP data coding format as a double.
+
+        Works for
+
+        CLASS1.MEASUREMENT
+        CLASS2_LEVEL1.MEASUREMENT
+        VSCP_CLASS1_MEASUREZONE
+        VSCP_CLASS1_SETVALUEZONE
+        CLASS2_MEASUREMENT_FLOAT
+        CLASS2_MEASUREMENT_STR
+
+        @param pEventEx Pointer to VSCP event ex.
+        @param pvalue Pointer to double that holds the result
+        @return true on success, false on failure.
+    */
+    bool vscp_getMeasurementAsDoubleEx(double* pvalue, const vscpEventEx* pEventEx);
+
+    /*!
      * Get measurement unit for any of the valid measurement events.
      * @param pEvent Pointer to VSCP event.
      * @return Measurement unit or -1 for error (event that is not a
      * measurement).
      */
     int vscp_getMeasurementUnit(const vscpEvent* pEvent);
+
+    /*!
+     * Get measurement unit for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement unit or -1 for error (event that is not a
+     * measurement).
+     */
+    int vscp_getMeasurementUnitEx(const vscpEventEx* pEventEx);
 
     /*!
      * Get measurement sensor index for any of the valid measurement events.
@@ -744,12 +801,28 @@ extern "C"
     int vscp_getMeasurementSensorIndex(const vscpEvent* pEvent);
 
     /*!
+     * Get measurement sensor index for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement sensor index or -1 for error or for event that is not
+     * a measurement or measurement event that does not have a sensor index.
+     */
+    int vscp_getMeasurementSensorIndexEx(const vscpEventEx* pEventEx);
+
+    /*!
      * Get measurement zone for any of the valid measurement events.
      * @param pEvent Pointer to VSCP event.
      * @return Measurement zone or 0 for error or event that is not a
      * measurement or measurement event that does not have a zone).
      */
     int vscp_getMeasurementZone(const vscpEvent* pEvent);
+
+    /*!
+     * Get measurement zone for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement zone or 0 for error or event that is not a
+     * measurement or measurement event that does not have a zone).
+     */
+    int vscp_getMeasurementZoneEx(const vscpEventEx* pEventEx);
 
     /*!
      * Get measurement subzone for any of the valid measurement events.
@@ -760,11 +833,26 @@ extern "C"
     int vscp_getMeasurementSubZone(const vscpEvent* pEvent);
 
     /*!
+     * Get measurement subzone for any of the valid measurement events.
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Measurement subzone or -1 for error or for event that is not a
+     * measurement or measurement event that does not have a subzone.
+     */
+    int vscp_getMeasurementSubZoneEx(const vscpEventEx* pEventEx);
+
+    /*!
      * Check if event is a measurement
      * @param pEvent Pointer to VSCP event.
      * @return Return true if the event is a measurement.
      */
     bool vscp_isMeasurement(const vscpEvent* pEvent);
+
+    /*!
+     * Check if event is a measurement
+     * @param pEventEx Pointer to VSCP event ex.
+     * @return Return true if the event is a measurement.
+     */
+    bool vscp_isMeasurementEx(const vscpEventEx* pEventEx);
 
     /*!
         Get data in the VSCP data coding format to a string. Works for
@@ -1175,10 +1263,13 @@ extern "C"
 
         @param strGUID Reference to string that will get GUID on string form
         @param pGUID Pointer to VSCP GUID array.
+        @param bUseComma Use comma as a separator instead of colon with 
+                            values in decimal.
         @return True on success, false on failure.
     */
     bool vscp_writeGuidArrayToString(std::string& strGUID,
-                                     const unsigned char* pGUID);
+                                     const unsigned char* pGUID,
+                                     bool bUseComma = false);
 
     /*!
         Write out GUID to string
@@ -1593,13 +1684,15 @@ extern "C"
         Covert VSCP event to CANAL message
     */
     bool vscp_convertEventToCanal(canalMsg* pcanalMsg,
-                                  const vscpEvent* pvscpEvent);
+                                  const vscpEvent* pvscpEvent,
+                                  uint8_t mode=CAN_MTU);
 
     /*!
         Covert VSCP event to CANAL message
     */
     bool vscp_convertEventExToCanal(canalMsg* pcanalMsg,
-                                    const vscpEventEx* pvscpEvent);
+                                    const vscpEventEx* pvscpEvent,
+                                    uint8_t mode=CAN_MTU);
 
     /*!
         Copy one VSCP event to another
@@ -1907,8 +2000,8 @@ extern "C"
      * @param input This is the frame that should be decrypted.
      * @param len This is the length of the frame to be decrypted.
      * @param key This is a pointer to the secret encryption key. This key
-     *            should be 128 bytes for AES128, 192 bytes for AES192,
-     *            256 bytes for AES256.
+     *            should be 128 bits for AES128, 192 bits for AES192,
+     *            256 bits for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a
      *           128 bit content. If NULL the iv is expected to be the last
      *           16 bytes of the encrypted data.
@@ -2000,7 +2093,7 @@ extern "C"
      * Validate password
      *
      * @param stored_pw Stored password on the form "salt;hash"
-     * @param password Password to test.
+     * @param password Password to test (clear text).
      * @return true on success, false otherwise.
      */
 
@@ -2028,9 +2121,10 @@ extern "C"
 
 
     
-
+/*
 #ifdef __cplusplus
 }
 #endif
+*/
 
 #endif // #if !defined(VSCPHELPER_H__INCLUDED_)

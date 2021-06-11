@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Grodans Paradis AB
+ * Copyright 2014 the VSCP project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,12 +168,12 @@ module.exports = function(RED) {
                     }   
                 }            
                 buffer = parts[parts.length-1];
-            } 
+            }) 
 
-        });
+        };
         
         client.on('end', function() {
-            if ( buffer.length > 0) ) {
+            if ( buffer.length > 0) {
                 var msg = {topic:node.topic,payload:{}};
                 msg._session = {type:"vscp",id:id};
                 if (buffer.length !== 0) {
@@ -212,11 +212,12 @@ module.exports = function(RED) {
         }
         
     }
-    
-    RED.nodes.registerType("vscp-receive", receiveVSCP{
+    /*
+    RED.nodes.registerType("vscp-receive", receiveVSCP() {
         credentials: {
             username: {type:"text"},
             password: {type:"password"}
         }
     });
+    */
 }

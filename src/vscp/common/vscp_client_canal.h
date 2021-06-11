@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,6 +30,8 @@
 #include "vscp_client_base.h"
 #include "vscpcanaldeviceif.h"
 
+#include <pthread.h>
+
 // When a callback is set and connect is called this object is shared
 // with a workerthread that 
 
@@ -46,12 +48,14 @@ public:
         @param strPath Path to CANAL driver.
         @param strParameters CANAL driver configuration string.
         @param flags CANAL driver configuration flags.
+        @param datarate Set baudrate/bitrate. If zero baudrate is
+                            not set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     int init(const std::string &strPath,
                 const std::string &strParameters = "",
                 unsigned long flags = 0,
-                unsigned long baudrate = 0); 
+                unsigned long datarate = 0); 
 
     // Run wizard
     int runWizard(void);
@@ -105,7 +109,7 @@ public:
         @param filter VSCP Filter to set.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setfilter(vscpEventFilter &filter) = 0;
+    virtual int setfilter(vscpEventFilter &filter);
 
     /*!
         Get number of events waiting to be received on remote
@@ -114,6 +118,12 @@ public:
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int getcount(uint16_t *pcount);
+
+    /*!
+        Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int clear(void);
 
     /*!
         Get version from interface
@@ -141,6 +151,44 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+    /*!
+        Set (and enable) receive callback for events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
+
+    /*!
+        Set (and enable) receive callback ex events
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string getConfigAsJson(void);
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool initFromJson(const std::string& config);
+
+    /*!
+        Getter/setters for connection timeout
+        Time is in milliseconds
+    */
+    virtual void setConnectionTimeout(uint32_t timeout);
+    virtual uint32_t getConnectionTimeout(void);
+
+    /*!
+        Getter/setters for response timeout
+        Time is in milliseconds
+    */
+    virtual void setResponseTimeout(uint32_t timeout);
+    virtual uint32_t getResponseTimeout(void);
 
 public:   
 

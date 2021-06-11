@@ -181,7 +181,7 @@
 </div>
 
 <div id="footer">
-	<p>Copyright C) 2010-2014 Åke Hedman, Grodans Paradis AB <a href="#">Privacy Policy</a> | 
+	<p>Copyright C) 2010-2014 ï¿½ke Hedmanthe VSCP projectAB <a href="#">Privacy Policy</a> | 
 	<a href="http://validator.w3.org/check/referer" 
 	title="This page validates as XHTML 1.0 Transitional"><abbr 
 	title="eXtensible HyperText Markup Language">XHTML</abbr></a> | 

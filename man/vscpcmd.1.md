@@ -1,5 +1,5 @@
 % VSCPCMD(1) VSCP Command Tool
-% Åke Hedman, Grodans Paradis AB
+% Åke Hedman, the VSCP project
 % January 20, 2020
 
 # NAME
@@ -31,4 +31,4 @@ The [manual](https://grodansparadis.gitbooks.io/the-vscp-daemon) for vscpd conta
 The vscpd source code may be downloaded from <https://github.com/grodansparadis/vscp>. Source code for other system components of VSCP & Friends are here <https://github.com/grodansparadis>
 
 # COPYRIGHT
-Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
+Copyright © 2000-2021 Ake Hedman, the VSCP project - MIT license.

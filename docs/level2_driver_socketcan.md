@@ -20,7 +20,7 @@ The parameter interface is the socketcan interface to use. Typically this is can
  | _filter       | string | Standard VSCP filter in string form. 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 as priority,class,type,GUID Used to filter what events that is received from the socketcan interface. If not give all events are received. | 
  | _mask         | string | Standard VSCP mask in string form. 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 as priority,class,type,GUID Used to filter what events that is received from the socketcan interface. If not give all events are received.   | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **socketcan1** and the full variable name for the **_interface** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **socketcan1** and the full variable name for the **_interface** will thus be
 
     socketcan1_interface
 
@@ -28,7 +28,7 @@ If you have another diver and name it  **socketcan2** it will therefore instead 
 
 If your driver name contains spaces, for example “name of driver” it will get a prefix that is “name_of_driver”. Leading and trailing spaces will be removed. 
 
-##### vscpd.conf example
+##### vscpd.json example
 
 ```xml
 <driver enable="true" >

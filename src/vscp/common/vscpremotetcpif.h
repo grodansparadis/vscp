@@ -5,8 +5,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,21 +37,35 @@
 #if !defined(VSCPREMOTETCPIF_H__INCLUDED_)
 #define VSCPREMOTETCPIF_H__INCLUDED_
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <sockettcp.h>
+
+#ifndef WIN32
 #include <arpa/inet.h>
-#include <inttypes.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <semaphore.h>
-#include <sockettcp.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#else
+#include <winsock2.h>
+#include <windows.h>
+#include <pthread.h>
+#include <semaphore.h>
+#endif
+
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 
 #include <canal.h>
 #include <guid.h>
@@ -96,7 +110,7 @@
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string
  */
-#define TCPIP_VENDOR_STRING "Grodans Paradis AB, Sweden"
+#define TCPIP_VENDOR_STRING "the VSCP project, Sweden"
 
 #define DRIVER_INFO_STRING ""
 
@@ -203,6 +217,14 @@ class VscpRemoteTcpIf
         @return Return false for "-OK" and true for "+OK"
      */
     bool checkReturnValue(bool bClear = false);
+
+    /*!
+        ReceiveLoop reader
+        Intended for thread loop workerthread
+        @param timout Timeout in milliseconds to wait for event
+        @return VSCP_ERROR_SUCCESS on success, otherise errorcode
+    */
+    int rcvloopRead(int timeout);
 
     /*!
         Clear the input queue

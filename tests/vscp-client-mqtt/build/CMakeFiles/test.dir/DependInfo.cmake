@@ -20,7 +20,9 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "../"
   "../../../src/vscp/common"
   "../../../src/common"
+  "../../../src/common/third_party"
   "../../../src/common/third_party/nlohmann"
+  "../../../src/common/third_party/spdlog-1.8.5/include"
   )
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-mqtt/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o"
@@ -39,7 +41,9 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../"
   "../../../src/vscp/common"
   "../../../src/common"
+  "../../../src/common/third_party"
   "../../../src/common/third_party/nlohmann"
+  "../../../src/common/third_party/spdlog-1.8.5/include"
   )
 
 # Targets to which this target links.

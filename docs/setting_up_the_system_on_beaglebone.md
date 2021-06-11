@@ -5,7 +5,7 @@
 
 [Beaglebone](https://beagleboard.org/bone) is a very nice board and VSCP & Friends is a perfect match for it if you are using distributions based on Debian wheezy or later.
 
-VSCP & Friends has been tested and works very well on Beaglebone Black. The setup is the same as on other Unix systems so the instructions to [setup VSCP & Friends on a Unix system](./setting_up_the_system_on_unix.md) can be used.
+VSCP & Friends has been tested and works very well on Beaglebone Black. The setup is the same as on other Unix systems so the instructions to [setup VSCP & Friends on a Unix system](./setting_up_the_system_on_linux.md) can be used.
 
 
 ## Related Links

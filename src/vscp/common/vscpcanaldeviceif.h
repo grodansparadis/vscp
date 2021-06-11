@@ -4,8 +4,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@
 #define VSCPCANALDEVICEIF_H__INCLUDED_
 
 #include <string>
+
+#include <dlfcn.h>
 
 #include <canaldlldef.h>
 
@@ -69,7 +71,7 @@ class VscpCanalDeviceIf
         @param nFormat Format for the data object
         @return CANAL_ERROR_SUCCESS on success, CANAL error code on failure
     */
-    bool
+    int
     constructCanalMsg( canalMsg *pmsg,
                         std::string& strObj,
                         uint8_t nFormat = CANAL_FORMAT_CAN_XML );
@@ -394,6 +396,32 @@ class VscpCanalDeviceIf
     */
     const char *CanalGetDriverInfo(void);
 
+    /*!
+        Getter for path
+    */
+    std::string getPath(void) { return m_strPath; };
+
+    /*!
+        Getter for parameter
+    */
+    std::string getParameter(void) { return m_strParameter; };
+
+    /*!
+        Getter for flags
+    */
+    uint32_t getDeviceFlags(void) { return m_deviceFlags; };
+
+    /*!
+        Release the driver
+    */
+    void releaseDriver(void) { if (NULL != m_hdll )  { dlclose(m_hdll); m_hdll = NULL; } };
+
+    /*!
+        Return true if the driver is a genaration 1 driver
+        @return True of generation 1 driver
+    */
+    bool isGenerationOne(void) { return m_bGenerationOne; };
+
   private:
     // Driver DLL/DL path
     std::string m_strPath;
@@ -412,6 +440,9 @@ class VscpCanalDeviceIf
 
     // Handle for dll/dl driver interface
     long m_openHandle;
+
+    // Set to true if driver is a generation one driver
+    bool m_bGenerationOne;
 
     // ------------------------------------------------------------------------
     //                     End of driver worker thread data

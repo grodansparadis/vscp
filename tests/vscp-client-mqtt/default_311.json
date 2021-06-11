@@ -1,0 +1,117 @@
+{
+  "bind" : "",   
+  "host" : "192.168.1.7",
+  "port" : 1883,
+  "mqtt-options" : {
+      "tcp-nodelay" : true,
+      "protocol-version": 311,
+      "receive-maximum": 20,
+      "send-maximum": 20,
+      "ssl-ctx-with-defaults": 0,
+      "tls-ocsp-required": 0,
+      "tls-use-os-certs" : 0
+  },
+  "user" : "vscp",
+  "password": "secret",
+  "clientid" : "mosq-vscp-daemon-000001",  
+  "publish-format" : "json",
+  "subscribe-format" : "auto",
+  "qos" : 1,
+  "bcleansession" : false,
+  "bretain" : false,      
+  "keepalive" : 60,
+  "bjsonmeasurementblock" : true,
+  "reconnect" : {
+    "delay" : 2,
+    "delay-max" : 10,
+    "exponential-backoff" : false
+  },
+  "tls" : {
+      "cafile" : "",
+      "capath" : "",
+      "certfile" : "",
+      "keyfile" : "",
+      "pwkeyfile" : "",
+      "no-hostname-checking" : true,
+      "cert-reqs" : 0,
+      "version": "",
+      "ciphers": "",
+      "psk": "",
+      "psk-identity" : ""
+  },
+  "will": {
+      "topic": "Last Will",
+      "qos": 0,
+      "retain": false,
+      "payload": "This is the end"
+  },
+    "subscribe": [
+        {
+            "topic": "test1/topic/A",
+            "qos": 0,
+            "v5-options": 0,
+            "format": "auto"
+        },
+        {
+            "topic": "test2/topic/B",
+            "qos": 0,
+            "v5-options": 0,
+            "format": "auto"
+        },
+        {
+            "topic": "test/#",
+            "qos": 0,
+            "v5-options": 0,
+            "format": "auto"
+        },
+        {
+            "topic": "test2/#",
+            "qos": 0,
+            "v5-options": 0,
+            "format": "auto"
+        }
+    ],
+    "bescape-pub-topics": true,
+    "user-escapes": [
+        {"escape1": "valu1"},
+        {"escape2": "valu2"}
+    ],
+    "publish": [
+        {
+            "topic" : "publish/topic/json",
+            "qos" : 0,
+            "retain" : false,
+            "format": "json"
+        },
+        {
+            "topic" : "publish/topic/xml",
+            "qos" : 0,
+            "retain" : false,
+            "format": "xml"
+        },
+        {
+            "topic" : "publish/topic/string",
+            "qos" : 0,
+            "retain" : false,
+            "format": "string"
+        },
+        {
+            "topic" : "publish/topic/binary",
+            "qos" : 0,
+            "retain" : false,
+            "format": "binary"
+        },
+        {
+            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+            "qos" : 0,
+            "retain" : false,
+            "format": "json"
+        }    
+    ],      
+    "v5" : {
+        "user-properties": {
+            "prop1" : "value",
+            "prop2" : "value"    
+        } 
+    }
+}

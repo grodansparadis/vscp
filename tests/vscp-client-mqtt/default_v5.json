@@ -1,0 +1,69 @@
+{
+  "bind" : "",   
+  "host" : "tcp://192.168.1.7:1883",
+  "port" : 1883,
+  "mqtt-options" : {
+      "tcp-nodelay" : true,
+      "protocol-version": 311,
+      "receive-maximum": 20,
+      "send-maximum": 20,
+      "ssl-ctx-with-defaults": 0,
+      "tls-ocsp-required": 0,
+      "tls-use-os-certs" : 0
+  },
+  "user" : "vscp",
+  "password": "secret",
+  "clientid" : "mosq-vscp-daemon-000001",  
+  "publish-format" : "json",
+  "subscribe-format" : "auto",
+  "qos" : 1,
+  "bcleansession" : false,
+  "bretain" : false,      
+  "keepalive" : 60,
+  "bjsonmeasurementblock": true,
+  "reconnect" : {
+    "delay" : 2,
+    "delay-max" : 10,
+    "exponential-backoff" : false
+  },
+  "tls" : {
+      "cafile" : "",
+      "capath" : "",
+      "certfile" : "",
+      "keyfile" : "",
+      "pwkeyfile" : "",
+      "no-hostname-checking" : true,
+      "cert-reqs" : 0,
+      "version": "",
+      "ciphers": "",
+      "psk": "",
+      "psk-identity" : ""
+  },
+  "will": {
+      "topic": "topic",
+      "qos": 0,
+      "retain": true,
+      "payload": "string/json/xml"
+  },
+  "subscribe": [
+      "subscribe/topic/A",
+      "subscribe/topic/B"          
+  ],
+  "publish": [
+      "publish/topic/A",
+      "publish/topic/B"
+  ],      
+  "v5" : {
+      "user-properties": {
+          "prop1" : "value",
+          "prop2" : "value"    
+      },
+      "subscribe-options": [
+            "NO_LOCAL",
+            "RETAIN_AS_PUBLISHED",
+            "SEND_RETAIN_ALWAYS",
+            "SEND_RETAIN_NEW",
+            "SEND_RETAIN_NEVER"
+      ]  
+  }
+}
