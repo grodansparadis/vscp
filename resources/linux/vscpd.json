@@ -41,6 +41,7 @@
         "bcleansession" : false,
         "bretain" : false,      
         "keepalive" : 60,
+        "bjsonmeasurementblock": true,
         "reconnect" : {
           "delay" : 2,
           "delay-max" : 10,
@@ -169,6 +170,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -295,6 +297,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -421,6 +424,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -547,6 +551,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -673,6 +678,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -797,6 +803,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -921,6 +928,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -1045,6 +1053,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -1169,6 +1178,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -1293,6 +1303,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -1417,6 +1428,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,
@@ -1541,6 +1553,7 @@
                     "bcleansession" : false,
                     "bretain" : false,      
                     "keepalive" : 60,
+                    "bjsonmeasurementblock": true,
                     "reconnect" : {
                       "delay" : 2,
                       "delay-max" : 10,

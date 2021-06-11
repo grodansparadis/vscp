@@ -192,7 +192,7 @@ If enabled and the event is a measurement and the publish format is in json, set
 }
 ```
 
-**Important!** One should never expect this block to be present for a measurement. For a client it is better to use the standard conversion functions on the data content.
+**Important!** One should never expect this block of data to be present for a measurement. It is better for a client to use the standard conversion functions for measurement content.
 
 default is **true**
 
