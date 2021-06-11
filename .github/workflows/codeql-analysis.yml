@@ -7,10 +7,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [master]
+    branches: [master, development]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [master]
+    branches: [master, development]
   schedule:
     - cron: '0 19 * * 4'
 
@@ -40,6 +40,27 @@ jobs:
     # the head of the pull request instead of the merge commit.
     - run: git checkout HEAD^2
       if: ${{ github.event_name == 'pull_request' }}
+
+    - name: Checkout google test repo
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo mkdir build && cd build && sudo cmake .. && sudo make DESTDIR=/usr/lib
+
+    - name: Update before installing packages
+      run: sudo apt-get update
+
+    - name: Install libexpat-dev manually
+      run: sudo apt-get install libexpat-dev
+      
+    - name: Install support libssl
+      run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
+
+    - name: Install libmosquitto-dev manually
+      run: sudo apt install libmosquitto-dev
+
+    - name: Install libexpat-dev manually
+      run: sudo apt install libexpat-dev
+
+    - name: Install libssl-dev manually
+      run: sudo apt-get install libssl-dev
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

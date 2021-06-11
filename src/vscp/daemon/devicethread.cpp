@@ -382,11 +382,11 @@ deviceThread(void *pData)
     // -------------------------------------------------------------
 
     // Setup MQTT for driver
-    if (!pDeviceItem->m_mqttClient.init()) {
-      spdlog::error("Failed to initialize MQTT client for level I driver.");
-      dlclose(hdll);
-      return NULL;
-    }
+    // if (!pDeviceItem->m_mqttClient.init()) {
+    //   spdlog::error("Failed to initialize MQTT client for level I driver.");
+    //   dlclose(hdll);
+    //   return NULL;
+    // }
 
     // Set GUID
     pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
@@ -406,7 +406,7 @@ deviceThread(void *pData)
     pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
 
     // Connect to server
-    if (!pDeviceItem->m_mqttClient.connect()) {
+    if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {
       spdlog::error("Failed to connect to MQTT client level I driver.");
       dlclose(hdll);
       return NULL;
@@ -660,11 +660,11 @@ deviceThread(void *pData)
     // -------------------------------------------------------------
 
     // Setup MQTT for driver
-    if (!pDeviceItem->m_mqttClient.init()) {
-      spdlog::error("Failed to initialize MQTT client for level II driver.");
-      dlclose(hdll);
-      return NULL;
-    }
+    // if (!pDeviceItem->m_mqttClient.init()) {
+    //   spdlog::error("Failed to initialize MQTT client for level II driver.");
+    //   dlclose(hdll);
+    //   return NULL;
+    // }
 
     // Set GUID
     pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
@@ -684,7 +684,7 @@ deviceThread(void *pData)
     pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
 
     // Connect to server
-    if (!pDeviceItem->m_mqttClient.connect()) {
+    if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {
       spdlog::error("Failed to connect to MQTT client for level II driver.");
       dlclose(hdll);
       return NULL;

@@ -574,6 +574,9 @@ vscpClientMqtt::vscpClientMqtt(void)
 
   m_type = CVscpClient::connType::MQTT; // This is a MQTT client
 
+  // Don't filter away anything
+  memset(&m_filter, 0, sizeof(vscpEventFilter));
+
   m_mapMqttIntOptions["tcp-nodelay"]      = 1;
   m_mapMqttIntOptions["protocol-version"] = 311;
   m_mapMqttIntOptions["receive-maximum"]  = 20;
@@ -708,33 +711,39 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Bind address
     if (j.contains("bind")) {
       m_bindInterface = j["bind"].get<std::string>();
+      spdlog::debug("json mqtt init: bind interface set to {}.", m_bindInterface);
     }
 
     // Host address on form (s)tcp://ip:port
     if (j.contains("host")) {
 
       m_host = j["host"].get<std::string>();
+      spdlog::debug("json mqtt init: host set to {}.", m_host);
 
       vscp_trim(m_host);
       if (0 == m_host.find("tcp://")) {
         m_host = m_host.substr(6);
         m_bTLS = false;
+        spdlog::debug("json mqtt init: Unsecure connection {}.", m_host);
       }
       else if (0 == m_host.find("stcp://")) {
         m_host = m_host.substr(7);
         m_bTLS = true;
+        spdlog::debug("json mqtt init: Secure connection {}.", m_host);
       }
 
       size_t pos;
       if (std::string::npos != (pos = m_host.rfind(":"))) {
         m_port = vscp_readStringValue(m_host.substr(pos + 1));
         m_host = m_host.substr(0, pos);
+        spdlog::debug("json mqtt init: port (from host string) set to {}.", m_port);
       }
     }
 
     // Port
     if (j.contains("port")) {
       m_port = j["port"].get<uint16_t>();
+      spdlog::debug("json mqtt init: port set to {}.", m_port);
     }
 
     // MQTT options
@@ -742,52 +751,64 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       json jj = j["mqtt-options"];
 
-      if (jj.contains("tcp-nodelay")) {
+      if (jj.contains("tcp-nodelay") && j["tcp-nodelay"].is_number()) {
         m_mapMqttIntOptions["tcp-nodelay"] = jj["tcp-nodelay"].get<int>();
+        spdlog::debug("json mqtt init: tcp-nodelay set to {}.", m_mapMqttIntOptions["tcp-nodelay"]);
       }
 
-      if (jj.contains("protocol-version")) {
+      if (jj.contains("protocol-version") && j["protocol-version"].is_number()) {
         m_mapMqttIntOptions["protocol-version"] = jj["protocol-version"].get<int>();
+        spdlog::debug("json mqtt init: protocol-version set to {}.", m_mapMqttIntOptions["protocol-version"]);
       }
 
-      if (jj.contains("receive-maximum")) {
+      if (jj.contains("receive-maximum") && j["receive-maximum"].is_number()) {
         m_mapMqttIntOptions["receive-maximum"] = jj["receive-maximum"].get<int>();
+        spdlog::debug("json mqtt init: receive-maximum set to {}.", m_mapMqttIntOptions["receive-maximum"]);
       }
 
-      if (jj.contains("send-maximum")) {
+      if (jj.contains("send-maximum") && j["send-maximum"].is_number()) {
         m_mapMqttIntOptions["send-maximum"] = jj["send-maximum"].get<int>();
+        spdlog::debug("json mqtt init: send-maximum set to {}.", m_mapMqttIntOptions["send-maximum"]);
       }
 
-      if (jj.contains("ssl-ctx-with-defaults")) {
+      if (jj.contains("ssl-ctx-with-defaults") && j["ssl-ctx-with-defaults"].is_number()) {
         m_mapMqttIntOptions["ssl-ctx-with-defaults"] = jj["ssl-ctx-with-defaults"].get<int>();
+        spdlog::debug("json mqtt init: ssl-ctx-with-defaults set to {}.", m_mapMqttIntOptions["ssl-ctx-with-defaults"]);
       }
 
-      if (jj.contains("tls-ocsp-required")) {
+      if (jj.contains("tls-ocsp-required") && j["tls-ocsp-required"].is_number()) {
         m_mapMqttIntOptions["tls-ocsp-required"] = jj["tls-ocsp-required"].get<int>();
+        spdlog::debug("json mqtt init: tls-ocsp-required set to {}.", m_mapMqttIntOptions["tls-ocsp-required"]);
       }
 
-      if (jj.contains("tls-use-os-certs")) {
+      if (jj.contains("tls-use-os-certs") && j["tls-use-os-certs"].is_number()) {
         m_mapMqttIntOptions["tls-use-os-certs"] = jj["tls-use-os-certs"].get<int>();
+        spdlog::debug("json mqtt init: tls-use-os-certs set to {}.", m_mapMqttIntOptions["tls-use-os-certs"]);
       }
 
-      if (jj.contains("tls-engine")) {
+      if (jj.contains("tls-engine") && j["tls-engine"].is_string()) {
         m_mapMqttStringOptions["tls-engine"] = jj["tls-engine"].get<std::string>();
+        spdlog::debug("json mqtt init: tls-engine set to {}.", m_mapMqttIntOptions["tls-engine"]);
       }
 
-      if (jj.contains("tls-keyform")) {
+      if (jj.contains("tls-keyform") && j["tls-keyform"].is_string()) {
         m_mapMqttStringOptions["tls-keyform"] = jj["tls-keyform"].get<std::string>();
+        spdlog::debug("json mqtt init: tls-keyform set to {}.", m_mapMqttIntOptions["tls-keyform"]);
       }
 
-      if (jj.contains("tls-kpass-sha1")) {
+      if (jj.contains("tls-kpass-sha1") && j["tls-kpass-sha1"].is_string()) {
         m_mapMqttStringOptions["tls-kpass-sha1"] = jj["tls-kpass-sha1"].get<std::string>();
+        spdlog::debug("json mqtt init: tls-kpass-sha1 set to {}.", m_mapMqttIntOptions["tls-kpass-sha1"]);
       }
 
-      if (jj.contains("tls-alpn")) {
+      if (jj.contains("tls-alpn") && j["tls-alpn"].is_string()) {
         m_mapMqttStringOptions["tls-alpn"] = jj["tls-alpn"].get<std::string>();
+        spdlog::debug("json mqtt init: tls-alpn set to {}.", m_mapMqttIntOptions["tls-alpn"]);
       }
 
-      if (jj.contains("bind-address")) {
+      if (jj.contains("bind-address") && j["bind-address"].is_string()) {
         m_mapMqttStringOptions["bind-address"] = jj["bind-address"].get<std::string>();
+        spdlog::debug("json mqtt init: bind-address set to {}.", m_mapMqttIntOptions["bind-address"]);
       }
 
       // if (jj.contains("ssl-ctx")) {
@@ -796,112 +817,115 @@ vscpClientMqtt::initFromJson(const std::string &config)
     }
     else if (j.contains("mqtt-options")) {
       // Format is invalid
-      spdlog::warn("config: 'mqtt-options' present but not an object.");
+      spdlog::warn("json mqtt init: 'mqtt-options' present but not an object.");
     }
 
     // user
-    if (j.contains("user")) {
+    if (j.contains("user") && j["user"].is_string()) {
       m_username = j["user"].get<std::string>();
+      spdlog::debug("json mqtt init: 'user' set to {}.", m_username);
     }
 
     // password
-    if (j.contains("password")) {
+    if (j.contains("password") && j["password"].is_string()) {
       m_password = j["password"].get<std::string>();
+      spdlog::debug("json mqtt init: 'password' set to {}.", "*******");
     }
 
     // Client ID
-    if (j.contains("clientid")) {
+    if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
+      spdlog::debug("json mqtt init: 'client id' set to {}.", m_clientid);
     }
 
     // Publish format
-    if (j.contains("publish-format")) {
+    if (j.contains("publish-format") && j["publish-format"].is_string()) {
       std::string str = j["publish-format"].get<std::string>();
       vscp_makeLower(str);
       if (std::string::npos != str.find("binary")) {
-        spdlog::debug("config: 'subscribe_format' Set to BINARY.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to BINARY.");
         m_publish_format = binfmt;
       }
       else if (std::string::npos != str.find("string")) {
-        spdlog::debug("config: 'subscribe_format' Set to STRING.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to STRING.");
         m_publish_format = strfmt;
       }
       else if (std::string::npos != str.find("json")) {
-        spdlog::debug("config: 'subscribe_format' Set to JSON.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to JSON.");
         m_publish_format = jsonfmt;
       }
       else if (std::string::npos != str.find("xml")) {
-        spdlog::debug("config: 'subscribe_format' Set to XML.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to XML.");
         m_publish_format = xmlfmt;
       }
       else {
-        spdlog::error("config: 'publish_format' Ivalid value. Set to JSON.");
+        spdlog::error("json mqtt init: 'publish_format' Ivalid value. Set to JSON.");
         m_publish_format = jsonfmt;
       }
     }
 
     // Subscribe format
-    if (j.contains("subscribe-format")) {
+    if (j.contains("subscribe-format") && j["subscribe-format"].is_string()) {
       std::string str = j["subscribe-format"].get<std::string>();
       vscp_makeLower(str);
       if (std::string::npos != str.find("binary")) {
-        spdlog::debug("config: 'subscribe_format' Set to BINARY.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to BINARY.");
         m_subscribe_format = binfmt;
       }
       else if (std::string::npos != str.find("string")) {
-        spdlog::debug("config: 'subscribe_format' Set to STRING.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to STRING.");
         m_subscribe_format = strfmt;
       }
       else if (std::string::npos != str.find("json")) {
-        spdlog::debug("config: 'subscribe_format' Set to JSON.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to JSON.");
         m_subscribe_format = jsonfmt;
       }
       else if (std::string::npos != str.find("xml")) {
-        spdlog::debug("config: 'subscribe_format' Set to XML.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to XML.");
         m_subscribe_format = xmlfmt;
       }
       else if (std::string::npos != str.find("auto")) {
-        spdlog::debug("config: 'subscribe_format' Set to AUTO.");
+        spdlog::debug("json mqtt init: 'subscribe_format' Set to AUTO.");
         m_subscribe_format = autofmt;
       }
       else {
-        spdlog::error("config: 'subscribe_format' Ivalid value. Set to AUTO.");
+        spdlog::error("json mqtt init: 'subscribe_format' Ivalid value. Set to AUTO.");
         m_subscribe_format = autofmt;
       }
     }
 
     // qos
-    if (j.contains("qos")) {
+    if (j.contains("qos") && j["qos"].is_number_unsigned()) {
       m_qos = j["qos"].get<uint8_t>();
       if (m_qos > 2) {
-        spdlog::error("config: 'qos' Ivalid value [{}]. Set to 0.", m_qos);
+        spdlog::error("json mqtt init: 'qos' Ivalid value [{}]. Set to 0.", m_qos);
         m_qos = 0;
       }
-      spdlog::debug("config: 'qos' Set to {}.", m_qos);
+      spdlog::debug("json mqtt init: 'qos' Set to {}.", m_qos);
     }
 
     // Clean Session
-    if (j.contains("bcleansession")) {
+    if (j.contains("bcleansession") && j["bcleansession"].is_boolean()) {
       m_bCleanSession = j["bcleansession"].get<bool>();
-      spdlog::debug("config: 'bcleansession' Set to {}.", m_bCleanSession);
+      spdlog::debug("json mqtt init: 'bcleansession' Set to {}.", m_bCleanSession);
     }
 
     // Retain
-    if (j.contains("bretain")) {
+    if (j.contains("bretain") && j["bretain"].is_boolean()) {
       m_bRetain = j["bretain"].get<bool>();
-      spdlog::debug("config: 'bretain' Set to {}.", m_bRetain);
+      spdlog::debug("json mqtt init: 'bretain' Set to {}.", m_bRetain);
     }
 
     // Keep Alive
-    if (j.contains("keepalive")) {
+    if (j.contains("keepalive") && j["keepalive"].is_number()) {
       m_keepalive = j["keepalive"].get<int>();
-      spdlog::debug("config: 'keepalive' Set to {}.", m_keepalive);
+      spdlog::debug("json mqtt init: 'keepalive' Set to {}.", m_keepalive);
     }
 
     // Enable measurement block
-    if (j.contains("bjsonmeasurementblock")) {
-      m_bJsonMeasurementAdd = j["bjsonmeasurementblock"].get<int>();
-      spdlog::debug("config: 'bjsonmeasurementblock' Set to {}.", m_bJsonMeasurementAdd);
+    if (j.contains("bjsonmeasurementblock") && j["bjsonmeasurementblock"].is_boolean()) {
+      m_bJsonMeasurementAdd = j["bjsonmeasurementblock"].get<bool>();
+      spdlog::debug("json mqtt init: 'bjsonmeasurementblock' Set to {}.", m_bJsonMeasurementAdd);
     }
 
     // Reconnect
@@ -909,19 +933,19 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       json jj = j["reconnect"];
 
-      if (jj.contains("delay")) {
+      if (jj.contains("delay") && j["delay"].is_number()) {
         m_reconnect_delay = jj["delay"].get<int>();
-        spdlog::debug("config: 'reconnect delay' Set to {}.", m_reconnect_delay);
+        spdlog::debug("json mqtt init: 'reconnect delay' Set to {}.", m_reconnect_delay);
       }
 
-      if (jj.contains("delay-max")) {
+      if (jj.contains("delay-max") && j["delay-max"].is_number()) {
         m_reconnect_delay_max = jj["delay-max"].get<int>();
-        spdlog::debug("config: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
+        spdlog::debug("json mqtt init: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
       }
 
-      if (jj.contains("exponential-backoff")) {
+      if (jj.contains("exponential-backoff") && j["exponential-backoff"].is_boolean()) {
         m_reconnect_exponential_backoff = jj["exponential-backoff"].get<bool>();
-        spdlog::debug("config: 'reconnect exponential-backoff' Set to {}.", m_reconnect_exponential_backoff);
+        spdlog::debug("json mqtt init: 'reconnect exponential-backoff' Set to {}.", m_reconnect_exponential_backoff);
       }
     }
 
@@ -930,38 +954,46 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       json jj = j["filter"];
 
-      if (jj.contains("priority-filter")) {
+      if (jj.contains("priority-filter") && j["priority-filter"].is_number_unsigned()) {
         m_filter.filter_priority = jj["priority-filter"].get<uint8_t>();
+        spdlog::debug("json mqtt init: 'priority-filter' set to {}.", m_filter.filter_priority);
       }
 
-      if (jj.contains("priority-mask")) {
+      if (jj.contains("priority-mask") && j["priority-mask"].is_number_unsigned()) {
         m_filter.mask_priority = jj["priority-mask"].get<uint8_t>();
+        spdlog::debug("json mqtt init: 'priority-mask' set to {}.", m_filter.mask_priority);
       }
 
-      if (jj.contains("class-filter")) {
+      if (jj.contains("class-filter") && j["class-filter"].is_number_unsigned()) {
         m_filter.filter_class = jj["class-filter"].get<uint16_t>();
+        spdlog::debug("json mqtt init: 'class-filter' set to {}.", m_filter.filter_class);
       }
 
-      if (jj.contains("class-mask")) {
+      if (jj.contains("class-mask") && j["class-mask"].is_number_unsigned()) {
         m_filter.mask_class = jj["class-mask"].get<uint16_t>();
+        spdlog::debug("json mqtt init: 'class mask' set to {}.", m_filter.mask_class);
       }
 
-      if (jj.contains("type-filter")) {
+      if (jj.contains("type-filter") && j["type-filter"].is_number_unsigned()) {
         m_filter.filter_type = jj["type-filter"].get<uint16_t>();
+        spdlog::debug("json mqtt init: 'type-filter' set to {}.", m_filter.filter_type);
       }
 
-      if (jj.contains("type-mask")) {
+      if (jj.contains("type-mask") && j["type-mask"].is_number_unsigned()) {
         m_filter.mask_type = jj["type-mask"].get<uint16_t>();
+        spdlog::debug("json mqtt init: 'type-mask' set to {}.", m_filter.mask_type);
       }
 
-      if (jj.contains("guid-filter")) {
+      if (jj.contains("guid-filter") && j["guid-filter"].is_string()) {
         std::string str = jj["guid-filter"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
+        spdlog::debug("json mqtt init: 'guid-filter' set to {}.", m_filter.filter_GUID);
       }
 
-      if (jj.contains("guid-mask")) {
+      if (jj.contains("guid-mask") && j["guid-mask"].is_string()) {
         std::string str = jj["guid-mask"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
+        spdlog::debug("json mqtt init: 'guid-mask' set to {}.", m_filter.mask_GUID);
       }
     }
 
@@ -971,78 +1003,80 @@ vscpClientMqtt::initFromJson(const std::string &config)
       json jj = j["tls"];
       m_bTLS  = true;
 
-      if (jj.contains("cafile")) {
+      if (jj.contains("cafile") && j["cafile"].is_string()) {
         m_tls_cafile = jj["cafile"].get<std::string>();
-        spdlog::debug("config: 'tls cafile' Set to {}.", m_tls_cafile);
+        spdlog::debug("json mqtt init: 'tls cafile' Set to {}.", m_tls_cafile);
       }
 
-      if (jj.contains("capath")) {
+      if (jj.contains("capath") && j["capath"].is_string()) {
         m_tls_capath = jj["capath"].get<std::string>();
-        spdlog::debug("config: 'tls capath' Set to {}.", m_tls_capath);
+        spdlog::debug("json mqtt init: 'tls capath' Set to {}.", m_tls_capath);
       }
 
-      if (jj.contains("certfile")) {
+      if (jj.contains("certfile") && j["certfile"].is_string()) {
         m_tls_certfile = jj["certfile"].get<std::string>();
-        spdlog::debug("config: 'tls certfile' Set to {}.", m_tls_certfile);
+        spdlog::debug("json mqtt init: 'tls certfile' Set to {}.", m_tls_certfile);
       }
 
-      if (jj.contains("keyfile")) {
+      if (jj.contains("keyfile") && j["keyfile"].is_string()) {
         m_tls_keyfile = jj["keyfile"].get<std::string>();
-        spdlog::debug("config: 'tls keyfile' Set to {}.", m_tls_keyfile);
+        spdlog::debug("json mqtt init: 'tls keyfile' Set to {}.", m_tls_keyfile);
       }
 
-      if (jj.contains("pwkeyfile")) {
+      if (jj.contains("pwkeyfile") && j["pwkeyfile"].is_string()) {
         m_tls_pwKeyfile = jj["pwkeyfile"].get<std::string>();
-        spdlog::debug("config: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
+        spdlog::debug("json mqtt init: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
       }
 
-      if (jj.contains("no-hostname-checking")) {
+      if (jj.contains("no-hostname-checking") && j["no-hostname-checking"].is_boolean()) {
         m_tls_bNoHostNameCheck = jj["no-hostname-checking"].get<bool>();
-        spdlog::debug("config: 'tls no-hostname-checking' Set to {}.", m_tls_bNoHostNameCheck);
+        spdlog::debug("json mqtt init: 'tls no-hostname-checking' Set to {}.", m_tls_bNoHostNameCheck);
       }
 
-      if (jj.contains("cert-reqs")) {
+      if (jj.contains("cert-reqs") && j["cert-reqs"].is_number()) {
         m_tls_cert_reqs = jj["cert-reqs"].get<int>();
-        spdlog::debug("config: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
+        spdlog::debug("json mqtt init: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
       }
 
-      if (jj.contains("version")) {
+      if (jj.contains("version") && j["version"].is_string()) {
         m_tls_version = jj["version"].get<std::string>();
-        spdlog::debug("config: 'tls version' Set to {}.", m_tls_version);
+        spdlog::debug("json mqtt init: 'tls version' Set to {}.", m_tls_version);
       }
 
-      if (jj.contains("ciphers")) {
+      if (jj.contains("ciphers") && j["ciphers"].is_string()) {
         m_tls_ciphers = jj["ciphers"].get<std::string>();
-        spdlog::debug("config: 'tls ciphers' Set to {}.", m_tls_ciphers);
+        spdlog::debug("json mqtt init: 'tls ciphers' Set to {}.", m_tls_ciphers);
       }
 
-      if (jj.contains("psk")) {
+      if (jj.contains("psk") && j["psk"].is_string()) {
         m_tls_psk = jj["psk"].get<std::string>();
-        spdlog::debug("config: 'tls psk' Set to {}.", m_tls_psk);
+        spdlog::debug("json mqtt init: 'tls psk' Set to {}.", m_tls_psk);
       }
 
-      if (jj.contains("psk-identity")) {
+      if (jj.contains("psk-identity") && j["psk-identity"].is_string()) {
         m_tls_identity = jj["psk-identity"].get<std::string>();
-        spdlog::debug("config: 'tls psk-identity' Set to {}.", m_tls_identity);
+        spdlog::debug("json mqtt init: 'tls psk-identity' Set to {}.", m_tls_identity);
       }
 
       // Both of cafile/capath can not be null
       if (!m_tls_cafile.length() && !m_tls_capath.length()) {
-        spdlog::warn("config: 'TLS'  Both cafile and capath must not be NULL. TLS disabled.");
+        spdlog::warn("json mqtt init: 'TLS'  Both cafile and capath must not be NULL. TLS disabled.");
         m_bTLS = false;
       }
 
       // If certfile == NULL, keyfile must also be NULL and no client certificate will be used.
       if (!m_tls_certfile.length()) {
-        spdlog::warn("config: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client certificate will be "
-                     "used. keyfile set to NULL.");
+        spdlog::warn(
+          "json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client certificate will be "
+          "used. keyfile set to NULL.");
         m_tls_keyfile = "";
       }
 
       // If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate will be used.
       if (!m_tls_keyfile.length()) {
-        spdlog::warn("config: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate "
-                     "will be used. certfile set to NULL.");
+        spdlog::warn(
+          "json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate "
+          "will be used. certfile set to NULL.");
         m_tls_certfile = "";
       }
     }
@@ -1053,24 +1087,24 @@ vscpClientMqtt::initFromJson(const std::string &config)
       json jj = j["will"];
       m_bWill = true;
 
-      if (jj.contains("topic")) {
+      if (jj.contains("topic") && j["topic"].is_string()) {
         m_will_topic = jj["topic"].get<std::string>();
-        spdlog::debug("config: 'will topic' Set to {}.", m_will_topic);
+        spdlog::debug("json mqtt init: 'will topic' Set to {}.", m_will_topic);
       }
 
-      if (jj.contains("qos")) {
+      if (jj.contains("qos") && j["qos"].is_number_unsigned()) {
         m_will_qos = jj["qos"].get<uint8_t>();
-        spdlog::debug("config: 'will qos' Set to {}.", m_will_qos);
+        spdlog::debug("json mqtt init: 'will qos' Set to {}.", m_will_qos);
       }
 
-      if (jj.contains("retain")) {
+      if (jj.contains("retain") && j["retain"].is_boolean()) {
         m_will_bretain = jj["retain"].get<bool>();
-        spdlog::debug("config: 'will retain' Set to {}.", m_will_bretain);
+        spdlog::debug("json mqtt init: 'will retain' Set to {}.", m_will_bretain);
       }
 
-      if (jj.contains("payload")) {
+      if (jj.contains("payload") && j["payload"].is_string()) {
         m_will_payload = jj["payload"].get<std::string>();
-        spdlog::debug("config: 'will payload' Set to {}.", m_will_payload);
+        spdlog::debug("json mqtt init: 'will payload' Set to {}.", m_will_payload);
       }
     }
 
@@ -1090,19 +1124,22 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
           if (subobj.contains("topic") && subobj["topic"].is_string()) {
             topic = subobj["topic"].get<std::string>();
+            spdlog::debug("json mqtt init: 'subscribe topic' Set to {}.", topic);
           }
           else {
-            spdlog::error("config: Missing subscription topic. Will skip it");
+            spdlog::error("json mqtt init: Missing subscription topic. Will skip it");
             continue;
           }
 
           if (subobj.contains("qos") && subobj["qos"].is_number_unsigned()) {
             qos = subobj["qos"].get<uint8_t>();
+            spdlog::debug("json mqtt init: 'subscribe qos' Set to {}.", qos);
           }
 
           // Numerically
           if (subobj.contains("v5-options") && subobj["v5-options"].is_number_integer()) {
             v5_options = subobj["v5-options"].get<int>();
+            spdlog::debug("json mqtt init: 'subscribe c5_options' Set to {}.", v5_options);
           }
           // From token
           else if (subobj.contains("v5-options") && subobj["v5-options"].is_string()) {
@@ -1173,33 +1210,35 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x20;
 #endif
             }
+
+            spdlog::debug("json mqtt init: 'subscribe v5_options' Set to {}.", v5_options);
           }
 
           if (subobj.contains("format") && subobj["format"].is_string()) {
             std::string str = j["subscribe-format"].get<std::string>();
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
-              spdlog::debug("config: 'subscribe obj format' Set to BINARY.");
+              spdlog::debug("json mqtt init: 'subscribe obj format' Set to BINARY.");
               m_subscribe_format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
-              spdlog::debug("config: 'subscribe obj format' Set to STRING.");
+              spdlog::debug("json mqtt init: 'subscribe obj format' Set to STRING.");
               m_subscribe_format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
-              spdlog::debug("config: 'subscribe obj format' Set to JSON.");
+              spdlog::debug("json mqtt init: 'subscribe obj format' Set to JSON.");
               m_subscribe_format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
-              spdlog::debug("config: 'subscribe obj format' Set to XML.");
+              spdlog::debug("json mqtt init: 'subscribe obj format' Set to XML.");
               m_subscribe_format = xmlfmt;
             }
             else if (std::string::npos != str.find("auto")) {
-              spdlog::debug("config: 'subscribe obj format' Set to AUTO.");
+              spdlog::debug("json mqtt init: 'subscribe obj format' Set to AUTO.");
               m_subscribe_format = autofmt;
             }
             else {
-              spdlog::error("config: 'subscribe obj format' Ivalid value. Set to AUTO.");
+              spdlog::error("json mqtt init: 'subscribe obj format' Ivalid value. Set to AUTO.");
               m_subscribe_format = autofmt;
             }
           }
@@ -1212,12 +1251,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     if (j.contains("bescape-pub-topics") && j["bescape-pub-topics"].is_boolean()) {
       m_bEscapesPubTopics = j["bescape-pub-topics"].get<bool>();
+      spdlog::debug("json mqtt init: 'bescape-pub-topics' Set to {}.", m_bEscapesPubTopics);
     }
 
     // User escapes m_mapUserEscapes
     if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
-      for (auto it = j.begin(); it != j.end(); ++it) {
+      for (auto it = j["user-escapes"].begin(); it != j["user-escapes"].end(); ++it) {
         m_mapUserEscapes[it.key()] = it.value();
+        spdlog::debug("json mqtt init: 'user-escapes' Set to {0}={1}.", it.key(), it.value());
       }
     }
 
@@ -1237,41 +1278,44 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
             topic = pubobj["topic"].get<std::string>();
+            spdlog::debug("json mqtt init: publish 'topic' Set to {}.", topic);
           }
           else {
-            spdlog::error("config: Missing publish topic. Will skip it");
+            spdlog::error("json mqtt init: Missing publish topic. Will skip it");
             continue;
           }
 
           if (pubobj.contains("qos") && pubobj["qos"].is_number_unsigned()) {
             qos = pubobj["qos"].get<uint8_t>();
+            spdlog::debug("json mqtt init: publish 'qos' Set to {}.", qos);
           }
 
-          if (pubobj.contains("bretain") && pubobj["bretain"].is_boolean()) {
-            bretain = pubobj["bretain"].get<bool>();
+          if (pubobj.contains("retain") && pubobj["retain"].is_boolean()) {
+            bretain = pubobj["retain"].get<bool>();
+            spdlog::debug("json mqtt init: publish 'bretain' Set to {}.", bretain);
           }
 
           if (pubobj.contains("format") && pubobj["format"].is_string()) {
-            std::string str = j["format"].get<std::string>();
+            std::string str = pubobj["format"].get<std::string>();
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
-              spdlog::debug("config: 'publish obj format' Set to BINARY.");
+              spdlog::debug("json mqtt init: 'publish obj format' Set to BINARY.");
               m_subscribe_format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
-              spdlog::debug("config: 'publish obj format' Set to STRING.");
+              spdlog::debug("json mqtt init: 'publish obj format' Set to STRING.");
               m_subscribe_format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
-              spdlog::debug("config: 'publish obj format' Set to JSON.");
+              spdlog::debug("json mqtt init: 'publish obj format' Set to JSON.");
               m_subscribe_format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
-              spdlog::debug("config: 'publish obj format' Set to XML.");
+              spdlog::debug("json mqtt init: 'publish obj format' Set to XML.");
               m_subscribe_format = xmlfmt;
             }
             else {
-              spdlog::error("config: 'publish obj format' Ivalid value. Set to JSON.");
+              spdlog::error("json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
               m_subscribe_format = jsonfmt;
             }
           }
@@ -1288,12 +1332,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (jj.contains("user-properties") && jj["user-properties"].is_object()) {
         for (auto it = jj.begin(); it != jj.end(); ++it) {
           m_mapMqttProperties[it.key()] = it.value();
+          spdlog::debug("json mqtt init: v5 'user-properties' Set to {0}={1}.", it.key(), it.value());
         }
       }
     }
   }
   catch (...) {
-    spdlog::error("config: JSON parsing error.");
+    spdlog::error("json mqtt init: JSON parsing error.");
     return false;
   }
 
@@ -1779,7 +1824,7 @@ vscpClientMqtt::connect(void)
     return VSCP_ERROR_NOT_CONNECTED;
   }
 
-  mosquitto_threaded_set(m_mosq, true);
+  // mosquitto_threaded_set(m_mosq, true);
 
   // Start the worker loop
   rv = mosquitto_loop_start(m_mosq);
@@ -1925,7 +1970,7 @@ vscpClientMqtt::send(vscpEvent &ev)
             spdlog::get("logger")->error("sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
-      } // is measurement
+      }   // is measurement
 
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
@@ -2107,9 +2152,9 @@ vscpClientMqtt::send(vscpEventEx &ex)
     memset(payload, 0, sizeof(payload));
 
     if (ppublish->getFormat() == jsonfmt) {
-      
+
       std::string strPayload;
-      
+
       if (!vscp_convertEventExToJSON(strPayload, &ex)) {
         return VSCP_ERROR_PARAMETER;
       }
@@ -2149,7 +2194,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
             spdlog::get("logger")->error("sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
-      } // is measurement
+      }   // is measurement
 
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));

@@ -9,7 +9,7 @@
     "vscpkey" : "/etc/vscp/vscp.key",
     "logging" : {
         "file-enable-log": true,
-        "file-log-level" : "info",
+        "file-log-level" : "debug",
         "file-pattern" : "[vscp] [%^%l%$] %v",
         "file-path" : "/var/log/vscp/vscpd.log",
         "file-max-size" : 5242880,
@@ -42,6 +42,9 @@
         "bretain" : false,      
         "keepalive" : 60,
         "bjsonmeasurementblock": true,
+        "topic-daemon-base": "vscp-daemon/{{guid}}/",
+        "topic-interfaces" : "interfaces",
+        "topic-discovery" : "discovery",
         "reconnect" : {
           "delay" : 2,
           "delay-max" : 10,
@@ -61,10 +64,10 @@
             "psk-identity" : ""
         },
         "will": {
-            "topic": "Last Will",
-            "qos": 0,
-            "retain": false,
-            "payload": "This is the end"
+            "topic": "vscp-daemon/{{guid}}/will",
+            "qos": 1,
+            "retain": true,
+            "payload": "VSCP Daemon is down"
         },
         "subscribe": [
             {
@@ -264,7 +267,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -391,7 +394,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : true,
@@ -399,7 +402,7 @@
                 "config" : "can0",
                 "flags" : 0,
                 "translation" : 2,
-                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.1",
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {
@@ -518,7 +521,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -645,7 +648,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             }
         ],
         "level2" : [
@@ -772,7 +775,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -897,7 +900,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1022,7 +1025,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1147,7 +1150,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1272,7 +1275,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1397,7 +1400,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1522,7 +1525,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1647,7 +1650,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             }
         ]
     }
