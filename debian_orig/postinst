@@ -24,7 +24,7 @@ if [ "$1" = configure ]; then
 
     if [ -f /etc/vscp ]; then
         # neither report_crashes nor report_metrics is used by vscpd
-        rm /etc/vscp/vscpd.xml
+        rm /etc/vscp/vscpd.json
     fi
 fi
 

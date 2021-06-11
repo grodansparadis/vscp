@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,24 +28,72 @@
 
 #include "vscp.h"    
 
+#include <json.hpp> // nlohmann
+
 #include <deque>
 #include <list>
 #include <string>
 
+// for convenience
+using json = nlohmann::json;
+
+// Callback to application if used. None, one or both can be used.
+// The second argument is a pointer tha application can set and use
+// as it wants.
+
 #ifdef WIN32
-typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent &ev );
-typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx &ex );
+typedef void ( __stdcall * LPFNDLL_EV_CALLBACK) ( vscpEvent *pev, void *pobj );     // Event callback
+typedef void ( __stdcall * LPFNDLL_EX_CALLBACK) ( vscpEventEx *pex, void *pobj );   // Event ex callbac
 #else
-typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev );     // Event callback
-typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex );   // Event ex callback
+typedef void ( *LPFNDLL_EV_CALLBACK ) ( vscpEvent *pev, void *pobj );     // Event callback
+typedef void ( *LPFNDLL_EX_CALLBACK ) ( vscpEventEx *pex, void *pobj );   // Event ex callback
 #endif
 
 class CVscpClient
 {
 
 public:
+
     CVscpClient();
     ~CVscpClient();
+
+/*!
+    vscp-client class types
+    =======================
+    - NONE - Undefined
+    - LOCAL - No connection, can handle files, logs etc 
+    - TCPIP - VSCP tcp/ip link protocol.
+    - CANAL - The CANAL protocol. This is the same as a VSCP level I driver.
+    - SOCKETCAN - VSCP events sent ovr socketcan.
+    - WS1 - VSCP websocket ws1 protocol.
+    - WS2 - VSCP websocket ws2 protocol.
+    - MQTT - VSCP over MQTT.
+    - UDP - VSCP over UDP.
+    - MULTICAST - VSCP multicast protocol.
+    - REST - VSCP REST interface.
+    - RS232 - VSCP over serial link.
+    - RS485 - VSCP over multidrop serial link.
+    - RAWCAN - Handle standard CAN and CANFD.
+    - RAWMQTT - Handle standard MQTT. 
+*/
+
+    enum class connType {
+        NONE=0, 
+        LOCAL, 
+        TCPIP, 
+        CANAL, 
+        SOCKETCAN, 
+        WS1, 
+        WS2, 
+        MQTT, 
+        UDP, 
+        MULTICAST, 
+        REST, 
+        RS232, 
+        RS485, 
+        RAWCAN, 
+        RAWMQTT
+    };
 
     /*!
         Connect to remote host
@@ -139,15 +187,19 @@ public:
 
     /*!
         Set (and enable) receive callback for events
+        @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+        @param pData User defined data to pass in callback call
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-   virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback);
+    virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData=nullptr);
 
     /*!
         Set (and enable) receive callback ex events
+        @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+        @param pData User defined data to pass in callback call
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
-    virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
+    virtual int setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData=nullptr);
 
     /*!
         Getter/setters for connection timeout
@@ -167,15 +219,46 @@ public:
         Check if ev callback is defined
         @return true if callback is defined
     */
-    bool isEvCallback(void) {return (nullptr != m_evcallback); };
+    bool isEvCallback(void) {return (nullptr != m_evcallback); }
 
     /*!
         Check if ex callback is defined
         @return true if callback is defined
     */
-    bool isExCallback(void) {return (nullptr != m_excallback); };
+    bool isExCallback(void) {return (nullptr != m_excallback); }
 
-public:
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string getConfigAsJson(void) = 0;
+
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool initFromJson(const std::string& config) = 0;
+
+    // ------------------------------------------------------------------------
+    
+    /*!
+        Get connection type
+        @return Type for the connection
+    */
+    connType getType(void);
+
+    /*!
+        Set name for communication object
+    */
+    virtual void setName(const std::string& name) { m_name = name; };
+
+    /*!
+        Get name for communication object
+    */
+    virtual std::string getName(void) { return m_name; };
+
+ public:
 
     /*!
         Callback for events
@@ -186,6 +269,18 @@ public:
         Callback for ex events
     */
     LPFNDLL_EX_CALLBACK m_excallback;
+
+    /*!
+        This data pointer is set by the callback
+        setter and is sent with the callback call
+    */
+   void *m_callbackObject;
+
+    // Type of connection object
+    connType m_type = CVscpClient::connType::NONE;
+
+    // Name for connection object 
+    std::string m_name;
 };
 
 #endif

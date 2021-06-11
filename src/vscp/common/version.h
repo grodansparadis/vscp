@@ -2,8 +2,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,20 @@
 */
 // I M P O T A N T ! ! ! Lines below must be located at line
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     14
+#define VSCPD_MAJOR_VERSION     15
 #define VSCPD_MINOR_VERSION     0
-#define VSCPD_RELEASE_VERSION   5
-#define VSCPD_BUILD_VERSION     4   
+#define VSCPD_RELEASE_VERSION   0
+#define VSCPD_BUILD_VERSION     1   
 
-#define VSCPD_DISPLAY_VERSION   "14.0.5-4 Silicon"
+#define VSCPD_DISPLAY_VERSION   "15.0.0-1 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                        \
-    "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, "                \
-    "https://www.grodansparadis.com"
+    "Copyright © 2000-2021 Ake Hedman, the VSCP project, "                   \
+    "https://www.vscp.org"
 #define VSCPD_COPYRIGHT_HTML                                                   \
-    "Copyright Ⓒ 2000-2020 Ake Hedman, <a "                                 \
-    "href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a "      \
-    "href=\"https://www.grodansparadis.com\">https://"                        \
+    "Copyright Ⓒ 2000-2021 Ake Hedman, <a "                                   \
+    "href=\"mailto:info@vscp.org\">the VSCP project</a>, <a "      \
+    "href=\"https://www.vscp.org\">https://"                         \
     "www.grodansparadis.com</a>"
 
 #define VSCP_VERSION(major, minor, release)                                    \

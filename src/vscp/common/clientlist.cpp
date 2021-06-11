@@ -7,8 +7,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright © 2000-2020 Ake Hedman,
-// Grodans Paradis AB, <akhe@vscp.org>
+// Copyright © 2000-2021 Ake Hedman,
+// the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,8 +30,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <syslog.h>
+#ifdef WIN32
+#else
 #include <unistd.h>
+#endif
 
 #include <canal_macro.h>
 #include <vscp.h>
@@ -40,7 +42,26 @@
 
 #include "clientlist.h"
 
-const char* interface_description[] = { "Unknown (you should not see this).",
+#include <json.hpp> // Needs C++11  -std=c++11
+#include <mustache.hpp>
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
+using namespace kainjow::mustache;
+
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <map>
+#include <string>
+
+const char *interface_description[] = { "Unknown (you should not see this).",
                                         "Internal VSCP server client.",
                                         "Level I (CANAL) Driver.",
                                         "Level II Driver.",
@@ -64,44 +85,45 @@ const char* interface_description[] = { "Unknown (you should not see this).",
 
 CClientItem::CClientItem()
 {
-    m_bOpen                 = false; // Initially Not Open
-    m_flags                 = 0;     // No flags
-    m_status.channel_status = 0;
-    m_clientID              = 0;
-    m_type                  = CLIENT_ITEM_INTERFACE_TYPE_NONE;
-    m_bUDPReceiveChannel    = false;
+  m_bOpen                      = false; // Initially Not Open
+  m_flags                      = 0;     // No flags
+  m_status.channel_status      = 0;
+  m_clientID                   = 0;
+  m_type                       = CLIENT_ITEM_INTERFACE_TYPE_NONE;
+  m_bUDPReceiveChannel         = false;
+  m_maxItemsInClientInputQueue = 0;
 
-    m_dtutc = vscpdatetime::UTCNow();
+  m_dtutc = vscpdatetime::UTCNow();
 
-    sem_init(&m_semClientInputQueue, 0, 0);
-    sem_init(&m_hEventSend, 0, 0);
-    pthread_mutex_init(&m_mutexClientInputQueue, NULL);
+  sem_init(&m_semClientInputQueue, 0, 0);
+  sem_init(&m_hEventSend, 0, 0);
+  pthread_mutex_init(&m_mutexClientInputQueue, NULL);
 
-    // Nill GUID
-    m_guid.clear();
+  // Nill GUID
+  m_guid.clear();
 
-    // Nill Level II mask (accept all)
-    vscp_clearVSCPFilter(&m_filter);
+  // Nill Level II mask (accept all)
+  vscp_clearVSCPFilter(&m_filter);
 
-    m_statistics.cntReceiveFrames  = 0; // # of receive frames
-    m_statistics.cntTransmitFrames = 0; // # of transmitted frames
-    m_statistics.cntReceiveData    = 0; // # of received data bytes
-    m_statistics.cntTransmitData   = 0; // # of transmitted data bytes
-    m_statistics.cntOverruns       = 0; // # of overruns
-    m_statistics.cntBusWarnings    = 0; // # of bus warnings
-    m_statistics.cntBusOff         = 0; // # of bus off's
+  m_statistics.cntReceiveFrames  = 0; // # of receive frames
+  m_statistics.cntTransmitFrames = 0; // # of transmitted frames
+  m_statistics.cntReceiveData    = 0; // # of received data bytes
+  m_statistics.cntTransmitData   = 0; // # of transmitted data bytes
+  m_statistics.cntOverruns       = 0; // # of overruns
+  m_statistics.cntBusWarnings    = 0; // # of bus warnings
+  m_statistics.cntBusOff         = 0; // # of bus off's
 
-    m_status.channel_status   = 0;
-    m_status.lasterrorcode    = 0;
-    m_status.lasterrorsubcode = 0;
-    memset(m_status.lasterrorstr, 0, sizeof(m_status.lasterrorstr));
+  m_status.channel_status   = 0;
+  m_status.lasterrorcode    = 0;
+  m_status.lasterrorsubcode = 0;
+  memset(m_status.lasterrorstr, 0, sizeof(m_status.lasterrorstr));
 
-    ///////////////////////////////////////////////////////////////////////////
-    //                 Working variable storage for clients
-    //////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  //                 Working variable storage for clients
+  //////////////////////////////////////////////////////////////////////////
 
-    bAuthenticated = false;
-    m_pUserItem    = NULL;
+  bAuthenticated = false;
+  m_pUserItem    = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -110,17 +132,16 @@ CClientItem::CClientItem()
 
 CClientItem::~CClientItem()
 {
-    std::deque<vscpEvent*>::iterator iter;
-    for (iter = m_clientInputQueue.begin(); iter != m_clientInputQueue.end();
-         ++iter) {
-        vscpEvent* pEvent = *iter;
-        vscp_deleteEvent_v2(&pEvent);
-    }
-    m_clientInputQueue.clear();
+  std::deque<vscpEvent *>::iterator iter;
+  for (iter = m_clientInputQueue.begin(); iter != m_clientInputQueue.end(); ++iter) {
+    vscpEvent *pEvent = *iter;
+    vscp_deleteEvent_v2(&pEvent);
+  }
+  m_clientInputQueue.clear();
 
-    sem_destroy(&m_hEventSend);
-    sem_destroy(&m_semClientInputQueue);
-    pthread_mutex_destroy(&m_mutexClientInputQueue);
+  sem_destroy(&m_hEventSend);
+  sem_destroy(&m_semClientInputQueue);
+  pthread_mutex_destroy(&m_mutexClientInputQueue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,25 +149,24 @@ CClientItem::~CClientItem()
 //
 
 bool
-CClientItem::CommandStartsWith(const std::string& cmd, bool bFix)
+CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
 {
-    if (!vscp_startsWith(vscp_upper(m_currentCommand), vscp_upper(cmd))) {
-        return false;
-    }
+  if (!vscp_startsWith(vscp_upper(m_currentCommand), vscp_upper(cmd))) {
+    return false;
+  }
 
-    // If asked to do so remove the command.
-    if (bFix) {
-        if (m_currentCommand.length() - cmd.length()) {
-            m_currentCommand =
-              vscp_str_right(m_currentCommand,
-                             m_currentCommand.length() - cmd.length() - 1);
-        } else {
-            m_currentCommand.clear();
-        }
-        vscp_trim(m_currentCommand);
+  // If asked to do so remove the command.
+  if (bFix) {
+    if (m_currentCommand.length() - cmd.length()) {
+      m_currentCommand = vscp_str_right(m_currentCommand, m_currentCommand.length() - cmd.length() - 1);
     }
+    else {
+      m_currentCommand.clear();
+    }
+    vscp_trim(m_currentCommand);
+  }
 
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,12 +174,12 @@ CClientItem::CommandStartsWith(const std::string& cmd, bool bFix)
 //
 
 void
-CClientItem::setDeviceName(const std::string& name)
+CClientItem::setDeviceName(const std::string &name)
 {
-    m_strDeviceName = name;
-    m_strDeviceName += "|Started at ";
+  m_strDeviceName = name;
+  m_strDeviceName += "|Started at ";
 
-    m_strDeviceName += vscpdatetime::Now().getISODateTime();
+  m_strDeviceName += vscpdatetime::Now().getISODateTime();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,21 +190,21 @@ CClientItem::setDeviceName(const std::string& name)
 std::string
 CClientItem::getAsString(void)
 {
-    std::string str;
+  std::string str;
 
-    str = vscp_str_format("%ud,", m_clientID);
-    str += vscp_str_format("%d,", m_type);
-    str += m_guid.toString();
-    str += ",";
-    str += m_strDeviceName;
-    str += ",";
-    str += m_dtutc.getISODateTime();
-    str += ",";
-    str += m_bOpen ? "true" : "false";
-    str += ",";
-    str += vscp_str_format("%ul", m_flags);
+  str = vscp_str_format("%ud,", m_clientID);
+  str += vscp_str_format("%d,", m_type);
+  str += m_guid.toString();
+  str += ",";
+  str += m_strDeviceName;
+  str += ",";
+  str += m_dtutc.getISODateTime();
+  str += ",";
+  str += m_bOpen ? "true" : "false";
+  str += ",";
+  str += vscp_str_format("%ul", m_flags);
 
-    return str;
+  return str;
 }
 
 // ----------------------------------------------------------------------------
@@ -198,7 +218,7 @@ CClientItem::getAsString(void)
 bool
 compareClientItems(const uint16_t element1, const uint16_t element2)
 {
-    return (element1 < element2);
+  return (element1 < element2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -211,7 +231,7 @@ compareClientItems(const uint16_t element1, const uint16_t element2)
 
 CClientList::CClientList()
 {
-    pthread_mutex_init(&m_mutexItemList, NULL);
+  pthread_mutex_init(&m_mutexItemList, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,8 +240,8 @@ CClientList::CClientList()
 
 CClientList::~CClientList()
 {
-    removeAllClients();
-    pthread_mutex_destroy(&m_mutexItemList);
+  removeAllClients();
+  pthread_mutex_destroy(&m_mutexItemList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,39 +249,40 @@ CClientList::~CClientList()
 //
 
 bool
-CClientList::findFreeId(uint16_t* pid)
+CClientList::findFreeId(uint16_t *pid)
 {
-    std::list<uint16_t> sorterIdList;
-    std::deque<CClientItem*>::iterator it;
+  std::list<uint16_t> sorterIdList;
+  std::deque<CClientItem *>::iterator it;
 
-    // Check pointer
-    if (NULL == pid)
-        return false;
+  // Check pointer
+  if (NULL == pid) {
+    return false;
+  }
 
-    // Find next free id
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-        CClientItem* pItem = *it;
-        sorterIdList.push_back(pItem->m_clientID);
+  // Find next free id
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+    CClientItem *pItem = *it;
+    sorterIdList.push_back(pItem->m_clientID);
+  }
+
+  // Sort list on client id
+  sorterIdList.sort(compareClientItems);
+
+  std::list<uint16_t>::iterator it_id;
+  for (it_id = sorterIdList.begin(); it_id != sorterIdList.end(); ++it_id) {
+    // As the list is sorted on id we have found an
+    // unused id if the id is higher than the counter
+    if (*pid < *it_id) {
+      break;
     }
 
-    // Sort list on client id
-    sorterIdList.sort(compareClientItems);
-
-    std::list<uint16_t>::iterator it_id;
-    for (it_id = sorterIdList.begin(); it_id != sorterIdList.end(); ++it_id) {
-        // As the list is sorted on id we have found an
-        // unused id if the id is higher than the counter
-        if (*pid < *it_id) {
-            break;
-        }
-
-        (*pid)++;
-        if (0 == *pid) {
-            return false; // All client id's are in use
-        }
+    (*pid)++;
+    if (0 == *pid) {
+      return false; // All client id's are in use
     }
+  }
 
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -269,37 +290,37 @@ CClientList::findFreeId(uint16_t* pid)
 //
 
 bool
-CClientList::addClient(CClientItem* pClientItem, uint32_t id)
+CClientList::addClient(CClientItem *pClientItem, uint32_t id)
 {
-    // Check pointer
-    if (NULL == pClientItem) {
-        return false;
+  // Check pointer
+  if (NULL == pClientItem) {
+    return false;
+  }
+
+  pClientItem->m_clientID = id ? id : 1;
+
+  if (0 == id) {
+    if (!findFreeId(&pClientItem->m_clientID)) {
+      return false;
     }
+  }
 
-    pClientItem->m_clientID = id ? id : 1;
+  // We try to assign requested id
+  std::deque<CClientItem *>::iterator it;
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-    if (0 == id) {
-        if (!findFreeId(&pClientItem->m_clientID)) {
-            return false;
-        }
+    CClientItem *pItem = *it;
+
+    // If id is already in use fail
+    if (pClientItem->m_clientID == pItem->m_clientID) {
+      return false;
     }
+  }
 
-    // We try to assign requested id
-    std::deque<CClientItem*>::iterator it;
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+  // Append to list
+  m_itemList.push_back(pClientItem);
 
-        CClientItem* pItem = *it;
-
-        // If id is already in use fail
-        if (pClientItem->m_clientID == pItem->m_clientID) {
-            return false;
-        }
-    }
-
-    // Append to list
-    m_itemList.push_back(pClientItem);
-
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,24 +328,24 @@ CClientList::addClient(CClientItem* pClientItem, uint32_t id)
 //
 
 bool
-CClientList::addClient(CClientItem* pClientItem, cguid& guid)
+CClientList::addClient(CClientItem *pClientItem, cguid &guid)
 {
-    // Check pointer
-    if (NULL == pClientItem) {
-        return false;
-    }
+  // Check pointer
+  if (NULL == pClientItem) {
+    return false;
+  }
 
-    if ( !addClient(pClientItem) ) {
-        return false;
-    }
+  if (!addClient(pClientItem)) {
+    return false;
+  }
 
-    // Set the guid
-    pClientItem->m_guid = guid;
+  // Set the guid
+  pClientItem->m_guid = guid;
 
-    // Make sure nickname id is zero
-    pClientItem->m_guid.setNicknameID(0);
+  // Make sure nickname id is zero
+  pClientItem->m_guid.setNicknameID(0);
 
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -332,111 +353,110 @@ CClientList::addClient(CClientItem* pClientItem, cguid& guid)
 //
 
 bool
-CClientList::removeClient(CClientItem* pClientItem)
+CClientList::removeClient(CClientItem *pClientItem)
 {
-    // Must be a valid pointer
-    if (NULL == pClientItem) {
-        syslog(LOG_ERR,"removeClient in clientlist but clinet obj is NULL");
-        return false;
-    }
-     
-    std::deque<vscpEvent*>::iterator iter;
-    for (iter = pClientItem->m_clientInputQueue.begin();
-         iter != pClientItem->m_clientInputQueue.end();
-         ++iter) {
-            
-        vscpEvent* pEvent = *iter;
-        vscp_deleteEvent_v2(&pEvent);
-    }
-    pClientItem->m_clientInputQueue.clear();
-
-    // Take away the node
-    for (std::deque<CClientItem*>::iterator it = m_itemList.begin();
-         it != m_itemList.end();
-         ++it) {
-        if (*it == pClientItem) {
-            m_itemList.erase(it);
-            delete pClientItem;
-            return true;
-        }
-    }
-
+  // Must be a valid pointer
+  if (NULL == pClientItem) {
+    spdlog::get("logger")->error("removeClient in clientlist but clinet obj is NULL");
     return false;
+  }
+
+  std::deque<vscpEvent *>::iterator iter;
+  for (iter = pClientItem->m_clientInputQueue.begin(); iter != pClientItem->m_clientInputQueue.end(); ++iter) {
+
+    vscpEvent *pEvent = *iter;
+    vscp_deleteEvent_v2(&pEvent);
+  }
+  pClientItem->m_clientInputQueue.clear();
+
+  // Take away the node
+  for (std::deque<CClientItem *>::iterator it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+    if (*it == pClientItem) {
+      m_itemList.erase(it);
+      delete pClientItem;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool
-CClientList::removeAllClients()  
+CClientList::removeAllClients()
 {
-    pthread_mutex_lock(&m_mutexItemList);
-    // Empty the client list
-    std::deque<CClientItem*>::iterator it;
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-        removeClient(*it);
-        delete *it;
-    }
-    m_itemList.clear();
-    pthread_mutex_unlock(&m_mutexItemList);
+  pthread_mutex_lock(&m_mutexItemList);
+  // Empty the client list
+  std::deque<CClientItem *>::iterator it;
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+    removeClient(*it);
+    delete *it;
+  }
+  m_itemList.clear();
+  pthread_mutex_unlock(&m_mutexItemList);
 
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getClientFromId
 //
 
-CClientItem*
+CClientItem *
 CClientList::getClientFromId(uint16_t id)
 {
-    std::deque<CClientItem*>::iterator it;
-    CClientItem* returnItem = NULL;
+  std::deque<CClientItem *>::iterator it;
+  CClientItem *returnItem = NULL;
 
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem* pItem = *it;
-        if (pItem->m_clientID == id) {
-            returnItem = pItem;
-            break;
-        }
+    CClientItem *pItem = *it;
+    if (pItem->m_clientID == id) {
+      returnItem = pItem;
+      break;
     }
+  }
 
-    return returnItem;
+  return returnItem;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getClientFromOrdinal
 //
 
-CClientItem*
+CClientItem *
 CClientList::getClientFromOrdinal(uint16_t ordinal)
 {
-    if (!m_itemList.size())
-        return NULL;
-    if (ordinal > (m_itemList.size() - 1))
-        return NULL;
+  if (!m_itemList.size()) {
+    return NULL;
+  }
 
-    return m_itemList[ordinal];
+  if (ordinal > (m_itemList.size() - 1)) {
+    return NULL;
+  }
+
+  return m_itemList[ordinal];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getClientFromGUID
 //
 
-CClientItem*
-CClientList::getClientFromGUID(cguid& guid)
+CClientItem *
+CClientList::getClientFromGUID(cguid &guid)
 {
-    std::deque<CClientItem*>::iterator it;
-    CClientItem* returnItem = NULL;
+  std::deque<CClientItem *>::iterator it;
+  CClientItem *returnItem = NULL;
 
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem* pItem = *it;
-        if (pItem->m_guid == guid) {
-            returnItem = pItem;
-            break;
-        }
+    CClientItem *pItem = *it;
+    if (pItem->m_guid == guid) {
+      returnItem = pItem;
+      break;
     }
+  }
 
-    return returnItem;
+  return returnItem;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -446,21 +466,20 @@ CClientList::getClientFromGUID(cguid& guid)
 std::string
 CClientList::getAllClientsAsString(void)
 {
-    std::string str;
+  std::string str;
 
-    pthread_mutex_lock(&m_mutexItemList);
+  pthread_mutex_lock(&m_mutexItemList);
 
-    std::deque<CClientItem*>::iterator it;
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+  std::deque<CClientItem *>::iterator it;
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+    CClientItem *pItem = *it;
+    str += pItem->getAsString();
+    str += "\r\n";
+  }
 
-        CClientItem* pItem = *it;
-        str += pItem->getAsString();
-        str += "\r\n";
-    }
+  pthread_mutex_unlock(&m_mutexItemList);
 
-    pthread_mutex_unlock(&m_mutexItemList);
-
-    return str;
+  return str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -468,17 +487,107 @@ CClientList::getAllClientsAsString(void)
 //
 
 bool
-CClientList::getClient(uint16_t n, std::string& client)
+CClientList::getClient(uint16_t n, std::string &client)
 {
-    if (!m_itemList.size())
-        return false;
-    if (n > (m_itemList.size() - 1))
-        return false;
+  if (!m_itemList.size()) {
+    return false;
+  }
 
-    CClientItem* pClient = m_itemList[n];
-    if (NULL == pClient)
-        return false;
-    client = pClient->getAsString();
+  if (n > (m_itemList.size() - 1)) {
+    return false;
+  }
 
-    return true;
+  CClientItem *pClient = m_itemList[n];
+  if (NULL == pClient) {
+    return false;
+  }
+
+  client = pClient->getAsString();
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendEventToClient
+//
+
+bool
+CClientList::sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent)
+{
+  // Must be valid pointers
+  if (NULL == pClientItem) {
+    spdlog::get("logger")->error("sendEventToClient - Pointer to clientitem is null");
+    return false;
+  }
+
+  if (NULL == pEvent) {
+    spdlog::get("logger")->error("sendEventToClient - Pointer to event is null");
+    return false;
+  }
+
+  // Check if filtered out - if so do nothing here
+  if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) {
+    spdlog::get("logger")->debug("sendEventToClient - Filtered out");
+    return false;
+  }
+
+  // If the client queue is full for this client then the
+  // client will not receive the message
+  // (max set to zero means any number of events can be collected)
+  if (pClientItem->m_maxItemsInClientInputQueue &&
+      (pClientItem->m_clientInputQueue.size() > pClientItem->m_maxItemsInClientInputQueue)) {
+    spdlog::get("logger")->info("sendEventToClient - overrun");
+    // Overrun
+    pClientItem->m_statistics.cntOverruns++;
+    return false;
+  }
+
+  // Create a new event
+  vscpEvent *pnewvscpEvent = new vscpEvent;
+  if (NULL != pnewvscpEvent) {
+
+    // Copy in the new event
+    if (!vscp_copyEvent(pnewvscpEvent, pEvent)) {
+      vscp_deleteEvent_v2(&pnewvscpEvent);
+      spdlog::get("logger")->error("sendEventToClient - Failed to copy event");
+      return false;
+    }
+
+    // Add the new event to the input queue
+    pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
+    pClientItem->m_clientInputQueue.push_back(pnewvscpEvent);
+    pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
+    sem_post(&pClientItem->m_semClientInputQueue);
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendEventAllClients
+//
+
+bool
+CClientList::sendEventAllClients(const vscpEvent *pEvent, uint32_t excludeID)
+{
+  CClientItem *pClientItem;
+  std::deque<CClientItem *>::iterator it;
+
+  if (NULL == pEvent) {
+    spdlog::get("logger")->error("sendEventAllClients - null event");
+    return false;
+  }
+
+  pthread_mutex_lock(&m_mutexItemList);
+  for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+    pClientItem = *it;
+
+    if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
+      spdlog::get("logger")->debug("Send event to client [{}]", pClientItem->m_strDeviceName);
+      if (!sendEventToClient(pClientItem, pEvent)) {}
+    }
+  }
+  pthread_mutex_unlock(&m_mutexItemList);
+
+  return true;
 }

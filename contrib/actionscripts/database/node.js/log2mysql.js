@@ -1,7 +1,7 @@
 //
 // log2mysql.js
 // =============
-// Copyright (C) 2014 Grodans Paradis AB
+// Copyright (C) 2014 the VSCP project
 // 
 // This script log temperature to a remote mysql database
 // http://www.thegeekstuff.com/2014/01/mysql-nodejs-intro/

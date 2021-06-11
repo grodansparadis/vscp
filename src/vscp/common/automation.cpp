@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -192,9 +192,9 @@ bool CAutomation::doWork( vscpEventEx *pEventEx )
         // IMPORTANT - GUID must be set by caller before event is sent
 
         memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
-        memcpy( pEventEx->data,
-                    gpobj->m_strServerName.c_str(),
-                    strlen( gpobj->m_strServerName.c_str() ) );
+        // memcpy( pEventEx->data,
+        //             gpobj->m_strServerName.c_str(),
+        //             strlen( gpobj->m_strServerName.c_str() ) );
         return true;
     }
 
@@ -268,9 +268,9 @@ bool CAutomation::doWork( vscpEventEx *pEventEx )
         }
 
         // Server name
-        memcpy( pEventEx->data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
-                    (const char *)m_pCtrlObj->m_strServerName.c_str(),
-                    std::min( 64, (int)m_pCtrlObj->m_strServerName.length() ) );
+        // memcpy( pEventEx->data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
+        //             (const char *)m_pCtrlObj->m_strServerName.c_str(),
+        //             std::min( 64, (int)m_pCtrlObj->m_strServerName.length() ) );
 
         // Capabilities array
         m_pCtrlObj->getVscpCapabilities( pEventEx->data );

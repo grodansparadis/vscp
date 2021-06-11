@@ -1,5 +1,6 @@
 # Document History
 
+*  **2020-12-05 AKHE** - Removed obsolete parts
 *  **2020-10-27 AKHE** - libmosquitto-dev now required for build.
 *  **2020-10-27 AKHE** - Formatted Level II API docs.
 *  **2020-10-26 AKHE** - Added section about how to enable Google test

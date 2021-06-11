@@ -23,7 +23,7 @@ See the table below for a description. Variables fetched from the daemon is used
  | _filter       | string | Standard VSCP filter in string from. *1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00* as *priority,class,type,GUID*                                                                           | 
  | _mask         | string | Standard VSCP mask in string form. *1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00* as *priority,class,type,GUID*                                                                             | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **log1** and the full variable name for the **_path** variable will therefore be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **log1** and the full variable name for the **_path** variable will therefore be
 
     log1_path 
 
@@ -31,7 +31,7 @@ If you have another diver and name it  **log2** it will therefore instead reques
 
 If your driver name contains spaces, for example "name of driver" it will get a prefix that is "name_of_driver". Leading and trailing spaces will be removed.
 
-##### Example of vscpd.conf entry for the logger driver.
+##### Example of vscpd.json entry for the logger driver.
 
 ```xml
 <driver enable="true" >

@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   (C) 2007-2020
-// Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright:   © 2007-2021
+// Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -96,6 +96,12 @@ public:
     virtual int getcount(uint16_t *pcount);
 
     /*!
+        Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    */
+    virtual int clear(void);
+
+    /*!
         Get version from interface
         @param pmajor Pointer to uint8_t that get major version of interface.
         @param pminor Pointer to uint8_t that get minor version of interface.
@@ -121,7 +127,33 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+    /*!
+        Return a JSON representation of connection
+        @return JSON representation as string
+    */
+    virtual std::string getConfigAsJson(void);
 
+    /*!
+        Set member variables from JSON representation of connection
+        @param config JSON representation as string
+        @return True on success, false on failure.
+    */
+    virtual bool initFromJson(const std::string& config);
+
+    /*!
+        Getter/setters for connection timeout
+        Time is in milliseconds
+    */
+    virtual void setConnectionTimeout(uint32_t timeout);
+    virtual uint32_t getConnectionTimeout(void);
+
+    /*!
+        Getter/setters for response timeout
+        Time is in milliseconds
+    */
+    virtual void setResponseTimeout(uint32_t timeout);
+    virtual uint32_t getResponseTimeout(void);
+    
 private:
 
 };

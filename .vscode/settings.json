@@ -70,16 +70,51 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "any": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp",
+        "codecvt": "cpp"
     },
     "cSpell.words": [
-        "Grodans",
-        "Hedman",
+        "Grodans Paradis",
         "MQTT",
-        "Paradis",
         "VSCP",
-        "akhe"
+        "b",
+        "bretain",
+        "callback",
+        "config",
+        "debug",
+        "m",
+        "mosq",
+        "mosquitto",
+        "mqtt",
+        "on",
+        "retain",
+        "set",
+        "spdlog",
+        "subscribe",
+        "to",
+        "unsubscribe",
+        "Åke Hedman"
     ],
     "editor.dragAndDrop": false,
-    "diffEditor.codeLens": true
+    "editor.codeLens": true,
+    "diffEditor.codeLens": true,
+    "cmake.configureSettings": {
+        "VCPKG_TARGET_TRIPLET" : "x64-windows",
+        "CMAKE_BUILD_TYPE" : "${buildType}",
+        "CMAKE_TOOLCHAIN_FILE" : "E:/development/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    "cmake.generator": "Visual Studio 16 2019",
+    "cSpell.language": "sv,en",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true
+    },
+    "editor.tabSize": 2,
+    "markdown-table-formatter.globalColumnSizes": "Same Table Size"
 }

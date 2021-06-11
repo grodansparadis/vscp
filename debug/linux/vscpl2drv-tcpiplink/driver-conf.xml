@@ -1,0 +1,13 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+    <!-- Version 0.0.1    2020-12-04   -->
+    <config debug="true"
+            write="true" 
+            remote-host="192.168.1.7" 
+            remote-port="9598" 
+            remote-user="admin"
+            remote-password="secret" 
+            response-timeout="0"
+            rxfilter=""
+            rxmask=""
+            txfilter=""
+            txmask=""  />

@@ -3,10 +3,10 @@
   send 0,30,5,,,0,-,15,14,13,12,11,10,9,8,7,6,5,4,3,2,0,0,1,35
   Code from: https://github.com/websockets/ws
 
-  Copyright 2020 Ake Hedman, Grodans Paradis AB - MIT license
+  Copyright 2020 Ake Hedman, the VSCP project - MIT license
 */
 
-const WebSocket = require('ws');
+WebSocket = require('ws');
 
 const ws = new WebSocket('ws://localhost:8884/ws2', {
   perMessageDeflate: false

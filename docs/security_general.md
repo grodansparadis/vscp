@@ -4,7 +4,7 @@ Security is very important in VSCP and so also of course in the VSCP daemon. Sti
 
 ## Encryption key
 
-For encryption a 256-bit key is used. This key can be stored in the *vscpd.conf* file as 32 byte hex string (`<general>` section `<security>`) in which case the *vscpd.conf* file must be protected from read from other uses. The second alternative is to give it as a key when the VSCP server starts up. Use the **-k** switch for that as
+For encryption a 256-bit key is used. This key can be stored in the *vscpd.json* file as 32 byte hex string (`<general>` section `<security>`) in which case the *vscpd.json* file must be protected from read from other uses. The second alternative is to give it as a key when the VSCP server starts up. Use the **-k** switch for that as
 
     vscpd -kA4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E 
     

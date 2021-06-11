@@ -45,7 +45,7 @@ override_dh_auto_install:
 	install -d debian/vscpd/etc/vscp/certs/
 	install -m 644 debian/README-certs debian/vscpd/etc/vscp/certs/README
 	install -m 644 install_files/vscp.key debian/vscpd/etc/vscp/certs/vscp.key
-	install -m 644 install_files/unix/vscpd.conf debian/vscpd/etc/vscp/vscpd.conf
+	install -m 644 install_files/unix/vscpd.json debian/vscpd/etc/vscp/vscpd.json
 	install -m 644 install_files/certs/server.pem debian/vscpd/etc/vscp/server.pem
 	install -d debian/vscpd/lib/systemd/system/
 	install -m 644  ./service/systemd/vscpd.service.notify debian/vscpd/lib/systemd/system/vscpd.service
@@ -53,7 +53,7 @@ override_dh_auto_install:
 	install man/vscpcmd.1 debian/vscpd/usr/share/man/man1/vscpcmd.1
 	install man/vscp-mkpasswd.1 debian/vscpd/usr/share/man/man1/vscp-mkpasswd.1
 	install -d debian/vscpd/usr/share/man/man5/
-	install man/vscpd.conf.5 debian/vscpd/usr/share/man/man5/vscpd.conf.5
+	install man/vscpd.json.5 debian/vscpd/usr/share/man/man5/vscpd.json.5
 	install -d debian/vscpd/usr/share/man/man7/
 	install man/vscpd-tls.7 debian/vscpd/usr/share/man/man7/vscpd-tls.7
 	install man/vscp.7 debian/vscpd/usr/share/man/man7/vscp.7

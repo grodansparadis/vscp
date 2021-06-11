@@ -28,7 +28,7 @@ The configuration string have the following format
  | _txmask            | string  | Standard VSCP mask in string form. 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 as priority,class,type,GUID Used to filter what events that is sent to the remote host. If not given all events are received.   | 
   | _responsetimeout   | long  | Time in milliseconds we should wait for a response from the remote host.    |
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **tcpiplink1** and the full variable name for the **_host_remote** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **tcpiplink1** and the full variable name for the **_host_remote** will thus be
 
     tcpiplink1_host_remote
 
@@ -59,7 +59,7 @@ The configuration  is read in the following order
  * Configuration variables.
  * XML configuration variable.
 
-##### vscpd.conf example
+##### vscpd.json example
 
 ```xml                
 <driver enable="true" >

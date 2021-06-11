@@ -39,7 +39,7 @@ The first configuration parameter is a unique id like "mysession22" for your con
  | **_mask**      | string  | Standard VSCP mask in string form. 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 as priority,class,type,GUID Used to filter what events that is received from the socketcan interface. If not give all events are received/sent.   | 
  | **_simplify**  | string  | Makes it possible to publish and subscribe data in a human handleable form. See below for more information.                                                                                                                                          | 
 
-The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.conf. So in the examples below the driver have the name **mqtt1** and the full variable name for the **_sessionid** will thus be
+The full variable name is built from the name you give the driver (prefix before _variablename) in vscpd.json. So in the examples below the driver have the name **mqtt1** and the full variable name for the **_sessionid** will thus be
 
     mqtt1_sessionid
 
@@ -95,7 +95,7 @@ The variable format is
 
 ([VSCP types are here](http://docs.vscp.org/spec/latest/#/./class1.measurement))
 
-## vscpd.conf example
+## vscpd.json example
 
 ```xml
 <driver enable="true" >
@@ -348,7 +348,7 @@ which will take you back to the variable list where you can click on any item to
 
 ### Example: Subscribing
 
-If you enter a driver entry like this in the */etc/vscp/vscpd.conf* file
+If you enter a driver entry like this in the */etc/vscp/vscpd.json* file
 
 ```xml
 <driver enable="true" >

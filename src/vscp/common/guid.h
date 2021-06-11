@@ -5,8 +5,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,12 @@ class cguid
         Negative compare
     */
     bool operator!=(const cguid &guid);
+
+    /*!
+        Get GUID at pos
+    */
+    uint8_t operator[](uint8_t pos) const;  // a[i]
+    uint8_t& operator[](uint8_t pos);       // a[i] = x
 
     /*!
         Nill the GUID
@@ -179,6 +185,16 @@ class cguid
         Get LSB GUID position
     */
     uint8_t getLSB(void) { return m_id[15]; };
+
+    /*!
+        Set MSB GUID position
+    */
+    void setMSB(const unsigned char value) { m_id[0] = value; };
+
+    /*!
+        Get MSB GUID position
+    */
+    uint8_t getMSB(void) { return m_id[0]; };
 
     /*!
         Get Nickname GUID position

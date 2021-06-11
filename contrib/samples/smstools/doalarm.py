@@ -1,5 +1,5 @@
 #!//usr/bin/python
-# Copyright 2018 Ake Hedman, Grodans Paradis AB
+# Copyright 2018 Ake Hedman, the VSCP project
 # for the VSCP project (https://www.vscp.org)
 #
 # Arguments: #tones zone subzone time date

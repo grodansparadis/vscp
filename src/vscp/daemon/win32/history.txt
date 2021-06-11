@@ -1,1 +1,0 @@
-2012-03-+5 - AKHE Removed msvcrtd.lib;libcd.lib;rpcrt4.lib;odbc32.lib;odbccp32.lib; libs from compile.

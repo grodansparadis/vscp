@@ -5,8 +5,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB
-// <info@grodansparadis.com>
+// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 #include "guid.h"
 #include "vscphelper.h"
@@ -112,6 +114,29 @@ cguid::operator!=(const cguid &guid)
     return !(*this == guid);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// operator[] - a[i] 
+//
+
+uint8_t
+cguid::operator[](uint8_t pos) const
+{
+    return m_id[pos & 0x0f];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator[] - a[i] = x
+//
+
+uint8_t& 
+cguid::operator[](uint8_t pos)
+{
+    return m_id[pos & 0x0f];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getFromString
+//
 
 void
 cguid::getFromString(const std::string &strGUID)

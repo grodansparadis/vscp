@@ -1,7 +1,7 @@
 /**
  * @brief           VSCP Level I/II class definition file
  * @file            vscp_class.h
- * @author          Ake Hedman, Grodans Paradis AB, www.vscp.org
+ * @author          Ake Hedman, the VSCP project, www.vscp.org
  *
  * @section description Description
  **********************************
@@ -15,8 +15,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (C) 2000-2020 Ake Hedman, 
- * Grodans Paradis AB <info@grodansparadis.com>
+ * Copyright (C) 2000-2021 Ake Hedman, 
+ * the VSCP project <info@vscp.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-06-11 14:08:10.422221
+                        Generated: 2021-04-21 07:24:33.140337
 */
  
 #ifndef VSCP_CLASS_H
@@ -91,6 +91,7 @@
 #define VSCP_CLASS1_PHONE                    100       /* Phone */
 #define VSCP_CLASS1_DISPLAY                  102       /* Display */
 #define VSCP_CLASS1_IR                       110       /* IR Remote I/f */
+#define VSCP_CLASS1_CONFIGURATION            120       /* Configuration */
 #define VSCP_CLASS1_GNSS                     206       /* Position (GNSS) */
 #define VSCP_CLASS1_WIRELESS                 212       /* Wireless */
 #define VSCP_CLASS1_DIAGNOSTIC               506       /* Diagnostic */
@@ -146,13 +147,13 @@
 #define VSCP_CLASS2_PROTOCOL                 1024      /* Level II Protocol Functionality */
 #define VSCP_CLASS2_CONTROL                  1025      /* Level II Control */
 #define VSCP_CLASS2_INFORMATION              1026      /* Level II Information */
-#define VSCP_CLASS2_TEXT2SPEECH              1027      /* Text to speech */
-#define VSCP_CLASS2_HLO                      1028      /* High Level Object */
+#define VSCP_CLASS2_TEXT2SPEECH              1027      /* Level II Text to speech */
+#define VSCP_CLASS2_HLO                      1028      /* Level II High Level Object */
 #define VSCP_CLASS2_CUSTOM                   1029      /* Level II Custom */
 #define VSCP_CLASS2_DISPLAY                  1030      /* Level II Display */
-#define VSCP_CLASS2_MEASUREMENT_STR          1040      /* Measurement string */
-#define VSCP_CLASS2_MEASUREMENT_FLOAT        1060      /* Measurement float */
-#define VSCP_CLASS2_VSCPD                    65535     /* VSCP Daemon internal events */
+#define VSCP_CLASS2_MEASUREMENT_STR          1040      /* Level II Measurement string */
+#define VSCP_CLASS2_MEASUREMENT_FLOAT        1060      /* Level II Measurement float */
+#define VSCP_CLASS2_VSCPD                    65535     /* Level II VSCP Daemon internal events */
  
 #endif
  

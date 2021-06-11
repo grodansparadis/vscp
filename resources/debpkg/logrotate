@@ -1,0 +1,23 @@
+/var/log/vscp/vscpd-access.log {
+	rotate 7
+	daily
+	compress
+	size 100k
+	nocreate
+	missingok
+	postrotate
+		/usr/bin/killall -HUP vscpd
+	endscript
+}
+
+/var/log/vscp/vscpd-error.log {
+	rotate 7
+	daily
+	compress
+	size 100k
+	nocreate
+	missingok
+	postrotate
+		/usr/bin/killall -HUP vscpd
+	endscript
+}
