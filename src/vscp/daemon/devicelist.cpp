@@ -42,13 +42,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <mosquitto.h>
-
 #include <canal.h>
 #include <controlobject.h>
 #include <devicethread.h>
 #include <guid.h>
 #include <vscp.h>
+#include <vscp_client_mqtt.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
 
@@ -92,11 +91,11 @@ CDeviceItem::CDeviceItem()
   m_DeviceFlags = 0;      // Default: No flags.
   m_driverLevel = 0;      // Standard Canal messages is the default
 
-  m_mqtt_format = jsonfmt; // JSON is default format
+  // m_mqtt_format = jsonfmt; // JSON is default format
 
-  m_mqtt_reconnect_delay               = 2;
-  m_mqtt_reconnect_delay_max           = 30;
-  m_mqtt_reconnect_exponential_backoff = false;
+  // m_mqtt_reconnect_delay               = 2;
+  // m_mqtt_reconnect_delay_max           = 30;
+  // m_mqtt_reconnect_exponential_backoff = false;
 
   // VSCP Level I
   m_proc_CanalOpen            = NULL;
@@ -291,221 +290,13 @@ CDeviceItem::sendEvent(vscpEvent *pev)
   // Send the event to the discovery routine
   m_pCtrlObj->discovery(pev);
 
-  // Convert to configured format
-
-  if (m_mqtt_format == jsonfmt) {
-
-    if (!vscp_convertEventToJSON(strPayload, pev)) {
-      spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to JSON");
-      return false;
-    }
-
-    // If function is enable din configuration
-    // add measurement info to JSON object
-    //
-    // "measurement" : {
-    //     "value" : 1.23,
-    //     "unit" : 0,
-    //     "sensorindex" : 1,
-    //     "zone" : 11,
-    //     "subzone" : 22
-    // }
-    //
-
-    if (vscp_isMeasurement(pev) && bJsonMeasurementAdd) {
-
-      double value = 0;
-      if (!vscp_getMeasurementAsDouble(&value, pev)) {
-        spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to value.");
-      }
-      else {
-        try {
-          auto j = json::parse(strPayload);
-
-          j["measurement"]["value"]       = value;
-          j["measurement"]["unit"]        = vscp_getMeasurementUnit(pev);
-          j["measurement"]["sensorindex"] = vscp_getMeasurementSensorIndex(pev);
-          j["measurement"]["zone"]        = vscp_getMeasurementZone(pev);
-          j["measurement"]["subzone"]     = vscp_getMeasurementSubZone(pev);
-
-          if (bJsonMeasurementAdd) {}
-
-          strPayload = j.dump();
-        }
-        catch (...) {
-          spdlog::get("logger")->error("Driver: sendEvent: Failed to add measurement info to event.");
-        }
-      }
-    }
-    else if (bJsonMeasurementAdd) {
-      // TODO
-    }
-  }
-  else if (m_mqtt_format == xmlfmt) {
-    if (!vscp_convertEventToXML(strPayload, pev)) {
-      spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to XML");
-      return false;
-    }
-  }
-  else if (m_mqtt_format == strfmt) {
-    if (!vscp_convertEventToString(strPayload, pev)) {
-      spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to STRING");
-      return false;
-    }
-  }
-  else if (m_mqtt_format == binfmt) {
-    pbuf = new uint8_t[VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData];
-    if (NULL == pbuf) {
-      return false;
-    }
-
-    if (!vscp_writeEventToFrame(pbuf,
-                                VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
-                                VSCP_MULTICAST_TYPE_EVENT,
-                                pev)) {
-      spdlog::get("logger")->error("ControlObject: sendEvent: Failed to convert event to BINARY");
-      return false;
-    }
-  }
-  else {
-    return VSCP_ERROR_NOT_SUPPORTED;
-  }
-
-  // Fix topic
-
-  for (std::list<std::string>::const_iterator it = m_mqtt_publish.begin(); it != m_mqtt_publish.end(); ++it) {
-
-    std::string topic_template = *it;
-
-    // Fix publish topics
-    mustache subtemplate{ topic_template };
-    data data;
-    cguid evguid(pev->GUID); // Event GUID
-    data.set("guid", evguid.getAsString());
-    for (int i = 0; i < 15; i++) {
-      data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
-    }
-    data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
-    data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
-    data.set("ifguid", m_guid.getAsString());
-
-    if (NULL != pev->pdata) {
-      for (int i = 0; i < pev->sizeData; i++) {
-        data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", pev->pdata[i]));
-      }
-    }
-
-    for (int i = 0; i < 15; i++) {
-      data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
-    }
-    data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
-    data.set("class", vscp_str_format("%d", pev->vscp_class));
-    data.set("type", vscp_str_format("%d", pev->vscp_type));
-
-    data.set("class-token", m_pCtrlObj->getTokenFromClassId(pev->vscp_class));
-    data.set("type-token", m_pCtrlObj->getTokenFromTypeId(pev->vscp_class, pev->vscp_type));
-
-    data.set("head", vscp_str_format("%d", pev->head));
-    data.set("obid", vscp_str_format("%ul", pev->obid));
-    data.set("timestamp", vscp_str_format("%ul", pev->timestamp));
-
-    std::string dt;
-    vscp_getDateStringFromEvent(dt, pev);
-    data.set("datetime", dt);
-    data.set("year", vscp_str_format("%d", pev->year));
-    data.set("month", vscp_str_format("%d", pev->month));
-    data.set("day", vscp_str_format("%d", pev->day));
-    data.set("hour", vscp_str_format("%d", pev->hour));
-    data.set("minute", vscp_str_format("%d", pev->minute));
-    data.set("second", vscp_str_format("%d", pev->second));
-
-    data.set("clientid", m_mqtt_strClientId);
-    data.set("user", m_mqtt_strUserName);
-    data.set("host", m_mqtt_strHost);
-
-    data.set("driver-name", m_strName);
-
-    // guid-to-real   - GUID as realname
-    // data-to-read   - Data to real
-
-    strTopic = subtemplate.render(data);
-
-    if (m_mqtt_format != binfmt) {
-      rv = mosquitto_publish(m_mosq,
-                             NULL,
-                             strTopic.c_str(),
-                             strPayload.length(),
-                             strPayload.c_str(),
-                             m_mqtt_qos,
-                             m_mqtt_bRetain);
-    }
-    else {
-      // Binary format publish
-      rv = mosquitto_publish(m_mosq,
-                             NULL,
-                             strTopic.c_str(),
-                             VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 + pev->sizeData,
-                             pbuf,
-                             m_mqtt_qos,
-                             true);
-    }
-
-    // Translate mosquitto error code to VSCP error code
-    switch (rv) {
-      case MOSQ_ERR_INVAL:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error Parameter");
-        rv = false;
-        break;
-      case MOSQ_ERR_NOMEM:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error Memory");
-        rv = false;
-        break;
-      case MOSQ_ERR_NO_CONN:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error Connection");
-        rv = false;
-        break;
-      case MOSQ_ERR_PROTOCOL:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error protocol");
-        rv = false;
-        return false;
-      case MOSQ_ERR_PAYLOAD_SIZE:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error payload size");
-        rv = false;
-        break;
-      case MOSQ_ERR_MALFORMED_UTF8:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error malformed utf8");
-        rv = false;
-        break;
-#if defined(MOSQ_ERR_QOS_NOT_SUPPORTED)
-      case MOSQ_ERR_QOS_NOT_SUPPORTED:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error QOS not supported");
-        rv = false;
-        break;
-#endif
-#if defined(MOSQ_ERR_OVERSIZE_PACKET)
-      case MOSQ_ERR_OVERSIZE_PACKET:
-        spdlog::get("logger")->error("ControlObject: sendEvent: Error Oversized package");
-        rv = false;
-        break;
-#endif
-    }
-
-    // End if error
-    if (!rv)
-      break;
-
-  } // for
-
-  // Clean up binary format buffer if used
-  if (m_mqtt_format == binfmt) {
-    if (NULL != pbuf) {
-      delete[] pbuf;
-      pbuf = NULL;
-    }
-  }
+  // Send the event
+  m_mqttClient.send(*pev);
 
   return (0 == rv);
 }
+
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList

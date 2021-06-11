@@ -38,7 +38,7 @@
 
 #if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 #include <mqtt_protocol.h>
-#else 
+#else
 // Name change from 1.6 (after 1.5.8)
 // As it looks it is not installed by deb script
 //#include <mqtt3_protocol.h>
@@ -103,6 +103,10 @@ mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   spdlog::trace("MQTT log: {}", logmsg);
+
+  if (nullptr != pClient->m_parentCallbackLog) {
+    pClient->m_parentCallbackLog(mosq, pClient->m_pParent, level, logmsg);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,6 +133,10 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
   pClient->m_bConnected   = true;
 
   spdlog::trace("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv);
+
+  if (nullptr != pClient->m_parentCallbackConnect) {
+    pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -153,6 +161,10 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
   pClient->m_bConnected   = true;
 
   spdlog::trace("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv, flags);
+
+  if (nullptr != pClient->m_parentCallbackConnect) {
+    pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,6 +189,10 @@ mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const
   pClient->m_bConnected   = true;
 
   spdlog::trace("MQTT v5 connect: rv={0:X} flags={1:X}", rv, flags);
+
+  if (nullptr != pClient->m_parentCallbackConnect) {
+    pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
+  }
 }
 #endif
 
@@ -201,6 +217,10 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   pClient->m_bConnected   = false;
 
   spdlog::trace("MQTT v3.11 disconnect: rv={0:X}", rv);
+
+  if (nullptr != pClient->m_parentCallbackDisconnect) {
+    pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,6 +245,10 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   pClient->m_bConnected   = false;
 
   spdlog::trace("MQTT v5 disconnect: rv={0:X}", rv);
+
+  if (nullptr != pClient->m_parentCallbackDisconnect) {
+    pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
+  }
 }
 #endif
 
@@ -247,6 +271,10 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   spdlog::trace("MQTT v3.11 publish: mid={0:X}", mid);
+
+  if (nullptr != pClient->m_parentCallbackPublish) {
+    pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -269,6 +297,10 @@ mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   spdlog::trace("MQTT v5 publish: mid={0:X} reason-code={1:X}", mid, reason_code);
+
+  if (nullptr != pClient->m_parentCallbackPublish) {
+    pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
+  }
 }
 #endif
 
@@ -294,10 +326,15 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
     return;
   }
 
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackMessage) {
+    pClient->m_parentCallbackMessage(mosq, pClient->m_pParent, pMsg);
+  }
+
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
   spdlog::trace("MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
-  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   if (!pClient->handleMessage(pMsg)) {
     spdlog::error("MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
@@ -333,6 +370,11 @@ mqtt_on_message_v5(struct mosquitto *mosq,
   spdlog::trace("MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackMessage) {
+    pClient->m_parentCallbackMessage(mosq, pClient->m_pParent, pMsg);
+  }
+
   if (!pClient->handleMessage(pMsg)) {
     spdlog::error("MQTT v5 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
@@ -354,6 +396,12 @@ mqtt_on_subscribe(struct mosquitto *mosq, void *pData, int mid, int qos_count, c
   // Check for a valid object pointer
   if (nullptr == pData) {
     return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackSubscribe) {
+    pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
   }
 }
 
@@ -383,6 +431,12 @@ mqtt_on_subscribe_v5(struct mosquitto *mosq,
   if (nullptr == granted_qos) {
     return;
   }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackSubscribe) {
+    pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
+  }
 }
 #endif
 
@@ -402,6 +456,12 @@ mqtt_on_unsubscribe(struct mosquitto *mosq, void *pData, int mid)
   if (nullptr == pData) {
     return;
   }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackUnsubscribe) {
+    pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -420,6 +480,12 @@ mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosqu
   // Check for a valid object pointer
   if (nullptr == pData) {
     return;
+  }
+
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+
+  if (nullptr != pClient->m_parentCallbackUnsubscribe) {
+    pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
   }
 }
 #endif
@@ -513,19 +579,20 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_mapMqttIntOptions["receive-maximum"]  = 20;
   m_mapMqttIntOptions["send-maximum"]     = 20;
 
-  m_bConnected       = false;   // Not connected
-  m_bindInterface    = "";      // No bind interface
-  m_mosq             = nullptr; // No mosquitto conection
-  m_publish_format   = jsonfmt; // Publish inm JSON if not configured to do something else
-  m_subscribe_format = autofmt; // Automatically detect payload format
-  m_bRun             = true;    // Run to the Hills...
-  m_host             = "";      // tcp://localhost:1883
-  m_port             = 1883;    // Default port
-  m_clientid         = "";      // No client id set
-  m_username         = "";      // No username set
-  m_password         = "";      // No password set
-  m_keepalive        = 30;      // 30 seconds for keepalive
-  m_bCleanSession    = false;   // Do not start with a clean session
+  m_bConnected          = false;   // Not connected
+  m_bJsonMeasurementAdd = true;    // Add measurement block to JSON publish event
+  m_bindInterface       = "";      // No bind interface
+  m_mosq                = nullptr; // No mosquitto conection
+  m_publish_format      = jsonfmt; // Publish inm JSON if not configured to do something else
+  m_subscribe_format    = autofmt; // Automatically detect payload format
+  m_bRun                = true;    // Run to the Hills...
+  m_host                = "";      // tcp://localhost:1883
+  m_port                = 1883;    // Default port
+  m_clientid            = "";      // No client id set
+  m_username            = "";      // No username set
+  m_password            = "";      // No password set
+  m_keepalive           = 30;      // 30 seconds for keepalive
+  m_bCleanSession       = false;   // Do not start with a clean session
 
   m_bTLS                 = false;
   m_tls_cafile           = "";
@@ -551,6 +618,15 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_reconnect_delay               = 2;
   m_reconnect_delay_max           = 10;
   m_reconnect_exponential_backoff = false;
+
+  // Parent callback functionality
+  m_pParent                  = nullptr;
+  m_parentCallbackLog        = nullptr;
+  m_parentCallbackConnect    = nullptr;
+  m_parentCallbackDisconnect = nullptr;
+  m_parentCallbackPublish    = nullptr;
+  m_parentCallbackSubscribe  = nullptr;
+  m_parentCallbackMessage    = nullptr;
 
   // Initialize MQTT
   if (MOSQ_ERR_SUCCESS != mosquitto_lib_init()) {
@@ -822,6 +898,12 @@ vscpClientMqtt::initFromJson(const std::string &config)
       spdlog::debug("config: 'keepalive' Set to {}.", m_keepalive);
     }
 
+    // Enable measurement block
+    if (j.contains("bjsonmeasurementblock")) {
+      m_bJsonMeasurementAdd = j["bjsonmeasurementblock"].get<int>();
+      spdlog::debug("config: 'bjsonmeasurementblock' Set to {}.", m_bJsonMeasurementAdd);
+    }
+
     // Reconnect
     if (j.contains("reconnect") && j["reconnect"].is_object()) {
 
@@ -1036,7 +1118,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= MQTT_SUB_OPT_NO_LOCAL;
 #else
               v5_options |= 0x04;
-#endif              
+#endif
             }
             /*
               0x08
@@ -1044,13 +1126,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
               flag as was set by the publishing client.  The default behaviour without this option
               set has the retain flag indicating whether a message is fresh/stale.
             */
-           
+
             if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)              
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
 #else
               v5_options |= 0x08;
-#endif              
+#endif
             }
             /*
               0x00
@@ -1058,38 +1140,38 @@ vscpClientMqtt::initFromJson(const std::string &config)
               is made, even if the subscription already exists.  This is the default behaviour, so it is
               not necessary to set this option.
             */
-          
+
             if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
 #else
               v5_options |= 0x00;
-#endif              
+#endif
             }
             /*
               0x10
               with this option set, pre-existing retained messages for this subscription will be sent when
               the subscription is made, but only if the subscription does not already exist.
             */
-          
+
             if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
 #else
               v5_options |= 0x10;
-#endif              
+#endif
             }
             /*
               0x20
               with this option set, pre-existing retained messages will never be sent for this subscription.
             */
-          
+
             if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)               
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
 #else
               v5_options |= 0x20;
-#endif              
+#endif
             }
           }
 
@@ -1135,8 +1217,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // User escapes m_mapUserEscapes
     if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
       for (auto it = j.begin(); it != j.end(); ++it) {
-          m_mapUserEscapes[it.key()] = it.value();
-        }
+        m_mapUserEscapes[it.key()] = it.value();
+      }
     }
 
     // Publish
@@ -1198,7 +1280,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
         } // obj
       }   // for
-    }     // pub    
+    }     // pub
 
     // v5
     if (j.contains("v5") && j["v5"].is_object()) {
@@ -1440,11 +1522,11 @@ vscpClientMqtt::init(void)
   }
 
   // v5
-#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
+#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   if (m_mapMqttIntOptions["protocol-version"] >= 500) {
     mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
   }
-#endif  
+#endif
 
   if (nullptr == m_mosq) {
     if (ENOMEM == errno) {
@@ -1459,22 +1541,22 @@ vscpClientMqtt::init(void)
   // Callbacks
   if (m_mapMqttIntOptions["protocol-version"] >= 500) {
     mosquitto_log_callback_set(m_mosq, mqtt_on_log);
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
     mosquitto_connect_v5_callback_set(m_mosq, mqtt_on_connect_v5);
     mosquitto_disconnect_v5_callback_set(m_mosq, mqtt_on_disconnect_v5);
     mosquitto_message_v5_callback_set(m_mosq, mqtt_on_message_v5);
     mosquitto_publish_v5_callback_set(m_mosq, mqtt_on_publish_v5);
     mosquitto_subscribe_v5_callback_set(m_mosq, mqtt_on_subscribe_v5);
     mosquitto_unsubscribe_v5_callback_set(m_mosq, mqtt_on_unsubscribe_v5);
-#endif    
+#endif
   }
   else {
     mosquitto_log_callback_set(m_mosq, mqtt_on_log);
-#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
+#if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
     mosquitto_connect_with_flags_callback_set(m_mosq, mqtt_on_connect_flags);
 #else
     mosquitto_connect_callback_set(m_mosq, mqtt_on_connect);
-#endif    
+#endif
     mosquitto_disconnect_callback_set(m_mosq, mqtt_on_disconnect);
     mosquitto_message_callback_set(m_mosq, mqtt_on_message);
     mosquitto_publish_callback_set(m_mosq, mqtt_on_publish);
@@ -1492,7 +1574,7 @@ vscpClientMqtt::init(void)
   // Set 'last will' if any is defined
   if (m_will_payload.length() && m_will_topic.length()) {
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)      
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
                                                     m_will_topic.c_str(),
                                                     m_will_payload.length(),
@@ -1501,13 +1583,13 @@ vscpClientMqtt::init(void)
                                                     m_will_bretain,
                                                     nullptr)) {
 #else
-    if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
-                                                    m_will_topic.c_str(),
-                                                    m_will_payload.length(),
-                                                    m_will_payload.c_str(),
-                                                    m_will_qos,
-                                                    m_will_bretain)) {
-#endif                                                      
+      if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
+                                                 m_will_topic.c_str(),
+                                                 m_will_payload.length(),
+                                                 m_will_payload.c_str(),
+                                                 m_will_qos,
+                                                 m_will_bretain)) {
+#endif
         spdlog::warn("Failed to set last will. rv={0} {1}", rv, mosquitto_strerror(rv));
       }
     }
@@ -1539,10 +1621,10 @@ vscpClientMqtt::init(void)
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_TCP_NODELAY, m_mapMqttIntOptions["tcp-nodelay"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_TCP_NODELAY. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
-#endif  
+#endif
 
   // version
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)  
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   {
     int ver;
     switch (m_mapMqttIntOptions["protocol-version"]) {
@@ -1564,7 +1646,7 @@ vscpClientMqtt::init(void)
       spdlog::error("Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
- 
+
   // receive-maximum
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_RECEIVE_MAXIMUM, m_mapMqttIntOptions["receive-maximum"]))) {
@@ -1576,7 +1658,7 @@ vscpClientMqtt::init(void)
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_SEND_MAXIMUM, m_mapMqttIntOptions["send-maximum"]))) {
     spdlog::error("Failed to set option MOSQ_OPT_SEND_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
-#endif 
+#endif
 
   //                          * * * TLS * * *
 
@@ -1621,7 +1703,11 @@ vscpClientMqtt::init(void)
 
 int
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
-vscpClientMqtt::addSubscription(const std::string strTopicSub, enumMqttMsgFormat format, int qos, int v5_options, mosquitto_property *properties)
+vscpClientMqtt::addSubscription(const std::string strTopicSub,
+                                enumMqttMsgFormat format,
+                                int qos,
+                                int v5_options,
+                                mosquitto_property *properties)
 #else
 vscpClientMqtt::addSubscription(const std::string strTopicSub, enumMqttMsgFormat format, int qos, int v5_options)
 #endif
@@ -1673,7 +1759,7 @@ vscpClientMqtt::connect(void)
   }
 
   if (m_bindInterface.length()) {
-#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)    
+#if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
       rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str(), nullptr);
     }
@@ -1681,8 +1767,8 @@ vscpClientMqtt::connect(void)
       rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
     }
 #else
-    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());     
-#endif    
+    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
+#endif
   }
   else {
     rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepalive);
@@ -1692,6 +1778,8 @@ vscpClientMqtt::connect(void)
     spdlog::error("Failed to connect to remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
     return VSCP_ERROR_NOT_CONNECTED;
   }
+
+  mosquitto_threaded_set(m_mosq, true);
 
   // Start the worker loop
   rv = mosquitto_loop_start(m_mosq);
@@ -1795,13 +1883,55 @@ vscpClientMqtt::send(vscpEvent &ev)
     memset(payload, 0, sizeof(payload));
 
     if (ppublish->getFormat() == jsonfmt) {
+
       std::string strPayload;
+
       if (!vscp_convertEventToJSON(strPayload, &ev)) {
         return VSCP_ERROR_PARAMETER;
       }
+
+      // If functionality is enable in configuration
+      // add measurement info to JSON object
+      //
+      // "measurement" : {
+      //     "value" : 1.23,
+      //     "unit" : 0,
+      //     "sensorindex" : 1,
+      //     "zone" : 11,
+      //     "subzone" : 22
+      // }
+      //
+
+      if (vscp_isMeasurement(&ev) && m_bJsonMeasurementAdd) {
+
+        double value = 0;
+        if (!vscp_getMeasurementAsDouble(&value, &ev)) {
+          spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to value.");
+        }
+        else {
+          try {
+            auto j = json::parse(strPayload);
+
+            j["measurement"]["value"]       = value;
+            j["measurement"]["unit"]        = vscp_getMeasurementUnit(&ev);
+            j["measurement"]["sensorindex"] = vscp_getMeasurementSensorIndex(&ev);
+            j["measurement"]["zone"]        = vscp_getMeasurementZone(&ev);
+            j["measurement"]["subzone"]     = vscp_getMeasurementSubZone(&ev);
+
+            strPayload = j.dump();
+            strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+          }
+          catch (...) {
+            spdlog::get("logger")->error("sendEvent: Failed to add measurement info to event.");
+          }
+        } // OK to insert extra info
+      } // is measurement
+
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
-    }
+
+    } // JSON
+
     else if (ppublish->getFormat() == xmlfmt) {
       std::string strPayload;
       if (!vscp_convertEventToXML(strPayload, &ev)) {
@@ -1977,13 +2107,54 @@ vscpClientMqtt::send(vscpEventEx &ex)
     memset(payload, 0, sizeof(payload));
 
     if (ppublish->getFormat() == jsonfmt) {
+      
       std::string strPayload;
+      
       if (!vscp_convertEventExToJSON(strPayload, &ex)) {
         return VSCP_ERROR_PARAMETER;
       }
+
+      // If functionality is enable in configuration
+      // add measurement info to JSON object
+      //
+      // "measurement" : {
+      //     "value" : 1.23,
+      //     "unit" : 0,
+      //     "sensorindex" : 1,
+      //     "zone" : 11,
+      //     "subzone" : 22
+      // }
+      //
+
+      if (vscp_isMeasurementEx(&ex) && m_bJsonMeasurementAdd) {
+
+        double value = 0;
+        if (!vscp_getMeasurementAsDoubleEx(&value, &ex)) {
+          spdlog::get("logger")->error("Driver: sendEvent: Failed to convert event to value.");
+        }
+        else {
+          try {
+            auto j = json::parse(strPayload);
+
+            j["measurement"]["value"]       = value;
+            j["measurement"]["unit"]        = vscp_getMeasurementUnitEx(&ex);
+            j["measurement"]["sensorindex"] = vscp_getMeasurementSensorIndexEx(&ex);
+            j["measurement"]["zone"]        = vscp_getMeasurementZoneEx(&ex);
+            j["measurement"]["subzone"]     = vscp_getMeasurementSubZoneEx(&ex);
+
+            strPayload = j.dump();
+            strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+          }
+          catch (...) {
+            spdlog::get("logger")->error("sendEvent: Failed to add measurement info to event.");
+          }
+        } // OK to insert extra info
+      } // is measurement
+
       lenPayload = strPayload.length();
       strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
-    }
+
+    } // JSON
     else if (ppublish->getFormat() == xmlfmt) {
       std::string strPayload;
       if (!vscp_convertEventExToXML(strPayload, &ex)) {

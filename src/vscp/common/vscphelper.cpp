@@ -1698,6 +1698,33 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementAsDoubleEx
+//
+//
+
+bool
+vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pEventEx)
+{
+  vscpEvent *pev = new vscpEvent;
+  if (nullptr == pev) {
+    return false;
+  }
+
+  pev->pdata    = nullptr;
+  pev->sizeData = 0;
+
+  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+    vscp_deleteEvent(pev);
+    return false;
+  }
+
+  int rv = vscp_getMeasurementAsDouble(pvalue, pev);
+  vscp_deleteEvent(pev);
+
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_getMeasurementFloat64AsString
 //
 //

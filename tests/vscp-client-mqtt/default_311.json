@@ -71,6 +71,10 @@
         }
     ],
     "bescape-pub-topics": true,
+    "user-escapes": [
+        {"escape1": "valu1"},
+        {"escape2": "valu2"}
+    ],
     "publish": [
         {
             "topic" : "publish/topic/json",

@@ -759,6 +759,24 @@ extern "C"
     bool vscp_getMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent);
 
     /*!
+        Write data from event ex in the VSCP data coding format as a double.
+
+        Works for
+
+        CLASS1.MEASUREMENT
+        CLASS2_LEVEL1.MEASUREMENT
+        VSCP_CLASS1_MEASUREZONE
+        VSCP_CLASS1_SETVALUEZONE
+        CLASS2_MEASUREMENT_FLOAT
+        CLASS2_MEASUREMENT_STR
+
+        @param pEventEx Pointer to VSCP event ex.
+        @param pvalue Pointer to double that holds the result
+        @return true on success, false on failure.
+    */
+    bool vscp_getMeasurementAsDoubleEx(double* pvalue, const vscpEventEx* pEventEx);
+
+    /*!
      * Get measurement unit for any of the valid measurement events.
      * @param pEvent Pointer to VSCP event.
      * @return Measurement unit or -1 for error (event that is not a
@@ -788,7 +806,7 @@ extern "C"
      * @return Measurement sensor index or -1 for error or for event that is not
      * a measurement or measurement event that does not have a sensor index.
      */
-    int vscp_getMeasurementSensorIndexEx(const vscpEvent* pEventEx);
+    int vscp_getMeasurementSensorIndexEx(const vscpEventEx* pEventEx);
 
     /*!
      * Get measurement zone for any of the valid measurement events.

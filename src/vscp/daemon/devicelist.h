@@ -34,6 +34,7 @@
 
 #include <canaldlldef.h>
 #include <vscp.h>
+#include <vscp_client_mqtt.h>
 //#include <devicethread.h>
 #include <guid.h>
 #include <level2drvdef.h>
@@ -210,39 +211,13 @@ public:
   //                                 MQTT
   // ------------------------------------------------------------------------
 
-  std::string m_mqtt_strHost;                  // MQTT broker
-  unsigned short m_mqtt_port;                  // MQTT broker port
-  std::list<std::string> m_mqtt_subscriptions; // Subscribe topic templates
-  std::list<std::string> m_mqtt_publish;       // Publish topic templates
+  /*!
+    VSCP MQTT client
+  */
+  vscpClientMqtt m_mqttClient;
 
-  std::string m_mqtt_strClientId;            // Client id
-  std::string m_mqtt_strUserName;            // Username
-  std::string m_mqtt_strPassword;            // Password
-  int m_mqtt_qos;                            // Quality of service (0/1/2)
-  bool m_mqtt_bRetain;                       // Enable retain
-  int m_mqtt_keepalive;                      // Keep alive in seconds
-  bool m_mqtt_bCleanSession;                 // Clean session on disconnect if true
-  uint16_t m_mqtt_reconnect_delay;           // reconnect delay
-  uint16_t m_mqtt_reconnect_delay_max;       // max time between reconnects
-  bool m_mqtt_reconnect_exponential_backoff; // Use exponential backoff
-
-  // SSL/TSL
-  bool m_mqtt_bTLS; // True of a TLS/SSL connection should be done
-
-  std::string m_mqtt_cafile;   // path to a file containing the PEM encoded trusted CA certificate files.
-                               // Either cafile or capath must not be NULL.
-  std::string m_mqtt_capath;   // path to a directory containing the PEM encoded trusted CA certificate files.
-                               // See mosquitto.conf for more details on configuring this directory.
-                               // Either cafile or capath must not be NULL.
-  std::string m_mqtt_certfile; // path to a file containing the PEM encoded certificate file for this client.
-                               // If NULL, keyfile must also be NULL and no client certificate will be used.
-  std::string m_mqtt_keyfile;
-
-  std::string m_mqtt_pwKeyfile; // Password for keyfile (set only if it is encrypted on disc)
-
-  struct mosquitto *m_mosq; // Handel for connection
-
-  enumMqttMsgFormat m_mqtt_format; // Format for mqtt events (JSON/XML)
+  /// Configuration
+  json m_mqttConfig;
 
   // Level I (CANAL) driver methods
   LPFNDLL_CANALOPEN m_proc_CanalOpen;

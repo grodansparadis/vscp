@@ -168,6 +168,24 @@ mqtt-options/protocol-version can be set to 310/311/500
 // Max number of events in inqueue
 #define MQTT_MAX_INQUEUE_SIZE 2000
 
+#ifdef WIN32
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_LOG ) ( struct mosquitto *mosq, void *pParent, int level, const char *logmsg );
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_CONNECT ) ( struct mosquitto *mosq, void *pData, int rv );
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_DISCONNECT ) ( struct mosquitto *mosq, void *pData, int rv );  
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_PUBLISH ) ( struct mosquitto *mosq, void *pData, int mid ); 
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_SUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid, int qos_count, const int *granted_qos );
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_UNSUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid );     
+  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_MESSAGE ) ( struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg );
+#else
+  typedef void ( *LPFN_PARENT_CALLBACK_LOG ) ( struct mosquitto *mosq, void *pParent, int level, const char *logmsg ); 
+  typedef void ( *LPFN_PARENT_CALLBACK_CONNECT ) ( struct mosquitto *mosq, void *pData, int rv );  
+  typedef void ( *LPFN_PARENT_CALLBACK_DISCONNECT ) ( struct mosquitto *mosq, void *pData, int rv ); 
+  typedef void ( *LPFN_PARENT_CALLBACK_PUBLISH ) ( struct mosquitto *mosq, void *pData, int mid ); 
+  typedef void ( *LPFN_PARENT_CALLBACK_SUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid, int qos_count, const int *granted_qos );
+  typedef void ( *LPFN_PARENT_CALLBACK_UNSUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid ); 
+  typedef void ( *LPFN_PARENT_CALLBACK_MESSAGE ) ( struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg );   
+#endif
+
 class publishTopic {
 
 public:
@@ -456,7 +474,6 @@ public:
       Time is in milliseconds
   */
   virtual void setConnectionTimeout(uint32_t timeout) { m_timeoutConnection = timeout; };
-
   virtual uint32_t getConnectionTimeout(void) { return m_timeoutConnection; };
 
   /*!
@@ -521,6 +538,45 @@ public:
  void setUserEscape(const std::string key, const std::string value) 
   { m_mapUserEscapes[key] = value; };
 
+   /*!
+    Set parent object pointer
+  */
+  void setParent(void *pParent) { m_pParent = pParent; };
+  
+  /*!
+    Set parent log callback
+  */
+  void setFuncParentCallbackLog(LPFN_PARENT_CALLBACK_LOG func) { m_parentCallbackLog = func; };
+
+  /*!
+    Set parent connect callback
+  */
+  void setFuncParentCallbackConnect(LPFN_PARENT_CALLBACK_CONNECT func) { m_parentCallbackConnect = func; };
+
+  /*!
+    Set parent disconnect callback
+  */
+  void setFuncParentCallbackDisconnet(LPFN_PARENT_CALLBACK_DISCONNECT func) { m_parentCallbackDisconnect = func; };
+
+  /*!
+    Set parent publish callback
+  */
+  void setFuncParentCallbackPublish(LPFN_PARENT_CALLBACK_PUBLISH func) { m_parentCallbackPublish = func; };
+
+  /*!
+    Set parent subscribe callback
+  */
+  void setFuncParentCallbackSubscribe(LPFN_PARENT_CALLBACK_SUBSCRIBE func) { m_parentCallbackSubscribe = func; };
+
+  /*!
+    Set parent unsubscribe callback
+  */
+  void setFuncParentCallbackUnsubscribe(LPFN_PARENT_CALLBACK_UNSUBSCRIBE func) { m_parentCallbackUnsubscribe = func; };
+
+  /*!
+    Set parent message callback
+  */
+  void setFuncParentCallbackMessage(LPFN_PARENT_CALLBACK_MESSAGE func) { m_parentCallbackMessage = func; };
 
 public:
   // Timeout in milliseconds for host connection.
@@ -543,6 +599,12 @@ public:
   bool m_bEscapesPubTopics;
 
   /*!
+    Will add measurement block to JSON published
+    events if true
+  */
+  bool m_bJsonMeasurementAdd;
+
+  /*!
     Mutex that protect CANAL interface when callbacks are defined
   */
   pthread_mutex_t m_mutexif;
@@ -552,6 +614,21 @@ public:
     this queue
   */
   std::deque<vscpEvent *> m_receiveQueue;
+
+  // * * * Parent callbacks * * *
+  
+  /*!
+    Pointer to parent object
+  */
+  void *m_pParent;
+
+  LPFN_PARENT_CALLBACK_LOG m_parentCallbackLog;
+  LPFN_PARENT_CALLBACK_CONNECT m_parentCallbackConnect;
+  LPFN_PARENT_CALLBACK_DISCONNECT m_parentCallbackDisconnect;
+  LPFN_PARENT_CALLBACK_PUBLISH m_parentCallbackPublish;
+  LPFN_PARENT_CALLBACK_SUBSCRIBE m_parentCallbackSubscribe;
+  LPFN_PARENT_CALLBACK_UNSUBSCRIBE m_parentCallbackUnsubscribe;
+  LPFN_PARENT_CALLBACK_MESSAGE m_parentCallbackMessage;
 
 private:
   /*!
@@ -756,7 +833,7 @@ private:
   std::string m_will_topic;   // Topic for last will
   int m_will_qos;             // qos for last will
   bool m_will_bretain;        // Enable retain for last will
-  std::string m_will_payload; // Payload for last will
+  std::string m_will_payload; // Payload for last will  
 
   struct mosquitto *m_mosq; // Handel for connection
   int m_mid;                // Message id

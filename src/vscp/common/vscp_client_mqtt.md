@@ -14,13 +14,13 @@ The method [initFromJson](#initFromJson) have a string as its argument. This str
       "host" : "[s]tcp://192.168.1.7:1883",
       "port" : 1883,
       "mqtt-options" : {
-          "tcp-nodelay" : true,
-          "protocol-version": 500,
-          "receive-maximum": 20,
-          "send-maximum": 20,
-          "ssl-ctx-with-defaults": 0,
-          "tls-ocsp-required": 0,
-          "tls-use-os-certs" : 0
+        "tcp-nodelay" : true,
+        "protocol-version": 500,
+        "receive-maximum": 20,
+        "send-maximum": 20,
+        "ssl-ctx-with-defaults": 0,
+        "tls-ocsp-required": 0,
+        "tls-use-os-certs" : 0
       },
       "user" : "vscp",
       "password": "secret",
@@ -31,6 +31,7 @@ The method [initFromJson](#initFromJson) have a string as its argument. This str
       "bcleansession" : false,
       "bretain" : false,
       "keepalive" : 60,
+      "bjsonmeasurementblock" : true,
       "reconnect" : {
         "delay" : 2,
         "delay-max" : 10,
@@ -69,20 +70,18 @@ The method [initFromJson](#initFromJson) have a string as its argument. This str
         {
           "topic": "subscribe/topic/A",
           "qos": 0,
-          "v5-options": 4,
-          "auto"
+          "v5-options": 4
         },
         {
           "topic":"subscribe/topic/B",
           "qos": 0,
-          "v5-options": "NO_LOCAL, RETAIN_AS_PUBLISHED, SEND_RETAIN_ALWAYS, SEND_RETAIN_NEW, SEND_RETAIN_NEVER".
-          "auto"
+          "v5-options": "NO_LOCAL, RETAIN_AS_PUBLISHED, SEND_RETAIN_ALWAYS, SEND_RETAIN_NEW, SEND_RETAIN_NEVER"
         }
       ],
       "bescape-pub-topics": true,
       "user-escapes": {
-        {"escape1": "valu1"},
-        {"escape2": "valu2"}
+        "escape1": "valu1",
+        "escape2": "valu2"
       },
       "publish": [
         {
@@ -178,6 +177,24 @@ Default is not set.
 Set to true to instruct the broker to clean all messages and subscriptions on disconnect, false to instruct it to keep them.  Note that a client will never discard its own outgoing messages on disconnect. Must be set to true if the client id parameter is not set.
 
 Default is **false**
+
+### bjsonmeasurementblock
+
+If enabled and the event is a measurement and the publish format is in json, setting this to true will add a measurement block to the json data like this
+
+```json
+"measurement" : {
+  "value" : 1.23,
+  "unit" : 0,
+  "sensorindex" : 1,
+  "zone" : 11,
+  "subzone" : 22
+}
+```
+
+**Important!** One should never expect this block to be present for a measurement. For a client it is better to use the standard conversion functions on the data content.
+
+default is **true**
 
 ### publish-format
 Default payload publish format. If not specified in the publishing configuration this is the value that will be used. Possible settings are
@@ -499,7 +516,7 @@ This is a method parse a string on JSON format and read configuration from it. T
 
 ## getConfigAsJson
 
-Return the current configuartion as a sting on JSON format.
+Return the current configuration as a sting on JSON format.
 
 ```c++
 std::string vscpClientMqtt::getConfigAsJson(void)
@@ -507,5 +524,5 @@ std::string vscpClientMqtt::getConfigAsJson(void)
 
 **Returns**
 
-A string with configuration on JSON format or an empty string if an error ocured or no configuration has been set.
+A string with configuration on JSON format or an empty string if an error occured or no configuration has been set.
 

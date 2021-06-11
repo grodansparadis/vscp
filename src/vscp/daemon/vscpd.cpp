@@ -349,7 +349,7 @@ main(int argc, char** argv)
     // The separate sub loggers will handle trace levels
     logger->set_level(spdlog::level::trace);                                                            
     spdlog::register_logger(logger);
-
+    spdlog::set_default_logger(logger);
 
     // *******************************
     //    Main loop is entered here

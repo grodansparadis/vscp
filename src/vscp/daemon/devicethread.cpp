@@ -59,7 +59,6 @@
 #include <vscp_debug.h>
 #include <vscphelper.h>
 
-#include <mosquitto.h>
 #include <mustache.hpp>
 using namespace kainjow::mustache;
 
@@ -67,162 +66,42 @@ using namespace kainjow::mustache;
 extern uint8_t *__vscp_key; // (256 bits)
 extern uint64_t gDebugLevel;
 
+
+
 //////////////////////////////////////////////////////////////////////
 //                         Callbacks
 //////////////////////////////////////////////////////////////////////
 
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_drv_log_callback
+// receive_event_callback
+//
+// Event received from MQTT client
 //
 
 static void
-mqtt_drv_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
-{
-  // Check pointers
-  if (nullptr == mosq)
-    return;
-  if (nullptr == pData)
-    return;
-
-  CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
-
-  if (gDebugLevel & VSCP_DEBUG_MQTT_LOG) {
-    char buf[80];
-    time_t tm;
-    time(&tm);
-    vscp_getTimeString(buf, sizeof(buf), &tm);
-    spdlog::get("logger")->trace("Driver {} MQTT log : {}", pDeviceItem->m_strName.c_str(), logmsg);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_drv_on_connect
-//
-
-static void
-mqtt_drv_on_connect(struct mosquitto *mosq, void *pData, int rv)
-{
-  // Check pointers
-  if (nullptr == mosq)
-    return;
-  if (nullptr == pData)
-    return;
-
-  CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
-  if (gDebugLevel & VSCP_DEBUG_MQTT_CONNECT) {
-    spdlog::get("logger")->trace("Driver {} MQTT connect", pDeviceItem->m_strName);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_drv_on_disconnect
-//
-
-static void
-mqtt_drv_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
-{
-  // Check pointers
-  if (nullptr == mosq)
-    return;
-  if (nullptr == pData)
-    return;
-
-  CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
-  if (gDebugLevel & VSCP_DEBUG_MQTT_CONNECT) {
-    spdlog::get("logger")->trace("Driver {} MQTT disconnect", pDeviceItem->m_strName);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_drv_on_message
-//
-
-static void
-mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg)
+receive_event_callback(vscpEvent *pev, void *pobj)
 {
   int rv;
-  vscpEvent ev;
 
   // Check pointers
-  if (nullptr == mosq) {
+  if (nullptr == pev) {
     return;
   }
 
-  if (nullptr == pData) {
+  if (nullptr == pobj) {
     return;
   }
 
-  if (nullptr == pMsg) {
-    return;
-  }
+  CDeviceItem *pDeviceItem = (CDeviceItem *) pobj;
 
-  CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
-
-  ev.sizeData = 0;
-  ev.pdata    = NULL;
-
-  if (pDeviceItem->m_mqtt_format == jsonfmt) {
-    std::string strPayload((const char *) pMsg->payload, pMsg->payloadlen);
-    printf("DRV: Message: [topic = %s]: Payload: %s\n", pMsg->topic, strPayload.c_str());
-    if (!vscp_convertJSONToEvent(&ev, strPayload)) {
-      // This is not a JSON formated event - we skip it
-      if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-        std::string str;
-        vscp_convertEventToString(str, &ev);
-        spdlog::get("logger")->error("Driver: {}: Failed to convert to event from JSON (check format) - event = {}",
-                                     pDeviceItem->m_strName,
-                                     str);
-      }
-      return;
-    }
-  }
-  else if (pDeviceItem->m_mqtt_format == xmlfmt) {
-    std::string strPayload((const char *) pMsg->payload, pMsg->payloadlen);
-    if (!vscp_convertXMLToEvent(&ev, strPayload)) {
-      if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-        std::string str;
-        vscp_convertEventToString(str, &ev);
-        spdlog::get("logger")->error("Driver: {}: Failed to convert to event from XML (check format) - event = {}",
-                                     pDeviceItem->m_strName,
-                                     str);
-      }
-      return;
-    }
-  }
-  else if (pDeviceItem->m_mqtt_format == strfmt) {
-    std::string strPayload((const char *) pMsg->payload, pMsg->payloadlen);
-    if (!vscp_convertStringToEvent(&ev, strPayload)) {
-      if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-        std::string str;
-        vscp_convertEventToString(str, &ev);
-        spdlog::get("logger")->error("Driver: {}: Failed to convert to event from STRING (check format) - event = {}",
-                                     pDeviceItem->m_strName,
-                                     str);
-      }
-      return;
-    }
-  }
-  else if (pDeviceItem->m_mqtt_format == binfmt) {
-    if (!vscp_getEventFromFrame(&ev, (const uint8_t *) pMsg->payload, pMsg->payloadlen)) {
-      if (gDebugLevel & VSCP_DEBUG_MQTT_MSG) {
-        std::string str;
-        vscp_convertEventToString(str, &ev);
-        spdlog::get("logger")->error("Driver: {}: Failed to convert to event from BINARY (check format) - event = {}",
-                                     pDeviceItem->m_strName,
-                                     str);
-      }
-      return;
-    }
-  }
-  else {
-    spdlog::get("logger")->error("Driver: {}: Failed to convert event (invalid format)", pDeviceItem->m_strName);
-    return;
-  }
+  spdlog::trace("VSCP Event received. class={0} type={1}", pev->vscp_class, pev->vscp_type);
 
   if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
 
     canalMsg msg;
-    vscp_convertEventToCanal(&msg, &ev);
+    vscp_convertEventToCanal(&msg, pev);
 
     // Use blocking method if available
     if (nullptr == pDeviceItem->m_proc_CanalBlockingSend) {
@@ -242,7 +121,7 @@ mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_
     }
   }
   else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
-    if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 500)) {
+    if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, pev, 500)) {
       spdlog::get("logger")->error("driver: mqtt_on_message - Failed to send level II event.");
     }
   }
@@ -251,26 +130,11 @@ mqtt_drv_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-// mqtt_drv_on_publish
-//
 
-static void
-mqtt_drv_on_publish(struct mosquitto *mosq, void *pData, int rv)
-{
-  // Check pointers
-  if (nullptr == mosq)
-    return;
-  if (nullptr == pData)
-    return;
-
-  // CDeviceItem *pItem = (CDeviceItem *)pData;
-  if (gDebugLevel & VSCP_DEBUG_MQTT_PUBLISH) {
-    spdlog::get("logger")->debug("Driver: MQTT Publish");
-  }
-}
 
 // ----------------------------------------------------------------------------
+
+
 
 #ifdef WIN32
 static void
@@ -517,116 +381,35 @@ deviceThread(void *pData)
     //                       MQTT Level I
     // -------------------------------------------------------------
 
-    if (pDeviceItem->m_mqtt_strClientId.length()) {
-      pDeviceItem->m_mosq =
-        mosquitto_new(pDeviceItem->m_mqtt_strClientId.c_str(), pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
-    }
-    else {
-      pDeviceItem->m_mqtt_bCleanSession = true; // Must be true without id
-      pDeviceItem->m_mosq               = mosquitto_new(NULL, pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
-    }
-
-    if (nullptr == pDeviceItem->m_mosq) {
-
-      if (ENOMEM == errno) {
-        spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
-      }
-      else if (EINVAL == errno) {
-        spdlog::get("logger")->error("Failed to create new mosquitto session (invalid parameters).");
-      }
-
+    // Setup MQTT for driver
+    if (!pDeviceItem->m_mqttClient.init()) {
+      spdlog::error("Failed to initialize MQTT client for level I driver.");
       dlclose(hdll);
       return NULL;
     }
 
-    // Set callbacks
-    mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_drv_log_callback);
-    mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_connect);
-    mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_disconnect);
-    mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_message);
-    mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_publish);
+    // Set GUID
+    pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
 
-    // Set username/password if defined
-    if (pDeviceItem->m_mqtt_strUserName.length()) {
-      int rv;
-      if (MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set(pDeviceItem->m_mosq,
-                                                              pDeviceItem->m_mqtt_strUserName.c_str(),
-                                                              pDeviceItem->m_mqtt_strPassword.c_str()))) {
-        if (MOSQ_ERR_INVAL == rv) {
-          spdlog::get("logger")->error("Failed to set mosquitto username/password (invalid parameter(s)).");
-        }
-        else if (MOSQ_ERR_NOMEM == rv) {
-          spdlog::get("logger")->error("Failed to set mosquitto username/password (out of memory).");
-        }
-      }
-    }
+    // Add user escapes
+    pDeviceItem->m_mqttClient.setUserEscape("driver-name", pDeviceItem->m_strName);
 
-    int rv = mosquitto_connect(pDeviceItem->m_mosq,
-                               pDeviceItem->m_mqtt_strHost.c_str(),
-                               pDeviceItem->m_mqtt_port,
-                               pDeviceItem->m_mqtt_keepalive);
+    // Driver level
+    pDeviceItem->m_mqttClient.setUserEscape("driver-level",
+                                            (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) ? "level1" : "level2");
 
-    if (MOSQ_ERR_SUCCESS != rv) {
+    // Add class/type tokens
+    pDeviceItem->m_mqttClient.setTokenMaps(&pDeviceItem->m_pCtrlObj->m_map_class_id2Token,
+                                           &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
-      if (MOSQ_ERR_INVAL == rv) {
-        spdlog::get("logger")->error("Failed to connect to mosquitto server (invalid parameter(s)).");
-      }
-      else if (MOSQ_ERR_ERRNO == rv) {
-        spdlog::get("logger")->error("Failed to connect to mosquitto server. System returned error (errno = %d).",
-                                     errno);
-      }
+    // Set event callback
+    pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
 
+    // Connect to server
+    if (!pDeviceItem->m_mqttClient.connect()) {
+      spdlog::error("Failed to connect to MQTT client level I driver.");
       dlclose(hdll);
       return NULL;
-    }
-
-    // mosquitto_threaded_set(pDeviceItem->m_mosq, true);
-
-    // Start the worker loop
-    rv = mosquitto_loop_start(pDeviceItem->m_mosq);
-    if (MOSQ_ERR_SUCCESS != rv) {
-      mosquitto_disconnect(pDeviceItem->m_mosq);
-      dlclose(hdll);
-      return NULL;
-    }
-
-    for (std::list<std::string>::const_iterator it = pDeviceItem->m_mqtt_subscriptions.begin();
-         it != pDeviceItem->m_mqtt_subscriptions.end();
-         ++it) {
-
-      std::string topic = *it;
-
-      // Fix subscribe/publish topics
-      mustache subtemplate{ topic };
-      data data;
-      data.set("guid", pDeviceItem->m_guid.getAsString());
-      std::string subscribe_topic = subtemplate.render(data);
-
-      // Subscribe to specified topic
-      rv = mosquitto_subscribe(pDeviceItem->m_mosq, NULL, subscribe_topic.c_str(), pDeviceItem->m_mqtt_qos);
-
-      switch (rv) {
-        case MOSQ_ERR_INVAL:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - input parameters were invalid.",
-                                       subscribe_topic.c_str());
-        case MOSQ_ERR_NOMEM:
-          spdlog::get("logger")->error(
-            "Failed to subscribed to specified topic [{}] - out of memory condition occurred.",
-            subscribe_topic.c_str());
-        case MOSQ_ERR_NO_CONN:
-          spdlog::get("logger")->error(
-            "Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.",
-            subscribe_topic.c_str());
-        case MOSQ_ERR_MALFORMED_UTF8:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - topic is not valid UTF-8.",
-                                       subscribe_topic.c_str());
-#if defined(MOSQ_ERR_OVERSIZE_PACKET)
-        case MOSQ_ERR_OVERSIZE_PACKET:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - resulting packet would be "
-                                       "larger than supported by the broker.",
-                                       subscribe_topic.c_str());
-#endif
-      }
     }
 
     // -------------------------------------------------------------
@@ -657,7 +440,6 @@ deviceThread(void *pData)
         canalMsg msg;
         vscpEvent ev;
 
-        // int rx = mosquitto_loop(pDeviceItem->m_mosq, 10, 1);
         if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle, &msg, 50)) {
 
           // Publish to MQTT broker
@@ -727,8 +509,6 @@ deviceThread(void *pData)
       while (!pDeviceItem->m_bQuit) {
 
         bActivity = false;
-
-        // int rx = mosquitto_loop(pDeviceItem->m_mosq, 10, 1);
 
         /////////////////////////////////////////////////////////////////////////////
         //                           Receive from device
@@ -803,7 +583,6 @@ deviceThread(void *pData)
 
         if (!bActivity) {
           usleep(100000); // 100 ms
-                          // int rx = mosquitto_loop(pDeviceItem->m_mosq, 100, 1);
         }
 
         bActivity = false;
@@ -824,9 +603,7 @@ deviceThread(void *pData)
     }
 
     pDeviceItem->m_bQuit = true;
-
-    mosquitto_disconnect(pDeviceItem->m_mosq);
-
+    pDeviceItem->m_mqttClient.disconnect();
     dlclose(hdll);
   }
 
@@ -882,123 +659,35 @@ deviceThread(void *pData)
     //                        MQTT Level II
     // -------------------------------------------------------------
 
-    if (pDeviceItem->m_mqtt_strClientId.length()) {
-      pDeviceItem->m_mosq =
-        mosquitto_new(pDeviceItem->m_mqtt_strClientId.c_str(), pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
-    }
-    else {
-      pDeviceItem->m_mqtt_bCleanSession = true; // Must be true without id
-      pDeviceItem->m_mosq               = mosquitto_new(NULL, pDeviceItem->m_mqtt_bCleanSession, pDeviceItem);
-    }
-
-    if (nullptr == pDeviceItem->m_mosq) {
-
-      if (ENOMEM == errno) {
-        spdlog::get("logger")->error("Failed to create new mosquitto session (out of memory).");
-      }
-      else if (EINVAL == errno) {
-        spdlog::get("logger")->error("Failed to create new mosquitto session (invalid parameters).");
-      }
-
+    // Setup MQTT for driver
+    if (!pDeviceItem->m_mqttClient.init()) {
+      spdlog::error("Failed to initialize MQTT client for level II driver.");
       dlclose(hdll);
       return NULL;
     }
 
-    // Set callbacks
-    mosquitto_log_callback_set(pDeviceItem->m_mosq, mqtt_drv_log_callback);
-    mosquitto_connect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_connect);
-    mosquitto_disconnect_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_disconnect);
-    mosquitto_message_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_message);
-    mosquitto_publish_callback_set(pDeviceItem->m_mosq, mqtt_drv_on_publish);
+    // Set GUID
+    pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
 
-    if (MOSQ_ERR_SUCCESS != mosquitto_reconnect_delay_set(pDeviceItem->m_mosq,
-                                                          pDeviceItem->m_mqtt_reconnect_delay,
-                                                          pDeviceItem->m_mqtt_reconnect_delay_max,
-                                                          pDeviceItem->m_mqtt_reconnect_exponential_backoff)) {
-      spdlog::get("logger")->error("Failed to set reconnect settings.");
-    }
+    // Add user escapes
+    pDeviceItem->m_mqttClient.setUserEscape("driver-name", pDeviceItem->m_strName);
 
-    // Set username/password if defined
-    if (pDeviceItem->m_mqtt_strUserName.length()) {
-      int rv;
-      if (MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set(pDeviceItem->m_mosq,
-                                                              pDeviceItem->m_mqtt_strUserName.c_str(),
-                                                              pDeviceItem->m_mqtt_strPassword.c_str()))) {
-        if (MOSQ_ERR_INVAL == rv) {
-          spdlog::get("logger")->error("Failed to set mosquitto username/password (invalid parameter(s)).");
-        }
-        else if (MOSQ_ERR_NOMEM == rv) {
-          spdlog::get("logger")->error("Failed to set mosquitto username/password (out of memory).");
-        }
-      }
-    }
+    // Driver level
+    pDeviceItem->m_mqttClient.setUserEscape("driver-level",
+                                            (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) ? "level1" : "level2");
 
-    int rv = mosquitto_connect(pDeviceItem->m_mosq,
-                               pDeviceItem->m_mqtt_strHost.c_str(),
-                               pDeviceItem->m_mqtt_port,
-                               pDeviceItem->m_mqtt_keepalive);
+    // Add class/type tokens
+    pDeviceItem->m_mqttClient.setTokenMaps(&pDeviceItem->m_pCtrlObj->m_map_class_id2Token,
+                                           &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
-    if (MOSQ_ERR_SUCCESS != rv) {
+    // Set event callback
+    pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
 
-      if (MOSQ_ERR_INVAL == rv) {
-        spdlog::get("logger")->error("Failed to connect to mosquitto server (invalid parameter(s)).");
-      }
-      else if (MOSQ_ERR_ERRNO == rv) {
-        spdlog::get("logger")->error("Failed to connect to mosquitto server. System returned error (errno = %d).",
-                                     errno);
-      }
-
+    // Connect to server
+    if (!pDeviceItem->m_mqttClient.connect()) {
+      spdlog::error("Failed to connect to MQTT client for level II driver.");
       dlclose(hdll);
       return NULL;
-    }
-
-    // mosquitto_threaded_set(pDeviceItem->m_mosq, true);
-
-    // Start the worker loop
-    rv = mosquitto_loop_start(pDeviceItem->m_mosq);
-    if (MOSQ_ERR_SUCCESS != rv) {
-      mosquitto_disconnect(pDeviceItem->m_mosq);
-      dlclose(hdll);
-      return NULL;
-    }
-
-    for (std::list<std::string>::const_iterator it = pDeviceItem->m_mqtt_subscriptions.begin();
-         it != pDeviceItem->m_mqtt_subscriptions.end();
-         ++it) {
-
-      std::string topic = *it;
-
-      // Fix subscribe/publish topics
-      mustache subtemplate{ topic };
-      data data;
-      data.set("guid", pDeviceItem->m_guid.getAsString());
-      std::string subscribe_topic = subtemplate.render(data);
-
-      // Subscribe to specified topic
-      rv = mosquitto_subscribe(pDeviceItem->m_mosq, NULL, subscribe_topic.c_str(), pDeviceItem->m_mqtt_qos);
-
-      switch (rv) {
-        case MOSQ_ERR_INVAL:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - input parameters were invalid.",
-                                       subscribe_topic);
-        case MOSQ_ERR_NOMEM:
-          spdlog::get("logger")->error(
-            "Failed to subscribed to specified topic [{}] - out of memory condition occurred.",
-            subscribe_topic);
-        case MOSQ_ERR_NO_CONN:
-          spdlog::get("logger")->error(
-            "Failed to subscribed to specified topic [{}] - client isn’t connected to a broker.",
-            subscribe_topic);
-        case MOSQ_ERR_MALFORMED_UTF8:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - topic is not valid UTF-8.",
-                                       subscribe_topic);
-#if defined(MOSQ_ERR_OVERSIZE_PACKET)
-        case MOSQ_ERR_OVERSIZE_PACKET:
-          spdlog::get("logger")->error("Failed to subscribed to specified topic [{}] - resulting packet would be "
-                                       "larger than supported by the broker.",
-                                       subscribe_topic);
-#endif
-      }
     }
 
     // -------------------------------------------------------------
@@ -1031,7 +720,6 @@ deviceThread(void *pData)
       vscpEvent ev;
       memset(&ev, 0, sizeof(vscpEvent));
 
-      // int rx = mosquitto_loop(pDeviceItem->m_mosq, 0, 1);
       if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPRead(pDeviceItem->m_openHandle, &ev, 50)) {
         continue;
       }
@@ -1061,7 +749,7 @@ deviceThread(void *pData)
     }
 
     pDeviceItem->m_bQuit = true;
-    mosquitto_disconnect(pDeviceItem->m_mosq);
+    pDeviceItem->m_mqttClient.disconnect();
 
     // Unload dll
     dlclose(hdll);

@@ -205,6 +205,7 @@ public:
   std::string getTokenFromTypeId(uint16_t cid, uint16_t tid) { return m_map_type_id2Token[((cid << 16) + tid)]; }
 
 public:
+
   // Will quit if set to true
   bool m_bQuit;
 
@@ -302,46 +303,20 @@ public:
   //                                  MQTT
   //**************************************************************************
 
-  std::string m_mqtt_strHost;                // MQTT broker
-  unsigned short m_mqtt_port;                // MQTT broker port
-  std::string m_mqtt_strClientId;            // Client id
-  std::string m_mqtt_strUserName;            // Username
-  std::string m_mqtt_strPassword;            // Password
-  int m_mqtt_qos;                            // Quality of service (0/1/2)
-  bool m_mqtt_bRetain;                       // Enable retain
-  int m_mqtt_keepalive;                      // Keep alive in seconds
-  bool m_mqtt_bCleanSession;                 // Clean session on disconnect if true
-  uint16_t m_mqtt_reconnect_delay;           // reconnect delay
-  uint16_t m_mqtt_reconnect_delay_max;       // max time between reconnects
-  bool m_mqtt_reconnect_exponential_backoff; // Use exponential backoff
+  /*!
+    VSCP MQTT client
+  */
+  vscpClientMqtt m_mqttClient;
 
-  // SSL/TSL
-  bool m_mqtt_bTLS; // True of a TLS/SSL connection should be done
-
-  std::string m_mqtt_cafile;   // path to a file containing the PEM encoded trusted CA certificate files.
-                               // Either cafile or capath must not be NULL.
-  std::string m_mqtt_capath;   // path to a directory containing the PEM encoded trusted CA certificate files.
-                               // See mosquitto.conf for more details on configuring this directory.
-                               // Either cafile or capath must not be NULL.
-  std::string m_mqtt_certfile; // path to a file containing the PEM encoded certificate file for this client.
-                               // If NULL, keyfile must also be NULL and no client certificate will be used.
-  std::string m_mqtt_keyfile;
-
-  std::string m_mqtt_pwKeyfile; // Password for keyfile (set only if it is encrypted on disc)
-
-  std::list<std::string> m_mqtt_subscriptions; // Subscribe topic templates
-  std::list<std::string> m_mqtt_publish;       // Publish topic templates
-
-  int m_mqtt_id;                   // Message id - the send function will set this to the message id of this particular
-                                   // message.  This can then be used with the subscribe callback to determine when
-                                   // the message has been sent.
-  enumMqttMsgFormat m_mqtt_format; // Format for mqtt events (JSON/XML)
+  json m_mqttConfig;
 
   std::string m_topicInterfaces; // Topic on which the dameon publish it's interfaces
-                                 // Default is vscp/{{guid}}/interfaces
+                                 // Default is vscp-daemon/{{guid}}/interfaces
+  std::string m_topicDiscovery;  // Topic on which the dameon publish it's new node discoveries
+                                 // Default is vscp-daemon/{{guid}}/discovery
 
 private:
-  struct mosquitto *m_mosq; // Handel for MQTT connection
+  //struct mosquitto *m_mosq; // Handel for MQTT connection
 };
 
 #endif // !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
