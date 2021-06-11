@@ -101,6 +101,7 @@
         "Åke Hedman"
     ],
     "editor.dragAndDrop": false,
+    "editor.codeLens": true,
     "diffEditor.codeLens": true,
     "cmake.configureSettings": {
         "VCPKG_TARGET_TRIPLET" : "x64-windows",
