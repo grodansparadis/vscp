@@ -822,8 +822,9 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent* pEvent, uint32_t mstimeout)
     // If array already contains lines check if one of them is an event
     while (m_inputStrArray.size()) {
 
-        std::string strItem = m_inputStrArray.front(); // Get first reply string
-        m_inputStrArray.pop_front(); // Remove it from the array
+        std::string strItem = m_inputStrArray.front();  // Get first reply string
+        m_inputStrArray.pop_front();                    // Remove it from the array
+        if (!strItem.length()) continue;
 
         if ((strItem.npos == strItem.find("+OK")) &&
             (strItem.npos == strItem.find("+ERR"))) {
@@ -866,9 +867,9 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent* pEvent, uint32_t mstimeout)
         // Check if one of the items is an event
         while (m_inputStrArray.size()) {
 
-            std::string strItem =
-              m_inputStrArray.front();   // Get first reply string
+            std::string strItem = m_inputStrArray.front();   // Get first reply string
             m_inputStrArray.pop_front(); // Remove it from the array
+            if (!strItem.length()) continue;
 
             // Not "+OK" or "+ERR"
             if ((strItem.npos == strItem.find("+OK")) &&
