@@ -399,21 +399,49 @@ install(TARGETS vscpd
         RUNTIME DESTINATION 	
         ${CMAKE_INSTALL_SBINDIR})
 
+# Build main directory structure
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level1/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level2/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/web/html/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/html/js/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/html/css/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/html/images/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+
+# Location for log
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/log/vscp/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+
 # Default configuration file
 install(FILES resources/linux/vscpd.json     
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-install(FILES resources/linux/vscpd.json resources/vscp.key     
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
+install(FILES resources/linux/vscpd.json resources/vscp.key
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE)            
 install(FILES resources/README-certs      
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs/
             PERMISSIONS OWNER_READ OWNER_WRITE)
 install(FILES resources/README-ca-certificates      
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates/
             PERMISSIONS OWNER_READ OWNER_WRITE)
 install(FILES resources/vscp_events.sqlite3      
-            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/
             PERMISSIONS OWNER_READ OWNER_WRITE)      
 
 endif()

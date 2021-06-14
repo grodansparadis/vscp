@@ -505,7 +505,7 @@
                             "topic" : "publish/topic/binary",
                             "qos" : 0,
                             "retain" : false,
-                            "format": "binary"
+                            "format": "binary"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
                         },
                         {
                             "topic" : "vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}",
