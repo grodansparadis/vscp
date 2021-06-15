@@ -8,7 +8,7 @@
     "vscpkey" : "/var/vscp/vscp.key",
     "logging" : {
         "file-enable-log": true,
-        "file-log-level" : "info",
+        "file-log-level" : "debug",
         "file-pattern" : "[vscp] [%^%l%$] %v",
         "file-path" : "/tmp/vscpd.log",
         "file-max-size" : 5242880,
@@ -19,32 +19,124 @@
     },
 
     "mqtt" : {
+        "bind" : "",   
         "host" : "192.168.1.7",
         "port" : 1883,
+        "mqtt-options" : {
+            "tcp-nodelay" : true,
+            "protocol-version": 311,
+            "receive-maximum": 20,
+            "send-maximum": 20,
+            "ssl-ctx-with-defaults": 0,
+            "tls-ocsp-required": 0,
+            "tls-use-os-certs" : 0
+        },
         "user" : "vscp",
-	    "password": "secret",
-	    "clientid" : "mosq-vscp-daemon-000001",
-	    "format" : "json",
+        "password": "secret",
+        "clientid" : "the-vscp-daemon",  
+        "publish-format" : "json",
+        "subscribe-format" : "auto",
         "qos" : 1,
         "bcleansession" : false,
-        "bretain" : false,
+        "bretain" : false,      
         "keepalive" : 60,
         "bjsonmeasurementblock": true,
-        "reconnect-delay" : 2,
-        "reconnect-delay-max" : 10,
-        "reconnect-exponential-backoff" : false,
-        "cafile" : "",
-    	"capath" : "",
-    	"certfile" : "",
-    	"keyfile" : "",
-        "pwkeyfile" : "",
-        "topic-interfaces" : "vscp/{{guid}}/interfaces",
-        "subscribe" : [
-            "oooo"
+        "topic-daemon-base": "vscp-daemon/{{guid}}/",
+        "topic-interfaces" : "interfaces",
+        "topic-discovery" : "discovery",
+        "reconnect" : {
+          "delay" : 2,
+          "delay-max" : 10,
+          "exponential-backoff" : false
+        },
+        "tls" : {
+            "cafile" : "",
+            "capath" : "",
+            "certfile" : "",
+            "keyfile" : "",
+            "pwkeyfile" : "",
+            "no-hostname-checking" : true,
+            "cert-reqs" : 0,
+            "version": "",
+            "ciphers": "",
+            "psk": "",
+            "psk-identity" : ""
+        },
+        "will": {
+            "topic": "vscp-daemon/{{guid}}/will",
+            "qos": 1,
+            "retain": true,
+            "payload": "VSCP Daemon is down"
+        },
+        "subscribe": [
+            {
+                "topic": "test1/topic/A",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/topic/B",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            }
         ],
-        "publish" : [
-            "grodan"
-        ]
+        "bescape-pub-topics": true,
+        "user-escapes": {
+            "escape1": "valu1",
+            "escape2": "valu2"
+        },
+        "publish": [
+            {
+                "topic" : "publish/topic/json",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            },
+            {
+                "topic" : "publish/topic/xml",
+                "qos" : 0,
+                "retain" : false,
+                "format": "xml"
+            },
+            {
+                "topic" : "publish/topic/string",
+                "qos" : 0,
+                "retain" : false,
+                "format": "string"
+            },
+            {
+                "topic" : "publish/topic/binary",
+                "qos" : 0,
+                "retain" : false,
+                "format": "binary"
+            },
+            {
+                "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            }    
+        ],      
+        "v5" : {
+            "user-properties": {
+                "prop1" : "value",
+                "prop2" : "value"    
+            } 
+        }
     },
 
     "drivers" : {
@@ -59,31 +151,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
 
                 "mqtt" : {
+                    "bind" : "",   
                     "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-l1drv-logger",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level1-logger-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscpp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -96,31 +278,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:02",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-can4vscp-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level1-can4vscp-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -129,38 +401,132 @@
                 "config" : "can0",
                 "flags" : 0,
                 "translation" : 2,
-                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.1",
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {
+                    "bind" : "",   
                     "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-socketcanl1-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level1-socketcan-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [                        
-                        "aaa",
-                        "bbb",
-                        "ccc",
-                        "ddd"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                        },
+                        {
+                            "topic" : "vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "vscp2/{{guid}}/{{class-token}}/{{type-token}}/{{nickname}}",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }
+   
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -173,31 +539,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:04",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-can232-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level1-can232-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             }
         ],
@@ -210,31 +666,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01",
 
                 "mqtt" : {
+                    "bind" : "",   
                     "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-loggerl1-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-logger-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -245,31 +791,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:06:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-lmsensors-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-lmsensors-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -280,31 +916,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:07:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-socketcanl2-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-socketcan-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certuuuufile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "socketcan"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -315,31 +1041,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:08:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-mqtt-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-mqtt-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -350,31 +1166,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
-                    "port" : 9598,
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
+                    "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-tcpiplink-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-tcpiplink-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -385,31 +1291,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0A:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-raweth-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-rawethernet-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -420,31 +1416,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0B:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-sim-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-sim-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             },
             {
@@ -455,31 +1541,121 @@
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:0C:00:00:00:00:00:00:00",
 
                 "mqtt" : {
-                    "host" : "127.0.0.1",
+                    "bind" : "",   
+                    "host" : "192.168.1.7",
                     "port" : 1883,
+                    "mqtt-options" : {
+                        "tcp-nodelay" : true,
+                        "protocol-version": 311,
+                        "receive-maximum": 20,
+                        "send-maximum": 20,
+                        "ssl-ctx-with-defaults": 0,
+                        "tls-ocsp-required": 0,
+                        "tls-use-os-certs" : 0
+                    },
                     "user" : "vscp",
                     "password": "secret",
-                    "clientid" : "mosq-vscp-1wire-000001",
-                    "format" : "json",
-                    "qos" : 0,
+                    "clientid" : "vscp-level2-1wire-driver",  
+                    "publish-format" : "json",
+                    "subscribe-format" : "auto",
+                    "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,
+                    "bretain" : false,      
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
-                    "reconnect-delay" : 2,
-                    "reconnect-delay-max" : 10,
-                    "reconnect-exponential-backoff" : false,
-                    "cafile" : "",
-                    "capath" : "",
-                    "certfile" : "",
-                    "keyfile" : "",
-                    "pwkeyfile" : "",
-                    "subscribe" : [
-                        "vscp/{{guid}}/#"
+                    "reconnect" : {
+                      "delay" : 2,
+                      "delay-max" : 10,
+                      "exponential-backoff" : false
+                    },
+                    "tls" : {
+                        "cafile" : "",
+                        "capath" : "",
+                        "certfile" : "",
+                        "keyfile" : "",
+                        "pwkeyfile" : "",
+                        "no-hostname-checking" : true,
+                        "cert-reqs" : 0,
+                        "version": "",
+                        "ciphers": "",
+                        "psk": "",
+                        "psk-identity" : ""
+                    },
+                    "will": {
+                        "topic": "vscp-daemon/{{guid}}/will",
+                        "qos": 1,
+                        "retain": true,
+                        "payload": "Driver down"
+                    },
+                    "subscribe": [
+                        {
+                            "topic": "test1/topic/A",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/topic/B",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        },
+                        {
+                            "topic": "test2/#",
+                            "qos": 0,
+                            "v5-options": 0,
+                            "format": "auto"
+                        }
                     ],
-                    "publish" : [
-                        "vscp/{{guid}}/{{class}}/{{type}}/{{nodeid}}"
-                    ]
+                    "bescape-pub-topics": true,
+                    "user-escapes": {
+                        "escape1": "valu1",
+                        "escape2": "valu2"
+                    },
+                    "publish": [
+                        {
+                            "topic" : "publish/topic/json",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        },
+                        {
+                            "topic" : "publish/topic/xml",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "xml"
+                        },
+                        {
+                            "topic" : "publish/topic/string",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "string"
+                        },
+                        {
+                            "topic" : "publish/topic/binary",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "binary"
+                        },
+                        {
+                            "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                            "qos" : 0,
+                            "retain" : false,
+                            "format": "json"
+                        }    
+                    ],      
+                    "v5" : {
+                        "user-properties": {
+                            "prop1" : "value",
+                            "prop2" : "value"    
+                        } 
+                    }
                 }
             }
         ]

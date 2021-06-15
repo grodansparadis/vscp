@@ -9,7 +9,7 @@
     "vscpkey" : "/etc/vscp/vscp.key",
     "logging" : {
         "file-enable-log": true,
-        "file-log-level" : "info",
+        "file-log-level" : "debug",
         "file-pattern" : "[vscp] [%^%l%$] %v",
         "file-path" : "/var/log/vscp/vscpd.log",
         "file-max-size" : 5242880,
@@ -21,7 +21,7 @@
 
     "mqtt" : {
         "bind" : "",   
-        "host" : "192.168.1.7",
+        "host" : "test.mosquitto.org",
         "port" : 1883,
         "mqtt-options" : {
             "tcp-nodelay" : true,
@@ -42,6 +42,9 @@
         "bretain" : false,      
         "keepalive" : 60,
         "bjsonmeasurementblock": true,
+        "topic-daemon-base": "vscp-daemon/{{guid}}/",
+        "topic-interfaces" : "interfaces",
+        "topic-discovery" : "discovery",
         "reconnect" : {
           "delay" : 2,
           "delay-max" : 10,
@@ -61,32 +64,32 @@
             "psk-identity" : ""
         },
         "will": {
-            "topic": "Last Will",
-            "qos": 0,
-            "retain": false,
-            "payload": "This is the end"
+            "topic": "vscp-daemon/{{guid}}/will",
+            "qos": 1,
+            "retain": true,
+            "payload": "VSCP Daemon is down"
         },
         "subscribe": [
             {
-                "topic": "test1/topic/A",
+                "topic": "vscp/topic/A",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/topic/B",
+                "topic": "vscp/topic/B",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test/#",
+                "topic": "vscp/los/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/#",
+                "topic": "vscp/users/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
@@ -99,25 +102,25 @@
         },
         "publish": [
             {
-                "topic" : "publish/topic/json",
+                "topic" : "vscp/publish/topic/json",
                 "qos" : 0,
                 "retain" : false,
                 "format": "json"
             },
             {
-                "topic" : "publish/topic/xml",
+                "topic" : "vscp/publish/topic/xml",
                 "qos" : 0,
                 "retain" : false,
                 "format": "xml"
             },
             {
-                "topic" : "publish/topic/string",
+                "topic" : "vscp/publish/topic/string",
                 "qos" : 0,
                 "retain" : false,
                 "format": "string"
             },
             {
-                "topic" : "publish/topic/binary",
+                "topic" : "vscp/publish/topic/binary",
                 "qos" : 0,
                 "retain" : false,
                 "format": "binary"
@@ -150,7 +153,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -264,7 +267,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -277,7 +280,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -391,7 +394,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : true,
@@ -399,12 +402,12 @@
                 "config" : "can0",
                 "flags" : 0,
                 "translation" : 2,
-                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so.1.1.1",
+                "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
                 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -518,7 +521,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -531,7 +534,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -645,7 +648,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             }
         ],
         "level2" : [
@@ -658,7 +661,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -772,7 +775,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -783,7 +786,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -897,7 +900,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -908,7 +911,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1022,7 +1025,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1033,7 +1036,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1147,7 +1150,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1158,7 +1161,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1272,7 +1275,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1283,7 +1286,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1397,7 +1400,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1408,7 +1411,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1522,7 +1525,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             },
             {
                 "enable" : false,
@@ -1533,7 +1536,7 @@
 
                 "mqtt" : {
                     "bind" : "",   
-                    "host" : "192.168.1.7",
+                    "host" : "test.mosquitto.org",
                     "port" : 1883,
                     "mqtt-options" : {
                         "tcp-nodelay" : true,
@@ -1647,7 +1650,7 @@
                             "prop2" : "value"    
                         } 
                     }
-                },
+                }
             }
         ]
     }

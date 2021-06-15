@@ -50,7 +50,7 @@ SET(CPACK_PACKAGE_VERSION_MINOR "${MINOR_VERSION}")
 SET(CPACK_PACKAGE_VERSION_PATCH "${PATCH_VERSION}")
 SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
-SET(CPACK_IGNORE_FILES "\\.psd$;/CVS/;/\\.svn/;/\\.git/;\\.swp$;/CMakeLists.txt.user;\\.#;/#;\\.tar.gz$;/CMakeFiles/;CMakeCache.txt;\\.qm$;/build/;\\.diff$;.DS_Store'")
+#SET(CPACK_IGNORE_FILES "\\.psd$;/CVS/;/\\.svn/;/\\.git/;\\.swp$;/CMakeLists.txt.user;\\.#;/#;\\.tar.gz$;/CMakeFiles/;CMakeCache.txt;\\.qm$;/build/;\\.diff$;.DS_Store'")
 set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
 SET(CPACK_NSIS_HELP_LINK ${APP_URL})
 SET(CPACK_NSIS_URL_INFO_ABOUT ${APP_URL})
@@ -75,6 +75,7 @@ endif()
 # Man build and install
 if(NOT DEFINED WIN32)
     add_subdirectory(man)
+    add_subdirectory(src/vscp/vscp-mkpasswd)
 endif()
 
 option(USE_SSL "Use SSL" TRUE)
@@ -102,6 +103,7 @@ INCLUDE(InstallRequiredSystemLibraries)
 if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/folders;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/preinst;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postinst;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/logrotate;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/prerm;"
@@ -122,7 +124,7 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
             ${CMAKE_CURRENT_BINARY_DIR}/resources/nsis/NSIS.definitions.nsh
         )
     else()
-        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto1 libsystem0 libspdlog-dev")
+        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto-dev libsystem0 libspdlog-dev")
         SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
         SET(CPACK_DEBIAN_PACKAGE_SECTION "network")
         SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
@@ -388,32 +390,77 @@ else()
         ${OPENSSL_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${EXPAT_LIBRARIES}
-#        spdlog::spdlog spdlog::spdlog_header_only
     )
 endif()
 
 if(WIN32)
 else()
+
+# Build main directory structure
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level1/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level2/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/web/html/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/web/html/js/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/web/html/css/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+install(DIRECTORY
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/web/html/images/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+
+# Location for log
+install(DIRECTORY 
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/log/vscp/
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+            
 # The VSCP daemon executable
 install(TARGETS vscpd
         RUNTIME DESTINATION 	
         ${CMAKE_INSTALL_SBINDIR})
 
+# Password generation
+install(TARGETS vscp-mkpasswd
+        RUNTIME DESTINATION 	
+        ${CMAKE_INSTALL_BINDIR})
+
+# The VSCP daemon systemctl service file
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.service
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/systemd/system/)
+
 # Default configuration file
-install(FILES resources/linux/vscpd.json     
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.json
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-install(FILES resources/linux/vscpd.json resources/vscp.key     
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp
-            PERMISSIONS OWNER_READ OWNER_WRITE)            
-install(FILES resources/README-certs      
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs
+# Default encryption key
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/vscp.key
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE)
-install(FILES resources/README-ca-certificates      
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates
+# Readme for certs
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-certs
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs/
             PERMISSIONS OWNER_READ OWNER_WRITE)
-install(FILES resources/vscp_events.sqlite3      
-            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd
-            PERMISSIONS OWNER_READ OWNER_WRITE)      
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-ca-certificates
+            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates/
+            PERMISSIONS OWNER_READ OWNER_WRITE)
+# Database
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/
+            PERMISSIONS OWNER_READ OWNER_WRITE)
+
+#SET(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+#            "${CMAKE_CURRENT_SOURCE_DIR}/prerm;${CMAKE_CURRENT_SOURCE_DIR}/postrm;${CMAKE_CURRENT_SOURCE_DIR}/files")
+# enable start/restart vscpd service
+#install(CODE "execute_process(COMMAND systemctl stop vscpd && systemctl enable vscpd && service vscpd start)") 
 
 endif()

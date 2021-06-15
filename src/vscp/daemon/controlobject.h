@@ -310,10 +310,20 @@ public:
 
   json m_mqttConfig;
 
-  std::string m_topicInterfaces; // Topic on which the dameon publish it's interfaces
-                                 // Default is vscp-daemon/{{guid}}/interfaces
-  std::string m_topicDiscovery;  // Topic on which the dameon publish it's new node discoveries
-                                 // Default is vscp-daemon/{{guid}}/discovery
+  /*!
+   Base topic for VSCP daemon info. Should end with slash
+ */
+  std::string m_topicDaemonBase; 
+  /*!
+    Topic under daemon base which the dameon publish it's interfaces
+    Default is 'daemon-base'/interfaces
+  */
+  std::string m_topicInterfaces; 
+  /*!
+    Topic under daemon base on which the dameon publish it's new node discoveries
+    Default is 'daemon-base'/discovery
+  */
+  std::string m_topicDiscovery;  
 
 private:
   //struct mosquitto *m_mosq; // Handel for MQTT connection
