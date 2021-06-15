@@ -393,7 +393,22 @@ extern "C"
 #define VSPP_BOOTLOADER_NXP1      0x20 /* NXP/Philips/Freescale algorithm 0 */
 #define VSCP_BOOTLOADER_ST        0x30 /* ST STR algorithm 0 */
 #define VSCP_BOOTLOADER_FREESCALE 0x40 /* Freescale Kinetics algorithm 0 */
-#define VSCP_BOOTLOADER_NONE      0xff
+#define VSCP_BOOTLOADER_USER0     0xf0 /* Used defined bootloader 0 */
+#define VSCP_BOOTLOADER_NONE1     0xf1 /* Used defined bootloader 1 */
+#define VSCP_BOOTLOADER_NONE2     0xf2 /* Used defined bootloader 2 */
+#define VSCP_BOOTLOADER_NONE3     0xf3 /* Used defined bootloader 3 */
+#define VSCP_BOOTLOADER_NONE4     0xf4 /* Used defined bootloader 4 */
+#define VSCP_BOOTLOADER_NONE5     0xf5 /* Used defined bootloader 5 */
+#define VSCP_BOOTLOADER_NONE6     0xf6 /* Used defined bootloader 6 */
+#define VSCP_BOOTLOADER_NONE7     0xf7 /* Used defined bootloader 7 */
+#define VSCP_BOOTLOADER_NONE8     0xf8 /* Used defined bootloader 8 */
+#define VSCP_BOOTLOADER_NONE9     0xf9 /* Used defined bootloader 9 */
+#define VSCP_BOOTLOADER_NONE10    0xfa /* Used defined bootloader 10 */
+#define VSCP_BOOTLOADER_NONE11    0xfb /* Used defined bootloader 11 */
+#define VSCP_BOOTLOADER_NONE12    0xfc /* Used defined bootloader 12 */
+#define VSCP_BOOTLOADER_NONE13    0xfd /* Used defined bootloader 13 */
+#define VSCP_BOOTLOADER_NONE14    0xfe /* Used defined bootloader 14 */
+#define VSCP_BOOTLOADER_NONE15    0xff /* No bootloader available */
 
 /*          * * * Data Coding for VSCP packets * * *   */
 

@@ -40,10 +40,15 @@ setup_vscpd_user() {
 	fi
 }
 
+setup_vscpd_systemd() {
+	/usr/bin/systemctl enable vscpd.service
+	/usr/bin/systemctl start vscpd
+}
+
 fix_permissions() {
 	chown vscp /var/lib/vscp
 	chgrp vscp /var/lib/vscp
-   	chown vscp /var/lib/vscp/drivers
+  chown vscp /var/lib/vscp/drivers
 	chgrp vscp /var/lib/vscp/drivers
 	chown vscp /var/lib/vscp/drivers/level1
 	chgrp vscp /var/lib/vscp/drivers/level1
