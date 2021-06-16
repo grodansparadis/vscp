@@ -59,4 +59,4 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
         make -j$(nproc)
-        make install DESTDIR=AppDir
+        sudo make install DESTDIR=AppDir
