@@ -65,8 +65,8 @@ target_link_libraries(vscp-mkpasswd PRIVATE m
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
-    gtest
-    gtest_main
+#    gtest
+#    gtest_main
 )    
 
 #add_library(MathFunctions mysqrt.cxx)

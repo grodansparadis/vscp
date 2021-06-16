@@ -48,6 +48,7 @@ set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY ${APP_NAME})
 SET(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR_VERSION}")
 SET(CPACK_PACKAGE_VERSION_MINOR "${MINOR_VERSION}")
 SET(CPACK_PACKAGE_VERSION_PATCH "${PATCH_VERSION}")
+SET(CPACK_PACKAGING_INSTALL_PREFIX "/")
 SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
 #SET(CPACK_IGNORE_FILES "\\.psd$;/CVS/;/\\.svn/;/\\.git/;\\.swp$;/CMakeLists.txt.user;\\.#;/#;\\.tar.gz$;/CMakeFiles/;CMakeCache.txt;\\.qm$;/build/;\\.diff$;.DS_Store'")
@@ -55,6 +56,7 @@ set(CPACK_SOURCE_IGNORE_FILES ${CPACK_IGNORE_FILES})
 SET(CPACK_NSIS_HELP_LINK ${APP_URL})
 SET(CPACK_NSIS_URL_INFO_ABOUT ${APP_URL})
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+
 
 if(NOT DEFINED APP_LOW_NAME)
 set(APP_LOW_NAME "vscpd")
@@ -103,11 +105,11 @@ INCLUDE(InstallRequiredSystemLibraries)
 if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/folders;"
-                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/preinst;"
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/conffiles;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postinst;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/logrotate;"
                                            "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/prerm;"
-                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postrm" )
+                                           "${CMAKE_CURRENT_SOURCE_DIR}/resources/debpkg/postrm;" )
 
     IF(WIN32)
         SET(CPACK_GENERATOR "NSIS" "ZIP")
@@ -124,7 +126,8 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
             ${CMAKE_CURRENT_BINARY_DIR}/resources/nsis/NSIS.definitions.nsh
         )
     else()
-        SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1 libssl1.1 libmosquitto-dev libsystem0 libspdlog-dev")
+        SET(CPACK_DEBIAN_PACKAGE_DEPENDS 
+                "libuuid1, lsb-base (>=4.1+Debian3), libc6-dev (>= 2.14), libstdc++6 (>= 5.2), libgcc1 (>= 1:3.0), libssl-dev (>=1.0.0), libmosquitto-dev (>=1.4.15), libexpat1-dev (>=2.0), libmosquitto-dev, libsystemd-dev, libwrap0-dev (>=7.6), libz-dev")
         SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
         SET(CPACK_DEBIAN_PACKAGE_SECTION "network")
         SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
