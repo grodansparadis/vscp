@@ -97,36 +97,36 @@
         ],
         "bescape-pub-topics": true,
         "user-escapes": {
-            "escape1": "valu1",
-            "escape2": "valu2"
+            "escape1": "value1",
+            "escape2": "value2"
         },
         "publish": [
             {
-                "topic" : "vscp/publish/topic/json",
+                "topic" : "vscp/{{guid}}/topic/json",
                 "qos" : 0,
                 "retain" : false,
                 "format": "json"
             },
             {
-                "topic" : "vscp/publish/topic/xml",
+                "topic" : "vscp/{{guid}}/topic/xml",
                 "qos" : 0,
                 "retain" : false,
                 "format": "xml"
             },
             {
-                "topic" : "vscp/publish/topic/string",
+                "topic" : "vscp/{{guid}}/topic/string",
                 "qos" : 0,
                 "retain" : false,
                 "format": "string"
             },
             {
-                "topic" : "vscp/publish/topic/binary",
+                "topic" : "vscp/{{guid}}/topic/binary",
                 "qos" : 0,
                 "retain" : false,
                 "format": "binary"
             },
             {
-                "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                "topic" : "vscp/{{guid}}/topic/{{datetime}}/{{user}}/C",
                 "qos" : 0,
                 "retain" : false,
                 "format": "json"

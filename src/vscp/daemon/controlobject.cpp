@@ -548,13 +548,14 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
       }
     }
     else {
-
+      // Database does not exist. Must be created
       if (SQLITE_OK != sqlite3_open(m_pathMainDb.c_str(), &m_db_vscp_daemon)) {
 
         // Failed to open/create the database file
-        spdlog::error("controlobject:  VSCP Daemon database could not be opened/created. - Path={} error={}",
+        spdlog::error("controlobject:  VSCP Daemon database could not be opened/created (check access rights). - Path={} error={}",
                       m_pathMainDb,
                       sqlite3_errmsg(m_db_vscp_daemon));
+        return false;                      
       }
 
       // We will try to create it
