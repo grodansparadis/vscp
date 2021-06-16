@@ -1272,9 +1272,9 @@ vscpClientMqtt::initFromJson(const std::string &config)
         if (pubobj.is_object()) {
 
           std::string topic        = "";
-          int qos                  = m_qos;
-          bool bretain             = m_bRetain;
-          enumMqttMsgFormat format = m_publish_format;
+          int qos                  = m_qos;             // Default
+          bool bretain             = m_bRetain;         // Default
+          enumMqttMsgFormat format = m_publish_format;  // Default
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
             topic = pubobj["topic"].get<std::string>();
@@ -1300,23 +1300,23 @@ vscpClientMqtt::initFromJson(const std::string &config)
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
               spdlog::debug("json mqtt init: 'publish obj format' Set to BINARY.");
-              m_subscribe_format = binfmt;
+              format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
               spdlog::debug("json mqtt init: 'publish obj format' Set to STRING.");
-              m_subscribe_format = strfmt;
+              format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
               spdlog::debug("json mqtt init: 'publish obj format' Set to JSON.");
-              m_subscribe_format = jsonfmt;
+              format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
               spdlog::debug("json mqtt init: 'publish obj format' Set to XML.");
-              m_subscribe_format = xmlfmt;
+              format = xmlfmt;
             }
             else {
               spdlog::error("json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
-              m_subscribe_format = jsonfmt;
+              format = jsonfmt;
             }
           }
 

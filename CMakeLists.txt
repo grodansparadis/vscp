@@ -424,7 +424,7 @@ install(DIRECTORY
 
 # Location for log
 install(DIRECTORY 
-            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/log/vscp/
+            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/log/vscp/
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
             
 # The VSCP daemon executable
