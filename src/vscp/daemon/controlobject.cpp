@@ -1177,7 +1177,7 @@ CControlObject::discovery(vscpEvent *pev)
                                                     j.dump().c_str(),
                                                     1,
                                                     true))) {
-      spdlog::error("Failed to publish VSCP daemon interfaces. error={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("Failed to publish VSCP daemon discovery. error={0} {1}", rv, mosquitto_strerror(rv));
     }
 
     // Add local host to in memory map
