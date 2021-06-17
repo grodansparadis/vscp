@@ -2,51 +2,101 @@
 
 The configuration file is used to tell which drivers should be used and how the VSCP daemon should operate. From version 15.0 this file has changed format from XML to JSON.
 
+As always with configuration files it easy to make changes that make the system nonfunctional. Sp be careful when you edit the file and keep to the JSON standard. Most important keep a backup so that yo can go back to a working copy if something goes wrong.
+
+It is very convenient to use one of the online JSON validators to validate the JSON file when doing a lot of changes. There are many available and a good one is [this one](https://jsonformatter.curiousconcept.com/). Just copy the content of the file in the box and validate.
+
 When you change something in the configuration file you have to restart the VSCP daemon for the changes to take effect. You do this with
 
 ```bash
 sudo systemctl restart vscpd
 ```
 
+If something is wrong the VSCP daemon may not start. Check the log file at **/var/log/vscpd.log**. You can also use
+
+```bash
+ps aux | grep vscpd
+```
+
+to see if the VSCP daemon is running or not.
+
+
 
 ## Location of the configuration file
 
-The daemon needs a configuration file called **vscpd.json**. It will not start without this file nor if the file contains invalid information. Normally the installation program will create a default file.
+The daemon needs a configuration file called **vscpd.json**. The server will not start without this file nor if the file contains invalid information or information on invalid format. Normally the installation program will create a default file.
 
-On most machines it will be located in 
+On most machines the configuration file will be located in 
 
-    /etc/vscp
+    /etc/vscp/vscpd.json
     
 The location that is searched to find the configuration file can be changed with switches when you start the daemon. see the section about [startup switches](http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_startup_switches) for each platform.
 
+## To think about before you start :id=think-before
+
+### GUID's :id=think-before-guid
+
+GUID's stands for **G**lobally **U**nique **ID**entifiers and this id is used in VSCP to identify thing. All devices and nodes are identified by a GUID but so is also the VSCP daemon (it is after all a node to) and each of the drivers connected to the server. Check the [VSCP specification](https://docs.vscp.org/#vscpspec) for more information about GUID's.
+
+The daemon needs a GUID assigned to it. Preferably a unique one. It is possible to base a GUID on the machines MAC address if it have an ethernet interface. There is also other id's to build upon. One can also ask for a personal assigned series. See [the VSCP specification](https://docs.vscp.org/#vscpspec) for more info on how.
+
+For most users the MAC address of the machine the VSCP daemon is installed on is the best solution. The installation package will even install a helper script on Linux that help you create this GUID. The script is called **vscp_eth_tp_guid**. To used it you need the name of your ethernet interface. You can get that with
+
+```bash
+ip link show
+```
+Say that your ethernet interface is **eth0** then you can use the script like
+
+```bash
+vscp_eth_to_guid eth0
+```
+and you will get a valid GUID from your ethernet address. You can even use
+
+```bash
+sudo vscp_eth_to_guid eth0 /etc/vscp/vscpd.json
+```
+and the distributed demo GUID's set in the standard file will all be changed.
 
 ##  Description of the configuration :id=config-description
 
 The configuration file is a standard JSON file that contains information that tells the VSCP daemon what to do and how it should be done. The information in it is divided into sections and this documentation and each section and it's content is described below.
 
-You can view a sample configuration file [here](https://github.com/grodansparadis/vscp/blob/master/install_files/unix/vscpd.json).
+You can view a sample configuration file [here](https://github.com/grodansparadis/vscp/blob/master/resources/linux/vscpd.json).
 
 ## The general section :id=config-general
 
 In the general section you find settings that are common to all components of the VSCP daemon software. 
 
 ```json
-"runasuser" : "vscp",		
+"runasuser" : "vscp",	
+"debug" : 0,	
 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
 "servername" : "The VSCP daemon",
 "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
 "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
 "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
 "vscpkey" : "/var/vscp/vscp.key",
-"debug" : 0,
+
 "logging" : {
-    "path" : "var/log/vscp/vscpd.log",
-    "max-size" : 104857600,
-    "max-files" : 7,
-    "syslog" : true
-},
+    "file-enable-log": true,
+    "file-log-level" : "debug",
+    "file-pattern" : "[vscp] [%^%l%$] %v",
+    "file-path" : "/var/log/vscp/vscpd.log",
+    "file-max-size" : 5242880,
+    "file-max-files" : 7,
+    "console-enable-log": false,
+    "console-log-level" : "info",
+    "console-pattern" : "[vscp] [%^%l%$] %v"
+}
 ```
 
+### debug :id=config-gerneral-debug    
+
+The debug entry is a 64-bit number (each bit is a flag)  that enable a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
+
+The debug bits are defined in [this file](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp_debug.h).
+
+Se the [solving problems](./solving_problems.md) section for more information.
 
 ### runasuser :id=config-general-runasuser
 
@@ -68,16 +118,9 @@ Set the server GUID for the daemon. This GUID is the base for the system.
 If not set here (or all nills) a GUID will be formed from the (first) MAC address of the machine the daemon runs on (on Linux needs to be run as root to get this) or if this fails the local IP address is used to form the GUID. The GUID string should be in MSB -> LSB order and have the four lsb set to zero.
 
 **Example**
+```
     FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:00:00:00:00
-
-### debug :id=config-gerneral-debug    
-
-The debug entry is a 64-bit number (each bit is a flag)  that enable a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
-
-TYhe debug bits are defined in [this file](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp_debug.h).
-
-Se the [solving problems](./solving_problems.md) section for more information.
- 
+```
 
 ### Servername :id=config-general-servername
 

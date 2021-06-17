@@ -319,7 +319,7 @@ CControlObject::CControlObject()
   // m_mqtt_format                        = jsonfmt;
 
   m_topicDaemonBase = "vscp-daemon/{{guid}}/";
-  m_topicInterfaces = m_topicDaemonBase + "interfaces";
+  m_topicDrivers = m_topicDaemonBase + "drivers";
   m_topicDiscovery  = m_topicDaemonBase + "discovery";
 
   // Initialize MQTT
@@ -725,9 +725,9 @@ CControlObject::init_mqtt()
     data data;
     data.set("guid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
-    spdlog::debug("interfaces topic {}", strTopic);
+    spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = m_strServerName;
-    spdlog::debug("interfaces {}", strPayload);
+    spdlog::debug("drivers {}", strPayload);
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
                                                     NULL,
                                                     strTopic.c_str(),
@@ -745,9 +745,9 @@ CControlObject::init_mqtt()
     data data;
     data.set("guid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
-    spdlog::debug("interfaces topic {}", strTopic);
+    spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = startSrvTime;
-    spdlog::debug("interfaces {}", strPayload);
+    spdlog::debug("drivers {}", strPayload);
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
                                                     NULL,
                                                     strTopic.c_str(),
@@ -759,15 +759,15 @@ CControlObject::init_mqtt()
     }
   }
 
-  // Publish interfaces
+  // Publish drivers
   {
-    mustache subtemplate{ m_topicInterfaces };
+    mustache subtemplate{ m_topicDrivers };
     data data;
     data.set("guid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
-    spdlog::debug("interfaces topic {}", strTopic);
+    spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = m_deviceList.getAllAsJSON();
-    spdlog::debug("interfaces {}", strPayload);
+    spdlog::debug("drivers {}", strPayload);
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
                                                     NULL,
                                                     strTopic.c_str(),
@@ -775,7 +775,7 @@ CControlObject::init_mqtt()
                                                     strPayload.c_str(),
                                                     2,
                                                     true))) {
-      spdlog::error("Failed to publish VSCP daemon interfaces. error={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("Failed to publish VSCP daemon drivers. error={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2005,7 +2005,7 @@ CControlObject::readJSON(const json &j)
 
     // * * * Extra MQTT info * * *
 
-    // MQTT topic-interfaces && j["mqtt"]["topic-deamon-base"].is_string()
+    // MQTT topic-drivers && j["mqtt"]["topic-deamon-base"].is_string()
 
     if (j["mqtt"].contains("topic-daemon-base")) {
       m_topicDaemonBase = j["mqtt"]["topic-daemon-base"].get<std::string>();
@@ -2019,15 +2019,15 @@ CControlObject::readJSON(const json &j)
       }
     }
 
-    if (j["mqtt"].contains("topic-interfaces")) {
-      m_topicInterfaces = j["mqtt"]["topic-interfaces"].get<std::string>();
+    if (j["mqtt"].contains("topic-drivers")) {
+      m_topicDrivers = j["mqtt"]["topic-drivers"].get<std::string>();
       if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-        spdlog::debug("ReadConfig: MQTT 'topic-interfaces' set to {}", m_topicInterfaces);
+        spdlog::debug("ReadConfig: MQTT 'topic-drivers' set to {}", m_topicDrivers);
       }
     }
     else {
       if (gDebugLevel & VSCP_DEBUG_CONFIG) {
-        spdlog::debug("ReadConfig: Failed to read MQTT 'topic-interfaces'. Defaults will be used.");
+        spdlog::debug("ReadConfig: Failed to read MQTT 'topic-drivers'. Defaults will be used.");
       }
     }
 
@@ -2046,7 +2046,7 @@ CControlObject::readJSON(const json &j)
 
     // Add base as prefix if defined
     if (m_topicDaemonBase.length()) {
-      m_topicInterfaces = m_topicDaemonBase + m_topicInterfaces;
+      m_topicDrivers = m_topicDaemonBase + m_topicDrivers;
       m_topicDiscovery  = m_topicDaemonBase + m_topicDiscovery;
     }
 
