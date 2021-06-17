@@ -1,9 +1,0 @@
-vscpd (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; urgency=medium
-
-  * Level I driver measurement event conversions to string/float fixed.
-  * vscp_convertEventToCanal
-       node id was not fetched correctly.
-       All level I events over level II was converted incorrectly.
-  * Fixed deadlock.      
-
- -- Ake Hedman <info@vscp.org>  %DATENOW

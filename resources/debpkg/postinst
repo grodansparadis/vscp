@@ -5,27 +5,27 @@
 
 set -e
 
-VSCPD_DEFAULT_FILE=/etc/default/vscpd
+VSCPD_DEFAULT_FILE=/etc/default/vscp
 
 setup_vscp_config() {
 	
-    if ! getent passwd vscpd >/dev/null; then
+    if ! getent passwd vscp >/dev/null; then
         adduser --disabled-password --quiet --system \
-                --home /nonexistent --no-create-home --group vscpd \
+                --home /nonexistent --no-create-home --group vscp \
                 --shell /bin/false
     fi
     mkdir -p -m 3777 /var/crash
     chmod g+s /var/crash
-    chgrp vscpd /var/crash
-    chgrp vscpd /var/crash/*.crash >/dev/null 2>&1 || true
+    chgrp vscp /var/crash
+    chgrp vscp /var/crash/*.crash >/dev/null 2>&1 || true
     chmod 0640 /var/crash/*.crash >/dev/null 2>&1 || true
 
     mkdir -p -m 3777 /var/metrics
     chmod g+s /var/metrics
-    chgrp vscpd /var/metrics
+    chgrp vscp /var/metrics
 
     if [ -f /etc/vscp ]; then
-        # neither report_crashes nor report_metrics is used by vscpd
+        # neither report_crashes nor report_metrics is used by vscp
         rm /etc/vscp/vscpd.json
     fi
 }
@@ -41,36 +41,36 @@ setup_vscpd_user() {
 }
 
 setup_vscpd_systemd() {
-	/usr/bin/systemctl enable vscpd.service
-	/usr/bin/systemctl start vscpd
+  /usr/bin/systemctl enable vscpd.service
+  /usr/bin/systemctl start vscpd
 }
 
 fix_permissions() {
-	chown vscp /var/lib/vscp
-	chgrp vscp /var/lib/vscp
+  chown vscp /var/lib/vscp
+  chgrp vscp /var/lib/vscp
   chown vscp /var/lib/vscp/drivers
-	chgrp vscp /var/lib/vscp/drivers
-	chown vscp /var/lib/vscp/drivers/level1
-	chgrp vscp /var/lib/vscp/drivers/level1
-	chown vscp /var/lib/vscp/drivers/level2
-	chgrp vscp /var/lib/vscp/drivers/level2
-	chown vscp /var/lib/vscp/vscpd
-	chgrp vscp /var/lib/vscp/vscpd
-	chown vscp /var/lib/vscp/web
-	chgrp vscp /var/lib/vscp/web
-	chown vscp /var/lib/vscp/web/html
-	chgrp vscp /var/lib/vscp/web/html
-	chown vscp /var/lib/vscp/web/images
-	chgrp vscp /var/lib/vscp/web/images
-	chown vscp /var/lib/vscp/web/css
-	chgrp vscp /var/lib/vscp/web/css
-	chown vscp /var/lib/vscp/web/js
-	chgrp vscp /var/lib/vscp/web/js
-	chown vscp /etc/vscp/certs
-	chgrp vscp /etc/vscp/certs
-	chmod 700 /etc/vscp/certs
-	test ! -e /var/log/vscp || chown vscp /var/log/vscp || chgrp vscp /var/log/vscp
-	test ! -e /var/log/vscp/vscpd.log || chown vscp /var/log/vscp/vscpd.log || chgrp vscp /var/log/vscp/vscpd.log
+  chgrp vscp /var/lib/vscp/drivers
+  chown vscp /var/lib/vscp/drivers/level1
+  chgrp vscp /var/lib/vscp/drivers/level1
+  chown vscp /var/lib/vscp/drivers/level2
+  chgrp vscp /var/lib/vscp/drivers/level2
+  chown vscp /var/lib/vscp/vscpd
+  chgrp vscp /var/lib/vscp/vscpd
+  chown vscp /var/lib/vscp/web
+  chgrp vscp /var/lib/vscp/web
+  chown vscp /var/lib/vscp/web/html
+  chgrp vscp /var/lib/vscp/web/html
+  chown vscp /var/lib/vscp/web/images
+  chgrp vscp /var/lib/vscp/web/images
+  chown vscp /var/lib/vscp/web/css
+  chgrp vscp /var/lib/vscp/web/css
+  chown vscp /var/lib/vscp/web/js
+  chgrp vscp /var/lib/vscp/web/js
+  chown vscp /etc/vscp/certs
+  chgrp vscp /etc/vscp/certs
+  chmod 700 /etc/vscp/certs
+  test ! -e /var/log/vscp || chown vscp /var/log/vscp || chgrp vscp /var/log/vscp
+  test ! -e /var/log/vscp/vscpd.log || chown vscp /var/log/vscp/vscpd.log || chgrp vscp /var/log/vscp/vscpd.log
 }
 
 case "$1" in
