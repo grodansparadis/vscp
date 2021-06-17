@@ -1,5 +1,6 @@
 # Document History
 
+*  **2021-06-17 AKHE** - Version 15.0
 *  **2020-12-05 AKHE** - Removed obsolete parts
 *  **2020-10-27 AKHE** - libmosquitto-dev now required for build.
 *  **2020-10-27 AKHE** - Formatted Level II API docs.

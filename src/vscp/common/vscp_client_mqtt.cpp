@@ -2270,7 +2270,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       for (int i = 0; i < 15; i++) {
         data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
       }
-      ]
+      
       data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
       data.set("class", vscp_str_format("%d", ex.vscp_class));
       data.set("type", vscp_str_format("%d", ex.vscp_type));
