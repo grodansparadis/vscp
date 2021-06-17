@@ -96,8 +96,8 @@
         ],
         "bescape-pub-topics": true,
         "user-escapes": {
-            "escape1": "valu1",
-            "escape2": "valu2"
+            "escape1": "value1",
+            "escape2": "value2"
         },
         "publish": [
             {
@@ -148,7 +148,7 @@
                 "flags" : 1,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -170,7 +170,7 @@
                     "subscribe-format" : "auto",
                     "qos" : 1,
                     "bcleansession" : false,
-                    "bretain" : false,      
+                    "bretain" : false,
                     "keepalive" : 60,
                     "bjsonmeasurementblock": true,
                     "reconnect" : {
@@ -275,7 +275,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can4vscp.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:02",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:02",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -402,7 +402,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:03",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -536,7 +536,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can232.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:04",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:04",
 
                 "mqtt" : {
                     "bind" : "",   
