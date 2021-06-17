@@ -20,6 +20,14 @@
   * [Solving problems and troubleshooting](solving_problems.md)
   * [logging](logging.md)
 
+* Subscribing
+  * [Server subscriptions](subscribing_server.md)
+  * [Driver subscriptions](subscribing_driver.md)
+
+* Publishing
+  * [Server publishing](publishing_server.md)
+  * [Driver publishing](publishing_driver.md)
+
 * Server/Service Discovery
  * [General](server_disovery.md)
  * [High end server probe](server_disovery_probe.md)
