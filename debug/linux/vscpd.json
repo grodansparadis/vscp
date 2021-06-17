@@ -42,7 +42,7 @@
         "keepalive" : 60,
         "bjsonmeasurementblock": true,
         "topic-daemon-base": "vscp-daemon/{{guid}}/",
-        "topic-interfaces" : "interfaces",
+        "topic-drivers" : "drivers",
         "topic-discovery" : "discovery",
         "reconnect" : {
           "delay" : 2,

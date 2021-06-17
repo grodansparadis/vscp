@@ -6,7 +6,7 @@
 * [Setting up the system](setting_up_the_system.md)
 
 * Configure
- * [Configuration file format](configuring_the_vscp_daemon.md)
+ * [The configuration file](configuring_the_vscp_daemon.md)
  * [Startup switches](startup_switches.md)
  * [Files and directory structure](files_and_directory_structure.md)
 

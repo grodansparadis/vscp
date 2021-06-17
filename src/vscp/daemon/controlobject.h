@@ -314,11 +314,12 @@ public:
    Base topic for VSCP daemon info. Should end with slash
  */
   std::string m_topicDaemonBase; 
+
   /*!
-    Topic under daemon base which the dameon publish it's interfaces
-    Default is 'daemon-base'/interfaces
+    Topic under daemon base which the dameon publish it's drivers
+    Default is 'daemon-base'/drivers
   */
-  std::string m_topicInterfaces; 
+  std::string m_topicDrivers; 
   /*!
     Topic under daemon base on which the dameon publish it's new node discoveries
     Default is 'daemon-base'/discovery
