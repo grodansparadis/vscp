@@ -89,7 +89,6 @@ The a big thank you to the following project that this code is built upon
 * The excellent [civetweb project](https://github.com/civetweb/civetweb)
 * The excellent [mustache library](https://github.com/janl/mustache.js)
 * The excellent [fast-pbkdf2](https://github.com/ctz/fastpbkdf2)
-* The excellent [fast-pbkdf2](https://github.com/ctz/fastpbkdf2)
 * And all other code I used to build this on.
 
 _Great things are built on the shoulders of gigants. Thank you!_
