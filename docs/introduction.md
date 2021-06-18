@@ -67,6 +67,16 @@ Has been removed. Use [node-red](https://nodered.org/) instead. There may be a d
 ## Remote variables
 Has been removed. There may be a driver with this functionality available in the future. Check out [vscpl2drv-variable](https://github.com/grodansparadis/vscpl2drv-variable)) or better yet help out to build the functionality.
 
+## Was it more...?
+Probably. If you miss something you can't live without, version 14 can still be run and be used. You can also take on the effort to build a driver for that thing. 
+
+## Support
+If you find a bug open an issue [here](https://github.com/grodansparadis/vscp/issues)
+
+If you want to discuss anything VSCP related go [here](https://github.com/grodansparadis/vscp/discussions)
+
+All docs for VSCP stuff can be found [here](https://docs.vscp.org/) where the [specification](https://grodansparadis.github.io/vscp-doc-spec/#/) probably is the most important. It state the truth almost always. If the real world behave differently it is the world that is wrong not the specification. Well in most cases...
+
 ## Thanks
 First a big thanks to my [sponsors](https://github.com/sponsors/grodansparadis) and [here](https://vscp.org). Support them please. Every cent is valuable and there support has helped me and the project a lot.
 
@@ -74,10 +84,10 @@ The a big thank you to the following project that this code is built upon
 
 * The excellent [nlohmann json parser](https://github.com/nlohmann/json)
 * The excellent [libexpat xml library](https://github.com/libexpat/libexpat)
-* The excellent [Mosquitto library](https://github.com/eclipse/mosquitto)
+* The excellent [mosquitto library](https://github.com/eclipse/mosquitto)
 * The excellent [spdlog library](https://github.com/gabime/spdlog)
 * The excellent [civetweb project](https://github.com/civetweb/civetweb)
-* The excellent [Mustache library](https://github.com/janl/mustache.js)
+* The excellent [mustache library](https://github.com/janl/mustache.js)
 * The excellent [fast-pbkdf2](https://github.com/ctz/fastpbkdf2)
 * The excellent [fast-pbkdf2](https://github.com/ctz/fastpbkdf2)
 * And all other code I used to build this on.
