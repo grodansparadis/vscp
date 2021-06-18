@@ -1,12 +1,12 @@
 # Setting up the System
 
-The VSCP Daemon is easy to setup. Just install the server and then configure the drivers you want to use. It is recommended to set up a MQTT broker locally also to get the utilize the full power of the system.
+The VSCP Daemon is easy to setup. Just install the server and then configure the drivers you want to use. It is recommended to set up a local MQTT broker also but one can use one of the [public MQTT brokers](https://mntolia.com/10-free-public-private-mqtt-brokers-for-testing-prototyping/) for testing.
 
 ## Setting up the system on Linux
 
-To install VSCP & Friends on Linux/Unix you need to install the binary package or build the system from source. The build process is simple and it usually don't give any problems. You can find the latest binaries and source files [here](https://github.com/grodansparadis/vscp/releases)
+To install the VSCP daemon on Linux/Unix you need to install the binary package or build the system from source. The build process is simple and it usually don't give any problems. You can find the latest binaries and source files [here](https://github.com/grodansparadis/vscp/releases)
 
-### Installing from binary package
+### Installing from binary package (preferred install method)
 
 The binary package is supplied as a Debian package. This should work as an installation method on all distribution's that can handle Debian packages. There are currently two variants available. 
 
@@ -24,11 +24,14 @@ When this is written the 15.0.0 release is the latest and the Debian package is 
 
 after downloading the file.
 
-When you have installed the package you can start the VSCP daemon with
+When you have installed the package you can enable and start the VSCP daemon with
 
 ```bash
+systemctl enable vscpd
 systemctl start vscpd
 ```
+
+But the install script should normally do this for you automatically.
 
 Thats it! You can start to work with VSCP.
 
@@ -36,7 +39,7 @@ Now read the section about configuring your system.
 
 ### Private Debian package repository - Experimental
 
-**Note:** Use only for testing !!!!
+**Note:** Use only for testing for now!!!!
 
 The VSCP project also have a private package repository which currently is experimental. The repository holds files for amd64/i385/armhf that should work on all debian derived systems such as Ubuntu and Raspbian as well as on Debian itself. The repository holds all drivers, the VSCP daemon and many other packages.
 
@@ -77,9 +80,9 @@ Prepare the build environment with
 ```bash
 sudo apt update
 sudo apt install build-essential
-sudo apt install git libssl-dev libsystemd-dev libwrap0-dev libz-dev libmosquitto-dev
+sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev
 ```    
-to install the build tools. 
+to install the build tools and required libraries. 
 
 #### Step 2
 
@@ -117,126 +120,21 @@ Enter the VSCP project folder ('vscp') and do
 
 ```bash
 cd vscp
-./configure
-bash
+mkdir build
+cd build
+cmake ..
+sudo make install
 ```
 
+This builds amd installs the system.
 
-If you get warnings about 
-
-    ERR_remove_state(0);
-    
-being deprecated   
-
-use 
-
-```bash
-./configure CFLAGS="-DOPENSSL_API_1_1"
-```
-
-to force use of openssl 1.1 instead of openssl 1.0
-
-You can find out which version of openssl you have installed with
-
-```bash
-openssl version
-```
-
-```bash    
-ls /usr/lib/i386-linux-gnu/libssl.so* (pc)
-ls /usr/lib/arm-linux-gnueabihf/libssl.so* (RPi)
-```    
-
-{{after_configure.png?600}}   
-
-##### Debugging
-
-If you want a debug build use the flag
-
-```bash	
---enable-debug
-```
-
-This flags used without a value is the same as
-
-	
-	--enable-debug="yes"
-
-
-you can specify values as below
-
- | Value   | Description | 
- | -----   | ----------- | 
- | yes     | Specifying 'yes' adds '-g -O0' to the compilation flags for all languages. | 
- | info    | Specifying 'info' adds '-g' to the compilation flags. | 
- | profile | Specifying 'profile'adds '-g -pg' to the compilation flags and '-pg' to the linking flags. | 
-
-#### Step 4
-
-```bash
-make
-```    
-
-To make sure everything build OK you can issue make again and check the output for errors. You don't get bombarded with such masses of text on the second run. 
-
-__You may get some complaints when the code is compiled. This is normally nothing to worry about and they are just warnings from subcomponents.__
-
-Tip    
-It can be hard to see errors in all the text that is output by the build process. If you use
-
-```bash
-make | grep error
-```    
-
-it is much easier so see possible errors during the build process.  
-
-    
-#### Step 5
-
-Install the system with
-
-```bash
-make install
-```
-
-Instead of first doing *make* and then *make install* you can of course do *make install* directly.
-
-```bash
-make install-conf
-```
-
-installs the default configuration files. Can always be used to restore them also.  
-
-```bash
-sudo make install-systemd-script
-```
-
-installs systemd startup scripts.
-
-Reboot or start service with
-
-```
-sudo systemctl start vscpd
-```
-
-Read the section about configuring your system.
-
-####  Step 6
-
-You can now remove the source packages if your want.
-    
-After doing this you can set up a working VSCP & Friends system.
-
-####  Step 7
-
-Now reboot and the daemon will run. or issue
+The service should be installed and be started automatically. Id it does not use the following commands
 
 ```bash
 sudo systemctl enable vscpd
 sudo systemctl start vscpd
 ```
 
-to start the server.  
     
 It is also possible to run the daemon as any other program with  
 
@@ -246,13 +144,7 @@ It is also possible to run the daemon as any other program with
 
 this is probably the best test to do on a newly installed system to see that the daemon starts properly as error messages will be shown in the terminal windows in this mode.  Terminate the daemon with **ctrl+c**  
     
-Default install directory is */usr/local/sbin*
-
-----
-
-#### Notes
-
-If your system does not have C++11 (Ubuntu Trusty) see this https://askubuntu.com/questions/428198/getting-installing-gcc-g-4-9-on-ubuntu  
+Default install directory is */usr/sbin*
 
 ----
 
@@ -270,18 +162,6 @@ sudo /etc/init.d/vscpd start to start
 
 to start the service
 
-----
-
-vscpd uses [Google test](https://github.com/google/googletest) for testing. If you want to build support for it do the following when in the VSCP root folder
-
-```bash
-git submodule update --recursive --remote
-mkdir build
-cd build
-cmake ..
-```
-
-![](./images/pi1l.jpg)
 
 ## Setting up the system on Rasperry Pi
 
@@ -293,8 +173,6 @@ VSCP & Friends has been tested and works very well on Raspberry Pi.
 
 The setup is the same as on other Unix systems so the instructions to [setup VSCP & Friends on a Linux system](./setting_up_the_system_on_linux.md) can be used. 
 
-
-![](./images/product_beaglebone.jpg)
 
 
 ## Setting up the system on Beaglebone
@@ -393,69 +271,19 @@ exit
     
 It's a good idea to reboot at this point.
 
-###  Step 4: Rebuild & upgrade wxbase
 
-At the time of writing, the provided wxbase library contains one or more errors.
-The workaround is to simply rebuild wxbase on your target.
-If you want to proceed with the provided wxbase package, you can simply run **pacman -S wxbase** and proceed to step 6. Let us know how it worked out!
-
-To rebuild wxbase:
-
-```bash
-git clone git://github.com/archlinuxarm/PKGBUILDs.git
-cd PKGBUILDs/aur/wxbase
-```
-    
-edit the PKGBUILD file 
-
-```bash
-nano PKGBUILD
-```
-    
-and add *arch=('armv7h')* to the file, after the other parameters.
-
-Leave nano (CTRL+X) and save the edited file.
-
-Start the build process, using screen:
-
-```bash
-screen makepkg
-```
-
-This build will take a while. The advantage of running this in [screen](https://wiki.archlinux.org/index.php/GNU_Screen) is that you can close the session while the build continues. To exit the screen session, do **CTRL+A** followed by **CTRL+D**. You can now log off or do other stuff. To reconnect, do
-
-```bash
-screen -ls
-```
-
-to get a list of active sessions and
-
-```bash
-screen -r *session*
-```
-
-to reconnect to a session. If there's only one active, you can omit the session number. If the build completed, the session is closed.
-
-In order to speed up the process, you can try to setup a DISTCC environment as described on the ArchLinuxArm website, but this is not trivial.
-
-To install the freshly built library, do
-
-```bash
-pacman -U wxbase-3.0.2-3-armv7h.pkg.tar.xz
-```
-
-###  Step 5: Get the VSCP sources
+###  Step 4: Get the VSCP sources
 
     
 You can follow step 7 above or since we have GIT installed:
 
 ```bash
-git clone https://github.com/grodansparadis/vscp_software.git
+git clone https://github.com/grodansparadis/vscp.git
 ```
 
 In a location you choose.
 
-### Step 6: build VSCP
+### Step 5: build VSCP
 
 As root (su), do:
 
@@ -477,7 +305,7 @@ Start the installation. Optionally, you can use **screen** again.
 make install
 ```
 
-### Step 7: install vscpd in systemd
+### Step 6: install vscpd in systemd
 
 Write the following, as root, to 
 
@@ -528,7 +356,7 @@ To test, debug and do work with the vscp daemon server you also need a MQTT clie
 For development we use the Mosquitto client tools. The main tools we use are [mosquitto_pub](https://mosquitto.org/man/mosquitto_pub-1.html) and [mosquitto_sub](https://mosquitto.org/man/mosquitto_sub-1.html). On a debian based system you can install them with
 
 ```bash
-sudp apt install mosquitto-clients
+sudo apt install mosquitto-clients
 ```
 
 Most samples in this documentation referee to these tools in some way.

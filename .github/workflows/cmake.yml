@@ -32,9 +32,6 @@ jobs:
     - name: Install libmosquitto-dev manually
       run: sudo apt install libmosquitto-dev
 
-    - name: Install libexpat-dev manually
-      run: sudo apt install libexpat-dev
-
     - name: Install libssl-dev manually
       run: sudo apt-get install libssl-dev
 

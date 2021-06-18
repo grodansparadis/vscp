@@ -149,7 +149,7 @@
                 "flags" : 1,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -276,7 +276,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can4vscp.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:02",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:00",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -403,7 +403,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-socketcan.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:03",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:03:00:00:00:00:00:00:00",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -530,7 +530,7 @@
                 "flags" : 0,
                 "translation" : 2,
                 "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-can232.so",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:04",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:04:00:00:00:00:04:00:00",
 
                 "mqtt" : {
                     "bind" : "",   
@@ -657,7 +657,7 @@
                 "name" : "Logger",
                 "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-logger.so",
                 "path-config" : "/var/lib/vscp/vscpd/logger2.conf",
-                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01",
+                "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:05:00:00:00:00:05:00:00,
 
                 "mqtt" : {
                     "bind" : "",   

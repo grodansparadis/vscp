@@ -1,7 +1,7 @@
 # Sample vscpd configuration file
 
  
-You can find sample files [here](https://github.com/grodansparadis/vscp/tree/master/install_files)
+You can find sample files [here](https://github.com/grodansparadis/vscp/blob/master/resources/linux/vscpd.json)
 
 \\ 
 ----
