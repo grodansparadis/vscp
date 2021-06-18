@@ -514,84 +514,109 @@ If not set the [config-mqtt-subscribe-format](./configuring_the_vscp_daemon.md#c
 | string | Comma separated string formatted payload will be expected. |
 | binary | Binary formatted payload will be expected. |
 
+## User escapes for topics :id=config-user-escapes
+
+User escapes is a possibility to define your own dynamic escapes for published topics. The consist of two parts. A key and a value. Both are on string form. They work such that a {{'key'}} set in a topic will be replaced by {{'value'}} before the message is published.
+
+See [server publishing](./publishing_server.md) for more information.
+
+```json
+"bescape-pub-topics": true,
+"user-escapes": {
+    "escape1": "value1",
+    "escape2": "value2"
+},
+```
+
+### bescape-pub-topics :id=config-user-escapes-bescape-pub-topics
+Set to *true* to enable the functionality.
+
+### user-escapes:id=config-user-escapes-bescape-map
+Here any number of key/value pairs can be defined.
+
 ### publish :id=config-mqtt-publish
 
 This is an array of topics which the VSCP daemon will subscribe to. You can specify as many as you like. Mustache escapes (escape tokens within {{_token_}}) can be used to create dynamic topics. The topic is created just before the event is published. The following escapes are valid for publish topics
 
-| Escape | Description |
+``` json
+"publish": [
+{
+    "topic" : "vscp/{{guid}}/topic/json",
+    "qos" : 0,
+    "retain" : false,
+    "format": "json"
+},
+{
+    "topic" : "vscp/{{guid}}/topic/xml",
+    "qos" : 0,
+    "retain" : false,
+    "format": "xml"
+},
+{
+    "topic" : "vscp/{{guid}}/topic/string",
+    "qos" : 0,
+    "retain" : false,
+    "format": "string"
+},
+{
+    "topic" : "vscp/{{guid}}/topic/binary",
+    "qos" : 0,
+    "retain" : false,
+    "format": "binary"
+},
+{
+    "topic" : "vscp/{{guid}}/topic/{{datetime}}/{{user}}/C",
+    "qos" : 0,
+    "retain" : false,
+    "format": "json"
+}    
+],  
+```
+
+### topic :id=config-mqtt-publish-topic
+This is the topic to publish event payloads to. It can be escaped for dynamic insertion of values. See [server publishing](./publishing_server.md) for more information.
+
+### qos :id=config-mqtt-publish-qos
+Quality of service for event payloads published on the topic. 
+
+### retain :id=config-mqtt-publish-retain
+Set to true to enable retain for event payload publishing..
+
+### format :id=config-mqtt-publish-format
+
+| Format | Description |
 | ------ | ----------- |
-| {{guid}} | Will be replaces with the GUID of the VSCP event that is about to be sent to the MQTT broker. |
-| {{guid-id}} | Will be replaces with the GUID id from the discovery database or the GUID if not present. |
-| {{guid[n]}} | Will be replaces with the GUID digit n of the VSCP event that is about to be sent to the MQTT broker. |
-| {{guid.msb}} | Will be replaces with the GUID most significant byte of the VSCP event that is about to be sent to the MQTT broker. |
-| {{guid.lsb}} | Will be replaces with the GUID least significant byte of the VSCP event that is about to be sent to the MQTT broker. |
-| {{ifguid}} | Will be replaces with the interface GUID for a driver or with the VSCP daemon GUID for server originating events. |
- |
-| {{ifguid[n]}} | Will be replaces with the n:th digit of the interface GUID for a driver or with the n:th digit of the VSCP daemon GUID for server originating events. |
-| {{nickname}} | Will be replaced with the nickname. An unsigned integer formed of the least significant bytes of the event GUID. |
-| {{data[n]}} | Will be replaces with the n:th data byte of the VSCP event that is about to be sent to the MQTT broker. A dash will be set if n is larger then the number of data bytes in the event. |
-| {{class}} | The class of the VSCP event that is about to be sent to the MQTT broker. |
-| {{type}} | The type of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{class-token}} | The class token of the VSCP event that is about to be sent to the MQTT broker. Needs the vscp event database. |
-| {{type-token}} | The type-token of the VSCP event that is about to be sent to the MQTT broker. Needs the vscp event database. |
-| {{head}} | The _head_ of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{obid}} | The _obid_ of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{timestamp}} | The _timestamp_ of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{dt}} | The _datetime_ string of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{year}} | The _year_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{month}} | The _month_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{day}} | The _day_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{hour}} | The _hour_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{minute}} | The _minute_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{second}} | The _second_ of the datetime of the VSCP event that is about to be sent to the MQTT broker.  |
-| {{clientid}} | The MQTT client id for the current connection. |
-| {{user}} | The _user_ of the the current MQTT connection. |
-| {{host}} | The _host_ of the the current MQTT connection. |
-
-**Example 1**
-
-```bash
-"vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}"
-```
-
-will be 
-
-```bash
-vscp/FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08/10/6/8
-```
-
-if the event's GUID is FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08 and the VSCP class is 10 and the VSCP type is 6, that is a temperature measurement event.
-
-**Example 2**
-
-```bash
-"vscp/{{guid}}/{{class-token}}/{{type-token}}/{{nickname}}"
-```
-
-will be 
-
-```bash
-vscp/FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08/CLASS1.MEASUREMENT/VSCP_TYPE_MEASUREMENT_TEMPERATURE/8
-```
-
-if the event's GUID is FF:FF:FF:FF:FF:FF:FF:FE:5C:CF:7F:C4:1E:7B:00:08 and the VSCP class is 10 and the VSCP type is 6, that is a temperature measurement event.
+| json | JSON formatted payload will be used. |
+| xml  | XML formatted payload will be used. |
+| string | Comma separated string formatted payload will be used. |
+| binary | Binary formatted payload will be used. |
 
 
 
 ----
 ##  Level I Drivers :id=config-level1-driver
 
-Define a VSCP daemon level I driver. If disabled the driver will be loaded. 
+Define a VSCP daemon level I driver. If enabled the driver will be loaded. 
 
-Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers.
+Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers (just because they are).
 
 ### Assigning GUID's to the interfaces of a VSCP daemon
 
-You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the nodes IP address. That is
+Be sure to read [this part](#think-before-guid) before setting driver GUID's.
+
+You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the machines IP or MAC address. For ip-address this is
 
 IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
 
 YY... is the IP address. 
+
+and for MAC address it is
+
+IP:  FF:FF:FF:FF:FF:FF:FF:FE:YY:YY:YY:YY:XX:XX:XX:XX
+
+YY... is the IP address. 
+
+More information about GUID's can be found in the [specification](https://grodansparadis.github.io/vscp-doc-spec/#/./vscp_globally_unique_identifiers).
 
 For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
 
