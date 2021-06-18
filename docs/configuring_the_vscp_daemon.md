@@ -504,7 +504,7 @@ Integer value 0, 1 or 2 indicating the Quality of Service to be used for the wil
 MQTT version 5 options. See information [here](https://mosquitto.org/api/files/mqtt_protocol-h.html#mqtt5_sub_options)
 
 ### format :id=config-mqtt-subscribe-format
-If not set the [config-mqtt-subscribe-format](./configuring_the_vscp_daemon.md#config-mqtt-general-subscribe-format) subscribe format will be used. 
+If not set the [config-mqtt-subscribe-format](#config-mqtt-general-subscribe-format) subscribe format will be used. 
 
 | Format | Description |
 | ------ | ----------- |
@@ -592,82 +592,179 @@ Set to true to enable retain for event payload publishing..
 | binary | Binary formatted payload will be used. |
 
 
+## **Drivers** :id=config-drivers
 
-----
+### Assigning GUID's to a driver
+
+Be sure to read [this part](#think-before-guid) before setting driver GUID's.
+
+You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the machines IP or MAC address. For ip-address this is
+
+```
+IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
+```
+
+where _YY..._ is the IP address. 
+
+and for MAC address it is
+
+```
+IP:  FF:FF:FF:FF:FF:FF:FF:FE:YY:YY:YY:YY:XX:XX:XX:XX
+```
+
+where _YY..._ is the IP address. 
+
+More information about GUID's can be found in the [specification](https://grodansparadis.github.io/vscp-doc-spec/#/./vscp_globally_unique_identifiers).
+
+For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
+
+```
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:00:00:00
+```
+
+and driver 2
+
+```
+FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:01:00:00
+```
+
+and so on.
+
 ##  Level I Drivers :id=config-level1-driver
 
 Define a VSCP daemon level I driver. If enabled the driver will be loaded. 
 
 Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers (just because they are).
 
-### Assigning GUID's to the interfaces of a VSCP daemon
-
-Be sure to read [this part](#think-before-guid) before setting driver GUID's.
-
-You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the machines IP or MAC address. For ip-address this is
-
-IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
-
-YY... is the IP address. 
-
-and for MAC address it is
-
-IP:  FF:FF:FF:FF:FF:FF:FF:FE:YY:YY:YY:YY:XX:XX:XX:XX
-
-YY... is the IP address. 
-
-More information about GUID's can be found in the [specification](https://grodansparadis.github.io/vscp-doc-spec/#/./vscp_globally_unique_identifiers).
-
-For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
-
-FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:00:00:00
-
-and driver 2
-
-FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:01:00:00
-
-and so on.
 
 ```json
-"drivers" : {
-    "level1" : [
-        {
-            "enable" : false,
-            "name" : "logger",
-            "config" : "/tmp/canallog.txt",
-            "flags" : 1,
-            "translation" : 2,
-            "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
-            "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
+"level1" : [
+{
+    "enable" : false,
+    "name" : "logger",
+    "config" : "/tmp/canallog.txt",
+    "flags" : 1,
+    "translation" : 2,
+    "path" : "/var/lib/vscp/drivers/level1/vscpl1drv-logger.so",
+    "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01",
 
-            "mqtt" : {
-                "host" : "127.0.0.1",
-                "port" : 1883,
-                "user" : "vscp",
-                "password": "secret",
-                "clientid" : "mosq-l1drv-logger",
-                "format" : "json",
-                "qos" : 0,
-                "bcleansession" : false,
-                "bretain" : false,
-                "keepalive" : 60,
-                "reconnect-delay" : 2,
-                "reconnect-delay-max" : 10,
-                "reconnect-exponential-backoff" : false,
-                "cafile" : "",
-                "capath" : "",
-                "certfile" : "",
-                "keyfile" : "",
-                "pwkeyfile" : "",
-                "subscribe" : [
-                    "vscp/{{guid}}/#"
-                ],
-                "publish" : [
-                    "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
-                ]
+    "mqtt" : {
+        "bind" : "",   
+        "host" : "test.mosquitto.org",
+        "port" : 1883,
+        "mqtt-options" : {
+            "tcp-nodelay" : true,
+            "protocol-version": 311,
+            "receive-maximum": 20,
+            "send-maximum": 20,
+            "ssl-ctx-with-defaults": 0,
+            "tls-ocsp-required": 0,
+            "tls-use-os-certs" : 0
+        },
+        "user" : "vscp",
+        "password": "secret",
+        "clientid" : "vscp-level1-logger-driver",  
+        "publish-format" : "json",
+        "subscribe-format" : "auto",
+        "qos" : 1,
+        "bcleansession" : false,
+        "bretain" : false,      
+        "keepalive" : 60,
+        "bjsonmeasurementblock": true,
+        "reconnect" : {
+        "delay" : 2,
+        "delay-max" : 10,
+        "exponential-backoff" : false
+        },
+        "tls" : {
+            "cafile" : "",
+            "capath" : "",
+            "certfile" : "",
+            "keyfile" : "",
+            "pwkeyfile" : "",
+            "no-hostname-checking" : true,
+            "cert-reqs" : 0,
+            "version": "",
+            "ciphers": "",
+            "psk": "",
+            "psk-identity" : ""
+        },
+        "will": {
+            "topic": "Last Will",
+            "qos": 0,
+            "retain": false,
+            "payload": "This is the end"
+        },
+        "subscribe": [
+            {
+                "topic": "test1/topic/A",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/topic/B",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
             }
+        ],
+        "bescape-pub-topics": true,
+        "user-escapes": {
+            "escape1": "valu1",
+            "escape2": "valu2"
+        },
+        "publish": [
+            {
+                "topic" : "publish/topic/json",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            },
+            {
+                "topic" : "publish/topic/xml",
+                "qos" : 0,
+                "retain" : false,
+                "format": "xml"
+            },
+            {
+                "topic" : "publish/topic/string",
+                "qos" : 0,
+                "retain" : false,
+                "format": "string"
+            },
+            {
+                "topic" : "publish/topic/binary",
+                "qos" : 0,
+                "retain" : false,
+                "format": "binary"
+            },
+            {
+                "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            }    
+        ],      
+        "v5" : {
+            "user-properties": {
+                "prop1" : "value",
+                "prop2" : "value"    
+            } 
         }
-    ]
+    }
 }
 ```
 
@@ -679,7 +776,7 @@ Set to true to enable loading of the driver, set to false to disable.
 
 ### name :id=config-level1-driver-name
 
-A name given by the user for the driver. This is the name by which the driver is identified by the system.
+A name given by the user for the driver. This is the name by which the driver is identified bym by the system.
 
 ### config :id=config-level1-driver-config
 
@@ -691,11 +788,11 @@ A 32 bit driver specific number that have bits set that have special meaning for
 
 ### path :id=config-level1-driver-path
 
-Path to where the driver is located. Usually points to a file located in _/var/lib/vscp/drivers/level1/_
+This is the path to where the driver is located. Usually points to a file located in in the folder _/var/lib/vscp/drivers/level1/_ where level I drivers by default will be installed.
 
 ### guid :id=config-level1-driver-guid
 
-__Must be set to a unique and valid GUID.**
+__Must be set to a unique and valid GUID.__   
 
 The GUID that the driver will use for it's interface. This means that this is the GUID that will be the source of Level I events.
 
@@ -714,75 +811,142 @@ This is a list of semicolon separated fields with translations that should be ca
 
 ### MQTT :id=config-level1-driver-mqtt
 
-This is the same MQTT information described above. You can leave out parts that are the same in which case the main settings will be used. Or you can repeat the information or set new.
-
-The _subscribe_ and _publish_ array's are the only parts that **must be preset**.
-
-
+This is the same MQTT information [described above](config-mqtt). 
 
 ----
 
 ## Level II drivers :id=config-level2-driver
 
-Level II drivers can handle the full VSCP abstraction and don't have the small payload size and other limitations of the Level I drivers.
+Level II drivers can handle the full VSCP abstraction and don't have the small level I maximum payload size of eight bytes and other limitations of the Level I drivers.
 
-### Assigning GUID's to the interfaces of a VSCP daemon
-
-You are free to pick any GUID you like as long as it (normally) have the two least significant bytes of the GUID available for nodes on the interface to be used as there nicknames. Best and simplest is to select GUID's based on the nodes IP address. That is
-
-IP:  FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:XX:XX:XX:XX
-
-YY... is the IP address. 
-
-For a multi driver/interface machine setup, the IP address is the best choice as the user available range XX:XX:XX:XX have room for many interfaces. For instace one can assign 00:00:XX:XX to the first, 00:01:XX:XX to the second etc. Here XX:XX is used for node nicknames. So driver 1 will have GUID
-
-FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:00:00:00
-
-and driver 2
-
-FF:FF:FF:FF:FF:FF:FF:FD:YY:YY:YY:YY:00:01:00:00
-
-and so on.
+[HLO (High Level Objects)](https://grodansparadis.github.io/vscp-doc-spec/#/./class2.hlo) are also understod by this type of drivers.
 
 ```json
-"drivers" : {
-    "level1" : [
-        {
-            "enable" : false,
-            "name" : "tcpiplink",
-            "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-tcpiplink.so",
-            "path-config" : "/var/lib/vscp/vscpd/tcpiplink.conf",
-            "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:09:00:00:00:00:00:00:00",
+{
+    "enable" : false,
+    "name" : "Logger",
+    "path-driver" : "/var/lib/vscp/drivers/level2/vscpl2drv-logger.so",
+    "path-config" : "/var/lib/vscp/vscpd/logger2.conf",
+    "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:02:00:00:00:00:00:00:01",
 
-            "mqtt" : {
-                "host" : "127.0.0.1",
-                "port" : 1883,
-                "user" : "vscp",
-                "password": "secret",
-                "clientid" : "mosq-vscp-daemon-000001",
-                "format" : "json",
-                "qos" : 0,
-                "bcleansession" : false,
-                "bretain" : false,
-                "keepalive" : 60,
-                "reconnect-delay" : 2,
-                "reconnect-delay-max" : 10,
-                "reconnect-exponential-backoff" : false,
-                "cafile" : "",
-                "capath" : "",
-                "certfile" : "",
-                "keyfile" : "",
-                "pwkeyfile" : "",
-                "subscribe" : [
-                    "vscp/{{guid}}/#"
-                ],
-                "publish" : [
-                    "vscp/{{guid}}/->/{{class}}/{{type}}/{{nodeid}}"
-                ]
+    "mqtt" : {
+        "bind" : "",   
+        "host" : "test.mosquitto.org",
+        "port" : 1883,
+        "mqtt-options" : {
+            "tcp-nodelay" : true,
+            "protocol-version": 311,
+            "receive-maximum": 20,
+            "send-maximum": 20,
+            "ssl-ctx-with-defaults": 0,
+            "tls-ocsp-required": 0,
+            "tls-use-os-certs" : 0
+        },
+        "user" : "vscp",
+        "password": "secret",
+        "clientid" : "vscp-level2-logger-driver",  
+        "publish-format" : "json",
+        "subscribe-format" : "auto",
+        "qos" : 1,
+        "bcleansession" : false,
+        "bretain" : false,      
+        "keepalive" : 60,
+        "bjsonmeasurementblock": true,
+        "reconnect" : {
+            "delay" : 2,
+            "delay-max" : 10,
+            "exponential-backoff" : false
+        },
+        "tls" : {
+            "cafile" : "",
+            "capath" : "",
+            "certfile" : "",
+            "keyfile" : "",
+            "pwkeyfile" : "",
+            "no-hostname-checking" : true,
+            "cert-reqs" : 0,
+            "version": "",
+            "ciphers": "",
+            "psk": "",
+            "psk-identity" : ""
+        },
+        "will": {
+            "topic": "Last Will",
+            "qos": 0,
+            "retain": false,
+            "payload": "This is the end"
+        },
+        "subscribe": [
+            {
+                "topic": "test1/topic/A",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/topic/B",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
+            },
+            {
+                "topic": "test2/#",
+                "qos": 0,
+                "v5-options": 0,
+                "format": "auto"
             }
+        ],
+        "bescape-pub-topics": true,
+        "user-escapes": {
+            "escape1": "valu1",
+            "escape2": "valu2"
+        },
+        "publish": [
+            {
+                "topic" : "publish/topic/json",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            },
+            {
+                "topic" : "publish/topic/xml",
+                "qos" : 0,
+                "retain" : false,
+                "format": "xml"
+            },
+            {
+                "topic" : "publish/topic/string",
+                "qos" : 0,
+                "retain" : false,
+                "format": "string"
+            },
+            {
+                "topic" : "publish/topic/binary",
+                "qos" : 0,
+                "retain" : false,
+                "format": "binary"
+            },
+            {
+                "topic" : "publish/topic/{{datetime}}/{{user}}/C",
+                "qos" : 0,
+                "retain" : false,
+                "format": "json"
+            }    
+        ],      
+        "v5" : {
+            "user-properties": {
+                "prop1" : "value",
+                "prop2" : "value"    
+            } 
         }
-    ]
-}
+    }
+},
 ```
 
 ### enable :id=config-level2-driver-enable
@@ -791,11 +955,11 @@ The driver should be loaded if set to true. If false the driver will not be load
 
 ### name :id=config-level2-driver-name
 
-A name given by the user for the driver.
+A name given by the user for the driver. Should not contain spaces.
 
 ### path-driver :id=config-level2-driver-path-driver
 
-This is the path to the driver. Usually points to a file located in _/var/lib/vscp/drivers/level2/_
+This is the path to the driver. Usually points to a file located in _/var/lib/vscp/drivers/level2/_ which is the default installation folder for level II drivers.
 
 ### path-config :id=config-level2-driver-path-config
 
@@ -808,6 +972,11 @@ The format of this file is up to the driver creator. JSON format is most common 
 __Must be set to a unique and valid GUID.**
 
 The GUID that the driver will use for it's interface.
+
+### MQTT :id=config-level2-driver-mqtt
+
+This is the same MQTT information [described above](config-mqtt). 
+
 
 
 [filename](./bottom_copyright.md ':include')
