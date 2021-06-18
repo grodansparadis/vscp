@@ -1,0 +1,15 @@
+#!/bin/bash
+# Download events database (needs wget)
+# arg 1 is download path. If not given "/var/lib/vscp/vscpd" will be used
+
+if [[ -z "$1" ]]; then
+  # No argument
+  cd /var/lib/vscp/vscpd
+else  
+  # Path set - go to it
+  cd "$1"
+fi
+
+echo "Download file to `pwd`"
+wget https://vscp.org/events/version.json
+wget https://vscp.org/events/vscp_events.sqlite3
