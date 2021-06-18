@@ -100,7 +100,7 @@ to create a string consisting of the eight most significant guid's.
 
 There is a good description [here](https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/)
 
-### Topic escapes
+### MQTT Topic escapes :id=publishing-server-topic-escapes
 
 Valid escapes are
 
