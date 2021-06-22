@@ -58,7 +58,7 @@ public:
         Constructor
         \param Device Open the named device
     */
-    Comm(char *Device) { m_fd = 0; open( Device ); }
+    Comm(const char *Device) { m_fd = 0; open( Device ); }
   
     /*!
         Constructor
@@ -75,7 +75,7 @@ public:
         \parm szDevice Name of communication device to open.
         \return True on success.
     */
-    virtual bool open( char* szDevice = NULL );
+    virtual bool open(const char* szDevice = NULL );
   
     /*!
         Close the communication device
@@ -96,9 +96,9 @@ public:
         \param HWFlow	Set to zero to disable hardware flow control.
         \param SWFlow Set to zero to disable software flow control.
     */
-    void setParam( char *baud, 
-                    char *parity, 
-                    char *bits, 
+    void setParam(const char *baud, 
+                    const char *parity, 
+                    const char *bits, 
                     int HWFlow=0, 
                     int SWFlow=0 );
   

@@ -1085,24 +1085,25 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("will") && j["will"].is_object()) {
 
       json jj = j["will"];
+      spdlog::debug("will={}", jj.dump());
       m_bWill = true;
 
-      if (jj.contains("topic") && j["topic"].is_string()) {
+      if (jj.contains("topic") && jj["topic"].is_string()) {
         m_will_topic = jj["topic"].get<std::string>();
         spdlog::debug("json mqtt init: 'will topic' Set to {}.", m_will_topic);
       }
 
-      if (jj.contains("qos") && j["qos"].is_number_unsigned()) {
+      if (jj.contains("qos") && jj["qos"].is_number_unsigned()) {
         m_will_qos = jj["qos"].get<uint8_t>();
         spdlog::debug("json mqtt init: 'will qos' Set to {}.", m_will_qos);
       }
 
-      if (jj.contains("retain") && j["retain"].is_boolean()) {
+      if (jj.contains("retain") && jj["retain"].is_boolean()) {
         m_will_bretain = jj["retain"].get<bool>();
         spdlog::debug("json mqtt init: 'will retain' Set to {}.", m_will_bretain);
       }
 
-      if (jj.contains("payload") && j["payload"].is_string()) {
+      if (jj.contains("payload") && jj["payload"].is_string()) {
         m_will_payload = jj["payload"].get<std::string>();
         spdlog::debug("json mqtt init: 'will payload' Set to {}.", m_will_payload);
       }
@@ -1616,12 +1617,42 @@ vscpClientMqtt::init(void)
     spdlog::warn("Failed to set reconnect settings.");
   }
 
+  std::string strTopic;
+  if (m_bEscapesPubTopics) {
+
+    std::string topic_template = m_will_topic;
+    mustache subtemplate{ topic_template };
+    data data;
+
+    data.set("clientid", m_clientid);
+    data.set("user", m_username);
+    data.set("host", m_host);
+
+    data.set("ifguid", m_guid.getAsString());
+    data.set("guid", m_guid.getAsString());
+
+    for (int i = 0; i < 15; i++) {
+      data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
+    }
+
+    for (int i = 0; i < 15; i++) {
+      data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
+    }
+
+    // Add user escapes like "driver-name"= "some-driver";
+    for (auto const &item : m_mapUserEscapes) {
+      data.set(item.first, item.second);
+    }
+
+    strTopic = subtemplate.render(data);
+  }
+
   // Set 'last will' if any is defined
   if (m_will_payload.length() && m_will_topic.length()) {
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
-                                                    m_will_topic.c_str(),
+                                                    strTopic.c_str(),
                                                     m_will_payload.length(),
                                                     m_will_payload.c_str(),
                                                     m_will_qos,
@@ -1629,7 +1660,7 @@ vscpClientMqtt::init(void)
                                                     nullptr)) {
 #else
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
-                                                 m_will_topic.c_str(),
+                                                 strTopic.c_str(),
                                                  m_will_payload.length(),
                                                  m_will_payload.c_str(),
                                                  m_will_qos,
@@ -1640,7 +1671,7 @@ vscpClientMqtt::init(void)
     }
     else {
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
-                                                 m_will_topic.c_str(),
+                                                 strTopic.c_str(),
                                                  m_will_payload.length(),
                                                  m_will_payload.c_str(),
                                                  m_will_qos,
@@ -2015,6 +2046,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       data data;
       cguid evguid(ev.GUID); // Event GUID
       data.set("guid", evguid.getAsString());
+
       for (int i = 0; i < 15; i++) {
         data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
       }
@@ -2022,18 +2054,41 @@ vscpClientMqtt::send(vscpEvent &ev)
       data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
       data.set("ifguid", m_guid.getAsString());
 
-      if (NULL != ev.pdata) {
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("xguid[%d]", i), vscp_str_format("%02X", evguid.getAt(i)));
+      }
+      data.set("xguid.msb", vscp_str_format("%02X", evguid.getAt(0)));
+      data.set("xguid.lsb", vscp_str_format("%02X", evguid.getMSB()));
+
+      data.set("sizedata", vscp_str_format("%d", ev.sizeData));
+      data.set("xsizedata", vscp_str_format("%04X", ev.sizeData));
+
+      if ((nullptr != ev.pdata) && ev.sizeData) {
         for (int i = 0; i < ev.sizeData; i++) {
           data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", ev.pdata[i]));
+        }
+      }
+
+      if ((nullptr != ev.pdata) && ev.sizeData) {
+        for (int i = 0; i < ev.sizeData; i++) {
+          data.set(vscp_str_format("xdata[%d]", i), vscp_str_format("%02X", ev.pdata[i]));
         }
       }
 
       for (int i = 0; i < 15; i++) {
         data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
       }
+
       data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
       data.set("class", vscp_str_format("%d", ev.vscp_class));
       data.set("type", vscp_str_format("%d", ev.vscp_type));
+
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("xifguid[%d]", i), vscp_str_format("%02X", m_guid.getAt(i)));
+      }
+
+      data.set("xclass", vscp_str_format("%02x", ev.vscp_class));
+      data.set("xtype", vscp_str_format("%02x", ev.vscp_type));
 
       if (nullptr != m_pmap_class) {
         data.set("class-token", (*m_pmap_class)[ev.vscp_class]);
@@ -2044,8 +2099,11 @@ vscpClientMqtt::send(vscpEvent &ev)
       }
 
       data.set("head", vscp_str_format("%d", ev.head));
+      data.set("xhead", vscp_str_format("%04X", ev.head));
       data.set("obid", vscp_str_format("%ul", ev.obid));
+      data.set("xobid", vscp_str_format("%08X", ev.obid));
       data.set("timestamp", vscp_str_format("%ul", ev.timestamp));
+      data.set("xtimestamp", vscp_str_format("%08X", ev.timestamp));
 
       std::string dt;
       vscp_getDateStringFromEvent(dt, &ev);
@@ -2056,6 +2114,14 @@ vscpClientMqtt::send(vscpEvent &ev)
       data.set("hour", vscp_str_format("%d", ev.hour));
       data.set("minute", vscp_str_format("%d", ev.minute));
       data.set("second", vscp_str_format("%d", ev.second));
+
+      data.set("local-datetime", dt);
+      data.set("local-year", vscp_str_format("%d", ev.year));
+      data.set("local-month", vscp_str_format("%d", ev.month));
+      data.set("local-day", vscp_str_format("%d", ev.day));
+      data.set("local-hour", vscp_str_format("%d", ev.hour));
+      data.set("local-minute", vscp_str_format("%d", ev.minute));
+      data.set("local-second", vscp_str_format("%d", ev.second));
 
       data.set("clientid", m_clientid);
       data.set("user", m_username);
@@ -2270,7 +2336,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       for (int i = 0; i < 15; i++) {
         data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_guid.getAt(i)));
       }
-      
+
       data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
       data.set("class", vscp_str_format("%d", ex.vscp_class));
       data.set("type", vscp_str_format("%d", ex.vscp_type));

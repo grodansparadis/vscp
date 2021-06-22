@@ -8,7 +8,7 @@
     "vscpkey" : "/var/vscp/vscp.key",
     "logging" : {
         "file-enable-log": true,
-        "file-log-level" : "debug",
+        "file-log-level" : "trace",
         "file-pattern" : "[vscp] [%^%l%$] %v",
         "file-path" : "/tmp/vscpd.log",
         "file-max-size" : 5242880,

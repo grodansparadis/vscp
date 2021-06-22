@@ -1215,7 +1215,6 @@ int64_t
 vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length)
 {
   int64_t value64 = 0;
-  // uint8_t byteArray[8];
 
   // Check pointer
   if (nullptr == pCode) {
@@ -2296,7 +2295,7 @@ vscp_convertFloatToNormalizedEventData(uint8_t *pdata, uint16_t *psize, double v
   }
 
   pdata[0] = VSCP_DATACODING_NORMALIZED + unit + sensoridx; // Normalised integer + unit + sensor index
-  pdata[1] = VSCP_DATACODING_NORMALIZED + ndigits;          // Decimal point shifted five steps to the left
+  pdata[1] = 0x80 + ndigits;                                // Decimal point shifted ndigits steps to the left
 
   return true;
 }
@@ -2372,7 +2371,7 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
     memcpy(data, (uint8_t *) val64, 8);
   }
 
-  // Count the leading zeror
+  // Count the leading zeros
   uint8_t nZeros = 0;
   for (i = 0; i < 8; i++) {
     if (*(p + i))
@@ -2395,9 +2394,287 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
 //
 
 bool
+vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit, uint8_t sensoridx)
+{
+  uint8_t offset = 0;
+  uint16_t data[8];
+
+  // Check pointer
+  if (nullptr == pEvent) {
+    return false;
+  }
+
+  if (nullptr != pEvent->pdata) {
+    delete pEvent->pdata;
+    pEvent->pdata    = nullptr;
+    pEvent->sizeData = 0;
+  }
+
+  memset(data, 0, 8);
+  data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
+
+  if ((uint64_t) value <= 0xff) {
+    data[1]          = value;
+    pEvent->sizeData = 2;
+  }
+  else if ((uint64_t) value <= 0xffff) {
+    pEvent->sizeData = 3;
+#ifdef __BIG_ENDIAN__
+    data[2] = *((uint8_t *) &value);
+    data[1] = *((uint8_t *) &value + 1);
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffff) {
+    pEvent->sizeData = 4;
+#ifdef __BIG_ENDIAN__
+    data[3] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[1] = *((uint8_t *) &value + 2);
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+    data[3]                    = *((uint8_t *) &value + 2);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffff) {
+    pEvent->sizeData = 5;
+#ifdef __BIG_ENDIAN__
+    data[4] = *((uint8_t *) &value);
+    data[3] = *((uint8_t *) &value + 1);
+    data[2] = *((uint8_t *) &value + 2);
+    data[1] = *((uint8_t *)&value + 3;
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+    data[3]                    = *((uint8_t *) &value + 2);
+    data[4]                    = *((uint8_t *) &value + 3);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffff) {
+    pEvent->sizeData = 6;
+#ifdef __BIG_ENDIAN__
+    data[5] = *((uint8_t *) &value);
+    data[4] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
+    data[2] = *((uint8_t *) &value + 3);
+    data[1] = *((uint8_t *) &value + 4);
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+    data[3]                    = *((uint8_t *) &value + 2);
+    data[4]                    = *((uint8_t *) &value + 3);
+    data[5]                    = *((uint8_t *) &value + 4);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffffff) {
+    pEvent->sizeData = 7;
+#ifdef __BIG_ENDIAN__
+    data[6] = *((uint8_t *) &value);
+    data[5] = *((uint8_t *) &value + 1);
+    data[4] = *((uint8_t *) &value + 2);
+    data[3] = *((uint8_t *) &value + 3);
+    data[2] = *((uint8_t *) &value + 4);
+    data[1] = *((uint8_t *) &value + 5);
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+    data[3]                    = *((uint8_t *) &value + 2);
+    data[4]                    = *((uint8_t *) &value + 3);
+    data[5]                    = *((uint8_t *) &value + 4);
+    data[6]                    = *((uint8_t *) &value + 5);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffffffff) {
+    pEvent->sizeData = 8;
+#ifdef __BIG_ENDIAN__
+    data[7] = *((uint8_t *) &value);
+    data[6] = *((uint8_t *) &value + 1);
+    data[5] = *((uint8_t *) &value + 2);
+    data[4] = *((uint8_t *) &value + 3);
+    data[3] = *((uint8_t *) &value + 4);
+    data[2] = *((uint8_t *) &value + 5);
+    data[1] = *((uint8_t *) &value + 6);
+#else
+    data[1]                    = *((uint8_t *) &value);
+    data[2]                    = *((uint8_t *) &value + 1);
+    data[3]                    = *((uint8_t *) &value + 2);
+    data[4]                    = *((uint8_t *) &value + 3);
+    data[5]                    = *((uint8_t *) &value + 4);
+    data[6]                    = *((uint8_t *) &value + 5);
+    data[7]                    = *((uint8_t *) &value + 6);
+#endif
+  }
+  else {
+    return false;
+  }
+
+  // Allocate data as needed
+  if ((nullptr == pEvent->pdata) && (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class)) {
+    offset        = 0;
+    pEvent->pdata = new uint8_t[pEvent->sizeData];
+    if (nullptr == pEvent->pdata) {
+      return false;
+    }
+    memcpy(pEvent->pdata, data, pEvent->sizeData);
+  }
+  else if ((nullptr == pEvent->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+    offset        = 16;
+    pEvent->pdata = new uint8_t[16 + pEvent->sizeData];
+    if (nullptr == pEvent->pdata) {
+      return false;
+    }
+    memcpy(pEvent->pdata + 16, data, pEvent->sizeData);
+  }
+  else {
+    return false;
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeFloatMeasurementEventEx
+//
+
+bool
+vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t unit, uint8_t sensoridx)
+{
+  uint8_t offset = 0;
+
+  // Check pointer
+  if (nullptr == pEventEx) {
+    return false;
+  }
+
+  if (VSCP_CLASS1_MEASUREMENT == pEventEx->vscp_class) {
+    offset = 0;
+  }
+  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEventEx->vscp_class) {
+    offset = 16;
+  }
+  else {
+    return false;
+  }
+
+  pEventEx->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
+
+  if ((uint64_t) value <= 0xff) {
+    pEventEx->data[1]  = value;
+    pEventEx->sizeData = 2;
+  }
+  else if ((uint64_t) value <= 0xffff) {
+    pEventEx->sizeData = 3;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[2 + offset] = *((uint8_t *) &value);
+    pEventEx->data[1 + offset] = *((uint8_t *) &value + 1);
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffff) {
+    pEventEx->sizeData = 4;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[3 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[1 + offset] = *((uint8_t *) &value + 2);
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffff) {
+    pEventEx->sizeData = 5;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[4 + offset] = *((uint8_t *) &value);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[1+offset] = *((uint8_t *)&value + 3;
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[4+offset] = *((uint8_t *)&value + 3);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffff) {
+    pEventEx->sizeData = 6;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[5 + offset] = *((uint8_t *) &value);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[1 + offset] = *((uint8_t *) &value + 4);
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffffff) {
+    pEventEx->sizeData = 7;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[6 + offset] = *((uint8_t *) &value);
+    pEventEx->data[5 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 4);
+    pEventEx->data[1 + offset] = *((uint8_t *) &value + 5);
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
+    pEventEx->data[6 + offset] = *((uint8_t *) &value + 5);
+#endif
+  }
+  else if ((uint64_t) value <= 0xffffffffffffff) {
+    pEventEx->sizeData = 8;
+#ifdef __BIG_ENDIAN__
+    pEventEx->data[7 + offset] = *((uint8_t *) &value);
+    pEventEx->data[6 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[5 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 4);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 5);
+    pEventEx->data[1 + offset] = *((uint8_t *) &value + 6);
+#else
+    pEventEx->data[1 + offset] = *((uint8_t *) &value);
+    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
+    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
+    pEventEx->data[6 + offset] = *((uint8_t *) &value + 5);
+    pEventEx->data[7 + offset] = *((uint8_t *) &value + 6);
+#endif
+  }
+  else {
+    return false;
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeFloatMeasurementEvent
+//
+
+bool
 vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
+
+  // Check pointer
+  if (nullptr == pEvent) {
+    return false;
+  }
 
   // Allocate data if needed
   if ((nullptr == pEvent->pdata) && (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class)) {
@@ -2428,8 +2705,9 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uin
 bool
 vscp_makeFloatMeasurementEventEx(vscpEventEx *pEventEx, float value, uint8_t unit, uint8_t sensoridx)
 {
-  if (nullptr == pEventEx)
+  if (nullptr == pEventEx) {
     return false;
+  }
 
   vscpEvent *pEvent = new vscpEvent;
   if (nullptr == pEvent) {
@@ -2547,7 +2825,7 @@ vscp_makeStringMeasurementEventEx(vscpEventEx *pEventEx, double value, uint8_t u
 
 bool
 vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
-                                     uint16_t type,
+                                     uint16_t vscp_type,
                                      double value,
                                      uint8_t unit,
                                      uint8_t sensoridx,
@@ -2560,7 +2838,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
   }
 
   pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-  pEvent->vscp_type  = type;
+  pEvent->vscp_type  = vscp_type;
   pEvent->obid       = 0;
   pEvent->timestamp  = 0;
 
@@ -2587,7 +2865,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
 
 bool
 vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
-                                       uint16_t type,
+                                       uint16_t vscp_type,
                                        double value,
                                        uint8_t unit,
                                        uint8_t sensoridx,
@@ -2609,7 +2887,7 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
     return false;
   }
 
-  if (!vscp_makeLevel2FloatMeasurementEvent(pEvent, type, value, unit, sensoridx, zone, subzone)) {
+  if (!vscp_makeLevel2FloatMeasurementEvent(pEvent, vscp_type, value, unit, sensoridx, zone, subzone)) {
     return false;
   }
 
@@ -2627,7 +2905,7 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
 
 bool
 vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
-                                      uint16_t type,
+                                      uint16_t vscp_type,
                                       double value,
                                       uint8_t unit,
                                       uint8_t sensoridx,
@@ -2642,7 +2920,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
   std::string strData = vscp_str_format("%f", value);
 
   pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-  pEvent->vscp_type  = type;
+  pEvent->vscp_type  = vscp_type;
   pEvent->obid       = 0;
   pEvent->timestamp  = 0;
   memset(pEvent->GUID, 0, 16);
@@ -2673,7 +2951,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
 
 bool
 vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
-                                        uint16_t type,
+                                        uint16_t vscp_type,
                                         double value,
                                         uint8_t unit,
                                         uint8_t sensoridx,
@@ -2697,7 +2975,7 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
     return false;
   }
 
-  if (!vscp_makeLevel2StringMeasurementEvent(pEvent, type, value, unit, sensoridx, zone, subzone)) {
+  if (!vscp_makeLevel2StringMeasurementEvent(pEvent, vscp_type, value, unit, sensoridx, zone, subzone)) {
     return false;
   }
 
@@ -3993,9 +4271,9 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
     return false;
   }
 
-  dt.clear();
-
   // Return empty string if all date/time values is zero
+  dt.clear();
+  
   if (pEvent->year || pEvent->month || pEvent->day || pEvent->hour || pEvent->minute || pEvent->second) {
     dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
                          (int) pEvent->year,
@@ -4589,7 +4867,6 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
   }
 
   depth_eventex_parser++;
-  
 }
 
 static void
