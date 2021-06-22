@@ -7,7 +7,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Disable abi warnings (nlohmann)
 SET(GCC_COVERAGE_COMPILE_FLAGS "-Wno-psabi -DOPENSSL_API_1_1")
-#SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+#SET(GCC_COVERAGE_LINK_FLAGS    "-lm")
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)

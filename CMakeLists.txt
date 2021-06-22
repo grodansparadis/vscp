@@ -38,8 +38,8 @@ if(NOT DEFINED PATCH_VERSION)
 endif()
 
 # Disable abi warnings (nlohmann)
-SET(GCC_COVERAGE_COMPILE_FLAGS "-Wno-psabi")
-#SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi")
+SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
 
 SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic controller for a VSCP based system. It is"
@@ -105,8 +105,8 @@ include(GNUInstallDirs)
 INCLUDE(InstallRequiredSystemLibraries)
 
 # Disable abi warnings (nlohmann)
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-#SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_VSCP_COMPILE_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_VSCP_LINK_FLAGS}")
 
 #   * * * * CPACK * * * *
 
