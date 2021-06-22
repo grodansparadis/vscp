@@ -46,7 +46,7 @@ Comm::~Comm( void )
 ///////////////////////////////////////////////////////////////////////////////
 // open
 
-bool Comm::open( char *szDevice )	
+bool Comm::open( const char *szDevice )	
 {
     // Not allowed to open if already open
     if ( m_fd != 0 ) return false;
@@ -73,9 +73,9 @@ bool Comm::open( char *szDevice )
 // Set port parameters.
 //
 
-void Comm::setParam( char *baud, 
-                        char *parity,
-                        char *bits,
+void Comm::setParam( const char *baud, 
+                        const char *parity,
+                        const char *bits,
                         int HWFlow,
                         int SWFlow )
 {
@@ -242,9 +242,7 @@ int Comm::comm_gets( char *Buffer, int max )
     unsigned char c;
     int x = 0;
 
-    if ((NULL != Buffer) &&
-        (0 < max)) {
-
+    if ((NULL != Buffer) && (0 < max)) {
         do {
             (void)read( m_fd, &c, 1 );
             Buffer[ x++ ] = c;

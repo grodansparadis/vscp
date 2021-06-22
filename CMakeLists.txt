@@ -463,6 +463,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
 
 # Scripts
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscp_eth_to_guid
+              ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/download-event-db
 DESTINATION ${CMAKE_INSTALL_BINDIR}
 PERMISSIONS OWNER_READ OWNER_WRITE)
 

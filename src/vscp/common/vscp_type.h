@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-06-15 13:32:52.397552
+                        Generated: 2021-06-21 13:25:14.819225
 */
  
 #ifndef VSCP_TYPE_H
@@ -118,6 +118,7 @@
 #define VSCP_TYPE_ALARM_ARM                         10  /* Arm */
 #define VSCP_TYPE_ALARM_DISARM                      11  /* Disarm */
 #define VSCP_TYPE_ALARM_WATCHDOG                    12  /* Watchdog */
+#define VSCP_TYPE_ALARM_RESET                       13  /* Alarm reset */
     
 /*  CLASS1.SECURITY = 2  -  Security */
 #define VSCP_TYPE_SECURITY_GENERAL                  0   /* General event */

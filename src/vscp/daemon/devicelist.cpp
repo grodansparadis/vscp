@@ -459,8 +459,8 @@ CDeviceList::getAllAsString(void)
 // getAllAsJSON
 //
 
-const char *interface_template = "{\
-    \"interfaces\" : [%s]\
+const char *driver_template = "{\
+    \"drivers\" : [%s]\
 }";
 
 std::string
@@ -472,12 +472,12 @@ CDeviceList::getAllAsJSON(void)
   for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
     CDeviceItem *pItem = *iter;
     if (NULL != pItem) {
-      str += pItem->getAsJSON();
-      str += ",";
+      if (str.length()) str += ",";
+      str += pItem->getAsJSON();      
     }
   }
 
-  str = vscp_str_format(interface_template, str.c_str());
+  str = vscp_str_format(driver_template, str.c_str());
 
   return str;
 }
