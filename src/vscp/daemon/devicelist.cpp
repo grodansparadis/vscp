@@ -296,8 +296,6 @@ CDeviceItem::sendEvent(vscpEvent *pev)
   return (0 == rv);
 }
 
-
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
 //////////////////////////////////////////////////////////////////////
@@ -345,39 +343,39 @@ CDeviceList::addItem(CControlObject *pCtrlObj,
   bool rv = true;
 
   CDeviceItem *pDeviceItem = new CDeviceItem();
-  if (NULL == pDeviceItem)
+  if (NULL == pDeviceItem) {
     return false;
+  }
 
-  if (NULL != pDeviceItem) {
+  if (vscp_fileExists(strPath)) {
+    m_devItemList.push_back(pDeviceItem);
 
-    if (vscp_fileExists(strPath)) {
-      m_devItemList.push_back(pDeviceItem);
+    pDeviceItem->m_bEnable  = true;
+    pDeviceItem->m_pCtrlObj = pCtrlObj;
 
-      pDeviceItem->m_bEnable  = true;
-      pDeviceItem->m_pCtrlObj = pCtrlObj;
+    pDeviceItem->m_driverLevel  = level;
+    pDeviceItem->m_strName      = strName;
+    pDeviceItem->m_strParameter = strParameter;
+    pDeviceItem->m_strPath      = strPath;
+    pDeviceItem->m_guid         = guid;
+    pDeviceItem->m_mqttClient.setIfGuid(guid);
+    pDeviceItem->m_mqttClient.setSrvGuid(pCtrlObj->m_guid);
+    pDeviceItem->m_translation  = translation;
 
-      pDeviceItem->m_driverLevel  = level;
-      pDeviceItem->m_strName      = strName;
-      pDeviceItem->m_strParameter = strParameter;
-      pDeviceItem->m_strPath      = strPath;
-      pDeviceItem->m_guid         = guid;
-      pDeviceItem->m_translation  = translation;
-
-      // Set buffer sizes and flags
-      pDeviceItem->m_DeviceFlags = flags;
+    // Set buffer sizes and flags
+    pDeviceItem->m_DeviceFlags = flags;
+  }
+  else {
+    if (nullptr == spdlog::get("logger")) {
+      fprintf(stderr, "Driver '%s' is not available at this path %s. Dropped!", strName.c_str(), strPath.c_str());
     }
     else {
-      if (nullptr == spdlog::get("logger")) {
-        fprintf(stderr, "Driver '%s' is not available at this path %s. Dropped!", strName.c_str(), strPath.c_str());
-      }
-      else {
-        spdlog::get("logger")->error("Driver '{}' is not available at this path {}. Dropped!", strName, strPath);
-      }
-
-      // Driver does not exist at this path
-      delete pDeviceItem;
-      rv = false;
+      spdlog::get("logger")->error("Driver '{}' is not available at this path {}. Dropped!", strName, strPath);
     }
+
+    // Driver does not exist at this path
+    delete pDeviceItem;
+    rv = false;
   }
 
   return rv;
@@ -472,8 +470,9 @@ CDeviceList::getAllAsJSON(void)
   for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
     CDeviceItem *pItem = *iter;
     if (NULL != pItem) {
-      if (str.length()) str += ",";
-      str += pItem->getAsJSON();      
+      if (str.length())
+        str += ",";
+      str += pItem->getAsJSON();
     }
   }
 

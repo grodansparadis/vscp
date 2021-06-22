@@ -505,10 +505,16 @@ public:
   }
 
   /*!
-    Set optional GUID
+    Set server GUID {{srvguid}}
     @param guid Guid to set
   */
-  void setGuid(const cguid &guid) { m_guid = guid; };
+  void setSrvGuid(const cguid &guid) { m_srvguid = guid; };
+
+  /*!
+    Set driver/interface GUID {{ifguid}}
+    @param guid Guid to set
+  */
+  void setIfGuid(const cguid &guid) { m_ifguid = guid; };
 
   /*!
     Get Mosquitto connection handle
@@ -704,9 +710,15 @@ private:
   std::string m_host; // MQTT broker
 
   /*!
-    Optional GUID for client
+    GUID for host
   */
-  cguid m_guid;
+  cguid m_srvguid;
+
+  /*!
+    GUID for driver
+  */
+  cguid m_ifguid;
+
 
   /*!
       Extracted from host address or set directly
