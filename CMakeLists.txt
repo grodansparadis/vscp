@@ -37,6 +37,7 @@ if(NOT DEFINED PATCH_VERSION)
     SET(PATCH_VERSION "0")
 endif()
 
+# Disable abi warnings (nlohmann)
 SET(GCC_COVERAGE_COMPILE_FLAGS "-Wno-psabi")
 #SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
 
