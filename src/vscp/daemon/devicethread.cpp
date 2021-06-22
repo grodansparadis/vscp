@@ -388,8 +388,11 @@ deviceThread(void *pData)
     //   return NULL;
     // }
 
-    // Set GUID
-    pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
+    // Set interface/driver GUID
+    pDeviceItem->m_mqttClient.setIfGuid(pDeviceItem->m_guid);
+
+    // Set server GUID
+    pDeviceItem->m_mqttClient.setSrvGuid(pDeviceItem->m_pCtrlObj->m_guid);
 
     // Add user escapes
     pDeviceItem->m_mqttClient.setUserEscape("driver-name", pDeviceItem->m_strName);
@@ -666,8 +669,11 @@ deviceThread(void *pData)
     //   return NULL;
     // }
 
-    // Set GUID
-    pDeviceItem->m_mqttClient.setGuid(pDeviceItem->m_guid);
+    // Set driver/interface GUID
+    pDeviceItem->m_mqttClient.setIfGuid(pDeviceItem->m_guid);
+
+    // Set server GUID
+    pDeviceItem->m_mqttClient.setSrvGuid(pDeviceItem->m_pCtrlObj->m_guid);
 
     // Add user escapes
     pDeviceItem->m_mqttClient.setUserEscape("driver-name", pDeviceItem->m_strName);

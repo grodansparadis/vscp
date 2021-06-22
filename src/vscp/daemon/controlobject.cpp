@@ -318,7 +318,7 @@ CControlObject::CControlObject()
   // m_mqtt_pwKeyfile                     = "";
   // m_mqtt_format                        = jsonfmt;
 
-  m_topicDaemonBase = "vscp-daemon/{{guid}}/";
+  m_topicDaemonBase = "vscp-daemon/{{srvguid}}/";
   m_topicDrivers = m_topicDaemonBase + "drivers";
   m_topicDiscovery  = m_topicDaemonBase + "discovery";
 
@@ -693,7 +693,8 @@ CControlObject::init_mqtt()
   // }
 
   // Set GUID
-  m_mqttClient.setGuid(m_guid);
+  m_mqttClient.setSrvGuid(m_guid);
+  m_mqttClient.setIfGuid(m_guid);
 
   // Add user escapes
   m_mqttClient.setUserEscape("server-name", m_strServerName);
@@ -724,6 +725,8 @@ CControlObject::init_mqtt()
     mustache subtemplate{ m_topicDaemonBase + "server-name" };
     data data;
     data.set("guid", m_guid.getAsString());
+    data.set("srvguid", m_guid.getAsString());
+    data.set("ifguid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
     spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = m_strServerName;
@@ -744,6 +747,8 @@ CControlObject::init_mqtt()
     mustache subtemplate{ m_topicDaemonBase + "server-started-utc" };
     data data;
     data.set("guid", m_guid.getAsString());
+    data.set("srvguid", m_guid.getAsString());
+    data.set("ifguid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
     spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = startSrvTime;
@@ -764,6 +769,8 @@ CControlObject::init_mqtt()
     mustache subtemplate{ m_topicDrivers };
     data data;
     data.set("guid", m_guid.getAsString());
+    data.set("srvguid", m_guid.getAsString());
+    data.set("ifguid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
     spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = m_deviceList.getAllAsJSON();
@@ -1168,6 +1175,8 @@ CControlObject::discovery(vscpEvent *pev)
     mustache subtemplate{ m_topicDiscovery };
     data data;
     data.set("guid", m_guid.getAsString());
+    data.set("srvguid", m_guid.getAsString());
+    data.set("ifguid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
