@@ -59,12 +59,7 @@ jobs:
         make -j$(nproc)
         sudo cpack -G DEB 
         sudo make install DESTDIR=AppDir
-    - name: copy file via ssh password
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.VSCP1 }}
-        username: ${{ secrets.VSCP1_USER }}
-        password: ${{ secrets.VSCP1_PW }}
-        port: ${{ secrets.VSCP1_PORT }}
-        source: "/home/runner/work/vscp/vscp/build/*.deb"
-        target: "/home/akhe/"    
+    - uses: actions/upload-artifact@v2
+        with:
+          name: vscpd_15.0.0.deb
+          path: /home/runner/work/vscp/vscp/build/vscpd_15.0.0.deb   
