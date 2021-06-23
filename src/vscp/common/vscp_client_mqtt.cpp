@@ -1636,7 +1636,7 @@ vscpClientMqtt::init(void)
     }
 
     for (int i = 0; i < 15; i++) {
-      data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_ifguid.getAt(i)));
+      data.set(vscp_str_format("xifguid[%d]", i), vscp_str_format("%02X", m_ifguid.getAt(i)));
     }
 
     for (int i = 0; i < 15; i++) {
@@ -1644,7 +1644,7 @@ vscpClientMqtt::init(void)
     }
 
     for (int i = 0; i < 15; i++) {
-      data.set(vscp_str_format("xsrvguid[%d]", i), vscp_str_format("%d", m_srvguid.getAt(i)));
+      data.set(vscp_str_format("xsrvguid[%d]", i), vscp_str_format("%02X", m_srvguid.getAt(i)));
     }
 
     // Add user escapes like "driver-name"= "some-driver";
@@ -2105,47 +2105,61 @@ vscpClientMqtt::send(vscpEvent &ev)
       mustache subtemplate{ topic_template };
       data data;
       cguid evguid(ev.GUID); // Event GUID
+      
+
+      // Event GUID
       data.set("guid", evguid.getAsString());
 
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
-      }
       data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
       data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
-      data.set("ifguid", m_ifguid.getAsString());
 
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("xguid[%d]", i), vscp_str_format("%02X", evguid.getAt(i)));
-      }
       data.set("xguid.msb", vscp_str_format("%02X", evguid.getAt(0)));
       data.set("xguid.lsb", vscp_str_format("%02X", evguid.getMSB()));
 
+      // Sever GUID
+      data.set("srvguid", m_srvguid.getAsString());
+
+      data.set("srvguid.msb", vscp_str_format("%d", m_srvguid.getAt(0)));
+      data.set("srvguid.lsb", vscp_str_format("%d", m_srvguid.getMSB()));
+
+      data.set("xsrvguid.msb", vscp_str_format("%02X", m_srvguid.getAt(0)));
+      data.set("xsrvguid.lsb", vscp_str_format("%02X", m_srvguid.getMSB()));
+
+      // Interface GUID
+      data.set("ifguid", m_ifguid.getAsString());
+
+      data.set("ifguid.msb", vscp_str_format("%d", m_ifguid.getAt(0)));
+      data.set("ifguid.lsb", vscp_str_format("%d", m_ifguid.getMSB()));
+
+      data.set("xifguid.msb", vscp_str_format("%02X", m_ifguid.getAt(0)));
+      data.set("xifguid.lsb", vscp_str_format("%02X", m_ifguid.getMSB()));
+
+      // GUID positions
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
+        data.set(vscp_str_format("xguid[%d]", i), vscp_str_format("%02X", evguid.getAt(i)));
+        data.set(vscp_str_format("srvguid[%d]", i), vscp_str_format("%d", m_srvguid.getAt(i)));
+        data.set(vscp_str_format("xsrvguid[%d]", i), vscp_str_format("%02X", m_srvguid.getAt(i)));
+        data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_ifguid.getAt(i)));
+        data.set(vscp_str_format("xifguid[%d]", i), vscp_str_format("%02X", m_ifguid.getAt(i)));
+      }
+
+
+      // Event data
       data.set("sizedata", vscp_str_format("%d", ev.sizeData));
       data.set("xsizedata", vscp_str_format("%04X", ev.sizeData));
 
       if ((nullptr != ev.pdata) && ev.sizeData) {
         for (int i = 0; i < ev.sizeData; i++) {
           data.set(vscp_str_format("data[%d]", i), vscp_str_format("%d", ev.pdata[i]));
-        }
-      }
-
-      if ((nullptr != ev.pdata) && ev.sizeData) {
-        for (int i = 0; i < ev.sizeData; i++) {
           data.set(vscp_str_format("xdata[%d]", i), vscp_str_format("%02X", ev.pdata[i]));
         }
-      }
-
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_ifguid.getAt(i)));
       }
 
       data.set("nickname", vscp_str_format("%d", evguid.getNicknameID()));
       data.set("class", vscp_str_format("%d", ev.vscp_class));
       data.set("type", vscp_str_format("%d", ev.vscp_type));
 
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("xifguid[%d]", i), vscp_str_format("%02X", m_ifguid.getAt(i)));
-      }
 
       data.set("xclass", vscp_str_format("%02x", ev.vscp_class));
       data.set("xtype", vscp_str_format("%02x", ev.vscp_type));
@@ -2363,20 +2377,43 @@ vscpClientMqtt::send(vscpEventEx &ex)
       mustache subtemplate{ topic_template };
       data data;
       cguid evguid(ex.GUID); // Event GUID
+      
+      // Event GUID
       data.set("guid", evguid.getAsString());
 
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
-      }
       data.set("guid.msb", vscp_str_format("%d", evguid.getAt(0)));
       data.set("guid.lsb", vscp_str_format("%d", evguid.getMSB()));
-      data.set("ifguid", m_ifguid.getAsString());
 
-      for (int i = 0; i < 15; i++) {
-        data.set(vscp_str_format("xguid[%d]", i), vscp_str_format("%02X", evguid.getAt(i)));
-      }
       data.set("xguid.msb", vscp_str_format("%02X", evguid.getAt(0)));
       data.set("xguid.lsb", vscp_str_format("%02X", evguid.getMSB()));
+
+      // Sever GUID
+      data.set("srvguid", m_srvguid.getAsString());
+
+      data.set("srvguid.msb", vscp_str_format("%d", m_srvguid.getAt(0)));
+      data.set("srvguid.lsb", vscp_str_format("%d", m_srvguid.getMSB()));
+
+      data.set("xsrvguid.msb", vscp_str_format("%02X", m_srvguid.getAt(0)));
+      data.set("xsrvguid.lsb", vscp_str_format("%02X", m_srvguid.getMSB()));
+
+      // Interface GUID
+      data.set("ifguid", m_ifguid.getAsString());
+
+      data.set("ifguid.msb", vscp_str_format("%d", m_ifguid.getAt(0)));
+      data.set("ifguid.lsb", vscp_str_format("%d", m_ifguid.getMSB()));
+
+      data.set("xifguid.msb", vscp_str_format("%02X", m_ifguid.getAt(0)));
+      data.set("xifguid.lsb", vscp_str_format("%02X", m_ifguid.getMSB()));
+
+      // GUID positions
+      for (int i = 0; i < 15; i++) {
+        data.set(vscp_str_format("guid[%d]", i), vscp_str_format("%d", evguid.getAt(i)));
+        data.set(vscp_str_format("xguid[%d]", i), vscp_str_format("%02X", evguid.getAt(i)));
+        data.set(vscp_str_format("srvguid[%d]", i), vscp_str_format("%d", m_srvguid.getAt(i)));
+        data.set(vscp_str_format("xsrvguid[%d]", i), vscp_str_format("%02X", m_srvguid.getAt(i)));
+        data.set(vscp_str_format("ifguid[%d]", i), vscp_str_format("%d", m_ifguid.getAt(i)));
+        data.set(vscp_str_format("xifguid[%d]", i), vscp_str_format("%02X", m_ifguid.getAt(i)));
+      }
 
       data.set("sizedata", vscp_str_format("%d", ex.sizeData));
       data.set("xsizedata", vscp_str_format("%04X", ex.sizeData));

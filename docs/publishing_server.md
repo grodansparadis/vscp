@@ -106,16 +106,25 @@ Valid escapes are
 
 | Escape | Description |
 | ------ | ----------- |
+| {{srvguid}} | GUID for the VSCP daemon server. |
+| {{srvguid.msb}} | Most significant byte of GUID for the VSCP daemon server in decimal |
+| {{srvguid.lsb}} | Least significant byte of GUID for the VSCP daemon server in decimal |
+| {{xsrvguid.msb}} | Most significant byte of GUID for the VSCP daemon server in hexadecimal |
+| {{xsrvguid.lsb}} | Least significant byte of GUID for the VSCP daemon server in hexadecimal |
+| {{srvguid[0..15]}} | Specified byte of GUID 0-15 for the VSCP daemon server in decimal |
+| {{xsrvguid[0..15]}} | Specified byte of GUID 0-15 for the VSCP daemon server in hexadecimal |
 | {{guid}} | GUID for the event |
-| {{ifguid}} | Interface GUID for the daemon or the driver |
-| {{ifguid[0..15]}} | Specified byte of interface GUID 0-15 for the event in decimal |
-| {{xifguid[0..15]}} | Specified byte of interface GUID 0-15 for the event in hexadecimal |
 | {{guid.msb}} | Most significant byte of GUID for the event in decimal |
-| {{xguid.msb}} | Most significant byte of GUID for the event in hexadecimal |
 | {{guid.lsb}} | Least significant byte of GUID for the event in decimal |
+| {{xguid.msb}} | Most significant byte of GUID for the event in hexadecimal |
 | {{xguid.lsb}} | Least significant byte of GUID for the event in hexadecimal |
 | {{guid[0..15]}} | Specified byte of GUID 0-15 for the event in decimal |
 | {{xguid[0..15]}} | Specified byte of GUID 0-15 for the event in hexadecimal |
+| {{ifguid}} | Interface GUID typically for driver |
+| {{ifguid.msb}} | Most significant byte of GUID for the interface in decimal |
+| {{ifguid.lsb}} | Least significant byte of GUID for the interface in decimal |
+| {{ifguid[0..15]}} | Specified byte of interface GUID 0-15 for the event in decimal |
+| {{xifguid[0..15]}} | Specified byte of interface GUID 0-15 for the event in hexadecimal |
 | {{data[0..511]}} | Specified byte of data 0-511 in decimal |
 | {{xdata[0..511]}} | Specified byte of data 0-511 for the event in hexadecimal |
 | {{sizedata}} | Data size for the event in decimal. |

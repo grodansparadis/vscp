@@ -80,13 +80,13 @@ In the general section you find settings that are common to all components of th
 "logging" : {
     "file-enable-log": true,
     "file-log-level" : "debug",
-    "file-pattern" : "[vscp] [%^%l%$] %v",
+    "file-pattern" : "[vscp %c] [%^%l%$] %v",
     "file-path" : "/var/log/vscp/vscpd.log",
     "file-max-size" : 5242880,
     "file-max-files" : 7,
     "console-enable-log": false,
     "console-log-level" : "info",
-    "console-pattern" : "[vscp] [%^%l%$] %v"
+    "console-pattern" : "[vscp %c] [%^%l%$] %v"
 }
 ```
 
@@ -95,6 +95,8 @@ In the general section you find settings that are common to all components of th
 The debug entry is a 64-bit number (each bit is a flag)  that enable a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
 
 The debug bits are defined in [this file](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp_debug.h).
+
+All flags set is 0xfffffffffffffff whish is 18446744073709551615. A decimal value must be set as JSON does not know hexadecimal.
 
 Se the [solving problems](./solving_problems.md) section for more information.
 
@@ -438,9 +440,26 @@ The identity of this client.  May be used as the username depending on the serve
 
 Configure will information for a mosquitto instance.  By default, clients do not have a will.  
 
+A limited set of escapes are available for will-topics. You can use {{srvguid}} the GUID of the server,  and {{ifguid}} the guid of the driver in _will_ topics.  The full list is.
+
+** Will-topic escapes.**
+
+| Escape | Description |
+| ------ | ----------- |
+| clientid | Clienid for the MQTT session. |
+| user | User name for the MQTT session.|
+| host | Remote host fo rthe MQTT session. |
+| srvguid | Full GUID for the VSCP daemon |
+| srvguid[n] | One pos in decimal for server GUID for daemon. n can be 0..15 where 0 is most significant byte. |
+| xsrvguid[n] | One pos in hexadecimal for server GUID for daemon. n can be 0..15 where 0 is most significant byte. |
+| ifguid | Full GUID for the interface (= GUID for driver). Valid only for drivers. |
+| ifguid[n] | One pos in decimal for interface GUID. n can be 0..15 where 0 is most significant byte. |
+| xifguid[n] | One pos in hexadecimal for interface GUID. n can be 0..15 where 0 is most significant byte. |
+| User defined escapes | User defined escapes |
+
 ```json
 "will": {
-    "topic": "vscp-daemon/{{guid}}/will",
+    "topic": "vscp-daemon/{{srvguid}}/will",
     "qos": 1,
     "retain": true,
     "payload": "VSCP Daemon is down"
@@ -697,25 +716,25 @@ Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers (ju
         },
         "subscribe": [
             {
-                "topic": "test1/topic/A",
+                "topic": "vscp/test1/topic/A",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/topic/B",
+                "topic": "vscp/test2/topic/B",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test/#",
+                "topic": "vscp/test/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/#",
+                "topic": "vscp/test2/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
@@ -878,25 +897,25 @@ Level II drivers can handle the full VSCP abstraction and don't have the small l
         },
         "subscribe": [
             {
-                "topic": "test1/topic/A",
+                "topic": "vscp/test1/topic/A",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/topic/B",
+                "topic": "vscp/test2/topic/B",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test/#",
+                "topic": "vscp/test/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
             },
             {
-                "topic": "test2/#",
+                "topic": "vscp/test2/#",
                 "qos": 0,
                 "v5-options": 0,
                 "format": "auto"
