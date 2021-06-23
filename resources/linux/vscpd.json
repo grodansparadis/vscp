@@ -393,7 +393,7 @@
         }
       },
       {
-        "enable": true,
+        "enable": false,
         "name": "socketcanl1",
         "config": "can0",
         "flags": 0,

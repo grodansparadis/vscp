@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
-            "args": ["-s","-c/home/akhe/development/VSCP/vscp/debug/linux/vscpd.json"],
+            "args": ["-s","-c/home/akhe/development/VSCP/vscp/demo/linux/vscpd.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -25,6 +25,27 @@
             "preLaunchTask": "build vscpd",
             "miDebuggerPath": "/usr/bin/gdb"
         },
+        {
+          "name": "(gdb) vscpd test with /etc/...",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
+          "args": ["-s","-c/etc/vscp/vscpd.json"],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "gdb",
+          "setupCommands": [
+              {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              }
+          ],
+          "preLaunchTask": "build vscpd",
+          "miDebuggerPath": "/usr/bin/gdb"
+      },
         {
             "name": "(gdb) vscp w/ automation driver",
             "type": "cppdbg",
