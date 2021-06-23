@@ -1,4 +1,4 @@
-name: CMake
+name: Build
 
 on: [push]
 
@@ -57,4 +57,9 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
         make -j$(nproc)
+        sudo cpack -G DEB 
         sudo make install DESTDIR=AppDir
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}_vscpd_15.0.0.deb
+        path: /home/runner/work/vscp/vscp/build/vscpd_15.0.0.deb   

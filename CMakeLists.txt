@@ -135,7 +135,7 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
         )
     else()
         SET(CPACK_DEBIAN_PACKAGE_DEPENDS 
-                "libuuid1, lsb-base (>=4.1+Debian3), libc6-dev (>= 2.14), libstdc++6 (>= 5.2), libgcc1 (>= 1:3.0), libssl-dev (>=1.0.0), libmosquitto-dev (>=1.4.15), libexpat1-dev (>=2.0), libmosquitto-dev, libsystemd-dev, libwrap0-dev (>=7.6), libz-dev")
+                "libuuid1, lsb-base (>=4.1+Debian3), libc6-dev (>= 2.14), libstdc++6 (>= 5.2), libgcc1 (>= 1:3.0), libssl-dev (>=1.0.0), libmosquitto-dev (>=1.4.10), libexpat1-dev (>=2.0), libmosquitto-dev, libsystemd-dev, libwrap0-dev (>=7.6), libz-dev")
         SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
         SET(CPACK_DEBIAN_PACKAGE_SECTION "network")
         SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
@@ -441,9 +441,9 @@ install(TARGETS vscpd
         ${CMAKE_INSTALL_SBINDIR})
 
 # Password generation
-install(TARGETS vscp-mkpasswd
-        RUNTIME DESTINATION 	
-        ${CMAKE_INSTALL_BINDIR})
+# install(TARGETS vscp-mkpasswd
+#         RUNTIME DESTINATION 	
+#         ${CMAKE_INSTALL_BINDIR})
 
 # The VSCP daemon systemctl service file
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.service
