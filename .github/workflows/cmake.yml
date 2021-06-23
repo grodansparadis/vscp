@@ -58,5 +58,5 @@ jobs:
       run: |
         make -j$(nproc)
         sudo make install DESTDIR=AppDir
-    - name: cpack
-      run: sudo cpack    
+    - name: cpack deb
+      run: sudo cpack -G DEB   
