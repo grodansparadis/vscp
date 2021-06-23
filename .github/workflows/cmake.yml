@@ -61,5 +61,5 @@ jobs:
         sudo make install DESTDIR=AppDir
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.node }}_vscpd_15.0.0.deb
+        name: ${{ matrix.os }}_vscpd_15.0.0.deb
         path: /home/runner/work/vscp/vscp/build/vscpd_15.0.0.deb   
