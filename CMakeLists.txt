@@ -441,9 +441,9 @@ install(TARGETS vscpd
         ${CMAKE_INSTALL_SBINDIR})
 
 # Password generation
-install(TARGETS vscp-mkpasswd
-        RUNTIME DESTINATION 	
-        ${CMAKE_INSTALL_BINDIR})
+# install(TARGETS vscp-mkpasswd
+#         RUNTIME DESTINATION 	
+#         ${CMAKE_INSTALL_BINDIR})
 
 # The VSCP daemon systemctl service file
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.service

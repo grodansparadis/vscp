@@ -78,4 +78,8 @@ target_link_libraries(vscp-mkpasswd PRIVATE m
 #    gtest_main
 )    
 
+install(TARGETS vscp-mkpasswd
+        RUNTIME DESTINATION 	
+        ${CMAKE_INSTALL_BINDIR})
+
 #add_library(MathFunctions mysqrt.cxx)
