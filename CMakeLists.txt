@@ -37,6 +37,10 @@ if(NOT DEFINED PATCH_VERSION)
     SET(PATCH_VERSION "0")
 endif()
 
+# Disable abi warnings (nlohmann)
+SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi")
+SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
+
 SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic controller for a VSCP based system. It is"
                                       "possible to add drivers to physical devices, interface external nodes over"
@@ -99,6 +103,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include(GNUInstallDirs)
 
 INCLUDE(InstallRequiredSystemLibraries)
+
+# Disable abi warnings (nlohmann)
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_VSCP_COMPILE_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_VSCP_LINK_FLAGS}")
 
 #   * * * * CPACK * * * *
 
@@ -459,7 +467,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-ca-certificates
 # Database
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
             DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/
-            PERMISSIONS OWNER_READ OWNER_WRITE)
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
 
 # Scripts
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscp_eth_to_guid

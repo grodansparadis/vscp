@@ -7435,6 +7435,22 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
   *to = '\0';
 }
 
+// ----------------------------------------------------------------------------
+
+static uint8_t readHexChar(char input)
+{
+  if(input >= '0' && input <= '9') {
+    return input - '0';
+  }
+  if(input >= 'A' && input <= 'F') {
+    return input - 'A' + 10;
+  }
+  if(input >= 'a' && input <= 'f') {
+    return input - 'a' + 10;
+  }
+  throw std::invalid_argument("Invalid hex char input");
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_hexStr2ByteArray
 //
@@ -7442,35 +7458,15 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 size_t
 vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 {
-  int slen = (int) strlen(hexstr);
-  int i = 0, j = 0;
+  int cnt = 0;
+  const char *phex = hexstr;
 
-  fprintf(stderr, "[%s]", hexstr);
-
-  // The output array size is half the hex_str length (rounded up)
-  size_t nhexsize = (slen + 1) / 2;
-
-  if (size < nhexsize) {
-    // Too big for the output array - truncate it
-    nhexsize = size;
+  while(*(phex + 2*cnt) && *(phex + 2*cnt + 1) && (cnt < size)) {
+    *(array + cnt) = (uint8_t)(readHexChar(*(phex + 2*cnt)) << 8) + readHexChar(*(phex + 2*cnt + 1));
+    cnt++;
   }
 
-  if (slen % 2 == 1) {
-    // hex_str is an odd length, so assume an implicit "0" prefix
-
-    if (sscanf(&(hexstr[0]), "%1hhx", &(array[0])) != 1) {
-      return 0;
-    }
-
-    i = j = 1;
-  }
-
-  for (; i < slen; i += 2, j++) {
-    if (sscanf(&(hexstr[i]), "%2hhx", &(array[j])) != 1) {
-      return 0;
-    }
-  }
-  return nhexsize;
+  return cnt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

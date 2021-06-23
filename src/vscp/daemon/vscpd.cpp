@@ -131,10 +131,10 @@ main(int argc, char **argv)
 
   auto console = spdlog::stdout_color_mt("console");
   // Start out with level=info. Config may change this
-  console->set_level(spdlog::level::info);
-  console->set_pattern("[vscp] [%^%l%$] %v");
+  console->set_level(spdlog::level::trace);
+  console->set_pattern("[vscp: %c] [%^%l%$] %v");
   spdlog::set_default_logger(console);
-
+  
   console->info("Starting the VSCP daemon...");
 
   // Ignore return value from defunct processes id

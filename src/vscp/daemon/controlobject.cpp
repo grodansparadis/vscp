@@ -118,7 +118,7 @@ foo(const int i)
 #define XML_BUFF_SIZE 0xffff
 
 // From vscp.cpp
-extern uint8_t *__vscp_key; // (256 bits / 32 bytes)
+extern uint8_t __vscp_key[32]; // (256 bits / 32 bytes)
 extern uint64_t gDebugLevel;
 
 // Prototypes
@@ -383,6 +383,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
   ////////////////////////////////////////////////////////////////////////////
   //                           Read configuration
   ////////////////////////////////////////////////////////////////////////////
+
+  spdlog::info("gDebugLevel={}", gDebugLevel);
 
   // Read JSON configuration
   if (gDebugLevel & VSCP_DEBUG_EXTRA) {
@@ -1548,11 +1550,13 @@ bool
 CControlObject::readEncryptionKey(const std::string &path)
 {
   bool rv = true;
+  spdlog::debug("Reading encryption key {}", path);
   try {
     std::ifstream in(path, std::ifstream::in);
     std::stringstream strStream;
     strStream << in.rdbuf();
     std::string hexstr = strStream.str();
+    spdlog::debug("key={}", hexstr);
     rv                 = (32 == vscp_hexStr2ByteArray(__vscp_key, 32, hexstr.c_str()));
   }
   catch (...) {
@@ -2211,9 +2215,7 @@ CControlObject::readJSON(const json &j)
 bool
 CControlObject::readConfiguration(const std::string &strcfgfile)
 {
-  if (gDebugLevel & VSCP_DEBUG_EXTRA) {
-    spdlog::debug("Reading full JSON configuration from {}", strcfgfile);
-  }
+  spdlog::debug("Reading full JSON configuration from {}" , strcfgfile);
 
   json j;
 

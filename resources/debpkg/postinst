@@ -48,6 +48,7 @@ setup_vscpd_systemd() {
 fix_permissions() {
   chown vscp /var/lib/vscp
   chgrp vscp /var/lib/vscp
+  chmod a+x /var/lib/vscp
   chown vscp /var/lib/vscp/drivers
   chgrp vscp /var/lib/vscp/drivers
   chown vscp /var/lib/vscp/drivers/level1
@@ -60,15 +61,18 @@ fix_permissions() {
   chgrp vscp /var/lib/vscp/web
   chown vscp /var/lib/vscp/web/html
   chgrp vscp /var/lib/vscp/web/html
-  chown vscp /var/lib/vscp/web/images
-  chgrp vscp /var/lib/vscp/web/images
-  chown vscp /var/lib/vscp/web/css
-  chgrp vscp /var/lib/vscp/web/css
-  chown vscp /var/lib/vscp/web/js
-  chgrp vscp /var/lib/vscp/web/js
+  chown vscp /var/lib/vscp/web/html/images
+  chgrp vscp /var/lib/vscp/web/html/images
+  chown vscp /var/lib/vscp/web/html/css
+  chgrp vscp /var/lib/vscp/web/html/css
+  chown vscp /var/lib/vscp/web/html/js
+  chgrp vscp /var/lib/vscp/web/html/js
   chown vscp /etc/vscp/certs
   chgrp vscp /etc/vscp/certs
   chmod 700 /etc/vscp/certs
+  chown vscp /etc/vscp/vscp.key
+  chgrp vscp /etc/vscp/vscp.key
+  chmod 600 /etc/vscp/vscp.key
   test ! -e /var/log/vscp || chown vscp /var/log/vscp || chgrp vscp /var/log/vscp
   test ! -e /var/log/vscp/vscpd.log || chown vscp /var/log/vscp/vscpd.log || chgrp vscp /var/log/vscp/vscpd.log
 }
