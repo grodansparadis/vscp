@@ -7461,8 +7461,7 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
   int cnt = 0;
   const char *phex = hexstr;
 
-  while(*(phex + 2*cnt) && *(phex + 2*cnt + 1) && (cnt < size))
-  {
+  while(*(phex + 2*cnt) && *(phex + 2*cnt + 1) && (cnt < size)) {
     *(array + cnt) = (uint8_t)(readHexChar(*(phex + 2*cnt)) << 8) + readHexChar(*(phex + 2*cnt + 1));
     cnt++;
   }

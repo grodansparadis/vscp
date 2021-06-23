@@ -467,7 +467,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-ca-certificates
 # Database
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
             DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/
-            PERMISSIONS OWNER_READ OWNER_WRITE)
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE OTHER_READ)
 
 # Scripts
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscp_eth_to_guid

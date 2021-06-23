@@ -70,25 +70,25 @@
     },
     "subscribe": [
       {
-        "topic": "test1/topic/A",
+        "topic": "vscp/test1/topic/A",
         "qos": 0,
         "v5-options": 0,
         "format": "auto"
       },
       {
-        "topic": "test2/topic/B",
+        "topic": "vscp/test2/topic/B",
         "qos": 0,
         "v5-options": 0,
         "format": "auto"
       },
       {
-        "topic": "test/#",
+        "topic": "vscp/test/#",
         "qos": 0,
         "v5-options": 0,
         "format": "auto"
       },
       {
-        "topic": "test2/#",
+        "topic": "vscp/test2/#",
         "qos": 0,
         "v5-options": 0,
         "format": "auto"
@@ -101,34 +101,28 @@
     },
     "publish": [
       {
-        "topic": "publish/topic/json",
+        "topic": "vscp/{{guid}}/publish/topic/json",
         "qos": 0,
         "retain": false,
         "format": "json"
       },
       {
-        "topic": "publish/topic/xml",
+        "topic": "vscp/{{guid}}publish/topic/xml",
         "qos": 0,
         "retain": false,
         "format": "xml"
       },
       {
-        "topic": "publish/topic/string",
+        "topic": "vscp/{{guid}}publish/topic/string",
         "qos": 0,
         "retain": false,
         "format": "string"
       },
       {
-        "topic": "publish/topic/binary",
+        "topic": "vscp/{{guid}}publish/topic/binary",
         "qos": 0,
         "retain": false,
         "format": "binary"
-      },
-      {
-        "topic": "publish/topic/{{datetime}}/{{user}}/C",
-        "qos": 0,
-        "retain": false,
-        "format": "json"
       }
     ],
     "v5": {
@@ -197,25 +191,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -228,34 +222,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -323,25 +311,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -354,34 +342,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -449,25 +431,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -480,34 +462,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -575,25 +551,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -606,34 +582,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -701,25 +671,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -732,34 +702,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -825,25 +789,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -856,34 +820,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -949,25 +907,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -980,34 +938,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -1073,25 +1025,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -1104,34 +1056,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -1197,25 +1143,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -1228,34 +1174,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -1321,25 +1261,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -1352,34 +1292,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -1445,25 +1379,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -1476,34 +1410,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
@@ -1569,25 +1497,25 @@
           },
           "subscribe": [
             {
-              "topic": "test1/topic/A",
+              "topic": "vscp/{{guid}}test1/topic/A",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/topic/B",
+              "topic": "vscp/{{guid}}test2/topic/B",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test/#",
+              "topic": "vscp/{{guid}}test/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
             },
             {
-              "topic": "test2/#",
+              "topic": "vscp/{{guid}}test2/#",
               "qos": 0,
               "v5-options": 0,
               "format": "auto"
@@ -1600,34 +1528,28 @@
           },
           "publish": [
             {
-              "topic": "publish/topic/json",
+              "topic": "vscp/{{guid}}publish/topic/json",
               "qos": 0,
               "retain": false,
               "format": "json"
             },
             {
-              "topic": "publish/topic/xml",
+              "topic": "vscp/{{guid}}publish/topic/xml",
               "qos": 0,
               "retain": false,
               "format": "xml"
             },
             {
-              "topic": "publish/topic/string",
+              "topic": "vscp/{{guid}}publish/topic/string",
               "qos": 0,
               "retain": false,
               "format": "string"
             },
             {
-              "topic": "publish/topic/binary",
+              "topic": "vscp/{{guid}}publish/topic/binary",
               "qos": 0,
               "retain": false,
               "format": "binary"
-            },
-            {
-              "topic": "publish/topic/{{datetime}}/{{user}}/C",
-              "qos": 0,
-              "retain": false,
-              "format": "json"
             }
           ],
           "v5": {
