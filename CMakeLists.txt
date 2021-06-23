@@ -38,7 +38,7 @@ if(NOT DEFINED PATCH_VERSION)
 endif()
 
 # Disable abi warnings (nlohmann)
-SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi")
+SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi -D WITH_SYSTEMD")
 SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
 
 SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
@@ -453,10 +453,12 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.service
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.json
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+
 # Default encryption key
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/vscp.key
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
             PERMISSIONS OWNER_READ OWNER_WRITE)
+
 # Readme for certs
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-certs
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs/
@@ -464,6 +466,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-certs
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-ca-certificates
             DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates/
             PERMISSIONS OWNER_READ OWNER_WRITE)
+
 # Database
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
             DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/

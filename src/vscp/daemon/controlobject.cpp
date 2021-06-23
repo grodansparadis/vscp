@@ -951,6 +951,10 @@ CControlObject::run(void)
 
   } // while
 
+#ifdef WITH_SYSTEMD
+  sd_notify(0, "STOPPING=1");
+#endif
+
   // Clean up is called in main file
   try {
     cleanup();
