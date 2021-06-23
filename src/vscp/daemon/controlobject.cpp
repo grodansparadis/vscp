@@ -932,7 +932,7 @@ CControlObject::run(void)
   clock_gettime(CLOCK_REALTIME, &old_now);
   old_now.tv_sec -= 60; // Do first send right away
 
-  while (true) {
+  while (!m_bQuit) {
 
     clock_gettime(CLOCK_REALTIME, &now);
 
@@ -949,12 +949,18 @@ CControlObject::run(void)
 
     usleep(5000);
 
+#ifdef WITH_SYSTEMD
+    sd_notify(0, "WATCHDOG=1");
+#endif
+
   } // while
+
+  spdlog::debug("Controlobject: starting shutdown");
 
 #ifdef WITH_SYSTEMD
   sd_notify(0, "STOPPING=1");
 #endif
-
+  
   // Clean up is called in main file
   try {
     cleanup();
