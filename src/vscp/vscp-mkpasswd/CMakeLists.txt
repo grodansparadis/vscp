@@ -5,6 +5,8 @@ project(vscp-mkpasswd LANGUAGES CXX C)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+include(GNUInstallDirs)
+
 # Disable abi warnings (nlohmann)
 SET(GCC_COVERAGE_COMPILE_FLAGS "-Wno-psabi -DOPENSSL_API_1_1")
 #SET(GCC_COVERAGE_LINK_FLAGS    "-lm")
@@ -79,7 +81,7 @@ target_link_libraries(vscp-mkpasswd PRIVATE m
 )    
 
 install(TARGETS vscp-mkpasswd
-        RUNTIME DESTINATION 	
-        ${CMAKE_INSTALL_BINDIR})
+	RUNTIME DESTINATION
+       	${CMAKE_INSTALL_BINDIR})
 
 #add_library(MathFunctions mysqrt.cxx)
