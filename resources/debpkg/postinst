@@ -73,7 +73,7 @@ fix_permissions() {
   chown vscp /etc/vscp/vscp.key
   chgrp vscp /etc/vscp/vscp.key
   chmod 600 /etc/vscp/vscp.key
-  test ! -e /var/log/vscp || chown vscp /var/log/vscp || chgrp vscp /var/log/vscp
+  test ! -e /var/log/vscp || chown vscp /var/log/vscp || chgrp vscp /var/log/vscp || chmod a+x var/log/vscp
   test ! -e /var/log/vscp/vscpd.log || chown vscp /var/log/vscp/vscpd.log || chgrp vscp /var/log/vscp/vscpd.log
 }
 
