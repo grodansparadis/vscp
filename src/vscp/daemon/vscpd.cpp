@@ -228,7 +228,7 @@ main(int argc, char **argv)
     dup2(0, 1);
     dup2(0, 2);
 
-  }    // gbDontRunAsDaemon
+  }    // !gbDontRunAsDaemon
 #endif // WIN32
 
 #ifndef WIN32

@@ -883,10 +883,10 @@ CControlObject::run(void)
 {
   std::deque<CClientItem *>::iterator nodeClient;
 
-  if (nullptr == spdlog::get("logger")) {
-    fprintf(stderr, "[Controlobject:run] Fatal error: Unable to get logger!");
-    return false;
-  }
+  // if (nullptr == spdlog::get("logger")) {
+  //   fprintf(stderr, "[Controlobject:run] Fatal error: Unable to get logger!");
+  //   return false;
+  // }
 
 #ifdef WITH_SYSTEMD
   sd_notify(0, "READY=1");
