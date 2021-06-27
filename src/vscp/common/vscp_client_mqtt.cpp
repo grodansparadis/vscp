@@ -336,7 +336,7 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
   spdlog::trace("MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   if (!pClient->handleMessage(pMsg)) {
-    spdlog::error("MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+    spdlog::trace("MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
 }
 
@@ -1364,12 +1364,14 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
   // Check pointers
   if (nullptr == pmsg) {
+    spdlog::error("handleMessage: No message to handle.");
     return false;
   }
 
   // Must/Should be a payload
   if (!pmsg->payloadlen) {
-    return 0;
+    spdlog::error("handleMessage: No payload to handle.");
+    return false;
   }
 
   if (autofmt == m_subscribe_format) {
@@ -1393,7 +1395,14 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       format = xmlfmt;
     }
     else {
-      // String
+      // String: send 0,20,3,,,,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35<CR><LF>
+      std::string s = (char *) pmsg->payload;
+      size_t n = std::count(s.begin(), s.end(), ',');
+      if (n<6) {
+        // This is not a VSCP event on string format
+        spdlog::trace("Payload is not VSCP event.");
+        return false;
+      }
       format = strfmt;
     }
   }
@@ -1408,10 +1417,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   if (jsonfmt == format) {
 
     if (!vscp_convertJSONToEvent(&ev, payload)) {
+      spdlog::trace("JSON->Event failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
+      spdlog::trace("JSON->EventEx failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1425,8 +1436,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     else {
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
-      if (nullptr == pEvent)
+      if (nullptr == pEvent) {
+        spdlog::critical("Memory problem.");
         return false;
+      }
+
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
@@ -1442,10 +1456,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   }
   else if (xmlfmt == format) {
     if (!vscp_convertXMLToEvent(&ev, payload)) {
+      spdlog::trace("XML->Event failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
+      spdlog::trace("XML->EventEx failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1459,11 +1475,14 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     else {
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
-      if (nullptr == pEvent)
+      if (nullptr == pEvent) {
+        spdlog::critical("Memory problem.");
         return false;
+      }
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
+        spdlog::critical("Memory problem.");
         delete pEvent;
         return false;
       }
@@ -1476,10 +1495,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   }
   else if (strfmt == format) {
     if (!vscp_convertStringToEvent(&ev, payload)) {
+      spdlog::trace("str->Event failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
+      spdlog::trace("str->EventEx failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1493,12 +1514,15 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     else {
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
-      if (nullptr == pEvent)
+      if (nullptr == pEvent) {
+        spdlog::critical("Memory problem.");
         return false;
+      }
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
         delete pEvent;
+        spdlog::critical("Memory problem.");
         return false;
       }
 
@@ -1512,10 +1536,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
     // Binary frame starts offset one in payload (after zero marker byte)
     if (!vscp_getEventFromFrame(&ev, (const uint8_t *) pmsg->payload + 1, pmsg->payloadlen)) {
+      spdlog::trace("bin->Event failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
+      spdlog::trace("bin->EventEx failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1529,11 +1555,15 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     else {
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
-      if (nullptr == pEvent)
+      if (nullptr == pEvent) {
+        spdlog::critical("Memory problem.");
         return false;
+      }
+      
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
+        spdlog::critical("Memory problem.");
         delete pEvent;
         return false;
       }

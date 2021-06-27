@@ -134,7 +134,7 @@ main(int argc, char **argv)
   console->set_level(spdlog::level::trace);
   console->set_pattern("[vscp: %c] [%^%l%$] %v");
   spdlog::set_default_logger(console);
-  
+
   console->info("Starting the VSCP daemon...");
 
   // Ignore return value from defunct processes id
@@ -321,28 +321,36 @@ main(int argc, char **argv)
     console_sink->set_level(spdlog::level::off);
   }
 
-  auto rotating_file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(gpobj->m_path_to_log_file.c_str(),
-                                                                                   gpobj->m_max_log_size,
-                                                                                   gpobj->m_max_log_files);
-  if (gpobj->m_bEnableFileLog) {
-    rotating_file_sink->set_level(gpobj->m_fileLogLevel);
-    rotating_file_sink->set_pattern(gpobj->m_fileLogPattern);
-  }
-  else {
-    // If disabled set to off
-    rotating_file_sink->set_level(spdlog::level::off);
-  }
+  try {
+    auto rotating_file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(gpobj->m_path_to_log_file.c_str(),
+                                                                                     gpobj->m_max_log_size,
+                                                                                     gpobj->m_max_log_files);
+    if (gpobj->m_bEnableFileLog) {
+      rotating_file_sink->set_level(gpobj->m_fileLogLevel);
+      rotating_file_sink->set_pattern(gpobj->m_fileLogPattern);
+    }
+    else {
+      // If disabled set to off
+      rotating_file_sink->set_level(spdlog::level::off);
+    }
 
-  std::vector<spdlog::sink_ptr> sinks{ console_sink, rotating_file_sink };
-  auto logger = std::make_shared<spdlog::async_logger>("logger",
-                                                       sinks.begin(),
-                                                       sinks.end(),
-                                                       spdlog::thread_pool(),
-                                                       spdlog::async_overflow_policy::block);
-  // The separate sub loggers will handle trace levels
-  logger->set_level(spdlog::level::trace);
-  spdlog::register_logger(logger);
-  spdlog::set_default_logger(logger);
+    std::vector<spdlog::sink_ptr> sinks{ console_sink, rotating_file_sink };
+    auto logger = std::make_shared<spdlog::async_logger>("logger",
+                                                         sinks.begin(),
+                                                         sinks.end(),
+                                                         spdlog::thread_pool(),
+                                                         spdlog::async_overflow_policy::block);
+    // The separate sub loggers will handle trace levels
+    logger->set_level(spdlog::level::trace);
+    spdlog::register_logger(logger);
+    spdlog::set_default_logger(logger);
+  }
+  catch (...) {
+    console->critical("vscpd: Unable to start the vscpd application. Logs Exiting.");
+    spdlog::drop_all();
+    spdlog::shutdown();
+    exit(EXIT_FAILURE);
+  }
 
   // *******************************
   //    Main loop is entered here

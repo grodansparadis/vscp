@@ -3680,7 +3680,12 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
     vscp_split(tokens, strGUID, ":");
     size_t cnt = tokens.size();
     for (int i = 0; i < (int) MIN(16, cnt); i++) {
-      pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
+      try {
+        pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
+      }
+      catch (...) {
+        pEvent->GUID[i] = 0;
+      }
       tokens.pop_front();
     }
   }
