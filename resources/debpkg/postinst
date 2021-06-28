@@ -75,7 +75,7 @@ fix_permissions() {
   chmod 600 /etc/vscp/vscp.key
   chown vscp /var/log/vscp
   chgrp vscp /var/log/vscp
-  chmod a+x var/log/vscp  
+  chmod 760 var/log/vscp  
 }
 
 case "$1" in
