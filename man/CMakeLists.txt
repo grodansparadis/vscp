@@ -1,3 +1,10 @@
+cmake_minimum_required(VERSION 3.5)
+project(man LANGUAGES CXX C)
+set(PACKAGE_AUTHOR "Ake Hedman, the VSCP Project")
+
+# --- System Libraries ---
+include(GNUInstallDirs)
+
 set(PANDOCCOMMAND_FOUND 0)
 find_program(PANDOCCOMMAND_PATH
   NAMES pandoc
@@ -28,6 +35,6 @@ if (${PANDOCCOMMAND_FOUND})
 endif()
 
 install(
-  FILES ${CMAKE_CURRENT_SOURCE_DIR}/vscpd.8
-  DESTINATION share/man/man8
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
+  DESTINATION ${CMAKE_INSTALL_MANDIR}/man8
 )
