@@ -1,0 +1,5 @@
+Change log for the VSCP Daemon
+==============================
+
+210629 AKHE  Path for install of man-pages was wrong. Fixed.
+210628 AKHE  Version 15.0.0

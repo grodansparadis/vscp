@@ -27,9 +27,9 @@ if (${PANDOCCOMMAND_FOUND})
 
     ADD_CUSTOM_COMMAND(
         TARGET man
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/man/vscpd.8.md
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/man/vscpd.8.md
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND pandoc -s -t man vscpd.8.md -o ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
+        COMMAND pandoc -s -t man ${CMAKE_CURRENT_SOURCE_DIR}/vscpd.8.md -o ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
         OUTPUTS ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
 )
 endif()
