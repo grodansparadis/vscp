@@ -26,6 +26,9 @@ jobs:
     - name: Install libexpat-dev manually
       run: sudo apt-get install libexpat-dev
       
+    - name: Install pandoc manually
+      run: sudo apt-get install pandoc
+
     - name: Install support libssl
       run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
 
