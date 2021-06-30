@@ -60,11 +60,6 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: |
         make -j$(nproc)
-        ls ..
-        echo "--->ls "
-        ls
-        echo "--->ls man"
-        ls man
         sudo cpack -G DEB 
         sudo make install DESTDIR=AppDir
     - uses: actions/upload-artifact@v2
