@@ -31,7 +31,7 @@ if (${PANDOCCOMMAND_FOUND})
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND pandoc -s -t man ${CMAKE_CURRENT_SOURCE_DIR}/vscpd.8.md -o ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
     OUTPUTS ${CMAKE_CURRENT_BINARY_DIR}/vscpd.8
-)
+  )
 endif()
 
 install(
