@@ -1661,14 +1661,25 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
     if (!vscp_getMeasurementAsString(str, pEvent)) {
       return false;
     }
-    *pvalue = stod(str);
+
+    try {
+      *pvalue = std::stod(str);
+    }
+    catch (...) {
+      return false;
+    }
   }
   else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
 
     if (!vscp_getMeasurementFloat64AsString(str, pEvent)) {
       return false;
     }
-    *pvalue = stod(str);
+    try {
+      *pvalue = stod(str);
+    }
+    catch (...) {
+      return false;
+    }
   }
   else if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
 
@@ -1679,8 +1690,12 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
     }
     memcpy(buf, pEvent->pdata + 4, pEvent->sizeData - 4);
 
-    // str = std::string( buf );
-    *pvalue = stod(std::string(buf));
+    try {
+      *pvalue = std::stod(std::string(buf));
+    }
+    catch (...) {
+      return false;
+    }
   }
   else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
 
@@ -2397,7 +2412,7 @@ bool
 vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
-  uint16_t data[8];
+  uint8_t data[8];
 
   // Check pointer
   if (nullptr == pEvent) {
@@ -7467,7 +7482,11 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
   const char *phex = hexstr;
 
   while(*(phex + 2*cnt) && *(phex + 2*cnt + 1) && (cnt < size)) {
-    *(array + cnt) = (uint8_t)(readHexChar(*(phex + 2*cnt)) << 8) + readHexChar(*(phex + 2*cnt + 1));
+    // printf("%02X %02X %02X\n", 
+    //         readHexChar(*(phex + 2*cnt))<<4,
+    //         readHexChar(*(phex + 2*cnt + 1)),
+    //         (uint8_t)(readHexChar(*(phex + 2*cnt)) << 4) + readHexChar(*(phex + 2*cnt + 1)));
+    *(array + cnt) = (uint8_t)(readHexChar(*(phex + 2*cnt)) << 4) + readHexChar(*(phex + 2*cnt + 1));
     cnt++;
   }
 
