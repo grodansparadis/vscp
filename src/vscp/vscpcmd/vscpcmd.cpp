@@ -69,7 +69,7 @@
 // 		-v/--verbose
 //		============
 //      Set verbose mode.
-// tttt
+// 
 
 #include <string>
 
