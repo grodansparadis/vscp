@@ -89,7 +89,7 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
-            "name": "(gdb) unittest",
+            "name": "(gdb) unittest for helperlib",
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/akhe/development/VSCP/vscp/tests/helperlib/unittest",

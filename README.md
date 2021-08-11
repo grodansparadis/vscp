@@ -12,6 +12,8 @@ have a common device discovery, a common configuration, a common way to interfac
 common way to update firmware of devices built on different architectures. A server is available that runs on
 many platforms that have a webserver/websocket/rest/driver and tcp/ip interface with ssl security.
 
+![](./docs/images/vscp_arcitecture.png)
+
 Documentation for VSCP is available at [https://docs.vscp.org](https://docs.vscp.org)
 
 Checkout with 

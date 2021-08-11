@@ -163,7 +163,7 @@ Modes for logging can be set as of below. In debug/trace mode the debug flag abo
 ##### file-enable-log :id=config-general-logging-file-enable-log
 Enable logging to a file by setting to *true*.
 
-##### file-enable-log :id=config-general-logging-file-enable-log
+##### file-log-level :id=config-general-logging-file-log-level
 Log level for file log. Default is "info".
 
 | Level | Description |

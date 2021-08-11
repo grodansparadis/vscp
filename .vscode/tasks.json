@@ -15,7 +15,7 @@
         {
             "taskName": "clean & build vscpd",
             "type": "shell",
-            "command": "mkdir build; cd build; cmake .. -DCMAKE_BUILD_TYPE=Debug; make clean; make",
+            "command": "mkdir build; cd build; rm CMakeCache.txt; cmake --clean-first .. -DCMAKE_BUILD_TYPE=Debug; make clean; make",
             "args": [],
             "group": {
                 "kind": "build",

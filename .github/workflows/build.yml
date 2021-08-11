@@ -26,6 +26,9 @@ jobs:
     - name: Install libexpat-dev manually
       run: sudo apt-get install libexpat-dev
       
+    - name: Install pandoc manually
+      run: sudo apt-get install pandoc
+
     - name: Install support libssl
       run: sudo apt install git libssl-dev libexpat-dev libsystemd-dev libwrap0-dev libz-dev
 
@@ -63,4 +66,4 @@ jobs:
       with:
         name: ${{ matrix.os }}_vscpd_15.0.0.deb
         path: /home/runner/work/vscp/vscp/build/vscpd_15.0.0.deb
-        retention-days: 30
+        retention-days: 7

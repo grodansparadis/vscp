@@ -39,7 +39,8 @@ endif()
 
 # Disable abi warnings (nlohmann)
 SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi -D WITH_SYSTEMD")
-SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
+# Profiling
+#SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
 
 SET(CPACK_PACKAGE_DESCRIPTION "the VSCP daemon")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A daemon that act as a hub and logic controller for a VSCP based system. It is"
