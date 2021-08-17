@@ -132,7 +132,6 @@ extern uint64_t gDebugLevel;
 //
 
 // static void
-// mqtt_log_callback(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 // {
 //   // Check pointers
 //   if (nullptr == mosq) {
@@ -557,7 +556,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
         spdlog::error("controlobject:  VSCP Daemon database could not be opened/created (check access rights). - Path={} error={}",
                       m_pathMainDb,
                       sqlite3_errmsg(m_db_vscp_daemon));
-        return false;                      
+        return false;
       }
 
       // We will try to create it
@@ -960,7 +959,7 @@ CControlObject::run(void)
 #ifdef WITH_SYSTEMD
   sd_notify(0, "STOPPING=1");
 #endif
-  
+
   // Clean up is called in main file
   try {
     cleanup();

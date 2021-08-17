@@ -1,10 +1,15 @@
 #!/bin/bash
-# vscp_eth_to_guid eth0 /etc/vscp/vscpd.json
+# vscp_ip_to_guid eth0 /etc/vscp/vscpd.json
 
 if [ -f "/usr/bin/sed" ]; then
     echo "sed exists."
     SED=1
 fi
+
+# | cut -d '.' -f 1
+# printf "%04x " 0 2930 0
+ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+ip6=$(/sbin/ip -o -6 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 
 IFACE=$1
 read MAC < /sys/class/net/$IFACE/address
@@ -16,4 +21,3 @@ if [ -f "$2" ]; then
     eval "$REGEXP"
     echo "Fixed GUID in $2"
 fi
-
