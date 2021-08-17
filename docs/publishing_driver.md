@@ -66,19 +66,19 @@ vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}
 
 This give many possibilities when subscribing to VSCP events.
 
-### Subscribe to _vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/#_
+### Subscribe to vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/#
 
 All events from the node defined by the particular GUID (FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01) set here will be received.
 
-### Subscribe to _vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/10/#_
+### Subscribe to vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/10/#
 
 All [measurement events](https://grodansparadis.github.io/vscp-doc-spec/#/./class1.measurement) sent by the node with this specific GUID will be received.
 
-### Subscribe to _vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/10/6/#_
+### Subscribe to vscp/FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01/10/6/#
 
 All [temperature measurement events](https://grodansparadis.github.io/vscp-doc-spec/#/./class1.measurement?id=type6) sent by the node with this specific GUID will be received.
 
-### Subscribe to _vscp/+/10/6/#_
+### Subscribe to vscp/+/10/6/#
 
 All [temperature measurement events](https://grodansparadis.github.io/vscp-doc-spec/#/./class1.measurement?id=type6) sent to all nodes will be received.
 
