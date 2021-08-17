@@ -182,7 +182,7 @@ Note that "bescape-pub-topics" tag must be set to true.
 
 You can set up as many topics as you want that events will be published on for a driver. All topics accept escapes to add dynamic information and also valid information such as qos and retain can be set for each topic individually.
 
-Escape are the same as [escapes]("./publishing.md#Topic escapes") for server publishing above.
+Escape are the same as [escapes](./publishing_server.md#publishing-server-topic-escapes) for server publishing above.
 
 
 
