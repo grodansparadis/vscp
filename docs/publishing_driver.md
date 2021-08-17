@@ -66,7 +66,7 @@ vscp/{{guid}}/{{class}}/{{type}}/{{nickname}}
 
 This give many possibilities when subscribing to VSCP events.
 
-### Subscribe to "vscp/FF::FF::FF::FF::FF::FF::FF::FE::60::A4::4C::E7::76::5A::00::01/#"
+### Subscribe to "vscp/FF\:FF\:FF\:FF\:FF\:FF\:FF\:FE\:60\:A4\:4C\:E7\:76\:5A:00\:01/#"
 
 All events from the node defined by the particular GUID (FF:FF:FF:FF:FF:FF:FF:FE:60:A4:4C:E7:76:5A:00:01) set here will be received.
 
