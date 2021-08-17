@@ -1,5 +1,5 @@
 #!/bin/bash
-# vscp_eoth_to_guid eth0 /etc/vscp/vscpd.json
+# vscp_eth_to_guid eth0 /etc/vscp/vscpd.json
 
 if [ -f "/usr/bin/sed" ]; then
     echo "sed exists."
