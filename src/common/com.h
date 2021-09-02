@@ -120,7 +120,7 @@ public:
   int getMaxBaud(void);
 
   /*!
-    Is there a character waiting in the inque
+    Is there a character waiting in the in queque
 
     \return No-zero if there is a character to read from the communication channel.
    */

@@ -66,7 +66,8 @@
             },
             "compilerPath": "/bin/gcc",
             "cStandard": "c11",
-            "cppStandard": "c++11"
+            "cppStandard": "c++11",
+            "configurationProvider": "ms-vscode.cmake-tools"
         },
         {
             "name": "Win32",
