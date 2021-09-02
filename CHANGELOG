@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+210901 AKHE  Updated Civetweb to version 1.15
 210701 AKHE  Protected stod conversions in helper lib that could throw exceptions for invalid strings
 210630 AKHE  Fixed bug in vscp_hexStr2ByteArray 
 210629 AKHE  Path for install of man-pages was wrong. Fixed.
