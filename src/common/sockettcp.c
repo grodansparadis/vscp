@@ -2513,15 +2513,15 @@ stcp_connect_socket( const char *hostip,
     }
 
     if (*sock == INVALID_SOCKET) {
-        stcp_report_error("socket(): %s");
-                            // strerror(ERRNO) );
+        stcp_report_error("socket(): Invalid ");
+        // strerror(ERRNO) );
         return 0;
     }
 
     if ( ( 4 == ip_ver ) &&
             ( 0 == connect( *sock,
-                                (struct sockaddr *)&sa->sin,
-                                sizeof(sa->sin) ) ) ) {
+                              (struct sockaddr *)&sa->sin,
+                              sizeof(sa->sin) ) ) ) {
         // connected with IPv4
         if ( 0 == set_non_blocking_mode( *sock ) ) {
             return 1;   // Ok
@@ -3933,7 +3933,7 @@ stcp_listening( struct server_context *srv_ctx,
                             sizeof( on ) ) != 0 ) {
 
             // Set reuse option, but don't abort on errors.
-            stcp_report_error( "cannot set socket option SO_REUSEADDR (entry %i)" );
+            stcp_report_error( "cannot set socket option SO_REUSEADDR " );
         }
 #endif
 
@@ -4006,7 +4006,7 @@ stcp_listening( struct server_context *srv_ctx,
             }
         }
         else {
-            stcp_report_error( "cannot bind: address family not supported (entry %i)" );
+            stcp_report_error( "cannot bind: address family not supported " );
             closesocket( so.sock );
             so.sock = INVALID_SOCKET;
             return 0;
