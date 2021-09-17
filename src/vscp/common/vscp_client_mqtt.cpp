@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <windows.h>
+#include <StdAfx.h>
 #endif
 
 #include "vscp_client_mqtt.h"
@@ -36,12 +36,14 @@
 
 #include <mosquitto.h>
 
+#ifndef WIN32
 #if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 #include <mqtt_protocol.h>
 #else
 // Name change from 1.6 (after 1.5.8)
 // As it looks it is not installed by deb script
 //#include <mqtt3_protocol.h>
+#endif
 #endif
 
 #include <guid.h>
@@ -1152,10 +1154,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
               the broker will not publish the message back to the client.
             */
             if (std::string::npos != str.find("NO_LOCAL")) {
+#ifndef WIN32              
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_NO_LOCAL;
 #else
               v5_options |= 0x04;
+#endif
+#else
+              v5_options |= 0x04;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1166,10 +1172,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
 #else
               v5_options |= 0x08;
+#endif
+#else
+              v5_options |= 0x08;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1180,10 +1190,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
 #else
               v5_options |= 0x00;
+#endif
+#else
+              v5_options |= 0x00;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1193,10 +1207,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
 #else
               v5_options |= 0x10;
+#endif
+#else
+              v5_options |= 0x10;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1205,10 +1223,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
 #else
               v5_options |= 0x20;
+#endif
+#else
+              v5_options |= 0x20;     // TODO Check if this is the right option
 #endif
             }
 
@@ -1587,7 +1609,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 bool
 vscpClientMqtt::init(void)
 {
-  int rv;
+  int rv = 0;
 
   if (m_clientid.length()) {
     m_mosq = mosquitto_new(m_clientid.c_str(), m_bCleanSession, this);

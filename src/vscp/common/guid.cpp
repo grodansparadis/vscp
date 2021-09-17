@@ -30,6 +30,10 @@
 //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include <algorithm>
 #include <cctype>
 #include <deque>

@@ -23,6 +23,10 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include "vscp_client_rs485.h"
 
 ///////////////////////////////////////////////////////////////////////////////

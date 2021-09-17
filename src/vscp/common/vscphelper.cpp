@@ -718,7 +718,11 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
   struct tm tbuf;
   struct tm *tm;
 
+  #ifdef WIN32
+  tm = ((t != nullptr) ? gmtime(t) : nullptr);
+  #else
   tm = ((t != nullptr) ? gmtime_r(t, &tbuf) : nullptr);
+  #endif
   if (tm != nullptr) {
 #else
   struct tm _tm;
@@ -754,7 +758,11 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
   }
 
   struct tm tbuf;
+#ifdef WIN32
+  strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
+#else
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime_r(t, &tbuf));
+#endif
 
   return true;
 }
@@ -5063,7 +5071,11 @@ vscp_setEventToNow(vscpEvent *pEvent)
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
+  ptm = gmtime(&rawtime);
+#else
   ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEvent->year   = ptm->tm_year + 1900;
   pEvent->month  = ptm->tm_mon + 1;
@@ -5091,7 +5103,11 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
+  ptm = gmtime(&rawtime);
+#else
   ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEventEx->year   = ptm->tm_year + 1900;
   pEventEx->month  = ptm->tm_mon + 1;
@@ -6202,7 +6218,11 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
+  ptm = gmtime(&rawtime);
+#else
   ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEvent->year   = ptm->tm_year + 1900;
   pEvent->month  = ptm->tm_mon + 1;
@@ -6231,7 +6251,11 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
+  ptm = gmtime(&rawtime);
+#else
   ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEventEx->year   = ptm->tm_year + 1900;
   pEventEx->month  = ptm->tm_mon + 1;
@@ -7176,7 +7200,11 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
     struct tm *ptm;
 
     time(&rawtime);
+#ifdef WIN32
+    ptm = gmtime(&rawtime);
+#else
     ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
     pEvent->year   = ptm->tm_year + 1900;
     pEvent->month  = ptm->tm_mon + 1;

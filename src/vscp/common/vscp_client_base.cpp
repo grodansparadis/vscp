@@ -27,6 +27,10 @@
 #pragma implementation
 #endif
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include <deque>
 #include <list>
 #include <string>
