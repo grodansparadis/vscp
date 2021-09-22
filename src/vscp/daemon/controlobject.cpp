@@ -318,7 +318,7 @@ CControlObject::CControlObject()
   // m_mqtt_format                        = jsonfmt;
 
   m_topicDaemonBase = "vscp-daemon/{{srvguid}}/";
-  m_topicDrivers = m_topicDaemonBase + "drivers";
+  m_topicDrivers    = m_topicDaemonBase + "drivers";
   m_topicDiscovery  = m_topicDaemonBase + "discovery";
 
   // Initialize MQTT
@@ -553,9 +553,10 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
       if (SQLITE_OK != sqlite3_open(m_pathMainDb.c_str(), &m_db_vscp_daemon)) {
 
         // Failed to open/create the database file
-        spdlog::error("controlobject:  VSCP Daemon database could not be opened/created (check access rights). - Path={} error={}",
-                      m_pathMainDb,
-                      sqlite3_errmsg(m_db_vscp_daemon));
+        spdlog::error(
+          "controlobject:  VSCP Daemon database could not be opened/created (check access rights). - Path={} error={}",
+          m_pathMainDb,
+          sqlite3_errmsg(m_db_vscp_daemon));
         return false;
       }
 
@@ -1566,7 +1567,7 @@ CControlObject::readEncryptionKey(const std::string &path)
     strStream << in.rdbuf();
     std::string hexstr = strStream.str();
     spdlog::debug("key={}", hexstr);
-    rv                 = (32 == vscp_hexStr2ByteArray(__vscp_key, 32, hexstr.c_str()));
+    rv = (32 == vscp_hexStr2ByteArray(__vscp_key, 32, hexstr.c_str()));
   }
   catch (...) {
     spdlog::error("[vscpl2drv-tcpipsrv] Failed to read encryption key file {}", path.c_str());
@@ -1644,7 +1645,18 @@ CControlObject::readJSON(const json &j)
 
   try {
     if (j.contains("debug")) {
-      gDebugLevel = j["debug"].get<uint64_t>();
+      if (j["debug"].is_number()) {
+        gDebugLevel = j["debug"].get<uint64_t>();
+      }
+      else if (j["debug"].is_string()) {
+        std::string str = j["debug"].get<std::string>();
+        vscp_makeLower(str);
+        vscp_trim(str);
+        gDebugLevel = strtoull(str.c_str(), NULL, 16);
+      }
+      else {
+        spdlog::error("ReadConfig: Failed to read 'debug'. Not string. Not number. What?");
+      }
     }
     else {
       spdlog::error("ReadConfig: Failed to read 'debug'. Must be present.");
@@ -2068,8 +2080,8 @@ CControlObject::readJSON(const json &j)
 
     // Add base as prefix if defined
     if (m_topicDaemonBase.length()) {
-      m_topicDrivers = m_topicDaemonBase + m_topicDrivers;
-      m_topicDiscovery  = m_topicDaemonBase + m_topicDiscovery;
+      m_topicDrivers   = m_topicDaemonBase + m_topicDrivers;
+      m_topicDiscovery = m_topicDaemonBase + m_topicDiscovery;
     }
 
   } //    end MQTT block
@@ -2224,7 +2236,7 @@ CControlObject::readJSON(const json &j)
 bool
 CControlObject::readConfiguration(const std::string &strcfgfile)
 {
-  spdlog::debug("Reading full JSON configuration from {}" , strcfgfile);
+  spdlog::debug("Reading full JSON configuration from {}", strcfgfile);
 
   json j;
 

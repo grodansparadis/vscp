@@ -126,6 +126,20 @@ cmake ..
 sudo make install
 ```
 
+Use 
+
+```
+cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
+or
+
+```
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+```
+
+to specify build type.
+
 This builds amd installs the system.
 
 The service should be installed and be started automatically. Id it does not use the following commands

@@ -92,11 +92,11 @@ In the general section you find settings that are common to all components of th
 
 ### debug :id=config-gerneral-debug    
 
-The debug entry is a 64-bit number (each bit is a flag)  that enable a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
+The debug entry is a 64-bit number (each bit is a flag)  that enable (if set) a specific debugging capability of the VSCP daemon. If you have problem you should enable the relevant bits to be able to detect the cause for the problem.
 
 The debug bits are defined in [this file](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp_debug.h).
 
-All flags set is 0xfffffffffffffff whish is 18446744073709551615. A decimal value must be set as JSON does not know hexadecimal.
+All flags set is 0xfffffffffffffff whish is 18446744073709551615. A decimal value or a string representing a hexadecimal value can be used to can be set the flags. If a string is used it can but does not have to, be preceded by '0x' or '0X'.
 
 Se the [solving problems](./solving_problems.md) section for more information.
 

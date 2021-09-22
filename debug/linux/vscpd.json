@@ -1,6 +1,6 @@
 {
     "runasuser" : "",
-    "debug" : 60,		
+    "debug" : "0xFFFFFF",		
     "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
     "servername" : "The VSCP daemon",
     "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
