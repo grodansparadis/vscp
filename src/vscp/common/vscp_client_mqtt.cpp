@@ -1973,7 +1973,7 @@ vscpClientMqtt::connect(void)
                                                     NULL,
                                                     1,
                                                     true))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2034,7 +2034,7 @@ vscpClientMqtt::disconnect(void)
   // stop the worker loop
   rv = mosquitto_loop_stop(m_mosq, false);
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("mosquitto_loop_stop failed. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -2314,7 +2314,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2595,7 +2595,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic

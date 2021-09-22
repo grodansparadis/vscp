@@ -208,7 +208,7 @@ else()
     include(FindMosquitto)
 
     # Logger
-    #find_package(spdlog CONFIG REQUIRED)
+    find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 
