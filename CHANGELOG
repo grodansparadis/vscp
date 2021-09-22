@@ -13,4 +13,4 @@ Change log for the VSCP Daemon
 210701 AKHE  Protected stod conversions in helper lib that could throw exceptions for invalid strings
 210630 AKHE  Fixed bug in vscp_hexStr2ByteArray 
 210629 AKHE  Path for install of man-pages was wrong. Fixed.
-210628 AKHE  Version 15.0.0
+210628 AKHE  *** Version 15.0.0 ***
