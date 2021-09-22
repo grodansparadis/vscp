@@ -838,6 +838,11 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
       spdlog::debug("json mqtt init: 'client id' set to {}.", m_clientid);
+      if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
+        spdlog::warn("json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 characters but longer is OK with most brokers).", 
+                m_clientid,
+                m_clientid.length());
+      }
     }
 
     // Publish format
@@ -1966,6 +1971,9 @@ vscpClientMqtt::connect(void)
       strTopic = subtemplate.render(data);
     }
 
+    spdlog::trace("Publish will: Topic: {0} Payload: empty qos=1 retain=true",
+            strTopic);
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -2307,6 +2315,12 @@ vscpClientMqtt::send(vscpEvent &ev)
       strTopic = subtemplate.render(data);
     }
 
+    spdlog::trace("Publish send ev: Topic: {0} Payload: {1} qos={2} retain={3}",
+            strTopic,
+            payload,
+            ppublish->getQos(),
+            ppublish->getRetain());
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -2587,6 +2601,12 @@ vscpClientMqtt::send(vscpEventEx &ex)
 
       strTopic = subtemplate.render(data);
     }
+
+    spdlog::trace("Publish send ex: Topic: {0} Payload: {1} qos={2} retain={3}",
+            strTopic,
+            payload,
+            ppublish->getQos(),
+            ppublish->getRetain());
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id

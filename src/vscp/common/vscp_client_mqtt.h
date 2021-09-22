@@ -167,6 +167,9 @@ mqtt-options/protocol-version can be set to 310/311/500
 
 // Max number of events in inqueue
 #define MQTT_MAX_INQUEUE_SIZE 2000
+#ifndef MQTT_MAX_CLIENTID_LENGTH
+#define MQTT_MAX_CLIENTID_LENGTH 23
+#endif
 
 #ifdef WIN32
   typedef void ( __stdcall * LPFN_PARENT_CALLBACK_LOG ) ( struct mosquitto *mosq, void *pParent, int level, const char *logmsg );

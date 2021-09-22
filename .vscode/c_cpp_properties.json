@@ -35,12 +35,13 @@
                 "/usr/include",
                 "/usr/include/openssl",
                 "/usr/local/include",
-                "/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux",
+                "/home/akhe/development/VSCP/vscp/src/vscp/daemon",
                 "/home/akhe/development/VSCP/vscp",
                 "/home/akhe/development/VSCP/vscp/src/vscp/common",
                 "/home/akhe/development/VSCP/vscp/src/common",
                 "/home/akhe/development/VSCP/vscp/src/common/third_party/",
-                "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann"
+                "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann",
+                "/home/akhe/development/VSCP/vscp/src/common/third_party/spdlog-1.9.2/include/"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -55,11 +56,12 @@
                     "/usr/include",
                     "/usr/local/include",
                     "${workspaceRoot}",
-                    "/home/akhe/development/VSCP/vscp/src/vscp/daemon/linux",
+                    "/home/akhe/development/VSCP/vscp/src/vscp/daemon",
                     "/home/akhe/development/VSCP/vscp/src/common",
                     "/home/akhe/development/VSCP/vscp/src/vscp/common",
                     "/home/akhe/development/VSCP/vscp/src/common/third_party/",
-                    "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann"
+                    "/home/akhe/development/VSCP/vscp/src/common/third_party/nlohmann",
+                    "/home/akhe/development/VSCP/vscp/src/common/third_party/spdlog-1.9.2/include/"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

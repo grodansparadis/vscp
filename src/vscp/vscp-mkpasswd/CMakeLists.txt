@@ -64,7 +64,7 @@ target_include_directories(vscp-mkpasswd PUBLIC
     ${PROJECT_SOURCE_DIR}/../../../src/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/nlohmann
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.8.5/include
+    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.9.2/include
     ${PROJECT_SOURCE_DIR}/../../../googletest/googletest/include
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
