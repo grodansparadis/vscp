@@ -1,0 +1,70 @@
+{
+  "runasuser": "vscp",
+  "debug": 0,
+  "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
+  "servername": "The VSCP daemon",
+  "classtypedb": "/var/lib/vscp/vscpd/vscp_events.sqlite3",
+  "maindb": "/var/lib/vscp/vscpd/vscp.sqlite3",
+  "discoverydb": "/var/lib/vscp/vscpd/vscp.sqlite3",
+  "vscpkey": "/etc/vscp/vscp.key",
+  "logging": {
+    "file-enable-log": true,
+    "file-log-level": "debug",
+    "file-pattern": "[vscp: %c] [%^%l%$] %v",
+    "file-path": "/var/log/vscp/vscpd.log",
+    "file-max-size": 5242880,
+    "file-max-files": 7,
+    "console-enable-log": true,
+    "console-log-level": "debug",
+    "console-pattern": "[vscp: %c] [%^%l%$] %v"
+  },
+  "mqtt": {
+    "bind": "",
+    "host": "test.mosquitto.org",
+    "port": 1883,
+    "mqtt-options": {
+      "tcp-nodelay": true,
+      "protocol-version": 311,
+      "receive-maximum": 20,
+      "send-maximum": 20,
+      "ssl-ctx-with-defaults": 0,
+      "tls-ocsp-required": 0,
+      "tls-use-os-certs": 0
+    },
+    "user": "",
+    "password": "",
+    "clientid": "",
+    "publish-format": "json",
+    "subscribe-format": "auto",
+    "qos": 1,
+    "bcleansession": false,
+    "bretain": false,
+    "keepalive": 60,
+    "bjsonmeasurementblock": true,
+    "topic-daemon-base": "vscp-daemon/{{guid}}/",
+    "topic-drivers": "drivers",
+    "topic-discovery": "discovery",
+    "will": {
+      "topic": "vscp-daemon/{{srvguid}}/will",
+      "qos": 1,
+      "retain": true,
+      "payload": "VSCP Daemon is down"
+    },
+    "subscribe": [
+      {
+        "topic": "vscp/mydaemon",
+        "qos": 0,
+        "v5-options": 0,
+        "format": "auto"
+      }
+    ],
+    "publish": [
+      {
+        "topic": "vscp/{{guid}}",
+        "qos": 0,
+        "retain": false,
+        "format": "json"
+      }
+    ]
+  }
+}
