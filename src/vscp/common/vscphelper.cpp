@@ -715,16 +715,21 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
   }
 
 #if !defined(REENTRANT_TIME)
+  struct tm tbuf;
   struct tm *tm;
 
+  #ifdef WIN32
   tm = ((t != nullptr) ? gmtime(t) : nullptr);
+  #else
+  tm = ((t != nullptr) ? gmtime_r(t, &tbuf) : nullptr);
+  #endif
   if (tm != nullptr) {
 #else
   struct tm _tm;
   struct tm *tm = &_tm;
 
   if (t != nullptr) {
-    gmtime_r(t, tm);
+    tm = gmtime_r(t, &tbuf);
 #endif
     strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", tm);
   }
@@ -752,7 +757,12 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
     return false;
   }
 
+  struct tm tbuf;
+#ifdef WIN32
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
+#else
+  strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime_r(t, &tbuf));
+#endif
 
   return true;
 }
@@ -5057,10 +5067,15 @@ vscp_setEventToNow(vscpEvent *pEvent)
   }
 
   time_t rawtime;
+  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
   ptm = gmtime(&rawtime);
+#else
+  ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEvent->year   = ptm->tm_year + 1900;
   pEvent->month  = ptm->tm_mon + 1;
@@ -5084,10 +5099,15 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
   }
 
   time_t rawtime;
+  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
   ptm = gmtime(&rawtime);
+#else
+  ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEventEx->year   = ptm->tm_year + 1900;
   pEventEx->month  = ptm->tm_mon + 1;
@@ -6194,10 +6214,15 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
   }
 
   time_t rawtime;
+  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
   ptm = gmtime(&rawtime);
+#else
+  ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEvent->year   = ptm->tm_year + 1900;
   pEvent->month  = ptm->tm_mon + 1;
@@ -6222,10 +6247,15 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
   }
 
   time_t rawtime;
+  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
+#ifdef WIN32
   ptm = gmtime(&rawtime);
+#else
+  ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
   pEventEx->year   = ptm->tm_year + 1900;
   pEventEx->month  = ptm->tm_mon + 1;
@@ -7166,10 +7196,15 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       (0 == pEvent->minute) && (0 == pEvent->second)) {
 
     time_t rawtime;
+    struct tm tbuf;
     struct tm *ptm;
 
     time(&rawtime);
+#ifdef WIN32
     ptm = gmtime(&rawtime);
+#else
+    ptm = gmtime_r(&rawtime, &tbuf);
+#endif
 
     pEvent->year   = ptm->tm_year + 1900;
     pEvent->month  = ptm->tm_mon + 1;

@@ -25,6 +25,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifdef WIN32
+#include <StdAfx.h>
+#include <limits>
+#endif
+
 #include <stdio.h>
 #ifndef WIN32
 #include <unistd.h>
@@ -625,8 +630,12 @@ wizardStepInt32::wizardStepInt32() :
 {
     m_type = wizardStepBase::wizardType::INT32;
     m_value = 0;
+#ifdef WIN32
+  // TODO: implement this for Windows
+#else
     m_min = std::numeric_limits<int32_t>::min();
     m_max = std::numeric_limits<int32_t>::max();
+#endif    
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -685,8 +694,12 @@ wizardStepUInt32::wizardStepUInt32() :
 {
     m_type = wizardStepBase::wizardType::UINT32;
     m_value = 0;
+#ifdef WIN32
+  // TODO: implement this for Windows
+#else    
     m_min = std::numeric_limits<uint32_t>::min();
     m_max = std::numeric_limits<uint32_t>::max();
+#endif    
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -746,8 +759,12 @@ wizardStepInt64::wizardStepInt64() :
 {
     m_type = wizardStepBase::wizardType::INT64;
     m_value = 0;
+#ifdef WIN32
+  // TODO: implement this for Windows
+#else
     m_min = std::numeric_limits<int64_t>::min();
     m_max = std::numeric_limits<int64_t>::max();
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -808,8 +825,12 @@ wizardStepUInt64::wizardStepUInt64() :
 {
     m_type = wizardStepBase::wizardType::UINT64;
     m_value = 0;
+#ifdef WIN32
+  // TODO: implement this for Windows
+#else    
     m_min = std::numeric_limits<uint64_t>::min();
     m_max = std::numeric_limits<uint64_t>::max();
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -869,8 +890,12 @@ wizardStepFloat::wizardStepFloat() :
 {
     m_type = wizardStepBase::wizardType::FLOAT;
     m_value = 0;
+#ifdef WIN32
+  // TODO: implement this for Windows
+#else    
     m_min = std::numeric_limits<double>::min();
     m_max = std::numeric_limits<double>::max();
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////

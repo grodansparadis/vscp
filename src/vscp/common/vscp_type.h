@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-08-03 15:32:26.242625
+                        Generated: 2021-09-14 09:51:39.745014
 */
  
 #ifndef VSCP_TYPE_H
@@ -191,7 +191,7 @@
 #define VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY   27  /* Catalytic activity */
 #define VSCP_TYPE_MEASUREMENT_VOLUME                28  /* Volume */
 #define VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY       29  /* Sound intensity */
-#define VSCP_TYPE_MEASUREMENT_ANGLE                 30  /* Angle */
+#define VSCP_TYPE_MEASUREMENT_ANGLE                 30  /* Angle, direction or similar */
 #define VSCP_TYPE_MEASUREMENT_POSITION              31  /* Position WGS 84 */
 #define VSCP_TYPE_MEASUREMENT_SPEED                 32  /* Speed */
 #define VSCP_TYPE_MEASUREMENT_ACCELERATION          33  /* Acceleration */

@@ -1951,7 +1951,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     if (lastpageCnt) nPages++;
     unsigned long allRcvValue = (unsigned long)pow(2.0, nPages) - 1;
 
-    unsigned long resendTime = m_registerOpResendTimeout * (1 + nPages);
+    unsigned long resendTime = (unsigned long)m_registerOpResendTimeout * (1 + nPages);
     uint32_t startTime = vscp_getMsTimeStamp();
 
     /*
@@ -2103,7 +2103,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
         else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
             // Send again
             doCmdSendEx(&e);
-            resendTime += m_registerOpResendTimeout * (1 + nPages);
+            resendTime += (unsigned long)m_registerOpResendTimeout * (1 + nPages);
 #ifdef DEBUG_LIB_VSCP_HELPER
             std::cout << "readLevel2Registers: Resend " << std::endl;
 #endif

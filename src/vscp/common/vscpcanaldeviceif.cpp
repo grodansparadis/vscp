@@ -25,6 +25,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include <string>
 #include <dlfcn.h>
 #include <stdlib.h>

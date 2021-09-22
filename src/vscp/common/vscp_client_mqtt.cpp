@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <windows.h>
+#include <StdAfx.h>
 #endif
 
 #include "vscp_client_mqtt.h"
@@ -36,12 +36,14 @@
 
 #include <mosquitto.h>
 
+#ifndef WIN32
 #if (LIBMOSQUITTO_MAJOR > 1) || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 #include <mqtt_protocol.h>
 #else
 // Name change from 1.6 (after 1.5.8)
 // As it looks it is not installed by deb script
 //#include <mqtt3_protocol.h>
+#endif
 #endif
 
 #include <guid.h>
@@ -836,6 +838,11 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
       spdlog::debug("json mqtt init: 'client id' set to {}.", m_clientid);
+      if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
+        spdlog::warn("json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 characters but longer is OK with most brokers).", 
+                m_clientid,
+                m_clientid.length());
+      }
     }
 
     // Publish format
@@ -1152,10 +1159,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
               the broker will not publish the message back to the client.
             */
             if (std::string::npos != str.find("NO_LOCAL")) {
+#ifndef WIN32              
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_NO_LOCAL;
 #else
               v5_options |= 0x04;
+#endif
+#else
+              v5_options |= 0x04;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1166,10 +1177,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("RETAIN_AS_PUBLISHED")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_RETAIN_AS_PUBLISHED;
 #else
               v5_options |= 0x08;
+#endif
+#else
+              v5_options |= 0x08;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1180,10 +1195,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_ALWAYS")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_ALWAYS;
 #else
               v5_options |= 0x00;
+#endif
+#else
+              v5_options |= 0x00;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1193,10 +1212,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_NEW")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEW;
 #else
               v5_options |= 0x10;
+#endif
+#else
+              v5_options |= 0x10;     // TODO Check if this is the right option
 #endif
             }
             /*
@@ -1205,10 +1228,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
             */
 
             if (std::string::npos != str.find("SEND_RETAIN_NEVER")) {
+#ifndef WIN32
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
               v5_options |= MQTT_SUB_OPT_SEND_RETAIN_NEVER;
 #else
               v5_options |= 0x20;
+#endif
+#else
+              v5_options |= 0x20;     // TODO Check if this is the right option
 #endif
             }
 
@@ -1587,7 +1614,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 bool
 vscpClientMqtt::init(void)
 {
-  int rv;
+  int rv = 0;
 
   if (m_clientid.length()) {
     m_mosq = mosquitto_new(m_clientid.c_str(), m_bCleanSession, this);
@@ -1944,6 +1971,9 @@ vscpClientMqtt::connect(void)
       strTopic = subtemplate.render(data);
     }
 
+    spdlog::trace("Publish will: Topic: {0} Payload: empty qos=1 retain=true",
+            strTopic);
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -1951,7 +1981,7 @@ vscpClientMqtt::connect(void)
                                                     NULL,
                                                     1,
                                                     true))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2012,7 +2042,7 @@ vscpClientMqtt::disconnect(void)
   // stop the worker loop
   rv = mosquitto_loop_stop(m_mosq, false);
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("mosquitto_loop_stop failed. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -2285,6 +2315,12 @@ vscpClientMqtt::send(vscpEvent &ev)
       strTopic = subtemplate.render(data);
     }
 
+    spdlog::trace("Publish send ev: Topic: {0} Payload: {1} qos={2} retain={3}",
+            strTopic,
+            payload,
+            ppublish->getQos(),
+            ppublish->getRetain());
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -2292,7 +2328,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2566,6 +2602,12 @@ vscpClientMqtt::send(vscpEventEx &ex)
       strTopic = subtemplate.render(data);
     }
 
+    spdlog::trace("Publish send ex: Topic: {0} Payload: {1} qos={2} retain={3}",
+            strTopic,
+            payload,
+            ppublish->getQos(),
+            ppublish->getRetain());
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -2573,7 +2615,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic

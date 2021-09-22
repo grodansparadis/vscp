@@ -1,7 +1,16 @@
 Change log for the VSCP Daemon
 ==============================
 
+210922 AKHE  Eased permissions a bit for install folders.
+210922 AKHE  All clientid's are empty on install.
+210922 AKHE  Added warning for >23 lenth clientid's. Most brokers accept longer
+             clientid's but some do not.
+210922 AKHE  Added trace log messages for mqtt publish
+210922 AKHE  Updated spdlog to 1.9.2
+210922 AKHE  Fixed error messages from mosquitto client. All complaining on disconnect.
+210901 AKHE  Updated nlohmann json parser to version 3.10.2
+210901 AKHE  Updated Civetweb to version 1.15
 210701 AKHE  Protected stod conversions in helper lib that could throw exceptions for invalid strings
 210630 AKHE  Fixed bug in vscp_hexStr2ByteArray 
 210629 AKHE  Path for install of man-pages was wrong. Fixed.
-210628 AKHE  Version 15.0.0
+210628 AKHE  *** Version 15.0.0 ***

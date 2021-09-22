@@ -266,7 +266,7 @@ Set to 1 to instruct the client to load and trust OS provided CA certificates fo
 ```json
 "user" : "vscp",
 "password": "secret",
-"clientid" : "the-vscp-daemon",  
+"clientid" : "",  
 "publish-format" : "json",
 "subscribe-format" : "auto",
 "qos" : 1,
@@ -291,7 +291,7 @@ This is the username to use to login on the MQTT broker. Leave blank to use no c
 This is the password to use to login on the MQTT broker. Leave blank to use no credentials. 
 
 ### clientid :id=config-mqtt-clientid
-Set the client id of this client
+Set the client id of this client. Note that all client id's should be unique to a broker. If not the client with the duplicate client id will be disconnected. If you leave this blank a random client id will be generated. The standard max length for client id's is 23 characters but most brokers accept longer client id's.
 
 ### publish-format :id=config-mqtt-general-publish-format
 This is the format the VSCP daemon will use to publish it's information if niot set specially for the publish topic. There are four formats available
@@ -446,9 +446,9 @@ A limited set of escapes are available for will-topics. You can use {{srvguid}} 
 
 | Escape | Description |
 | ------ | ----------- |
-| clientid | Clienid for the MQTT session. |
+| clientid | Clientid for the MQTT session. |
 | user | User name for the MQTT session.|
-| host | Remote host fo rthe MQTT session. |
+| host | Remote host for the MQTT session. |
 | srvguid | Full GUID for the VSCP daemon |
 | srvguid[n] | One pos in decimal for server GUID for daemon. n can be 0..15 where 0 is most significant byte. |
 | xsrvguid[n] | One pos in hexadecimal for server GUID for daemon. n can be 0..15 where 0 is most significant byte. |
@@ -682,7 +682,7 @@ Level I drivers was in the past called CANAL (CAN Abstraction Layer) drivers (ju
         },
         "user" : "vscp",
         "password": "secret",
-        "clientid" : "vscp-level1-logger-driver",  
+        "clientid" : "",  
         "publish-format" : "json",
         "subscribe-format" : "auto",
         "qos" : 1,
@@ -863,7 +863,7 @@ Level II drivers can handle the full VSCP abstraction and don't have the small l
         },
         "user" : "vscp",
         "password": "secret",
-        "clientid" : "vscp-level2-logger-driver",  
+        "clientid" : "",  
         "publish-format" : "json",
         "subscribe-format" : "auto",
         "qos" : 1,

@@ -30,6 +30,10 @@
 #pragma implementation "frmmain.h"
 #endif
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include <deque>
 #include <set>
 #include <string>

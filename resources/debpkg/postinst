@@ -53,20 +53,28 @@ fix_permissions() {
   chgrp vscp /var/lib/vscp/drivers
   chown vscp /var/lib/vscp/drivers/level1
   chgrp vscp /var/lib/vscp/drivers/level1
+  chmod a+x /var/lib/vscp/drivers/level1
   chown vscp /var/lib/vscp/drivers/level2
   chgrp vscp /var/lib/vscp/drivers/level2
+  chmod a+x /var/lib/vscp/drivers/level2
   chown vscp /var/lib/vscp/vscpd
   chgrp vscp /var/lib/vscp/vscpd
+  chmod a+x /var/lib/vscp/vscpd
   chown vscp /var/lib/vscp/web
   chgrp vscp /var/lib/vscp/web
+  chmod a+x /var/lib/vscp/web
   chown vscp /var/lib/vscp/web/html
   chgrp vscp /var/lib/vscp/web/html
+  chmod a+x /var/lib/vscp/web/html
   chown vscp /var/lib/vscp/web/html/images
   chgrp vscp /var/lib/vscp/web/html/images
+  chmod a+x /var/lib/vscp/web/html/images
   chown vscp /var/lib/vscp/web/html/css
   chgrp vscp /var/lib/vscp/web/html/css
+  chmod a+x /var/lib/vscp/web/html/css
   chown vscp /var/lib/vscp/web/html/js
   chgrp vscp /var/lib/vscp/web/html/js
+  chmod a+x /var/lib/vscp/web/html/js
   chown vscp /etc/vscp/certs
   chgrp vscp /etc/vscp/certs
   chmod 700 /etc/vscp/certs
@@ -75,7 +83,7 @@ fix_permissions() {
   chmod 600 /etc/vscp/vscp.key
   chown vscp /var/log/vscp
   chgrp vscp /var/log/vscp
-  chmod 760 var/log/vscp  
+  chmod 755 var/log/vscp  
 }
 
 case "$1" in

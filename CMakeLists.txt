@@ -197,7 +197,7 @@ if (WIN32)
     find_package(dlfcn-win32 CONFIG REQUIRED)
 
     # Logging
-    find_package(spdlog CONFIG REQUIRED)
+    #find_package(spdlog CONFIG REQUIRED)
 else()
     # expat
     include(FindEXPAT)
@@ -255,8 +255,8 @@ if (WIN32)
         src/vscp/common/register.h
         src/vscp/common/register.cpp
         src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.14/include/civetweb.h
-        src/common/third_party/civetweb-1.14/src/civetweb.c
+        src/common/third_party/civetweb-1.15/include/civetweb.h
+        src/common/third_party/civetweb-1.15/src/civetweb.c
         src/common/third_party/sqlite3-3.35.4/sqlite3.h
         src/common/third_party/sqlite3-3.35.4/sqlite3.c
         src/common/windows/getopt.c
@@ -313,8 +313,8 @@ else()
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.14/include/civetweb.h
-        src/common/third_party/civetweb-1.14/src/civetweb.c
+        src/common/third_party/civetweb-1.15/include/civetweb.h
+        src/common/third_party/civetweb-1.15/src/civetweb.c
         src/common/third_party/sqlite3-3.35.4/sqlite3.h
         src/common/third_party/sqlite3-3.35.4/sqlite3.c
         src/common/configfile.h
@@ -348,10 +348,10 @@ if (WIN32)
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.14/
-                            ./src/common/third_party/civetweb-1.14/include/
+                            ./src/common/third_party/civetweb-1.15/
+                            ./src/common/third_party/civetweb-1.15/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.8.5/include/
+                            ./src/common/third_party/spdlog-1.9.2/include/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -366,10 +366,10 @@ else()
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.14/
-                            ./src/common/third_party/civetweb-1.14/include/
+                            ./src/common/third_party/civetweb-1.15/
+                            ./src/common/third_party/civetweb-1.15/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.8.5/include/
+                            ./src/common/third_party/spdlog-1.9.2/include/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}

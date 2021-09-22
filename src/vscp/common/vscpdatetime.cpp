@@ -27,6 +27,10 @@
 // SOFTWARE.
 //
 
+#ifdef WIN32
+#include <StdAfx.h>
+#endif
+
 #include <string>
 
 #include <stdio.h>
@@ -395,11 +399,18 @@ vscpdatetime::set(const struct tm &tm)
 void
 vscpdatetime::setNow(void)
 {
-    time_t rawtime;
+    time_t rawtime;    
     struct tm *ptm;
 
     time(&rawtime);
-    ptm = localtime(&rawtime);
+#ifdef WIN32
+    struct tm tbuf;
+    ptm = &tbuf;
+    localtime_s(ptm, &rawtime);
+#else   
+    struct tm buf;
+    ptm = localtime_r(&rawtime, &buf);
+#endif    
 
     m_year = ptm->tm_year + 1900;
     m_month = ptm->tm_mon;
@@ -407,7 +418,6 @@ vscpdatetime::setNow(void)
     m_hour = ptm->tm_hour;
     m_minute = ptm->tm_min;
     m_second = ptm->tm_sec;
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,11 +427,18 @@ vscpdatetime::setNow(void)
 void
 vscpdatetime::setUTCNow(void)
 {
-    time_t rawtime;
+    time_t rawtime;    
     struct tm *ptm;
 
     time(&rawtime);
-    ptm = gmtime(&rawtime);
+#ifdef WIN32
+    struct tm tbuf;
+    ptm = &tbuf;
+    gmtime_s(ptm, &rawtime);
+#else    
+    struct tm buf;
+    ptm = gmtime_r(&rawtime, &buf);
+#endif
 
     m_year = ptm->tm_year + 1900;
     m_month = ptm->tm_mon;
@@ -443,7 +460,12 @@ vscpdatetime::Now(void)
     struct tm *ptm;
 
     time(&rawtime);
-    ptm = localtime(&rawtime);
+#ifdef WIN32
+    localtime_s(ptm, &rawtime);
+#else   
+    struct tm buf;
+    ptm = localtime_r(&rawtime, &buf);
+#endif
 
     /*m_year = ptm->tm_year + 1900;
     m_month = ptm->tm_mon;
@@ -462,11 +484,18 @@ vscpdatetime::Now(void)
 vscpdatetime
 vscpdatetime::UTCNow(void)
 {
-    time_t rawtime;
+    time_t rawtime;    
     struct tm *ptm;
 
     time(&rawtime);
-    ptm = gmtime(&rawtime);
+#ifdef WIN32
+    struct tm tbuf;
+    ptm = &tbuf;
+    gmtime_s(ptm, &rawtime);
+#else
+    struct tm buf;
+    ptm = gmtime_r(&rawtime, &buf);
+#endif
 
     /*m_year = ptm->tm_year + 1900;
     m_month = ptm->tm_mon;
@@ -521,12 +550,23 @@ vscpdatetime::getISODateTime(bool bSeparator) const
 {
     char buf[32];
     std::string isodt;
+    struct tm tbuf;
 
     const time_t t = vscpdatetime::toSysTime();
     if (bSeparator) {
-        strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", gmtime(&t));
+#ifdef WIN32
+        gmtime_s(&tbuf, &t);
+        strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", &tbuf); 
+#else      
+        strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", gmtime_r(&t, &tbuf));
+#endif
     } else {
-        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%SZ", gmtime(&t));
+#ifdef WIN32
+        gmtime_s(&tbuf, &t);
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%SZ", &tbuf);
+#else
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%SZ", gmtime_r(&t, &tbuf));
+#endif        
     }
     isodt = buf;
 
@@ -542,9 +582,15 @@ vscpdatetime::getISODate(void)
 {
     char buf[32];
     std::string isodt;
+    struct tm tbuf;
 
     const time_t t = toSysTime();
-    strftime(buf, sizeof(buf), "%Y-%m-%d", gmtime(&t));
+#ifdef WIN32
+    gmtime_s(&tbuf, &t);
+    strftime(buf, sizeof(buf), "%Y-%m-%d", &tbuf);
+#else
+    strftime(buf, sizeof(buf), "%Y-%m-%d", gmtime_r(&t, &tbuf));
+#endif
     isodt = buf;
 
     return isodt;
@@ -559,9 +605,15 @@ vscpdatetime::getISOTime(void)
 {
     char buf[32];
     std::string isodt;
+    struct tm tbuf;
 
     const time_t t = toSysTime();
-    strftime(buf, sizeof(buf), "%H:%M:%SZ", gmtime(&t));
+#ifdef WIN32
+    gmtime_s(&tbuf, &t);
+    strftime(buf, sizeof(buf), "%H:%M:%SZ", &tbuf);
+#else
+    strftime(buf, sizeof(buf), "%H:%M:%SZ", gmtime_r(&t, &tbuf));
+#endif
     isodt = buf;
 
     return isodt;
@@ -795,9 +847,17 @@ int
 vscpdatetime::getWeekNumber(void) const
 {
     constexpr int DAYS_PER_WEEK = 7;
-
     time_t t       = toSysTime();
-    struct tm *ptm = localtime(&t);
+    struct tm *ptm;
+
+#ifdef _WIN32
+    struct tm tbuf;
+    ptm = &tbuf;
+    localtime_s(ptm, &t);
+#else    
+    struct tm tbuf;
+    ptm = localtime_r(&t, &tbuf);
+#endif    
 
     const int wday  = ptm->tm_wday;
     const int delta = wday ? wday - 1 : DAYS_PER_WEEK - 1;
@@ -811,8 +871,16 @@ vscpdatetime::getWeekNumber(void) const
 vscpdatetime::weekDay
 vscpdatetime::getWeekDay(void) const
 {
-    time_t t       = toSysTime();
-    struct tm *ptm = localtime(&t);
+  time_t t       = toSysTime();
+  struct tm *ptm;
+#ifdef WIN32
+    struct tm tbuf;
+    ptm = &tbuf;
+    localtime_s(ptm, &t);
+#else    
+    struct tm tbuf;
+    ptm = localtime_r(&t, &tbuf);
+#endif
     return static_cast<weekDay>(ptm->tm_wday);
 }
 
@@ -1062,8 +1130,18 @@ vscpdatetime::tzOffset2LocalTime(void)
 long
 vscpdatetime::tz_offset_second(time_t t)
 {
-    struct tm local = *localtime(&t);
-    struct tm utc   = *gmtime(&t);
+    struct tm local;
+    struct tm utc;
+
+#ifdef _WIN32
+    localtime_s(&local, &t);
+    gmtime_s(&utc, &t);
+#else    
+    struct tm tbuf2;
+    local = *localtime_r(&t, &tbuf2);
+    utc   = *gmtime_r(&t, &tbuf2);
+#endif    
+    
     long diff =
       ((local.tm_hour - utc.tm_hour) * 60 + (local.tm_min - utc.tm_min)) * 60L +
       (local.tm_sec - utc.tm_sec);
