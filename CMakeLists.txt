@@ -197,7 +197,7 @@ if (WIN32)
     find_package(dlfcn-win32 CONFIG REQUIRED)
 
     # Logging
-    find_package(spdlog CONFIG REQUIRED)
+    #find_package(spdlog CONFIG REQUIRED)
 else()
     # expat
     include(FindEXPAT)
@@ -208,7 +208,7 @@ else()
     include(FindMosquitto)
 
     # Logger
-    find_package(spdlog CONFIG REQUIRED)
+    #find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 
@@ -351,7 +351,7 @@ if (WIN32)
                             ./src/common/third_party/civetweb-1.15/
                             ./src/common/third_party/civetweb-1.15/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.8.5/include/
+                            ./src/common/third_party/spdlog-1.9.2/include/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -369,7 +369,7 @@ else()
                             ./src/common/third_party/civetweb-1.15/
                             ./src/common/third_party/civetweb-1.15/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.8.5/include/
+                            ./src/common/third_party/spdlog-1.9.2/include/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
