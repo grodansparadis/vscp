@@ -135,8 +135,6 @@ main(int argc, char **argv)
   console->set_pattern("[vscp: %c] [%^%l%$] %v");
   spdlog::set_default_logger(console);
 
-  console->info("Starting the VSCP daemon...");
-
   // Ignore return value from defunct processes id
 #ifndef WIN32
   signal(SIGCHLD, SIG_IGN);
@@ -147,13 +145,13 @@ main(int argc, char **argv)
   strcfgfile   = "/etc/vscp/vscpd.json";
   gbStopDaemon = false;
 
-  while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
+  while ((opt = getopt(argc, argv, "d:c:r:k:hgsv")) != -1) {
 
     switch (opt) {
 
       case 's':
         gbDontRunAsDaemon = true;
-        console->info("I will ***NOT*** run as daemon! (use ctrl+c to terminate)");
+        console->info("I will ***NOT*** run as a daemon! (use ctrl+c to terminate)");
         break;
 
       case 'c':
@@ -179,6 +177,11 @@ main(int argc, char **argv)
         copyleft();
         exit(0);
         break;
+        
+      case 'v':
+        fprintf(stderr, "%s\n", VSCPD_DISPLAY_VERSION);
+        exit(0);
+        break;
 
       default:
       case 'h':
@@ -186,6 +189,8 @@ main(int argc, char **argv)
         exit(-1);
     }
   }
+
+  console->info("Starting the VSCP daemon...");
 
   // * * * init * * *
 
@@ -458,6 +463,7 @@ help(char *szPrgname)
           "-dd0,d1,d2...\n",
           szPrgname);
   fprintf(stderr, "\t-h\tThis help message.\n");
+  fprintf(stderr, "\t-v\tPrint version. \n");
   fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
   fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
   fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
