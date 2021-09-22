@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+210922 AKHE  Eased permissions a bit for install folders.
 210922 AKHE  All clientid's are empty on install.
 210922 AKHE  Added warning for >23 lenth clientid's. Most brokers accept longer
              clientid's but some do not.
