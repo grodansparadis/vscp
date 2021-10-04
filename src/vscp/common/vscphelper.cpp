@@ -1016,13 +1016,8 @@ vscp_getPortFromInterface(const std::string &iface)
   std::string str = iface;
   vscp_trim(str);
 
-  // tcp:// stcp:// udp:// sudp:// ....
-  if (std::string::npos == (pos = str.find("://"))) {
-    str = str.substr(pos + 1);
-  }
-
-  if (std::string::npos == (pos = str.find(":"))) {
-    str = str.substr(pos);
+  if (std::string::npos != (pos = str.rfind(":"))) {
+    str = str.substr(pos+1);
   }
 
   port = atoi(str.c_str());
@@ -7684,11 +7679,12 @@ vscp_getHostFromInterface(const std::string &iface)
   vscp_trim(str);
 
   // tcp:// stcp:// udp:// sudp:// ....
-  if (std::string::npos == (pos = str.find("://"))) {
-    str = str.substr(pos + 1);
+  if (std::string::npos != (pos = str.find("://"))) {
+    str = str.substr(pos + 3);
   }
 
-  if (std::string::npos == (pos = str.find(":"))) {
+  // Remove port if set
+  if (std::string::npos != (pos = str.find(":"))) {
     str = str.substr(0, pos);
   }
 

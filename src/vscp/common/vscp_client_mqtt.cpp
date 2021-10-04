@@ -596,7 +596,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_clientid            = "";      // No client id set
   m_username            = "";      // No username set
   m_password            = "";      // No password set
-  m_keepalive           = 30;      // 30 seconds for keepalive
+  m_keepAlive           = 30;      // 30 seconds for keepalive
   m_bCleanSession       = false;   // Do not start with a clean session
 
   m_bTLS                 = false;
@@ -925,8 +925,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     // Keep Alive
     if (j.contains("keepalive") && j["keepalive"].is_number()) {
-      m_keepalive = j["keepalive"].get<int>();
-      spdlog::debug("json mqtt init: 'keepalive' Set to {}.", m_keepalive);
+      m_keepAlive = j["keepalive"].get<int>();
+      spdlog::debug("json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
     }
 
     // Enable measurement block
@@ -1902,17 +1902,17 @@ vscpClientMqtt::connect(void)
   if (m_bindInterface.length()) {
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
-      rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str(), nullptr);
+      rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str(), nullptr);
     }
     else {
-      rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
+      rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str());
     }
 #else
-    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
+    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str());
 #endif
   }
   else {
-    rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepalive);
+    rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepAlive);
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
