@@ -494,10 +494,14 @@ public:
   virtual uint32_t getResponseTimeout(void) { return m_timeoutResponse; };
 
   /*!
-      Getter for remote host
-
-      @return Return remote host as string
+    Getters/Setter for remote host
+    @param host Remote host as string (host:port)
   */
+  void setHost(std::string &host) { 
+    m_host = vscp_getHostFromInterface(host); 
+    m_port = vscp_getPortFromInterface(host);
+  }
+
   std::string getHost(void)
   {
     std::string str = m_host;
@@ -505,22 +509,30 @@ public:
   }
 
   /*!
-    Setter for remote host
-    @param host Remote host as string (host:port)
+    Getter/setter for user
   */
-  void setHost(std::string &host) { 
-    m_host = vscp_getHostFromInterface(host); 
-    m_port = vscp_getPortFromInterface(host);
-    }
+  void setUser(std::string &user) { m_username = user; };
+  std::string getUser(void) { return m_username; };
 
-  void setUser(std::string &user) 
-    { m_username = user; };
-
+  /*!
+     Getter/setter for password 
+  */
   void setPassword(std::string &password)   
     { m_password = password; };
+  std::string getPassword(void) { return m_password; };
 
+  /*!
+    Getter/setter for client id
+  */
   void setClientId(std::string &clientId)   
     { m_clientid = clientId; };
+  std::string getClientId(void) { return m_clientid; };
+
+  /*!
+    Getter/setter for keep alive
+  */
+  void setKeepAlive(uint16_t keepAlive) { m_keepAlive = keepAlive; };  
+  uint32_t getKeepAlive(void) { return m_keepAlive; };
 
   /*!
     Getter for remote port
@@ -531,10 +543,6 @@ public:
     std::string str = m_host;
     return vscp_getPortFromInterface(str);
   }
-
-  /// getters/&Setters for keepAlive
-  uint32_t getKeepAlive(void) { return m_keepAlive; };
-  void setKeepAlive(uint32_t keepAlive) { m_keepAlive = keepAlive; };
 
   /*!
     Set server GUID {{srvguid}}

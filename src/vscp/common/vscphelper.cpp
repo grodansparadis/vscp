@@ -4448,7 +4448,7 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
 
     // GUID
     memset(pEvent->GUID, 0, 16);
-    if (j.contains("vscpGuid") && j["vscpType"].is_string()) {
+    if (j.contains("vscpGuid") && j["vscpGuid"].is_string()) {
       std::string guidStr = j.at("vscpGuid").get<std::string>();
       cguid guid;
       guid.getFromString(guidStr);
