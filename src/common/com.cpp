@@ -52,7 +52,7 @@ Comm::~Comm(void)
 ///////////////////////////////////////////////////////////////////////////////
 // open
 
-bool Comm::open(char *szDevice)
+bool Comm::open(const char *szDevice)
 {
     // Not allowed to open if already open
     if (m_fd != 0) return false;
@@ -459,9 +459,9 @@ int Comm::isTransmitterEmpty()
 // Set port parameters.
 //
 
-void Comm::setParam(char *baud,
-    char *parity,
-    char *bits,
+void Comm::setParam(iconst char *baud,
+    const char *parity,
+    const char *bits,
     int HWFlow,
     int SWFlow)
 {

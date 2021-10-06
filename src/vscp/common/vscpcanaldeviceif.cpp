@@ -96,8 +96,9 @@ VscpCanalDeviceIf::init()
 #ifdef WIN32
 #else        
         syslog(LOG_ERR,
-               "Devicethread: Unable to load dynamic library. path = %s",
-               m_strPath.c_str());
+                "Devicethread: Unable to load dynamic library. path = %s error=%s",
+                m_strPath.c_str(),
+                dlerror());
 #endif               
         return CANAL_ERROR_PARAMETER;
     }
