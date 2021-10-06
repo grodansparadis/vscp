@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+211006 AKHE  Protected CANAL interface class from failed initializartion of driver.
 211004 AKHE  Fixed error in MQTT client which skips GUID parsing for JSON objects. 
 211004 AKHE  Fixed host/port interface extraction in helper lib
 210922 AKHE  The debug flags of the config file can now be set as a string containing 

@@ -49,7 +49,7 @@ vscpClientCanal::vscpClientCanal()
 {
     m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
-    //m_tid = 0;
+    m_tid = 0;
     m_bRun = false;
     pthread_mutex_init(&m_mutexif,NULL);
 }
@@ -136,7 +136,7 @@ bool vscpClientCanal::initFromJson(const std::string& config)
         }
 
         setName(j["name"]);
-        return (VSCP_ERROR_SUCCESS == init(j["path"], j["config"], j["flags"], j["datarate"]));
+        return (init(j["path"], j["config"], j["flags"], j["datarate"]));
     }
     catch (...) {
         return false;

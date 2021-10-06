@@ -1182,6 +1182,12 @@ vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
       datacoding_byte = pEvent->pdata[16];
     }
   }
+  else if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
+    datacoding_byte = 0x40; // string
+  }
+  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
+    datacoding_byte = 0xC0; // float
+  }
 
   return datacoding_byte;
 }
@@ -1840,16 +1846,18 @@ vscp_getMeasurementUnit(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[3];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[3];
   }
