@@ -561,6 +561,8 @@ VscpCanalDeviceIf::CanalClose()
         return rv;
     }
 
+    m_openHandle = 0;
+
     return CANAL_ERROR_SUCCESS;
 }
 

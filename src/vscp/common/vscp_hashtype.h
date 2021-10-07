@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-10-05 16:38:37.228363
+                        Generated: 2021-10-06 18:25:22.788495
 */
  
 
