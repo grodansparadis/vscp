@@ -1,6 +1,6 @@
 // vscp_client_rawcan.cpp
 //
-// tcp/ip client communication classes.
+// Raw CAN client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License

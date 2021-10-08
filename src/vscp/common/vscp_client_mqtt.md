@@ -1,6 +1,6 @@
 # vscp_client_mqtt 
 
-This is one of the classes in the VSCP client collection. The collection defines programatic functionality to send and receice VSCP evenst over different transports.
+This is one of the classes in the VSCP client collection. The collection defines programmatic functionality to send and receive VSCP events over different transports.
 
 This class uses the [MQTT protocol](https://mqtt.org/) as its transport medium.
 

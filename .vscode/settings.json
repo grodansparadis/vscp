@@ -1,8 +1,5 @@
 {
-    // Whether git is enabled.
-    "git.enabled": false,
-
-    "files.associations": {
+  "files.associations": {
         "*.tcc": "cpp",
         "optional": "cpp",
         "istream": "cpp",

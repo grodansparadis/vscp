@@ -1,4 +1,4 @@
-// vscpdlldef.h
+// level2drvdef.h
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
