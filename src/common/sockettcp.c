@@ -2506,10 +2506,10 @@ stcp_connect_socket( const char *hostip,
     }
     
     if ( 4 == ip_ver ) {
-        *sock = socket(PF_INET, SOCK_STREAM, 0);
+        *sock = (int)socket(PF_INET, SOCK_STREAM, 0);
     }
     else if ( 6 == ip_ver ) {
-        *sock = socket(PF_INET6, SOCK_STREAM, 0);
+        *sock = (int)socket(PF_INET6, SOCK_STREAM, 0);
     }
 
     if (*sock == INVALID_SOCKET) {
@@ -3900,7 +3900,7 @@ stcp_listening( struct server_context *srv_ctx,
         }
 
         if ( INVALID_SOCKET == 
-                 ( so.sock = socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
+                 ( so.sock = (int)socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
             stcp_report_error( "cannot create socket" );
             return 0;
         }
@@ -4106,7 +4106,7 @@ stcp_accept( struct server_context *srv_ctx,
     }
 
     if ( INVALID_SOCKET == 
-       ( psocket->sock = accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
+       ( psocket->sock = (int)accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
         stcp_report_error( "accept() failed: %s",
                             strerror( ERRNO ) ) ;
         return 0;

@@ -456,25 +456,22 @@ vscpdatetime::setUTCNow(void)
 vscpdatetime
 vscpdatetime::Now(void)
 {
-    time_t rawtime;
-    struct tm *ptm;
+  time_t rawtime;    
 
-    time(&rawtime);
+  time(&rawtime);
+
 #ifdef WIN32
-    localtime_s(ptm, &rawtime);
+  struct tm tm;
+  localtime_s(&tm, &rawtime);
+  return vscpdatetime(tm);
 #else   
-    struct tm buf;
-    ptm = localtime_r(&rawtime, &buf);
+  struct tm *ptm;
+  struct tm buf;
+  ptm = localtime_r(&rawtime, &buf);
+  return vscpdatetime(*ptm);
 #endif
 
-    /*m_year = ptm->tm_year + 1900;
-    m_month = ptm->tm_mon;
-    m_day = ptm->tm_mday;
-    m_hour = ptm->tm_hour;
-    m_minute = ptm->tm_min;
-    m_second = ptm->tm_sec;*/
-
-    return vscpdatetime(*ptm);
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////

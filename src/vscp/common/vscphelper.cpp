@@ -112,7 +112,6 @@
 #endif
 
 #define vsnprintf_impl vsnprintf
-
 #define XML_BUFF_SIZE 0xffff
 
 using namespace std;
@@ -715,14 +714,14 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
   }
 
 #if !defined(REENTRANT_TIME)
-  struct tm tbuf;
   struct tm *tm;
 
-  #ifdef WIN32
+#ifdef WIN32
   tm = ((t != nullptr) ? gmtime(t) : nullptr);
-  #else
+#else
+  struct tm tbuf;
   tm = ((t != nullptr) ? gmtime_r(t, &tbuf) : nullptr);
-  #endif
+#endif
   if (tm != nullptr) {
 #else
   struct tm _tm;
@@ -756,11 +755,11 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
   if (nullptr == t) {
     return false;
   }
-
-  struct tm tbuf;
+  
 #ifdef WIN32
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
 #else
+  struct tm tbuf;
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime_r(t, &tbuf));
 #endif
 
@@ -2442,7 +2441,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
   data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    data[1]          = value;
+    data[1]          = (uint8_t)value;
     pEvent->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -2590,7 +2589,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
   pEventEx->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    pEventEx->data[1]  = value;
+    pEventEx->data[1]  = (uint8_t)value;
     pEventEx->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -5069,14 +5068,14 @@ vscp_setEventToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -5102,13 +5101,13 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
   }
 
   time_t rawtime;
-  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -6216,14 +6215,14 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -6249,14 +6248,14 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -7199,13 +7198,13 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       (0 == pEvent->minute) && (0 == pEvent->second)) {
 
     time_t rawtime;
-    struct tm tbuf;
     struct tm *ptm;
 
     time(&rawtime);
 #ifdef WIN32
     ptm = gmtime(&rawtime);
 #else
+    struct tm tbuf;
     ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
