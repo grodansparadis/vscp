@@ -105,7 +105,7 @@
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION 0x00000010
+#define TCPIP_DLL_VERSION 0x000f0002      // 15.0.2
 /*!
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string
