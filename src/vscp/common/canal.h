@@ -42,7 +42,7 @@
 #define EXPORT
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <linux/can.h>
 #endif
 

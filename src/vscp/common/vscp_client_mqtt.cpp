@@ -83,7 +83,7 @@ int
 password_callback(char *buf, int size, int rwflag, void *userdata)
 {
   strcpy(buf, "secret");
-  return strlen(buf);
+  return (int)strlen(buf);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1720,7 +1720,7 @@ vscpClientMqtt::init(void)
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
                                                     strTopic.c_str(),
-                                                    m_will_payload.length(),
+                                                    (int)m_will_payload.length(),
                                                     m_will_payload.c_str(),
                                                     m_will_qos,
                                                     m_will_bretain,
@@ -1739,7 +1739,7 @@ vscpClientMqtt::init(void)
     else {
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
                                                  strTopic.c_str(),
-                                                 m_will_payload.length(),
+                                                 (int)m_will_payload.length(),
                                                  m_will_payload.c_str(),
                                                  m_will_qos,
                                                  m_will_bretain)) {

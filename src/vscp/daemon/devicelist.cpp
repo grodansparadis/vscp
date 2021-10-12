@@ -26,13 +26,18 @@
 // SOFTWARE.
 //
 
-#include "devicelist.h"
-
 #define _POSIX
 
-#ifndef WIN32
+#ifdef WIN32
+#include <stdafx.h>
+#else
 #include <unistd.h>
 #endif
+
+#include "devicelist.h"
+
+
+
 
 #include <errno.h>
 #include <fcntl.h>
