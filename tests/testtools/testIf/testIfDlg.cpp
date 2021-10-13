@@ -28,7 +28,7 @@
 
 
 
-#include "stdafx.h"
+#include <pch.h>
 #include "testIf.h"
 #include "testIfDlg.h"
 

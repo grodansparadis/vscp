@@ -1,7 +1,7 @@
 // vc6_simple_button.cpp : Defines the class behaviors for the application.
 //
 
-#include "stdafx.h"
+#include <pch.h>
 
 #ifdef __GNUG__
     //#pragma implementation

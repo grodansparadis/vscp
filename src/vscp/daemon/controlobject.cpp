@@ -1,4 +1,4 @@
-// ControlObject.cpp: m_path_db_vscp_logimplementation of the CControlObject
+// ControlObject.cpp: implementation of the CControlObject
 // class.
 //
 // This file is part of the VSCP (https://www.vscp.org)
@@ -31,7 +31,7 @@
 #define _POSIX
 
 #ifdef WIN32
-#include <stdAfx.h>
+#include <pch.h>
 #include <nb30.h>
 #endif
 
@@ -281,14 +281,14 @@ CControlObject::CControlObject()
 
   // Logging defaults
   m_fileLogLevel     = spdlog::level::info;
-  m_fileLogPattern   = "[vscp] [%^%l%$] %v";
+  m_fileLogPattern   = "[vscpd] [%^%l%$] %v";
   m_path_to_log_file = "/var/log/vscp/vscp.log";
   m_max_log_size     = 5242880;
   m_max_log_files    = 7;
 
   m_bEnableConsoleLog = false;
   m_consoleLogLevel   = spdlog::level::info;
-  m_consoleLogPattern = "[vscp] [%^%l%$] %v";
+  m_consoleLogPattern = "[vscpd] [%^%l%$] %v";
 
   // Nill the GUID
   m_guid.clear();

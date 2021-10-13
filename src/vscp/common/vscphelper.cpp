@@ -27,7 +27,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include <limits.h>
@@ -87,6 +87,11 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #define UNUSED(expr)                                                                                                   \
   do {                                                                                                                 \
@@ -609,8 +614,9 @@ vscp_rstrstr(const char *s1, const char *s2)
   }
 
   for (s = (char *) s1 + s1len - s2len; s >= s1; --s) {
-    if (0 == strncmp(s, s2, s2len))
+    if (0 == strncmp(s, s2, s2len)) {
       return s;
+    }
   }
 
   return nullptr;
@@ -1477,8 +1483,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
     uint8_t buf[8];
 
     // Must be correct data
-    if (12 != pEvent->sizeData)
+    if (12 != pEvent->sizeData) {
       return false;
+    }
 
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pEvent->pdata + 4, 8); // Double
@@ -1509,8 +1516,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
     uint8_t buf[4];
 
     // Must be correct data
-    if ((16 + 4) != pEvent->sizeData)
+    if ((16 + 4) != pEvent->sizeData) {
       return false;
+    }
 
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pEvent->pdata + 16, 4); // float
@@ -1936,16 +1944,18 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[0];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[0];
   }
@@ -2025,16 +2035,18 @@ vscp_getMeasurementZone(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
@@ -2109,16 +2121,18 @@ vscp_getMeasurementSubZone(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[offset + 2];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
@@ -3638,8 +3652,9 @@ vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet)
 
     crc = crcFast(pbuf, sizeof(pbuf));
 
-    if (bSet)
+    if (bSet) {
       pEvent->crc = crc;
+    }
 
     free(pbuf);
   }
@@ -3744,8 +3759,9 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
       pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
       tokens.pop_front();
       // If no tokens left no use to continue
-      if (tokens.size())
+      if (tokens.size()) {
         break;
+      }
     }
   }
 
@@ -3775,8 +3791,9 @@ vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
   std::deque<std::string> tokens;
   vscp_split(tokens, strGUID, ":");
   while (tokens.size()) {
-    if (cnt > 15)
+    if (cnt > 15) {
       return false;
+    }
     std::size_t pos;
     pGUID[cnt++] = (uint8_t) std::stoul(tokens.front(), &pos, 16);
     tokens.pop_front();
@@ -4168,8 +4185,9 @@ vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
   if (pEventFrom->sizeData) {
 
     pEventTo->pdata = new unsigned char[pEventFrom->sizeData];
-    if (nullptr == pEventTo->pdata)
+    if (nullptr == pEventTo->pdata) {
       return false;
+    }
 
     memcpy(pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData);
   }
@@ -6067,8 +6085,9 @@ vscp_setEventDataFromString(vscpEvent *pEvent, const std::string &str)
     std::string token = tokens.front();
     tokens.pop_front();
     data[pEvent->sizeData++] = vscp_readStringValue(token);
-    if (pEvent->sizeData >= VSCP_MAX_DATA)
+    if (pEvent->sizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   if (pEvent->sizeData > 0) {
@@ -6106,8 +6125,9 @@ vscp_setEventExDataFromString(vscpEventEx *pEventEx, const std::string &str)
     tokens.pop_front();
     pEventEx->data[pEventEx->sizeData] = vscp_readStringValue(token);
     pEventEx->sizeData++;
-    if (pEventEx->sizeData >= VSCP_MAX_DATA)
+    if (pEventEx->sizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   return true;
@@ -6138,8 +6158,9 @@ vscp_setDataArrayFromString(uint8_t *pData, uint16_t *psizeData, const std::stri
     tokens.pop_front();
     pData[*psizeData] = vscp_readStringValue(token);
     (*psizeData)++;
-    if (*psizeData >= VSCP_MAX_DATA)
+    if (*psizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   return true;
@@ -7771,14 +7792,16 @@ parse_address(const char *input, ip_address_t *result)
 #else
       char *copy = strdup(input);
 #endif
-      if (copy == nullptr)
+      if (copy == nullptr) {
         return false;
+      }
       int index   = (int) (ptr - input);
       copy[index] = '\0';
       if (copy[index - 1] == ']' && copy[0] == '[') {
         copy[index - 1] = '\0';
-        if (parse_ipv6_address(copy + 1, result))
+        if (parse_ipv6_address(copy + 1, result)) {
           success = true;
+        }
       }
       else if (parse_ipv4_address(copy, result)) {
         success = true;

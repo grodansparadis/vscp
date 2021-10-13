@@ -28,7 +28,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include <string>

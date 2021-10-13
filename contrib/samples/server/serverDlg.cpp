@@ -1,7 +1,7 @@
 // serverDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include <pch.h>
 #include "server.h"
 #include "serverDlg.h"
 

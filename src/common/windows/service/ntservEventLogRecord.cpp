@@ -29,7 +29,7 @@ to maintain a single distribution point for the source code.
 
 /////////////////////////////////  Includes  //////////////////////////////////
 
-#include "stdafx.h"
+#include <pch.h>
 #include "ntservEventLogRecord.h"
 
 

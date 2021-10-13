@@ -29,7 +29,7 @@
 #ifdef WIN32
 // For getopt
 #define __GNU_LIBRARY__
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include <errno.h>

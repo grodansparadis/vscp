@@ -79,7 +79,7 @@
 #endif
 
 #if defined(_WIN32)
-#include "stdafx.h"
+#include <pch.h>
 #if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
 #endif

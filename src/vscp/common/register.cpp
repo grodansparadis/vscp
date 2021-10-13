@@ -26,7 +26,7 @@
 //
 
 #ifdef WIN32
-#include <stdafx.h>
+#include <pch.h>
 #endif
 
 #include <string>

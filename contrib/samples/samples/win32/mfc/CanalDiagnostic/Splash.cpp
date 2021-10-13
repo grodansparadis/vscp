@@ -26,7 +26,7 @@
 // $Author: akhe $                                              
 // $Revision: 1.2 $ 
 
-#include "stdafx.h"  // e. g. stdafx.h
+#include <pch.h>  // e. g. stdafx.h
 #include "resource.h"  // e.g. resource.h
 
 #include "Splash.h"  // e.g. splash.h

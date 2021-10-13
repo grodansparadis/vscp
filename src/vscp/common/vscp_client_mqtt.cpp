@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include "vscp_client_mqtt.h"
@@ -2013,6 +2013,24 @@ vscpClientMqtt::connect(void)
   // Start worker thread if a callback has been defined
   if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
     int rv = pthread_create(&m_tid, nullptr, workerThread, this);
+    switch(rv) {
+
+        case EAGAIN:
+            spdlog::error("Failed to start MQTT callback thread - Insufficient resources to create another thread.");
+            break;
+
+        case EINVAL:
+            spdlog::error("Failed to start MQTT callback thread - Invalid settings in attr");
+            break;
+
+        case EPERM:
+            spdlog::error("Failed to start MQTT callback thread - No permission to set the scheduling policy");
+            break;
+
+        default:
+            spdlog::debug("Started MQTT callback thread");
+            break;
+    }
   }
 
   return VSCP_ERROR_SUCCESS;

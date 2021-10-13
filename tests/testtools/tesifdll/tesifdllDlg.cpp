@@ -2,7 +2,7 @@
 //
 
 
-#include "stdafx.h"
+#include <pch.h>
 #include "tesifdll.h"
 #include "tesifdllDlg.h"
 

@@ -25,7 +25,7 @@
 // $Author: akhe $                                              
 // $Revision: 1.3 $ 
 
-#include "stdafx.h"
+#include <pch.h>
 #include "CanalDiagnostic.h"
 #include "CanalDiagnosticDoc.h"
 #include "NewDocument.h"

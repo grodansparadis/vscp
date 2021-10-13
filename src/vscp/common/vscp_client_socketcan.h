@@ -1,4 +1,4 @@
-// vscp_client_socketcan.cpp
+// vscp_client_socketcan.h
 //
 // CANAL client communication classes.
 //
@@ -26,12 +26,39 @@
 #if !defined(VSCPCLIENTSOCKETCAN_H__INCLUDED_)
 #define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
-#ifndef WIN32
+#define _POSIX
 
-#include "vscp.h"
+#include <list>
+#include <string>
+
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <syslog.h>
+#include <time.h>
+#include <unistd.h>
+
+#include <hlo.h>
+#include <remotevariablecodes.h>
+#include <canal.h>
+#include <canal_macro.h>
+#include <guid.h>
+#include <vscp.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
+#include <vscpdatetime.h>
+#include <vscphelper.h>
 #include <vscp_client_base.h>
-#include "vscpcanaldeviceif.h"
 
+#include <json.hpp>  // Needs C++11  -std=c++11
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
+const uint16_t MAX_ITEMS_IN_QUEUE = 32000;
 
 // ----------------------------------------------------------------------------
 
@@ -47,6 +74,10 @@ public:
     vscpClientSocketCan();
     ~vscpClientSocketCan();
 
+    // Socketcan flags
+    const u_int32_t sockletcan_flag_fd_enable = 0x00008000; // FD frames will be handled
+
+    // Driver flags
     static const uint32_t FLAG_ENABLE_DEBUG = 0x80000000;  // Debug mode
     static const uint32_t FLAG_FD_MODE      = 0x4000000;   // Enable FD mode
 
@@ -55,10 +86,12 @@ public:
     /*!
         Initialize the CANAL client
         @param interface Socketcan interface name
+        @param guid Interface GUID on string form
         @param flags Driver configuration flags. See m_flags below.
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     int init(const std::string &interface, 
+                const std::string &guid,
                 unsigned long flags,
                 uint32_t timeout = DEAULT_RESPONSE_TIMEOUT); 
 
@@ -200,13 +233,13 @@ public:
     // True as long as the worker thread should do it's work
     bool m_bRun;
 
+    /// enable/disable debug output
+    bool m_bDebug;
+
     // Mutex that protect CANAL interface when callbacks are defined
 #ifndef WIN32
     pthread_mutex_t m_mutexif;
 #endif
-
-    // CANAL functionality
-    VscpCanalDeviceIf m_canalif;
 
     LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
     LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
@@ -221,6 +254,45 @@ public:
     */
     uint32_t m_flags;
 
+    /// GUID for interface
+    cguid m_guid;
+
+    /////////////////////////////////////////////////////////
+    //                      Logging
+    /////////////////////////////////////////////////////////
+    
+    bool m_bEnableFileLog;                        // True to enable logging
+    spdlog::level::level_enum m_fileLogLevel;     // log level
+    std::string m_fileLogPattern;                 // log file pattern
+    std::string m_path_to_log_file;               // Path to logfile      
+    uint32_t m_max_log_size;                      // Max size for logfile before rotating occurs 
+    uint16_t m_max_log_files;                     // Max log files to keep
+
+    bool m_bConsoleLogEnable;                     // True to enable logging to console
+    spdlog::level::level_enum m_consoleLogLevel;  // Console log level
+    std::string m_consoleLogPattern;              // Console log pattern
+
+    // ------------------------------------------------------------------------
+
+    // Event lists
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
+
+    /*!
+      Event object to indicate that there is an event in the
+      output queue
+    */
+    sem_t m_semSendQueue;
+    sem_t m_semReceiveQueue;
+
+    // Mutex to protect the output queue
+    pthread_mutex_t m_mutexSendQueue;
+    pthread_mutex_t m_mutexReceiveQueue;
+
+    /// Filters for input/output
+    vscpEventFilter m_filterIn;
+    vscpEventFilter m_filterOut;
+
 private:
 
     /// Socket for SocketCan
@@ -229,17 +301,20 @@ private:
     /// CAN mode
     int m_mode;
 
+    // JSON configuration
+    json m_j_config;
+
     /*!
         True of dll connection is open
     */
     bool m_bConnected;
 
-    // Worker thread id
-#ifndef WIN32
-    pthread_t m_tid;
-#endif
-};
+    /// Pointer to worker threads
+    pthread_t m_threadWork;
 
-#endif  // WIN32
+
+
+
+};
 
 #endif

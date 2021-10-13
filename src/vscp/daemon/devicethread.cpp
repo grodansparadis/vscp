@@ -29,7 +29,7 @@
 #define _POSIX
 
 #ifdef WIN32
-#include <stdAfx.h>
+#include <pch.h>
 #endif
 
 #ifndef DWORD

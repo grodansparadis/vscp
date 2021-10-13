@@ -1,7 +1,7 @@
 // testifdllDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include <pch.h>
 #include "testifdll.h"
 #include "testifdllDlg.h"
 

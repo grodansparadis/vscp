@@ -18,7 +18,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-//#include "stdafx.h"
+//#include <pch.h>
 //#include <winsock.h>
 #include "pcap.h"
 

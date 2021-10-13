@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include "vscp_client_multicast.h"

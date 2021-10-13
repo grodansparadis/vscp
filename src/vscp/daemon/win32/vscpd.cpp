@@ -22,7 +22,7 @@
 //
 
 #ifdef WIN32
-#include <stdAfx.h>
+#include <pch.h>
 #endif
 
 #include <iostream>
