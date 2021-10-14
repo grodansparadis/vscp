@@ -26,20 +26,20 @@
 // ASSERT_NE(0, vscp_getMeasurementAsFloat(iv4, 5));
 
 // If TEST_LOCAL is defined all tests are run also against a local machine
-#define TEST_LOCAL 
+//#define TEST_LOCAL 
 
 // Standard connection (a VSCP daemon must be running here)
 #define INTERFACE1 	        "vscp2.vscp.org:9598;admin;secret"
-#define INTERFACE1_HOST 	  "vscp2.vscp.org:9598"
+#define INTERFACE1_HOST 	"vscp2.vscp.org:9598"
 #define INTERFACE1_PORT     9598
-#define INTERFACE1_USER 	  "admin"
+#define INTERFACE1_USER 	"admin"
 #define INTERFACE1_PASSWORD "secret"
 
 // Standard connection (a VSCP daemon must be running here)
 #define INTERFACE2 	        "lynx:9598;admin;secret"
-#define INTERFACE2_HOST 	  "lynx:9598"
+#define INTERFACE2_HOST 	"lynx:9598"
 #define INTERFACE2_PORT     9598
-#define INTERFACE2_USER 	  "admin"
+#define INTERFACE2_USER 	"admin"
 #define INTERFACE2_PASSWORD "secret"
 
 
@@ -72,7 +72,7 @@ int sendEventsFromOtherSession(const char *host,
   rv = vscpif.doCmdOpen(host, user, password);
   if (VSCP_ERROR_SUCCESS != rv) return rv;
   
-  for (int i=0;i<count; i++) {
+  for (unsigned int i=0;i<count; i++) {
     ex.data[0] = i;
     rv = vscpif.doCmdSendEx(&ex);
     if (VSCP_ERROR_SUCCESS != rv) return rv;
@@ -310,8 +310,31 @@ TEST(VscpRemoteTcpIf, connect_chkdata)
 // ===========================================================================
 
 int main(int argc, char **argv) {
+
+#ifdef WIN32
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+
+    wVersionRequested = MAKEWORD(2, 2);
+    err               = WSAStartup(wVersionRequested, &wsaData);
+    if (err != 0) {
+      /* Tell the user that we could not find a usable */
+      /* Winsock DLL.                                  */
+      printf("WSAStartup failed with error: %d\n", err);
+      exit(1);
+    };
+#endif
+
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+   int rv =  RUN_ALL_TESTS();
+
+#ifdef WIN32
+   // Cleanup
+   WSACleanup();
+#endif
+
+   return rv;
 }
 
 
