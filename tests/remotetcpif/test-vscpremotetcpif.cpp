@@ -5,6 +5,10 @@
 // https://www.vscp.org   the VSCP project   info@vscp.org
 //https://www.vscp.org/docs/vscphelper/doku.php?id=classes_vscpremotetcpipif_metods
 
+#ifdef WIN32
+#include <pch.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
