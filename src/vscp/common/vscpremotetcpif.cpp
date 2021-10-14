@@ -943,7 +943,7 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
     std::string strLine;
     int nMsg = 0;
 
-    if (!isConnected()) return VSCP_ERROR_ERROR;
+    if (!isConnected()) return VSCP_ERROR_ERROR);
 
     // If receive loop active terminate
     if (m_bModeReceiveLoop) return VSCP_ERROR_ERROR;
