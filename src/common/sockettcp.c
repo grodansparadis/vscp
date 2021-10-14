@@ -1599,7 +1599,7 @@ static int
 ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
 {
     if ( 0 == SSL_CTX_use_certificate_file( ssl_ctx, pem, 1 ) ) {
-        stcp_report_error( "Cannot open certificate file %s: %s",
+        stcp_report_error( "sockettcp: Cannot open certificate file %s: %s",
                             pem,
                             stcp_ssl_error() );
         return 0;
@@ -1607,14 +1607,14 @@ ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
 
     // could use SSL_CTX_set_default_passwd_cb_userdata
     if ( 0 == SSL_CTX_use_PrivateKey_file( ssl_ctx, pem, 1 ) ) {
-        stcp_report_error( "Cannot open private key file %s: %s",
+        stcp_report_error( "sockettcp: Cannot open private key file %s: %s",
                             pem,
                             stcp_ssl_error() );
         return 0;
     }
 
     if ( 0 == SSL_CTX_check_private_key( ssl_ctx ) ) {
-        stcp_report_error( "Certificate and private key do not match: %s",
+        stcp_report_error( "sockettcp: Certificate and private key do not match: %s",
                             pem );
         return 0;
     }
@@ -1629,7 +1629,7 @@ ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
     //
     if (chain) {
         if ( 0 == SSL_CTX_use_certificate_chain_file( ssl_ctx, chain ) ) {
-            stcp_report_error( "Cannot use certificate chain file %s: %s",
+            stcp_report_error( "sockettcp: Cannot use certificate chain file %s: %s",
                                 pem,
                                 stcp_ssl_error() );
             return 0;
@@ -1697,7 +1697,7 @@ refresh_trust( struct stcp_connection *conn,
                                                     ca_file,
                                                     ca_path ) != 1) {
                 stcp_report_error(
-                            "SSL_CTX_load_verify_locations error: %s "
+                            "sockettcp: SSL_CTX_load_verify_locations error: %s "
                             "ssl_verify_peer requires setting "
                             "either ssl_ca_path or ssl_ca_file. Is any of them "
                             "present in "
@@ -1928,7 +1928,7 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
 #endif            
         }
         else {
-            stcp_report_error( "Out of memory: Cannot allocate memory for client "
+            stcp_report_error( "sockettcp: Out of memory: Cannot allocate memory for client "
                                "certificate" );
         }
 
@@ -2021,7 +2021,7 @@ stcp_init_mt_ssl( void )
         ssl_mutexes = NULL;
     }
     else if ( NULL == ( ssl_mutexes = (pthread_mutex_t *)malloc( size ) ) ) {
-        stcp_report_error( "Cannot allocate mutexes: %s", stcp_ssl_error() );
+        stcp_report_error( "sockettcp: Cannot allocate mutexes: %s", stcp_ssl_error() );
         return 0;
     }
 
@@ -2158,7 +2158,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
     /* Init. ssl multithread locks for ssl 1.0 */
     if ( !(secure_opts->bNOInitMT) ) {
         if ( !stcp_init_mt_ssl() ) {
-            stcp_report_error( "Failed to init ssl\n" );
+            stcp_report_error( "sockettcp: Failed to init ssl\n" );
             return 0;
         }
     }
@@ -2172,7 +2172,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
                      NULL);
 
     if ( NULL == ( ssl_ctx = SSL_CTX_new( TLS_server_method() ) ) ) {
-        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
+        stcp_report_error( "sockettcp: SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #else
@@ -2181,7 +2181,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
     SSL_load_error_strings();
 
     if ( NULL == ( ssl_ctx = SSL_CTX_new( SSLv23_server_method() ) ) ) {
-        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
+        stcp_report_error( "sockettcp: SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #endif // OPENSSL_API_1_1
@@ -2270,7 +2270,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
                                                 secure_opts->ca_path )
             != 1) {
             stcp_report_error(
-                        "SSL_CTX_load_verify_locations error: %s "
+                        "sockettcp: SSL_CTX_load_verify_locations error: %s "
                         "ssl_verify_peer requires setting "
                         "either ssl_ca_path or ssl_ca_file. Is any of them "
                         "present in "
@@ -2291,7 +2291,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 
         if ( use_default_verify_paths &&
                 ( SSL_CTX_set_default_verify_paths( ssl_ctx ) != 1 ) ) {
-            stcp_report_error( "SSL_CTX_set_default_verify_paths error: %s",
+            stcp_report_error( "sockettcp: SSL_CTX_set_default_verify_paths error: %s",
                                 stcp_ssl_error() );
             return 0;
         }
@@ -2301,7 +2301,7 @@ stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
     }
 
     if ( SSL_CTX_set_cipher_list( ssl_ctx, STCP_SSL_CIPHER_LIST ) != 1 ) {
-        stcp_report_error( "SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
+        stcp_report_error( "sockettcp: SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
     }
 
     return 1;
@@ -2458,12 +2458,12 @@ stcp_connect_socket( const char *hostip,
     memset(sa, 0, sizeof (*sa));
 
     if ( NULL == hostip ) {
-        stcp_report_error( "NULL host" );
+        stcp_report_error( "sockettcp: NULL host" );
         return 0;
     }
 
     if ( (port <= 0) || !is_valid_port((unsigned) port)) {
-        stcp_report_error("invalid port");
+        stcp_report_error("sockettcp: invalid port");
         return 0;
     }
 
@@ -2501,7 +2501,7 @@ stcp_connect_socket( const char *hostip,
     }
 
     if ( 0 == ip_ver ) {
-        stcp_report_error("host not found");
+        stcp_report_error("sockettcp: host not found");
         return 0; 
     }
     
@@ -2513,7 +2513,7 @@ stcp_connect_socket( const char *hostip,
     }
 
     if (*sock == INVALID_SOCKET) {
-        stcp_report_error("socket(): Invalid ");
+        stcp_report_error("sockettcp: socket(): Invalid ");
         // strerror(ERRNO) );
         return 0;
     }
@@ -2547,7 +2547,7 @@ stcp_connect_socket( const char *hostip,
     }
 
     // Not connected
-    stcp_report_error("connect(%s:%d): %s",
+    stcp_report_error("sockettcp: connect(%s:%d): %s",
                         hostip,
                         port,
                         strerror( ERRNO ) );
@@ -2611,7 +2611,7 @@ stcp_connect_remote_impl( const char *host,
 #ifdef OPENSSL_API_1_1
     if ( bUseSSL &&
             ( NULL == ( conn->ssl_ctx = SSL_CTX_new( TLS_client_method() ) ) ) ) {
-        stcp_report_error("SSL_CTX_new error");
+        stcp_report_error("sockettcp: SSL_CTX_new error");
         close(sock);
         free(conn);
         return NULL;
@@ -2621,7 +2621,7 @@ stcp_connect_remote_impl( const char *host,
             ( NULL == ( conn->ssl_ctx = SSL_CTX_new( SSLv23_client_method() ) ) ) ) {
         unsigned long ssl_err = ERR_get_error();
         const char* const str = ERR_reason_error_string( ssl_err );
-        stcp_report_error("SSL_CTX_new error. %s", str );
+        stcp_report_error("sockettcp: SSL_CTX_new error. %s", str );
 #ifdef _WIN32
         closesocket(sock);
 #else
@@ -2642,7 +2642,7 @@ stcp_connect_remote_impl( const char *host,
     conn->client.lsa = sa;
 
     if ( getsockname(sock, psa, &len) != 0 ) {
-        stcp_report_error( "getsockname() failed: %s", strerror( ERRNO ) );
+        stcp_report_error( "sockettcp: getsockname() failed: %s", strerror( ERRNO ) );
     }
 
     conn->client.is_ssl = bUseSSL ? 1 : 0;
@@ -2660,7 +2660,7 @@ stcp_connect_remote_impl( const char *host,
             if ( !ssl_use_pem_file( conn->ssl_ctx,
                                     secure_options->client_cert_path,
                                     NULL ) ) {
-                stcp_report_error( "Can not use SSL client certificate" );
+                stcp_report_error( "sockettcp: Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
 #ifdef _WIN32
                 closesocket(sock);
@@ -2688,7 +2688,7 @@ stcp_connect_remote_impl( const char *host,
                         conn->ssl_ctx,
                         SSL_connect,
                         &(conn->stop_flag ) ) ) {
-            stcp_report_error("SSL connection error");
+            stcp_report_error("sockettcp: SSL connection error");
             SSL_CTX_free( conn->ssl_ctx );
 #ifdef _WIN32
             closesocket(sock);
@@ -2833,7 +2833,7 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
         // Cannot determine if socket is already closed. This should
         // not occur and never did in a test. Log an error message
         // and continue.
-        stcp_report_error("getsockopt(SOL_SOCKET SO_ERROR) failed: %s",
+        stcp_report_error("sockettcp: getsockopt(SOL_SOCKET SO_ERROR) failed: %s",
                             strerror(ERRNO) );
     }
     else if ( error_code == ECONNRESET ) {
@@ -2847,7 +2847,7 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
                             SO_LINGER,
                             (char *)&linger,
                             sizeof( linger ) ) != 0 ) {
-            stcp_report_error("setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s",
+            stcp_report_error("sockettcp: setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s",
                                 linger.l_onoff,
                                 linger.l_linger,
                                 strerror( ERRNO ) );
@@ -3894,14 +3894,14 @@ stcp_listening( struct server_context *srv_ctx,
         }
 
         if  ( so.is_ssl && ( NULL == srv_ctx->ssl_ctx ) ) {
-            stcp_report_error( "Cannot add SSL socket. Is -ssl_certificate "
+            stcp_report_error( "sockettcp: Cannot add SSL socket. Is -ssl_certificate "
                                "option set?" );
             return 0;
         }
 
         if ( INVALID_SOCKET == 
                  ( so.sock = (int)socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
-            stcp_report_error( "cannot create socket" );
+            stcp_report_error( "sockettcp: cannot create socket" );
             return 0;
         }
 
@@ -3923,7 +3923,7 @@ stcp_listening( struct server_context *srv_ctx,
                         sizeof(on) ) != 0) {
 
             // Set reuse option, but don't abort on errors.
-            stcp_report_error( "cannot set socket option SO_EXCLUSIVEADDRUSE" );
+            stcp_report_error( "sockettcp: cannot set socket option SO_EXCLUSIVEADDRUSE" );
         }
 #else
         if ( setsockopt( so.sock,
@@ -3933,7 +3933,7 @@ stcp_listening( struct server_context *srv_ctx,
                             sizeof( on ) ) != 0 ) {
 
             // Set reuse option, but don't abort on errors.
-            stcp_report_error( "cannot set socket option SO_REUSEADDR " );
+            stcp_report_error( "sockettcp: cannot set socket option SO_REUSEADDR " );
         }
 #endif
 
@@ -3949,7 +3949,7 @@ stcp_listening( struct server_context *srv_ctx,
 				        sizeof( off ) ) != 0 ) {
 
                         /* Set IPv6 only option, but don't abort on errors. */
-			        stcp_report_error( "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+			        stcp_report_error( "sockettcp: cannot set socket option IPV6_V6ONLY=off (entry %i)",
 					                    portsTotal );
                 }
             }
@@ -3963,7 +3963,7 @@ stcp_listening( struct server_context *srv_ctx,
                                     sizeof( off ) ) != 0 ) ) {
 
                     // Set IPv6 only option, but don't abort on errors.
-                    stcp_report_error( "cannot set socket option IPV6_V6ONLY" );
+                    stcp_report_error( "sockettcp: cannot set socket option IPV6_V6ONLY" );
                 }
                 
             }
@@ -3979,7 +3979,7 @@ stcp_listening( struct server_context *srv_ctx,
                         &(so.lsa.sa), 
                         len ) != 0) {
 
-                stcp_report_error( "cannot bind to %.*s: %d (%s)",
+                stcp_report_error( "sockettcp: cannot bind to %.*s: %d (%s)",
                                     (int)msg.len,
                                     msg.ptr,
                                     (int)ERRNO,
@@ -3995,7 +3995,7 @@ stcp_listening( struct server_context *srv_ctx,
             if ( bind( so.sock, 
                         &(so.lsa.sa), 
                         len ) != 0 ) {
-                stcp_report_error( "cannot bind to IPv6 %.*s: %d (%s)",
+                stcp_report_error( "sockettcp: cannot bind to IPv6 %.*s: %d (%s)",
                                     (int)msg.len,
                                     msg.ptr,
                                     (int)ERRNO,
@@ -4006,7 +4006,7 @@ stcp_listening( struct server_context *srv_ctx,
             }
         }
         else {
-            stcp_report_error( "cannot bind: address family not supported " );
+            stcp_report_error( "sockettcp: cannot bind: address family not supported " );
             closesocket( so.sock );
             so.sock = INVALID_SOCKET;
             return 0;
@@ -4014,7 +4014,7 @@ stcp_listening( struct server_context *srv_ctx,
 
         if ( listen( so.sock, SOMAXCONN ) != 0 ) {
 
-            stcp_report_error( "cannot listen to %.*s: %d (%s)",
+            stcp_report_error( "sockettcp: cannot listen to %.*s: %d (%s)",
                                 (int)msg.len,
                                 msg.ptr,
                                 (int)ERRNO,
@@ -4028,7 +4028,7 @@ stcp_listening( struct server_context *srv_ctx,
              ( usa.sa.sa_family != so.lsa.sa.sa_family ) ) {
 
             int err = (int)ERRNO;
-            stcp_report_error( "call to getsockname failed %.*s: %d (%s)",
+            stcp_report_error( "sockettcp: call to getsockname failed %.*s: %d (%s)",
                                 (int)msg.len,
                                 msg.ptr,
                                 err,
@@ -4051,7 +4051,7 @@ stcp_listening( struct server_context *srv_ctx,
                                             ( srv_ctx->num_listening_sockets + 1 ) *
                                             sizeof( srv_ctx->listening_sockets[0] ) ) ) ) {
 
-            stcp_report_error( "Out of memory" );
+            stcp_report_error( "sockettcp: Out of memory" );
             closesocket( so.sock );
             so.sock = INVALID_SOCKET;
             continue;
@@ -4062,7 +4062,7 @@ stcp_listening( struct server_context *srv_ctx,
                                             ( srv_ctx->num_listening_sockets + 1 ) *
 		                                    sizeof( srv_ctx->listening_socket_fds[0] ) ) ) ) {
 
-            stcp_report_error( "Out of memory" );
+            stcp_report_error( "sockettcp: Out of memory" );
             closesocket( so.sock );
             so.sock = INVALID_SOCKET;
             free(ptr);
@@ -4107,7 +4107,7 @@ stcp_accept( struct server_context *srv_ctx,
 
     if ( INVALID_SOCKET == 
        ( psocket->sock = (int)accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
-        stcp_report_error( "accept() failed: %s",
+        stcp_report_error( "sockettcp: accept() failed: %s",
                             strerror( ERRNO ) ) ;
         return 0;
     }
@@ -4131,7 +4131,7 @@ stcp_accept( struct server_context *srv_ctx,
         psocket->is_ssl = listener->is_ssl;
 
         if ( getsockname( psocket->sock, &psocket->lsa.sa, &len ) != 0 ) {
-            stcp_report_error( "getsockname() failed: %s",
+            stcp_report_error( "sockettcp: getsockname() failed: %s",
                                 strerror( ERRNO ) ) ;
         }
 
@@ -4146,7 +4146,7 @@ stcp_accept( struct server_context *srv_ctx,
                             SO_KEEPALIVE,
                             (SOCK_OPT_TYPE)&on,
                             sizeof( on ) ) != 0 ) {
-            stcp_report_error( "setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
+            stcp_report_error( "sockettcp: setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
                                 strerror( ERRNO ) );
         }
 
@@ -4159,7 +4159,7 @@ stcp_accept( struct server_context *srv_ctx,
         //
         if ( ( NULL != srv_ctx ) &&  srv_ctx->config_tcp_nodelay ) {
             if ( set_tcp_nodelay( psocket->sock, 1 ) != 0 ) {
-                stcp_report_error( "setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
+                stcp_report_error( "sockettcp: setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
                                     strerror( ERRNO ) );
             }
         }

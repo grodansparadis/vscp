@@ -108,10 +108,9 @@
 #define TCPIP_DLL_VERSION 0x000f0002      // 15.0.2
 /*!
     @def TCPIP_VENDOR_STRING
-    Pseudo vendor string
+    Vendor string
  */
-#define TCPIP_VENDOR_STRING "the VSCP project, Sweden"
-
+#define TCPIP_VENDOR_STRING "the VSCP project, https://www.vscp.org"
 #define DRIVER_INFO_STRING ""
 
 /*!
@@ -255,9 +254,13 @@ class VscpRemoteTcpIf
 
     /*!
         Open communication interface.
-        @param strInterface should contain "username;password;ip-addr;port" if
+        @param strInterface should contain "ip-addr:port;username;password" if
        used. All including port are optional and defaults to no
        username/password, server as "localhost" and "9598" as default port.
+       Interface can be given as
+          tcp://host:port;username;password
+          or
+          host:port;username;password
         @param flags are not used at the moment.
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if
        error or the channel is already opened or other error occur.

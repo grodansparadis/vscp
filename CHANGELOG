@@ -1,6 +1,8 @@
 Change log for the VSCP Daemon
 ==============================
 
+211014 AKHE  Added vscpremoteif test
+211014 AKHE  google test removed as submodule.
 211006 AKHE  Protected som eof the com class calls for Linux
 211006 AKHE  Protected CANAL interface class from failed initializartion of driver.
 211004 AKHE  Fixed error in MQTT client which skips GUID parsing for JSON objects. 

@@ -330,6 +330,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strInterface, uint32_t flags)
 
     // Interface can be given as
     //      tcp://host:port;username;password
+    //      or
     //      host:port;username;password
 
     std::deque<std::string> tokens;
@@ -431,7 +432,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string& strHostname,
     // Username
     str = strUsername;
     vscp_trim(str);
-    ;
+    
     buf = std::string("USER ") + str + std::string("\r\n");
 
     if (VSCP_ERROR_SUCCESS != doCommand(buf)) {

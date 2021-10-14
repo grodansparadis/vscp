@@ -123,6 +123,28 @@
             "problemMatcher": "$gcc"
         },
         {
+          "taskName": "clean & build test remotetcpif",
+          "type": "shell",
+          "command": "cd tests/remotetcpif; rm -rf build; mkdir build; cd build; cmake .. -DCMAKE_BUILD_TYPE=Debug; make clean; make",
+          "args": [],
+          "group": {
+              "kind": "build",
+              "isDefault": false
+          },
+          "problemMatcher": "$gcc"
+        },
+        {
+          "taskName": "build test remotetcpif",
+          "type": "shell",
+          "command": "cd tests/remotetcpif/build; make",
+          "args": [],
+          "group": {
+              "kind": "build",
+              "isDefault": false
+          },
+          "problemMatcher": "$gcc"
+        },
+        {
             "taskName": "clean & build unittest clientlist",
             "type": "shell",
             "command": "cd tests/clientlist; mkdir build; cd build; cmake ..; make clean; make",
