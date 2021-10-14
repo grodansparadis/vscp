@@ -359,7 +359,7 @@ int main(int argc, char **argv) {
     WSADATA wsaData;
     int err;
 
-    wVersionRequested = MAKEWORD(2, 2);
+    wVersionRequested = MAKEWORD(2,2);
     err               = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0) {
       /* Tell the user that we could not find a usable */
