@@ -31,25 +31,73 @@
 //#define TEST_LOCAL 
 
 // Standard connection (a VSCP daemon must be running here)
-#define INTERFACE1 	        "vscp2.vscp.org:9598;admin;secret"
-#define INTERFACE1_HOST 	"vscp2.vscp.org:9598"
-#define INTERFACE1_PORT     9598
-#define INTERFACE1_USER 	"admin"
-#define INTERFACE1_PASSWORD "secret"
+#define INTERFACE1 	          "vscp2.vscp.org:9598;admin;secret"
+#define INTERFACE1_HOST 	    "vscp2.vscp.org:9598"
+#define INTERFACE1_PORT       9598
+#define INTERFACE1_USER 	    "admin"
+#define INTERFACE1_PASSWORD   "secret"
 
 // Standard connection (a VSCP daemon must be running here)
-#define INTERFACE2 	        "lynx:9598;admin;secret"
-#define INTERFACE2_HOST 	"lynx:9598"
-#define INTERFACE2_PORT     9598
-#define INTERFACE2_USER 	"admin"
-#define INTERFACE2_PASSWORD "secret"
+#define INTERFACE2 	          "lynx:9598;admin;secret"
+#define INTERFACE2_HOST 	    "lynx:9598"
+#define INTERFACE2_PORT       9598
+#define INTERFACE2_USER 	    "admin"
+#define INTERFACE2_PASSWORD   "secret"
+
+///////////////////////////////////////////////////////////////////////////////
+// Open session to host and Send n events using ev
+//
+
+int sendEventFromOtherSession(const char *host,
+                                const char *user,
+                                const char *password,
+                                unsigned int count)
+{
+  int rv;
+
+  VscpRemoteTcpIf vscpif;
+
+  // Send event (Turn on the 'thing(s)' defined by zone/subzone)
+  vscpEvent *pev = new vscpEvent;
+  pev->pdata = nullptr;
+  pev->sizeData = 0;
+
+  memset(pev->GUID, 0, 16);               // Use inteface GUID
+  vscp_setEventDateTimeBlockToNow(pev);
+  pev->head     = VSCP_HEADER16_DUMB;     // This node does not have registers, mdf etc
+  pev->timestamp = vscp_makeTimeStamp();
+  pev->vscp_class = VSCP_CLASS1_CONTROL;
+  pev->vscp_type = VSCP_TYPE_CONTROL_TURNON;
+  pev->sizeData = 3;
+  pev->pdata = new uint8_t[3];
+  pev->pdata[0] = 0;       // Optional user byte
+  pev->pdata[1] = 0x55;    // Zone
+  pev->pdata[2] = 0xAA;    // SubZone
+
+  rv = vscpif.doCmdOpen(host, user, password);
+  if (VSCP_ERROR_SUCCESS != rv) return rv;
+  
+  for (unsigned int i=0;i<count; i++) {
+    pev->pdata[0] = i;
+    rv = vscpif.doCmdSend(pev);
+    if (VSCP_ERROR_SUCCESS != rv) return rv;
+  }
+
+  vscp_deleteEvent(pev);
+  
+  rv = vscpif.doCmdClose();
+  if (VSCP_ERROR_SUCCESS != rv) return rv;
+
+  return rv;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Open session to host and Send n events
+// Open session to host and Send n events using ex
 //
 
-int sendEventsFromOtherSession(const char *host,
+int sendEventExFromOtherSession(const char *host,
                                 const char *user,
                                 const char *password,
                                 unsigned int count)
@@ -91,7 +139,7 @@ int sendEventsFromOtherSession(const char *host,
 
 //-----------------------------------------------------------------------------
 
-TEST(VscpRemoteTcpIf, connect_vscp2_host_user_password) 
+TEST(VscpRemoteTcpIf, ConnectVscp2HostUserPassword) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -126,7 +174,7 @@ TEST(lynx, connect_vscp2_host_user_password)
 
 //-----------------------------------------------------------------------------
 
-TEST(VscpRemoteTcpIf, connect_vscp2_host_port_user_password) 
+TEST(VscpRemoteTcpIf, ConnectVscp2HostPortUserPassword) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -142,7 +190,7 @@ TEST(VscpRemoteTcpIf, connect_vscp2_host_port_user_password)
 
 //-----------------------------------------------------------------------------
 
-TEST(VscpRemoteTcpIf, connect_vscp2_unknown_host) 
+TEST(VscpRemoteTcpIf, ConnectVscp2UnknownHost) 
 { 
   const char *pHost = (char *)"test.host.no";
   const char *pUser = (char *)INTERFACE1_USER;
@@ -162,7 +210,7 @@ TEST(VscpRemoteTcpIf, connect_vscp2_unknown_host)
 
 
 #ifdef TEST_LOCAL
-TEST(lynx, connect_vscp2_host_port_user_password) 
+TEST(lynx, ConnectVscp2HostPortUserPassword) 
 { 
   const char *pHost = (char *)INTERFACE2_HOST;
   const char *pUser = (char *)INTERFACE2_USER;
@@ -179,7 +227,7 @@ TEST(lynx, connect_vscp2_host_port_user_password)
 
 //-----------------------------------------------------------------------------
 
-TEST(VscpRemoteTcpIf, connect_vscp2_interface) 
+TEST(VscpRemoteTcpIf, ConnectVscp2Interface) 
 { 
   const char *pInterface = (char *)INTERFACE1;
 
@@ -195,7 +243,7 @@ TEST(VscpRemoteTcpIf, connect_vscp2_interface)
 
 
 #ifdef TEST_LOCAL
-TEST(lynx, connect_lynx_interface) 
+TEST(lynx, ConnectLynxInterface) 
 { 
   const char *pInterface = (char *)INTERFACE2;
 
@@ -209,7 +257,7 @@ TEST(lynx, connect_lynx_interface)
 #endif
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_nowhere) 
+TEST(VscpRemoteTcpIf, ConnectNowhere) 
 { 
   const char *pHost = "nowhere";
   const char *pUser = (char *)INTERFACE1_USER;
@@ -222,7 +270,7 @@ TEST(VscpRemoteTcpIf, connect_nowhere)
 }
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_user_empty_fault) 
+TEST(VscpRemoteTcpIf, ConnectUserEmptyFault) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = "";   // Empty user
@@ -235,7 +283,7 @@ TEST(VscpRemoteTcpIf, connect_user_empty_fault)
 }
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_user_wrong_fault) 
+TEST(VscpRemoteTcpIf, ConnectUserWrongFault) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = "xxxxxx"; // Wrong user
@@ -249,7 +297,7 @@ TEST(VscpRemoteTcpIf, connect_user_wrong_fault)
 }
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_password_empty_fault) 
+TEST(VscpRemoteTcpIf, ConnectPasswordEmptyFault) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -261,7 +309,7 @@ TEST(VscpRemoteTcpIf, connect_password_empty_fault)
 }
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_password_wrong_fault) 
+TEST(VscpRemoteTcpIf, ConnectPasswordWrongFault) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -273,7 +321,7 @@ TEST(VscpRemoteTcpIf, connect_password_wrong_fault)
 }
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, connect_chkdata) 
+TEST(VscpRemoteTcpIf, cCnnectChkdataEv) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -286,9 +334,44 @@ TEST(VscpRemoteTcpIf, connect_chkdata)
   ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdNOOP());
   ASSERT_EQ(true, vscpif.isConnected());
   ASSERT_EQ(VSCP_LEVEL2, vscpif.doCmdGetLevel());
-  ASSERT_EQ(CANAL_ERROR_SUCCESS, sendEventsFromOtherSession(INTERFACE1_HOST, 
-                                                              INTERFACE1_USER, 
-                                                              INTERFACE1_PASSWORD, 
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, sendEventFromOtherSession(pHost, 
+                                                              pUser, 
+                                                              pPassword, 
+                                                              10));                                                            
+  ASSERT_EQ(true, (vscpif.doCmdDataAvailable() >= 10));
+  do {
+    vscpEvent *pEvent = new vscpEvent;
+    ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdReceive(pEvent));
+    if ( (nullptr != pEvent) && 
+          (VSCP_CLASS1_CONTROL == pEvent->vscp_class) && 
+          (VSCP_TYPE_CONTROL_TURNON == pEvent->vscp_type) ) {
+      ASSERT_EQ(3, pEvent->sizeData);
+      ASSERT_NE(nullptr, pEvent->pdata);
+      ASSERT_EQ(0x55, pEvent->pdata[1]);
+      ASSERT_EQ(0xAA, pEvent->pdata[2]);
+    }
+    vscp_deleteEvent(pEvent);
+  } while (vscpif.doCmdDataAvailable() > 0);
+
+}
+
+//-----------------------------------------------------------------------------
+TEST(VscpRemoteTcpIf, ConnectChkdataEx) 
+{ 
+  const char *pHost = (char *)INTERFACE1_HOST;
+  const char *pUser = (char *)INTERFACE1_USER;
+  const char *pPassword = (char *)INTERFACE1_PASSWORD;
+
+  VscpRemoteTcpIf vscpif;
+
+  ASSERT_EQ(false, vscpif.isConnected());
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, INTERFACE1_PORT, pUser, pPassword));
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdNOOP());
+  ASSERT_EQ(true, vscpif.isConnected());
+  ASSERT_EQ(VSCP_LEVEL2, vscpif.doCmdGetLevel());
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, sendEventExFromOtherSession(pHost, 
+                                                              pUser, 
+                                                              pPassword, 
                                                               10));                                                            
   ASSERT_EQ(true, (vscpif.doCmdDataAvailable() >= 10));
   do {
@@ -309,7 +392,7 @@ TEST(VscpRemoteTcpIf, connect_chkdata)
 
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, rcvloop_test) 
+TEST(VscpRemoteTcpIf, RcvloopTestEx) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -346,9 +429,44 @@ TEST(VscpRemoteTcpIf, rcvloop_test)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
 }
 
+//-----------------------------------------------------------------------------
+TEST(VscpRemoteTcpIf, PollingTestEv) 
+{ 
+  const char *pHost = (char *)INTERFACE1_HOST;
+  const char *pUser = (char *)INTERFACE1_USER;
+  const char *pPassword = (char *)INTERFACE1_PASSWORD;
+
+  VscpRemoteTcpIf vscpif;
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, pUser, pPassword));
+
+  // Start measuring time
+  std::chrono::seconds elapsed = std::chrono::seconds::zero();
+  auto begin = std::chrono::high_resolution_clock::now();
+  int cnt = 0;
+  int rv;
+
+  do {
+    if (vscpif.doCmdDataAvailable()) {
+      vscpEvent *pev = new vscpEvent;
+      pev->pdata = nullptr;
+      pev->sizeData = 0;
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceive(pev)));
+      vscp_deleteEvent(pev);
+      cnt++;
+      if (cnt >= 4) {
+        break;
+      }
+    }
+  } while (elapsed.count() < 70);
+
+  ASSERT_EQ(true, (cnt >= 4));
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
+}
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, polling_test_ex) 
+TEST(VscpRemoteTcpIf, PollingTestEx) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
