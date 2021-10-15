@@ -703,7 +703,7 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx* pEventEx)
         return VSCP_ERROR_PARAMETER;
     }
 
-    if (vscp_convertEventToEventEx(pEventEx, pEvent)) {
+    if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
         vscp_deleteEvent(pEvent);
         return VSCP_ERROR_PARAMETER;
     }
@@ -943,7 +943,7 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
     std::string strLine;
     int nMsg = 0;
 
-    if (!isConnected()) return VSCP_ERROR_ERROR);
+    if (!isConnected()) return VSCP_ERROR_ERROR;
 
     // If receive loop active terminate
     if (m_bModeReceiveLoop) return VSCP_ERROR_ERROR;

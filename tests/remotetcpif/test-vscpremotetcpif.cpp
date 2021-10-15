@@ -347,6 +347,40 @@ TEST(VscpRemoteTcpIf, rcvloop_test)
 }
 
 
+//-----------------------------------------------------------------------------
+TEST(VscpRemoteTcpIf, polling_test_ex) 
+{ 
+  const char *pHost = (char *)INTERFACE1_HOST;
+  const char *pUser = (char *)INTERFACE1_USER;
+  const char *pPassword = (char *)INTERFACE1_PASSWORD;
+
+  VscpRemoteTcpIf vscpif;
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, pUser, pPassword));
+
+  // Start measuring time
+  std::chrono::seconds elapsed = std::chrono::seconds::zero();
+  auto begin = std::chrono::high_resolution_clock::now();
+  int cnt = 0;
+  int rv;
+
+  do {
+    if (vscpif.doCmdDataAvailable()) {
+      vscpEventEx ex;
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
+      cnt++;
+      if (cnt >= 4) {
+        break;
+      }
+    }
+  } while (elapsed.count() < 70);
+
+  ASSERT_EQ(true, (cnt >= 4));
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
+}
+
+
 // ===========================================================================
 // ===========================================================================
 // ===========================================================================
