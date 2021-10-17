@@ -1030,7 +1030,7 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
     return VSCP_ERROR_ERROR;
   }
 
-  if (m_inputStrArray.size()) {
+  if (!m_inputStrArray.size()) {
     return 0;
   }
 

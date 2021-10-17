@@ -338,6 +338,7 @@ TEST(VscpRemoteTcpIf, cCnnectChkdataEv)
                                                               pUser, 
                                                               pPassword, 
                                                               10));                                                            
+ 
   ASSERT_EQ(true, (vscpif.doCmdDataAvailable() >= 10));
   do {
     vscpEvent *pEvent = new vscpEvent;
@@ -520,7 +521,11 @@ TEST(VscpRemoteTcpIf, PollingTestExInifinite)
       vscpEventEx ex;
       ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
       printf("Received Event\n");
+
       cnt++;
+      printf("cnt=%d",cnt);
+
+      vscpif.doCmdClear();
     }
     else {
       printf(".\n");
