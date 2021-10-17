@@ -223,7 +223,7 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
   doClrInputQueue();
 
   // Make sure we are connected
-  if (nullstr == m_conn) {
+  if (nullptr == m_conn) {
     return VSCP_ERROR_CONNECTION;
   }
 
@@ -1030,7 +1030,7 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
     return VSCP_ERROR_ERROR;
   }
 
-  if (m_inputStrArray.length()) {
+  if (m_inputStrArray.size()) {
     return 0;
   }
 
