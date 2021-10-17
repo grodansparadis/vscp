@@ -205,8 +205,7 @@ class VscpRemoteTcpIf
      */
     bool isConnected(void)
     {
-        return ((NULL != m_conn) &&
-                (STCP_CONN_STATE_CONNECTED == m_conn->conn_state));
+        return ((NULL != m_conn) && (STCP_CONN_STATE_CONNECTED == m_conn->conn_state));
     };
 
     /*!

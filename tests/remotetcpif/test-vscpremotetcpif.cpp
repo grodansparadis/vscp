@@ -460,7 +460,7 @@ TEST(VscpRemoteTcpIf, PollingTestEv)
     }
   } while (elapsed.count() < 70);
 
-  ASSERT_EQ(true, (cnt >= 4));
+  EXPECT_TRUE(cnt >= 4) << "Expected four or more events received";
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
 }
@@ -493,7 +493,39 @@ TEST(VscpRemoteTcpIf, PollingTestEx)
     }
   } while (elapsed.count() < 70);
 
-  ASSERT_EQ(true, (cnt >= 4));
+  EXPECT_TRUE(cnt >= 4) << "Expected four or more events received";
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
+}
+
+//-----------------------------------------------------------------------------
+TEST(VscpRemoteTcpIf, PollingTestExInifinite) 
+{ 
+  const char *pHost = (char *)INTERFACE1_HOST;
+  const char *pUser = (char *)INTERFACE1_USER;
+  const char *pPassword = (char *)INTERFACE1_PASSWORD;
+
+  VscpRemoteTcpIf vscpif;
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, pUser, pPassword));
+
+  // Start measuring time
+  std::chrono::seconds elapsed = std::chrono::seconds::zero();
+  auto begin = std::chrono::high_resolution_clock::now();
+  int cnt = 0;
+  int rv;
+
+  do {
+    if (vscpif.doCmdDataAvailable()) {
+      vscpEventEx ex;
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
+      printf("Received Event\n");
+      cnt++;
+    }
+    else {
+      printf(".\n");
+    }
+  } while (elapsed.count() < 3600);
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
 }

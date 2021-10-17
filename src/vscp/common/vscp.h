@@ -608,7 +608,10 @@ extern "C"
 #define VSCP_ERROR_INVALID_TYPE         56 /* Item (variable) is of wrong type */
 #define VSCP_ERROR_PERMISSION           57 /* Does hot have permission to do that */
 #define VSCP_ERROR_INVALID_SYNTAX       58 /* Syntax is invalid */
-#define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */
+#define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */  
+#define VSCP_ERROR_MTU                  60 /* Frame does not fit */
+#define VSCP_ERROR_SOCKET               61 /* Unable to create socket or other socket error*/
+
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

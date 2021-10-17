@@ -189,6 +189,9 @@ public:
     */
     virtual int getwcyd(uint64_t &wcyd);
 
+
+    void sendToCallbacks(vscpEvent *pev);
+
     /*!
         Set (and enable) receive callback for events
         @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -241,8 +244,8 @@ public:
     pthread_mutex_t m_mutexif;
 #endif
 
-    LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
-    LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
+    //LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
+    //LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
 
     /// Socketcan interface
     std::string m_interface;
@@ -293,13 +296,15 @@ public:
     vscpEventFilter m_filterIn;
     vscpEventFilter m_filterOut;
 
+    /// CAN mode
+    int m_mode;
+
 private:
 
     /// Socket for SocketCan
-    int m_socket;
+    //int m_socket;
 
-    /// CAN mode
-    int m_mode;
+
 
     // JSON configuration
     json m_j_config;
@@ -311,9 +316,6 @@ private:
 
     /// Pointer to worker threads
     pthread_t m_threadWork;
-
-
-
 
 };
 

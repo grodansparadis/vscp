@@ -45,7 +45,7 @@
 
 #include "canal_xmlconfig.h"
 
-#include <climits>
+#include <limits>
 #include <cfloat>
 
 // Uncomment to get some debug info
