@@ -222,8 +222,7 @@ VscpRemoteTcpIf::doCommand(const std::string& cmd)
     doClrInputQueue();
 
     int n;
-    if (0 == (n = stcp_write(m_conn, (const char*)cmd.c_str(), cmd.length())) ||
-        n != (int)cmd.length()) {
+    if (0 == (n = stcp_write(m_conn, (const char*)cmd.c_str(), cmd.length())) || n != (int)cmd.length()) {
         return VSCP_ERROR_ERROR;
     }
 
