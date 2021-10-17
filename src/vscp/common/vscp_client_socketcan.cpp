@@ -126,11 +126,11 @@ vscpClientSocketCan::vscpClientSocketCan()
     m_bDebug     = false;
     m_bConnected = false;  // Not connected
     m_threadWork = 0;
-    m_bRun = false;
+    m_bRun = true;
     m_interface    = "vcan0";
     m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
     m_flags = 0;
-    m_socket = -1;
+    //m_socket = -1;
     m_mode = CAN_MTU;
 
     setResponseTimeout(3);  // Response timeout 3 ms
@@ -145,6 +145,7 @@ vscpClientSocketCan::vscpClientSocketCan()
     pthread_mutex_init(&m_mutexSendQueue, NULL);
     pthread_mutex_init(&m_mutexReceiveQueue, NULL);
 
+ /*
     // Init pool
     spdlog::init_thread_pool(8192, 1);
 
@@ -169,6 +170,7 @@ vscpClientSocketCan::vscpClientSocketCan()
     m_path_to_log_file = "/var/log/vscp/vscp-client-socketcan.log";
     m_max_log_size     = 5242880;
     m_max_log_files    = 7;
+*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,8 +235,8 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     m_j_config = json::parse(config);
 
     // SocketCAN interface
-    if (m_j_config.contains("interface")) {
-      m_interface = m_j_config["interface"].get<std::string>();
+    if (m_j_config.contains("device")) {
+      m_interface = m_j_config["device"].get<std::string>();
       spdlog::debug("json socketcan init: interface set to {}.", m_interface);
     }
 
@@ -252,6 +254,7 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
 
     }
 
+/*
     // Logging
     if (m_j_config.contains("logging") && m_j_config["logging"].is_object()) {
 
@@ -505,7 +508,7 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     // The separate sub loggers will handle trace levels
     logger->set_level(spdlog::level::trace);
     spdlog::register_logger(logger);
-
+*/
 
     // Filter
     if (m_j_config.contains("filter") && m_j_config["filter"].is_object()) {
@@ -596,8 +599,9 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
 
   int vscpClientSocketCan::connect(void)
   {
-    int rv = CANAL_ERROR_SUCCESS;
+    int rv = VSCP_ERROR_SUCCESS;
 
+/*
     // open the socket 
     if ( (m_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0 )  {
         return CANAL_ERROR_SOCKET_CREATE;
@@ -611,7 +615,8 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
-        return CANAL_ERROR_CONVERT_NAME_TO_INDEX;
+        spdlog::error("Cant get socketcan index from {0}", m_interface);
+        return VSCP_ERROR_ERROR;
     }
 
     addr.can_family = AF_CAN;
@@ -620,28 +625,30 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     if (CANFD_MTU == m_mode) {
         // check if the frame fits into the CAN netdevice 
         if (ioctl(m_socket, SIOCGIFMTU, &ifr) < 0) {
-            return CANAL_ERROR_MTU;
+            spdlog::error("FD MTU does not fit for {0}", m_interface);
+            return VSCP_TYPE_ERROR_FIFO_SIZE;
         }
 
         mtu = ifr.ifr_mtu;
 
         if (mtu != CANFD_MTU) {
-            return CANAL_ERROR_FD_SUPPORT;
+            spdlog::error("CAN FD mode is not supported for {0}", m_interface);
+            return VSCP_ERROR_NOT_SUPPORTED;
         }
 
-        /* interface is ok - try to switch the socket into CAN FD mode */
+        // interface is ok - try to switch the socket into CAN FD mode
         if (setsockopt(m_socket, 
                             SOL_CAN_RAW, 
                             CAN_RAW_FD_FRAMES,
                             &enable_canfd, 
                             sizeof(enable_canfd))) 
         {
-            
-            return CANAL_ERROR_FD_SUPPORT_ENABLE;
+            spdlog::error("Failed to switch socket to FD mode {0}", m_interface);
+            return VSCP_ERROR_NOT_SUPPORTED;
         }
 
     }
-
+*/
     //const int timestamping_flags = (SOF_TIMESTAMPING_SOFTWARE | \
     //    SOF_TIMESTAMPING_RX_SOFTWARE | \
     //    SOF_TIMESTAMPING_RAW_HARDWARE);
@@ -651,13 +658,13 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     //    perror("setsockopt SO_TIMESTAMPING is not supported by your Linux kernel");
     //}
 
-    ///* disable default receive filter on this RAW socket */
-    ///* This is obsolete as we do not read from the socket at all, but for */
-    ///* this reason we can remove the receive list in the Kernel to save a */
-    ///* little (really a very little!) CPU usage.                          */
+    // disable default receive filter on this RAW socket 
+    // This is obsolete as we do not read from the socket at all, but for 
+    // this reason we can remove the receive list in the Kernel to save a 
+    // little (really a very little!) CPU usage.                          
     //setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, NULL, 0);
 
-
+/*
     struct timeval tv;
     tv.tv_sec = 0;  
     tv.tv_usec = getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
@@ -665,6 +672,12 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
 
     if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         return CANAL_ERROR_SOCKET_BIND;
+    }
+*/
+    // start the workerthread
+    if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
+        spdlog::critical("Failed to start workerthread");
+        return false;
     }
 
     return rv;
@@ -682,9 +695,10 @@ int vscpClientSocketCan::disconnect(void)
     }
 
     m_bRun = false; // terminate the thread
+    // Wait for workerthread to to terminate
     pthread_join(m_threadWork, NULL);
     
-    ::close(m_socket);
+    //::close(m_socket);
     m_bConnected = false;
     return CANAL_ERROR_SUCCESS;
 }
@@ -725,9 +739,9 @@ int vscpClientSocketCan::send(vscpEvent &ev)
         socket_mode = 1;
     }
     /* send frame */
-    if (::write(m_socket, &frame, int(socket_mode)) != int(socket_mode)) {
-        return VSCP_ERROR_WRITE_ERROR;
-    }
+    //if (::write(m_socket, &frame, int(socket_mode)) != int(socket_mode)) {
+    //    return VSCP_ERROR_WRITE_ERROR;
+    //}
 
     return VSCP_ERROR_WRITE_ERROR;
 }
@@ -891,6 +905,22 @@ uint32_t vscpClientSocketCan::getResponseTimeout(void)
     return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// sendToCallbacks
+//
+
+void vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
+{
+    if (nullptr != m_evcallback) {
+        m_evcallback(pev, m_callbackObject);
+    }
+
+    if (nullptr != m_excallback) {
+        vscpEventEx ex;
+        vscp_convertEventToEventEx(&ex, pev);
+        m_excallback(&ex, m_callbackObject);
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
@@ -900,7 +930,7 @@ int vscpClientSocketCan::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
 {
     // Can not be called when connected
     if ( m_bConnected ) return VSCP_ERROR_ERROR;
-
+    m_evcallback = m_evcallback;
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -912,7 +942,7 @@ int vscpClientSocketCan::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 {
     // Can not be called when connected
     if ( m_bConnected ) return VSCP_ERROR_ERROR;
-
+    m_excallback = m_excallback;
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -925,7 +955,7 @@ void *
 workerThread(void *pData)
 {
   int sock;
-  char devname[IFNAMSIZ + 1];
+  int mtu, enable_canfd = 1;
   fd_set rdfs;
   struct timeval tv;
   struct sockaddr_can addr;
@@ -935,15 +965,10 @@ workerThread(void *pData)
   char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
   const int canfd_on = 1;
 
-  vscpClientSocketCan *pObj = (vscpClientSocketCan *) pData;
+  vscpClientSocketCan *pObj = (vscpClientSocketCan *)pData;
   if (NULL == pObj) {
     spdlog::error("No object data object supplied for worker thread");
     return NULL;
-  }
-
-  strncpy(devname, pObj->m_interface.c_str(), sizeof(devname) - 1);
-  if (pObj->m_bDebug) {
-    spdlog::debug("wrkthread socketcan client: Interface: '{}'", pObj->m_interface);
   }
 
   while (pObj->m_bRun) {
@@ -960,8 +985,14 @@ workerThread(void *pData)
       break;
     }
 
-    strcpy(ifr.ifr_name, devname);
-    ioctl(sock, SIOCGIFINDEX, &ifr);
+    strncpy(ifr.ifr_name, pObj->m_interface.c_str(), IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+    ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
+    if (!ifr.ifr_ifindex) {
+        spdlog::error("Cant get socketcan index from {0}", pObj->m_interface);
+        return NULL;
+    }
+    //ioctl(sock, SIOCGIFINDEX, &ifr);
 
     addr.can_family  = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
@@ -971,13 +1002,49 @@ workerThread(void *pData)
     }
 
     // try to switch the socket into CAN FD mode
-    setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
+    //setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
+
+    if (CANFD_MTU == pObj->m_mode) {
+
+      // check if the frame fits into the CAN netdevice
+      if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+          spdlog::error("FD MTU does not fit for {0}", pObj->m_interface);
+          //return VSCP_TYPE_ERROR_FIFO_SIZE;
+          return NULL;
+      }
+
+      mtu = ifr.ifr_mtu;
+
+      if (mtu != CANFD_MTU) {
+          spdlog::error("CAN FD mode is not supported for {0}", pObj->m_interface);
+          //return VSCP_ERROR_NOT_SUPPORTED;
+          return NULL;
+      }
+
+      // interface is ok - try to switch the socket into CAN FD mode
+      if (setsockopt(sock,
+                          SOL_CAN_RAW,
+                          CAN_RAW_FD_FRAMES,
+                          &enable_canfd,
+                          sizeof(enable_canfd))) {
+          spdlog::error("Failed to switch socket to FD mode {0}", pObj->m_interface);
+          //return VSCP_ERROR_NOT_SUPPORTED;
+          return NULL;
+      }
+
+    }
+
+    struct timeval tv;
+    tv.tv_sec = 0;  
+    tv.tv_usec = pObj->getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 
     if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
       spdlog::error("wrkthread socketcan client: Error in socket bind. Terminating!");
       close(sock);
       sleep(2);
-      continue;
+      //continue;
+      return NULL;
     }
 
     bool bInnerLoop = true;
@@ -1030,12 +1097,12 @@ workerThread(void *pData)
         frame.can_id &= CAN_EFF_MASK;
 
         vscpEvent *pEvent = new vscpEvent();
-        if (NULL != pEvent) {
+        if (nullptr != pEvent) {
 
           // This can lead to level I frames having to
           // much data. Later code will handel this case.
           pEvent->pdata = new uint8_t[frame.len];
-          if (NULL == pEvent->pdata) {
+          if (nullptr == pEvent->pdata) {
             delete pEvent;
             continue;
           }
@@ -1053,15 +1120,29 @@ workerThread(void *pData)
 
           // Copy data if any
           pEvent->sizeData = frame.len;
-          if (frame.len) {
+          if (frame.len) {              
             memcpy(pEvent->pdata, frame.data, frame.len);
           }
 
           if (vscp_doLevel2Filter(pEvent, &pObj->m_filterIn)) {
-            pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
-            pObj->m_receiveList.push_back(pEvent);
-            sem_post(&pObj->m_semReceiveQueue);
-            pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
+
+            if (nullptr != pObj->m_evcallback) {
+                pObj->m_evcallback(pEvent, pObj->m_callbackObject);
+            }
+
+            if (nullptr != pObj->m_excallback) {
+                vscpEventEx ex;
+                if (vscp_convertEventToEventEx(&ex, pEvent) ) {
+                    pObj->m_excallback(&ex, pObj->m_callbackObject);
+                }
+            }
+
+            if ((nullptr != pObj->m_evcallback) && (nullptr != pObj->m_excallback)) {
+                pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
+                pObj->m_receiveList.push_back(pEvent);
+                sem_post(&pObj->m_semReceiveQueue);
+                pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
+            }
           }
           else {
             vscp_deleteEvent(pEvent);
