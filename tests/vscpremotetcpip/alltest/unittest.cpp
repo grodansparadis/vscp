@@ -21,12 +21,6 @@
 #include <vscpremotetcpif.h>
 #include <vscphelper.h>
 
-// uint8_t iv4[5] = {0xae,0xC6,0xA7,0xE2,0xA4};
-// ASSERT_EQ(-21489.320312f, vscp_getMeasurementAsFloat(iv4, 5));
-// ASSERT_NE(-21489.320312, vscp_getMeasurementAsFloat(iv4, 5));
-// ASSERT_NE(-1, vscp_getMeasurementAsFloat(iv4, 5));
-// ASSERT_NE(0, vscp_getMeasurementAsFloat(iv4, 5));
-
 // If TEST_LOCAL is defined all tests are run also against a local machine
 //#define TEST_LOCAL 
 
@@ -459,6 +453,7 @@ TEST(VscpRemoteTcpIf, PollingTestEv)
         break;
       }
     }
+    elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - begin);
   } while (elapsed.count() < 70);
 
   EXPECT_TRUE(cnt >= 4) << "Expected four or more events received";
@@ -492,45 +487,10 @@ TEST(VscpRemoteTcpIf, PollingTestEx)
         break;
       }
     }
+    elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - begin);
   } while (elapsed.count() < 70);
 
   EXPECT_TRUE(cnt >= 4) << "Expected four or more events received";
-
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
-}
-
-//-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, PollingTestExInifinite) 
-{ 
-  const char *pHost = (char *)INTERFACE1_HOST;
-  const char *pUser = (char *)INTERFACE1_USER;
-  const char *pPassword = (char *)INTERFACE1_PASSWORD;
-
-  VscpRemoteTcpIf vscpif;
-
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, pUser, pPassword));
-
-  // Start measuring time
-  std::chrono::seconds elapsed = std::chrono::seconds::zero();
-  auto begin = std::chrono::high_resolution_clock::now();
-  int cnt = 0;
-  int rv;
-
-  do {
-    if (rv = vscpif.doCmdDataAvailable()) {
-      vscpEventEx ex;
-      ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
-      printf("Received Event\n");
-
-      cnt++;
-      printf("cnt=%d",cnt);
-
-      //vscpif.doCmdClear();
-    }
-    else {
-      printf("rv=%d\n", rv);
-    }
-  } while (true); 
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
 }
