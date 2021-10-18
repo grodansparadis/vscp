@@ -171,7 +171,7 @@ TEST(VscpRemoteTcpIf, PollingTestExForOneHour)
     }
 
     elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - begin);
-    if (elapsed.count % 60) {
+    if (elapsed.count() % 60) {
       printf("Elapsed time %d", (int)elapsed.count() );
     }
 
