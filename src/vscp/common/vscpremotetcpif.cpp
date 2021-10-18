@@ -284,20 +284,14 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
   // in the read buffer.
 
   // Get rest string that should not be handled now
-  try {
-    size_t fpos = m_strResponse.find_last_of('\n');
-    if (std::string::npos == fpos) {
-      tempStr = m_strResponse; // first CR not found at end of input
-    }
-    else {
-      tempStr = m_strResponse.substr(fpos + 1); // "+OK - Success" or other command response
-    }
+  size_t fpos = m_strResponse.find_last_of('\n');
+  if (std::string::npos == fpos) {
+    tempStr = m_strResponse; // first CR not found at end of input
   }
-  catch (...) {
-    m_inputStrArray.clear();
-    return 0;
+  else {
+    tempStr = m_strResponse.substr(fpos + 1); // "+OK - Success" or other command response
   }
-
+ 
   // Get the string that should be parsed for inclusion in the string array
   std::string strToArray = m_strResponse.substr(0, m_strResponse.length() - tempStr.length());
 
@@ -418,7 +412,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   port = (int) vscp_readStringValue(tokens.front());
   tokens.pop_front();
 
-  m_conn = stcp_connect_remote((const char *) host.c_str(), port, m_connectionTimeOut);
+  m_conn = stcp_connect_remote((const char *)host.c_str(), port, m_connectionTimeOut);
   if (NULL == m_conn) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER
@@ -760,8 +754,6 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
   if (NULL == pEvent) {
     return VSCP_ERROR_PARAMETER;
   }
-
-  
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
     return VSCP_ERROR_PARAMETER;

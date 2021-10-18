@@ -3555,11 +3555,11 @@ int
 stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
 {
     if ( len > INT_MAX ) {
-        len = INT_MAX;
+      len = INT_MAX;
     }
 
     if ( ( conn == NULL ) || ( NULL == buf ) ) {
-        return -1; 
+      return -1; 
     }
     
     memset( buf, 0, len );

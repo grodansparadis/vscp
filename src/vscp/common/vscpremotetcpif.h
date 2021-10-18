@@ -83,29 +83,33 @@
 
     This is the overall time to wait for a +OK respose.
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT 2000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000  // ms
+
+/*!
+*   Default connect timeout
+*/
+#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   15    // Seconds
 
 /*!
     @def DEFAULT_INNER_RESPONSE_TIMEOUT
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT 0
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
 
-#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP 0 // TODO remove !!!!!!!!!
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define TCPIP_REGISTER_READ_RESEND_TIMEOUT 1000
-#define TCPIP_REGISTER_READ_ERROR_TIMEOUT 5000
-#define TCPIP_REGISTER_READ_MAX_TRIES 3
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT      1000
+#define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
+#define TCPIP_REGISTER_READ_MAX_TRIES           3
 
-#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS 15 // Seconds
+
 /*!
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION 0x000f0002      // 15.0.2
+#define TCPIP_DLL_VERSION                       0x000f0002      // 15.0.2
 /*!
     @def TCPIP_VENDOR_STRING
     Vendor string
