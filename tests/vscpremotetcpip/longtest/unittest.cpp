@@ -142,7 +142,7 @@ int sendEventExFromOtherSession(const char *host,
 
 
 //-----------------------------------------------------------------------------
-TEST(VscpRemoteTcpIf, PollingTestExInifinite) 
+TEST(VscpRemoteTcpIf, PollingTestExForOneHour) 
 { 
   const char *pHost = (char *)INTERFACE1_HOST;
   const char *pUser = (char *)INTERFACE1_USER;
@@ -164,12 +164,17 @@ TEST(VscpRemoteTcpIf, PollingTestExInifinite)
       ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
       printf("Received Event\n");
       cnt++;
-      printf("cnt=%d",cnt);
+      printf("cnt=%d\n",cnt);
     }
     else {
-      ASSERT_EQ(0,rv) << "rv=" << rv << " -1 mans error\n";
+      ASSERT_EQ(0,rv) << "rv=" << rv << " -1 means error\n";
     }
+
     elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - begin);
+    if (elapsed.count % 60) {
+      printf("Elapsed time %d", (int)elapsed.count() );
+    }
+
   } while (elapsed.count() < 3600);
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
