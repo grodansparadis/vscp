@@ -517,7 +517,7 @@ TEST(VscpRemoteTcpIf, PollingTestExInifinite)
   int rv;
 
   do {
-    if (vscpif.doCmdDataAvailable()) {
+    if (rv = vscpif.doCmdDataAvailable()) {
       vscpEventEx ex;
       ASSERT_EQ(VSCP_ERROR_SUCCESS, (rv = vscpif.doCmdReceiveEx(&ex)));
       printf("Received Event\n");
@@ -525,12 +525,12 @@ TEST(VscpRemoteTcpIf, PollingTestExInifinite)
       cnt++;
       printf("cnt=%d",cnt);
 
-      vscpif.doCmdClear();
+      //vscpif.doCmdClear();
     }
     else {
-      printf(".\n");
+      printf("rv=%d\n", rv);
     }
-  } while (elapsed.count() < 3600);
+  } while (true); 
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, vscpif.doCmdClose());
 }
