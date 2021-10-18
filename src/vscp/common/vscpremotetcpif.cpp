@@ -134,12 +134,12 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
       if (STCP_ERROR_TIMEOUT == nRead) {
         // rv = VSCP_ERROR_TIMEOUT;
         rv = false;
-        break;
+        return rv;
       }
       else if (STCP_ERROR_STOPPED == nRead) {
         // rv = VSCP_ERROR_STOPPED;
         rv = false;
-        break;
+        return rv;
       }
       break;
     }
@@ -296,19 +296,23 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
   m_strResponse = tempStr;
 
   // Parse the array string
-  std::deque<std::string> tokens;
-  vscp_split(tokens, strToArray, "\n");
-  while (tokens.size()) {
-    // Get line
-    std::string str = tokens.front();
-    tokens.pop_front();
+  try {
+    std::deque<std::string> tokens;
+    vscp_split(tokens, strToArray, "\n");
+    while (tokens.size()) {
+      // Get line
+      std::string str = tokens.front();
+      tokens.pop_front();
 
-    vscp_trim(str);
-
-    // Save line of not just whitespace
-    if (str.length()) {
-      m_inputStrArray.push_back(str);
+      // Save line of not just whitespace
+      vscp_trim(str);
+      if (str.length()) {
+        m_inputStrArray.push_back(str);
+      }
     }
+  }
+  catch (...) {
+    std::cout << "Exception in addInputStringArrayFromReply";
   }
 
   return m_inputStrArray.size();
