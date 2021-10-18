@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+211015 AKHE Fixed bug in session handler.
 211015 AKHE  Fixed bug in doCmdReceiveEx which cause VSCP_ERROR_PARAMETER to be returned also on OK received event.
 211114 AKHE  doCmdDataAvailable did not handle error return correctly.
 211114 AKHE  fix: Now init tcp/ip network layer in session init on windows.

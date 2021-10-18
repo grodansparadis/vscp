@@ -132,14 +132,14 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 #endif
     if (nRead < 0) {
       if (STCP_ERROR_TIMEOUT == nRead) {
-        // rv = VSCP_ERROR_TIMEOUT;
+        // VSCP_ERROR_TIMEOUT;
         rv = false;
-        return rv;
+        break;
       }
       else if (STCP_ERROR_STOPPED == nRead) {
-        // rv = VSCP_ERROR_STOPPED;
+        // VSCP_ERROR_STOPPED;
         rv = false;
-        return rv;
+        break;
       }
       break;
     }
@@ -182,7 +182,7 @@ int
 VscpRemoteTcpIf::rcvloopRead(int timeout)
 {
   // bool rv = false;
-  char buf[8192];
+  char buf[0xffff];
 
   memset(buf, 0, sizeof(buf));
   int nRead = stcp_read(m_conn, buf, sizeof(buf), timeout);
@@ -281,12 +281,18 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
   // in the read buffer.
 
   // Get rest string that should not be handled now
-  size_t fpos = m_strResponse.find_last_of('\n');
-  if (std::string::npos == fpos) {
-    tempStr = m_strResponse; // first CR not found at end of input
+  try {
+    size_t fpos = m_strResponse.find_last_of('\n');
+    if (std::string::npos == fpos) {
+      tempStr = m_strResponse; // first CR not found at end of input
+    }
+    else {
+      tempStr = m_strResponse.substr(fpos + 1); // "+OK - Success" or other command response
+    }
   }
-  else {
-    tempStr = m_strResponse.substr(fpos + 1); // "+OK - Success" or other command response
+  catch (...) {
+    m_inputStrArray.clear();
+    return 0;
   }
 
   // Get the string that should be parsed for inclusion in the string array
@@ -296,23 +302,18 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
   m_strResponse = tempStr;
 
   // Parse the array string
-  try {
-    std::deque<std::string> tokens;
-    vscp_split(tokens, strToArray, "\n");
-    while (tokens.size()) {
-      // Get line
-      std::string str = tokens.front();
-      tokens.pop_front();
+  std::deque<std::string> tokens;
+  vscp_split(tokens, strToArray, "\n");
+  while (tokens.size()) {
+    // Get line
+    std::string str = tokens.front();
+    tokens.pop_front();
 
-      // Save line of not just whitespace
-      vscp_trim(str);
-      if (str.length()) {
-        m_inputStrArray.push_back(str);
-      }
-    }
-  }
-  catch (...) {
-    std::cout << "Exception in addInputStringArrayFromReply";
+    // Save line of not just whitespace
+    vscp_trim(str);
+    if (str.length()) {
+      m_inputStrArray.push_back(str);
+     }
   }
 
   return m_inputStrArray.size();
