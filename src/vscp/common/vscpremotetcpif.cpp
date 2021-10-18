@@ -276,6 +276,9 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
     m_inputStrArray.clear();
   }
 
+  if (!m_strResponse.length())
+    return 0;
+
   // If readBuffer have a "\r\n" pair at the end it just contains full
   // reply rows. If not we need to leave ending part after "\r\n" pair
   // in the read buffer.
@@ -714,6 +717,10 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
     return VSCP_ERROR_ERROR;
   }
 
+  if (!m_inputStrArray.size()) {
+    return VSCP_ERROR_ERROR;
+  }
+
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
     return VSCP_ERROR_PARAMETER;
   }
@@ -745,10 +752,16 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
     return VSCP_ERROR_ERROR;
   }
 
+  if (!m_inputStrArray.size()) {
+    return VSCP_ERROR_ERROR;
+  }
+
   vscpEvent *pEvent = new vscpEvent;
   if (NULL == pEvent) {
     return VSCP_ERROR_PARAMETER;
   }
+
+  
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
     return VSCP_ERROR_PARAMETER;
