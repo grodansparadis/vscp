@@ -3513,6 +3513,8 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
       nread += n;
     }
     else {
+      // (nread > 0) is always false here (https://github.com/BlueAndi)
+      // TODO: check if this is still required in next major version
       nread = ( (nread > 0) ? nread : n); 
      }
 
