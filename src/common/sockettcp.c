@@ -3499,29 +3499,29 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
 {
     int64_t n, nread;
     int64_t len64 =
-            (int64_t) ((len > INT_MAX) ? INT_MAX : len); // since the return value is
-                                                         // int, we may not read more
-	                                                     // bytes
+            (int64_t) ((len > INT_MAX) ? INT_MAX : len);  // since the return value is
+                                                          // int, we may not read more
+	                                                        // bytes
     if ( conn == NULL ) {
-        return -1;
+      return -1;
     }
 
     nread = 0;
     
     // Read new data from the remote socket.
     if ( ( n = stcp_pull_all( NULL, conn, (char *)buf, (int)len64, mstimeout ) ) >= 0 ) {
-        nread += n;
+      nread += n;
     }
     else {
-        nread = ( (nread > 0) ? nread : n); 
+      nread = ( (nread > 0) ? nread : n); 
      }
 
     // Disconnected=
     if ( -2 == nread) {
-        if (errno == EPIPE ) {  // Broken pipe
-            conn->conn_state = STCP_CONN_STATE_UNDEFINED;
-        }
-    }
+      if (errno == EPIPE ) {  // Broken pipe
+          conn->conn_state = STCP_CONN_STATE_UNDEFINED;
+      }
+  }
 
     return (int)nread;
 

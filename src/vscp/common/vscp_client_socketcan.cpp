@@ -130,11 +130,11 @@ vscpClientSocketCan::vscpClientSocketCan()
     m_interface    = "vcan0";
     m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
     m_flags = 0;
-    //m_socket = -1;
+    m_socket = -1;
     m_mode = CAN_MTU;
 
     setResponseTimeout(3);  // Response timeout 3 ms
-    pthread_mutex_init(&m_mutexif,NULL);
+    pthread_mutex_init(&m_mutexSocket, NULL);
 
     vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
     vscp_clearVSCPFilter(&m_filterOut); // Send all events
@@ -180,7 +180,7 @@ vscpClientSocketCan::vscpClientSocketCan()
 vscpClientSocketCan::~vscpClientSocketCan() 
 {
     disconnect();
-    pthread_mutex_destroy(&m_mutexif);
+    pthread_mutex_destroy(&m_mutexSocket);
 
     sem_destroy(&m_semSendQueue);
     sem_destroy(&m_semReceiveQueue);
@@ -675,6 +675,7 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
     }
 */
     // start the workerthread
+    m_bRun = true;    // Workerthread should run, run, run...
     if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
         spdlog::critical("Failed to start workerthread");
         return false;
@@ -718,6 +719,10 @@ bool vscpClientSocketCan::isConnected(void)
 
 int vscpClientSocketCan::send(vscpEvent &ev)
 {
+    if (m_socket <= 0) {
+        return VSCP_ERROR_WRITE_ERROR;
+    }
+
     canalMsg canalMsg;
     if ( !vscp_convertEventToCanal(&canalMsg, &ev ) ) {
         return VSCP_ERROR_PARAMETER;    
@@ -726,24 +731,27 @@ int vscpClientSocketCan::send(vscpEvent &ev)
     struct canfd_frame frame;
     memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0 
     
-    //convert CanFrame to canfd_frame
+    // convert CanFrame to canfd_frame
     frame.can_id = canalMsg.id;
+    frame.can_id |= CAN_EFF_FLAG;
     frame.len = canalMsg.sizeData;
-    //frame.flags = canalMsg.flags;
+    frame.flags = canalMsg.flags;
     memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
-    int socket_mode = 0;
     if (m_flags & FLAG_FD_MODE) {
-        // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64 
+        // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
         frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
-        socket_mode = 1;
     }
-    /* send frame */
-    //if (::write(m_socket, &frame, int(socket_mode)) != int(socket_mode)) {
-    //    return VSCP_ERROR_WRITE_ERROR;
-    //}
 
-    return VSCP_ERROR_WRITE_ERROR;
+    // send the frame
+    pthread_mutex_lock(&m_mutexSocket);
+    if ( -1 == write(m_socket, &frame, sizeof(struct can_frame)) ) {
+        pthread_mutex_unlock(&m_mutexSocket);
+        return VSCP_ERROR_WRITE_ERROR;
+    }
+    pthread_mutex_unlock(&m_mutexSocket);
+
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -752,12 +760,39 @@ int vscpClientSocketCan::send(vscpEvent &ev)
 
 int vscpClientSocketCan::send(vscpEventEx &ex)
 {
+    if (m_socket <= 0) {
+        return VSCP_ERROR_WRITE_ERROR;
+    }
+
     canalMsg canalMsg;
     if ( !vscp_convertEventExToCanal(&canalMsg, &ex ) ) {
         return VSCP_ERROR_PARAMETER;    
     }
 
-    return 0; //m_canalif.CanalSend(&canalMsg);
+    struct canfd_frame frame;
+    memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0
+
+    // convert CanFrame to canfd_frame
+    frame.can_id = canalMsg.id;
+    frame.can_id |= CAN_EFF_FLAG;
+    frame.len = canalMsg.sizeData;
+    frame.flags = canalMsg.flags;
+    memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
+
+    if (m_flags & FLAG_FD_MODE) {
+        // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
+        frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
+    }
+
+    // send the frame
+    pthread_mutex_lock(&m_mutexSocket);
+    if ( -1 == write(m_socket, &frame, sizeof(struct can_frame)) ) {
+        pthread_mutex_unlock(&m_mutexSocket);
+        return VSCP_ERROR_WRITE_ERROR;
+    }
+    pthread_mutex_unlock(&m_mutexSocket);
+
+    return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -948,13 +983,12 @@ int vscpClientSocketCan::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CSocketcanWorkerTread
+//                     Workerthread - Read
 //////////////////////////////////////////////////////////////////////
 
 void *
 workerThread(void *pData)
 {
-  int sock;
   int mtu, enable_canfd = 1;
   fd_set rdfs;
   struct timeval tv;
@@ -973,12 +1007,14 @@ workerThread(void *pData)
 
   while (pObj->m_bRun) {
 
-    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if (sock < 0) {
+    pthread_mutex_lock(&pObj->m_mutexSocket);
+    pObj->m_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (pObj->m_socket < 0) {
 
       if (ENETDOWN == errno) {
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
         sleep(1);
-        continue;
+        continue;   // Try again
       }
 
       spdlog::error("wrkthread socketcan client: Error while opening socket. Terminating!");
@@ -989,10 +1025,11 @@ workerThread(void *pData)
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
         spdlog::error("Cant get socketcan index from {0}", pObj->m_interface);
         return NULL;
     }
-    //ioctl(sock, SIOCGIFINDEX, &ifr);
+    //ioctl(pObj->m_socket, SIOCGIFINDEX, &ifr);
 
     addr.can_family  = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
@@ -1002,12 +1039,13 @@ workerThread(void *pData)
     }
 
     // try to switch the socket into CAN FD mode
-    //setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
+    //setsockopt(pObj->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
 
     if (CANFD_MTU == pObj->m_mode) {
 
       // check if the frame fits into the CAN netdevice
-      if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
+      if (ioctl(pObj->m_socket, SIOCGIFMTU, &ifr) < 0) {
+          pthread_mutex_unlock(&pObj->m_mutexSocket);
           spdlog::error("FD MTU does not fit for {0}", pObj->m_interface);
           //return VSCP_TYPE_ERROR_FIFO_SIZE;
           return NULL;
@@ -1016,17 +1054,19 @@ workerThread(void *pData)
       mtu = ifr.ifr_mtu;
 
       if (mtu != CANFD_MTU) {
+          pthread_mutex_unlock(&pObj->m_mutexSocket);
           spdlog::error("CAN FD mode is not supported for {0}", pObj->m_interface);
           //return VSCP_ERROR_NOT_SUPPORTED;
           return NULL;
       }
 
       // interface is ok - try to switch the socket into CAN FD mode
-      if (setsockopt(sock,
+      if (setsockopt(pObj->m_socket,
                           SOL_CAN_RAW,
                           CAN_RAW_FD_FRAMES,
                           &enable_canfd,
                           sizeof(enable_canfd))) {
+          pthread_mutex_unlock(&pObj->m_mutexSocket);
           spdlog::error("Failed to switch socket to FD mode {0}", pObj->m_interface);
           //return VSCP_ERROR_NOT_SUPPORTED;
           return NULL;
@@ -1034,14 +1074,16 @@ workerThread(void *pData)
 
     }
 
+    pthread_mutex_unlock(&pObj->m_mutexSocket);
+
     struct timeval tv;
     tv.tv_sec = 0;  
     tv.tv_usec = pObj->getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
+    setsockopt(pObj->m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 
-    if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    if (bind(pObj->m_socket, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
       spdlog::error("wrkthread socketcan client: Error in socket bind. Terminating!");
-      close(sock);
+      close(pObj->m_socket);
       sleep(2);
       //continue;
       return NULL;
@@ -1051,13 +1093,13 @@ workerThread(void *pData)
     while (pObj->m_bRun && bInnerLoop) {
 
       FD_ZERO(&rdfs);
-      FD_SET(sock, &rdfs);
+      FD_SET(pObj->m_socket, &rdfs);
 
       tv.tv_sec  = 0;
       tv.tv_usec = 5000; // 5ms timeout
 
       int ret;
-      if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
+      if ((ret = select(pObj->m_socket + 1, &rdfs, NULL, NULL, &tv)) < 0) {
         // Error
         if (ENETDOWN == errno) {
           // We try to get contact with the net
@@ -1074,8 +1116,11 @@ workerThread(void *pData)
 
         // There is data to read
 
-        ret = read(sock, &frame, sizeof(struct can_frame));
+        pthread_mutex_lock(&pObj->m_mutexSocket);
+
+        ret = read(pObj->m_socket, &frame, sizeof(struct can_frame));
         if (ret < 0) {
+          pthread_mutex_unlock(&pObj->m_mutexSocket);
           if (ENETDOWN == errno) {
             // We try to get contact with the net
             // again if it goes down
@@ -1087,6 +1132,8 @@ workerThread(void *pData)
           }
           continue;
         }
+
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
 
         // Must be Extended
         if (!(frame.can_id & CAN_EFF_FLAG)) {
@@ -1192,7 +1239,7 @@ workerThread(void *pData)
           pthread_mutex_unlock(&pObj->m_mutexSendQueue);
 
           // Write the data
-          int nbytes = write(sock, &frame, sizeof(struct can_frame));
+          int nbytes = write(pObj->m_socket, &frame, sizeof(struct can_frame));
 
         } // event to send
 
@@ -1201,270 +1248,12 @@ workerThread(void *pData)
     } // Inner loop
 
     // Close the socket
-    close(sock);
+    close(pObj->m_socket);
 
   } // Outer loop
 
   return NULL;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Workerthread
-//
-// This thread call the appropriate callback when events are received
-//
 
-
-// static void *workerThread(void *pObj)
-// {
-//     uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//     vscpClientSocketCan *pClient = (vscpClientSocketCan *)pObj;
-//     VscpCanalDeviceIf *pif = (VscpCanalDeviceIf *)&(pClient->m_canalif);
-
-//     if (NULL == pif) return NULL;
-
-//     while (pClient->m_bRun) {
-
-//         //pthread_mutex_lock(&pif->m_mutexif);
-        
-//         // Check if there are events to fetch
-//         int cnt;
-//         if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
-
-//             while (cnt) {
-//                 canalMsg msg;
-//                 if ( CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalReceive(&msg) ) {
-//                     if ( NULL != pClient->m_evcallback ) {
-//                         vscpEvent ev;
-//                         if (vscp_convertCanalToEvent(&ev,
-//                                                         &msg,
-//                                                         guid) ) {
-//                             pClient->m_evcallback(&ev);
-//                         }
-//                     }
-//                     if ( NULL != pClient->m_excallback ) {
-//                         vscpEventEx ex;
-//                         if (vscp_convertCanalToEventEx(&ex,
-//                                                         &msg,
-//                                                         guid) ) {
-//                             pClient->m_excallback(&ex);
-//                         }
-//                     }
-//                 }
-//                 cnt--;
-//             }
-
-//         }
-
-//         //pthread_mutex_unlock(&pif->m_mutexif);
-//         usleep(200);
-//     }
-
-//     return NULL;
-// }
-
-// void *workerThread(void *pData)
-// {
-//     int sock;
-//     char devname[IFNAMSIZ + 1];
-//     fd_set rdfs;
-//     struct timeval tv;
-//     struct sockaddr_can addr;
-//     struct ifreq ifr;
-//     struct cmsghdr *cmsg;
-//     struct canfd_frame frame;
-//     char
-//       ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-//     const int canfd_on = 1;
-
-//     vscpClientSocketCan *pObj = (vscpClientSocketCan *)pData;
-//     if (NULL == pObj) {
-//         //syslog(LOG_ERR, "No object data supplied for worker thread");
-//         return NULL;
-//     }
-
-//     strncpy(devname, pObj->m_interface.c_str(), sizeof(devname) - 1);
-
-//     while (pObj->m_bRun) {
-
-//         sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-//         if (sock < 0) {
-
-//             if (ENETDOWN == errno) {
-//                 sleep(1);
-//                 continue;   // We try again
-//             }
-
-//             if (pObj->m_flags & pObj->FLAG_ENABLE_DEBUG) {
-//                 syslog(LOG_ERR,
-//                        "%s",
-//                     (const char *)"ReadSocketCanTread: Error while "
-//                                      "opening socket. Terminating!");
-//             }
-//             break;
-//         }
-
-//         strcpy(ifr.ifr_name, devname);
-//         ioctl(sock, SIOCGIFINDEX, &ifr);
-
-//         addr.can_family  = AF_CAN;
-//         addr.can_ifindex = ifr.ifr_ifindex;
-
-// #ifdef DEBUG
-//         printf("using interface name '%s'.\n", ifr.ifr_name);
-// #endif
-
-//         // try to switch the socket into CAN FD mode
-//         setsockopt(
-//           sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
-
-//         if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-//             syslog(LOG_ERR,
-//                    "%s",
-//                    (const char *)"wrkthread socketcan client: Error in socket bind. "
-//                                  "Terminating!");
-//             close(sock);
-//             sleep(2);
-//             continue;
-//         }
-
-//         bool bInnerLoop = true;
-//         while (!pObj->m_bRun && bInnerLoop) {
-
-//             FD_ZERO(&rdfs);
-//             FD_SET(sock, &rdfs);
-
-//             tv.tv_sec  = 0;
-//             tv.tv_usec = 5000; // 5ms timeout
-
-//             int ret;
-//             if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
-//                 // Error
-//                 if (ENETDOWN == errno) {
-//                     // We try to get contact with the net
-//                     // again if it goes down
-//                     bInnerLoop = false;
-//                 } else {
-//                     pObj->m_bRun = false;
-//                 }
-//                 continue;
-//             }
-
-//             if (ret) {
-
-//                 // There is data to read
-
-//                 ret = read(sock, &frame, sizeof(struct can_frame));
-//                 if (ret < 0) {
-//                     if (ENETDOWN == errno) {
-//                         // We try to get contact with the net
-//                         // again if it goes down
-//                         bInnerLoop = false;
-//                         sleep(2);
-//                     } else {
-//                         pObj->m_bRun = false;
-//                     }
-//                     continue;
-//                 }
-
-//                 // Must be Extended
-//                 if (!(frame.can_id & CAN_EFF_FLAG)) continue;
-
-//                 // Mask of control bits
-//                 frame.can_id &= CAN_EFF_MASK;
-
-//                 vscpEvent *pEvent = new vscpEvent();
-//                 if (NULL != pEvent) {
-
-//                     pEvent->pdata = new uint8_t[frame.len];
-//                     if (NULL == pEvent->pdata) {
-//                         delete pEvent;
-//                         continue;
-//                     }
-
-//                     // GUID will be set to GUID of interface
-//                     // by driver interface with LSB set to nickname
-//                     memset(pEvent->GUID, 0, 16);
-//                     pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
-
-//                     // Set VSCP class
-//                     pEvent->vscp_class = vscp_getVscpClassFromCANALid(frame.can_id);
-
-//                     // Set VSCP type
-//                     pEvent->vscp_type = vscp_getVscpTypeFromCANALid(frame.can_id);
-
-//                     // Copy data if any
-//                     pEvent->sizeData = frame.len;
-//                     if (frame.len) {
-//                         memcpy(pEvent->pdata, frame.data, frame.len);
-//                     }
-
-//                     // if (vscp_doLevel2Filter(pEvent, &pObj->m_vscpfilter)) {
-//                     //     pthread_mutex_lock( &pObj->m_mutexReceiveQueue);
-//                     //     pObj->m_receiveList.push_back(pEvent);
-//                     //     sem_post(&pObj->m_semReceiveQueue);
-//                     //     pthread_mutex_unlock( &pObj->m_mutexReceiveQueue);
-//                     // } else {
-//                     //     vscp_deleteVscpEvent(pEvent);
-//                     // }
-//                 }
-
-//             } else {
-
-//                 // Check if there is event(s) to send
-//                 // if (pObj->m_sendList.size()) {
-
-//                 //     // Yes there are data to send
-//                 //     // So send it out on the CAN bus
-
-//                 //     pthread_mutex_lock( &pObj->m_mutexSendQueue);
-//                 //     vscpEvent *pEvent = pObj->m_sendList.front();
-//                 //     pObj->m_sendList.pop_front();
-//                 //     pthread_mutex_unlock( &pObj->m_mutexSendQueue);
-
-//                 //     if (NULL == pEvent) continue;
-
-//                 //     // Class must be a Level I class or a Level II
-//                 //     // mirror class
-//                 //     if (pEvent->vscp_class < 512) {
-//                 //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-//                 //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-//                 //         if (0 != pEvent->sizeData) {
-//                 //             frame.len =
-//                 //               (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-//                 //             memcpy(frame.data, pEvent->pdata, frame.len);
-//                 //         }
-//                 //     } else if (pEvent->vscp_class < 1024) {
-//                 //         pEvent->vscp_class -= 512;
-//                 //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-//                 //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-//                 //         if (0 != pEvent->sizeData) {
-//                 //             frame.len = ((pEvent->sizeData - 16) > 8
-//                 //                            ? 8
-//                 //                            : pEvent->sizeData - 16);
-//                 //             memcpy(frame.data, pEvent->pdata + 16, frame.len);
-//                 //         }
-//                 //     }
-
-//                 //     // Remove the event
-//                 //     pthread_mutex_lock( &pObj->m_mutexSendQueue);
-//                 //     vscp_deleteVSCPevent(pEvent);
-//                 //     pthread_mutex_unlock( &pObj->m_mutexSendQueue);
-
-//                 //     // Write the data
-//                 //     int nbytes = write(sock, &frame, sizeof(struct can_frame));
-
-//                 //} // event to send
-
-//             } // No data to read
-
-//         } // Inner loop
-
-//         // Close the socket
-//         close(sock);
-
-//     } // Outer loop
-
-//     return NULL;
-// }
 

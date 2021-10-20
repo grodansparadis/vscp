@@ -1,29 +1,30 @@
 Change log for the VSCP Daemon
 ==============================
 
+211019 AKHE Updated nlohmann/json to 3.10.4
 211015 AKHE Fixed bug in session handler.
-211015 AKHE  Fixed bug in doCmdReceiveEx which cause VSCP_ERROR_PARAMETER to be returned also on OK received event.
-211114 AKHE  doCmdDataAvailable did not handle error return correctly.
-211114 AKHE  fix: Now init tcp/ip network layer in session init on windows.
-211014 AKHE  Added vscpremoteif test
-211014 AKHE  google test removed as submodule.
-211006 AKHE  Protected som eof the com class calls for Linux
-211006 AKHE  Protected CANAL interface class from failed initializartion of driver.
-211004 AKHE  Fixed error in MQTT client which skips GUID parsing for JSON objects. 
-211004 AKHE  Fixed host/port interface extraction in helper lib
-210922 AKHE  The debug flags of the config file can now be set as a string containing 
+211015 AKHE Fixed bug in doCmdReceiveEx which cause VSCP_ERROR_PARAMETER to be returned also on OK received event.
+211114 AKHE doCmdDataAvailable did not handle error return correctly.
+211114 AKHE fix: Now init tcp/ip network layer in session init on windows.
+211014 AKHE Added vscpremoteif test
+211014 AKHE google test removed as submodule.
+211006 AKHE Protected som eof the com class calls for Linux
+211006 AKHE Protected CANAL interface class from failed initializartion of driver.
+211004 AKHE Fixed error in MQTT client which skips GUID parsing for JSON objects. 
+211004 AKHE Fixed host/port interface extraction in helper lib
+210922 AKHE The debug flags of the config file can now be set as a string containing 
              a hexa decimal representation.
-210922 AKHE  Added -v switch for version display.
-210922 AKHE  Eased permissions a bit for install folders.
-210922 AKHE  All clientid's are empty on install.
-210922 AKHE  Added warning for >23 lenth clientid's. Most brokers accept longer
+210922 AKHE Added -v switch for version display.
+210922 AKHE Eased permissions a bit for install folders.
+210922 AKHE All clientid's are empty on install.
+210922 AKHE Added warning for >23 lenth clientid's. Most brokers accept longer
              clientid's but some do not.
-210922 AKHE  Added trace log messages for mqtt publish
-210922 AKHE  Updated spdlog to 1.9.2
-210922 AKHE  Fixed error messages from mosquitto client. All complaining on disconnect.
-210901 AKHE  Updated nlohmann json parser to version 3.10.2
-210901 AKHE  Updated Civetweb to version 1.15
-210701 AKHE  Protected stod conversions in helper lib that could throw exceptions for invalid strings
-210630 AKHE  Fixed bug in vscp_hexStr2ByteArray 
-210629 AKHE  Path for install of man-pages was wrong. Fixed.
-210628 AKHE  *** Version 15.0.0 ***
+210922 AKHE Added trace log messages for mqtt publish
+210922 AKHE Updated spdlog to 1.9.2
+210922 AKHE Fixed error messages from mosquitto client. All complaining on disconnect.
+210901 AKHE Updated nlohmann json parser to version 3.10.2
+210901 AKHE Updated Civetweb to version 1.15
+210701 AKHE Protected stod conversions in helper lib that could throw exceptions for invalid strings
+210630 AKHE Fixed bug in vscp_hexStr2ByteArray 
+210629 AKHE Path for install of man-pages was wrong. Fixed.
+210628 AKHE *** Version 15.0.0 ***

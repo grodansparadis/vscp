@@ -925,6 +925,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
       if (STCP_ERROR_STOPPED == nRead) {
         stcp_close_connection(m_conn);
+        m_conn = NULL;
         return VSCP_ERROR_STOPPED;
       }
 #ifndef WIN32

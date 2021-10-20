@@ -239,16 +239,17 @@ public:
     /// enable/disable debug output
     bool m_bDebug;
 
-    // Mutex that protect CANAL interface when callbacks are defined
-#ifndef WIN32
-    pthread_mutex_t m_mutexif;
-#endif
-
-    //LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
-    //LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
-
     /// Socketcan interface
     std::string m_interface;
+
+    /// Socket for SocketCan
+    int m_socket;
+
+    /// Protects the socket
+    pthread_mutex_t m_mutexSocket;
+
+    /// CAN mode
+    int m_mode;
 
     /*!
         Flags for interface
@@ -294,17 +295,9 @@ public:
 
     /// Filters for input/output
     vscpEventFilter m_filterIn;
-    vscpEventFilter m_filterOut;
-
-    /// CAN mode
-    int m_mode;
+    vscpEventFilter m_filterOut;    
 
 private:
-
-    /// Socket for SocketCan
-    //int m_socket;
-
-
 
     // JSON configuration
     json m_j_config;
