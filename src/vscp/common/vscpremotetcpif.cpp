@@ -114,7 +114,7 @@ bool
 VscpRemoteTcpIf::checkReturnValue(bool bClear)
 {
   bool rv = false;
-  char buf[8192];
+  char buf[0xffff];
 
   if (bClear) {
     doClrInputQueue();
@@ -276,8 +276,9 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
     m_inputStrArray.clear();
   }
 
-  if (!m_strResponse.length())
+  if (!m_strResponse.length()) {
     return 0;
+  }
 
   // If readBuffer have a "\r\n" pair at the end it just contains full
   // reply rows. If not we need to leave ending part after "\r\n" pair
@@ -286,7 +287,7 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
   // Get rest string that should not be handled now
   size_t fpos = m_strResponse.find_last_of('\n');
   if (std::string::npos == fpos) {
-    tempStr = m_strResponse; // first CR not found at end of input
+    tempStr = m_strResponse;                  // first CR not found at end of input
   }
   else {
     tempStr = m_strResponse.substr(fpos + 1); // "+OK - Success" or other command response
@@ -879,7 +880,7 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 int
 VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 {
-  char buf[8192];
+  char buf[0xffff];
   int nRead;
 
   // Check pointer
