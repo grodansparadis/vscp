@@ -4,6 +4,7 @@
 ![C/C++ CI](https://github.com/grodansparadis/vscp/workflows/C/C++%20CI/badge.svg)
 [![Release](https://img.shields.io/github/release/grodansparadis/vscp.svg)](https://github.com/grodansparadis/vscp/releases)
 [![Travis Build Status](https://api.travis-ci.org/grodansparadis/vscp.svg?branch=master)](https://travis-ci.org/grodansparadis/vscp)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 <img src="https://vscp.org/images/logo.png" width="100">
 
