@@ -19,7 +19,7 @@ Documentation for VSCP is available at [https://docs.vscp.org](https://docs.vscp
 Checkout with 
 
 ```bash
-git clone --recurse-submodules -j8 https://github.com/grodansparadis/vscp.git
+git clone -j8 https://github.com/grodansparadis/vscp.git
 ```
 
 <p>A short introduction to VSCP is available
