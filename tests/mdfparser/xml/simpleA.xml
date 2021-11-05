@@ -1,0 +1,27 @@
+<!--  Copyright C) 2021 Ake Hedman, Grodans Paradis AB  -->
+<!--  <akhe@grodansparadis.com>  -->
+<vscp>
+<module>
+<name>Simple test</name>
+<model>Simple model</model>
+<version>A</version>
+<changed>2021-11-02</changed>
+<description lang="en">    This is an english description</description>
+<infourl lang="en"> https://www.english.en</infourl>
+<description lang="es">Esta es una descripción en inglés</description>
+<infourl lang="es">https://www.spanish.es</infourl>
+<description lang="pt">Esta é uma descrição em inglês</description>
+<infourl lang="pt">https://www.portuguese.pt</infourl>
+<description lang="zh">这是英文说明</description>
+<infourl lang="zh">https://www.chineese.zh</infourl>
+<description lang="se">Det här är en engelsk beskrivning</description>
+<infourl lang="se">https://www.swedish.se</infourl>
+<description lang="lt">Tai yra angliškas aprašymas</description>
+<infourl lang="lt">https://www.lithuanian.lt</infourl>
+<description lang="de">Dies ist eine englische Beschreibung</description>
+<infourl lang="de">https://www.german.de</infourl>
+<description lang="eo">Ĉi tio estas angla priskribo</description>
+<infourl lang="eo">https://www.esperanto.eo</infourl>
+<buffersize>8</buffersize>
+</module>
+</vscp>

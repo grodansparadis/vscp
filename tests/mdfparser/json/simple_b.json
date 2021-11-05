@@ -1,0 +1,14 @@
+{
+  "_copyright": "Copyright C) 2021 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
+
+  "module": {
+    "name": "Simple B test",
+    "model": "Simple B model",
+    "version": "B",
+    "changed": "2021-11-02",
+    "description": "This is an english description",
+    "infourl": "https://www.english.en",
+    "buffersize": 8
+  }
+}
+

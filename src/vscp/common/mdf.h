@@ -605,8 +605,7 @@ public:
     about the device if it is supplied.
   */
 
-  std::string
-  vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
+  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
 
   /*!
     Parse XML formated MDF file
@@ -666,7 +665,7 @@ public:
     Get the number of module names availabel in different languages
     @return Number of names available.
   */
-  size_t getModuleNameSize(void) {return m_mapModule_Name.size();};
+  size_t getModuleNameSize(void) { return m_mapModule_Name.size(); };
 
   /*!
     Get Module description in selected language.
@@ -680,7 +679,7 @@ public:
     Get the number of module descriptions availabel in different languages
     @return Number of descriptions available.
   */
-  size_t getModuleDescriptionSize(void) {return m_mapModule_Description.size();};
+  size_t getModuleDescriptionSize(void) { return m_mapModule_Description.size(); };
 
   /*!
     Get Module info url in selected language.
@@ -694,7 +693,31 @@ public:
     Get the number of module info URL's availabel in different languages
     @return Number of info url's available.
   */
-  size_t getModuleInfoUrlSize(void) {return m_mapModule_InfoURL.size();};
+  size_t getModuleInfoUrlSize(void) { return m_mapModule_InfoURL.size(); };
+
+  /*!
+    Get module change date
+    @return Return string with module change date.
+  */
+  std::string &getModuleChangeDate(void) { return m_strModule_changeDate; };
+
+  /*!
+    Get module version
+    @return Return string with module version.
+  */
+  std::string &getModuleModel(void) { return m_strModule_Model; };
+
+  /*!
+    Get module version
+    @return Return string with module version.
+  */
+  std::string &getModuleVersion(void) { return m_strModule_Version; };
+
+  /*!
+    Get module buffer size
+    @return Buffer size in bytes.
+  */
+  uint16_t getModuleBufferSize(void) { return m_module_bufferSize; };
 
   /*
       Return temporary file path
@@ -704,8 +727,7 @@ public:
 
   // --------------------------------------------------------------------------
 
-  private:
-
+private:
   std::string m_strLocale; // ISO code for requested language
                            // defaults to "en"
 
@@ -723,11 +745,11 @@ public:
   std::map<std::string, std::string> m_mapModule_Description; // Module description
   std::map<std::string, std::string> m_mapModule_InfoURL;     // URL for full module information
 
-  std::string m_changeDate;        // Last date changed
-  std::string m_strModule_Model;   // Module Model
-  std::string m_strModule_Version; // Module version
+  std::string m_strModule_changeDate; // Last date changed
+  std::string m_strModule_Model;      // Module Model
+  std::string m_strModule_Version;    // Module version
 
-  uint16_t m_Module_buffersize; // Buffersize for module
+  uint16_t m_module_bufferSize; // Buffersize for module
 
   std::deque<CMDF_Firmware *> m_firmware; // Firmware file(s)
 
@@ -739,8 +761,7 @@ public:
   std::deque<CMDF_Event *> m_list_event;              // Events this node can generate
   std::deque<CMDF_Register *> m_list_register;        // List with defined registers
   std::deque<CMDF_RemoteVariable *> m_list_remotevar; // List with defined remote variables
-  std::deque<CMDF_Bit *> m_list_alarmbits;            // List with alarm bit defines  
-
+  std::deque<CMDF_Bit *> m_list_alarmbits;            // List with alarm bit defines
 };
 
 #endif

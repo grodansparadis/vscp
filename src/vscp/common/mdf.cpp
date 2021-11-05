@@ -891,8 +891,8 @@ CMDF::clearStorage(void)
   m_strModule_Version.clear();
   m_mapModule_Description.clear();
   m_mapModule_InfoURL.clear();
-  m_changeDate.clear();
-  m_Module_buffersize = 0;
+  m_strModule_changeDate.clear();
+  m_module_bufferSize = 0;
   m_strURL.clear();
   m_list_manufacturer.clear();
   m_dmInfo.clearStorage();
@@ -1269,7 +1269,7 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 
     // Manufacturer data
     strHTML += "<b>Module name :</b> ";
-    strHTML += pmdf->m_Module_Name["en"]; // TODO Make language aware
+    strHTML += pmdf->m_mapModule_Name["en"]; // TODO Make language aware
     strHTML += "<br>";
 
     strHTML += "<b>Module model:</b> ";
@@ -1280,7 +1280,7 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += pmdf->m_strModule_Version;
 
     strHTML += "<b>Module last change:</b> ";
-    strHTML += pmdf->m_changeDate;  
+    strHTML += pmdf->m_strModule_changeDate;  
     strHTML += "<br>";
 
     strHTML += "<b>Module description:</b> ";
@@ -1562,7 +1562,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
     }
     else if (gtoken == "changed") {
       spdlog::trace("ParseMDF: Module Changedate: {0}", strContent);
-      pmdf->m_changeDate = strContent;
+      pmdf->m_strModule_changeDate = strContent;
     }
     else if (gtoken == "description") {
       spdlog::trace("ParseMDF: Module Description: {0} language: {1}", strContent, gLastLanguage);
@@ -1575,7 +1575,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
     }
     else if (gtoken == "buffersize") {
       spdlog::trace("ParseMDF: Module buffer size: {0}", strContent);
-      pmdf->m_Module_buffersize = vscp_readStringValue(strContent);
+      pmdf->m_module_bufferSize = vscp_readStringValue(strContent);
     }
   }
   // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix, events

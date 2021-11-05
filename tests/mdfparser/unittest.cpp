@@ -39,12 +39,37 @@ TEST(parseMDF, Simple_XML_A)
   std::string path = "xml/simpleA.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  // Check descriptions
-  ASSERT_EQ(8, mdf.getModuleNameSize());
+  // Check # names
+  ASSERT_EQ(1, mdf.getModuleNameSize());
+
+  // Check # descriptions
+  ASSERT_EQ(8, mdf.getModuleDescriptionSize());
+
+  // Check # info URL's
+  ASSERT_EQ(8, mdf.getModuleInfoUrlSize());
   
   // Check name
   ASSERT_TRUE(mdf.getModuleName("en") == "Simple test");
-  
+
+  // Check description
+  ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english description");
+  ASSERT_TRUE(mdf.getModuleDescription("es") == "Esta es una descripción en inglés");
+  ASSERT_TRUE(mdf.getModuleDescription("pt") == "Esta é uma descrição em inglês");
+  ASSERT_TRUE(mdf.getModuleDescription("zh") == "这是英文说明");
+  ASSERT_TRUE(mdf.getModuleDescription("se") == "Det här är en engelsk beskrivning");
+  ASSERT_TRUE(mdf.getModuleDescription("lt") == "Tai yra angliškas aprašymas");
+  ASSERT_TRUE(mdf.getModuleDescription("de") == "Dies ist eine englische Beschreibung");
+  ASSERT_TRUE(mdf.getModuleDescription("eo") == "Ĉi tio estas angla priskribo");
+
+  // Check info URL
+  ASSERT_TRUE(mdf.getModuleInfoUrl("en") == "https://www.english.en");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("es") == "https://www.spanish.es");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("pt") == "https://www.portuguese.pt");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("zh") == "https://www.chineese.zh");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("se") == "https://www.swedish.se");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("lt") == "https://www.lithuanian.lt");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("de") == "https://www.german.de");
+  ASSERT_TRUE(mdf.getModuleInfoUrl("eo") == "https://www.esperanto.eo");
 }
 
 //-----------------------------------------------------------------------------
