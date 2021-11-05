@@ -611,7 +611,7 @@ extern "C"
 #define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */  
 #define VSCP_ERROR_MTU                  60 /* Frame does not fit */
 #define VSCP_ERROR_SOCKET               61 /* Unable to create socket or other socket error*/
-
+#define VSCP_ERROR_PARSING              61 /* Failed to parse input */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

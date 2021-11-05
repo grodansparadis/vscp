@@ -61,7 +61,7 @@
 
 #include "canal_macro.h"
 #include "vscpd.h"
-#include <controlobject.h>
+#include "controlobject.h"
 #include <crc.h>
 #include <version.h>
 #include <vscphelper.h>

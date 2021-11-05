@@ -81,7 +81,7 @@ static wizardStepChoice *lastItemChoice = NULL;
 // it here. This pointer is set to NULL in the end bit tag
 static wizardFlagBitChoice *lastBitChoice = NULL;
 
-void
+static void
 startSetupParser( void *data, const char *name, const char **attr ) 
 {
     canalXmlConfig *pConfig = (canalXmlConfig *)data;
@@ -371,7 +371,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
 }
 
-void
+static void
 handle_data(void *data, const char *content, int length)
 {
     canalXmlConfig *pConfig = (canalXmlConfig *)data;
@@ -413,7 +413,7 @@ handle_data(void *data, const char *content, int length)
     }
 }
 
-void
+static void
 endSetupParser( void *data, const char *name ) 
 {
     depth_setup_parser--;

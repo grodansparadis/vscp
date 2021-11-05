@@ -1,0 +1,2831 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Ake Hedman, Grodans Paradis AB -->
+<vscp>
+<module>
+	<name>Beijing IO controller</name>
+	<model>B</model>
+	<version>1.0.0</version>
+	<changed>2015-06-15</changed>
+	<description lang="en">
+		With this VSCP module it is possible to control up to four digital outputs 
+		and read up to three optoisolated inputs.
+	</description>
+	<infourl>http://www.grodansparadis.com/beijing/beijing.html</infourl>
+	<buffersize>8</buffersize>
+	<manufacturer>
+		<name>Grodans Paradis AB</name>
+		<address>
+			<street>Brattbergavägen 17</street>
+			<city>Los</city>
+			<postcode>82050</postcode>
+			<country>Sweden</country>
+		</address>
+		<telephone>
+			<number>+46 8 40011835 </number>
+			<description lang="en" >Main Reception</description>
+		</telephone>
+		<email>
+			<address>support@grodansparadis.com</address>
+			<description>Support email</description>
+		</email>
+		<email>
+			<address>sales@grodansparadis.com</address>
+			<description>Sales inquires email</description>
+		</email>
+		<email>
+			<address>info@grodansparadis.com</address>
+			<description>General email</description>
+		</email>	
+		<web>
+			<address>http://www.grodansparadis.com</address>
+			<description>Main web site</description>
+		</web>					
+	</manufacturer>  
+	
+	<!-- Picture of device -->
+	<picture path="http://www.auto.grodansparadis.com/images/power_lamp.jpg" 
+		format="jpg"
+		size="510129">
+		<description lang="en" >
+				Picture of Paris Beijing module.
+		</description>
+	</picture>
+	
+	<!-- Firmware for the device -->
+	<firmware path="http://www.auto.grodansparadis.com/beijing/download/firmware_beijing_1_0_0.hex" 
+		format="intelhex8"
+		size="32000"
+		date="2012-01-01"
+		version_major="1"
+		version_minor="0"
+		version_subminor="0">
+		<description lang="en" >
+			Firmware version 1.0.0 for the Beijing module.
+		</description> 
+	</firmware>
+
+	<!-- Full documentation for the device -->
+	<manual path="http://www.grodansparadis.com/beijing/manual/doku.php?id=start" 	
+		lang="en"
+		format="html">
+    	<description lang="en" >
+			Full manual for the Beijing module.
+		</description>
+	</manual>
+	
+	<boot>
+		<algorithm>1</algorithm>
+		<blocksize>8</blocksize>
+		<blockcount>4096</blockcount>
+	</boot>
+	
+	
+	<registers>        
+
+      <reg page="0" offset="0" default="0" >
+			<name lang="en">Zone</name>
+			<description lang="en">Zone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="1" default="0" >
+			<name lang="en">Subzone</name>
+			<description lang="en">Subzone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="2" default="0" >
+			<name lang="en">Subzone Input 0</name>
+			<description lang="en">Subzone for input 0</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="3" default="0">
+			<name lang="en">Subzone Input 1</name>
+			<description lang="en">Subzone for input 1</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="4" default="0">
+			<name lang="en">Subzone Input 2</name>
+			<description lang="en">Subzone for input 2</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="5" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="6" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="7" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="8" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="9" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="11" default="0" >
+			<name lang="en">Subzone Output 0</name>
+			<description lang="en">Subzone for output 0</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="12" default="0" >
+			<name lang="en">Subzone Output 1</name>
+			<description lang="en">Subzone for output 1</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="13" default="0" >
+			<name lang="en">Subzone Output 2</name>
+			<description lang="en">Subzone for output 2</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="14" default="0" >
+			<name lang="en">Subzone Output 3</name>
+			<description lang="en">Subzone for output 3</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="15" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="16" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="17" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="18" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="19" >
+			<name lang="en">Input 0 status register</name>
+      	<description lang="en">
+			Read the state of input 0 in this register.\n
+			0 - is returned for inactive.\n
+			1 - is returned for active.\n
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="20" >
+			<name lang="en">Input 1 status register</name>
+      	<description lang="en">
+			Read the state of input 1 in this register.\n
+			0 - is returned for inactive.\n
+			1 - is returned for active.\n
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="21" >
+			<name lang="en">Input 2 status register</name>
+      	<description lang="en">
+			Read the state of input 2 in this register.\n
+			0 - is returned for inactive.\n
+			1 - is returned for active.\n
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="22" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="23" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="24" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="25" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="26" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="27" default="0">
+			<name lang="en">Output 0 status register</name>
+      	<description lang="en">
+			Writing a value to the output control register will activate/deactivate the 
+			output.\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n
+			Reading a value from the control register is read as a one if the relay is 
+			activated and a zero if the output is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		Set output channel in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		Set output channel in is on state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="28" default="0">
+			<name lang="en">Output 1 status register</name>
+      	<description lang="en">
+			Writing a value to the output control register will activate/deactivate the 
+			output.\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n
+			Reading a value from the control register is read as a one if the relay is 
+			activated and a zero if the output is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		Set output channel in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		Set output channel in is on state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="29" default="0">
+			<name lang="en">Output 2 status register</name>
+      	<description lang="en">
+			Writing a value to the output control register will activate/deactivate the 
+			output.\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n
+			Reading a value from the control register is read as a one if the relay is 
+			activated and a zero if the output is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		Set output channel in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		Set output channel in is on state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="30" default="0">
+			<name lang="en">Output 3 status register</name>
+      	<description lang="en">
+			Writing a value to the output control register will activate/deactivate the 
+			output.\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n
+			Reading a value from the control register is read as a one if the relay is 
+			activated and a zero if the output is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		Set output channel in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		Set output channel in is on state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="32" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="32" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="33" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="34" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+												
+		<reg page="0" offset="35" default="0" >
+			<name lang="en">Output 0 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality:\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="36" default="0" >
+			<name lang="en">Output 0 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality:\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="37" default="0" >
+			<name lang="en">Output 0 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality:\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="38" default="0" >
+			<name lang="en">Output 0 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality:\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="39" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="40" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="41" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="42" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="43" default="0" >
+			<name lang="en">Input 0 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality:\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Activate debounce\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to send On/off events. Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate debounce</name>
+      	    <description lang="en">
+      	    Debounce functionality is activated
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		
+		<reg page="0" offset="44" default="0" >
+			<name lang="en">Input 1 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality:\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Activate debounce\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to send On/off events. Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate debounce</name>
+      	    <description lang="en">
+      	    Debounce functionality is activated
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="45" default="0" >
+			<name lang="en">Input 2 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality:\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Activate debounce\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to send On/off events. Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate debounce</name>
+      	    <description lang="en">
+      	    Debounce functionality is activated
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="46" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="47" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="48" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="49" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="50" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="51" default="0" >
+			<name lang="en">Debounce time</name>
+      	<description lang="en">
+      	Debounce time in milliseconds * 10. That is 1=10 ms, 2=20 ms and so on.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="52" default="0" >
+			<name lang="en">Module Control register</name>
+      	<description lang="en">
+      	It is possible to control general module behaviour in this register.\n
+		Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Reserved.\n
+			Bit 2 - Reserved.\n
+			Bit 3 - Reserved.\n
+			Bit 4 - Reserved.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Reserved.\n
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="53" default="0" >
+			<name lang="en">Input stream sample time</name>
+      	<description lang="en">
+      	This is the time in seconds between input stream samples. Set to zero to disable.\n
+		CLASS1.DATA is sent with data coding=0(bits), unit=0, sensor=0 for the inputs/outputs as set here. First byte is outputs, second byte is inputs.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		
+		///////////////////////////////////////////////////////////////////////
+		// Register Page 1 - Timing
+		///////////////////////////////////////////////////////////////////////
+		
+		// * * *   Pulse time  * * *   
+		
+		<reg page="1" offset="0" >
+			<name lang="en">Output pulse time register for output 0 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="1" >
+			<name lang="en">Output pulse time register for output 0 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="2" >
+			<name lang="en">Output pulse time register for output 1 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="3" >
+			<name lang="en">Output pulse time register for output 1 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="1" offset="4" >
+			<name lang="en">Output pulse time register for output 2 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="5" >
+			<name lang="en">Output pulse time register for output 2 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="6" >
+			<name lang="en">Output pulse time register for output 3 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="7" >
+			<name lang="en">Output pulse time register for output 3 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to make an output turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the output status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="8" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="9" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="10" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="11" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="12" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="13" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="14" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="15" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+
+		
+		// * * *   Output protection  * * *
+		
+		
+		<reg page="1" offset="16" >
+			<name lang="en">Output protection time register for output 0 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="17" >
+			<name lang="en">Output protection time register for output 0 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="18" >
+			<name lang="en">Output protection time register for output 1 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="19" >
+			<name lang="en">Output protection time register for output 1 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="20" >
+			<name lang="en">Output protection time register for output 2 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="21" >
+			<name lang="en">Output protection time register for output 2 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="22" >
+			<name lang="en">Output protection time register for output 3 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="23" >
+			<name lang="en">Output protection time register for output 3 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="24" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="25" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="26" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="27" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="28" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="29" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="30" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="1" offset="31" >
+			<name lang="en">Reserved</name>
+      	<description lang="en">
+      	This register position is reserved for future use.
+      	</description>
+      	<access>r</access>
+		</reg>
+				
+				
+		///////////////////////////////////////////////////////////////////////
+		// Register Page 2 - Decision Matrix
+		///////////////////////////////////////////////////////////////////////		
+				
+			
+		<!-- DM Row 1 -->
+		<reg page="2" offset="0" >
+			<name lang="en">Decision matrix row 1: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="1" >
+			<name lang="en">Decision matrix row 1: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="2" >
+			<name lang="en">Decision matrix row 1: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="3" >
+			<name lang="en">Decision matrix row 1: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="4" >
+			<name lang="en">Decision matrix row 1: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="5" >
+			<name lang="en">Decision matrix row 1: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="6" >
+			<name lang="en">Decision matrix row 1: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="7" >
+			<name lang="en">Decision matrix row 1: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 2 -->
+		<reg page="2" offset="8" >
+			<name lang="en">Decision matrix row 2: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="8" >
+			<name lang="en">Decision matrix row 2: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="10" >
+			<name lang="en">Decision matrix row 2: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="11" >
+			<name lang="en">Decision matrix row 2: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="12" >
+			<name lang="en">Decision matrix row 2: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="13" >
+			<name lang="en">Decision matrix row 2: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="14" >
+			<name lang="en">Decision matrix row 2: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="15" >
+			<name lang="en">Decision matrix row 2: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 3 -->
+		<reg page="2" offset="16" >
+			<name lang="en">Decision matrix row 3: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="17" >
+			<name lang="en">Decision matrix row 3: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="18" >
+			<name lang="en">Decision matrix row 3: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="19" >
+			<name lang="en">Decision matrix row 3: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="20" >
+			<name lang="en">Decision matrix row 3: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="21" >
+			<name lang="en">Decision matrix row 3: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="22" >
+			<name lang="en">Decision matrix row 3: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="23" >
+			<name lang="en">Decision matrix row 3: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>					
+		
+		<!-- DM Row 4 -->
+		<reg page="2" offset="24" >
+			<name lang="en">Decision matrix row 4: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="25" >
+			<name lang="en">Decision matrix row 4: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="26" >
+			<name lang="en">Decision matrix row 4: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="27" >
+			<name lang="en">Decision matrix row 4: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="28" >
+			<name lang="en">Decision matrix row 4: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="29" >
+			<name lang="en">Decision matrix row 4: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="30" >
+			<name lang="en">Decision matrix row 4: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="31" >
+			<name lang="en">Decision matrix row 4: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 5 -->
+		<reg page="2" offset="32" >
+			<name lang="en">Decision matrix row 5: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="33" >
+			<name lang="en">Decision matrix row 5: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="34" >
+			<name lang="en">Decision matrix row 5: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="35" >
+			<name lang="en">Decision matrix row 5: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="36" >
+			<name lang="en">Decision matrix row 5: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="37" >
+			<name lang="en">Decision matrix row 5: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="38" >
+			<name lang="en">Decision matrix row 5: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="39" >
+			<name lang="en">Decision matrix row 5: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 6 -->
+		<reg page="2" offset="40" >
+			<name lang="en">Decision matrix row 6: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="41" >
+			<name lang="en">Decision matrix row 6: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="42" >
+			<name lang="en">Decision matrix row 6: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="43" >
+			<name lang="en">Decision matrix row 6: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="44" >
+			<name lang="en">Decision matrix row 6: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="45" >
+			<name lang="en">Decision matrix row 6: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="46" >
+			<name lang="en">Decision matrix row 6: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="47" >
+			<name lang="en">Decision matrix row 6: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<!-- DM Row 7 -->
+		<reg page="2" offset="48" >
+			<name lang="en">Decision matrix row 7: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="49" >
+			<name lang="en">Decision matrix row 7: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="50" >
+			<name lang="en">Decision matrix row 7: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="51" >
+			<name lang="en">Decision matrix row 7: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="52" >
+			<name lang="en">Decision matrix row 7: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="53" >
+			<name lang="en">Decision matrix row 7: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="54" >
+			<name lang="en">Decision matrix row 7: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="55" >
+			<name lang="en">Decision matrix row 7: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+								
+	</registers>
+	
+	
+	
+	
+	<abstractions>
+
+		<abstraction type="short" default="0"  
+							page = "1" offset = "0" >
+   		<name lang="en">Output pulse time register for output 0</name>
+      	<description lang="en">
+      	This is the pulse time for output 0 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "2" >
+   		<name lang="en">Output pulse time register for output 1</name>
+      	<description lang="en">
+      	This is the pulse time for output 1 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "4" >
+   		<name lang="en">Output pulse time register for output 2</name>
+      	<description lang="en">
+      	This is the pulse time for output 2 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "6" >
+   		<name lang="en">Output pulse time register for output 3</name>
+      	<description lang="en">
+      	This is the pulse time for output 3 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+
+   	
+		<abstraction type="short" default="0"  
+							page = "1" offset = "16" >
+   		<name lang="en">Output protection time register output 0</name>
+      	<description lang="en">
+      	This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+   	
+		<abstraction type="short" default="0"  
+							page = "1" offset = "18" >
+   		<name lang="en">Output protection time register output 0</name>
+      	<description lang="en">
+      	This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "20" >
+   		<name lang="en">Output protection time register output 0</name>
+      	<description lang="en">
+      	This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "22" >
+   		<name lang="en">Output protection time register output 0</name>
+      	<description lang="en">
+      	This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 	   	  
+   	 
+   </abstractions>
+	
+	
+	
+
+	<alarm>
+   	<bit pos="7">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="6">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="5">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="4">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="3">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="2">
+   		<name lang="en">Low alarm</name>
+      	<description lang="en">
+      	An input bit has gone low and the alarm condition for it is enabled.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="1">
+   		<name lang="en">High alarms</name>
+      	<description lang="en">
+      	An input bit has gone high and the alarm condition for it is enabled.
+      	</description>
+   	</bit>
+   	
+    <bit pos="0">
+   		<name lang="en">Protection timer elapsed</name>
+      	<description lang="en">
+      	A protection timer has elapsed.
+      	</description>
+   	</bit>  	   	   	   	   	   	
+	</alarm>
+	
+	
+	<!-- Decision matrix -->
+	<dmatrix>
+  
+		<level>1</level>					
+		<start page="0" offset="72"/> 	
+		<rowcnt>7</rowcnt>			 
+					
+    	<action code="0x01">				
+      	<name lang="en">Activate outputs(s)</name>
+        	<description lang="en">
+			Activate outputs(s) given by argument. The argument is a bit 
+			array where bit 0 is output 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs to activate</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents output zero and 
+			so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to activate output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to activate output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to activate output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to activate output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x02">				
+      	<name lang="en">Deactivate outputs(s)</name>
+        	<description lang="en">
+			Deactivate outputs(s) given by argument. The argument is a bit array where bit 0 is output 0 and so on.\n    	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+				A bit-array where the first bit represents output zero and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to deactivate output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to deactivate output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to deactivate output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to deactivate output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+		<action code="0x03">				
+      	<name lang="en">Set outputs(s)</name>
+        	<description lang="en">
+			Set outputs(s) given by argument. The argument is a bit array where bit 0 is output 0 and so on.\n    	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+				A bit-array where the first bit represents output zero and so on. A bit set to zero on a position
+				will deactivate that output and a bit set to one on a position will activate that position.
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to activate output 0. Set to zero to deactivate output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to activate output 0. Set to zero to deactivate output 0.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to activate output 0. Set to zero to deactivate output 0.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to activate output 0. Set to zero to deactivate output 0.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x04">				
+      	<name lang="en">Pulse output(s)</name>
+        	<description lang="en">
+			Pulse output(s) given by argument. The argument is a bit array 
+			where bit 0 is output 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+				A bit-array where the first bit represents output zero and 
+				so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to pulse output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to pulse output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to pulse output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to pulse output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+		
+		<action code="0x05">				
+      	<name lang="en">Toggle outputs(s)</name>
+        	<description lang="en">
+			Toggle outputs(s) given by argument. The argument is a bit-array 
+			where bit 0 is output 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+				A bit-array where the first bit represents output zero and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to toggle output 0</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to toggle output 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to toggle output 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to toggle output 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+		
+    	<action code="0x0A">				
+      	<name lang="en">Send status for output(s)</name>
+        	<description lang="en">
+			Send status for output(s) given by argument. The argument is a 
+			bit-array where bit 0 is output 0 and so on.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents output 0 and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to send status for output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to send status for output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to send status for output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to send status for output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+		
+		<action code="0x0B">				
+      	<name lang="en">Send status for input(s)</name>
+        	<description lang="en">
+			Send status for input(s) given by argument. The argument is a 
+			bit-array where bit 0 is input 0 and so on.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for inputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents input 0 and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Input 0</name>
+      		    <description lang="en">Set to one to send status for input 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Input 1</name>
+      		    <description lang="en">Set to one to send status for input 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Input 2</name>
+      		    <description lang="en">Set to one to send status for input 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x0C">				
+      	<name lang="en">Disable Outputs(s)</name>
+        	<description lang="en">
+			Disable outputs(s) given by argument. The argument is a bit-array 
+			where bit 0 is output 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents output zero and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to disable output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to disable output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to disable output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to disable output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+
+		<action code="0x0D">				
+      	<name lang="en">Enable Outputs(s)</name>
+        	<description lang="en">
+			Enable outputs(s) given by argument. The argument is a bit-array 
+			where bit 0 is output 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents output zero and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Output 0</name>
+      		    <description lang="en">Set to one to enable output 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Output 1</name>
+      		    <description lang="en">Set to one to enable output 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Output 2</name>
+      		    <description lang="en">Set to one to enable output 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Output 3</name>
+      		    <description lang="en">Set to one to enable output 3.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+				<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+
+		<action code="0x0E">				
+      	<name lang="en">Disable Inputs(s)</name>
+        	<description lang="en">
+			Disable inputs(s) given by argument. The argument is a bit-array 
+			where bit 0 is input 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for inputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents input zero and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Input 0</name>
+      		    <description lang="en">Set to one to disable input 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Input 1</name>
+      		    <description lang="en">Set to one to disable input 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Input 2</name>
+      		    <description lang="en">Set to one to disable input 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+				<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+
+		<action code="0x0F">				
+      	<name lang="en">Enable input(s)</name>
+        	<description lang="en">
+			Enable input(s) given by argument. The argument is a bit-array 
+			where bit 0 is input 0 and so on.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Bit-array for outputs</name> 
+      	   <description lang="en">
+			A bit-array where the first bit represents input zero and so on.	      	   
+      	   </description>
+      	   
+      	    <bit pos="0" default="false">
+				<name lang="en">Input 0</name>
+      		    <description lang="en">Set to one to enable input 0.</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Input 1</name>
+      		    <description lang="en">Set to one to enable input 1.</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Input 2</name>
+      		    <description lang="en">Set to one to enable input 2.</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved.</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Reserved</name>
+      		    <description lang="en">Reserved</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		 
+	</dmatrix>
+	
+	
+	
+	<events>
+	
+		<event class="0x014" type="0x03" >
+			<name lang="en">On Event</name> 					
+			<description lang="en">
+			An output has been set in its ON position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Is set to n indicating relay n (0-3)
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the output or if it is zero to the 
+			 sub zone for the module.
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x014" type="0x04" >
+			<name lang="en">Off Event</name> 					
+			<description lang="en">
+			An output has been set in its OFF position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating output n (0-3)
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the output or if it is zero to the 
+			 sub zone for the module.
+      		</description>      	
+			</data>
+		</event>	
+
+		<event class="0x01E" type="0x05" >
+			<name lang="en">TurnOn Event</name> 					
+			<description lang="en">
+			An input has gone to its ON position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating input n (0-3)
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the input or if it is zero to the 
+			 sub zone for the module.
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x01E" type="0x06" >
+			<name lang="en">TurnOff Event</name> 					
+			<description lang="en">
+			An input has gone to its OFF position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating input n (0-3)
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the input or if it is zero to the 
+			 sub zone for the module.
+      		</description>      	
+			</data>
+		</event>
+		
+			
+		<event class="0x00F" type="0x01" >
+			<name lang="en">I/O Data event</name> 					
+			<description lang="en">
+			Input/Output data steam event sent on regular intervals if activated. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Datacoding</name>
+      		<description lang="en">
+      		Set to zero for bit coding, unit=0, sensor=0.
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Outputs states</name>
+      		<description lang="en">
+      		State for outputs. Bit 0 is output 0 and so on.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Input states</name>
+      		<description lang="en">
+      		State for inputs. Bit 0 is input 0 and so on.
+      		</description>      	
+			</data>
+		</event>
+		
+	</events>
+	
+</module>	
+</vscp>	

@@ -1,0 +1,226 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Version 0.0.1 -->
+<!-- 2008-10-24 - Gediminas Simanskis, edevices -->
+<vscp>
+<module>
+	<name>VSCP RFID Module</name>
+ 	<model>2000</model>
+   		<description lang="en">Access control RFID 125kHz CAN VSCP proximity reader module with internal antenna. \n Key Specifications/Special Features \n * Read range: over 10cm \n * Dimensions: 65 x 50 x 24mm \n* Supported frequency range: 100 to 150 kHz \n* Power requirement: 8..15VDC at 60mA nominal * Card format: 64 bit,FC/32,ASK,Manchester \n*Protocol: VSCP \n* Interface: CAN bus \n* Operating temperature range: -40 to +85°C
+      </description>
+  		<infourl>http://www.vscp.org/wiki/doku.php/rfid_module</infourl>
+  		<buffersize>8</buffersize>
+   	<manufacturer>	
+   		<name>edevices</name>
+      		<address>
+      			<street>Aukstuju Rusoku vs.</street>
+         		<city>Vilnius</city>
+         		<postcode>LT-14013</postcode>
+         		<country>Lithuania</country>
+     		  </address>
+      		<telephone>									
+      			<number>+37 069912663</number>
+        		<description lang="en" >Main Reception</description>
+   		    </telephone>
+   		  <email>info@edevices.lt</email>	
+      	<web>www.devices.lt</web>					
+	</manufacturer>  
+	
+	
+	<boot>
+		<algorithm>1</algorithm>
+		<blocksize>8</blocksize>
+		<blockcount>4096</blockcount>
+	</boot>
+	
+	
+	<registers>        
+
+	  <reg page="0" offset="0" >
+			<name lang="en">Zone</name>
+			<description lang="en">Zone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="1" >
+			<name lang="en">Subzone</name>
+			<description lang="en">Subzone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="2" >
+			<name lang="en">Red Led Sub Zone.</name>
+      			<description lang="en">Can be used to address the red led if needed.</description>
+      			<access>rw</access>
+		</reg>
+	
+		<reg page="0" offset="3" >
+			<name lang="en">Green Led Sub Zone.</name>
+      			<description lang="en">Can be used to address the green red if needed.</description>
+      			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="4" >
+			<name lang="en">Key Sub Zone.</name>
+      			<description lang="en">Can be used to address the relay/key if needed.</description>
+      			<access>rw</access>
+		</reg>
+	
+		<reg page="0" offset="5" >
+			<name lang="en">Green led on time.</name>
+      			<description lang="en">Set the time in multipls of 100ms the green LED should be on.</description>
+      			<access>rw</access>
+		</reg>
+	
+		<reg page="0" offset="6" >
+			<name lang="en">Red led on time.</name>
+      			<description lang="en">Set the time in multipls of 100ms the red LED should be on.</description>
+      			<access>rw</access>
+		</reg>	
+
+		<reg page="0" offset="7" >
+			<name lang="en">Key led on time.</name>
+      			<description lang="en">Set the time in multiples of 100ms the red key should be on.</description>
+      			<access>rw</access>
+		</reg>	
+
+		<reg page="0" offset="8" >
+			<name lang="en">RFID configuration register.</name>
+      			<description lang="en">Register used to configure the unit. \n bit 0 - Green Led On after card reading.\n Bit 1 - Beep On after card reading.</description>
+      			<access>rw</access>
+
+			<bit pos="0" default="true" >
+      	    			<name lang="en">Green led control bit</name>
+      	    			<description lang="en">Green Led On after card reading.</description> 
+        		</bit>
+
+			<bit pos="0" default="true" >
+      	    			<name lang="en">Buzzer control bit</name>
+      	    			<description lang="en">Beep On after card reading.</description> 
+        		</bit>
+		</reg>	
+
+		<reg page="0" offset="9" >
+			<name lang="en">PWM Frequency</name>
+      			<description lang="en">PWM frequency value after autocalibration (MSB).</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="10" >
+			<name lang="en">PWM Frequency</name>
+      			<description lang="en">PWM frequency value after autocalibration (LSB).</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="11" >
+			<name lang="en">RFID card code 0</name>
+      			<description lang="en">PFID code byte 0 for last detected card.</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="12" >
+			<name lang="en">RFID card code 1</name>
+      			<description lang="en">PFID code byte 1 for last detected card.</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="13" >
+			<name lang="en">RFID card code 2</name>
+      			<description lang="en">PFID code byte 2 for last detected card.</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="14" >
+			<name lang="en">RFID card code 3</name>
+      			<description lang="en">PFID code byte 3 for last detected card.</description>
+      			<access>r</access>
+		</reg>
+
+		<reg page="0" offset="15" >
+			<name lang="en">RFID card code 4</name>
+      			<description lang="en">PFID code byte 4 for last detected card.</description>
+      			<access>r</access>
+		</reg>
+	</registers>
+  
+	<abstractions>
+
+		<abstraction type="uint16_t" 
+				page = "0" offset = "9" >
+   				<name lang="en">PWM Frequency</name>
+      				<description lang="en">PWM frequency value after autocalibration.</description>
+      				<access>r</access>
+   		</abstraction>
+   
+   </abstractions>
+	
+	
+	<events>
+	
+		<event class="0x014" type="0x25" >
+			<name lang="en">RFID Token</name> 					
+			<description lang="en">
+			A RFID card has been decoded. A 40 bit code is supplied.  
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   				<name lang="en">format and status</name>
+      				<description lang="en">
+					Byte is always 0x54 meaning "touch and release", 40-bit code
+      				</description>      	
+			</data>
+
+			<data offset="1" >						
+   				<name lang="en">zone</name>
+      				<description lang="en">
+      		 			This is the zone this module belongs to.
+      				</description>      	
+			</data>
+
+			<data offset="2" >						
+   				<name lang="en">subzone</name>
+      				<description lang="en">
+      		 			This is the subzone this module belongs to.
+      				</description>      	
+			</data>
+
+			<data offset="3" >						
+   				<name lang="en">RFID Code 0</name>
+      				<description lang="en">
+      		 			Detected RFID card code byte 0.
+      				</description>      	
+			</data>
+
+			<data offset="4" >						
+   				<name lang="en">RFID Code 1</name>
+      				<description lang="en">
+      		 			Detected RFID card code byte 1.
+      				</description>      	
+			</data>
+
+			<data offset="5" >						
+   				<name lang="en">RFID Code 2</name>
+      				<description lang="en">
+      		 			Detected RFID card code byte 2.
+      				</description>      	
+			</data>
+
+			<data offset="6" >						
+   				<name lang="en">RFID Code 3</name>
+      				<description lang="en">
+      		 			Detected RFID card code byte 3.
+      				</description>      	
+			</data>
+
+			<data offset="7" >						
+   				<name lang="en">RFID Code 4</name>
+      				<description lang="en">
+      		 			Detected RFID card code byte 4.
+      				</description>      	
+			</data>
+
+		</event>
+		
+	</events>
+	
+</module>	
+</vscp>	

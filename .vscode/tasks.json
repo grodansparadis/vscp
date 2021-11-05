@@ -177,5 +177,27 @@
             },
             "problemMatcher": "$gcc"
         },
+        {
+          "taskName": "build test code for mdfparser",
+          "type": "shell",
+          "command": "cd tests/mdfparser/build; make",
+          "args": [],
+          "group": {
+              "kind": "build",
+              "isDefault": false
+          },
+          "problemMatcher": "$gcc"
+      },
+      {
+          "taskName": "clean & build test code for mdfparser",
+          "type": "shell",
+          "command": "cd tests/mdfparser; mkdir build; cd build; cmake .. -DCMAKE_BUILD_TYPE=Debug; make clean; make",
+          "args": [],
+          "group": {
+              "kind": "build",
+              "isDefault": false
+          },
+          "problemMatcher": "$gcc"
+      }
     ]
 }
