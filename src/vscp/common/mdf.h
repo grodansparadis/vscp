@@ -415,9 +415,9 @@ public:
   ~CMDF_Item();
 
   std::string m_strItem;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapHelpType; // Type for item (if any)
+  std::map<std::string, std::string> m_mapHelp;     // Item help text or url (if any)
 };
 
 /*!
@@ -489,8 +489,7 @@ public:
   void clearStorage(void);
 
   std::string m_strName;
-
-  std::deque<CMDF_Address *> m_list_Address;
+  CMDF_Address m_address;
 
   std::deque<CMDF_Item *> m_list_Phone;
   std::deque<CMDF_Item *> m_list_Fax;
@@ -499,9 +498,9 @@ public:
 };
 
 /*!
-  CMDF_Manufacturer
+  CMDF_Firmware
 
-  Holds information about one manufacturer of the module
+  Holds information about one firmware of the module
 
  */
 
@@ -608,52 +607,6 @@ public:
   std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
 
   /*!
-    Parse XML formated MDF file
-    @param ifs Open input file stream for the file to parse.
-    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF_XML(std::ifstream &ifs);
-
-  /*!
-    Parse JSON formated MDF file
-    @param ifs Open input file stream for the file to parse.
-    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF_JSON(std::ifstream &ifs);
-
-  /*!
-      Parse a MDF. The format can be XML or JSON. If the format is
-      unknown, the function will try to determine it.
-      @param path Path to downloaded MDF
-      @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF(std::string &path);
-
-  // Helpers
-
-  /*!
-      Get number of defined registers
-      @param page Register page to check
-      @return Number of registers used.
-  */
-  uint32_t getNumberOfRegisters(uint32_t page);
-
-  /*!
-      Get number of register pages used
-      @param array Reference to array with pages
-      @return Number of register pages used.
-  */
-  uint32_t getPages(std::set<long> &pages);
-
-  /*!
-      Return register class from register + page
-      @param register Register to search for.
-      @param page Page top search for.
-      @return Pointer to CMDF_Register class if found else NULL.
-  */
-  CMDF_Register *getMDFRegister(uint8_t reg, uint16_t page);
-
-  /*!
     Get Module name in selected language.
     @param language Language to get name in.
     @return Return string with module name in selected language or
@@ -699,25 +652,122 @@ public:
     Get module change date
     @return Return string with module change date.
   */
-  std::string &getModuleChangeDate(void) { return m_strModule_changeDate; };
+  std::string getModuleChangeDate(void) { return m_strModule_changeDate; };
 
   /*!
     Get module version
     @return Return string with module version.
   */
-  std::string &getModuleModel(void) { return m_strModule_Model; };
+  std::string getModuleModel(void) { return m_strModule_Model; };
 
   /*!
     Get module version
     @return Return string with module version.
   */
-  std::string &getModuleVersion(void) { return m_strModule_Version; };
+  std::string getModuleVersion(void) { return m_strModule_Version; };
 
   /*!
     Get module buffer size
     @return Buffer size in bytes.
   */
   uint16_t getModuleBufferSize(void) { return m_module_bufferSize; };
+
+  /*!
+    Get module manufacturer
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer.
+  */
+  std::string getManufacturerName(uint8_t index = 0);
+
+  /*!
+    Get manufacturer street address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer street address.
+  */
+  std::string getManufacturerStreetAddress(uint8_t index = 0);
+
+  /*!
+    Get manufacturer city address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer city address.
+  */
+  std::string getManufacturerCityAddress(uint8_t index = 0);
+
+  /*!
+    Get manufacturer town address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer town address.
+  */
+  std::string getManufacturerTownAddress(uint8_t index = 0);
+
+  /*!
+    Get manufacturer post code address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer post code address.
+  */
+  std::string getManufacturerPostCodeAddress(uint8_t index = 0);
+
+  /*!
+    Get manufacturer region address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer region address.
+  */
+  std::string getManufacturerRegionAddress(uint8_t index = 0);
+
+  /*!
+    Get manufacturer state address
+    @param index (with default 0) is the index of the manufacturer.
+    @return Return string with module manufacturer state address.
+  */
+  std::string getManufacturerStateAddress(uint8_t index = 0);
+
+  // ------------------------------------------------------------------------
+
+  /*!
+    Parse XML formated MDF file
+    @param ifs Open input file stream for the file to parse.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF_XML(std::ifstream &ifs);
+
+  /*!
+    Parse JSON formated MDF file
+    @param path Path to the JSON file to parse.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF_JSON(std::string &path);
+
+  /*!
+      Parse a MDF. The format can be XML or JSON. If the format is
+      unknown, the function will try to determine it.
+      @param path Path to downloaded MDF
+      @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF(std::string &path);
+
+  // Helpers
+
+  /*!
+      Get number of defined registers
+      @param page Register page to check
+      @return Number of registers used.
+  */
+  uint32_t getNumberOfRegisters(uint32_t page);
+
+  /*!
+      Get number of register pages used
+      @param array Reference to array with pages
+      @return Number of register pages used.
+  */
+  uint32_t getPages(std::set<long> &pages);
+
+  /*!
+      Return register class from register + page
+      @param register Register to search for.
+      @param page Page top search for.
+      @return Pointer to CMDF_Register class if found else NULL.
+  */
+  CMDF_Register *getMDFRegister(uint8_t reg, uint16_t page);
 
   /*
       Return temporary file path
@@ -751,9 +801,8 @@ private:
 
   uint16_t m_module_bufferSize; // Buffersize for module
 
+  CMDF_Manufacturer m_manufacturer;       // Manufacturer information
   std::deque<CMDF_Firmware *> m_firmware; // Firmware file(s)
-
-  std::deque<CMDF_Manufacturer *> m_list_manufacturer; // Manufacturer information
 
   CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
   CMDF_BootLoaderInfo m_bootInfo; // Boot loader info

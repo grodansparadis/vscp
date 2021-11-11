@@ -6,9 +6,72 @@
     "model": "Simple B model",
     "version": "B",
     "changed": "2021-11-02",
-    "description": "This is an english description",
-    "infourl": "https://www.english.en",
-    "buffersize": 8
+    "description": "This is an english BBB description",
+    "infourl": "https://www.BBBenglishBBB.en",
+    "buffersize": 64,
+  
+     "manufacturer": {
+        "name" : "Grodans Paradis AB",
+         "address": {
+               "street": "Brattbergavägen 17",
+               "city": "Los",
+               "town": "Loos",
+               "postcode": "82770",
+               "state": "HA",
+               "Region": "Hälsingland",
+               "country" : "Sweden"
+         },
+         "telephone": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Main Reception",
+                  "se": "Huvudreception"
+               }
+            }
+         ],
+         "fax": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Non working fax",
+                  "se": "Icke fungerande fax"
+               }
+            }
+         ],
+         "email": [
+            {
+               "address": "support@grodansparadis.com",
+               "description": {
+            	   "en": "Support email"
+               }
+            },
+            {
+               "address": "sales@grodansparadis.com",
+               "description": "Sales inquires email"
+            },
+            {
+               "address": "info@grodansparadis.com",
+               "<description": {
+            	   "en": "General email"
+               }
+            }
+         ],
+         "web": [
+            {
+               "address": "http://www.grodansparadis.com",
+               "description": {
+            	   "en": "Main web site"
+               }
+            },
+            {
+               "url": "http://shop.grodansparadis.com",
+               "description": {
+            	   "en": "on-line store"
+               }
+            }
+         ]
+     }
   }
 }
 

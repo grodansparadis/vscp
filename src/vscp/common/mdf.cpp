@@ -725,15 +725,15 @@ void
 CMDF_Manufacturer::clearStorage(void)
 {
   // Cleanup Address list
-  std::deque<CMDF_Address *>::iterator iterAddress;
-  for (iterAddress = m_list_Address.begin(); iterAddress != m_list_Address.end(); ++iterAddress) {
-    CMDF_Address *pRecordAddress = *iterAddress;
-    if (NULL != pRecordAddress) {
-      delete pRecordAddress;
-      pRecordAddress = nullptr;
-    }
-  }
-  m_list_Address.clear();
+  // std::deque<CMDF_Address *>::iterator iterAddress;
+  // for (iterAddress = m_list_Address.begin(); iterAddress != m_list_Address.end(); ++iterAddress) {
+  //   CMDF_Address *pRecordAddress = *iterAddress;
+  //   if (NULL != pRecordAddress) {
+  //     delete pRecordAddress;
+  //     pRecordAddress = nullptr;
+  //   }
+  // }
+  // m_list_Address.clear();
 
   // Cleanup Phone list
   std::deque<CMDF_Item *>::iterator iterPhone;
@@ -830,16 +830,16 @@ void
 CMDF::clearStorage(void)
 {
   // Clean up manufacturer list
-  std::deque<CMDF_Manufacturer *>::iterator iterManufacturer;
-  for (iterManufacturer = m_list_manufacturer.begin(); iterManufacturer != m_list_manufacturer.end();
-       ++iterManufacturer) {
-    CMDF_Manufacturer *pRecordManufacturer = *iterManufacturer;
-    if (NULL != pRecordManufacturer) {
-      delete pRecordManufacturer;
-      pRecordManufacturer = nullptr;
-    }
-  }
-  m_list_manufacturer.clear();
+  // std::deque<CMDF_Manufacturer *>::iterator iterManufacturer;
+  // for (iterManufacturer = m_list_manufacturer.begin(); iterManufacturer != m_list_manufacturer.end();
+  //      ++iterManufacturer) {
+  //   CMDF_Manufacturer *pRecordManufacturer = *iterManufacturer;
+  //   if (NULL != pRecordManufacturer) {
+  //     delete pRecordManufacturer;
+  //     pRecordManufacturer = nullptr;
+  //   }
+  // }
+  // m_list_manufacturer.clear();
 
   // Cleanup node event list
   std::deque<CMDF_Event *>::iterator iterEvent;
@@ -894,7 +894,7 @@ CMDF::clearStorage(void)
   m_strModule_changeDate.clear();
   m_module_bufferSize = 0;
   m_strURL.clear();
-  m_list_manufacturer.clear();
+  //m_list_manufacturer.clear();
   m_dmInfo.clearStorage();
   m_bootInfo.clearStorage();
   m_list_event.clear();
@@ -1106,6 +1106,7 @@ CMDF::mdfDescriptionFormat(std::string &str)
 // getDeviceHtmlStatusInfo
 //
 
+/*  TODO
 std::string
 CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 {
@@ -1264,7 +1265,6 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 
     // MDF Info
     strHTML += "<h1>MDF Information</h1>";
-
     strHTML += "<font color=\"#009900\">";
 
     // Manufacturer data
@@ -1295,94 +1295,102 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "</a>";
     strHTML += "<br>";
 
-    std::deque<CMDF_Manufacturer *>::iterator iter;
-    for (iter = pmdf->m_list_manufacturer.begin(); iter != pmdf->m_list_manufacturer.end(); ++iter) {
+    //std::deque<CMDF_Manufacturer *>::iterator iter;
+    //for (iter = pmdf->m_list_manufacturer.begin(); iter != pmdf->m_list_manufacturer.end(); ++iter) {
 
-      strHTML += "<hr><br>";
+    strHTML += "<hr><br>";
 
-      CMDF_Manufacturer *manufacturer = *iter;
-      strHTML += "<b>Manufacturer:</b> ";
-      strHTML += manufacturer->m_strName;
+    //CMDF_Manufacturer *manufacturer = *iter;
+    strHTML += "<b>Manufacturer:</b> ";
+    strHTML += m_manufacturer->m_strName;
+    strHTML += "<br>";
+
+    //std::deque<CMDF_Address *>::iterator iterAddr;
+    // for (iterAddr = pmdf->m_manufacturer->m_address.begin(); iterAddr != manufacturer->m_list_Address.end();
+    //      ++iterAddr) {
+
+    //CMDF_Address *address = *iterAddr;
+    strHTML += "<h4>Address</h4>";
+    strHTML += "<b>Street:</b> ";
+    strHTML += m_manufacturer->m_address->m_strStreet;
+    strHTML += "<br>";
+    strHTML += "<b>Town:</b> ";
+    strHTML += m_manufacturer->m_address->m_strTown;
+    strHTML += "<br>";
+    strHTML += "<b>City:</b> ";
+    strHTML += m_manufacturer->m_address->m_strCity;
+    strHTML += "<br>";
+    strHTML += "<b>Post Code:</b> ";
+    strHTML += m_manufacturer->m_address->m_strPostCode;
+    strHTML += "<br>";
+    strHTML += "<b>State:</b> ";
+    strHTML += m_manufacturer->m_address->m_strState;
+    strHTML += "<br>";
+    strHTML += "<b>Region:</b> ";
+    strHTML += m_manufacturer->m_address->m_strRegion;
+    strHTML += "<br>";
+    strHTML += "<b>Country:</b> ";
+    strHTML += m_manufacturer->m_address->m_strCountry;
+    strHTML += "<br><br>";
+      //}
+
+    std::deque<CMDF_Item *>::iterator iterPhone;
+    for (iterPhone = m_manufacturer->m_list_Phone.begin(); 
+          iterPhone != m_manufacturer->m_list_Phone.end(); 
+          ++iterPhone) {
+
+    CMDF_Item *phone = *iterPhone;
+    strHTML += "<b>Phone:</b> ";
+    strHTML += phone->m_strItem;
+    strHTML += " ";
+    strHTML += phone->m_mapDescription["en"]; // TODO
+    strHTML += "<br>";
+      //}
+
+    std::deque<CMDF_Item *>::iterator iterFax;
+    for (iterFax = m_manufacturer->m_list_Fax.begin(); 
+          iterFax != m_manufacturer->m_list_Fax.end(); 
+          ++iterFax) {
+
+      CMDF_Item *fax = *iterFax;
+      strHTML += "<b>Fax:</b> ";
+      strHTML += fax->m_strItem;
+      strHTML += " ";
+      strHTML += fax->m_mapDescription["en"]; // TODO
       strHTML += "<br>";
+    }
 
-      std::deque<CMDF_Address *>::iterator iterAddr;
-      for (iterAddr = manufacturer->m_list_Address.begin(); iterAddr != manufacturer->m_list_Address.end();
-           ++iterAddr) {
+    std::deque<CMDF_Item *>::iterator iterEmail;
+    for (iterEmail = m_manufacturer->m_list_Email.begin(); 
+          iterEmail != m_manufacturer->m_list_Email.end(); 
+          ++iterEmail) {
 
-        CMDF_Address *address = *iterAddr;
-        strHTML += "<h4>Address</h4>";
-        strHTML += "<b>Street:</b> ";
-        strHTML += address->m_strStreet;
-        strHTML += "<br>";
-        strHTML += "<b>Town:</b> ";
-        strHTML += address->m_strTown;
-        strHTML += "<br>";
-        strHTML += "<b>City:</b> ";
-        strHTML += address->m_strCity;
-        strHTML += "<br>";
-        strHTML += "<b>Post Code:</b> ";
-        strHTML += address->m_strPostCode;
-        strHTML += "<br>";
-        strHTML += "<b>State:</b> ";
-        strHTML += address->m_strState;
-        strHTML += "<br>";
-        strHTML += "<b>Region:</b> ";
-        strHTML += address->m_strRegion;
-        strHTML += "<br>";
-        strHTML += "<b>Country:</b> ";
-        strHTML += address->m_strCountry;
-        strHTML += "<br><br>";
-      }
+      CMDF_Item *email = *iterEmail;
+      strHTML += "<b>Email:</b> <a href=\"";
+      strHTML += email->m_strItem;
+      strHTML += "\" >";
+      strHTML += email->m_strItem;
+      strHTML += "</a> ";
+      strHTML += email->m_mapDescription["en"]; // TODO
+      strHTML += "<br>";
+    }
 
-      std::deque<CMDF_Item *>::iterator iterPhone;
-      for (iterPhone = manufacturer->m_list_Phone.begin(); iterPhone != manufacturer->m_list_Phone.end(); ++iterPhone) {
+    std::deque<CMDF_Item *>::iterator iterWeb;
+    for (iterWeb = m_manufacturer->m_list_Web.begin(); 
+          iterWeb != m_manufacturer->m_list_Web.end(); 
+          ++iterWeb) {
 
-        CMDF_Item *phone = *iterPhone;
-        strHTML += "<b>Phone:</b> ";
-        strHTML += phone->m_strItem;
-        strHTML += " ";
-        strHTML += phone->m_strDescription["en"]; // TODO
-        strHTML += "<br>";
-      }
+      CMDF_Item *web = *iterWeb;
+      strHTML += "<b>Web:</b> <a href=\"";
+      strHTML += web->m_strItem;
+      strHTML += "\">";
+      strHTML += web->m_strItem;
+      strHTML += "</a> ";
+      strHTML += web->m_mapDescription["en"]; // TODO
+      strHTML += "<br>";
+    }
 
-      std::deque<CMDF_Item *>::iterator iterFax;
-      for (iterFax = manufacturer->m_list_Fax.begin(); iterFax != manufacturer->m_list_Fax.end(); ++iterFax) {
-
-        CMDF_Item *fax = *iterFax;
-        strHTML += "<b>Fax:</b> ";
-        strHTML += fax->m_strItem;
-        strHTML += " ";
-        strHTML += fax->m_strDescription["en"]; // TODO
-        strHTML += "<br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterEmail;
-      for (iterEmail = manufacturer->m_list_Email.begin(); iterEmail != manufacturer->m_list_Email.end(); ++iterEmail) {
-
-        CMDF_Item *email = *iterEmail;
-        strHTML += "<b>Email:</b> <a href=\"";
-        strHTML += email->m_strItem;
-        strHTML += "\" >";
-        strHTML += email->m_strItem;
-        strHTML += "</a> ";
-        strHTML += email->m_strDescription["en"]; // TODO
-        strHTML += "<br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterWeb;
-      for (iterWeb = manufacturer->m_list_Web.begin(); iterWeb != manufacturer->m_list_Web.end(); ++iterWeb) {
-
-        CMDF_Item *web = *iterWeb;
-        strHTML += "<b>Web:</b> <a href=\"";
-        strHTML += web->m_strItem;
-        strHTML += "\">";
-        strHTML += web->m_strItem;
-        strHTML += "</a> ";
-        strHTML += web->m_strDescription["en"]; // TODO
-        strHTML += "<br>";
-      }
-
-    } // manufacturer
+    //} // manufacturer
   }
   else {
     strHTML += "No MDF info available.";
@@ -1394,6 +1402,7 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 
   return strHTML;
 }
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // getModuleName
@@ -1413,7 +1422,7 @@ CMDF::getModuleName(std::string language)
 // getModuleDescription
 //
 
-std::string 
+std::string
 CMDF::getModuleDescription(std::string language)
 {
   std::string str = m_mapModule_Description[language];
@@ -1427,7 +1436,7 @@ CMDF::getModuleDescription(std::string language)
 // getModuleInfoUrl
 //
 
-std::string 
+std::string
 CMDF::getModuleInfoUrl(std::string language)
 {
   std::string str = m_mapModule_InfoURL[language];
@@ -1435,6 +1444,27 @@ CMDF::getModuleInfoUrl(std::string language)
     str = m_mapModule_InfoURL["en"];
   }
   return str;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getManufacturerName
+//
+
+std::string
+CMDF::getManufacturerName(uint8_t index)
+{
+  return m_manufacturer.m_strName;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getManufacturerStreetAddress
+//
+
+std::string 
+CMDF::getManufacturerStreetAddress(uint8_t index)
+{
+  return m_manufacturer.m_address.m_strStreet;
 }
 
 // ----------------------------------------------------------------------------
@@ -1453,47 +1483,42 @@ CMDF::getModuleInfoUrl(std::string language)
 
 // ----------------------------------------------------------------------------
 
-std::string gtoken;
-std::string gLastLanguage;
+std::string gToken;         // Current token
+std::string gTokenParent;   // This is the parent to the current token
+std::string gLastLanguage;  // Last language ISO two diget code (name/description)
 
 int gdepth_xml_parser = 0;
 
 bool gbVscp   = false;
 bool gbModule = false;
 
+CMDF_Item *gpItemStruct;     // Holds temporary items
+
 void
 __startSetupMDFParser(void *data, const char *name, const char **attr)
 {
   CMDF *pmdf = (CMDF *) data;
   if (NULL == pmdf) {
+    spdlog::trace("ParseMDF: ---> startSetupMDFParser: Data object is invalid");
     return;
   }
 
-  spdlog::trace("ParseMDF: <--- Start: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
+  spdlog::trace("ParseMDF: <--- startSetupMDFParser: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
+
+  gToken = name;
+  vscp_trim(gToken);
 
   // Default language
   gLastLanguage = "en";
 
-  // Save the token
-  gtoken = name;
-  vscp_trim(gtoken);
-
-  if ((0 == strcmp(name, "vscp")) && (0 == gdepth_xml_parser)) {
-    gbVscp = true;
-  }
-  else if (gbVscp && (0 == strcmp(name, "redirect")) && (1 == gdepth_xml_parser)) {
-    pmdf->m_redirectUrl = "";
-  }
-  else if (gbVscp && (0 == strcmp(name, "module")) && (1 == gdepth_xml_parser)) {
-    gbModule = true;
-  }
-  else if (gbModule && (0 == strcmp(name, "description")) && (2 == gdepth_xml_parser)) {
+  // Set language for 'name', 'infourl' and 'description'
+  if ((0 == strcmp(name, "name")) || 
+      (0 == strcmp(name, "description")) || 
+      (0 == strcmp(name, "infourl"))) {
     for (int i = 0; attr[i]; i += 2) {
-
       std::string attribute = attr[i + 1];
       vscp_trim(attribute);
       vscp_makeLower(attribute);
-
       if (0 == strcasecmp(attr[i], "lang")) {
         if (!attribute.empty()) {
           gLastLanguage = attribute;
@@ -1501,20 +1526,50 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
     }
   }
-  else if (gbModule && (0 == strcmp(name, "infourl")) && (2 == gdepth_xml_parser)) {
-    for (int i = 0; attr[i]; i += 2) {
 
-      std::string attribute = attr[i + 1];
-      vscp_trim(attribute);
-      vscp_makeLower(attribute);
+  switch (gdepth_xml_parser) {
 
-      if (0 == strcasecmp(attr[i], "lang")) {
-        if (!attribute.empty()) {
-          gLastLanguage = attribute;
-        }
+    case 0: // Root
+      if (0 == strcmp(name, "vscp")) {
+        gbVscp = true;
       }
-    }
-  }
+      break;
+
+    case 1:
+      if (gbVscp && (0 == strcmp(name, "module"))) {
+        gTokenParent = "module";
+        gbModule = true;
+      }
+      break;  
+
+    case 2:
+      if (gbModule && (0 == strcmp(name, "manufacturer"))) {
+        gTokenParent = "manufacturer";
+      }
+      break;
+
+    case 3:
+      if ((0 == strcmp(name, "address"))) {
+        gTokenParent = "address";
+      }
+      else if ((0 == strcmp(name, "telephone"))) {
+        gTokenParent = "telephone";
+        gpItemStruct = new CMDF_Item;
+      }
+      else if ((0 == strcmp(name, "fax"))) {
+        gTokenParent = "fax";
+        gpItemStruct = new CMDF_Item;
+      }
+      else if ((0 == strcmp(name, "email"))) {
+        gTokenParent = "email";
+        gpItemStruct = new CMDF_Item;
+      }
+      else if ((0 == strcmp(name, "web"))) {
+        gTokenParent = "web";
+        gpItemStruct = new CMDF_Item;
+      }
+      break;  
+  }    
 
   gdepth_xml_parser++;
 }
@@ -1525,16 +1580,19 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
   // Get the pointer to the CMDF object
   CMDF *pmdf = (CMDF *) data;
   if (NULL == pmdf) {
+    spdlog::error("ParseMDF: ---> handleMDFParserData: Data object is invalid");
     return;
   }
 
   // Must be some content to work on
   if (!content) {
+    spdlog::error("ParseMDF: ---> handleMDFParserData: No content");
     return;
   }
 
   // No use to work without the <vscp> tag
   if (!gbVscp) {
+    spdlog::error("ParseMDF: ---> handleMDFParserData: No vscp tag");
     return;
   }
 
@@ -1546,41 +1604,141 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
   spdlog::trace("ParseMDF: XML Data: {}", strContent);
 
-  if (gbModule && (3 == gdepth_xml_parser)) { // Module
+  switch (gdepth_xml_parser) {
+    
+    case 1:   // On module level
+      if (gToken == "redirect") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module redirect: {0}", strContent);
+        pmdf->m_redirectUrl = strContent;
+      }
+      else if (gToken == "name") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent, gLastLanguage);
+        pmdf->m_mapModule_Name[gLastLanguage] = strContent;
+      }
+      break;
 
-    if (gtoken == "name") {
-      spdlog::trace("ParseMDF: Module name: {0} language: {1}", strContent, gLastLanguage);
-      pmdf->m_mapModule_Name[gLastLanguage] = strContent;
-    }
-    else if (gtoken == "model") {
-      spdlog::trace("ParseMDF: Module name: {0}", strContent);
-      pmdf->m_strModule_Model = strContent;
-    }
-    else if (gtoken == "version") {
-      spdlog::trace("ParseMDF: Module name: {0}", strContent);
-      pmdf->m_strModule_Version = strContent;
-    }
-    else if (gtoken == "changed") {
-      spdlog::trace("ParseMDF: Module Changedate: {0}", strContent);
-      pmdf->m_strModule_changeDate = strContent;
-    }
-    else if (gtoken == "description") {
-      spdlog::trace("ParseMDF: Module Description: {0} language: {1}", strContent, gLastLanguage);
-      pmdf->m_mapModule_Description[gLastLanguage] = strContent;
-      spdlog::trace("ParseMDF: Module Description size: {0}", pmdf->m_mapModule_Description.size());
-    }
-    else if (gtoken == "infourl") {
-      spdlog::trace("ParseMDF: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
-      pmdf->m_mapModule_InfoURL[gLastLanguage] = strContent;
-    }
-    else if (gtoken == "buffersize") {
-      spdlog::trace("ParseMDF: Module buffer size: {0}", strContent);
-      pmdf->m_module_bufferSize = vscp_readStringValue(strContent);
-    }
+    case 2:   
+      break;
+
+    case 3:
+      if (gToken == "name") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent, gLastLanguage);
+          pmdf->m_mapModule_Name[gLastLanguage] = strContent;
+      } 
+      else if (gToken == "model") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0}", strContent);
+        pmdf->m_strModule_Model = strContent;
+      }
+      else if (gToken == "version") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0}", strContent);
+        pmdf->m_strModule_Version = strContent;
+      }
+      else if (gToken == "changed") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module Changedate: {0}", strContent);
+        pmdf->m_strModule_changeDate = strContent;
+      }
+      else if (gToken == "description") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module Description: {0} language: {1}", strContent, gLastLanguage);
+        pmdf->m_mapModule_Description[gLastLanguage] = strContent;
+        spdlog::trace("ParseMDF: handleMDFParserData: Module Description size: {0}", pmdf->m_mapModule_Description.size());
+      }
+      else if (gToken == "infourl") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
+        pmdf->m_mapModule_InfoURL[gLastLanguage] = strContent;
+      }
+      else if (gToken == "buffersize") {
+        spdlog::trace("ParseMDF: handleMDFParserData: Module buffer size: {0}", strContent);
+        pmdf->m_module_bufferSize = vscp_readStringValue(strContent);
+      }
+      break;
+
+    case 4: // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix, events
+      if ((gTokenParent == "manufacturer") && (gToken == "name")) {
+        // Name of manufacturer
+        spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer name: {0} language: {1}", strContent, gLastLanguage);
+        pmdf->m_manufacturer.m_strName = strContent;  
+      }
+      break;
+
+    case 5:
+
+      // manufacturer: address, telephone, fax, email, web
+
+      // manufacturer: address
+      if (gTokenParent == "address") {
+        if (gToken == "street") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address street: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strStreet = strContent;
+        }
+        else if (gToken == "city") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address city: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strCity = strContent;
+        } 
+        else if (gToken == "town") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address town: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strTown = strContent;
+        } 
+        else if (gToken == "postcode") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address postcode: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strPostCode = strContent;
+        } 
+        else if (gToken == "country") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address country: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strCountry = strContent;
+        }
+        else if (gToken == "region") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address region: {0}", strContent );
+          pmdf->m_manufacturer.m_address.m_strRegion = strContent;
+        }
+
+      }
+      // manufacturer/telephone
+      else if (gTokenParent == "telephone") {
+        if ((gToken == "number") && (gpItemStruct != nullptr)) {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent );
+          gpItemStruct->m_strItem = strContent;
+        }
+        else if (gToken == "description") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address telephone description: {0} Language: {1}", strContent,gLastLanguage );
+          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+      }
+      // manufacturer/fax
+      else if ((gTokenParent == "fax") && ( gpItemStruct != NULL)) {
+        if (gToken == "number") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax number: {0}", strContent );
+          gpItemStruct->m_strItem = strContent;
+        }
+        else if (gToken == "description") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}", strContent, gLastLanguage );
+          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+      } 
+      // manufacturer/email
+      else if ((gTokenParent == "email") && ( gpItemStruct != NULL)) {
+        if (gToken == "address") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent );
+          gpItemStruct->m_strItem = strContent;
+        }
+        else if (gToken == "description") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}", strContent, gLastLanguage );
+          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+      } 
+      // manufacturer/web
+      else if ((gTokenParent == "email") && ( gpItemStruct != NULL)) {
+        if ((gToken == "address") || (gToken == "url")) {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent );
+          gpItemStruct->m_strItem = strContent;
+        }
+        else if (gToken == "description") {
+          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}", strContent, gLastLanguage );
+          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+      }
+      break;
   }
-  // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix, events
-  else if (4 == gdepth_xml_parser) {
-  }
+    
 }
 
 void
@@ -1588,14 +1746,70 @@ __endSetupMDFParser(void *data, const char *name)
 {
   spdlog::trace("ParseMDF: ---> End: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
 
-  if ((0 == strcmp(name, "vscp")) && (1 == gdepth_xml_parser)) {
-    gbVscp = false;
+  // Get the pointer to the CMDF object
+  CMDF *pmdf = (CMDF *) data;
+  if (NULL == pmdf) {
+    spdlog::trace("ParseMDF: ---> endSetupMDFParser: Data object is invalid");
+    return;
   }
-  else if ((0 == strcmp(name, "redirect")) && (2 == gdepth_xml_parser)) {
-    // pmdf->m_redirectUrl = "";
+
+  switch (gdepth_xml_parser) {
+    
+    case 1:
+      if (0 == strcasecmp(name, "vscp")) {
+        gbVscp = false;
+      }
+      break;
+
+    case 2:
+      if (0 == strcasecmp(name, "module")) {
+        gbModule = false;
+      }
+      else if (0 == strcasecmp(name, "redirect")) {
+      }
+      break;
+
+    case 3:
+      if (0 == strcasecmp(name, "manufacturer")) {
+        // Nothing to do
+      }
+      break;
+
+      case 4:
+        if (0 == strcasecmp(name, "address")) {
+          // Nothing to do
+        }
+        else if (0 == strcasecmp(name, "telephone") && 
+           (gpItemStruct != nullptr)) {
+          // Save address data in list
+          pmdf->m_manufacturer.m_list_Phone.push_back(gpItemStruct);
+          gpItemStruct = nullptr;
+        }
+        else if (0 == strcasecmp(name, "fax") && 
+           (gpItemStruct != nullptr)) {
+          // Save address data in list
+          pmdf->m_manufacturer.m_list_Fax.push_back(gpItemStruct);
+          gpItemStruct = nullptr;
+        }
+        else if (0 == strcasecmp(name, "email") && 
+           (gpItemStruct != nullptr)) {
+          // Save address data in list
+          pmdf->m_manufacturer.m_list_Email.push_back(gpItemStruct);
+          gpItemStruct = nullptr;
+        }
+        else if (0 == strcasecmp(name, "web") && 
+           (gpItemStruct != nullptr)) {
+          // Save address data in list
+          pmdf->m_manufacturer.m_list_Web.push_back(gpItemStruct);
+          gpItemStruct = nullptr;
+        }
+        break;      
   }
-  else if (gbVscp && (0 == strcmp(name, "module")) && (2 == gdepth_xml_parser)) {
-    gbModule = false;
+
+
+  // Reset language for 'name' and 'description' to default
+  if ((0 == strcmp(name, "name")) || (0 == strcmp(name, "description"))) {
+    gLastLanguage = "en";
   }
 
   gdepth_xml_parser--;
@@ -1618,6 +1832,8 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   gbVscp   = false;
   gbModule = false;
   gLastLanguage = "en";
+
+  gpItemStruct = nullptr;
 
   // Empty old MDF information
   clearStorage();
@@ -1657,9 +1873,447 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 //
 
 int
-CMDF::parseMDF_JSON(std::ifstream &ifs)
+CMDF::parseMDF_JSON(std::string &path)
 {
   int rv = VSCP_ERROR_SUCCESS;
+
+  spdlog::debug("Reading JSON MDF");
+
+  json j;
+
+  try {
+    std::ifstream ifs(path, std::ifstream::in);
+    ifs >> j;
+    ifs.close();
+  }
+  catch (...) {
+    spdlog::error("Parse-JSON: Failed to parse JSON configuration.");
+    return false;
+  }
+
+  spdlog::trace("Parse-JSON: <<{}>>", j.dump());
+
+  // ********************************************************************************
+  //                                  Module
+  // ********************************************************************************
+
+
+  if (!(j.contains("module") && j["module"].is_object())) {
+    spdlog::error("Parse-JSON: module info is not found. <<{}>>", j.dump());
+    return VSCP_ERROR_PARSING;
+  }
+  else {
+
+    // Module name - Mandatory
+    // Can either be string or object
+    if (j["module"].contains("name")) {
+
+      if (j["module"]["name"].is_string()) {
+        m_mapModule_Name["en"] = j["module"]["name"];
+        spdlog::trace("Parse-JSON: Module name: {0} language: 'en' ", m_mapModule_Name["en"]);
+      }
+      else if (j["module"]["name"].is_object()) {
+        for (auto& item : j["module"]["name"].items()) {
+          m_mapModule_Name[item.key()] = item.value();
+          spdlog::trace("Parse-JSON: Module name: {0} language: '{1}'", item.value(), item.key());
+        }
+      }
+      else {
+        spdlog::error("Parse-JSON: Failed to read module name (not string, not object)");        
+        return VSCP_ERROR_PARSING;
+      }
+    }
+    else {
+      spdlog::debug("Parse-JSON: Failed to read module name.");
+      return VSCP_ERROR_PARSING;
+    }
+
+
+    // Module model - not mandatory
+    if (j["module"].contains("model") && j["module"]["model"].is_string()) {
+      m_strModule_Model = j["module"]["model"];
+      spdlog::trace("Parse-JSON: Module model: {0}", m_strModule_Model);
+    }
+    else {
+      spdlog::trace("Parse-JSON: There is no module model.");
+    }
+
+    // Module version - not mandatory
+    if (j["module"].contains("version") && j["module"]["version"].is_string()) {
+      m_strModule_Version = j["module"]["version"];
+      spdlog::trace("Parse-JSON: Module version: {0}", m_strModule_Version);
+    }
+    else {
+      spdlog::trace("Parse-JSON: There is no module version.");
+    }
+
+    // Module changed - not mandatory
+    if (j["module"].contains("changed") && j["module"]["changed"].is_string()) {
+      m_strModule_changeDate = j["module"]["changed"];
+      spdlog::trace("Parse-JSON: Module changed: {0}", m_strModule_changeDate);
+    }
+    else {
+      spdlog::trace("Parse-JSON: There is no module changed.");
+    }
+
+    // Module buffersize - not mandatory
+    m_module_bufferSize = 8;
+    if (j["module"].contains("buffersize") && j["module"]["buffersize"].is_number_integer()) {
+      m_module_bufferSize = j["module"]["buffersize"];
+      spdlog::trace("Parse-JSON: Module buffersize: {0}", m_module_bufferSize);
+    }
+    else {
+      spdlog::trace("Parse-JSON: There is no module buffersize.");
+    }
+
+    // Module description - not mandatory
+    // Can either be string or object
+    if (j["module"].contains("description")) {
+
+      if (j["module"]["description"].is_string()) {
+        m_mapModule_Description["en"] = j["module"]["description"];
+        spdlog::trace("Parse-JSON: Module description: {0} language: 'en' ", m_mapModule_Description["en"]);
+      }
+      else if (j["module"]["description"].is_object()) {
+        for (auto& item : j["module"]["description"].items()) {
+          m_mapModule_Description[item.key()] = item.value();
+          spdlog::trace("Parse-JSON: Module description: {0} language: '{1}'", item.value(), item.key());
+        }
+      }
+      else {
+        spdlog::trace("Parse-JSON: No module description (not string, not object)");        
+      }
+    }
+    else {
+      spdlog::trace("Parse-JSON: No module description.");
+    }
+
+    // Module infourl - not mandatory
+    // Can either be string or object
+    if (j["module"].contains("infourl")) {
+      if (j["module"]["infourl"].is_string()) {
+        m_mapModule_InfoURL["en"] = j["module"]["infourl"];
+        spdlog::trace("Parse-JSON: Module info URL: {0} language: 'en' ", m_mapModule_InfoURL["en"]);
+      }
+      else if (j["module"]["infourl"].is_object()) {
+        for (auto& item : j["module"]["infourl"].items()) {
+          m_mapModule_InfoURL[item.key()] = item.value();
+          spdlog::trace("Parse-JSON: Module info URL: {0} language: '{1}'", item.value(), item.key());
+        }
+      }
+      else {
+        spdlog::trace("Parse-JSON: No module info URL (not string, not object)");        
+      }
+    }
+    else {
+      spdlog::trace("Parse-JSON: No module info URL.");
+    }
+
+
+    // Module infourl - not mandatory
+    // Can either be string or object
+    if (j["module"].contains("manufacturer") && j["module"]["manufacturer"].is_object()) {
+
+      json jsub = j["module"]["manufacturer"];
+
+      // Create manufacurer object
+      // CMDF_Manufacturer *pmf = new CMDF_Manufacturer();
+      // if (pmf == nullptr) {
+      //   spdlog::error("Parse-JSON: Failed to allocate memory for manufacturer.");
+      //   return VSCP_ERROR_PARSING;
+      // }
+      // m_manufacturer.push_back(pmf);
+      
+      if (jsub.contains("name") && jsub["name"].is_string()) {
+        m_manufacturer.m_strName = jsub["name"];
+        spdlog::trace("Parse-JSON: Module manufacturer name: {0}", m_manufacturer.m_strName);
+      }
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module manufacturer name (not string)");
+      }
+
+      // Adress - Is always object
+      if (jsub.contains("address") && jsub["address"].is_object()) {
+
+        //for (auto& addr : jsub["address"].items()) {
+          //std::cout << "key: " << addr.key() << ", value:" << addr.value() << '\n';
+          //if (addr.value().is_object()) {
+
+            // CMDF_Address *paddr = new CMDF_Address();
+            // if (paddr == nullptr) {
+            //   spdlog::error("Parse-JSON: Failed to allocate memory for address.");
+            //   return VSCP_ERROR_PARSING;
+            // }
+            // m_manufacturer.m_address.push_back(paddr);
+
+            json jsub2 = jsub["address"];
+            if (jsub2.contains("street") && jsub2["street"].is_string()) {
+              m_manufacturer.m_address.m_strStreet = jsub2["street"];
+            } 
+
+            if (jsub2.contains("town") && jsub2["town"].is_string()) {
+              m_manufacturer.m_address.m_strTown = jsub2["town"];
+            }
+
+            if (jsub2.contains("city") && jsub2["city"].is_string()) {
+              m_manufacturer.m_address.m_strCity = jsub2["city"];
+            }
+
+            if (jsub2.contains("postcode") && jsub2["postcode"].is_string()) {
+              m_manufacturer.m_address.m_strPostCode = jsub2["postcode"];
+            }   
+
+            if (jsub2.contains("state") && jsub2["state"].is_string()) {
+              m_manufacturer.m_address.m_strState = jsub2["state"];
+            }
+
+            if (jsub2.contains("region") && jsub2["region"].is_string()) {
+              m_manufacturer.m_address.m_strRegion = jsub2["region"];
+            }
+
+            if (jsub2.contains("country") && jsub2["country"].is_string()) {
+              m_manufacturer.m_address.m_strCountry = jsub2["country"];
+            }
+        //   }              
+        // }
+
+        // Phone - Is always array
+        if (jsub.contains("telephone") && jsub["telephone"].is_array()) {
+
+          for (auto& phone : jsub["telephone"].items()) {
+            //std::cout << "key: " << phone.key() << ", value:" << phone.value() << '\n';
+            if (phone.value().is_object()) {
+
+              CMDF_Item *ptel = new CMDF_Item();
+              if (ptel == nullptr) {
+                spdlog::error("Parse-JSON: Failed to allocate memory for telephone.");
+                return VSCP_ERROR_PARSING;
+              }
+              //m_manufacturer.m_address.m_list_Phone.push_back(ptel);
+
+              json jsub2 = phone.key();
+
+              if (jsub2.contains("description") && jsub2["description"].is_string()) {
+                ptel->m_strItem = jsub2["number"];
+              }
+              
+              // Description is language specific. Can be string or object
+              if (jsub2.contains("description")) {
+
+                if (jsub2["description"].is_string()) {
+                  ptel->m_mapDescription["en"] = jsub2["description"];
+                  spdlog::trace("Parse-JSON: Phone description: {0} language: 'en' ", jsub2["description"]);
+                }
+                else if (jsub2["description"].is_object()) {
+                  for (auto& item : jsub2["description"].items()) {
+                    ptel->m_mapDescription[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Phone description: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No phone description (not string, not object)");        
+                }
+              }
+              else {
+                spdlog::trace("Parse-JSON: No phone description.");
+              }
+            }
+          }
+        }
+
+        // Fax - Is always array
+        if (jsub.contains("fax") && jsub["fax"].is_array()) {
+
+          for (auto& fax : jsub["fax"].items()) {
+            //std::cout << "key: " << fax.key() << ", value:" << fax.value() << '\n';
+            if (fax.value().is_object()) {
+
+              CMDF_Item *pfax = new CMDF_Item();
+              if (pfax == nullptr) {
+                spdlog::error("Parse-JSON: Failed to allocate memory for fax.");
+                return VSCP_ERROR_PARSING;
+              }
+              //m_manufacturer.m_address.m_list_Fax.push_back(pfax);
+
+              json jsub2 = fax.key();
+
+              if (jsub2.contains("description") && jsub2["description"].is_string()) {
+                pfax->m_strItem = jsub2["number"];
+              }
+              
+              // Description is language specific. Can be string or object
+              if (jsub2.contains("description")) {
+
+                if (jsub2["description"].is_string()) {
+                  pfax->m_mapDescription["en"] = jsub2["description"];
+                  spdlog::trace("Parse-JSON: Fax description: {0} language: 'en' ", jsub2["description"]);
+                }
+                else if (jsub2["description"].is_object()) {
+                  for (auto& item : jsub2["description"].items()) {
+                    pfax->m_mapDescription[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Fax description: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No phone description (not string, not object)");        
+                }
+              }
+              else {
+                spdlog::trace("Parse-JSON: No phone description.");
+              }
+            }
+          }
+        }
+
+        // Email - Is always array
+        if (jsub.contains("email") && jsub["email"].is_array()) {
+
+          for (auto& email : jsub["email"].items()) {
+            //std::cout << "key: " << email.key() << ", value:" << email.value() << '\n';
+            if (email.value().is_object()) {
+
+              CMDF_Item *pemail = new CMDF_Item();
+              if (pemail == nullptr) {
+                spdlog::error("Parse-JSON: Failed to allocate memory for email item.");
+                return VSCP_ERROR_PARSING;
+              }
+              //m_manufacturer.m_address.m_list_Email.push_back(pemail);
+
+              json jsub2 = email.key();
+
+              if (jsub2.contains("address") && jsub2["address"].is_string()) {
+                pemail->m_strItem = jsub2["address"];
+              }
+              
+              // Description is language specific. Can be string or object
+              if (jsub2.contains("description")) {
+
+                if (jsub2["description"].is_string()) {
+                  pemail->m_mapDescription["en"] = jsub2["description"];
+                  spdlog::trace("Parse-JSON: Email description: {0} language: 'en' ", jsub2["description"]);
+                }
+                else if (jsub2["description"].is_object()) {
+                  for (auto& item : jsub2["description"].items()) {
+                    pemail->m_mapDescription[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Email description: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No email description (not string, not object)");        
+                }
+              }
+              else {
+                spdlog::trace("Parse-JSON: No email description.");
+              }
+            }
+          }
+        }
+
+        // Web - Is always array
+        if (jsub.contains("web") && jsub["web"].is_array()) {
+
+          for (auto& web : jsub["web"].items()) {
+            //std::cout << "key: " << web.key() << ", value:" << web.value() << '\n';
+            if (web.value().is_object()) {
+
+              CMDF_Item *pweb = new CMDF_Item();
+              if (pweb == nullptr) {
+                spdlog::error("Parse-JSON: Failed to allocate memory for web item.");
+                return VSCP_ERROR_PARSING;
+              }
+              //m_manufacturer.m_address.m_list_Email.push_back(pweb);
+
+              json jsub2 = web.key();
+
+              if (jsub2.contains("url") && jsub2["url"].is_string()) {
+                pweb->m_strItem = jsub2["url"];
+              }
+              else if (jsub2.contains("address") && jsub2["address"].is_string()) {
+                pweb->m_strItem = jsub2["address"];
+              }
+              else {
+                spdlog::warn("Parse-JSON: No web url/address.");
+              }
+              
+              // Description is language specific. Can be string or object
+              if (jsub2.contains("description")) {
+
+                if (jsub2["description"].is_string()) {
+                  pweb->m_mapDescription["en"] = jsub2["description"];
+                  spdlog::trace("Parse-JSON: Web description: {0} language: 'en' ", jsub2["description"]);
+                }
+                else if (jsub2["description"].is_object()) {
+                  for (auto& item : jsub2["description"].items()) {
+                    pweb->m_mapDescription[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Web description: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No Web description (not string, not object)");        
+                }
+              }
+              else {
+                spdlog::trace("Parse-JSON: No Web description.");
+              }
+            }
+          }
+        }
+
+      }
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module manufacturer address");
+      }
+    }
+    else {
+      spdlog::warn("Parse-JSON: No manufacturer defined");        
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                               Pictures
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                                Files
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                                Manual
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                              Bootloader
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                               Registers
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                     Remote variables/Abstractions
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                               Alarm
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                          Decision Matrix
+    ///////////////////////////////////////////////////////////////////////////
+  
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                               Events
+    ///////////////////////////////////////////////////////////////////////////
+
+
+  } // Module
 
   return rv;
 }
@@ -1682,8 +2336,11 @@ CMDF::parseMDF(std::string &path)
   int rv = VSCP_ERROR_ERROR;
   std::ifstream ifs;
 
+  spdlog::debug("parseMDF: Parsing MDF file {}", path);
+
   // Check if file exists
   if (!vscp_fileExists(path)) {
+    spdlog::error("parseMDF: MDF file {} does not exist", path);
     return VSCP_ERROR_INVALID_PATH;
   }
 
@@ -1695,7 +2352,7 @@ CMDF::parseMDF(std::string &path)
   // for XML. Whitespace is ignored.
 
   try {
-    ifs.open(path);
+    ifs.open(path, std::ifstream::in);
   }
   catch (...) {
     spdlog::error("parseMDF: Failed to open file {}", path);
@@ -1714,8 +2371,8 @@ CMDF::parseMDF(std::string &path)
     vscp_trim(str);
     if ((pos = str.find('{')) != std::string::npos) {
       spdlog::debug("parseMDF: MDF file format is JSON");
-      rv = parseMDF_JSON(ifs);
       ifs.close();
+      rv = parseMDF_JSON(path);      
       break;
     }
     else if ((pos = str.find('<')) != std::string::npos) {
