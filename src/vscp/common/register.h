@@ -279,7 +279,7 @@ public:
         @param strValue Abstraction value in string form on return if call successful.
         @return true on success.
     */
-    bool abstractionValueFromRegsToString( CMDF_Abstraction *pAbstraction,
+    bool abstractionValueFromRegsToString( CMDF_RemoteVariable *pRemoteVar,
                                                 std::string &strValue,
                                                 uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
 
@@ -289,7 +289,7 @@ public:
      * @param strValue Abstraction value in string form.
      * @return true on success.
      */
-    bool abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstraction,
+    bool abstractionValueFromStringToRegs( CMDF_RemoteVariable *pRemoteVar,
                                                 std::string &strValue );
 
 private:

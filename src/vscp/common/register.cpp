@@ -302,7 +302,7 @@ bool CUserRegisters::writeReg( uint32_t reg, uint32_t page, uint8_t value )
 //  abstractionValueFromRegsToString
 //
 
-bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstraction, 
+bool CUserRegisters::abstractionValueFromRegsToString( CMDF_RemoteVariable *pRemoteVar, 
                                                             std::string &strValue,
                                                             uint8_t format )
 {
@@ -310,21 +310,21 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     bool rv = false;
  /*   uint8_t *pReg;
 
-    if ( NULL == pAbstraction ) return false;
+    if ( NULL == pRemoteVar ) return false;
 
     // Get register page
-    if ( NULL == ( pReg = getRegs4Page( pAbstraction->m_nPage ) ) ) return false;
+    if ( NULL == ( pReg = getRegs4Page( pRemoteVar->m_nPage ) ) ) return false;
 
-    switch ( pAbstraction->m_nType ) {
+    switch ( pRemoteVar->m_nType ) {
 
     case type_string: 
         {            
             uint8_t *pStr;
             
-            pStr = new uint8_t[ pAbstraction->m_nWidth + 1 ];
+            pStr = new uint8_t[ pRemoteVar->m_nWidth + 1 ];
             if ( NULL == pStr ) return false;
-            memset( pStr, 0, pAbstraction->m_nWidth + 1 );                
-            memcpy( pStr, pReg + pAbstraction->m_nOffset, pAbstraction->m_nWidth );
+            memset( pStr, 0, pRemoteVar->m_nWidth + 1 );                
+            memcpy( pStr, pReg + pRemoteVar->m_nOffset, pRemoteVar->m_nWidth );
             strValue = (const char *)pStr;
             delete [] pStr;
             return true;
@@ -333,14 +333,14 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_boolval:
         {
-            strValue = (pReg[pAbstraction->m_nOffset] ? "true" : "false" );
+            strValue = (pReg[pRemoteVar->m_nOffset] ? "true" : "false" );
         }
         break;
 
     case type_bitfield:
-        for ( int i=0; i<pAbstraction->m_nWidth; i++ ) {
+        for ( int i=0; i<pRemoteVar->m_nWidth; i++ ) {
             for ( int j=7; j>0; j-- ) {
-                if ( *(pReg + pAbstraction->m_nOffset + i) & (1 << j) ) {
+                if ( *(pReg + pRemoteVar->m_nOffset + i) & (1 << j) ) {
                     strValue += "1";
                 }
                 else {
@@ -353,10 +353,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_int8_t:
         {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_sting_format( "%d", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_sting_format( "%d", *( pReg + pRemoteVar->m_nOffset ) );
             }
             else {
-                strValue = vscp_str_format( "0x%02x", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "0x%02x", *( pReg + pRemoteVar->m_nOffset ) );
             }
         }
         break;
@@ -364,17 +364,17 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_uint8_t:
         {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_str_format( "%ud", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%ud", *( pReg + pRemoteVar->m_nOffset ) );
             }
             else {
-                strValue = vscp_str_format( "0x%02x" , *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "0x%02x" , *( pReg + pRemoteVar->m_nOffset ) );
             }
         }
         break;
 
     case type_int16_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             int16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -390,7 +390,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_uint16_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             uint16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -404,13 +404,13 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_int32_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_str_format( "%ld", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%ld", *( pReg + pRemoteVar->m_nOffset ) );
             }
             else {
-                strValue = vscp_str_format( "%08lx", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%08lx", *( pReg + pRemoteVar->m_nOffset ) );
                 strValue = "0x";
                 strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
             }
@@ -419,7 +419,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_uint32_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -433,7 +433,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_int64_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             *p = VSCP_UINT64_SWAP_ON_LE( *p );
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
@@ -449,7 +449,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_uint64_t:
         {
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             *p = wxUINT64_SWAP_ON_LE( *p );
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
                 strValue = vscp_str_format( "%ulld", *p );
@@ -462,7 +462,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_float:
         {
-            uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset ); 
+            uint8_t *p = (uint8_t *)(pReg + pRemoteVar->m_nOffset ); 
             uint32_t n = wxUINT32_SWAP_ON_LE( *( (uint32_t *)p ) );
             float f = *( (float *)((uint8_t *)&n ) );
             strValue = vscp_str_format( "%f", f );
@@ -471,7 +471,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_double:
         {
-            uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset );
+            uint8_t *p = (uint8_t *)(pReg + pRemoteVar->m_nOffset );
             uint64_t n = wxUINT64_SWAP_ON_LE( *( (uint32_t *)p ) );
             double f = *( (double *)((uint8_t *)&n ) );
             strValue = vscp_str_format( "%g"), f );
@@ -481,7 +481,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_date:
         {
             wxDateTime date;
-            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint8_t *p = pReg + pRemoteVar->m_nOffset;
             uint8_t year = ( p[ 0 ] << 8 ) + p[ 1 ];
             date.SetYear( year );
             date.SetMonth( wxDateTime::Month( p[ 2 ] ) );
@@ -493,9 +493,9 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_time:
         {
             wxDateTime time;
-            time.SetHour( *(pReg + pAbstraction->m_nOffset ) );
-            time.SetMinute( *(pReg + pAbstraction->m_nOffset + 1 ) );
-            time.SetSecond( *(pReg + pAbstraction->m_nOffset + 2 ) );
+            time.SetHour( *(pReg + pRemoteVar->m_nOffset ) );
+            time.SetMinute( *(pReg + pRemoteVar->m_nOffset + 1 ) );
+            time.SetSecond( *(pReg + pRemoteVar->m_nOffset + 2 ) );
             strValue = time.FormatISOTime();
         }
         break;
@@ -503,7 +503,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_guid:
         {
             cguid guid;
-            guid.getFromArray( pReg + pAbstraction->m_nOffset );
+            guid.getFromArray( pReg + pRemoteVar->m_nOffset );
             guid.toString( strValue );
         }
         break;
@@ -522,18 +522,18 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 //  abstractionValueFromStringToRegs
 //
 
-bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstraction, 
+bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_RemoteVariable *pRemoteVar, 
                                                         std::string &strValue )
 {   
     bool rv = false;
  /*   uint8_t *pReg;
 
-    if ( NULL == pAbstraction ) return false;
+    if ( NULL == pRemoteVar ) return false;
 
     // Get register page
-    if ( NULL == ( pReg = getRegs4Page( pAbstraction->m_nPage ) ) ) return false;
+    if ( NULL == ( pReg = getRegs4Page( pRemoteVar->m_nPage ) ) ) return false;
 
-    switch ( pAbstraction->m_nType ) {
+    switch ( pRemoteVar->m_nType ) {
 
     case type_string: 
 
