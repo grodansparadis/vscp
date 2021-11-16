@@ -46,7 +46,7 @@ TEST(parseMDF, Simple_XML_A)
   ASSERT_EQ(8, mdf.getModuleDescriptionSize());
 
   // Check # info URL's
-  ASSERT_EQ(8, mdf.getModuleInfoUrlSize());
+  ASSERT_EQ(8, mdf.getModuleHelpUrlCount());
   
   // Check name
   ASSERT_TRUE(mdf.getModuleName("en") == "Simple test");
@@ -62,14 +62,14 @@ TEST(parseMDF, Simple_XML_A)
   ASSERT_TRUE(mdf.getModuleDescription("eo") == "Ĉi tio estas angla priskribo");
 
   // Check info URL
-  ASSERT_TRUE(mdf.getModuleInfoUrl("en") == "https://www.english.en");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("es") == "https://www.spanish.es");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("pt") == "https://www.portuguese.pt");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("zh") == "https://www.chineese.zh");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("se") == "https://www.swedish.se");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("lt") == "https://www.lithuanian.lt");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("de") == "https://www.german.de");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("eo") == "https://www.esperanto.eo");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.english.en");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("es") == "https://www.spanish.es");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("pt") == "https://www.portuguese.pt");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("zh") == "https://www.chineese.zh");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("se") == "https://www.swedish.se");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("lt") == "https://www.lithuanian.lt");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("de") == "https://www.german.de");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("eo") == "https://www.esperanto.eo");
 
   ASSERT_EQ(8, mdf.getModuleBufferSize());
 }
@@ -89,7 +89,7 @@ TEST(parseMDF, Simple_XML_B)
   ASSERT_EQ(1, mdf.getModuleDescriptionSize());
 
   // Check # info URL's
-  ASSERT_EQ(1, mdf.getModuleInfoUrlSize());
+  ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
   
   // Check name
   ASSERT_TRUE(mdf.getModuleName("en") == "Simple B test");
@@ -103,7 +103,7 @@ TEST(parseMDF, Simple_XML_B)
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
 
   // Check description
-  ASSERT_TRUE(mdf.getModuleInfoUrl("en") == "http://www.grodansparadis.com/kelvin1w/index.html");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "http://www.grodansparadis.com/kelvin1w/index.html");
   
   ASSERT_EQ(128, mdf.getModuleBufferSize());
 
@@ -111,6 +111,212 @@ TEST(parseMDF, Simple_XML_B)
   ASSERT_TRUE(mdf.getManufacturerName() == "Grodans Paradis AB");
 
 }
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Picture_Old_Format)
+{
+  CMDF mdf;
+  CMDF_Picture *pPicture;
+
+  std::string path = "xml/simple_picture_old_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(2, mdf.getPictureCount());
+
+  uint16_t index = 0;
+  ASSERT_TRUE(nullptr != mdf.getPictureObj());
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(0));
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(1));
+  ASSERT_TRUE(nullptr == mdf.getPictureObj(2));
+  ASSERT_TRUE(mdf.getPictureObj() == mdf.getPictureObj(0));
+
+  // Get first picture url
+  pPicture = mdf.getPictureObj();
+  ASSERT_TRUE("http://www.somewhere.com/images/pict1.jpg" == pPicture->getUrl());
+
+  ASSERT_TRUE("jpg" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
+
+  // Get first picture url again
+  pPicture = mdf.getPictureObj(0);
+  ASSERT_TRUE("http://www.somewhere.com/images/pict1.jpg" == pPicture->getUrl());
+
+  ASSERT_TRUE("jpg" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
+
+  // Get second picture url 
+  pPicture = mdf.getPictureObj(1);
+  ASSERT_TRUE("http://www.somewhere.com/images/pict2.png" == pPicture->getUrl());
+
+  ASSERT_TRUE("png" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture 2 description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 2" == pPicture->getDescription("se"));
+}
+
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Picture_Standard_Format)
+{
+  CMDF mdf;
+  CMDF_Picture *pPicture;
+
+  std::string path = "xml/simple_picture_standard_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(2, mdf.getPictureCount());
+
+  uint16_t index = 0;
+  ASSERT_TRUE(nullptr != mdf.getPictureObj());
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(0));
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(1));
+  ASSERT_TRUE(nullptr == mdf.getPictureObj(2));
+  ASSERT_TRUE(mdf.getPictureObj() == mdf.getPictureObj(0));
+
+  // Get first picture url
+  pPicture = mdf.getPictureObj();
+  ASSERT_TRUE("http://www.somewhere.com/images/stdpict1.jpg" == pPicture->getUrl());
+
+  ASSERT_TRUE("jpg" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
+
+  // Get first picture url again
+  pPicture = mdf.getPictureObj(0);
+  ASSERT_TRUE("http://www.somewhere.com/images/stdpict1.jpg" == pPicture->getUrl());
+
+  ASSERT_TRUE("jpg" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
+
+  // Get second picture url 
+  pPicture = mdf.getPictureObj(1);
+  ASSERT_TRUE("http://www.somewhere.com/images/stdpict2.png" == pPicture->getUrl());
+
+  ASSERT_TRUE("png" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture 2 description in English" == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 2" == pPicture->getDescription("se"));
+}
+
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Firmware_Standard_Format)
+{
+  CMDF mdf;
+  CMDF_Firmware *pFirmware;
+
+  std::string path = "xml/simple_firmware_standard_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(6, mdf.getFirmwareCount());
+
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj());
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(0));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(1));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(2));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(3));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(4));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(5));
+  ASSERT_TRUE(nullptr == mdf.getFirmwareObj(6));
+  ASSERT_TRUE(mdf.getFirmwareObj() == mdf.getFirmwareObj(0));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj();
+  ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(11 == pFirmware->getTargetCode());
+  ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
+  ASSERT_TRUE("2020-05-15" == pFirmware->getDate());
+  ASSERT_TRUE(8192 == pFirmware->getSize());
+  ASSERT_TRUE(1 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(1 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(6 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
+
+  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor." == pFirmware->getDescription("se"));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(44 == pFirmware->getTargetCode());
+  ASSERT_TRUE("intelhex16" == pFirmware->getFormat());
+  ASSERT_TRUE("2021-11-02" == pFirmware->getDate());
+  ASSERT_TRUE(0 == pFirmware->getSize());
+  ASSERT_TRUE(99 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(8 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(17 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
+
+  ASSERT_TRUE("Description in English." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Beskrivning på Svenska." == pFirmware->getDescription("se"));
+
+}
+
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Firmware_Old_Format)
+{
+  CMDF mdf;
+  CMDF_Firmware *pFirmware;
+
+  std::string path = "xml/simple_firmware_old_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(6, mdf.getFirmwareCount());
+
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj());
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(0));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(1));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(2));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(3));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(4));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(5));
+  ASSERT_TRUE(nullptr == mdf.getFirmwareObj(6));
+  ASSERT_TRUE(mdf.getFirmwareObj() == mdf.getFirmwareObj(0));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj(0);
+  ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(11 == pFirmware->getTargetCode());
+  ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
+  ASSERT_TRUE("2020-05-15" == pFirmware->getDate());
+  ASSERT_TRUE(8192 == pFirmware->getSize());
+  ASSERT_TRUE(1 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(1 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(6 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
+
+  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor." == pFirmware->getDescription("se"));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(44 == pFirmware->getTargetCode());
+  ASSERT_TRUE("intelhex16" == pFirmware->getFormat());
+  ASSERT_TRUE("2021-11-02" == pFirmware->getDate());
+  ASSERT_TRUE(0 == pFirmware->getSize());
+  ASSERT_TRUE(99 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(8 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(17 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
+
+  ASSERT_TRUE("Description in English." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Beskrivning på Svenska." == pFirmware->getDescription("se"));
+
+}
+
 
 //-----------------------------------------------------------------------------
 TEST(parseMDF, REALXML)
@@ -227,14 +433,15 @@ TEST(parseMDF, JSON_SIMPLE_A)
   ASSERT_TRUE(mdf.getModuleDescription("eo") == "Ĉi tio estas angla priskribo");
 
   // Check info URL
-  ASSERT_TRUE(mdf.getModuleInfoUrl("en") == "https://www.english.en");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("es") == "https://www.spanish.es");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("pt") == "https://www.portuguese.pt");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("zh") == "https://www.chineese.zh");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("se") == "https://www.swedish.se");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("lt") == "https://www.lithuanian.lt");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("de") == "https://www.german.de");
-  ASSERT_TRUE(mdf.getModuleInfoUrl("eo") == "https://www.esperanto.eo");
+  ASSERT_EQ(8, mdf.getModuleHelpUrlCount());
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.english.en");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("es") == "https://www.spanish.es");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("pt") == "https://www.portuguese.pt");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("zh") == "https://www.chineese.zh");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("se") == "https://www.swedish.se");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("lt") == "https://www.lithuanian.lt");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("de") == "https://www.german.de");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("eo") == "https://www.esperanto.eo");
 
   ASSERT_EQ(8, mdf.getModuleBufferSize());
 }
@@ -258,7 +465,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
 
-  ASSERT_TRUE(mdf.getModuleInfoUrl("en") == "https://www.BBBenglishBBB.en");
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.BBBenglishBBB.en");
 
   ASSERT_EQ(64, mdf.getModuleBufferSize());
 

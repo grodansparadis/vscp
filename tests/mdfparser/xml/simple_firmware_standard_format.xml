@@ -1,0 +1,137 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Copyright C) 2016 Ake Hedman, Grodans Paradis AB -->
+<!-- <akhe@grodansparadis.com> -->
+<vscp>
+  <module>
+    <name>Simple B test</name>
+    <model>Simple B model</model>
+    <version></version>
+    <changed>2021-11-02</changed>
+    <description lang="en">This is an english BBB description</description>
+    <infourl>http://www.grodansparadis.com/kelvin1w/index.html</infourl>
+    <buffersize>128</buffersize>
+    <manufacturer>
+      <name>Grodans Paradis AB</name>
+      <address>
+          <street>Brattbergavägen 17</street>
+          <city>Los</city>
+          <postcode>82770</postcode>
+          <country>Sweden</country>
+      </address>
+      <telephone>
+          <number>+46 8 40011835 </number>
+          <description lang="en" >Main Reception</description>
+      </telephone>
+      <email>
+          <address>support@grodansparadis.com</address>
+          <description>Support email</description>
+      </email>
+      <email>
+          <address>sales@grodansparadis.com</address>
+          <description>Sales inquires email</description>
+      </email>
+      <email>
+          <address>info@grodansparadis.com</address>
+          <description>General email</description>
+      </email>
+      <web>
+          <address>http://www.grodansparadis.com</address>
+          <description>Main web site</description>
+      </web> 
+    </manufacturer>  
+
+    <!-- Standard picture format -->
+    <files>
+
+      <picture path="http://www.somewhere.com/images/stdpict1.jpg" format="jpg" >
+        <description lang="en">This is a picture description in English</description>
+        <description lang="se">Det här är en svensk beskrivning av bild 1</description>
+      </picture>
+
+      <picture path="http://www.somewhere.com/images/stdpict2.png" format="png" >
+        <description lang="en">This is a picture 2 description in English</description>
+        <description lang="se">Det här är en svensk beskrivning av bild 2</description>
+      </picture>
+
+      <firmware target="pic18f2580"
+                targetcode="11"
+                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" 
+                format="intelhex8" 
+                date="2020-05-15" 
+                size="8192"
+                version_major="1" 
+                version_minor="1" 
+                version_subminor="6"
+                md5sum="0x595f44fec1e92a71d3e9e77456ba80d1">
+        <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor. </description>
+        <description lang="se"> Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor. </description>
+      </firmware>
+
+      <firmware target="pic18f26K80" 
+                targetcode="22"
+                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f26k80_1_1_6_relocated.hex" 
+                format="intelhex8" 
+                date="2020-05-15" 
+                size="8192"
+                version_major="1" 
+                version_minor="1" 
+                version_subminor="6"
+                md5sum="71f920fa275127a7b60fa4d4d41432a3">
+        <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f26K80 processor. </description>
+      </firmware>
+
+      <firmware target="pic18f2580" 
+                targetcode="33"
+                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.2/paris_relay_1_1_2.hex" 
+                format="intelhex8" 
+                date="2015-11-12" 
+                size="8192"
+                version_major="1" 
+                version_minor="1" 
+                version_subminor="2"
+                md5sum="43c191bf6d6c3f263a8cd0efd4a058ab">
+        <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor. </description>
+      </firmware>
+
+      <firmware target="esp32c3" 
+                targetcode="44"
+                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" 
+                format="intelhex16" 
+                date="2021-11-02" 
+                version_major="99" 
+                version_minor="8"
+                version_subminor="17"
+                md5sum="595f44fec1e92a71d3e9e77456ba80d1">
+        <description lang="en">Description in English.</description>
+        <description lang="se">Beskrivning på Svenska.</description>
+      </firmware>
+
+      <firmware target="pic18f2580" 
+                targetcode="55"
+                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.0/paris_relay_1_1_0.hex" 
+                format="intelhex8" 
+                date="2015-03-20" 
+                size="8192"
+                version_major="1" 
+                version_minor="1" 
+                version_subminor="0"
+                md5sum="71f920fa275127a7b60fa4d4d41432a3">
+        <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processo. </description>
+      </firmware>
+
+      <firmware target="pic18f2580" 
+                targetcode="66"
+                path="http://www.auto.grodansparadis.com/kelvin/firmware_paris_1_0_0.hex" 
+                format="intelhex8" 
+                size="32000" 
+                date="2012-01-01" 
+                version_major="1" 
+                version_minor="0" 
+                version_subminor="0"
+                md5sum="43c191bf6d6c3f263a8cd0efd4a058ab">
+        <description lang="en"> Firmware version 1.0.0 for the Paris relay module with PIC18f2580 processo. </description>
+      </firmware>
+    </files>
+
+  </module>
+</vscp>

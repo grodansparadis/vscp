@@ -38,7 +38,7 @@ public:
 
     /*!
         Constructor
-        @param pstr string to encrypt.
+        @param pstr string to calculate checksum for.
     */
     Cmd5( unsigned char *pstr );
     
@@ -49,14 +49,14 @@ public:
 
     /*!
         Perform MD5
-        @param pstr string to encrypt.
+        @param pstr string to calculate checksum for.
         @return Encrypted data.
     */
     char *digest( unsigned char *pstr );
 
     /*!
         Perform MD5
-        @return Encrypted data.
+        @return checksum data.
     */
     char *getDigest( void ) { return m_szDigest; };
 

@@ -96,6 +96,11 @@ public:
   CMDF_ValueListValue();
   ~CMDF_ValueListValue();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   std::string m_strName;
   std::map<std::string, std::string> m_strDescription;
   std::map<std::string, std::string> m_strHelpType;
@@ -112,6 +117,11 @@ class CMDF_RemoteVariable {
 public:
   CMDF_RemoteVariable();
   ~CMDF_RemoteVariable();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear data storage
@@ -177,6 +187,11 @@ public:
   CMDF_Bit();
   ~CMDF_Bit();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
@@ -209,6 +224,11 @@ class CMDF_Register {
 public:
   CMDF_Register();
   ~CMDF_Register();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear storage
@@ -268,6 +288,11 @@ public:
   CMDF_ActionParameter();
   ~CMDF_ActionParameter();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
@@ -298,6 +323,11 @@ public:
   CMDF_Action();
   ~CMDF_Action();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
@@ -325,6 +355,11 @@ class CMDF_DecisionMatrix {
 public:
   CMDF_DecisionMatrix();
   ~CMDF_DecisionMatrix();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear storage
@@ -354,6 +389,11 @@ public:
   CMDF_EventData();
   ~CMDF_EventData();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
@@ -382,6 +422,11 @@ class CMDF_Event {
 public:
   CMDF_Event();
   ~CMDF_Event();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear storage
@@ -414,6 +459,11 @@ public:
   CMDF_Item();
   ~CMDF_Item();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   std::string m_strItem;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapHelpType; // Type for item (if any)
@@ -432,6 +482,11 @@ class CMDF_BootLoaderInfo {
 public:
   CMDF_BootLoaderInfo();
   ~CMDF_BootLoaderInfo();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear storage
@@ -455,6 +510,11 @@ class CMDF_Address {
 public:
   CMDF_Address();
   ~CMDF_Address();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
       Clear storage
@@ -483,6 +543,11 @@ public:
   CMDF_Manufacturer();
   ~CMDF_Manufacturer();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
@@ -495,6 +560,86 @@ public:
   std::deque<CMDF_Item *> m_list_Fax;
   std::deque<CMDF_Item *> m_list_Email;
   std::deque<CMDF_Item *> m_list_Web;
+};
+
+class CMDF_Picture {
+
+public:
+  CMDF_Picture();
+  ~CMDF_Picture();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+    Get URL for picture
+    @return URL for picture
+  */
+  std::string getUrl(void) { return m_strURL; };
+
+  /*!
+    Set URL for picture
+    @param strURL URL for picture
+  */
+  void setUrl(std::string &strURL) { m_strURL = strURL; };
+
+  /*!
+    Get format for picture
+    @return format for picture
+  */
+  std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Set format for picture
+    @param strFormat Format for picture
+  */
+  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+
+  /*!
+    Set description for picture
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for picture
+    @param strLanguage Language for description (default="en")
+    @return Description for picture as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+private:
+  /*!
+    Path to picture file
+  */
+  std::string m_strURL;
+
+  /*!
+    Picture type
+  */
+  std::string m_strFormat;
+
+  /*!
+      Description of file
+  */
+  std::map<std::string, std::string> m_mapDescription;
 };
 
 /*!
@@ -510,44 +655,223 @@ public:
   CMDF_Firmware();
   ~CMDF_Firmware();
 
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
   /*!
       Clear storage
   */
   void clearStorage(void);
 
   /*!
-      Path to firmware hex file
+    Get URL for firmware
+    @return URL for firmware
   */
-  std::string m_strPath;
+  std::string getUrl(void) { return m_strURL; };
 
   /*!
-      Size for firmware file (not the image)
+    Get target string for firmware
+    @return Target string for firmware
   */
-  uint32_t m_size;
+  std::string getTarget(void) { return m_strTarget; };
+
+  /*!
+    Get hex file string format for firmware
+    @return Hex string format
+  */
+  std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Get ISO date string for firmware
+    @return ISO date string for firmware
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Get target code for firmware
+    @return Target code for firmware
+  */
+  uint16_t getTargetCode(void) { return m_targetCode; };
+
+  /*!
+    Get version major for firmware
+    @return Version major for firmware
+  */
+  uint16_t getVersionMajor(void) { return m_version_major; };
+
+  /*!
+    Get version minor for firmware
+    @return Version minor for firmware
+  */
+  uint16_t getVersionMinor(void) { return m_version_minor; };
+
+  /*!
+    Get version patch for firmware
+    @return Version patch for firmware
+  */
+  uint16_t getVersionPatch(void) { return m_version_patch; };
+
+  /*!
+    Get size for firmware
+    @return Version patch for firmware
+  */
+  size_t getSize(void) { return m_size; };
+
+  /*!
+    Get MD5 for firmware file on hex string format
+    @return md5 hash for firmware file on string format.
+  */
+  std::string getMd5(void) { return m_strMd5; };
+
+  /*!
+    Set description for picture
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for firmware
+    @param strLanguage Language for description (default="en")
+    @return Description for firmware as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+private:
+
+  /*!
+      Path/url to firmware hex file
+  */
+  std::string m_strURL;
+
+  /*!
+    Target system or processor for this firmware
+  */
+  std::string m_strTarget;
+
+  /*!
+    The target code is the same as the string
+    target but coded to save space in device. This code
+    can be used to make sure the firmware is compatible
+    with the device.
+  */
+  uint16_t m_targetCode;
+
+  /*!
+    Format for firmware (intelhex8|intelhex16 etc)
+  */
+  std::string m_strFormat;
+
+  /*!
+    Date of firmware
+  */
+  std::string m_strDate;
+
+  /*!
+      Size for firmware file (not the binary image)
+  */
+  size_t m_size;
 
   /// Major version number
-  uint8_t m_version_major;
+  uint16_t m_version_major;
 
   /// Minor version number
-  uint8_t m_version_minor;
+  uint16_t m_version_minor;
 
   /// Subminor version number
-  uint8_t m_version_subminor;
+  uint16_t m_version_patch;
+
+  /*!
+    MD5 hash on hex string form for firmware file
+  */
+  std::string m_strMd5;
 
   /*!
       Description of file
   */
-  std::map<std::string, std::string> m_strDescription;
+  std::map<std::string, std::string> m_mapDescription;
 
   /*!
       Help type
   */
-  std::map<std::string, std::string> m_strHelpType;
+  std::map<std::string, std::string> m_mapHelpType;
 
   /*!
       Pointer to help
   */
-  std::map<std::string, std::string> m_strHelp;
+  std::map<std::string, std::string> m_mapHelp;
+};
+
+
+// ---------------------------------------------------------------------------
+
+
+class CMDF_Manual {
+
+public:
+  CMDF_Manual();
+  ~CMDF_Manual();
+
+  // Friend declarations
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+    Get URL for manual
+    @return URL for manual
+  */
+  std::string getUrl(void) { return m_strURL; };
+
+  /*!
+    Get URL for firmware
+    @return Manual format string.
+  */
+  std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Get language
+    @return Manual language string
+  */
+  std::string getLanguage(void) { return m_strLanguage; };
+
+private:
+
+  /*!
+    URL for manual file
+  */
+  std::string m_strURL;
+
+  /*!
+    Format for manual / txt, html, pdf etc
+  */
+  std::string m_strFormat;
+
+  /*!
+    Language format for manual
+  */
+  std::string m_strLanguage;
+
+  /*!
+      Description of file
+  */
+  std::map<std::string, std::string> m_mapDescription;
 };
 
 /*!
@@ -636,17 +960,17 @@ public:
 
   /*!
     Get Module info url in selected language.
-    @param language Language to get info url in.
+    @param language Language for the help resource.
     @return Return string with module info url in selected language or
       in english if the language is not available.
   */
-  std::string getModuleInfoUrl(std::string language = "en");
+  std::string getModuleHelpUrl(std::string language = "en");
 
   /*!
-    Get the number of module info URL's availabel in different languages
+    Get the number of module help URL's availabel in different mime types
     @return Number of info url's available.
   */
-  size_t getModuleInfoUrlSize(void) { return m_mapModule_InfoURL.size(); };
+  size_t getModuleHelpUrlCount(void) { return m_mapModule_HelpURL.size(); };
 
   /*!
     Get module change date
@@ -721,6 +1045,54 @@ public:
   */
   std::string getManufacturerStateAddress(uint8_t index = 0);
 
+  /*!
+    Get number of module pictures
+    @return Number of pictures available.
+  */
+  size_t getPictureCount(void) { return m_list_picture.size(); };
+
+  /*!
+    Get a picture object from it's index
+    @param index Index of picture to get.
+    @return Pointer to picture object or NULL if index is out of range.
+  */
+  CMDF_Picture *getPictureObj(uint16_t index = 0)
+  {
+    return ((m_list_picture.size() <= index) ? nullptr : m_list_picture[index]);
+  };
+
+  /*!
+    Get number of module firmware files
+    @return Number of firmware files available.
+  */
+  size_t getFirmwareCount(void) { return m_list_firmware.size(); };
+
+  /*!
+    Get a firmware object from it's index
+    @param index Index of picture to get.
+    @return Pointer to firmware object or NULL if index is out of range.
+  */
+  CMDF_Firmware *getFirmwareObj(uint16_t index = 0)
+  {
+    return ((m_list_firmware.size() <= index) ? nullptr : m_list_firmware[index]);
+  };
+
+  /*!
+    Get number of module manual files
+    @return Number of manual files available.
+  */
+  size_t getManualCount(void) { return m_list_manual.size(); };
+
+  /*!
+    Get a manual object from it's index
+    @param index Index of picture to get.
+    @return Pointer to manual object or NULL if index is out of range.
+  */
+  CMDF_Manual *getManualObj(size_t index = 0)
+  {
+    return ((m_list_manual.size() <= index) ? nullptr : m_list_manual[index]);
+  };
+
   // ------------------------------------------------------------------------
 
   /*!
@@ -793,7 +1165,7 @@ private:
   // case.
   std::map<std::string, std::string> m_mapModule_Name;        // Module name
   std::map<std::string, std::string> m_mapModule_Description; // Module description
-  std::map<std::string, std::string> m_mapModule_InfoURL;     // URL for full module information
+  std::map<std::string, std::string> m_mapModule_HelpURL;     // URL for full module information
 
   std::string m_strModule_changeDate; // Last date changed
   std::string m_strModule_Model;      // Module Model
@@ -801,8 +1173,12 @@ private:
 
   uint16_t m_module_bufferSize; // Buffersize for module
 
-  CMDF_Manufacturer m_manufacturer;       // Manufacturer information
-  std::deque<CMDF_Firmware *> m_firmware; // Firmware file(s)
+  CMDF_Manufacturer m_manufacturer; // Manufacturer information
+
+  // File lists
+  std::deque<CMDF_Picture *> m_list_picture;   // Picture file(s)
+  std::deque<CMDF_Firmware *> m_list_firmware; // Firmware file(s)
+  std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
 
   CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
   CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
