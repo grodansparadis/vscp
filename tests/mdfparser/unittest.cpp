@@ -317,6 +317,56 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 
 }
 
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Manual_Standard_Format)
+{
+  CMDF mdf;
+  CMDF_Manual *pManual;
+
+  std::string path = "xml/simple_manual_standard_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(2, mdf.getManualCount());
+
+  ASSERT_TRUE(nullptr != mdf.getManualObj());
+  ASSERT_TRUE(nullptr != mdf.getManualObj(0));
+
+  pManual = mdf.getManualObj(0);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
+  ASSERT_TRUE("en" == pManual->getLanguage());
+  ASSERT_TRUE("pdf" == pManual->getFormat());
+
+  pManual = mdf.getManualObj(1);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
+  ASSERT_TRUE("xx" == pManual->getLanguage());
+  ASSERT_TRUE("html" == pManual->getFormat());
+}
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, Simple_Manual_Old_Format)
+{
+  CMDF mdf;
+  CMDF_Manual *pManual;
+
+  std::string path = "xml/simple_manual_old_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(2, mdf.getManualCount());
+
+  ASSERT_TRUE(nullptr != mdf.getManualObj());
+  ASSERT_TRUE(nullptr != mdf.getManualObj(0));
+
+  pManual = mdf.getManualObj(0);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
+  ASSERT_TRUE("en" == pManual->getLanguage());
+  ASSERT_TRUE("pdf" == pManual->getFormat());
+
+  pManual = mdf.getManualObj(1);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
+  ASSERT_TRUE("xx" == pManual->getLanguage());
+  ASSERT_TRUE("html" == pManual->getFormat());
+}
+
 
 //-----------------------------------------------------------------------------
 TEST(parseMDF, REALXML)
