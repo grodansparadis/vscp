@@ -2,8 +2,8 @@
   "_copyright": "Copyright C) 2021 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
 
   "module": {
-    "name": "Simple B test",
-    "model": "Simple B model",
+    "name": "Simple registers",
+    "model": "Simple registers",
     "version": "B",
     "changed": "2021-11-02",
     "description": "This is an english BBB description",
@@ -236,7 +236,142 @@
           }
         }
       ]
-    }
+    },
+    "register" : [
+      {
+        "page": 0,
+        "offset": 0,
+        "width": 1,
+        "min" : 0,
+        "max" : 255,
+        "access" : "rw",
+        "bgcolor" : "0xfff3d4",
+        "fgcolor" : "0x000000",        
+        "name" : "Register 1",
+        "description" : {
+          "en" : "Just a byte register with color settings",
+          "se" : "Ett vanligt register med färginställningar"
+        }
+      },
+      {
+        "page": "0x00",
+        "offset": "0x01",
+        "default": "0x00",
+        "width": "0x08",
+        "min" : "0x00",
+        "max" : "0xff",
+        "access" : "rw",
+        "bgcolor" : "0xfff3d4",
+        "fgcolor" : "0x000000",
+        "name" : "Register 2",
+        "description" : {
+          "en" : "Register with value list",
+          "se" : "Beskrivning med värde lista"
+        },
+        "infourl" : {
+          "gb": "English help",
+          "se": "Svensk hjälp",
+          "lt": "Lietuvos padeda"
+        },
+        "valuelist" : [
+          {
+            "value" : "0x00",
+            "name" : "Off",
+            "description" : {
+              "en" : "The device is off",
+              "se" : "Enheten är av"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          },
+          {
+            "value" : "0x01",
+            "name" : "On",
+            "description" : {
+              "en" : "The device is on",
+              "se" : "Enheten är på"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          },
+          {
+            "value" : "0xff",
+            "name" : "Disabled",
+            "description" : {
+              "en" : "Device is disabled",
+              "se" : "Enheten är avstängd"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          }
+        ]
+      },
+      {
+        "page": 0,
+        "offset": 2,
+        "default": 0,
+        "width" : 1,
+        "access" : "rw",
+        "bgcolor" : "0xfff3d4",
+        "fgcolor" : "0x000000",
+        "name" :  "Register 3",
+        "description" : {
+          "en" : "Register with value list",
+          "se" : "Beskrivning med värde lista"
+        },
+        "infourl" : {
+          "gb": "English help",
+          "se": "Svensk hjälp",
+          "lt": "Lietuvos padeda"
+        },
+        "bit": [
+          {
+            "pos": 0,
+            "width": 3,
+            "default": 0,
+            "min": 0,
+            "max": 7,
+            "access" : "rw",
+            "name" : "English bit or bitfield name",
+            "description" : {
+              "gb": "English description",
+              "se": "Svensk beskrivning",
+              "lt": "Lietuvos aprašymas"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          },
+          {
+            "pos": 3,
+            "width": 2,
+            "default": false,
+            "name" : "English bit or bitfield name",
+            "description" : {
+              "gb": "English description",
+              "se": "Svensk beskrivning",
+              "lt": "Lietuvos aprašymas"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          }
+        ]
+      }
+    ]    
   } 
 }
 

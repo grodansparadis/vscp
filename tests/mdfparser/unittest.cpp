@@ -39,9 +39,6 @@ TEST(parseMDF, Simple_XML_A)
   std::string path = "xml/simpleA.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  // Check # names
-  ASSERT_EQ(1, mdf.getModuleNameSize());
-
   // Check # descriptions
   ASSERT_EQ(8, mdf.getModuleDescriptionSize());
 
@@ -49,7 +46,7 @@ TEST(parseMDF, Simple_XML_A)
   ASSERT_EQ(8, mdf.getModuleHelpUrlCount());
   
   // Check name
-  ASSERT_TRUE(mdf.getModuleName("en") == "Simple test");
+  ASSERT_TRUE(mdf.getModuleName() == "Simple test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english description");
@@ -82,9 +79,6 @@ TEST(parseMDF, Simple_XML_B)
   std::string path = "xml/simpleB.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  // Check # names
-  ASSERT_EQ(1, mdf.getModuleNameSize());
-
   // Check # descriptions
   ASSERT_EQ(1, mdf.getModuleDescriptionSize());
 
@@ -92,12 +86,7 @@ TEST(parseMDF, Simple_XML_B)
   ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
   
   // Check name
-  ASSERT_TRUE(mdf.getModuleName("en") == "Simple B test");
-
-  // Check name for invlid language
-  // The default language is "en" and and it should be used
-  // for a null result. So result should be the same as above.
-  ASSERT_TRUE(mdf.getModuleName("pt") == "Simple B test");
+  ASSERT_TRUE(mdf.getModuleName() == "Simple B test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
@@ -367,6 +356,20 @@ TEST(parseMDF, Simple_Manual_Old_Format)
   ASSERT_TRUE("html" == pManual->getFormat());
 }
 
+//-----------------------------------------------------------------------------
+TEST(parseMDF, XML_BOOTLOADER)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/boot.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(1, mdf.getBootLoaderObj()->getAlgorithm());
+  ASSERT_EQ(8, mdf.getBootLoaderObj()->getBlockSize());
+  ASSERT_EQ(0x2000, mdf.getBootLoaderObj()->getBlockCount());
+}
+
 
 //-----------------------------------------------------------------------------
 TEST(parseMDF, REALXML)
@@ -463,14 +466,7 @@ TEST(parseMDF, JSON_SIMPLE_A)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName("en") == "Simple A test");
-  ASSERT_TRUE(mdf.getModuleName("es") == "Prueba simple A");
-  ASSERT_TRUE(mdf.getModuleName("pt") == "Teste A simples");
-  ASSERT_TRUE(mdf.getModuleName("zh") == "简单 A 测试");
-  ASSERT_TRUE(mdf.getModuleName("se") == "Enkel A test");
-  ASSERT_TRUE(mdf.getModuleName("lt") == "Paprastas A testas");
-  ASSERT_TRUE(mdf.getModuleName("de") == "Einfacher A-Test");
-  ASSERT_TRUE(mdf.getModuleName("eo") == "Simpla A-testo");
+  ASSERT_TRUE(mdf.getModuleName() == "Simple A test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english description");
@@ -506,12 +502,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName("en") == "Simple B test");
-
-  // Check name for invlid language
-  // The default language is "en" and and it should be used
-  // for a null result. So result should be the same as above.
-  ASSERT_TRUE(mdf.getModuleName("pt") == "Simple B test");
+  ASSERT_TRUE(mdf.getModuleName() == "Simple B test");
 
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
 
@@ -519,6 +510,160 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   ASSERT_EQ(64, mdf.getModuleBufferSize());
 
+  // * * * Picture * * *
+
+  CMDF_Picture *pPicture;
+
+  ASSERT_EQ(2, mdf.getPictureCount());
+
+  uint16_t index = 0;
+  ASSERT_TRUE(nullptr != mdf.getPictureObj());
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(0));
+  ASSERT_TRUE(nullptr != mdf.getPictureObj(1));
+  ASSERT_TRUE(nullptr == mdf.getPictureObj(2));
+  ASSERT_TRUE(mdf.getPictureObj() == mdf.getPictureObj(0));
+
+  // Get first picture url
+  pPicture = mdf.getPictureObj();
+  ASSERT_TRUE("http://www.grodansparadis.com/logo.png" == pPicture->getUrl());
+
+  ASSERT_TRUE("png" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English." == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1." == pPicture->getDescription("se"));
+
+  pPicture = mdf.getPictureObj(0);
+  ASSERT_TRUE("http://www.grodansparadis.com/logo.png" == pPicture->getUrl());
+
+  ASSERT_TRUE("png" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture description in English." == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 1." == pPicture->getDescription("se"));
+
+  // Get first picture url again
+  pPicture = mdf.getPictureObj(1);
+  ASSERT_TRUE("http://www.somewhere.com/images/pict2.png" == pPicture->getUrl());
+
+  ASSERT_TRUE("png" == pPicture->getFormat());
+
+  ASSERT_TRUE("This is a picture 2 description in English." == pPicture->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av bild 2." == pPicture->getDescription("se"));
+
+  // * * * Firmware * * *
+
+  CMDF_Firmware *pFirmware;
+
+  ASSERT_EQ(8, mdf.getFirmwareCount());
+
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj());
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(0));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(1));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(2));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(3));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(4));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(5));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(6));
+  ASSERT_TRUE(nullptr != mdf.getFirmwareObj(7));
+  ASSERT_TRUE(nullptr == mdf.getFirmwareObj(8));
+  ASSERT_TRUE(mdf.getFirmwareObj() == mdf.getFirmwareObj(0));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj(0);
+  ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
+  ASSERT_TRUE("https://xxx.yy/1.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(11 == pFirmware->getTargetCode());
+  ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
+  ASSERT_TRUE("2020-05-15" == pFirmware->getDate());
+  ASSERT_TRUE(8192 == pFirmware->getSize());
+  ASSERT_TRUE(1 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(1 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(6 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
+
+  ASSERT_TRUE("English 1." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Svenska 1." == pFirmware->getDescription("se"));
+
+  // Get first firmare url
+  pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
+  ASSERT_TRUE("https://xxx.yy/4.hex" == pFirmware->getUrl());
+  ASSERT_TRUE(0x33 == pFirmware->getTargetCode());
+  ASSERT_TRUE("xxx123" == pFirmware->getFormat());
+  ASSERT_TRUE("2021-11-02" == pFirmware->getDate());
+  ASSERT_TRUE(0x2000 == pFirmware->getSize());
+  ASSERT_TRUE(0x99 == pFirmware->getVersionMajor());
+  ASSERT_TRUE(0x08 == pFirmware->getVersionMinor());
+  ASSERT_TRUE(0x17 == pFirmware->getVersionPatch());
+  ASSERT_TRUE("43c191bf6d6c3f263a8cd0efd4a058ab" == pFirmware->getMd5());
+
+  ASSERT_TRUE("English 3." == pFirmware->getDescription("en"));
+
+
+  // * * * Manual * * *
+
+  CMDF_Manual *pManual;
+
+  ASSERT_EQ(2, mdf.getManualCount());
+
+  ASSERT_TRUE(nullptr != mdf.getManualObj());
+  ASSERT_TRUE(nullptr != mdf.getManualObj(0));
+
+  pManual = mdf.getManualObj(0);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
+  ASSERT_TRUE("en" == pManual->getLanguage());
+  ASSERT_TRUE("pdf" == pManual->getFormat());
+
+  pManual = mdf.getManualObj(1);
+  ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
+  ASSERT_TRUE("xx" == pManual->getLanguage());
+  ASSERT_TRUE("html" == pManual->getFormat());
+
+
+  // * * * Boot * * *
+
+  ASSERT_EQ(1, mdf.getBootLoaderObj()->getAlgorithm());
+  ASSERT_EQ(8, mdf.getBootLoaderObj()->getBlockSize());
+  ASSERT_EQ(4096, mdf.getBootLoaderObj()->getBlockCount());
+
+}
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, JSON_SIMPLE_Registers)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "json/simple_registers.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check name
+  ASSERT_TRUE(mdf.getModuleName() == "Simple registers");
+}
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, JSON_SIMPLE_Remotevar)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "json/simple_remotevar.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check name
+  ASSERT_TRUE(mdf.getModuleName() == "Simple remotevar");
+}
+
+//-----------------------------------------------------------------------------
+TEST(parseMDF, JSON_SIMPLE_DMatrix)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "json/simple_dm.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check name
+  ASSERT_TRUE(mdf.getModuleName() == "Simple DM");
 }
 
 //-----------------------------------------------------------------------------

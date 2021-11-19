@@ -42,49 +42,55 @@
 #include <set>
 #include <string>
 
-#define MDF_ACCESS_READ  1
-#define MDF_ACCESS_WRITE 2
+typedef enum mdf_reg_access_mode {
+  MDF_REG_ACCESS_NONE       = 0,
+  MDF_REG_ACCESS_READ_ONLY  = 1,
+  MDF_REG_ACCESS_WRITE_ONLY = 2,
+  MDF_REG_ACCESS_READ_WRITE = 3
+} mdf_reg_access_mode;
 
-#define REGISTER_TYPE_STANDARD 0
-#define REGISTER_TYPE_DMATRIX1 1
-#define REGISTER_TYPE_BLOCK    2
+typedef enum mdf_register_type {
+  REGISTER_TYPE_STANDARD = 0,
+  REGISTER_TYPE_DMATRIX1 = 1,
+  REGISTER_TYPE_BLOCK    = 2
+} mdf_register_type;
 
-enum vscp_level { level1 = 1, level2 };
-enum vscp_access { access_read = 1, access_write };
-
-enum vscp_remote_variable_type {
-  type_unknown = 0,
-  type_string,
-  type_bitfield,
-  type_boolval,
-  type_int8_t,
-  type_uint8_t,
-  type_int16_t,
-  type_uint16_t,
-  type_int32_t,
-  type_uint32_t,
-  type_int64_t,
-  type_uint64_t,
-  type_float,
-  type_double,
-  type_date,
-  type_time,
-  type_guid,
-  type_index8_int16_t,
-  type_index8_uint16_t,
-  type_index8_int32_t,
-  type_index8_uint32_t,
-  type_index8_int64_t,
-  type_index8_uint64_t,
-  type_index8_float,
-  type_index8_double,
-  type_index8_date,
-  type_index8_time,
-  type_index8_guid,
+typedef enum vscp_remote_variable_type {
+  remote_variable_type_unknown = 0,
+  remote_variable_type_string,
+  remote_variable_type_bitfield,
+  remote_variable_type_boolval,
+  remote_variable_type_int8_t,
+  remote_variable_type_uint8_t,
+  remote_variable_type_int16_t,
+  remote_variable_type_uint16_t,
+  remote_variable_type_int32_t,
+  remote_variable_type_uint32_t,
+  remote_variable_type_int64_t,
+  remote_variable_type_uint64_t,
+  remote_variable_type_float,
+  remote_variable_type_double,
+  remote_variable_type_date,
+  remote_variable_type_time,
+  remote_variable_type_guid,
+  remote_variable_type_index8_int16_t,
+  remote_variable_type_index8_uint16_t,
+  remote_variable_type_index8_int32_t,
+  remote_variable_type_index8_uint32_t,
+  remote_variable_type_index8_int64_t,
+  remote_variable_type_index8_uint64_t,
+  remote_variable_type_index8_float,
+  remote_variable_type_index8_double,
+  remote_variable_type_index8_date,
+  remote_variable_type_index8_time,
+  remote_variable_remote_variable_type_index8_guid,
   type_index8_string
-};
+} vscp_remote_variable_type;
 
 // * * * Settings * * *
+
+// Forward declarations
+class CMDF;
 
 /*!
   CMDF_ValueListValue
@@ -97,15 +103,16 @@ public:
   ~CMDF_ValueListValue();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
 
-  std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or URL
-  std::string m_strValue;                       // The abstraction tells the type
+private:
+  std::string m_name;
+  std::string m_strValue; // String because used for remote variabels also
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 };
 
 /*!
@@ -119,6 +126,7 @@ public:
   ~CMDF_RemoteVariable();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -141,27 +149,22 @@ public:
    */
   uint16_t getRemoteVariableTypeByteCount(void);
 
-  std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or URL
+private:
+  std::string m_name; // Abstract variable name (unique
+                      // inside of MDF
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 
-  std::string m_strID;      // Abstract variable id (unique
-                            // inside of MDF
   std::string m_strDefault; // default value
+  vscp_remote_variable_type m_type; // One of the predefined types
 
-  vscp_remote_variable_type m_nType; // One of the predefined types
-
-  uint16_t m_nPage;      // stored on this page
-  uint32_t m_nOffset;    // stored at this offset
-  uint16_t m_nBitnumber; // Stored at this bit position.
-
-  uint16_t m_nWidth; // Width for bit field and strings.
-
-  uint32_t m_nMax; // If numeric max value can be set
-  uint32_t m_nMin; // If numeric min value can be set
-
-  uint8_t m_nAccess; // Access rights
+  uint16_t m_page;              // stored on this page
+  uint32_t m_offset;            // stored at this offset
+  uint16_t m_bitnumber;         // Stored at this bit position.
+  uint16_t m_width;             // Width for bit field and strings.
+  uint32_t m_max;               // If numeric max value can be set
+  uint32_t m_min;               // If numeric min value can be set
+  mdf_reg_access_mode m_access; // Access rights
 
   bool m_bIndexed; // True of indexed storage
 
@@ -188,6 +191,7 @@ public:
   ~CMDF_Bit();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -197,17 +201,18 @@ public:
   */
   void clearStorage(void);
 
-  std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or URL
+private:
+  std::string m_name;
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 
   // The following is used if the remote variable is a bit or bit field
-  uint8_t m_nPos;     // 'pos'      position in bit field 0-7 (from the left)
-  uint8_t m_nWidth;   // 'width'    1 for one bit 2-8 for bit-field
-  uint8_t m_nDefault; // 'default'  Default value for field
-
-  uint8_t m_nAccess; // 'access'   Access rights for the bit(-field)
+  uint8_t m_pos;                // 'pos'      position in bit field 0-7 (from the left (high))
+  uint8_t m_width;              // 'width'    1 (default) for one bit 2-8 for bit-field
+  uint8_t m_default;            // 'default'  Default value for field
+  uint8_t m_min;                // 'min'      Minimum value for field (if applicable)
+  uint8_t m_max;                // 'max'      Maximum value for field (if applicable)
+  mdf_reg_access_mode m_access; // 'access'   Access rights for the bit(-field)
 
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
@@ -216,7 +221,6 @@ public:
   CMDF_Register
 
   Holds information for one register
-
  */
 
 class CMDF_Register {
@@ -226,6 +230,7 @@ public:
   ~CMDF_Register();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -240,39 +245,41 @@ public:
    */
   uint8_t setDefault(void);
 
+private:
   /*!
       Assignment
   */
   CMDF_Register &operator=(const CMDF_Register &other);
 
   std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  uint16_t m_nPage;
-  uint16_t m_nOffset;
-  uint16_t m_nWidth; // Defaults to 1
+  uint16_t m_page;
+  uint16_t m_offset;
+  uint16_t m_width; // Defaults to 1
 
-  uint8_t m_type; // std=0/dmatix1=1/block=2
-  uint8_t m_size; // Size for special types (default = 1)
+  mdf_register_type m_type; // std=0/dmatix1=1/block=2
+  uint8_t m_size;           // Size for special types (default = 1)
 
-  uint32_t m_nMin;
-  uint32_t m_nMax;
+  uint32_t m_min; // Defaults to 0
+  uint32_t m_max; // Defaults to 255
 
   std::string m_strDefault; // "UNDEF" if not set
 
-  uint8_t m_nAccess;
+  mdf_reg_access_mode m_access;
 
   std::deque<CMDF_Bit *> m_list_bit;              // dll list with bit defines
   std::deque<CMDF_ValueListValue *> m_list_value; // dll list with selectable values
 
-  // For VSCP Works
+  // Below are for VSCP Works use only
   long m_rowInGrid;   // Helper for display (row reg is displayed on)
   uint8_t m_value;    // Initial value read. This is the value
                       // that will be restored.
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
+
+  std::deque<uint8_t> m_list_undo_value; // List with undo values
 };
 
 /*!
@@ -289,6 +296,7 @@ public:
   ~CMDF_ActionParameter();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -298,10 +306,10 @@ public:
   */
   void clearStorage(void);
 
+private:
   std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
   uint16_t m_nOffset;
   uint8_t m_width;
@@ -324,6 +332,7 @@ public:
   ~CMDF_Action();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -333,10 +342,10 @@ public:
   */
   void clearStorage(void);
 
+private:
   std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
   uint16_t m_nCode;
 
@@ -357,6 +366,7 @@ public:
   ~CMDF_DecisionMatrix();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -366,6 +376,7 @@ public:
   */
   void clearStorage(void);
 
+private:
   uint8_t m_nLevel;        // 1 or 2 (defaults to 1)
   uint16_t m_nStartPage;   // Page where DM starts
   uint16_t m_nStartOffset; // Offset on start page for DM
@@ -390,6 +401,7 @@ public:
   ~CMDF_EventData();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -399,10 +411,10 @@ public:
   */
   void clearStorage(void);
 
+private:
   std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
   uint16_t m_nOffset;
 
@@ -424,6 +436,7 @@ public:
   ~CMDF_Event();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -433,10 +446,10 @@ public:
   */
   void clearStorage(void);
 
+private:
   std::string m_strName;
-  std::map<std::string, std::string> m_strDescription;
-  std::map<std::string, std::string> m_strHelpType;
-  std::map<std::string, std::string> m_strHelp; // Item help text or url
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
   uint16_t m_nClass;
   uint16_t m_nType;
@@ -460,14 +473,15 @@ public:
   ~CMDF_Item();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
 
+private:
   std::string m_strItem;
   std::map<std::string, std::string> m_mapDescription;
-  std::map<std::string, std::string> m_mapHelpType; // Type for item (if any)
-  std::map<std::string, std::string> m_mapHelp;     // Item help text or url (if any)
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 };
 
 /*!
@@ -484,6 +498,7 @@ public:
   ~CMDF_BootLoaderInfo();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -493,6 +508,25 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bootloader algorithm
+    @return Bootloader algorithm
+  */
+  uint8_t getAlgorithm(void) { return m_nAlgorithm; };
+
+  /*!
+    get bootloader block size
+    @return Bootloader block size
+  */
+  uint32_t getBlockSize(void) { return m_nBlockSize; };
+
+  /*!
+    Get bootloader block count
+    @return Bootloader block count
+  */
+  uint32_t getBlockCount(void) { return m_nBlockCount; };
+
+private:
   uint8_t m_nAlgorithm;   // Bootloader algorithm used by device
   uint32_t m_nBlockSize;  // Size for one boot block
   uint32_t m_nBlockCount; // Number of boot blocks
@@ -512,6 +546,7 @@ public:
   ~CMDF_Address();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -521,6 +556,49 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get street address
+    @return Street address
+  */
+  std::string getStreet(void) { return m_strStreet; };
+
+  /*!
+    Get town address
+    @return Town address
+  */
+  std::string getTown(void) { return m_strTown; };
+
+  /*!
+    Get city address
+    @return City address
+  */
+  std::string getCity(void) { return m_strCity; };
+
+  /*!
+    Get post code address
+    @return Post code address
+  */
+  std::string getPostCode(void) { return m_strState; };
+
+  /*!
+    Get state address
+    @return State address
+  */
+  std::string getState(void) { return m_strState; };
+
+  /*!
+    Get region address
+    @return Region address
+  */
+  std::string getRegion(void) { return m_strRegion; };
+
+  /*!
+    Get country address
+    @return Country address
+  */
+  std::string getCountry(void) { return m_strCountry; };
+
+private:
   std::string m_strStreet;
   std::string m_strTown;
   std::string m_strCity;
@@ -544,6 +622,7 @@ public:
   ~CMDF_Manufacturer();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -553,6 +632,35 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get a phone object from it's index
+    @param index Index of phone object to get.
+    @return Pointer to phone object or NULL if index is out of range.
+  */
+  CMDF_Item *getPhoneObj(size_t index = 0) { return ((m_list_Phone.size() <= index) ? nullptr : m_list_Phone[index]); };
+
+  /*!
+    Get a fax object from it's index
+    @param index Index of fax objext to get.
+    @return Pointer to fax object or NULL if index is out of range.
+  */
+  CMDF_Item *getFaxObj(size_t index = 0) { return ((m_list_Fax.size() <= index) ? nullptr : m_list_Fax[index]); };
+
+  /*!
+    Get a email object from it's index
+    @param index Index of email object to get.
+    @return Pointer to email object or NULL if index is out of range.
+  */
+  CMDF_Item *getEmailObj(size_t index = 0) { return ((m_list_Email.size() <= index) ? nullptr : m_list_Email[index]); };
+
+  /*!
+    Get a web object from it's index
+    @param index Index of web object to get.
+    @return Pointer to web object or NULL if index is out of range.
+  */
+  CMDF_Item *getWebObj(size_t index = 0) { return ((m_list_Web.size() <= index) ? nullptr : m_list_Web[index]); };
+
+private:
   std::string m_strName;
   CMDF_Address m_address;
 
@@ -569,6 +677,7 @@ public:
   ~CMDF_Picture();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -656,6 +765,7 @@ public:
   ~CMDF_Firmware();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -749,7 +859,6 @@ public:
   };
 
 private:
-
   /*!
       Path/url to firmware hex file
   */
@@ -801,21 +910,9 @@ private:
       Description of file
   */
   std::map<std::string, std::string> m_mapDescription;
-
-  /*!
-      Help type
-  */
-  std::map<std::string, std::string> m_mapHelpType;
-
-  /*!
-      Pointer to help
-  */
-  std::map<std::string, std::string> m_mapHelp;
 };
 
-
 // ---------------------------------------------------------------------------
-
 
 class CMDF_Manual {
 
@@ -824,6 +921,7 @@ public:
   ~CMDF_Manual();
 
   // Friend declarations
+  friend CMDF;
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -852,7 +950,6 @@ public:
   std::string getLanguage(void) { return m_strLanguage; };
 
 private:
-
   /*!
     URL for manual file
   */
@@ -932,17 +1029,9 @@ public:
 
   /*!
     Get Module name in selected language.
-    @param language Language to get name in.
-    @return Return string with module name in selected language or
-      in english if the language is not available.
+    @return Return string with module name
   */
-  std::string getModuleName(std::string language = "en");
-
-  /*!
-    Get the number of module names availabel in different languages
-    @return Number of names available.
-  */
-  size_t getModuleNameSize(void) { return m_mapModule_Name.size(); };
+  std::string getModuleName(void) { return m_name; };
 
   /*!
     Get Module description in selected language.
@@ -956,7 +1045,7 @@ public:
     Get the number of module descriptions availabel in different languages
     @return Number of descriptions available.
   */
-  size_t getModuleDescriptionSize(void) { return m_mapModule_Description.size(); };
+  size_t getModuleDescriptionSize(void) { return m_mapDescription.size(); };
 
   /*!
     Get Module info url in selected language.
@@ -970,7 +1059,7 @@ public:
     Get the number of module help URL's availabel in different mime types
     @return Number of info url's available.
   */
-  size_t getModuleHelpUrlCount(void) { return m_mapModule_HelpURL.size(); };
+  size_t getModuleHelpUrlCount(void) { return m_mapInfoURL.size(); };
 
   /*!
     Get module change date
@@ -1093,6 +1182,12 @@ public:
     return ((m_list_manual.size() <= index) ? nullptr : m_list_manual[index]);
   };
 
+  /*!
+    Get bootloader object
+    @return Pointer to bootloader object.
+  */
+  CMDF_BootLoaderInfo *getBootLoaderObj(void) { return &m_bootInfo; };
+
   // ------------------------------------------------------------------------
 
   /*!
@@ -1163,9 +1258,9 @@ private:
   // Language specific information. "en" is default, but any variant
   // if ISO two letter language code can be used. Key is always lower
   // case.
-  std::map<std::string, std::string> m_mapModule_Name;        // Module name
-  std::map<std::string, std::string> m_mapModule_Description; // Module description
-  std::map<std::string, std::string> m_mapModule_HelpURL;     // URL for full module information
+  std::string m_name;                                  // Module name
+  std::map<std::string, std::string> m_mapDescription; // Module description
+  std::map<std::string, std::string> m_mapInfoURL;     // URL for full module information
 
   std::string m_strModule_changeDate; // Last date changed
   std::string m_strModule_Model;      // Module Model
@@ -1183,10 +1278,10 @@ private:
   CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
   CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
 
-  std::deque<CMDF_Event *> m_list_event;              // Events this node can generate
   std::deque<CMDF_Register *> m_list_register;        // List with defined registers
   std::deque<CMDF_RemoteVariable *> m_list_remotevar; // List with defined remote variables
-  std::deque<CMDF_Bit *> m_list_alarmbits;            // List with alarm bit defines
+  std::deque<CMDF_Event *> m_list_event;              // Events this node can generate
+  std::deque<CMDF_Bit *> m_list_alarm;                // List with alarm bit defines
 };
 
 #endif

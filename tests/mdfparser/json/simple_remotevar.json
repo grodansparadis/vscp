@@ -2,8 +2,8 @@
   "_copyright": "Copyright C) 2021 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
 
   "module": {
-    "name": "Simple B test",
-    "model": "Simple B model",
+    "name": "Simple remotevar",
+    "model": "Simple remotyevar",
     "version": "B",
     "changed": "2021-11-02",
     "description": "This is an english BBB description",
@@ -236,7 +236,108 @@
           }
         }
       ]
-    }
+    },
+    "remotevar" : [
+      {
+        "name" : "Abstraction 1",
+        "type": "short", 
+        "default":"0",
+        "page" :"0",
+        "offset" :18,
+        "bgcolor" :"0xCCFFFF",
+        "fgcolor" :"0x000000",
+        
+        "description" : {
+          "en": "English description 1",
+          "se": "Svensk beskrivning 1",
+          "lt": "Lietuvos padeda 1"
+        },
+        "infourl" : {
+          "gb": "English help",
+          "se": "Svensk hjälp",
+          "lt": "Lietuvos padeda"
+        }
+      },
+      {
+        "name" : "Abstraction 2",
+        "type": "uint8_t", 
+        "default": "0x22",
+        "page" : "0x00",
+        "offset" :"18",
+        "bgcolor" :"0xCCFFFF",
+        "fgcolor" :"0x000000",        
+        "description" : {
+          "en": "English description 2",
+          "se": "Svensk beskrivning 2",
+          "lt": "Lietuvos padeda 2"
+        },
+        "infourl" : {
+          "en": "English help 2",
+          "se": "Svensk hjälp 2",
+          "lt": "Lietuvos padeda 2"
+        },
+        "valuelist" : [
+          {
+            "value" : "0x00",
+            "name" : "Low",
+            "description" : {
+              "en" : "Low speed",
+              "se" : "Låg hastighet"
+            },
+            "infourl" : {
+              "gb": "English help 1 vl2",
+              "se": "Svensk hjälp 1 vl2",
+              "lt": "Lietuvos padeda 1 vl2"
+            }
+          },
+          {
+            "value" : "0x01",
+            "name" : "Medium",
+            "description" : {
+              "en" : "Medium speed",
+              "se" : "Medium hastighet"
+            },
+            "infourl" : {
+              "gb": "English help 2 vl2",
+              "se": "Svensk hjälp 2 vl2",
+              "lt": "Lietuvos padeda 2 vl2"
+            }
+          },
+          {
+            "value" : "0x03",
+            "name" : "High",
+            "description" : {
+              "en" : "High speed",
+              "se" : "Hög hastighet"
+            },
+            "infourl" : {
+              "gb": "English help 3 vl2",
+              "se": "Svensk hjälp 3 vl2",
+              "lt": "Lietuvos padeda 3 vl2"
+            }
+          }
+        ] 
+      },
+      {
+        "name" : "Abstraction 3",
+        "type": "short", 
+        "default":"0",
+        "page" :"0",
+        "offset" :18,
+        "bgcolor" :"0xCCFFFF",
+        "fgcolor" :"0x000000",
+        
+        "description" : {
+          "en": "English description 3",
+          "se": "Svensk beskrivning 3",
+          "lt": "Lietuvos padeda 3"
+        },
+        "infourl" : {
+          "gb": "English help 3",
+          "se": "Svensk hjälp 3",
+          "lt": "Lietuvos padeda 3"
+        }
+      }    
+    ]
   } 
 }
-

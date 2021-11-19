@@ -1,15 +1,6 @@
 {
     "module": {
-	    "name": {
-	    	"en": "Simple A test",
-	    	"es": "Prueba simple A",
-	      	"pt": "Teste A simples",
-	      	"zh": "简单 A 测试",
-	      	"se": "Enkel A test",
-	      	"lt": "Paprastas A testas",
-	      	"de": "Einfacher A-Test",
-	      	"eo": "Simpla A-testo"
-	    },
+	    "name": "Simple A test",
 	    "model": "Simple A model",
 	    "version": "A",
 	    "changed": "2021-11-02",

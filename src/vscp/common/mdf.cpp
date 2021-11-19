@@ -87,9 +87,8 @@ CMDF_ValueListValue::CMDF_ValueListValue()
 
 CMDF_ValueListValue::~CMDF_ValueListValue()
 {
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,9 +120,8 @@ CMDF_RemoteVariable::clearStorage(void)
   }
   m_list_value.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,57 +131,57 @@ CMDF_RemoteVariable::clearStorage(void)
 std::string
 CMDF_RemoteVariable::getRemoteVariableValueType(void)
 {
-  switch (m_nType) {
+  switch (m_type) {
 
-    case type_string:
+    case remote_variable_type_string:
       return (std::string("String"));
 
-    case type_boolval:
+    case remote_variable_type_boolval:
       return (std::string("Boolean"));
 
-    case type_bitfield:
+    case remote_variable_type_bitfield:
       return (std::string("Bitfield"));
 
-    case type_int8_t:
+    case remote_variable_type_int8_t:
       return (std::string("Signed 8-bit integer"));
 
-    case type_uint8_t:
+    case remote_variable_type_uint8_t:
       return (std::string("Unsigned 8-bit integer"));
 
-    case type_int16_t:
+    case remote_variable_type_int16_t:
       return (std::string("Signed 16-bit integer"));
 
-    case type_uint16_t:
+    case remote_variable_type_uint16_t:
       return (std::string("Unsigned 16-bit integer"));
 
-    case type_int32_t:
+    case remote_variable_type_int32_t:
       return (std::string("Signed 32-bit integer"));
 
-    case type_uint32_t:
+    case remote_variable_type_uint32_t:
       return (std::string("Unsigned 32-bit integer"));
 
-    case type_int64_t:
+    case remote_variable_type_int64_t:
       return (std::string("Signed 64-bit integer"));
 
-    case type_uint64_t:
+    case remote_variable_type_uint64_t:
       return (std::string("Unsigned 64-bit integer"));
 
-    case type_float:
+    case remote_variable_type_float:
       return (std::string("float"));
 
-    case type_double:
+    case remote_variable_type_double:
       return (std::string("double"));
 
-    case type_date:
+    case remote_variable_type_date:
       return (std::string("Date"));
 
-    case type_time:
+    case remote_variable_type_time:
       return (std::string("Time"));
 
-    case type_guid:
+    case remote_variable_type_guid:
       return (std::string("GUID"));
 
-    case type_unknown:
+    case remote_variable_type_unknown:
     default:
       return (std::string("Unknown Type"));
   }
@@ -198,61 +196,61 @@ CMDF_RemoteVariable::getRemoteVariableTypeByteCount(void)
 {
   uint16_t width = 0;
 
-  switch (m_nType) {
+  switch (m_type) {
 
-    case type_string:
-      width = m_nWidth;
+    case remote_variable_type_string:
+      width = m_width;
       break;
 
-    case type_boolval:
+    case remote_variable_type_boolval:
       width = 1;
       break;
 
-    case type_bitfield:
-      width = m_nWidth;
+    case remote_variable_type_bitfield:
+      width = m_width;
       break;
 
-    case type_int8_t:
-    case type_uint8_t:
+    case remote_variable_type_int8_t:
+    case remote_variable_type_uint8_t:
       width = 1;
       break;
 
-    case type_int16_t:
-    case type_uint16_t:
+    case remote_variable_type_int16_t:
+    case remote_variable_type_uint16_t:
       width = 2;
       break;
 
-    case type_int32_t:
-    case type_uint32_t:
+    case remote_variable_type_int32_t:
+    case remote_variable_type_uint32_t:
       width = 4;
       break;
 
-    case type_int64_t:
-    case type_uint64_t:
+    case remote_variable_type_int64_t:
+    case remote_variable_type_uint64_t:
       width = 8;
       break;
 
-    case type_float:
+    case remote_variable_type_float:
       width = 4;
       break;
 
-    case type_double:
+    case remote_variable_type_double:
       width = 8;
       break;
 
-    case type_date:
+    case remote_variable_type_date:
       width = 6;
       break;
 
-    case type_time:
+    case remote_variable_type_time:
       width = 6;
       break;
 
-    case type_guid:
+    case remote_variable_type_guid:
       width = 16;
       break;
 
-    case type_unknown:
+    case remote_variable_type_unknown:
       width = 0;
     default:
       break;
@@ -294,9 +292,8 @@ CMDF_Bit::clearStorage(void)
   }
   m_list_value.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -305,7 +302,20 @@ CMDF_Bit::clearStorage(void)
 
 CMDF_Register::CMDF_Register()
 {
-  ;
+  m_page = 0;
+  m_offset = 0;
+  m_width = 8;
+  m_min = 0;
+  m_max = 255;
+  m_strDefault = "UNDEF";
+  m_access = MDF_REG_ACCESS_READ_WRITE;
+  m_type = REGISTER_TYPE_STANDARD;
+  m_size = 1;
+
+  m_rowInGrid = 0;
+  m_value = 0;
+  m_bgcolor = 0;
+  m_fgcolor = 0;
 }
 
 CMDF_Register::~CMDF_Register()
@@ -342,9 +352,8 @@ CMDF_Register::clearStorage(void)
   }
   m_list_value.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -372,23 +381,22 @@ CMDF_Register &
 CMDF_Register::operator=(const CMDF_Register &other)
 {
   m_strName        = other.m_strName;
-  m_strDescription = other.m_strDescription;
-  m_strHelpType    = other.m_strHelpType;
-  m_strHelp        = other.m_strHelp;
+  m_mapDescription = other.m_mapDescription;
+  m_mapInfoURL     = other.m_mapInfoURL;
 
-  m_nPage   = other.m_nPage;
-  m_nOffset = other.m_nOffset;
-  m_nWidth  = other.m_nWidth;
+  m_page   = other.m_page;
+  m_offset = other.m_offset;
+  m_width  = other.m_width;
 
   m_type = other.m_type;
   m_size = other.m_size;
 
-  m_nMin = other.m_nMin;
-  m_nMax = other.m_nMax;
+  m_min = other.m_min;
+  m_max = other.m_max;
 
   m_strDefault = other.m_strDefault;
 
-  m_nAccess = other.m_nAccess;
+  m_access = other.m_access;
 
   m_rowInGrid = other.m_rowInGrid;
   m_value     = other.m_value;
@@ -470,9 +478,8 @@ CMDF_ActionParameter::clearStorage(void)
   }
   m_list_value.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -510,9 +517,8 @@ CMDF_Action::clearStorage(void)
   // Delete all nodes
   m_list_ActionParameter.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -594,9 +600,8 @@ CMDF_EventData::clearStorage()
   }
   m_list_value.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -631,9 +636,8 @@ CMDF_Event::clearStorage()
   }
   m_list_eventdata.clear();
 
-  m_strDescription.clear();
-  m_strHelpType.clear();
-  m_strHelp.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -832,15 +836,13 @@ CMDF_Firmware::clearStorage(void)
   m_strFormat.clear();
   m_strMd5.clear();
 
-  m_targetCode = 0;
+  m_targetCode    = 0;
   m_size          = 0;
   m_version_major = 0;
   m_version_minor = 0;
   m_version_patch = 0;
 
   m_mapDescription.clear();
-  m_mapHelpType.clear();
-  m_mapHelp.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -869,9 +871,7 @@ CMDF_Manual::clearStorage(void)
   m_mapDescription.clear();
 }
 
-
 // ----------------------------------------------------------------------------
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
@@ -930,20 +930,20 @@ CMDF::clearStorage(void)
 
   // Clear alarm bit list
   std::deque<CMDF_Bit *>::iterator iterAlarmBits;
-  for (iterAlarmBits = m_list_alarmbits.begin(); iterAlarmBits != m_list_alarmbits.end(); ++iterAlarmBits) {
+  for (iterAlarmBits = m_list_alarm.begin(); iterAlarmBits != m_list_alarm.end(); ++iterAlarmBits) {
     CMDF_Bit *pRecordAlarmBits = *iterAlarmBits;
     if (NULL != pRecordAlarmBits) {
       delete pRecordAlarmBits;
       pRecordAlarmBits = nullptr;
     }
   }
-  m_list_alarmbits.clear();
+  m_list_alarm.clear();
 
-  m_mapModule_Name.clear();
+  m_name = "";
   m_strModule_Model.clear();
   m_strModule_Version.clear();
-  m_mapModule_Description.clear();
-  m_mapModule_HelpURL.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
   m_strModule_changeDate.clear();
   m_module_bufferSize = 0;
   m_strURL.clear();
@@ -953,7 +953,7 @@ CMDF::clearStorage(void)
   m_list_event.clear();
   m_list_register.clear();
   m_list_remotevar.clear();
-  m_list_alarmbits.clear();
+  m_list_alarm.clear();
 
   // Clean up picture list
   std::deque<CMDF_Picture *>::iterator iterPicture;
@@ -1481,19 +1481,7 @@ CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 }
 */
 
-///////////////////////////////////////////////////////////////////////////////
-// getModuleName
-//
 
-std::string
-CMDF::getModuleName(std::string language)
-{
-  std::string str = m_mapModule_Name[language];
-  if (str.length() == 0) {
-    str = m_mapModule_Name["en"];
-  }
-  return str;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getModuleDescription
@@ -1502,9 +1490,9 @@ CMDF::getModuleName(std::string language)
 std::string
 CMDF::getModuleDescription(std::string language)
 {
-  std::string str = m_mapModule_Description[language];
+  std::string str = m_mapDescription[language];
   if (str.length() == 0) {
-    str = m_mapModule_Description["en"];
+    str = m_mapDescription["en"];
   }
   return str;
 }
@@ -1516,9 +1504,9 @@ CMDF::getModuleDescription(std::string language)
 std::string
 CMDF::getModuleHelpUrl(std::string language)
 {
-  std::string str = m_mapModule_HelpURL[language];
+  std::string str = m_mapInfoURL[language];
   if (str.length() == 0) {
-    str = m_mapModule_HelpURL["en"];
+    str = m_mapInfoURL["en"];
   }
   return str;
 }
@@ -1571,7 +1559,7 @@ bool gbModule = false;
 CMDF_Item *gpItemStruct;         // Holds temporary items
 CMDF_Picture *gpPictureStruct;   // Holds temporary picture items
 CMDF_Firmware *gpFirmwareStruct; // Holds temporary firmware items
-CMDF_Manual *gpManualStruct;   // Holds temporary manual items
+CMDF_Manual *gpManualStruct;     // Holds temporary manual items
 
 // ----------------------------------------------------------------------------
 void
@@ -1633,21 +1621,20 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       // Now under the <files> tag
       else if (gbModule && (0 == strcmp(name, "picture"))) {
 
-        gTokenParent    = "picture";
-        
-        gpPictureStruct = new CMDF_Picture;        
+        gTokenParent = "picture";
+
+        gpPictureStruct = new CMDF_Picture;
         if (nullptr == gpPictureStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for picture");
           return;
         }
         pmdf->m_list_picture.push_back(gpPictureStruct);
-        
+
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
-          if ((0 == strcasecmp(attr[i], "path")) || 
-              (0 == strcasecmp(attr[i], "url"))) {
+          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
               gpPictureStruct->m_strURL = attribute;
             }
@@ -1660,17 +1647,17 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
       }
       // * * * NOTE! * * *
-      // This is an old deprecated form with one firmware element 
+      // This is an old deprecated form with one firmware element
       // Now under the <files> tag
       else if (gbModule && (0 == strcmp(name, "firmware"))) {
-        
-        gTokenParent    = "firmware";
+
+        gTokenParent     = "firmware";
         gpFirmwareStruct = new CMDF_Firmware;
         if (nullptr == gpFirmwareStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for firmware");
           return;
         }
-        
+
         pmdf->m_list_firmware.push_back(gpFirmwareStruct);
 
         for (int i = 0; attr[i]; i += 2) {
@@ -1699,7 +1686,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version minor: {0}", attribute);
             gpFirmwareStruct->m_version_minor = vscp_readStringValue(attribute);
           }
-          else if ((0 == strcasecmp(attr[i],"version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
+          else if ((0 == strcasecmp(attr[i], "version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
             // Version for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version patch: {0}", attribute);
             gpFirmwareStruct->m_version_patch = vscp_readStringValue(attribute);
@@ -1709,12 +1696,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i],"md5sum")) {
+          else if (0 == strcasecmp(attr[i], "md5sum")) {
             // MD5 for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
           }
-          else if (0 == strcasecmp(attr[i],"size")) {
+          else if (0 == strcasecmp(attr[i], "size")) {
             // Size for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware size: {0}", attribute);
             gpFirmwareStruct->m_size = vscp_readStringValue(attribute);
@@ -1732,16 +1719,16 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
       }
       // * * * NOTE! * * *
-      // This is an old deprecated form with one manual element 
+      // This is an old deprecated form with one manual element
       // Now under the <files> tag
       else if (gbModule && (0 == strcmp(name, "manual"))) {
-        gTokenParent    = "manual";
+        gTokenParent   = "manual";
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for manual");
           return;
         }
-        
+
         pmdf->m_list_manual.push_back(gpManualStruct);
 
         for (int i = 0; attr[i]; i += 2) {
@@ -1754,7 +1741,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Path/url for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
-          } 
+          }
           else if (0 == strcasecmp(attr[i], "lang")) {
             // Language for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual language: {0}", attribute);
@@ -1764,9 +1751,9 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Format for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
-          } 
+          }
         }
-      }      
+      }
       else if (gbModule && (0 == strcmp(name, "boot"))) {
         gTokenParent = "boot";
       }
@@ -1809,23 +1796,22 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
       // Picture (standard format)
       else if ((0 == strcmp(name, "picture"))) {
-        
-        gTokenParent    = "picture";
-        
+
+        gTokenParent = "picture";
+
         gpPictureStruct = new CMDF_Picture;
         if (nullptr == gpPictureStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for picture");
           return;
         }
-        
+
         pmdf->m_list_picture.push_back(gpPictureStruct);
 
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
-          if ((0 == strcasecmp(attr[i], "path")) || 
-              (0 == strcasecmp(attr[i], "url"))) {
+          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
               gpPictureStruct->m_strURL = attribute;
             }
@@ -1875,7 +1861,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version minor: {0}", attribute);
             gpFirmwareStruct->m_version_minor = vscp_readStringValue(attribute);
           }
-          else if ((0 == strcasecmp(attr[i],"version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
+          else if ((0 == strcasecmp(attr[i], "version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
             // Version for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version patch: {0}", attribute);
             gpFirmwareStruct->m_version_patch = vscp_readStringValue(attribute);
@@ -1885,12 +1871,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i],"md5sum")) {
+          else if (0 == strcasecmp(attr[i], "md5sum")) {
             // MD5 for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
           }
-          else if (0 == strcasecmp(attr[i],"size")) {
+          else if (0 == strcasecmp(attr[i], "size")) {
             // Size for firmware
             spdlog::trace("ParseMDF: handleMDFParserData: Module firmware size: {0}", attribute);
             gpFirmwareStruct->m_size = vscp_readStringValue(attribute);
@@ -1909,7 +1895,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
       // Manual  (standard format)
       else if ((0 == strcmp(name, "manual"))) {
-        gTokenParent     = "manual";
+        gTokenParent   = "manual";
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for manual");
@@ -1928,7 +1914,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Path/url for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
-          } 
+          }
           else if (0 == strcasecmp(attr[i], "lang")) {
             // Language for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual language: {0}", attribute);
@@ -1938,13 +1924,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Format for manual
             spdlog::trace("ParseMDF: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
-          } 
+          }
         }
       }
       // Boot  (standard format)
       else if ((0 == strcmp(name, "boot"))) {
-        gTokenParent     = "boot";
-        //gpBootStruct = new CMDF_Boot;
+        gTokenParent = "boot";
+        // gpBootStruct = new CMDF_Boot;
       }
       break;
   }
@@ -1952,9 +1938,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
   gdepth_xml_parser++;
 }
 
-
 // ----------------------------------------------------------------------------
-
 
 void
 __handleMDFParserData(void *data, const XML_Char *content, int length)
@@ -1994,8 +1978,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         pmdf->m_redirectUrl = strContent;
       }
       else if (gToken == "name") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent, gLastLanguage);
-        pmdf->m_mapModule_Name[gLastLanguage] = strContent;
+        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        pmdf->m_name = strContent;
       }
       break;
 
@@ -2004,8 +1988,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
     case 3:
       if (gToken == "name") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent, gLastLanguage);
-        pmdf->m_mapModule_Name[gLastLanguage] = strContent;
+        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        pmdf->m_name = strContent;
       }
       else if (gToken == "model") {
         spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0}", strContent);
@@ -2021,17 +2005,17 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       else if (gToken == "description") {
         if (gTokenParent == "module") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module Description: {0} language: {1}",
-                      strContent,
-                      gLastLanguage);
-        pmdf->m_mapModule_Description[gLastLanguage] = strContent;
-        spdlog::trace("ParseMDF: handleMDFParserData: Module Description size: {0}",
-                      pmdf->m_mapModule_Description.size());
-        }     
+          spdlog::trace("ParseMDF: handleMDFParserData: Module Description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          pmdf->m_mapDescription[gLastLanguage] = strContent;
+          spdlog::trace("ParseMDF: handleMDFParserData: Module Description size: {0}",
+                        pmdf->m_mapDescription.size());
+        }
       }
       else if (gToken == "infourl") {
         spdlog::trace("ParseMDF: handleMDFParserData: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
-        pmdf->m_mapModule_HelpURL[gLastLanguage] = strContent;
+        pmdf->m_mapInfoURL[gLastLanguage] = strContent;
       }
       else if (gToken == "buffersize") {
         spdlog::trace("ParseMDF: handleMDFParserData: Module buffer size: {0}", strContent);
@@ -2082,6 +2066,15 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("ParseMDF: handleMDFParserData: Manual Description size: {0}",
                         gpManualStruct->m_mapDescription.size());
         }
+      }
+      else if (gTokenParent == "boot" && (gToken == "algorithm")) {
+        pmdf->m_bootInfo.m_nAlgorithm = vscp_readStringValue(strContent);
+      }
+      else if (gTokenParent == "boot" && (gToken == "blocksize")) {
+        pmdf->m_bootInfo.m_nBlockSize = vscp_readStringValue(strContent);
+      }
+      else if (gTokenParent == "boot" && (gToken == "blockcount")) {
+        pmdf->m_bootInfo.m_nBlockCount = vscp_readStringValue(strContent);
       }
       break;
 
@@ -2205,9 +2198,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
   }
 }
 
-
 // ----------------------------------------------------------------------------
-
 
 void
 __endSetupMDFParser(void *data, const char *name)
@@ -2247,7 +2238,7 @@ __endSetupMDFParser(void *data, const char *name)
       // This is the deprecated form
       else if (0 == strcasecmp(name, "pictures")) {
         gpPictureStruct = nullptr;
-      }      
+      }
       else if (0 == strcasecmp(name, "picture")) {
         gpPictureStruct = nullptr;
       }
@@ -2311,8 +2302,7 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   gpItemStruct     = nullptr;
   gpPictureStruct  = nullptr;
   gpFirmwareStruct = nullptr;
-  gpManualStruct  = nullptr;
-  
+  gpManualStruct   = nullptr;
 
   // Empty old MDF information
   clearStorage();
@@ -2356,7 +2346,7 @@ CMDF::parseMDF_JSON(std::string &path)
 {
   int rv = VSCP_ERROR_SUCCESS;
 
-  spdlog::debug("Reading JSON MDF");
+  spdlog::debug("Reading JSON MDF {0}", path);
 
   json j;
 
@@ -2387,14 +2377,8 @@ CMDF::parseMDF_JSON(std::string &path)
     if (j["module"].contains("name")) {
 
       if (j["module"]["name"].is_string()) {
-        m_mapModule_Name["en"] = j["module"]["name"];
-        spdlog::trace("Parse-JSON: Module name: {0} language: 'en' ", m_mapModule_Name["en"]);
-      }
-      else if (j["module"]["name"].is_object()) {
-        for (auto &item : j["module"]["name"].items()) {
-          m_mapModule_Name[item.key()] = item.value();
-          spdlog::trace("Parse-JSON: Module name: {0} language: '{1}'", item.value(), item.key());
-        }
+        m_name = j["module"]["name"];
+        spdlog::trace("Parse-JSON: Module name: {0} language: 'en' ", m_name);
       }
       else {
         spdlog::error("Parse-JSON: Failed to read module name (not string, not object)");
@@ -2448,12 +2432,12 @@ CMDF::parseMDF_JSON(std::string &path)
     if (j["module"].contains("description")) {
 
       if (j["module"]["description"].is_string()) {
-        m_mapModule_Description["en"] = j["module"]["description"];
-        spdlog::trace("Parse-JSON: Module description: {0} language: 'en' ", m_mapModule_Description["en"]);
+        m_mapDescription["en"] = j["module"]["description"];
+        spdlog::trace("Parse-JSON: Module description: {0} language: 'en' ", m_mapDescription["en"]);
       }
       else if (j["module"]["description"].is_object()) {
         for (auto &item : j["module"]["description"].items()) {
-          m_mapModule_Description[item.key()] = item.value();
+          m_mapDescription[item.key()] = item.value();
           spdlog::trace("Parse-JSON: Module description: {0} language: '{1}'", item.value(), item.key());
         }
       }
@@ -2469,12 +2453,12 @@ CMDF::parseMDF_JSON(std::string &path)
     // Can either be string or object
     if (j["module"].contains("infourl")) {
       if (j["module"]["infourl"].is_string()) {
-        m_mapModule_HelpURL["en"] = j["module"]["infourl"];
-        spdlog::trace("Parse-JSON: Module info URL: {0} language: 'en' ", m_mapModule_HelpURL["en"]);
+        m_mapInfoURL["en"] = j["module"]["infourl"];
+        spdlog::trace("Parse-JSON: Module info URL: {0} language: 'en' ", m_mapInfoURL["en"]);
       }
       else if (j["module"]["infourl"].is_object()) {
         for (auto &item : j["module"]["infourl"].items()) {
-          m_mapModule_HelpURL[item.key()] = item.value();
+          m_mapInfoURL[item.key()] = item.value();
           spdlog::trace("Parse-JSON: Module info URL: {0} language: '{1}'", item.value(), item.key());
         }
       }
@@ -2735,8 +2719,449 @@ CMDF::parseMDF_JSON(std::string &path)
           }
         }
       }
+
+      if (j["module"].contains("register") && j["module"]["register"].is_array()) {
+        for (auto &reg : j["module"]["register"].items()) {
+          //std::cout << "key: " << reg.key() << ", value:" << reg.value() << '\n';
+          if (reg.value().is_object()) {
+
+            CMDF_Register *preg = new CMDF_Register();
+            if (preg == nullptr) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for register item.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            m_list_register.push_back(preg);
+
+            json jreg(reg.value());
+            //std::cout << "REG: " << jreg.dump() << '\n';
+
+            // Register Page
+            if (jreg.contains("page") && jreg["page"].is_number()) {
+              preg->m_page = jreg["page"];
+            }
+            else if (jreg.contains("page") && jreg["page"].is_string()) {
+              preg->m_page = vscp_readStringValue(jreg["page"]);
+            }
+            else {
+              preg->m_page = 0;
+              spdlog::warn("Parse-JSON: No register page defined (defaults to zero).");
+            }
+
+            // Register offset
+            if (jreg.contains("offset") && jreg["offset"].is_number()) {
+              preg->m_offset = jreg["offset"];
+            }
+            else if (jreg.contains("offset") && jreg["offset"].is_string()) {
+              preg->m_offset = vscp_readStringValue(jreg["offset"]);
+            }
+            else {
+              preg->m_offset = 0;
+              spdlog::error("Parse-JSON: No register offset defined (defaults to zero).");
+            }
+
+            // Register width
+            if (jreg.contains("width") && jreg["width"].is_number()) {
+              preg->m_width = jreg["width"];
+            }
+            else if (jreg.contains("width") && jreg["width"].is_string()) {
+              preg->m_width = vscp_readStringValue(jreg["width"]);
+            }
+            else {
+              preg->m_width = 8;
+              spdlog::info("Parse-JSON: No register width defined (defaults to eight bits).");
+            }
+
+            // Register min
+            if (jreg.contains("min") && jreg["min"].is_number()) {
+              preg->m_min = jreg["min"];
+            }
+            else if (jreg.contains("min") && jreg["min"].is_string()) {
+              preg->m_min = vscp_readStringValue(jreg["min"]);
+            }
+            else {
+              preg->m_min = 0;
+              spdlog::info("Parse-JSON: No register min defined (defaults to zero).");
+            }
+
+            // Register max
+            if (jreg.contains("max") && jreg["max"].is_number()) {
+              preg->m_max = jreg["max"];
+            }
+            else if (jreg.contains("max") && jreg["max"].is_string()) {
+              preg->m_max = vscp_readStringValue(jreg["max"]);
+            }
+            else {
+              preg->m_max = 0;
+              spdlog::info("Parse-JSON: No register max defined (defaults to 255).");
+            }
+
+            if (jreg.contains("access") && jreg["access"].is_string()) {
+              std::string strAccess = jreg["access"];
+              vscp_trim(strAccess);
+              vscp_makeLower(strAccess);
+              preg->m_access = MDF_REG_ACCESS_NONE;
+              if (strAccess == "w") {
+                preg->m_access = MDF_REG_ACCESS_READ_ONLY;
+              }
+              else if (strAccess == "r") {
+                preg->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+              }
+              else if (strAccess == "rw") {
+                preg->m_access = MDF_REG_ACCESS_READ_WRITE;
+              }
+            }
+            else {
+              preg->m_max = 0;
+              spdlog::info("Parse-JSON: No register max defined (defaults to 255).");
+            }
+
+            // Register description
+            if (jreg.contains("description")) {
+
+                if (jreg["description"].is_string()) {
+                  preg->m_mapDescription["en"] = jreg["description"];
+                  spdlog::trace("Parse-JSON: Register description: {0} language: 'en' ", jreg["description"]);
+                }
+                else if (jreg["description"].is_object()) {
+                  for (auto &item : jreg["description"].items()) {
+                    preg->m_mapDescription[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Register description: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No register description (not string, not object)");
+                }
+            }
+            else {
+              spdlog::trace("Parse-JSON: No register description.");
+            }
+
+            // Register infourl
+            if (jreg.contains("infourl")) {
+
+                if (jreg["infourl"].is_string()) {
+                  preg->m_mapDescription["en"] = jreg["infourl"];
+                  spdlog::trace("Parse-JSON: Register description: {0} language: 'en' ", jreg["infourl"]);
+                }
+                else if (jreg["infourl"].is_object()) {
+                  for (auto &item : jreg["infourl"].items()) {
+                    preg->m_mapInfoURL[item.key()] = item.value();
+                    spdlog::trace("Parse-JSON: Register infourl: {0} language: '{1}'", item.value(), item.key());
+                  }
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No register infourl (not string, not object)");
+                }
+            }
+            else {
+              spdlog::trace("Parse-JSON: No register infourl.");
+            }
+
+            // Register valuelist
+            if (jreg.contains("valuelist") && jreg["valuelist"].is_array()) {
+              for (auto &item : jreg["valuelist"].items()) {
+                if (item.value().is_object()) {
+
+                  json jvalue(item.value());
+
+                  CMDF_ValueListValue *pvalue = new CMDF_ValueListValue();
+                  if (pvalue == nullptr) {
+                    spdlog::error("Parse-JSON: Failed to allocate memory for register value item.");
+                    return VSCP_ERROR_PARSING;
+                  }
+
+                  preg->m_list_value.push_back(pvalue);
+
+                  if (jvalue.contains("name") && jvalue["name"].is_string()) {
+                    pvalue->m_name = jreg["name"];
+                  }
+                  else {
+                    pvalue->m_name = "";
+                    spdlog::error("Parse-JSON: No register valuelist name defined (defaults to empty).");
+                  }
+
+                  if (jvalue.contains("value") && jvalue["value"].is_string()) {
+                    pvalue->m_strValue = jvalue["value"];
+                  }
+                  else {
+                    spdlog::error("Parse-JSON: No register valuelist value defined (defaults to zero).");
+                  }
+
+                  // Register description
+                  if (jvalue.contains("description")) {
+
+                      if (jvalue["description"].is_string()) {
+                        pvalue->m_mapDescription["en"] = jvalue["description"];
+                        spdlog::trace("Parse-JSON: Register description: {0} language: 'en' ", jvalue["description"]);
+                      }
+                      else if (jvalue["description"].is_object()) {
+                        for (auto &item : jvalue["description"].items()) {
+                          pvalue->m_mapDescription[item.key()] = item.value();
+                          spdlog::trace("Parse-JSON: Register valuelist description: {0} language: '{1}'", item.value(), item.key());
+                        }
+                      }
+                      else {
+                        spdlog::trace("Parse-JSON: No register valuelist description (not string, not object)");
+                      }
+                  }
+                  else {
+                    spdlog::trace("Parse-JSON: No registervaluelist  description.");
+                  }
+
+                  // Register infourl
+                  if (jvalue.contains("infourl")) {
+
+                      if (jvalue["infourl"].is_string()) {
+                        pvalue->m_mapDescription["en"] = jvalue["infourl"];
+                        spdlog::trace("Parse-JSON: Register valuelist infourl: {0} language: 'en' ", jvalue["infourl"]);
+                      }
+                      else if (jvalue["infourl"].is_object()) {
+                        for (auto &item : jvalue["infourl"].items()) {
+                          pvalue->m_mapInfoURL[item.key()] = item.value();
+                          spdlog::trace("Parse-JSON: Register valuelist infourl: {0} language: '{1}'", item.value(), item.key());
+                        }
+                      }
+                      else {
+                        spdlog::trace("Parse-JSON: No register valuelist infourl (not string, not object)");
+                      }
+                  }
+                  else {
+                    spdlog::trace("Parse-JSON: No register valuelist infourl.");
+                  }
+
+                }
+                else {
+                  spdlog::trace("Parse-JSON: No register valuelist value is is not object");
+                }
+              }              
+            } // valuelist
+
+            // Register bit
+            if (jreg.contains("bit") && jreg["bit"].is_array()) {
+              for (auto &item : jreg["bit"].items()) {
+                if (item.value().is_object()) {
+
+                  json jbit(item.value());
+
+                  CMDF_Bit *pbit = new CMDF_Bit();
+                  if (pbit == nullptr) {
+                    spdlog::error("Parse-JSON: Failed to allocate memory for register bit item.");
+                    return VSCP_ERROR_PARSING;
+                  }
+
+                  preg->m_list_bit.push_back(pbit);
+
+                  if (jbit.contains("name") && jbit["name"].is_string()) {
+                    pbit->m_name = jbit["name"];
+                  }
+                  else {
+                    pbit->m_name = "";
+                    spdlog::error("Parse-JSON: No register bit name defined (defaults to empty).");
+                  }
+
+                  if (jbit.contains("pos") && jbit["pos"].is_number()) {
+                    pbit->m_pos = jbit["pos"];
+                  }
+                  else if (jbit.contains("pos") && jbit["pos"].is_string()) {
+                    pbit->m_pos = vscp_readStringValue(jbit["pos"]);
+                  }
+                  else {
+                    pbit->m_pos = 0;
+                    spdlog::error("Parse-JSON: No register bit pos defined (defaults to zero).");
+                  }
+
+                  if (jbit.contains("width") && jbit["width"].is_number()) {
+                    pbit->m_width = jbit["width"];
+                  }
+                  else if (jbit.contains("width") && jbit["width"].is_string()) {
+                    pbit->m_width = vscp_readStringValue(jbit["width"]);
+                  }
+                  else {
+                    pbit->m_width = 1;
+                    spdlog::trace("Parse-JSON: No register bit width defined (defaults to one).");
+                  }
+
+                  if (jbit.contains("default") && jbit["default"].is_number()) {
+                    pbit->m_default = jbit["default"];
+                  }
+                  else if (jbit.contains("default") && jbit["default"].is_string()) {
+                    pbit->m_default = vscp_readStringValue(jbit["default"]);
+                  }
+                  else {
+                    pbit->m_default = 1;
+                    spdlog::trace("Parse-JSON: No register bit default defined (defaults to zero).");
+                  }
+
+                  if (jbit.contains("min") && jbit["min"].is_number()) {
+                    pbit->m_min = jbit["min"];
+                  }
+                  else if (jbit.contains("min") && jbit["min"].is_string()) {
+                    pbit->m_min = vscp_readStringValue(jbit["min"]);
+                  }
+                  else {
+                    pbit->m_min = 0;
+                    spdlog::trace("Parse-JSON: No register bit min defined (defaults to zero).");
+                  }
+
+                  if (jbit.contains("max") && jbit["max"].is_number()) {
+                    pbit->m_max = jbit["max"];
+                  }
+                  else if (jbit.contains("max") && jbit["max"].is_string()) {
+                    pbit->m_max = vscp_readStringValue(jbit["max"]);
+                  }
+                  else {
+                    pbit->m_min = 255;
+                    spdlog::trace("Parse-JSON: No register bit max defined (defaults to 255).");
+                  }
+
+                  if (jbit.contains("access") && jbit["access"].is_string()) {
+                    std::string strAccess = jbit["access"];
+                    vscp_trim(strAccess);
+                    vscp_makeLower(strAccess);
+                    pbit->m_access = MDF_REG_ACCESS_NONE;
+                    if (strAccess == "w") {
+                      pbit->m_access = MDF_REG_ACCESS_READ_ONLY;
+                    }
+                    else if (strAccess == "r") {
+                      pbit->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+                    }
+                    else if (strAccess == "rw") {
+                      pbit->m_access = MDF_REG_ACCESS_READ_WRITE;
+                    }
+                  }
+                  else {
+                    pbit->m_access = MDF_REG_ACCESS_READ_WRITE;
+                    spdlog::info("Parse-JSON: No register access defined (defaults to 'rw').");
+                  }      
+
+                  // Register description
+                  if (jbit.contains("description")) {
+
+                      if (jbit["description"].is_string()) {
+                        pbit->m_mapDescription["en"] = jbit["description"];
+                        spdlog::trace("Parse-JSON: Register description: {0} language: 'en' ", jreg["description"]);
+                      }
+                      else if (jbit["description"].is_object()) {
+                        for (auto &item : jbit["description"].items()) {
+                          pbit->m_mapDescription[item.key()] = item.value();
+                          spdlog::trace("Parse-JSON: Register bit description: {0} language: '{1}'", item.value(), item.key());
+                        }
+                      }
+                      else {
+                        spdlog::trace("Parse-JSON: No register bit description (not string, not object)");
+                      }
+                  }
+                  else {
+                    spdlog::trace("Parse-JSON: No register bit  description.");
+                  }
+
+                  // Register infourl
+                  if (jbit.contains("infourl")) {
+
+                      if (jbit["infourl"].is_string()) {
+                        pbit->m_mapDescription["en"] = jbit["infourl"];
+                        spdlog::trace("Parse-JSON: Register bit: {0} language: 'en' ", jbit["infourl"]);
+                      }
+                      else if (jbit["infourl"].is_object()) {
+                        for (auto &item : jbit["infourl"].items()) {
+                          pbit->m_mapInfoURL[item.key()] = item.value();
+                          spdlog::trace("Parse-JSON: Register bit: {0} language: '{1}'", item.value(), item.key());
+                        }
+                      }
+                      else {
+                        spdlog::trace("Parse-JSON: No register bit (not string, not object)");
+                      }
+                  }
+                  else {
+                    spdlog::trace("Parse-JSON: No bit infourl.");
+                  }
+
+                } // is object
+              } // for 
+            } // bit
+           
+          }
+        }
+      }
       else {
-        spdlog::warn("Parse-JSON: Failed to read module manufacturer address");
+        spdlog::warn("Parse-JSON: Failed to read module registers");
+      }
+
+      if (j["module"].contains("remotevar") && j["module"]["remotevar"].is_array()) {
+        for (auto &rvar : j["module"]["remotevar"].items()) {
+          //std::cout << "key: " << rvar.key() << ", value:" << rvar.value() << '\n';
+          if (rvar.value().is_object()) {
+
+            CMDF_RemoteVariable *prvar = new CMDF_RemoteVariable();
+            if (prvar == nullptr) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for remote variable item.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            m_list_remotevar.push_back(prvar);
+
+            json jrvar = rvar.value();
+
+            if (jrvar.contains("name") && jrvar["name"].is_string()) {
+              prvar->m_name = jrvar["name"];
+            }
+            else {
+              spdlog::error("Parse-JSON: No remote variable name defined.");
+              return VSCP_ERROR_PARSING;
+            }
+          }
+        }
+      }
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module remote variable");
+      }
+
+      if (j["module"].contains("dmatrix") && j["module"]["dmatrix"].is_object()) {}
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module decision matrix");
+      }
+
+      if (j["module"].contains("events") && j["module"]["events"].is_array()) {
+        for (auto &ev : j["module"]["events"].items()) {
+          //std::cout << "key: " << ev.key() << ", value:" << ev.value() << '\n';
+          if (ev.value().is_object()) {
+
+            CMDF_Event *pev = new CMDF_Event();
+            if (pev == nullptr) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for remote variable item.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            m_list_event.push_back(pev);
+
+            json jev = ev.key();
+          }
+        }
+      }
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module events");
+      }
+
+      if (j["module"].contains("alarm") && j["module"]["alarm"].is_array()) {
+        for (auto &alarm : j["module"]["alarm"].items()) {
+          //std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
+          if (alarm.value().is_object()) {
+
+            CMDF_Bit *palarm = new CMDF_Bit();
+            if (palarm == nullptr) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for alarm item.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            m_list_alarm.push_back(palarm);
+
+            json jalarm = alarm.key();
+          }
+        }
+      }
+      else {
+        spdlog::warn("Parse-JSON: Failed to read module alarm bits");
       }
     }
     else {
@@ -2744,40 +3169,335 @@ CMDF::parseMDF_JSON(std::string &path)
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    //                               Pictures
-    ///////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////
     //                                Files
     ///////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////////////////////////////
-    //                                Manual
-    ///////////////////////////////////////////////////////////////////////////
+    // 'files' - Is always object
+    if (j["module"].contains("files") && j["module"]["files"].is_object()) {
+
+      json jsub = j["module"]["files"];
+
+      // * * * Pictures * * *
+      if (jsub.contains("picture") && jsub["picture"].is_array()) {
+        for (auto &item : jsub["picture"].items()) {
+
+          CMDF_Picture *ppicture = new CMDF_Picture();
+          if (ppicture == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for picture item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_picture.push_back(ppicture);
+
+          json jpic = item.value();
+
+          if (jpic.contains("url") && jpic["url"].is_string()) {
+            ppicture->m_strURL = jpic["url"];
+            spdlog::trace("Parse-JSON: Picture URL: {0} ", jpic["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No picture url.");
+          }
+
+          if (jpic.contains("format") && jpic["format"].is_string()) {
+            ppicture->m_strFormat = jpic["format"];
+            spdlog::trace("Parse-JSON: Picture Format: {0} ", jpic["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No picture format.");
+          }
+
+          if (jpic.contains("description") && jpic["description"].is_object()) {
+
+            for (auto &item : jpic["description"].items()) {
+              ppicture->m_mapDescription[item.key()] = item.value();
+              spdlog::trace("Parse-JSON: Picture description: {0} language: '{1}'", item.value(), item.key());
+            }
+          }
+          else {
+            spdlog::trace("Parse-JSON: No picture description.");
+          }
+        }
+      }
+
+      // * * * Firmware * * *
+      if (jsub.contains("firmware") && jsub["firmware"].is_array()) {
+        for (auto &item : jsub["firmware"].items()) {
+
+          CMDF_Firmware *pfirmware = new CMDF_Firmware();
+          if (pfirmware == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for firmware item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_firmware.push_back(pfirmware);
+
+          json jfirmware = item.value();
+
+          if (jfirmware.contains("url") && jfirmware["url"].is_string()) {
+            pfirmware->m_strURL = jfirmware["url"];
+            spdlog::trace("Parse-JSON: Picture URL: {0} ", jfirmware["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No picture url.");
+          }
+
+          if (jfirmware.contains("target") && jfirmware["target"].is_string()) {
+            pfirmware->m_strTarget = jfirmware["target"];
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["target"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware target.");
+          }
+
+          if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_number()) {
+            pfirmware->m_targetCode = jfirmware["targetcode"];
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware target code.");
+          }
+
+          // Target code string value
+          if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_string()) {
+            pfirmware->m_targetCode = vscp_readStringValue(jfirmware["targetcode"]);
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware target code.");
+          }
+
+          if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_number()) {
+            pfirmware->m_targetCode = jfirmware["targetcode"];
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware target code.");
+          }
+
+          if (jfirmware.contains("format") && jfirmware["format"].is_string()) {
+            pfirmware->m_strFormat = jfirmware["format"];
+            spdlog::trace("Parse-JSON: Firmware format: {0} ", jfirmware["format"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware format.");
+          }
+
+          if (jfirmware.contains("date") && jfirmware["date"].is_string()) {
+            pfirmware->m_strDate = jfirmware["date"];
+            spdlog::trace("Parse-JSON: Firmware date: {0} ", jfirmware["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware date");
+          }
+
+          if (jfirmware.contains("version_major") && jfirmware["version_major"].is_number()) {
+            pfirmware->m_version_major = jfirmware["version_major"];
+            spdlog::trace("Parse-JSON: Firmware version major: {0} ", jfirmware["version_major"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version_major");
+          }
+
+          if (jfirmware.contains("version_major") && jfirmware["version_major"].is_string()) {
+            pfirmware->m_version_major = vscp_readStringValue(jfirmware["version_major"]);
+            spdlog::trace("Parse-JSON: Firmware version major: {0} ", jfirmware["version_major"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version_major");
+          }
+
+          if (jfirmware.contains("version_minor") && jfirmware["version_minor"].is_number()) {
+            pfirmware->m_version_minor = jfirmware["version_minor"];
+            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", jfirmware["version_minor"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version_minor");
+          }
+
+          if (jfirmware.contains("version_minor") && jfirmware["version_minor"].is_string()) {
+            pfirmware->m_version_minor = vscp_readStringValue(jfirmware["version_minor"]);
+            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", jfirmware["version_minor"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version_minor");
+          }
+
+          if (jfirmware.contains("version_patch") && jfirmware["version_patch"].is_number()) {
+            pfirmware->m_version_patch = jfirmware["version_patch"];
+            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", jfirmware["version_patch"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version patch");
+          }
+
+          if (jfirmware.contains("version_patch") && jfirmware["version_patch"].is_string()) {
+            pfirmware->m_version_patch = vscp_readStringValue(jfirmware["version_patch"]);
+            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", jfirmware["version_patch"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version patch");
+          }
+
+          if (jfirmware.contains("size") && jfirmware["size"].is_number()) {
+            pfirmware->m_size = jfirmware["size"];
+            spdlog::trace("Parse-JSON: Firmware version size: {0} ", jfirmware["size"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version size");
+          }
+
+          if (jfirmware.contains("size") && jfirmware["size"].is_string()) {
+            pfirmware->m_size = vscp_readStringValue(jfirmware["size"]);
+            spdlog::trace("Parse-JSON: Firmware version size: {0} ", jfirmware["size"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version size");
+          }
+
+          if (jfirmware.contains("md5sum") && jfirmware["md5sum"].is_string()) {
+            pfirmware->m_strMd5 = jfirmware["md5sum"];
+            spdlog::trace("Parse-JSON: Firmware version md5: {0} ", jfirmware["md5sum"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware version md5sum");
+          }
+
+          if (jfirmware.contains("description") && jfirmware["description"].is_object()) {
+
+            for (auto &item : jfirmware["description"].items()) {
+              pfirmware->m_mapDescription[item.key()] = item.value();
+              spdlog::trace("Parse-JSON: Picture description: {0} language: '{1}'", item.value(), item.key());
+            }
+          }
+          else {
+            spdlog::trace("Parse-JSON: No picture description.");
+          }
+        }
+      }
+
+      // * * * Manual * * *
+      if (jsub.contains("manual") && jsub["manual"].is_array()) {
+        for (auto &item : jsub["manual"].items()) {
+
+          CMDF_Manual *pmanual = new CMDF_Manual();
+          if (pmanual == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for manual item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_manual.push_back(pmanual);
+
+          json jmanual = item.value();
+
+          if (jmanual.contains("url") && jmanual["url"].is_string()) {
+            pmanual->m_strURL = jmanual["url"];
+            spdlog::trace("Parse-JSON: Manual URL: {0} ", jmanual["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No manual url.");
+          }
+
+          if (jmanual.contains("format") && jmanual["format"].is_string()) {
+            pmanual->m_strFormat = jmanual["format"];
+            spdlog::trace("Parse-JSON: Manual Format: {0} ", jmanual["format"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No manual format.");
+          }
+
+          if (jmanual.contains("lang") && jmanual["lang"].is_string()) {
+            pmanual->m_strLanguage = jmanual["lang"];
+            spdlog::trace("Parse-JSON: Manual language: {0} ", jmanual["lang"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No manual language.");
+          }
+
+          if (jmanual.contains("description") && jmanual["description"].is_object()) {
+
+            for (auto &item : jmanual["description"].items()) {
+              pmanual->m_mapDescription[item.key()] = item.value();
+              spdlog::trace("Parse-JSON: Manual description: {0} language: '{1}'", item.value(), item.key());
+            }
+          }
+          else {
+            spdlog::trace("Parse-JSON: No manual description.");
+          }
+        }
+      }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     //                              Bootloader
     ///////////////////////////////////////////////////////////////////////////
 
+    // 'boot' - Is always object
+    if (j["module"].contains("boot") && j["module"]["boot"].is_object()) {
+
+      json jsub = j["module"]["boot"];
+      if (jsub.contains("algorithm") && jsub["algorithm"].is_number()) {
+        m_bootInfo.m_nAlgorithm = jsub["algorithm"];
+      }
+
+      if (jsub.contains("blocksize") && jsub["blocksize"].is_number()) {
+        m_bootInfo.m_nBlockSize = jsub["blocksize"];
+      }
+
+      if (jsub.contains("blockcount") && jsub["blockcount"].is_number()) {
+        m_bootInfo.m_nBlockCount = jsub["blockcount"];
+      }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     //                               Registers
     ///////////////////////////////////////////////////////////////////////////
+
+    // 'registers' - Is always array
+    if (j["module"].contains("registers") && j["module"]["registers"].is_array()) {
+
+      json jsub = j["module"]["registers"];
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     //                     Remote variables/Abstractions
     ///////////////////////////////////////////////////////////////////////////
 
+    // 'remotevar' - Is always array
+    if ((j["module"].contains("remotevar") && j["module"]["remotevar"].is_array())) {
+
+      json jsub = j["module"]["remotevar"];
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     //                               Alarm
     ///////////////////////////////////////////////////////////////////////////
+
+    // 'files' - Is always object
+    if (j["module"].contains("alarm") && j["module"]["alarm"].is_object()) {
+
+      json jsub = j["module"]["alarm"];
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     //                          Decision Matrix
     ///////////////////////////////////////////////////////////////////////////
 
+    // 'dmatrix' - Is always object
+    if (j["module"].contains("dmatrix") && j["module"]["dmatrix"].is_object()) {
+
+      json jsub = j["module"]["dmatrix"];
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     //                               Events
     ///////////////////////////////////////////////////////////////////////////
+
+    // 'files' - Is always object
+    if (j["module"].contains("events") && j["module"]["events"].is_object()) {
+
+      json jsub = j["module"]["events"];
+    }
 
   } // Module
 
@@ -2869,7 +3589,7 @@ CMDF::getNumberOfRegisters(uint32_t page)
   for (iterValue = m_list_register.begin(); iterValue != m_list_register.end(); ++iterValue) {
     CMDF_Register *pRecordValue = *iterValue;
     if (NULL != pRecordValue) {
-      if (page == pRecordValue->m_nPage)
+      if (page == pRecordValue->m_page)
         nregisters++;
     }
   }
@@ -2903,8 +3623,8 @@ CMDF::getPages(std::set<long> &pages)
       }*/
 
       // Add page if not already in set
-      if (pages.end() == pages.find(pRecordValue->m_nPage)) {
-        pages.insert(pRecordValue->m_nPage);
+      if (pages.end() == pages.find(pRecordValue->m_page)) {
+        pages.insert(pRecordValue->m_page);
       }
     }
   }
@@ -2923,7 +3643,7 @@ CMDF::getMDFRegister(uint8_t reg, uint16_t page)
   for (iter = m_list_register.begin(); iter != m_list_register.end(); ++iter) {
 
     CMDF_Register *preg = *iter;
-    if ((reg == preg->m_nOffset) && (page == preg->m_nPage)) {
+    if ((reg == preg->m_offset) && (page == preg->m_page)) {
       return preg;
     }
   }
