@@ -239,22 +239,12 @@
     },
     "dmatrix" : [
       {
-        "description" : {
-          "en": "English description dm",
-          "se": "Svensk beskrivning dm",
-          "lt": "Lietuvos padeda dm"
-        },
-        "infourl" : {
-          "gb": "English help dm",
-          "se": "Svensk hjälp dm",
-          "lt": "Lietuvos padeda dm"
-        },
-        "start" : {
-          "page": 0,
-          "offset": 88,
-          "indexed": false
-        },
+        "level" : 1,
+        "start-page" : "0x00",
+        "start-offset": 88,
+        "indexed": false,
         "rowcnt" : 10,
+        "rowsize" : 8,
         "action": [
           {
             "name": "action 1",
@@ -268,7 +258,7 @@
               "se": "Svensk hjälp dm action 1",
               "lt": "Lietuvos padeda dm action 1"
             },
-            "parm": [
+            "param": [
               {
                 "name" : "parm 1",
                 "description" : {
@@ -364,6 +354,8 @@
           },
           {
             "name": "action 2",
+            "min": 0,
+            "max": 2,
             "description" : {
               "en": "English description dm action 2",
               "se": "Svensk beskrivning dm action 2",
@@ -415,7 +407,7 @@
                     }
                   },
                   {
-                    "value" : "0x03",
+                    "value" : "0x02",
                     "name" : "High",
                     "description" : {
                       "en" : "High speed",

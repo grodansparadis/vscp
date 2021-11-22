@@ -42,6 +42,11 @@
 #include <set>
 #include <string>
 
+#include <json.hpp> // Needs C++11  -std=c++11
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
 typedef enum mdf_reg_access_mode {
   MDF_REG_ACCESS_NONE       = 0,
   MDF_REG_ACCESS_READ_ONLY  = 1,
@@ -58,7 +63,6 @@ typedef enum mdf_register_type {
 typedef enum vscp_remote_variable_type {
   remote_variable_type_unknown = 0,
   remote_variable_type_string,
-  remote_variable_type_bitfield,
   remote_variable_type_boolval,
   remote_variable_type_int8_t,
   remote_variable_type_uint8_t,
@@ -71,20 +75,7 @@ typedef enum vscp_remote_variable_type {
   remote_variable_type_float,
   remote_variable_type_double,
   remote_variable_type_date,
-  remote_variable_type_time,
-  remote_variable_type_guid,
-  remote_variable_type_index8_int16_t,
-  remote_variable_type_index8_uint16_t,
-  remote_variable_type_index8_int32_t,
-  remote_variable_type_index8_uint32_t,
-  remote_variable_type_index8_int64_t,
-  remote_variable_type_index8_uint64_t,
-  remote_variable_type_index8_float,
-  remote_variable_type_index8_double,
-  remote_variable_type_index8_date,
-  remote_variable_type_index8_time,
-  remote_variable_remote_variable_type_index8_guid,
-  type_index8_string
+  remote_variable_type_time
 } vscp_remote_variable_type;
 
 // * * * Settings * * *
@@ -155,7 +146,7 @@ private:
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 
-  std::string m_strDefault; // default value
+  std::string m_strDefault;         // default value
   vscp_remote_variable_type m_type; // One of the predefined types
 
   uint16_t m_page;              // stored on this page
@@ -307,12 +298,14 @@ public:
   void clearStorage(void);
 
 private:
-  std::string m_strName;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
-  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra help information
 
-  uint16_t m_nOffset;
-  uint8_t m_width;
+  uint16_t m_offset; // Offset for parameter (Always zero for level I)
+  uint8_t m_min;     // Min value for parameter
+  uint8_t m_max;     // Max value for parameter
+  // uint8_t m_width;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
@@ -343,11 +336,11 @@ public:
   void clearStorage(void);
 
 private:
-  std::string m_strName;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  uint16_t m_nCode;
+  uint16_t m_code;
 
   std::deque<CMDF_ActionParameter *> m_list_ActionParameter; // List with action parameters
 };
@@ -377,12 +370,12 @@ public:
   void clearStorage(void);
 
 private:
-  uint8_t m_nLevel;        // 1 or 2 (defaults to 1)
-  uint16_t m_nStartPage;   // Page where DM starts
-  uint16_t m_nStartOffset; // Offset on start page for DM
-  uint16_t m_nRowCount;    // Number of rows in DM
-  uint16_t m_nRowSize;     // Size of a DM row (Normally 8)
-  bool m_bIndexed;         // True of storage is indexed
+  uint8_t m_level;        // 1 or 2 (defaults to 1)
+  uint16_t m_startPage;   // Page where DM starts
+  uint16_t m_startOffset; // Offset on start page for DM
+  uint16_t m_rowCount;    // Number of rows in DM
+  uint16_t m_rowSize;     // Size of a DM row (Normally 8)
+  bool m_bIndexed;        // True of storage is indexed
 
   std::deque<CMDF_Action *> m_list_action; // Action description
 };
@@ -661,8 +654,8 @@ public:
   CMDF_Item *getWebObj(size_t index = 0) { return ((m_list_Web.size() <= index) ? nullptr : m_list_Web[index]); };
 
 private:
-  std::string m_strName;
-  CMDF_Address m_address;
+  std::string m_strName;  // Manufacturer name
+  CMDF_Address m_address; // Address of manufacturer
 
   std::deque<CMDF_Item *> m_list_Phone;
   std::deque<CMDF_Item *> m_list_Fax;
@@ -1211,6 +1204,38 @@ public:
       @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
   int parseMDF(std::string &path);
+
+  /*!
+    Get items from bit list
+    @param j JSON object with bit list
+    @param list List to store bit items to
+    @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int getBitList(json &j, std::deque<CMDF_Bit *> &list);
+
+  /*!
+    Get items from valulist
+    @param j JSON object with valulist
+    @param list List to store valuelist items to
+    @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int getValueList(json &j, std::deque<CMDF_ValueListValue *> &list);
+
+  /*!
+    Get items from description list/item
+    @param j JSON object with valulist
+    @param list List to store description items to
+    @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int getDescriptionList(json &j, std::map<std::string, std::string> &map);
+
+  /*!
+    Get items from infoURL list/item
+    @param j JSON object with valulist
+    @param list List to store infoURL items to
+    @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int getInfoUrlList(json &j, std::map<std::string, std::string> &map);
 
   // Helpers
 

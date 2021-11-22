@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+211122 AKHE Remove bitfild and guid as abstract variable types
 211105 AKHE Removed vscp_getDeviceHtmlStatusInfo from vscphelper
 211019 AKHE Updated nlohmann/json to 3.10.4
 211015 AKHE Fixed bug in session handler.
