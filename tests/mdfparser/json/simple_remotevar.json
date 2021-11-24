@@ -260,7 +260,7 @@
       },
       {
         "name" : "Abstraction 2",
-        "type": "uint8_t", 
+        "type": "uint8", 
         "default": "0x22",
         "page" : "0x00",
         "offset" :"18",
@@ -320,7 +320,7 @@
       },
       {
         "name" : "Abstraction 3",
-        "type": "short", 
+        "type": "uint32", 
         "default":"0",
         "page" :"0",
         "offset" :18,
@@ -336,7 +336,85 @@
           "gb": "English help 3",
           "se": "Svensk hjälp 3",
           "lt": "Lietuvos padeda 3"
-        }
+        },
+        "bit": [
+          {
+            "pos": 0,
+            "width": 3,
+            "default": 0,
+            "min": 0,
+            "max": 7,
+            "access" : "rw",
+            "name" : "English bit or bitfield name",
+            "description" : {
+              "gb": "English description",
+              "se": "Svensk beskrivning",
+              "lt": "Lietuvos aprašymas"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          },
+          {
+            "pos": 3,
+            "width": 2,
+            "default": false,
+            "name" : "English bit or bitfield name",
+            "description" : {
+              "gb": "English description",
+              "se": "Svensk beskrivning",
+              "lt": "Lietuvos aprašymas"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            },
+            "valuelist" : [
+              {
+                "value" : "0x00",
+                "name" : "Low",
+                "description" : {
+                  "en" : "Low speed",
+                  "se" : "Låg hastighet"
+                },
+                "infourl" : {
+                  "gb": "English help 1 vl2",
+                  "se": "Svensk hjälp 1 vl2",
+                  "lt": "Lietuvos padeda 1 vl2"
+                }
+              },
+              {
+                "value" : "0x01",
+                "name" : "Medium",
+                "description" : {
+                  "en" : "Medium speed",
+                  "se" : "Medium hastighet"
+                },
+                "infourl" : {
+                  "gb": "English help 2 vl2",
+                  "se": "Svensk hjälp 2 vl2",
+                  "lt": "Lietuvos padeda 2 vl2"
+                }
+              },
+              {
+                "value" : "0x03",
+                "name" : "High",
+                "description" : {
+                  "en" : "High speed",
+                  "se" : "Hög hastighet"
+                },
+                "infourl" : {
+                  "gb": "English help 3 vl2",
+                  "se": "Svensk hjälp 3 vl2",
+                  "lt": "Lietuvos padeda 3 vl2"
+                }
+              }
+            ] 
+          }
+        ]
       }    
     ]
   } 

@@ -118,8 +118,8 @@ CMDF_RemoteVariable::clearStorage(void)
       pRecordValue = nullptr;
     }
   }
-  m_list_value.clear();
 
+  m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -136,7 +136,7 @@ CMDF_RemoteVariable::getRemoteVariableValueType(void)
     case remote_variable_type_string:
       return (std::string("String"));
 
-    case remote_variable_type_boolval:
+    case remote_variable_type_boolean:
       return (std::string("Boolean"));
 
     case remote_variable_type_int8_t:
@@ -164,10 +164,10 @@ CMDF_RemoteVariable::getRemoteVariableValueType(void)
       return (std::string("Unsigned 64-bit integer"));
 
     case remote_variable_type_float:
-      return (std::string("float"));
+      return (std::string("Float"));
 
     case remote_variable_type_double:
-      return (std::string("double"));
+      return (std::string("Double"));
 
     case remote_variable_type_date:
       return (std::string("Date"));
@@ -188,62 +188,62 @@ CMDF_RemoteVariable::getRemoteVariableValueType(void)
 uint16_t
 CMDF_RemoteVariable::getRemoteVariableTypeByteCount(void)
 {
-  uint16_t width = 0;
+  uint16_t size = 0;
 
   switch (m_type) {
 
     case remote_variable_type_string:
-      width = m_width;
+      size = m_size;
       break;
 
-    case remote_variable_type_boolval:
-      width = 1;
+    case remote_variable_type_boolean:
+      size = 1;
       break;
 
     case remote_variable_type_int8_t:
     case remote_variable_type_uint8_t:
-      width = 1;
+      size = 1;
       break;
 
     case remote_variable_type_int16_t:
     case remote_variable_type_uint16_t:
-      width = 2;
+      size = 2;
       break;
 
     case remote_variable_type_int32_t:
     case remote_variable_type_uint32_t:
-      width = 4;
+      size = 4;
       break;
 
     case remote_variable_type_int64_t:
     case remote_variable_type_uint64_t:
-      width = 8;
+      size = 8;
       break;
 
     case remote_variable_type_float:
-      width = 4;
+      size = 4;
       break;
 
     case remote_variable_type_double:
-      width = 8;
+      size = 8;
       break;
 
     case remote_variable_type_date:
-      width = 3;  // YYMMDD
+      size = 3;  // YYMMDD
       break;
 
     case remote_variable_type_time:
-      width = 3;  // HHMMSS
+      size = 3;  // HHMMSS
       break;
 
     case remote_variable_type_unknown:
-      width = 0;
+      size = 0;
     default:
       break;
 
   } // switch
 
-  return width;
+  return size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -276,8 +276,8 @@ CMDF_Bit::clearStorage(void)
       pRecordValue = nullptr;
     }
   }
-  m_list_value.clear();
 
+  m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -290,12 +290,13 @@ CMDF_Register::CMDF_Register()
 {
   m_page       = 0;
   m_offset     = 0;
+  m_span      = 1;
   m_width      = 8;
   m_min        = 0;
   m_max        = 255;
   m_strDefault = "UNDEF";
   m_access     = MDF_REG_ACCESS_READ_WRITE;
-  m_type       = REGISTER_TYPE_STANDARD;
+  m_type       = MDF_REG_TYPE_STANDARD;
   m_size       = 1;
 
   m_rowInGrid = 0;
@@ -336,8 +337,8 @@ CMDF_Register::clearStorage(void)
       pRecordValue = nullptr;
     }
   }
-  m_list_value.clear();
 
+  m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -372,6 +373,7 @@ CMDF_Register::operator=(const CMDF_Register &other)
 
   m_page   = other.m_page;
   m_offset = other.m_offset;
+  m_span = other.m_span;
   m_width  = other.m_width;
 
   m_type = other.m_type;
@@ -2669,6 +2671,10 @@ CMDF::parseMDF_JSON(std::string &path)
       spdlog::warn("Parse-JSON: Failed to get module infourl.");
     }
 
+    // ------------------------------------------------------------------------
+    //                                  Module
+    // ------------------------------------------------------------------------
+
     // Module infourl - not mandatory
     // Can either be string or object
     if (j["module"].contains("manufacturer") && j["module"]["manufacturer"].is_object()) {
@@ -2737,7 +2743,7 @@ CMDF::parseMDF_JSON(std::string &path)
               }
               m_manufacturer.m_list_Phone.push_back(ptel);
 
-              json jsub2 = phone.key();
+              json jsub2 = phone.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
                 ptel->m_strItem = jsub2["number"];
@@ -2769,7 +2775,7 @@ CMDF::parseMDF_JSON(std::string &path)
               }
               m_manufacturer.m_list_Fax.push_back(pfax);
 
-              json jsub2 = fax.key();
+              json jsub2 = fax.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
                 pfax->m_strItem = jsub2["number"];
@@ -2801,7 +2807,7 @@ CMDF::parseMDF_JSON(std::string &path)
               }
               m_manufacturer.m_list_Email.push_back(pemail);
 
-              json jsub2 = email.key();
+              json jsub2 = email.value();
 
               if (jsub2.contains("address") && jsub2["address"].is_string()) {
                 pemail->m_strItem = jsub2["address"];
@@ -2833,7 +2839,7 @@ CMDF::parseMDF_JSON(std::string &path)
               }
               m_manufacturer.m_list_Email.push_back(pweb);
 
-              json jsub2 = web.key();
+              json jsub2 = web.value();
 
               if (jsub2.contains("url") && jsub2["url"].is_string()) {
                 pweb->m_strItem = jsub2["url"];
@@ -2857,6 +2863,10 @@ CMDF::parseMDF_JSON(std::string &path)
           }
         }
       }
+
+      // ------------------------------------------------------------------------
+      //                                Registers
+      // ------------------------------------------------------------------------
 
       if (j["module"].contains("register") && j["module"]["register"].is_array()) {
         for (auto &reg : j["module"]["register"].items()) {
@@ -2896,6 +2906,24 @@ CMDF::parseMDF_JSON(std::string &path)
             else {
               preg->m_offset = 0;
               spdlog::error("Parse-JSON: No register offset defined (defaults to zero).");
+            }
+
+            // Register span
+            if (jreg.contains("span") && jreg["span"].is_number()) {
+              preg->m_span = jreg["span"];
+              if ((preg->m_span == 0) || (preg->m_span > 8)) {
+                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. Default set (1)");
+              }
+            }
+            else if (jreg.contains("span") && jreg["span"].is_string()) {
+              preg->m_span = vscp_readStringValue(jreg["span"]);
+              if ((preg->m_span == 0) || (preg->m_span > 8)) {
+                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. Default set (1)");
+              }
+            }
+            else {
+              preg->m_span = 1;
+              spdlog::info("Parse-JSON: No register span defined (defaults to one byte).");
             }
 
             // Register width
@@ -2978,9 +3006,14 @@ CMDF::parseMDF_JSON(std::string &path)
         spdlog::warn("Parse-JSON: Failed to read module registers");
       }
 
+      //------------------------------------------------------------------------
+      //                             Remote variable
+      //------------------------------------------------------------------------
+
       if (j["module"].contains("remotevar") && j["module"]["remotevar"].is_array()) {
         for (auto &rvar : j["module"]["remotevar"].items()) {
           // std::cout << "key: " << rvar.key() << ", value:" << rvar.value() << '\n';
+          spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", rvar.key(), rvar.value() );
           if (rvar.value().is_object()) {
 
             CMDF_RemoteVariable *prvar = new CMDF_RemoteVariable();
@@ -2996,6 +3029,7 @@ CMDF::parseMDF_JSON(std::string &path)
             // Remote variable name
             if (jrvar.contains("name") && jrvar["name"].is_string()) {
               prvar->m_name = jrvar["name"];
+              spdlog::debug("Parse-JSON: Remote variable name set to {}.", prvar->m_name );
             }
             else {
               spdlog::error("Parse-JSON: No remote variable name defined.");
@@ -3009,53 +3043,209 @@ CMDF::parseMDF_JSON(std::string &path)
               vscp_makeLower(str);
               if (str == "string") {
                 prvar->m_type = remote_variable_type_string;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", prvar->m_type );
               }
               else if (str == "bool") {
-                prvar->m_type = remote_variable_type_boolval;
+                prvar->m_type = remote_variable_type_boolean;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", prvar->m_type );
               }
-              else if (str == "int8") {
+              else if ((str == "int8") || (str == "int8_t")) {
                 prvar->m_type = remote_variable_type_int8_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", prvar->m_type );
               }
-              else if (str == "uint8") {
+              else if ((str == "uint8") || (str == "uint8_t")) {
                 prvar->m_type = remote_variable_type_uint8_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", prvar->m_type );
               }
-              else if (str == "int16") {
+              else if ((str == "int16") || (str == "int16_t") || (str == "short")) {
                 prvar->m_type = remote_variable_type_int16_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", prvar->m_type );
               }
-              else if (str == "uint16") {
+              else if ((str == "uint16") || (str == "uint16_t")) {
                 prvar->m_type = remote_variable_type_uint16_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", prvar->m_type );
               }
-              else if (str == "int32") {
+              else if ((str == "int32") || (str == "int32_t") || (str == "long")) {
                 prvar->m_type = remote_variable_type_int32_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", prvar->m_type );
               }
-              else if (str == "uint32") {
+              else if ((str == "uint32") || (str == "uint32_t") || (str == "unsigned")) {
                 prvar->m_type = remote_variable_type_uint32_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", prvar->m_type );
               }
-              else if (str == "int64") {
+              else if ((str == "int64") || (str == "int64_t") || (str == "longlong")) {
                 prvar->m_type = remote_variable_type_int64_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", prvar->m_type );
               }
-              else if (str == "uint64") {
+              else if ((str == "uint64") || (str == "uint64_t")) {
                 prvar->m_type = remote_variable_type_uint64_t;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", prvar->m_type );
               }
               else if (str == "float") {
                 prvar->m_type = remote_variable_type_float;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", prvar->m_type );
               }
               else if (str == "double") {
                 prvar->m_type = remote_variable_type_double;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", prvar->m_type );
               }
               else if (str == "date") {
                 prvar->m_type = remote_variable_type_date;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", prvar->m_type );
               }
               else if (str == "time") {
                 prvar->m_type = remote_variable_type_time;
+                spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", prvar->m_type );
               }
               else {
                 prvar->m_type =remote_variable_type_unknown;
               }
             }
             else {
+              // Must be a type if a remote variable is there
               spdlog::error("Parse-JSON: No remote variable type defined.");
               return VSCP_ERROR_PARSING;
+            }
+
+            // Default value. Always a string. Convert to the correct type
+            // when default is set.
+            if (jrvar.contains("default") && jrvar["default"].is_string()) {
+              prvar->m_strDefault = jrvar["default"];
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
+            else {
+              prvar->m_strDefault = "";
+              spdlog::debug("Parse-JSON: No remote variable default defined (set to empty).");
+            }
+
+            // Page where the remote variable is located
+            if (jrvar.contains("page") && jrvar["page"].is_string()) {
+              prvar->m_page = vscp_readStringValue(jrvar["page"]);
+              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page );
+            }
+            else if (jrvar.contains("page") && jrvar["page"].is_number()) {
+              prvar->m_page = jrvar["page"];
+              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page );
+            }
+            else {
+              prvar->m_page = 0;
+              spdlog::warn("Parse-JSON: No remote variable page defined (set to 0).");
+            }
+
+            // Offset where the remote variable is located
+            if (jrvar.contains("offset") && jrvar["offset"].is_string()) {
+              prvar->m_offset = vscp_readStringValue(jrvar["offset"]);
+              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset );
+            }
+            else if (jrvar.contains("offset") && jrvar["offset"].is_number()) {
+              prvar->m_offset = jrvar["offset"];
+              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset );
+            }
+            else {
+              // Must be an offset if a remote variable is there, but we accept
+              // a default value. Flag as error because it is an error.
+              prvar->m_offset = 0;
+              spdlog::error("Parse-JSON: No remote variable offset defined (set to 0).");
+            }
+
+            // Bit position in byte where the boolean variable is located (0-7)
+            // If -1 not used.
+            if (jrvar.contains("bitpos") && jrvar["bitpos"].is_string()) {
+              prvar->m_bitpos = vscp_readStringValue(jrvar["bitpos"]) & 0x07;
+              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos );
+            }
+            else if (jrvar.contains("bitpos") && jrvar["bitpos"].is_number()) {
+              prvar->m_bitpos = jrvar["bitpos"];
+              prvar->m_bitpos &= 7; 
+              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos );
+            }
+            else {
+              prvar->m_bitpos = -1;
+              spdlog::trace("Parse-JSON: No remote variable bitpos defined (set to -1).");
+            }
+
+            // Size for a string (ignored for all other types)
+            if (jrvar.contains("size") && jrvar["size"].is_string()) {
+              prvar->m_size = vscp_readStringValue(jrvar["size"]);
+              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size );
+            }
+            else if (jrvar.contains("size") && jrvar["size"].is_number()) {
+              prvar->m_size = jrvar["size"];
+              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size );
+            }
+            else {
+              prvar->m_bitpos = 0;
+              spdlog::trace("Parse-JSON: No remote variable size defined (set to 0).");
+            }
+
+            // Access rights for remote variable
+            if (j.contains("access") && j["access"].is_string()) {
+              std::string strAccess = j["access"];
+              vscp_trim(strAccess);
+              vscp_makeLower(strAccess);
+              prvar->m_access = MDF_REG_ACCESS_NONE;
+              if (strAccess == "w") {
+                spdlog::debug("Parse-JSON: Remote variable access set to write only.");
+                prvar->m_access = MDF_REG_ACCESS_READ_ONLY;
+              }
+              else if (strAccess == "r") {
+                spdlog::debug("Parse-JSON: Remote variable access set to read only.");
+                prvar->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+              }
+              else if (strAccess == "rw") {
+                spdlog::debug("Parse-JSON: Remote variable access set to read/write.");
+                prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
+              }
+            }
+            else {
+              prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
+              spdlog::debug("Parse-JSON: No remote variable access defined (defaults to 'rw').");
+            }
+
+            // Foreground color (VSCP Works)
+            if (jrvar.contains("fgcolor") && jrvar["fgcolor"].is_string()) {
+              prvar->m_fgcolor = vscp_readStringValue(jrvar["fgcolor"]);
+              spdlog::debug("Parse-JSON: Remote variable fore ground color set to {}.", prvar->m_fgcolor );
+            }
+            else if (jrvar.contains("fgcolor") && jrvar["fgcolor"].is_number()) {
+              prvar->m_fgcolor = jrvar["fgcolor"];
+              spdlog::debug("Parse-JSON: Remote variable fore ground color to {}.", prvar->m_fgcolor );
+            }
+            else {
+              prvar->m_fgcolor = 0;
+              spdlog::trace("Parse-JSON: No remote variable size defined (set to 0).");
+            }
+
+            // Backround color (VSCP Works)
+            if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_string()) {
+              prvar->m_bgcolor = vscp_readStringValue(jrvar["bgcolor"]);
+              spdlog::debug("Parse-JSON: Remote variable background color set to {}.", prvar->m_bgcolor );
+            }
+            else if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_number()) {
+              prvar->m_bgcolor = jrvar["bgcolor"];
+              spdlog::debug("Parse-JSON: Remote variable background color to {}.", prvar->m_bgcolor );
+            }
+            else {
+              prvar->m_bgcolor = 0;
+              spdlog::trace("Parse-JSON: No remote variable bgcolor not defined (set to 0).");
+            }
+
+            if (getDescriptionList(jrvar, prvar->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get remote variable description.");
+            }
+
+            if (getInfoUrlList(jrvar, prvar->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get remote variable infourl.");
+            }
+
+            // Register valuelist
+            if (getValueList(jrvar, prvar->m_list_value) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get remot evariable valuelist.");
+            }
+
+            // Register bitlist
+            if (getBitList(jrvar, prvar->m_list_bit) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get remote variable bitlist.");
             }
 
           }
@@ -3064,6 +3254,10 @@ CMDF::parseMDF_JSON(std::string &path)
       else {
         spdlog::warn("Parse-JSON: Failed to read module remote variable");
       }
+
+      //------------------------------------------------------------------------
+      //                            Decision Matrix
+      //------------------------------------------------------------------------
 
       if (j["module"].contains("dmatrix") && j["module"]["dmatrix"].is_object()) {
 
@@ -3294,6 +3488,10 @@ CMDF::parseMDF_JSON(std::string &path)
         spdlog::warn("Parse-JSON: Failed to read module decision matrix");
       }
 
+      // ------------------------------------------------------------------------
+      //                                  Events
+      // ------------------------------------------------------------------------
+
       if (j["module"].contains("events") && j["module"]["events"].is_array()) {
         for (auto &ev : j["module"]["events"].items()) {
           // std::cout << "key: " << ev.key() << ", value:" << ev.value() << '\n';
@@ -3307,13 +3505,119 @@ CMDF::parseMDF_JSON(std::string &path)
 
             m_list_event.push_back(pev);
 
-            json jev = ev.key();
-          }
-        }
-      }
+            json jev = ev.value();
+
+            // Class
+            if (jev.contains("class") && jev["class"].is_string()) {
+              pev->m_class = vscp_readStringValue(jev["class"]);
+            }
+            else if (jev.contains("class") && jev["class"].is_number()) {
+              pev->m_class = jev["class"];
+            }
+            else {
+              spdlog::error("Parse-JSON: No event class defined.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            // Type
+            if (jev.contains("type") && jev["type"].is_string()) {
+              pev->m_type = vscp_readStringValue(jev["type"]);
+            }
+            else if (jev.contains("type") && jev["type"].is_number()) {
+              pev->m_type = jev["type"];
+            }
+            else {
+              spdlog::error("Parse-JSON: No event type defined.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            // Direction ('in'/'out')
+            if (jev.contains("direction") && jev["direction"].is_string()) {
+              std::string str = jev["direction"];
+              vscp_trim(str);
+              vscp_makeLower(str);
+              if (str == "in") {
+                pev->m_direction = MDF_EVENT_DIR_IN;
+              }
+              else if (str == "out") {
+                pev->m_direction = MDF_EVENT_DIR_OUT;
+              }
+              else {
+                pev->m_direction = MDF_EVENT_DIR_OUT;
+                spdlog::error("Parse-JSON: Event direction not 'in' or 'out'. Set to out.");
+              }
+            }
+            else {
+              pev->m_direction = MDF_EVENT_DIR_OUT;
+              spdlog::warn("Parse-JSON: No event direction defined. Set to out.");
+            }
+
+            // Priority
+            if (jev.contains("priority") && jev["priority"].is_string()) {
+              pev->m_type = vscp_readStringValue(jev["priority"]) & 7;
+            }
+            else if (jev.contains("priority") && jev["priority"].is_number()) {
+              pev->m_type = (uint8_t)jev["type"] & 7;
+            }
+            else {
+              spdlog::error("Parse-JSON: No event priority defined.");
+              return VSCP_ERROR_PARSING;
+            }
+
+            if (getDescriptionList(jev, pev->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get event description.");
+            }
+
+            if (getInfoUrlList(jev, pev->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get event infourl.");
+            }
+
+            if (jev.contains("data") && jev["events"].is_array()) {
+              for (auto &data : jev["events"].items()) {
+                // std::cout << "key: " << ev.key() << ", value:" << ev.value() << '\n';
+                if (data.value().is_object()) {
+
+                  CMDF_EventData *pevdata = new CMDF_EventData();
+                  if (pevdata == nullptr) {
+                    spdlog::error("Parse-JSON: Failed to allocate memory for event data item.");
+                    return VSCP_ERROR_PARSING;
+                  }
+
+                  pev->m_list_eventdata.push_back(pevdata);
+                  json jevdata = data.value();
+
+                  if (getDescriptionList(jevdata, pevdata->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+                    spdlog::warn("Parse-JSON: Failed to get event data description.");
+                  }
+
+                  if (getInfoUrlList(jevdata, pevdata->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+                    spdlog::warn("Parse-JSON: Failed to get event data infourl.");
+                  }
+
+                  // Register valuelist
+                  if (getValueList(jevdata, pevdata->m_list_value) != VSCP_ERROR_SUCCESS) {
+                    spdlog::warn("Parse-JSON: Failed to get event data valuelist.");
+                  }
+
+                  // Register bitlist
+                  if (getBitList(jevdata, pevdata->m_list_bit) != VSCP_ERROR_SUCCESS) {
+                    spdlog::warn("Parse-JSON: Failed to get event data bitlist.");
+                  }
+
+                } // data object
+              } // for
+            } // data array
+
+          } // Event object
+        } // for
+      } // Events array
       else {
         spdlog::warn("Parse-JSON: Failed to read module events");
       }
+
+      // ------------------------------------------------------------------------
+      //                               Alarm bits
+      // ------------------------------------------------------------------------
 
       if (j["module"].contains("alarm") && j["module"]["alarm"].is_array()) {
         for (auto &alarm : j["module"]["alarm"].items()) {
@@ -3329,6 +3633,11 @@ CMDF::parseMDF_JSON(std::string &path)
             m_list_alarm.push_back(palarm);
 
             json jalarm = alarm.key();
+
+            // Alarm bitlist
+            if (getBitList(jalarm, m_list_alarm) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get alarm bitlist.");
+            }
           }
         }
       }

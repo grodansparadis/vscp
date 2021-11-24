@@ -47,6 +47,7 @@
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
 
+// This is the access rights
 typedef enum mdf_reg_access_mode {
   MDF_REG_ACCESS_NONE       = 0,
   MDF_REG_ACCESS_READ_ONLY  = 1,
@@ -54,16 +55,24 @@ typedef enum mdf_reg_access_mode {
   MDF_REG_ACCESS_READ_WRITE = 3
 } mdf_reg_access_mode;
 
+// This is the register type codes
 typedef enum mdf_register_type {
-  REGISTER_TYPE_STANDARD = 0,
-  REGISTER_TYPE_DMATRIX1 = 1,
-  REGISTER_TYPE_BLOCK    = 2
+  MDF_REG_TYPE_STANDARD = 0,
+  MDF_REG_TYPE_DMATRIX1 = 1,
+  MDF_RE_TYPE_BLOCK    = 2
 } mdf_register_type;
 
+// This is the event direction
+typedef enum mdf_event_direction {
+  MDF_EVENT_DIR_IN = 0,
+  MDF_EVENT_DIR_OUT
+} mdf_event_direction;
+
+// This is the remote variable type
 typedef enum vscp_remote_variable_type {
   remote_variable_type_unknown = 0,
   remote_variable_type_string,
-  remote_variable_type_boolval,
+  remote_variable_type_boolean,
   remote_variable_type_int8_t,
   remote_variable_type_uint8_t,
   remote_variable_type_int16_t,
@@ -104,65 +113,6 @@ private:
   std::string m_strValue; // String because used for remote variabels also
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
-};
-
-/*!
-  CMDF_RemoteVariable
- */
-
-class CMDF_RemoteVariable {
-
-public:
-  CMDF_RemoteVariable();
-  ~CMDF_RemoteVariable();
-
-  // Friend declarations
-  friend CMDF;
-  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
-  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
-  friend void __endSetupMDFParser(void *data, const char *name);
-
-  /*!
-      Clear data storage
-  */
-  void clearStorage(void);
-
-  /*!
-      Get real text description of type
-      @param type Remote variable type
-      @return Real text description of type.
-  */
-  std::string getRemoteVariableValueType(void);
-
-  /*!
-      Get number of bytes for an remote variable type
-      @return Number of bytes for remote variable type.
-   */
-  uint16_t getRemoteVariableTypeByteCount(void);
-
-private:
-  std::string m_name; // Abstract variable name (unique
-                      // inside of MDF
-  std::map<std::string, std::string> m_mapDescription;
-  std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
-
-  std::string m_strDefault;         // default value
-  vscp_remote_variable_type m_type; // One of the predefined types
-
-  uint16_t m_page;              // stored on this page
-  uint32_t m_offset;            // stored at this offset
-  uint16_t m_bitnumber;         // Stored at this bit position.
-  uint16_t m_width;             // Width for bit field and strings.
-  uint32_t m_max;               // If numeric max value can be set
-  uint32_t m_min;               // If numeric min value can be set
-  mdf_reg_access_mode m_access; // Access rights
-
-  bool m_bIndexed; // True of indexed storage
-
-  uint32_t m_bgcolor; // Cell background colour. Default = white.
-  uint32_t m_fgcolor; // Cell foreground colour. Default = black.
-
-  std::deque<CMDF_ValueListValue *> m_list_value; // list with selectable values
 };
 
 // * * * Register * * *
@@ -244,11 +194,12 @@ private:
 
   std::string m_strName;
   std::map<std::string, std::string> m_mapDescription;
-  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
+  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra help information
 
-  uint16_t m_page;
-  uint16_t m_offset;
-  uint16_t m_width; // Defaults to 1
+  uint16_t m_page;   // Level 1 page is 8-bit, pageing is not used for Level II.
+  uint32_t m_offset; // Level 1 offset is 7 bits, Level II offset is 32 bits.
+  uint16_t m_span;   // Defaults to 1. Number of bytes for a group of registers
+  uint16_t m_width;  // Defaults to 8. Width in bits for register 1-8 
 
   mdf_register_type m_type; // std=0/dmatix1=1/block=2
   uint8_t m_size;           // Size for special types (default = 1)
@@ -260,8 +211,8 @@ private:
 
   mdf_reg_access_mode m_access;
 
-  std::deque<CMDF_Bit *> m_list_bit;              // dll list with bit defines
-  std::deque<CMDF_ValueListValue *> m_list_value; // dll list with selectable values
+  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
+  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 
   // Below are for VSCP Works use only
   long m_rowInGrid;   // Helper for display (row reg is displayed on)
@@ -271,6 +222,64 @@ private:
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
   std::deque<uint8_t> m_list_undo_value; // List with undo values
+};
+
+/*!
+  CMDF_RemoteVariable
+ */
+
+class CMDF_RemoteVariable {
+
+public:
+  CMDF_RemoteVariable();
+  ~CMDF_RemoteVariable();
+
+  // Friend declarations
+  friend CMDF;
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear data storage
+  */
+  void clearStorage(void);
+
+  /*!
+      Get real text description of type
+      @param type Remote variable type
+      @return Real text description of type.
+  */
+  std::string getRemoteVariableValueType(void);
+
+  /*!
+      Get number of bytes for an remote variable type
+      @return Number of bytes for remote variable type.
+   */
+  uint16_t getRemoteVariableTypeByteCount(void);
+
+private:
+  std::string m_name; // Abstract variable name (unique
+                      // inside of MDF
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
+
+  std::string m_strDefault;         // default value
+  vscp_remote_variable_type m_type; // One of the predefined types
+
+  uint16_t m_page;              // stored on this page
+  uint32_t m_offset;            // stored at this offset
+  int8_t m_bitpos;              // For booleans (can be a single bit in a byte).
+  uint16_t m_size;              // Size of string.
+  mdf_reg_access_mode m_access; // Access rights
+
+  // For VSCP Works usage
+
+  uint32_t m_bgcolor; // Cell background colour. Default = white.
+  uint32_t m_fgcolor; // Cell foreground colour. Default = black.
+
+  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
+  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
 
 /*!
@@ -405,7 +414,7 @@ public:
   void clearStorage(void);
 
 private:
-  std::string m_strName;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
@@ -440,13 +449,14 @@ public:
   void clearStorage(void);
 
 private:
-  std::string m_strName;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  uint16_t m_nClass;
-  uint16_t m_nType;
-  uint8_t m_nPriority;
+  uint16_t m_class;
+  uint16_t m_type;
+  uint8_t m_priority;
+  mdf_event_direction m_direction;
 
   std::deque<CMDF_EventData *> m_list_eventdata; // List with event data descriptions
 };
