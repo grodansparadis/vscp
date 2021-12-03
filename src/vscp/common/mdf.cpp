@@ -125,11 +125,11 @@ CMDF_RemoteVariable::clearStorage(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  getRemoteVariableValueType
+//  getTypeString
 //
 
 std::string
-CMDF_RemoteVariable::getRemoteVariableValueType(void)
+CMDF_RemoteVariable::getTypeString(void)
 {
   switch (m_type) {
 
@@ -182,11 +182,11 @@ CMDF_RemoteVariable::getRemoteVariableValueType(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  getRemoteVariableTypeByteCount
+//  getTypeByteCount
 //
 
 uint16_t
-CMDF_RemoteVariable::getRemoteVariableTypeByteCount(void)
+CMDF_RemoteVariable::getTypeByteCount(void)
 {
   uint16_t size = 0;
 
@@ -3107,6 +3107,10 @@ CMDF::parseMDF_JSON(std::string &path)
               preg->m_value = jreg["default"];
               spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_value);
             }
+            else if (jreg.contains("default") && jreg["default"].is_boolean()) {
+              preg->m_strDefault = jreg["default"] ? "true" : "false";
+              spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_value);
+            }
 
             if (jreg.contains("access") && jreg["access"].is_string()) {
               std::string strAccess = jreg["access"];
@@ -3314,6 +3318,26 @@ CMDF::parseMDF_JSON(std::string &path)
               prvar->m_strDefault = jrvar["default"];
               spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
             }
+            else if (jrvar.contains("default") && jrvar["default"].is_number()) {
+              prvar->m_strDefault = std::to_string((uint32_t)jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
+            else if (jrvar.contains("default") && jrvar["default"].is_number_integer()) {
+              prvar->m_strDefault = std::to_string((int32_t)jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
+            else if (jrvar.contains("default") && jrvar["default"].is_number_unsigned()) {
+              prvar->m_strDefault = std::to_string((uint32_t)jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
+            else if (jrvar.contains("default") && jrvar["default"].is_number_float()) {
+              prvar->m_strDefault = std::to_string((double)jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
+            else if (jrvar.contains("default") && jrvar["default"].is_boolean()) {
+              prvar->m_strDefault = jrvar["default"] ? "true" : "false";
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+            }
             else {
               prvar->m_strDefault = "";
               spdlog::debug("Parse-JSON: No remote variable default defined (set to empty).");
@@ -3380,8 +3404,8 @@ CMDF::parseMDF_JSON(std::string &path)
             }
 
             // Access rights for remote variable
-            if (j.contains("access") && j["access"].is_string()) {
-              std::string strAccess = j["access"];
+            if (jrvar.contains("access") && jrvar["access"].is_string()) {
+              std::string strAccess = jrvar["access"];
               vscp_trim(strAccess);
               vscp_makeLower(strAccess);
               prvar->m_access = MDF_REG_ACCESS_NONE;
@@ -3401,6 +3425,20 @@ CMDF::parseMDF_JSON(std::string &path)
             else {
               prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
               spdlog::debug("Parse-JSON: No remote variable access defined (defaults to 'rw').");
+            }
+
+            // Grid position (VSCP Works)
+            if (jrvar.contains("rowpos") && jrvar["rowpos"].is_string()) {
+              prvar->m_rowInGrid = vscp_readStringValue(jrvar["rowpos"]);
+              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", prvar->m_rowInGrid );
+            }
+            else if (jrvar.contains("rowpos") && jrvar["rowpos"].is_number()) {
+              prvar->m_rowInGrid = jrvar["rowpos"];
+              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", prvar->m_rowInGrid );
+            }
+            else {
+              prvar->m_rowInGrid = -1;
+              spdlog::trace("Parse-JSON: No rowpos defined (set to -1).");
             }
 
             // Foreground color (VSCP Works)
@@ -4274,6 +4312,30 @@ CMDF::getRegister(uint32_t reg, uint32_t page)
     CMDF_Register *preg = *iter;
     if ((reg == preg->m_offset) && (page == preg->m_page)) {
       return preg;
+    }
+  }
+
+  return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getRemoteVariable
+//
+
+CMDF_RemoteVariable *
+CMDF::getRemoteVariable(std::string name)
+{
+  vscp_trim(name);
+  vscp_makeLower(name);
+
+  std::deque<CMDF_RemoteVariable *>::iterator iter;
+  for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
+    CMDF_RemoteVariable *prvar = *iter;
+    std::string rname = prvar->m_name;
+    vscp_trim(rname);
+    vscp_makeLower(rname);
+    if (rname == name) {
+      return prvar;
     }
   }
 

@@ -963,12 +963,354 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
 {
   std::string path;
   CMDF mdf;
+  CMDF_RemoteVariable *prvar;
+  std::deque<CMDF_ValueListValue *> *pValueList;
+  std::deque<CMDF_Bit *> *pBitList;
+  CMDF_Bit *pBit;
 
   path = "json/simple_remotevar.json";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
   ASSERT_TRUE(mdf.getModuleName() == "Simple remotevar");
+
+  // Check module version
+  ASSERT_TRUE(mdf.getModuleVersion() == "var2022");
+
+  // Check model
+  ASSERT_TRUE(mdf.getModuleModel() == "Simple remotevar module");
+
+  // Check module date
+  ASSERT_TRUE(mdf.getModuleChangeDate() == "1956-11-02");
+
+  // Check description
+  ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
+
+  // Check help url
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.BBBenglishBBB.en");
+
+  // Check buffer size
+  ASSERT_EQ(32, mdf.getModuleBufferSize());
+
+  // Check number of registers that is defined
+  ASSERT_EQ(3, mdf.getRemoteVariableCount());
+
+  // Invalid remote variable
+  prvar = mdf.getRemoteVariable("Unexisting_remotevar");
+  ASSERT_EQ(nullptr, prvar);
+
+  // ***** Remote variable 1 *****
+
+  // Test remote variable
+  prvar = mdf.getRemoteVariable("Remote variable 1");
+  ASSERT_NE(nullptr, prvar);
+
+  // Check name
+  ASSERT_TRUE(prvar->getName() == "Remote variable 1");
+
+  // Check type "short" == int16_t
+  ASSERT_EQ(remote_variable_type_int16_t, prvar->getType());
+
+  // Check default value
+  ASSERT_EQ(8, vscp_readStringValue(prvar->getDefault()));
+
+  // Check default value
+  ASSERT_EQ(8, vscp_readStringValue(prvar->getDefault()));
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, prvar->getAccess());
+
+  // Check page
+  ASSERT_EQ(2, prvar->getPage());
+
+  // Check offset
+  ASSERT_EQ(18, prvar->getOffset());
+
+  // Check VSCP Work grid position
+  ASSERT_EQ(99, prvar->getRowPosition());
+
+  // Get foreground color
+  ASSERT_EQ(0x123456, prvar->getForegroundColor());
+
+  // Get background color
+  ASSERT_EQ(0xCCFFFF, prvar->getBackgroundColor());
+
+  // Check description
+  ASSERT_EQ("English description remotevar 1", prvar->getDescription("en"));
+  ASSERT_EQ("Svensk beskrivning remotevar 1", prvar->getDescription("se"));
+  ASSERT_EQ("Lietuvos padeda remotevar 1", prvar->getDescription("lt"));
+  ASSERT_EQ("", prvar->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(prvar->getInfoURL("gb") == "English help remotevar 1");
+  ASSERT_TRUE(prvar->getInfoURL("se") == "Svensk hjälp remotevar 1");
+  ASSERT_TRUE(prvar->getInfoURL("lt") == "Lietuvos padeda remotevar 1");
+  ASSERT_TRUE(prvar->getInfoURL("xx") == "");
+
+  
+  // Check complete type set/get
+  prvar->setType(remote_variable_type_unknown);
+  ASSERT_EQ(remote_variable_type_unknown, prvar->getType());
+  
+  prvar->setType(remote_variable_type_string);
+  ASSERT_EQ(remote_variable_type_string, prvar->getType());
+  
+  prvar->setType(remote_variable_type_boolean);
+  ASSERT_EQ(remote_variable_type_boolean, prvar->getType());
+  
+  prvar->setType(remote_variable_type_int8_t);
+  ASSERT_EQ(remote_variable_type_int8_t, prvar->getType());
+  
+  prvar->setType(remote_variable_type_uint8_t);
+  ASSERT_EQ(remote_variable_type_uint8_t, prvar->getType());
+  
+  prvar->setType(remote_variable_type_int16_t);
+  ASSERT_EQ(remote_variable_type_int16_t, prvar->getType());
+  
+  prvar->setType(remote_variable_type_uint16_t);
+  ASSERT_EQ(remote_variable_type_uint16_t, prvar->getType());
+
+  prvar->setType(remote_variable_type_int32_t);
+  ASSERT_EQ(remote_variable_type_int32_t, prvar->getType());
+
+  prvar->setType(remote_variable_type_uint32_t);
+  ASSERT_EQ(remote_variable_type_uint32_t, prvar->getType());
+
+  prvar->setType(remote_variable_type_int64_t);
+  ASSERT_EQ(remote_variable_type_int64_t, prvar->getType());
+
+  prvar->setType(remote_variable_type_uint64_t);
+  ASSERT_EQ(remote_variable_type_uint64_t, prvar->getType());
+
+  prvar->setType(remote_variable_type_float);
+  ASSERT_EQ(remote_variable_type_float, prvar->getType());
+
+  prvar->setType(remote_variable_type_double);
+  ASSERT_EQ(remote_variable_type_double, prvar->getType());
+
+  prvar->setType(remote_variable_type_date);
+  ASSERT_EQ(remote_variable_type_date, prvar->getType());
+
+  prvar->setType(remote_variable_type_time);
+  ASSERT_EQ(remote_variable_type_time, prvar->getType());
+
+
+  // ***** Remote variable 2 *****
+
+  // Test remote variable
+  prvar = mdf.getRemoteVariable("Remote variable 2");
+  ASSERT_NE(nullptr, prvar);
+
+  // Check name
+  ASSERT_TRUE(prvar->getName() == "Remote variable 2");
+
+  // Check type "byte" == uint8_t
+  ASSERT_EQ(remote_variable_type_uint8_t, prvar->getType());
+
+  // Check default value
+  ASSERT_EQ(0x22, vscp_readStringValue(prvar->getDefault()));
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, prvar->getAccess());
+
+  // Check page
+  ASSERT_EQ(0x11, prvar->getPage());
+
+  // Check offset
+  ASSERT_EQ(12, prvar->getOffset());
+
+  // Check VSCP Work grid position
+  ASSERT_EQ(4, prvar->getRowPosition());
+
+  // Get foreground color
+  ASSERT_EQ(0x888888, prvar->getForegroundColor());
+
+  // Get background color
+  ASSERT_EQ(0x777777, prvar->getBackgroundColor());
+
+  // Check description
+  ASSERT_EQ("English description remotevar 2", prvar->getDescription("en"));
+  ASSERT_EQ("Svensk beskrivning remotevar 2", prvar->getDescription("se"));
+  ASSERT_EQ("Lietuvos padeda remotevar 2", prvar->getDescription("lt"));
+  ASSERT_EQ("", prvar->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(prvar->getInfoURL("en") == "English help remotevar 2");
+  ASSERT_TRUE(prvar->getInfoURL("se") == "Svensk hjälp remotevar 2");
+  ASSERT_TRUE(prvar->getInfoURL("lt") == "Lietuvos padeda remotevar 2");
+  ASSERT_TRUE(prvar->getInfoURL("xx") == "");
+
+  pValueList = prvar->getListValues();
+  ASSERT_TRUE(nullptr != pValueList);
+
+  // Check number of values in list
+  ASSERT_EQ(3, pValueList->size());
+
+  // Check value list
+  CMDF_ValueListValue *pValue;
+  pValue = pValueList->at(0);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("Low", pValue->getName());
+  ASSERT_EQ("Low speed", pValue->getDescription("en"));
+  ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
+  ASSERT_EQ("??????????", pValue->getDescription("lt"));
+  ASSERT_EQ("", pValue->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pValue->getInfoURL("gb") == "English help 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("se") == "Svensk hjälp 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("lt") == "Lietuvos padeda 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("xx") == "");
+
+  pValue = pValueList->at(1);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("Medium", pValue->getName());
+
+  pValue = pValueList->at(2);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(3, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("High", pValue->getName());
+
+
+  // ***** Remote variable 3 *****
+
+  // Test remote variable
+  prvar = mdf.getRemoteVariable("Remote variable 3");
+  ASSERT_NE(nullptr, prvar);
+
+  // Check name
+  ASSERT_TRUE(prvar->getName() == "Remote variable 3");
+
+  // Check type "byte" == uint8_t
+  ASSERT_EQ(remote_variable_type_uint32_t, prvar->getType());
+
+  // Check default value
+  ASSERT_EQ(0, vscp_readStringValue(prvar->getDefault()));
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, prvar->getAccess());
+
+  // Check page
+  ASSERT_EQ(9, prvar->getPage());
+
+  // Check offset
+  ASSERT_EQ(98, prvar->getOffset());
+
+  // Check VSCP Work grid position
+  ASSERT_EQ(0x44, prvar->getRowPosition());
+
+  // Get foreground color
+  ASSERT_EQ(0xAAAAAA, prvar->getForegroundColor());
+
+  // Get background color
+  ASSERT_EQ(0x999999, prvar->getBackgroundColor());
+
+  // ******  Bitarray 0 ******
+
+  // Check bit list
+  pBitList = prvar->getListBits();
+  ASSERT_TRUE(nullptr != pBitList);
+
+  // Check item count
+  ASSERT_EQ(2, pBitList->size());
+
+  // Check bit definitions
+  pBit = pBitList->at(0);
+  ASSERT_TRUE(nullptr != pBit);
+
+  // Check start for bit array
+  ASSERT_EQ(0, pBit->getPos());
+
+  // Check width for bit array
+  ASSERT_EQ(3, pBit->getWidth());
+
+  // Check width for bit array
+  ASSERT_EQ(4, pBit->getDefault());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
+
+  // Check name
+  ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+
+  // Check description
+  ASSERT_EQ("English description bitfield 0", pBit->getDescription("gb"));
+  ASSERT_EQ("Svensk beskrivning bitfield 0", pBit->getDescription("se"));
+  ASSERT_EQ("Lietuvos aprašymas bitfield 0", pBit->getDescription("lt"));
+  ASSERT_EQ("", pBit->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pBit->getInfoURL("gb") == "English help bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("xx") == "");
+
+
+  // ******  Bitarray 1 ******
+ 
+
+  // Check bit definitions
+  pBit = pBitList->at(1);
+  ASSERT_TRUE(nullptr != pBit);
+
+  // Check start for bit array
+  ASSERT_EQ(3, pBit->getPos());
+
+  // Check width for bit array
+  ASSERT_EQ(2, pBit->getWidth());
+
+  // Check width for bit array
+  ASSERT_EQ(0, pBit->getDefault());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
+
+  // Check name
+  ASSERT_TRUE(pBit->getName() == "Bitfield name 1");
+
+  // Check description
+  ASSERT_EQ("English description bitfield 1", pBit->getDescription("gb"));
+  ASSERT_EQ("Svensk beskrivning bitfield 1", pBit->getDescription("se"));
+  ASSERT_EQ("Lietuvos aprašymas bitfield 1", pBit->getDescription("lt"));
+  ASSERT_EQ("", pBit->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pBit->getInfoURL("gb") == "English help bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("xx") == "");
+
+  // Value list
+
+   pValueList = pBit->getListValues();
+  ASSERT_TRUE(nullptr != pValueList);
+
+  // Check number of values in list
+  ASSERT_EQ(3, pValueList->size());
+
+  // Check value list
+  pValue = pValueList->at(0);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("Low", pValue->getName());
+  ASSERT_EQ("Low speed", pValue->getDescription("en"));
+  ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
+  ASSERT_EQ("", pValue->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pValue->getInfoURL("gb") == "English help 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("se") == "Svensk hjälp 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("lt") == "Lietuvos padeda 1 vl2");
+  ASSERT_TRUE(pValue->getInfoURL("xx") == "");
+
+  pValue = pValueList->at(1);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("Medium", pValue->getName());
+
+
 }
 
 //-----------------------------------------------------------------------------

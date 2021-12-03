@@ -48,12 +48,12 @@
 using json = nlohmann::json;
 
 // This is the access rights
-typedef enum mdf_reg_access_mode {
+typedef enum mdf_access_mode {
   MDF_REG_ACCESS_NONE       = 0,
   MDF_REG_ACCESS_READ_ONLY  = 1,
   MDF_REG_ACCESS_WRITE_ONLY = 2,
   MDF_REG_ACCESS_READ_WRITE = 3
-} mdf_reg_access_mode;
+} mdf_access_mode;
 
 // This is the register type codes
 typedef enum mdf_register_type {
@@ -301,13 +301,13 @@ public:
     Get access for bitfield
     @return Access for bitfield.
   */
-  mdf_reg_access_mode getAccess(void) { return m_access; };
+  mdf_access_mode getAccess(void) { return m_access; };
 
   /*!
     Set access for bitfield
     @param access Access for bitfield.
   */
-  void setAccess(mdf_reg_access_mode access) { m_access = access; };
+  void setAccess(mdf_access_mode access) { m_access = access; };
 
   /*!
     Fetch the value definition list
@@ -326,7 +326,7 @@ private:
   uint8_t m_default;            // 'default'  Default value for field
   uint8_t m_min;                // 'min'      Minimum value for field (if applicable)
   uint8_t m_max;                // 'max'      Maximum value for field (if applicable)
-  mdf_reg_access_mode m_access; // 'access'   Access rights for the bit(-field)
+  mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
 
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
@@ -515,13 +515,13 @@ public:
     Get access for register
     @return Access for register.
   */
-  mdf_reg_access_mode getAccess(void) { return m_access; };
+  mdf_access_mode getAccess(void) { return m_access; };
 
   /*!
     Set access for register
     @param access Access for register.
   */
-  void setAccess(mdf_reg_access_mode access) { m_access = access; };
+  void setAccess(mdf_access_mode access) { m_access = access; };
 
   /*!
     Set type for register
@@ -632,7 +632,7 @@ private:
 
   std::string m_strDefault; // "UNDEF" if not set
 
-  mdf_reg_access_mode m_access;
+  mdf_access_mode m_access;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
@@ -672,17 +672,163 @@ public:
   void clearStorage(void);
 
   /*!
+      Fetch the name of the remote variable
+      @return Name of the remote variable
+  */
+  std::string getName(void) { return m_name; };  
+
+  /*!
+    Set name of the remote variable 
+    @param name Name of the remote variable
+  */
+ void setName(std::string name) { m_name = name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get the type for the remote variable
+    @return Type for the remote variable.
+  */
+  vscp_remote_variable_type getType(void) { return m_type; };
+
+  /*!
+    Set type for remote variable
+    @param type Type for remote variable.
+  */
+  void setType(vscp_remote_variable_type type) { m_type = type; };
+
+  /*!
       Get real text description of type
       @param type Remote variable type
       @return Real text description of type.
   */
-  std::string getRemoteVariableValueType(void);
+  std::string getTypeString(void);
 
   /*!
       Get number of bytes for an remote variable type
       @return Number of bytes for remote variable type.
    */
-  uint16_t getRemoteVariableTypeByteCount(void);
+  uint16_t getTypeByteCount(void);
+
+  /*!
+      Get default value for remote variable
+      @return Default value.
+  */
+  std::string getDefault(void) { return m_strDefault; };
+
+  /*!
+    Set default value for remote variable
+    @param strDefault Default value.
+  */
+  void setDefault(std::string strDefault) { m_strDefault = strDefault; };
+
+  /*!
+    Get Page for remote variable
+    @return Page for remote variable.
+  */
+  uint16_t getPage(void) { return m_page; };
+
+  /*!
+    Set Page for remote variable
+    @param page Page for remote variable.
+  */
+  void setPage(uint16_t page) { m_page = page; };
+
+  /*!
+    Get Offset for remote variable
+    @return Offset for remote variable.
+  */
+  uint32_t getOffset(void) { return m_offset; };
+
+  /*!
+    Set Offset for remote variable
+    @param offset Offset for remote variable.
+  */
+  void setOffset(uint32_t offset) { m_offset = offset; };  
+
+  /*!
+      Get access mode for remote variable
+      @return Access mode for remote variable.
+  */
+  mdf_access_mode getAccess(void) { return m_access; };
+
+  /*!
+    Set access mode for remote variable
+    @param access Access mode for remote variable.  
+  */
+  void setAccess(mdf_access_mode access) { m_access = access; };
+
+  /*!
+    Get value list for remote variable
+    @return Value list for remote variable.
+  */
+  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+
+  /*!
+    Get bit list for remote variable
+    @return Bit list for remote variable.
+  */
+  std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
+
+  /*!
+    Get VSCP Works grid position.
+    @return VSCP Works grid postion. Set to -1 if not set.
+  */
+  long getRowPosition(void) { return m_rowInGrid; };
+
+  /*!
+    Set VSCP Works grid position.
+    @param rowInGrid VSCP Works grid postion.
+  */
+  void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
+
+  /*!
+    Set Foreground color for VSCP Works grid.
+    @param color Foreground color to set.
+  */
+  void setForegroundColor(uint32_t color) { m_fgcolor = color; };
+
+  /*!
+    Get Foreground color for VSCP Works grid.
+    @return Fourground color.
+  */
+  uint32_t getForegroundColor(void) { return m_fgcolor; };
+
+  /*!
+    Set Background color for VSCP Works grid.
+    @param color Background color to set.
+  */
+  void setBackgroundColor(uint32_t color) { m_bgcolor = color; };
+
+  /*!
+    Get Background color for VSCP Works grid.
+    @return Background color.
+  */
+  uint32_t getBackgroundColor(void) { return m_bgcolor; };
 
 private:
   std::string m_name; // Abstract variable name (unique
@@ -697,10 +843,11 @@ private:
   uint32_t m_offset;            // stored at this offset
   int8_t m_bitpos;              // For booleans (can be a single bit in a byte).
   uint16_t m_size;              // Size of string.
-  mdf_reg_access_mode m_access; // Access rights
+  mdf_access_mode m_access; // Access rights
 
   // For VSCP Works usage
 
+  long m_rowInGrid;   // Helper for display (row reg is displayed on)  
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
@@ -1673,6 +1820,21 @@ public:
       @return Number of register pages used.
   */
   uint32_t getPages(std::set<long> &pages);
+
+  //-----------------------------------------------------------------------------
+
+  /*!
+    Get number of defined remote variables
+    @return Number of remote variables.
+  */
+  size_t getRemoteVariableCount(void) { return m_list_remotevar.size(); };
+
+  /*!
+      Return remote variable from its name
+      @param name Name iof remote variable to search for.
+      @return Pointer to CMDF_RemoteVariable class if found else NULL.
+  */
+  CMDF_RemoteVariable *getRemoteVariable(std::string name);
 
   // ----------------------------------------------------------------------------
 

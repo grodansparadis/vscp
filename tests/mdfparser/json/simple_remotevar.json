@@ -3,12 +3,12 @@
 
   "module": {
     "name": "Simple remotevar",
-    "model": "Simple remotevar",
-    "version": "B",
-    "changed": "2021-11-02",
+    "model": "Simple remotevar module",
+    "version": "var2022",
+    "changed": "1956-11-02",
     "description": "This is an english BBB description",
     "infourl": "https://www.BBBenglishBBB.en",
-    "buffersize": 64,
+    "buffersize": 32,
   
     "manufacturer": {
         "name" : "Grodans Paradis AB",
@@ -239,42 +239,46 @@
     },
     "remotevar" : [
       {
-        "name" : "Abstraction 1",
+        "name" : "Remote variable 1",
         "type": "short", 
-        "default":"0",
-        "page" :"0",
+        "default":"8",
+        "access": "rw",
+        "page" :"2",
         "offset" :18,
+        "rowpos": 99,
         "bgcolor" :"0xCCFFFF",
-        "fgcolor" :"0x000000",
+        "fgcolor" :"0x123456",
         
         "description" : {
-          "en": "English description 1",
-          "se": "Svensk beskrivning 1",
-          "lt": "Lietuvos padeda 1"
+          "en": "English description remotevar 1",
+          "se": "Svensk beskrivning remotevar 1",
+          "lt": "Lietuvos padeda remotevar 1"
         },
         "infourl" : {
-          "gb": "English help",
-          "se": "Svensk hjälp",
-          "lt": "Lietuvos padeda"
+          "gb": "English help remotevar 1",
+          "se": "Svensk hjälp remotevar 1",
+          "lt": "Lietuvos padeda remotevar 1"
         }
       },
       {
-        "name" : "Abstraction 2",
+        "name" : "Remote variable 2",
         "type": "uint8", 
         "default": "0x22",
-        "page" : "0x00",
-        "offset" :"18",
-        "bgcolor" :"0xCCFFFF",
-        "fgcolor" :"0x000000",        
+        "access": "r",
+        "page" : "0x11",
+        "offset" :"12",
+        "rowpos": "0x04",
+        "bgcolor" :"0x777777",
+        "fgcolor" :"0x888888",        
         "description" : {
-          "en": "English description 2",
-          "se": "Svensk beskrivning 2",
-          "lt": "Lietuvos padeda 2"
+          "en": "English description remotevar 2",
+          "se": "Svensk beskrivning remotevar 2",
+          "lt": "Lietuvos padeda remotevar 2"
         },
         "infourl" : {
-          "en": "English help 2",
-          "se": "Svensk hjälp 2",
-          "lt": "Lietuvos padeda 2"
+          "en": "English help remotevar 2",
+          "se": "Svensk hjälp remotevar 2",
+          "lt": "Lietuvos padeda remotevar 2"
         },
         "valuelist" : [
           {
@@ -282,7 +286,8 @@
             "name" : "Low",
             "description" : {
               "en" : "Low speed",
-              "se" : "Låg hastighet"
+              "se" : "Låg hastighet",
+              "lt" : "??????????"
             },
             "infourl" : {
               "gb": "English help 1 vl2",
@@ -319,13 +324,15 @@
         ] 
       },
       {
-        "name" : "Abstraction 3",
+        "name" : "Remote variable 3",
         "type": "uint32", 
         "default":"0",
-        "page" :"0",
-        "offset" :18,
-        "bgcolor" :"0xCCFFFF",
-        "fgcolor" :"0x000000",
+        "access": "rw",
+        "page" :"9",
+        "offset" :98,
+        "rowpos": "0x44",
+        "bgcolor" :"0x999999",
+        "fgcolor" :"0xAAAAAA",
         
         "description" : {
           "en": "English description 3",
@@ -341,36 +348,37 @@
           {
             "pos": 0,
             "width": 3,
-            "default": 0,
+            "default": 4,
             "min": 0,
             "max": 7,
             "access" : "rw",
-            "name" : "English bit or bitfield name",
+            "name" : "Bitfield name 0",
             "description" : {
-              "gb": "English description",
-              "se": "Svensk beskrivning",
-              "lt": "Lietuvos aprašymas"
+              "gb": "English description bitfield 0",
+              "se": "Svensk beskrivning bitfield 0",
+              "lt": "Lietuvos aprašymas bitfield 0"
             },
             "infourl" : {
-              "gb": "English help",
-              "se": "Svensk hjälp",
-              "lt": "Lietuvos padeda"
+              "gb": "English help bitfield 0",
+              "se": "Svensk hjälp bitfield 0",
+              "lt": "Lietuvos padeda bitfield 0"
             }
           },
           {
             "pos": 3,
             "width": 2,
             "default": false,
-            "name" : "English bit or bitfield name",
+            "access": "r",
+            "name" : "Bitfield name 1",
             "description" : {
-              "gb": "English description",
-              "se": "Svensk beskrivning",
-              "lt": "Lietuvos aprašymas"
+              "gb": "English description bitfield 1",
+              "se": "Svensk beskrivning bitfield 1",
+              "lt": "Lietuvos aprašymas bitfield 1"
             },
             "infourl" : {
-              "gb": "English help",
-              "se": "Svensk hjälp",
-              "lt": "Lietuvos padeda"
+              "gb": "English help bitfield 1",
+              "se": "Svensk hjälp bitfield 1",
+              "lt": "Lietuvos padeda bitfield 1"
             },
             "valuelist" : [
               {
