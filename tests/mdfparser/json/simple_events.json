@@ -2,8 +2,8 @@
   "_copyright": "Copyright C) 2021 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
 
   "module": {
-    "name": "Simple remotevar",
-    "model": "Simple remotyevar",
+    "name": "Simple Events",
+    "model": "Simple Events",
     "version": "B",
     "changed": "2021-11-02",
     "description": "This is an english BBB description",

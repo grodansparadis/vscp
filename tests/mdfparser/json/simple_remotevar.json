@@ -3,7 +3,7 @@
 
   "module": {
     "name": "Simple remotevar",
-    "model": "Simple remotyevar",
+    "model": "Simple remotevar",
     "version": "B",
     "changed": "2021-11-02",
     "description": "This is an english BBB description",

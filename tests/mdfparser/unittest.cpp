@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <vscphelper.h>
+
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -14,6 +16,7 @@
 #include <string>
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Invalid_Path)
 {
   CMDF mdf;
@@ -23,6 +26,7 @@ TEST(parseMDF, Invalid_Path)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Invalid_Tag)
 {
   CMDF mdf;
@@ -32,6 +36,7 @@ TEST(parseMDF, Invalid_Tag)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_XML_A)
 {
   CMDF mdf;
@@ -72,6 +77,7 @@ TEST(parseMDF, Simple_XML_A)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_XML_B)
 {
   CMDF mdf;
@@ -102,6 +108,7 @@ TEST(parseMDF, Simple_XML_B)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Picture_Old_Format)
 {
   CMDF mdf;
@@ -147,8 +154,8 @@ TEST(parseMDF, Simple_Picture_Old_Format)
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 2" == pPicture->getDescription("se"));
 }
 
-
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Picture_Standard_Format)
 {
   CMDF mdf;
@@ -194,8 +201,8 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 2" == pPicture->getDescription("se"));
 }
 
-
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Firmware_Standard_Format)
 {
   CMDF mdf;
@@ -250,8 +257,8 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
 
 }
 
-
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Firmware_Old_Format)
 {
   CMDF mdf;
@@ -307,6 +314,7 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Manual_Standard_Format)
 {
   CMDF mdf;
@@ -332,6 +340,7 @@ TEST(parseMDF, Simple_Manual_Standard_Format)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Manual_Old_Format)
 {
   CMDF mdf;
@@ -357,6 +366,7 @@ TEST(parseMDF, Simple_Manual_Old_Format)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, XML_BOOTLOADER)
 {
   std::string path;
@@ -370,8 +380,8 @@ TEST(parseMDF, XML_BOOTLOADER)
   ASSERT_EQ(0x2000, mdf.getBootLoaderObj()->getBlockCount());
 }
 
-
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, REALXML)
 {
   std::string path;
@@ -452,11 +462,15 @@ TEST(parseMDF, REALXML)
 } 
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                JSON
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_A)
 {
   std::string path;
@@ -493,6 +507,7 @@ TEST(parseMDF, JSON_SIMPLE_A)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_B)
 {
   std::string path;
@@ -628,19 +643,322 @@ TEST(parseMDF, JSON_SIMPLE_B)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_Registers)
 {
   std::string path;
   CMDF mdf;
+  CMDF_Register *preg;
+  std::deque<CMDF_ValueListValue *> *pValueList;
+  std::deque<CMDF_Bit *> *pBitList;
+  CMDF_Bit *pBit;
 
   path = "json/simple_registers.json";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
   ASSERT_TRUE(mdf.getModuleName() == "Simple registers");
+
+  // Check module version
+  ASSERT_TRUE(mdf.getModuleVersion() == "Special version");
+
+  // Check model
+  ASSERT_TRUE(mdf.getModuleModel() == "Simple reg model");
+
+  // Check module date
+  ASSERT_TRUE(mdf.getModuleChangeDate() == "2029-11-02");
+
+  // Check description
+  ASSERT_TRUE(mdf.getModuleDescription("en") == "This is a simple reg description");
+
+  // Check help url
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.simplereg.en");
+
+  // Check buffer size
+  ASSERT_EQ(16, mdf.getModuleBufferSize());
+
+  // Check number of registers that is defined
+  ASSERT_EQ(3, mdf.getRegisterCount());
+
+  // Check number of registers that is defined on page == 0
+  ASSERT_EQ(2, mdf.getRegisterCount(2));
+
+  // Check number of registers that is defined on page = 99
+  ASSERT_EQ(1, mdf.getRegisterCount(99));
+
+  // Invalid register offset
+  preg = mdf.getRegister(33, 0);
+  ASSERT_EQ(nullptr, preg);
+
+  // *************************************************************************
+  // 02:22
+  // *************************************************************************
+
+  // Check register att offset 0x22, page=2
+  preg = mdf.getRegister(0x22, 2);
+
+  // Should return a valid pointer
+  ASSERT_TRUE(nullptr != preg);
+  
+  // Check register offset
+  ASSERT_EQ(0x22, preg->getOffset());
+
+  // Check register page
+  ASSERT_EQ(2, preg->getPage());
+
+  // Check register span
+  ASSERT_EQ(1, preg->getSpan());
+
+  // Check register width
+  ASSERT_EQ(8, preg->getWidth());
+
+  // Check register min
+  ASSERT_EQ(2, preg->getMin());
+
+  // Check register max
+  ASSERT_EQ(128, preg->getMax());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, preg->getAccess());
+
+  // Check register default value
+  ASSERT_EQ(99, vscp_readStringValue(preg->getDefault()));
+
+  // Check name
+  ASSERT_TRUE(preg->getName() == "Register example 1");
+
+  // Check description
+  ASSERT_TRUE(preg->getDescription("en") == "Just a byte register with color settings");
+  ASSERT_TRUE(preg->getDescription("se") == "Ett vanligt register med färginställningar");
+
+  // Check info URL
+  ASSERT_TRUE(preg->getInfoURL("en") == "https://one.com");
+  ASSERT_TRUE(preg->getInfoURL("se") == "https://two.com");
+
+  // * * * VSCP Works * * *
+
+  // Get current value - Should be default value
+  ASSERT_EQ(99, preg->getValue());
+
+  // Get row position
+  ASSERT_EQ(11, preg->getRowPosition());
+
+  // Get foreground color
+  ASSERT_EQ(0x001200, preg->getForegroundColor());
+
+  // Get background color
+  ASSERT_EQ(0xfff3d4, preg->getBackgroundColor());
+
+  // Empty value list
+  pValueList = preg->getListValues();
+  ASSERT_TRUE(nullptr != pValueList);
+
+  // Check number of values
+  ASSERT_EQ(0, pValueList->size());
+
+  // *************************************************************************
+  //  02:31   -- Testing value list
+  // *************************************************************************
+
+  // Check register att offset 0x22, page=2
+  preg = mdf.getRegister(0x31, 2);
+
+  // Should return a valid pointer
+  ASSERT_TRUE(nullptr != preg);
+  
+  // Check register offset
+  ASSERT_EQ(0x31, preg->getOffset());
+
+  // Check register page
+  ASSERT_EQ(2, preg->getPage());
+
+  // Check register span
+  ASSERT_EQ(1, preg->getSpan());
+
+  // Check register width
+  ASSERT_EQ(4, preg->getWidth());
+
+  // Check register min
+  ASSERT_EQ(0, preg->getMin());
+
+  // Check register max
+  ASSERT_EQ(15, preg->getMax());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, preg->getAccess());
+
+  // Check register default value
+  ASSERT_EQ(253, vscp_readStringValue(preg->getDefault()));
+
+  // Check name
+  ASSERT_TRUE(preg->getName() == "Register example 2");
+
+  // Check description
+  ASSERT_TRUE(preg->getDescription("en") == "Register with value list");
+  ASSERT_TRUE(preg->getDescription("se") == "Beskrivning med värde lista");
+  ASSERT_TRUE(preg->getDescription("xx") == "");
+
+  // Check info URL
+  ASSERT_TRUE(preg->getInfoURL("gb") == "English help");
+  ASSERT_TRUE(preg->getInfoURL("se") == "Svensk hjälp");
+  ASSERT_TRUE(preg->getInfoURL("lt") == "Lietuvos padeda");
+  ASSERT_TRUE(preg->getInfoURL("xx") == "");
+
+  pValueList = preg->getListValues();
+  ASSERT_TRUE(nullptr != pValueList);
+
+  // Check number of values in list
+  ASSERT_EQ(3, pValueList->size());
+
+  // Check value list
+  CMDF_ValueListValue *pValue;
+  pValue = pValueList->at(0);
+  ASSERT_TRUE(nullptr != pValue);
+  ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
+  ASSERT_EQ("Off", pValue->getName());
+  ASSERT_EQ("The device is off", pValue->getDescription("en"));
+  ASSERT_EQ("Enheten är av", pValue->getDescription("se"));
+  ASSERT_EQ("", pValue->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pValue->getInfoURL("gb") == "English help url");
+  ASSERT_TRUE(pValue->getInfoURL("se") == "Svensk hjälp url");
+  ASSERT_TRUE(pValue->getInfoURL("lt") == "Lietuvos padeda url");
+  ASSERT_TRUE(pValue->getInfoURL("xx") == "");
+
+  // * * * VSCP Works * * *
+
+  // Get current value - Should be default value
+  ASSERT_EQ(253, preg->getValue());
+
+  // Get row position
+  ASSERT_EQ(0xaa, preg->getRowPosition());
+
+  // Get foreground color
+  ASSERT_EQ(0x100000, preg->getForegroundColor());
+
+  // Get background color
+  ASSERT_EQ(0x00f3d4, preg->getBackgroundColor());
+
+
+
+  // *************************************************************************
+  //  63:02   -- Testing bit list
+  // *************************************************************************
+
+
+
+  // Check register att offset 0x02, page=99
+  preg = mdf.getRegister(2, 99);
+
+  // Should return a valid pointer
+  ASSERT_TRUE(nullptr != preg);
+  
+  // Check register offset
+  ASSERT_EQ(2, preg->getOffset());
+
+  // Check register page
+  ASSERT_EQ(99, preg->getPage());
+
+  // Check register span
+  ASSERT_EQ(3, preg->getSpan());
+
+  // Check register width
+  ASSERT_EQ(8, preg->getWidth());
+
+  // Check register min
+  ASSERT_EQ(0, preg->getMin());
+
+  // Check register max
+  ASSERT_EQ(255, preg->getMax());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_WRITE_ONLY, preg->getAccess());
+
+  // Check register default value
+  ASSERT_EQ(0x55, vscp_readStringValue(preg->getDefault()));
+
+  // Check name
+  ASSERT_TRUE(preg->getName() == "Register example 3");
+
+  // ******  Bitarray 0 ******
+
+  // Check bit list
+  pBitList = preg->getListBits();
+  ASSERT_TRUE(nullptr != pBitList);
+
+  // Check item count
+  ASSERT_EQ(2, pBitList->size());
+
+  // Check bit definitions
+  pBit = pBitList->at(0);
+  ASSERT_TRUE(nullptr != pBit);
+
+  // Check start for bit array
+  ASSERT_EQ(0, pBit->getPos());
+
+  // Check width for bit array
+  ASSERT_EQ(3, pBit->getWidth());
+
+  // Check width for bit array
+  ASSERT_EQ(4, pBit->getDefault());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
+
+  // Check name
+  ASSERT_TRUE(pBit->getName() == "English bit or bitfield name 0");
+
+  // Check description
+  ASSERT_EQ("English description bitfield 0", pBit->getDescription("gb"));
+  ASSERT_EQ("Svensk beskrivning bitfield 0", pBit->getDescription("se"));
+  ASSERT_EQ("Lietuvos aprašymas bitfield 0", pBit->getDescription("lt"));
+  ASSERT_EQ("", pBit->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pBit->getInfoURL("gb") == "English help bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 0");
+  ASSERT_TRUE(pBit->getInfoURL("xx") == "");
+
+
+  // ******  Bitarray 1 ******
+ 
+
+  // Check bit definitions
+  pBit = pBitList->at(1);
+  ASSERT_TRUE(nullptr != pBit);
+
+  // Check start for bit array
+  ASSERT_EQ(3, pBit->getPos());
+
+  // Check width for bit array
+  ASSERT_EQ(2, pBit->getWidth());
+
+  // Check width for bit array
+  ASSERT_EQ(0, pBit->getDefault());
+
+  // Get access rights
+  ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
+
+  // Check name
+  ASSERT_TRUE(pBit->getName() == "English bit or bitfield name 1");
+
+  // Check description
+  ASSERT_EQ("English description bitfield 1", pBit->getDescription("gb"));
+  ASSERT_EQ("Svensk beskrivning bitfield 1", pBit->getDescription("se"));
+  ASSERT_EQ("Lietuvos aprašymas bitfield 1", pBit->getDescription("lt"));
+  ASSERT_EQ("", pBit->getDescription("xx"));
+
+  // Check info URL
+  ASSERT_TRUE(pBit->getInfoURL("gb") == "English help bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 1");
+  ASSERT_TRUE(pBit->getInfoURL("xx") == "");
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_Remotevar)
 {
   std::string path;
@@ -654,6 +972,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
 }
 
 //-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_DMatrix)
 {
   std::string path;
@@ -667,6 +986,26 @@ TEST(parseMDF, JSON_SIMPLE_DMatrix)
 }
 
 //-----------------------------------------------------------------------------
+
+TEST(parseMDF, JSON_Events)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "json/simple_events.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check name
+  ASSERT_TRUE(mdf.getModuleName() == "Simple Events");
+}
+
+
+
+//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------
+
+
 
 int
 main(int argc, char **argv)

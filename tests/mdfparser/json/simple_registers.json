@@ -3,12 +3,12 @@
 
   "module": {
     "name": "Simple registers",
-    "model": "Simple registers",
-    "version": "B",
-    "changed": "2021-11-02",
-    "description": "This is an english BBB description",
-    "infourl": "https://www.BBBenglishBBB.en",
-    "buffersize": 64,
+    "model": "Simple reg model",
+    "version": "Special version",
+    "changed": "2029-11-02",
+    "description": "This is a simple reg description",
+    "infourl": "https://www.simplereg.en",
+    "buffersize": 16,
   
     "manufacturer": {
         "name" : "Grodans Paradis AB",
@@ -239,31 +239,41 @@
     },
     "register" : [
       {
-        "page": 0,
-        "offset": 0,
-        "width": 1,
-        "min" : 0,
-        "max" : 255,
+        "page": 2,
+        "offset": "0x22",
+        "span": 1,
+        "width": 8,
+        "min" : 2,
+        "max" : 128,
         "access" : "rw",
+        "default": 99,
+        "rowpos" : 11,
         "bgcolor" : "0xfff3d4",
-        "fgcolor" : "0x000000",        
-        "name" : "Register 1",
+        "fgcolor" : "0x001200",        
+        "name" : "Register example 1",
         "description" : {
           "en" : "Just a byte register with color settings",
           "se" : "Ett vanligt register med färginställningar"
+        },
+        "infourl" : {
+          "en" : "https://one.com",
+          "se" : "https://two.com"
         }
       },
       {
-        "page": "0x00",
-        "offset": "0x01",
-        "default": "0x00",
-        "width": "0x08",
+        "page": "0x02",
+        "offset": "0x31",
+        "default": "0x88",
+        "width": "0x04",
+        "span": "0x01",
         "min" : "0x00",
-        "max" : "0xff",
-        "access" : "rw",
-        "bgcolor" : "0xfff3d4",
-        "fgcolor" : "0x000000",
-        "name" : "Register 2",
+        "max" : "0x000f",
+        "access" : "r",
+        "default": "0xfd",
+        "rowpos" : "0xaa",
+        "bgcolor" : "0x00f3d4",
+        "fgcolor" : "0x100000",
+        "name" : "Register example 2",
         "description" : {
           "en" : "Register with value list",
           "se" : "Beskrivning med värde lista"
@@ -282,9 +292,9 @@
               "se" : "Enheten är av"
             },
             "infourl" : {
-              "gb": "English help",
-              "se": "Svensk hjälp",
-              "lt": "Lietuvos padeda"
+              "gb": "English help url",
+              "se": "Svensk hjälp url",
+              "lt": "Lietuvos padeda url"
             }
           },
           {
@@ -316,57 +326,64 @@
         ]
       },
       {
-        "page": 0,
+        "name" : "Register example 3",
+        "page": 99,
         "offset": 2,
-        "default": 0,
-        "width" : 1,
-        "access" : "rw",
-        "bgcolor" : "0xfff3d4",
-        "fgcolor" : "0x000000",
-        "name" :  "Register 3",
+        "default": "0x55",
+        "width" : 8,
+        "span" : 3,
+        "min" : 0,
+        "max" : 255,
+        "access" : "w",
+        "rowpos" : "200",
+        "bgcolor" : "0xfffff3d4",
+        "fgcolor" : "0xffffffff",        
         "description" : {
-          "en" : "Register with value list",
-          "se" : "Beskrivning med värde lista"
+          "en" : "Register with bits",
+          "se" : "Beskrivning med bitar"
         },
         "infourl" : {
-          "gb": "English help",
-          "se": "Svensk hjälp",
-          "lt": "Lietuvos padeda"
+          "gb": "English help bits",
+          "se": "Svensk hjälp bits",
+          "lt": "Lietuvos padeda bits"
         },
         "bit": [
           {
             "pos": 0,
             "width": 3,
-            "default": 0,
+            "default": 4,
             "min": 0,
             "max": 7,
             "access" : "rw",
-            "name" : "English bit or bitfield name",
+            "name" : "English bit or bitfield name 0",
             "description" : {
-              "gb": "English description",
-              "se": "Svensk beskrivning",
-              "lt": "Lietuvos aprašymas"
+              "gb": "English description bitfield 0",
+              "se": "Svensk beskrivning bitfield 0",
+              "lt": "Lietuvos aprašymas bitfield 0"
             },
             "infourl" : {
-              "gb": "English help",
-              "se": "Svensk hjälp",
-              "lt": "Lietuvos padeda"
+              "gb": "English help bitfield 0",
+              "se": "Svensk hjälp bitfield 0",
+              "lt": "Lietuvos padeda bitfield 0"
             }
           },
           {
-            "pos": 3,
-            "width": 2,
+            "pos": "0x03",
+            "width": "0x02",
             "default": false,
-            "name" : "English bit or bitfield name",
+            "access": "r",
+            "min": "0x01",
+            "max": "0x07",
+            "name" : "English bit or bitfield name 1",
             "description" : {
-              "gb": "English description",
-              "se": "Svensk beskrivning",
-              "lt": "Lietuvos aprašymas"
+              "gb": "English description bitfield 1",
+              "se": "Svensk beskrivning bitfield 1",
+              "lt": "Lietuvos aprašymas bitfield 1"
             },
             "infourl" : {
-              "gb": "English help",
-              "se": "Svensk hjälp",
-              "lt": "Lietuvos padeda"
+              "gb": "English help bitfield 1",
+              "se": "Svensk hjälp bitfield 1",
+              "lt": "Lietuvos padeda bitfield 1"
             }
           }
         ]

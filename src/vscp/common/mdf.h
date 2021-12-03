@@ -59,14 +59,11 @@ typedef enum mdf_reg_access_mode {
 typedef enum mdf_register_type {
   MDF_REG_TYPE_STANDARD = 0,
   MDF_REG_TYPE_DMATRIX1 = 1,
-  MDF_RE_TYPE_BLOCK    = 2
+  MDF_RE_TYPE_BLOCK     = 2
 } mdf_register_type;
 
 // This is the event direction
-typedef enum mdf_event_direction {
-  MDF_EVENT_DIR_IN = 0,
-  MDF_EVENT_DIR_OUT
-} mdf_event_direction;
+typedef enum mdf_event_direction { MDF_EVENT_DIR_IN = 0, MDF_EVENT_DIR_OUT } mdf_event_direction;
 
 // This is the remote variable type
 typedef enum vscp_remote_variable_type {
@@ -92,6 +89,8 @@ typedef enum vscp_remote_variable_type {
 // Forward declarations
 class CMDF;
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_ValueListValue
  */
@@ -108,12 +107,76 @@ public:
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
 
+  /*!
+    Get the value name
+    @return Value name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    Set value name
+    @param name Value name to set
+  */
+  void setName(std::string &name) { m_name = name; };
+
+  /*!
+    Get value
+    @return value .
+  */
+  std::string getValue(void) { return m_strValue; };
+
+  /*!
+    Set value
+    @param value Value on string form.
+  */
+  void setValue(std::string value) { m_strValue = value; };
+
+  /*!
+    Set value
+    @param value Value on numeric form.
+  */
+  void setValue(uint32_t value) { m_strValue = std::to_string(value); };
+
+  /*!
+    Set value
+    @param value Value on numeric form.
+  */
+  void setValue(double value) { m_strValue = std::to_string(value); };
+
+  /*!
+    Get the value description
+    @return Value description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set value description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
   std::string m_name;
   std::string m_strValue; // String because used for remote variabels also
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 };
+
+// ----------------------------------------------------------------------------
 
 // * * * Register * * *
 
@@ -142,6 +205,116 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get bit array start position (0-7)
+    @return Bit array start position
+  */
+  uint8_t getPos(void) { return (m_pos & 3); };
+
+  /*!
+    Set bit array start position (0-7)
+    @param pos Bit array start position
+  */
+  void setPos(uint8_t pos) { m_pos = (pos & 3); };
+
+  /*!
+    Get bit array length (1-8)
+    @return Bit array length
+  */
+  uint8_t getWidth(void) { return m_width; };
+
+  /*!
+    Set bit array length (1-8)
+    @param width Bit array length
+  */
+  void setWidth(uint8_t width) { m_width = width; };
+
+  /*!
+    Get bit array value
+    @return Bit array value
+  */
+  uint8_t getDefault(void) { return m_default; };
+
+  /*!
+    Set bit array value
+    @param default Bit array value
+  */
+  void setDefault(uint8_t default_) { m_default = default_; };
+
+  /*!
+    Get bit array value
+    @return Bit array value
+  */
+  uint8_t getMin(void) { return m_min; };
+
+  /*!
+    Set bit array value
+    @param min Bit array value
+  */
+  void setMin(uint8_t min) { m_min = min; };
+
+  /*!
+    Get bit array value
+    @return Bit array value
+  */
+  uint8_t getMax(void) { return m_max; };
+
+  /*!
+    Set bit array value
+    @param max Bit array value
+  */
+  void setMax(uint8_t max) { m_max = max; };
+
+  /*!
+    Get access for bitfield
+    @return Access for bitfield.
+  */
+  mdf_reg_access_mode getAccess(void) { return m_access; };
+
+  /*!
+    Set access for bitfield
+    @param access Access for bitfield.
+  */
+  void setAccess(mdf_reg_access_mode access) { m_access = access; };
+
+  /*!
+    Fetch the value definition list
+    @return Value definition list
+  */
+  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+
 private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -157,6 +330,8 @@ private:
 
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_Register
@@ -182,9 +357,257 @@ public:
   void clearStorage(void);
 
   /*!
-   Set default for value if it is defined.
-   */
-  uint8_t setDefault(void);
+    Get the register name
+    @return Register name
+  */
+  std::string &getName(void) { return m_name; };
+
+  /*!
+    Set register name
+    @param name Register name to set
+  */
+  void setName(std::string &name) { m_name = name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get register default string
+    @return Register default string. This string is set to "UNDEF"
+            if no default is set.
+  */
+  std::string &getDefault(void) { return m_strDefault; };
+
+  /*!
+    Get register default
+    @param val Pointer to byte that will get default value if defined.
+    @return true if default value is defined. If so return the default
+            value in default_value.
+  */
+  bool getDefault(uint8_t &default_value);
+
+  /*!
+    Set register default
+    @param str Default string to set
+  */
+  void setDefault(std::string &str) { m_strDefault = str; };
+
+  /*!
+    Set register default
+    @param val Default value to set
+  */
+  void setDefault(uint8_t val) { m_strDefault = std::to_string(val); };
+
+  /*!
+    Set default for register value if it is defined.
+    @return New default value.
+  */
+  uint8_t setValueToDefault(void);
+
+  /*!
+    Get minimum for value.
+    @return Minimum value.
+  */
+  uint8_t getMin(void) { return m_min; };
+
+  /*!
+    Set minimum for value.
+    @param min Minimum value to set.
+  */
+  void setMin(uint8_t min) { m_min = min; };
+
+  /*!
+    Get maximum for value.
+    @return Maximum value.
+  */
+  uint8_t getMax(void) { return m_max; };
+
+  /*!
+    Set maximum for value.
+    @param max Maximum value to set.
+  */
+  void setMax(uint8_t max) { m_max = max; };
+
+  /*!
+    Get offset for register
+    @return Offset for register.
+  */
+  uint32_t getOffset(void) { return m_offset; };
+
+  /*!
+    Set offset for register
+    @param offset Offset for register.
+  */
+  void setOffset(uint32_t offset) { m_offset = offset; };
+
+  /*!
+    Get page for register
+    @return Page for register.
+  */
+  uint32_t getPage(void) { return m_page; };
+
+  /*!
+    Set page for register
+    @param page Page for register.
+  */
+  void setPage(uint32_t page) { m_page = page; };
+
+  /*!
+    Get span for register
+    @return Span for register.
+  */
+  uint32_t getSpan(void) { return m_span; };
+
+  /*!
+    Set span for register
+    @param span Span for register.
+  */
+  void setSpan(uint32_t span) { m_span = span; };
+
+  /*!
+    Get width for register
+    @return Width for register.
+  */
+  uint32_t getWidth(void) { return m_width; };
+
+  /*!
+    Set width for register
+    @param width Width for register.
+  */
+  void setWidth(uint32_t width) { m_width = width; };
+
+  /*!
+    Get size for register
+    @return Size for register.
+  */
+  uint32_t getSize(void) { return m_size; };
+
+  /*!
+    Set size for register
+    @param size Size for register.
+  */
+  void setSize(uint32_t size) { m_size = size; };
+
+  /*!
+    Get access for register
+    @return Access for register.
+  */
+  mdf_reg_access_mode getAccess(void) { return m_access; };
+
+  /*!
+    Set access for register
+    @param access Access for register.
+  */
+  void setAccess(mdf_reg_access_mode access) { m_access = access; };
+
+  /*!
+    Set type for register
+    @param type Type for register.
+  */
+  void setType(mdf_register_type type) { m_type = type; };
+
+  /*!
+    Get type for register
+    @return Type for register.
+  */
+  mdf_register_type getType(void) { return m_type; };
+
+  /*!
+    Fetch the bit definition list
+    @return Bit definition list
+  */
+  std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
+
+  /*!
+    Fetch the value definition list
+    @return Value definition list
+  */
+  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+
+  // * * * VSCP Works Special methods * * *
+
+  /*!
+    Get value for register
+    @return value for register.
+  */
+  uint8_t getValue(void) { return m_value; };
+
+  /*!
+    Set value for register
+    @param value Value for register.
+  */
+  void setValue(uint8_t value);
+
+  /*!
+    Get VSCP Works grid position.
+    @return VSCP Works grid postion. Set to -1 if not set.
+  */
+  long getRowPosition(void) { return m_rowInGrid; };
+
+  /*!
+    Set VSCP Works grid position.
+    @param rowInGrid VSCP Works grid postion.
+  */
+  void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
+
+  /*!
+    Set Foreground color for VSCP Works grid.
+    @param color Foreground color to set.
+  */
+  void setForegroundColor(uint32_t color) { m_fgcolor = color; };
+
+  /*!
+    Get Foreground color for VSCP Works grid.
+    @return Fourground color.
+  */
+  uint32_t getForegroundColor(void) { return m_fgcolor; };
+
+  /*!
+    Set Background color for VSCP Works grid.
+    @param color Background color to set.
+  */
+  void setBackgroundColor(uint32_t color) { m_bgcolor = color; };
+
+  /*!
+    Get Background color for VSCP Works grid.
+    @return Background color.
+  */
+  uint32_t getBackgroundColor(void) { return m_bgcolor; };
+
+  /*!
+    Undo command on register value in VSCP grid.
+    @return Previous register value. -1 if there is no previous value.
+  */
+  int undo(void);
+
+  /*!
+    Redo command on register value in VSCP grid.
+    @return Previous register value. -1 if there is no previous value.
+  */
+  int redo(void);
 
 private:
   /*!
@@ -192,14 +615,14 @@ private:
   */
   CMDF_Register &operator=(const CMDF_Register &other);
 
-  std::string m_strName;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra help information
 
   uint16_t m_page;   // Level 1 page is 8-bit, pageing is not used for Level II.
   uint32_t m_offset; // Level 1 offset is 7 bits, Level II offset is 32 bits.
   uint16_t m_span;   // Defaults to 1. Number of bytes for a group of registers
-  uint16_t m_width;  // Defaults to 8. Width in bits for register 1-8 
+  uint16_t m_width;  // Defaults to 8. Width in bits for register (1-8 bits)
 
   mdf_register_type m_type; // std=0/dmatix1=1/block=2
   uint8_t m_size;           // Size for special types (default = 1)
@@ -218,11 +641,14 @@ private:
   long m_rowInGrid;   // Helper for display (row reg is displayed on)
   uint8_t m_value;    // Initial value read. This is the value
                       // that will be restored.
-  uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
+  uint32_t m_bgcolor; // Cell background colour. Default = white.
 
   std::deque<uint8_t> m_list_undo_value; // List with undo values
+  std::deque<uint8_t> m_list_redo_value; // List with redo values
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_RemoteVariable
@@ -282,6 +708,8 @@ private:
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_ActionParameter
 
@@ -320,6 +748,8 @@ private:
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_Action
 
@@ -353,6 +783,8 @@ private:
 
   std::deque<CMDF_ActionParameter *> m_list_ActionParameter; // List with action parameters
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_DecisionMatrix
@@ -389,6 +821,8 @@ private:
   std::deque<CMDF_Action *> m_list_action; // Action description
 };
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_EventData
 
@@ -423,6 +857,8 @@ private:
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_Event
@@ -461,6 +897,8 @@ private:
   std::deque<CMDF_EventData *> m_list_eventdata; // List with event data descriptions
 };
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_Item
 
@@ -486,6 +924,8 @@ private:
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_BootLoaderInfo
@@ -534,6 +974,8 @@ private:
   uint32_t m_nBlockSize;  // Size for one boot block
   uint32_t m_nBlockCount; // Number of boot blocks
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_Address
@@ -611,6 +1053,8 @@ private:
   std::string m_strCountry;
 };
 
+// ----------------------------------------------------------------------------
+
 /*!
   CMDF_Manufacturer
 
@@ -672,6 +1116,8 @@ private:
   std::deque<CMDF_Item *> m_list_Email;
   std::deque<CMDF_Item *> m_list_Web;
 };
+
+// ----------------------------------------------------------------------------
 
 class CMDF_Picture {
 
@@ -752,7 +1198,10 @@ private:
       Description of file
   */
   std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF_Firmware
@@ -913,6 +1362,7 @@ private:
       Description of file
   */
   std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
 
 // ---------------------------------------------------------------------------
@@ -972,7 +1422,10 @@ private:
       Description of file
   */
   std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
+
+// ----------------------------------------------------------------------------
 
 /*!
   CMDF
@@ -1191,7 +1644,37 @@ public:
   */
   CMDF_BootLoaderInfo *getBootLoaderObj(void) { return &m_bootInfo; };
 
-  // ------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+
+  /*!
+    Get number of registers
+    @return Number of registers.
+  */
+  size_t getRegisterCount(void) { return m_list_register.size(); };
+
+  /*!
+      Get number of defined registers
+      @param page Register page to check
+      @return Number of registers used.
+  */
+  size_t getRegisterCount(uint32_t page);
+
+  /*!
+      Return register definition from register + page
+      @param register Register to search for.
+      @param page Page top search for.
+      @return Pointer to CMDF_Register class if found else NULL.
+  */
+  CMDF_Register *getRegister(uint32_t reg, uint32_t page = 0);
+
+  /*!
+      Get number of register pages used
+      @param array Reference to array with pages
+      @return Number of register pages used.
+  */
+  uint32_t getPages(std::set<long> &pages);
+
+  // ----------------------------------------------------------------------------
 
   /*!
     Parse XML formated MDF file
@@ -1246,30 +1729,6 @@ public:
     @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
   */
   int getInfoUrlList(json &j, std::map<std::string, std::string> &map);
-
-  // Helpers
-
-  /*!
-      Get number of defined registers
-      @param page Register page to check
-      @return Number of registers used.
-  */
-  uint32_t getNumberOfRegisters(uint32_t page);
-
-  /*!
-      Get number of register pages used
-      @param array Reference to array with pages
-      @return Number of register pages used.
-  */
-  uint32_t getPages(std::set<long> &pages);
-
-  /*!
-      Return register class from register + page
-      @param register Register to search for.
-      @param page Page top search for.
-      @return Pointer to CMDF_Register class if found else NULL.
-  */
-  CMDF_Register *getMDFRegister(uint8_t reg, uint16_t page);
 
   /*
       Return temporary file path
