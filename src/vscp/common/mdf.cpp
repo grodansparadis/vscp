@@ -3940,9 +3940,9 @@ CMDF::parseMDF_JSON(std::string &path)
       //                               Alarm bits
       // ------------------------------------------------------------------------
 
-      if (j["module"].contains("alarm") && j["module"]["alarm"].is_array()) {
-        for (auto &alarm : j["module"]["alarm"].items()) {
-          // std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
+      if (j["module"].contains("alarms") && j["module"]["alarms"].is_array()) {
+        for (auto &alarm : j["module"]["alarms"].items()) {
+          //std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
           if (alarm.value().is_object()) {
 
             CMDF_Bit *palarm = new CMDF_Bit();
@@ -3953,12 +3953,36 @@ CMDF::parseMDF_JSON(std::string &path)
 
             m_list_alarm.push_back(palarm);
 
-            json jalarm = alarm.key();
+            json jalarm = alarm.value();
 
-            // Alarm bitlist
-            if (getBitList(jalarm, m_list_alarm) != VSCP_ERROR_SUCCESS) {
-              spdlog::warn("Parse-JSON: Failed to get alarm bitlist.");
+            // name
+            if (jalarm.contains("name") && jalarm["name"].is_string()) {
+              palarm->m_name = jalarm["name"];
+              spdlog::debug("Parse-JSON: Alarm name set to {0}.", palarm->m_name );              
             }
+
+            // pos
+            if (jalarm.contains("pos") && jalarm["pos"].is_string()) {
+              palarm->m_pos = vscp_readStringValue(jalarm["pos"]);
+              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos );              
+            }
+            else if (jalarm.contains("pos") && jalarm["pos"].is_number()) {
+              palarm->m_pos = jalarm["pos"];
+              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos );              
+            }
+            else {
+              palarm->m_pos = 0;
+              spdlog::warn("Parse-JSON: No alarm pos defined (set to 0.");
+            }
+
+            if (getDescriptionList(jalarm, palarm->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get event data description.");
+            }
+
+            if (getInfoUrlList(jalarm, palarm->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+              spdlog::warn("Parse-JSON: Failed to get event data infourl.");
+            }
+
           }
         }
       }

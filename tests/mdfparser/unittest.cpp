@@ -1578,8 +1578,6 @@ TEST(parseMDF, JSON_Events)
         ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bit 0");
         ASSERT_TRUE(pBit->getInfoURL("xx") == "");
 
-        
-
         // ******  Bitarray 1 ******
 
         // Check bit definitions
@@ -1644,6 +1642,39 @@ TEST(parseMDF, JSON_Events)
         ASSERT_EQ("Medium", pValue->getName());
       }
     }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+TEST(parseMDF, JSON_Alarm)
+{
+  std::deque<CMDF_Bit *> *pAlarmList;
+  std::string path;
+  CMDF mdf;
+
+  path = "json/simple_alarm.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check name
+  ASSERT_EQ(mdf.getModuleName(), "Simple Alarm");
+
+  // Check bit list
+  pAlarmList = mdf.getAlarmList();
+  ASSERT_TRUE(nullptr != pAlarmList);
+
+  // Check item count
+  ASSERT_EQ(8, pAlarmList->size());
+
+  for (uint8_t i = 0; i < 7; i++) {
+    CMDF_Bit *pBit;
+
+    // Check bit definitions
+    pBit = pAlarmList->at(i);
+    ASSERT_TRUE(nullptr != pBit);
+
+    // Check start for bit array
+    ASSERT_EQ(i, pBit->getPos());
   }
 }
 

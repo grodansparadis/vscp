@@ -241,13 +241,13 @@ public:
     Get bit array start position (0-7)
     @return Bit array start position
   */
-  uint8_t getPos(void) { return (m_pos & 3); };
+  uint8_t getPos(void) { return (m_pos & 7); };
 
   /*!
     Set bit array start position (0-7)
     @param pos Bit array start position
   */
-  void setPos(uint8_t pos) { m_pos = (pos & 3); };
+  void setPos(uint8_t pos) { m_pos = (pos & 7); };
 
   /*!
     Get bit array length (1-8)
@@ -2232,6 +2232,12 @@ public:
     @return Pointer to the event list.
   */
   std::deque<CMDF_Event *> *getEventList(void) { return &m_list_event; };
+
+  /*!
+    Get the alarm list
+    @return Pointer to the alarm list.
+  */
+  std::deque<CMDF_Bit *> *getAlarmList() { return &m_list_alarm; };
 
   // ----------------------------------------------------------------------------
 
