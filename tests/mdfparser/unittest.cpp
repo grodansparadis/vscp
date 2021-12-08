@@ -1467,7 +1467,184 @@ TEST(parseMDF, JSON_Events)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple Events");
+  ASSERT_EQ(mdf.getModuleName(), "Simple Events");
+
+  // Get events list
+  std::deque<CMDF_Event *> *pEventList = mdf.getEventList();
+  ASSERT_NE(nullptr, pEventList);
+
+  // Validate event count
+  ASSERT_EQ(1, pEventList->size());
+
+  {
+    CMDF_Event *pevent = pEventList->front();
+    ASSERT_NE(nullptr, pevent);
+
+    // Verify name
+    ASSERT_EQ(pevent->getName(), "test event 1");
+
+    ASSERT_EQ(pevent->getDescription("en"), "English event description 3");
+    ASSERT_EQ(pevent->getDescription("se"), "Svensk event beskrivning 3");
+    ASSERT_EQ(pevent->getDescription("lt"), "Lietuvos event padeda 3");
+    ASSERT_EQ(pevent->getDescription("xx"), "");
+
+    // Check info URL
+    ASSERT_TRUE(pevent->getInfoURL("en") == "English event help 3");
+    ASSERT_TRUE(pevent->getInfoURL("se") == "Svensk event hjälp 3");
+    ASSERT_TRUE(pevent->getInfoURL("lt") == "Lietuvos event padeda 3");
+    ASSERT_TRUE(pevent->getInfoURL("xx") == "");
+
+    // Verify class
+    ASSERT_EQ(pevent->getClass(), 10);
+
+    // Verify type
+    ASSERT_EQ(pevent->getType(), 6);
+
+    // Verify priority
+    ASSERT_EQ(pevent->getPriority(), 7);
+
+    // Verify direction
+    ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_IN);
+
+    std::deque<CMDF_EventData *> *pEventDataList = pevent->getListEventData();
+    ASSERT_NE(nullptr, pEventDataList);
+
+    // Validate event data count
+    ASSERT_EQ(1, pEventDataList->size());
+
+    {
+      CMDF_EventData *peventdata = pEventDataList->front();
+      ASSERT_NE(nullptr, peventdata);
+
+      // Verify name
+      ASSERT_EQ(peventdata->getName(), "test event data 1");
+
+      CMDF_EventData *pEventData = pEventDataList->front();
+      ASSERT_NE(nullptr, pEventDataList);
+
+      ASSERT_EQ(pEventData->getDescription("en"), "English event data description 3");
+      ASSERT_EQ(pEventData->getDescription("se"), "Svensk event data beskrivning 3");
+      ASSERT_EQ(pEventData->getDescription("lt"), "Lietuvos event data padeda 3");
+      ASSERT_EQ(pEventData->getDescription("xx"), "");
+
+      // Check info URL
+      ASSERT_TRUE(pEventData->getInfoURL("en") == "English event data help 3");
+      ASSERT_TRUE(pEventData->getInfoURL("se") == "Svensk event data hjälp 3");
+      ASSERT_TRUE(pEventData->getInfoURL("lt") == "Lietuvos event data padeda 3");
+      ASSERT_TRUE(pEventData->getInfoURL("xx") == "");
+
+      {
+        std::deque<CMDF_Bit *> *pBitList;
+        CMDF_Bit *pBit;
+        std::deque<CMDF_ValueListValue *> *pValueList;
+
+        // ******  Bitarray 0 ******
+
+        // Check bit list
+        pBitList = pEventData->getListBits();
+        ASSERT_TRUE(nullptr != pBitList);
+
+        // Check item count
+        ASSERT_EQ(2, pBitList->size());
+
+        // Check bit definitions
+        pBit = pBitList->at(0);
+        ASSERT_TRUE(nullptr != pBit);
+
+        // Check start for bit array
+        ASSERT_EQ(0, pBit->getPos());
+
+        // Check width for bit array
+        ASSERT_EQ(3, pBit->getWidth());
+
+        // Check width for bit array
+        ASSERT_EQ(4, pBit->getDefault());
+
+        // Get access rights
+        ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
+
+        // Check name
+        ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+
+        // Check description
+        ASSERT_EQ("English description bit 0", pBit->getDescription("en"));
+        ASSERT_EQ("Svensk beskrivning bit 0", pBit->getDescription("se"));
+        ASSERT_EQ("Lietuvos aprašymas bit 0", pBit->getDescription("lt"));
+        ASSERT_EQ("", pBit->getDescription("xx"));
+
+        // Check info URL
+        ASSERT_TRUE(pBit->getInfoURL("en") == "English help bit 0");
+        ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bit 0");
+        ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bit 0");
+        ASSERT_TRUE(pBit->getInfoURL("xx") == "");
+
+        
+
+        // ******  Bitarray 1 ******
+
+        // Check bit definitions
+        pBit = pBitList->at(1);
+        ASSERT_TRUE(nullptr != pBit);
+
+        // Check start for bit array
+        ASSERT_EQ(3, pBit->getPos());
+
+        // Check width for bit array
+        ASSERT_EQ(2, pBit->getWidth());
+
+        // Check width for bit array
+        ASSERT_EQ(0, pBit->getDefault());
+
+        // Get access rights
+        ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
+
+        // Check name
+        ASSERT_TRUE(pBit->getName() == "Bitfield name 1");
+
+        // Check description
+        ASSERT_EQ("English description bit 1", pBit->getDescription("en"));
+        ASSERT_EQ("Svensk beskrivning bit 1", pBit->getDescription("se"));
+        ASSERT_EQ("Lietuvos aprašymas bit 1", pBit->getDescription("lt"));
+        ASSERT_EQ("", pBit->getDescription("xx"));
+
+        // Check info URL
+        ASSERT_TRUE(pBit->getInfoURL("en") == "English help bit 1");
+        ASSERT_TRUE(pBit->getInfoURL("se") == "Svensk hjälp bit 1");
+        ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bit 1");
+        ASSERT_TRUE(pBit->getInfoURL("xx") == "");
+
+        // Value list
+
+        pValueList = pBit->getListValues();
+        ASSERT_TRUE(nullptr != pValueList);
+
+        // Check number of values in list
+        ASSERT_EQ(3, pValueList->size());
+
+        CMDF_ValueListValue *pValue;
+
+        // Check value list
+        pValue = pValueList->at(0);
+        ASSERT_TRUE(nullptr != pValue);
+        ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
+        ASSERT_EQ("Low", pValue->getName());
+        ASSERT_EQ("Low speed", pValue->getDescription("en"));
+        ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
+        ASSERT_EQ("", pValue->getDescription("xx"));
+
+        // Check info URL
+        ASSERT_TRUE(pValue->getInfoURL("en") == "English help 1 vl2");
+        ASSERT_TRUE(pValue->getInfoURL("se") == "Svensk hjälp 1 vl2");
+        ASSERT_TRUE(pValue->getInfoURL("lt") == "Lietuvos padeda 1 vl2");
+        ASSERT_TRUE(pValue->getInfoURL("xx") == "");
+
+        pValue = pValueList->at(1);
+        ASSERT_TRUE(nullptr != pValue);
+        ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
+        ASSERT_EQ("Medium", pValue->getName());
+      }
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------

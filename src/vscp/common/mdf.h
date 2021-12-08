@@ -1294,36 +1294,95 @@ public:
   void clearStorage(void);
 
   /*!
-    Get bit array name
-    @return Bit array name
+    Get event name
+    @return EWvent name
   */
   std::string getName(void) { return m_name; };
 
   /*!
-    Get the register description
-    @return Register description
+    Set event name
+  */
+  void setName(std::string &name) { m_name = name; };
+
+  /*!
+    Get event class
+    @return Event class
+  */
+  uint16_t getClass(void) { return m_class; };
+
+  /*!
+    Set event class 
+    @param vscpclass Event class
+  */
+  void setClass(uint16_t vscpclass) { m_class = vscpclass; };
+
+  /*!
+    Get event type
+    @return Event type
+  */
+  uint16_t getType(void) { return m_type; };
+
+  /*!
+    Set event type 
+    @param vscptype Event type
+  */
+  void setType(uint16_t vscptype) { m_type = vscptype; };
+
+  /*!
+    Get event priority
+    @return Event priority
+  */
+  uint8_t getPriority(void) { return (m_priority & 7); };
+
+  /*!
+    Set event priority 
+    @param priority Event priority
+  */
+  void setPriority(uint8_t priority) { m_priority = (priority & 7); };
+
+  /*!
+    Get event direction
+    @return Event direction
+  */
+  mdf_event_direction getDirection(void) { return m_direction; };
+
+  /*!
+    Set event direction 
+    @param direction Event direction
+  */
+  void setDirection(mdf_event_direction direction) { m_direction = direction; };
+
+  /*!
+    Get the event description
+    @return event description
   */
   std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
 
   /*!
-    Set register description
+    Set event description
     @param lang Language
-    @param desc Register description to set
+    @param desc Event description to set
   */
   void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
-    Get the register info URL
-    @return Register info URL
+    Get the event info URL
+    @return Event info URL
   */
   std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
 
   /*!
-    Set register info URL
+    Set event info URL
     @param lang Language
-    @param url Register info URL to set
+    @param url Event info URL to set
   */
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get the event data list
+    @return Pointer to event data list
+  */
+  std::deque<CMDF_EventData *> *getListEventData(void) { return &m_list_eventdata; };
 
 private:
   std::string m_name;
@@ -2167,6 +2226,12 @@ public:
     @return Pointer to decision matrix.
   */
   CMDF_DecisionMatrix *getDM(void) { return &m_dmInfo; };
+
+  /*!
+    Get the event list
+    @return Pointer to the event list.
+  */
+  std::deque<CMDF_Event *> *getEventList(void) { return &m_list_event; };
 
   // ----------------------------------------------------------------------------
 

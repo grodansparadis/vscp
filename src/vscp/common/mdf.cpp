@@ -3786,6 +3786,12 @@ CMDF::parseMDF_JSON(std::string &path)
 
             json jev = ev.value();
 
+            // name
+            if (jev.contains("name") && jev["name"].is_string()) {
+              pev->m_name = jev["name"];
+              spdlog::debug("Parse-JSON: Event name set to {0}.", pev->m_name );              
+            }
+
             // Class
             if (jev.contains("class") && jev["class"].is_string()) {
               pev->m_class = vscp_readStringValue(jev["class"]);
@@ -3816,9 +3822,11 @@ CMDF::parseMDF_JSON(std::string &path)
 
             // Direction ('in'/'out')
             if (jev.contains("direction") && jev["direction"].is_string()) {
+              
               std::string str = jev["direction"];
               vscp_trim(str);
               vscp_makeLower(str);
+
               if (str == "in") {
                 pev->m_direction = MDF_EVENT_DIR_IN;
                 spdlog::debug("Parse-JSON: Event direction set to in.");
@@ -3839,11 +3847,31 @@ CMDF::parseMDF_JSON(std::string &path)
 
             // Priority
             if (jev.contains("priority") && jev["priority"].is_string()) {
-              pev->m_priority = vscp_readStringValue(jev["priority"]) & 7;
+
+              std::string str = jev["priority"];
+              vscp_trim(str);
+              vscp_makeLower(str);
+
+              if (str == "low") {
+                pev->m_priority = VSCP_PRIORITY_LOW>>5;
+                spdlog::debug("Parse-JSON: Event priority set to low.");
+              }
+              else if (str == "medium") {
+                pev->m_priority = VSCP_PRIORITY_MEDIUM>>5;
+                spdlog::debug("Parse-JSON: Event priority set to medium.");
+              }
+              else if (str == "high") {
+                pev->m_priority = VSCP_PRIORITY_HIGH>>5;
+                spdlog::debug("Parse-JSON: Event priority set to high.");
+              }
+              else {
+                pev->m_priority = vscp_readStringValue(jev["priority"]) & 7;
               spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority );
+              }
+              
             }
             else if (jev.contains("priority") && jev["priority"].is_number()) {
-              pev->m_priority = (uint8_t)jev["type"] & 7;
+              pev->m_priority = (uint8_t)jev["priority"] & 7;
               spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority );
             }
             else {
@@ -3859,8 +3887,8 @@ CMDF::parseMDF_JSON(std::string &path)
               spdlog::warn("Parse-JSON: Failed to get event infourl.");
             }
 
-            if (jev.contains("data") && jev["events"].is_array()) {
-              for (auto &data : jev["events"].items()) {
+            if (jev.contains("data") && jev["data"].is_array()) {
+              for (auto &data : jev["data"].items()) {
                 // std::cout << "key: " << ev.key() << ", value:" << ev.value() << '\n';
                 if (data.value().is_object()) {
 
@@ -3872,6 +3900,12 @@ CMDF::parseMDF_JSON(std::string &path)
 
                   pev->m_list_eventdata.push_back(pevdata);
                   json jevdata = data.value();
+
+                  // name
+                  if (jevdata.contains("name") && jevdata["name"].is_string()) {
+                    pevdata->m_name = jevdata["name"];
+                    spdlog::debug("Parse-JSON: Event name set to {0}.", pevdata->m_name );              
+                  }
 
                   if (getDescriptionList(jevdata, pevdata->m_mapDescription) != VSCP_ERROR_SUCCESS) {
                     spdlog::warn("Parse-JSON: Failed to get event data description.");

@@ -239,58 +239,69 @@
     },
     "events" : [
       {
-        "name": "test event",
+        "name": "test event 1",
         "class" : 10,
         "type": 6,
-        "direction:": "in",
-        "prioriy": "low",
+        "direction": "in",
+        "priority": "low",
+        "description" : {
+          "en": "English event description 3",
+          "se": "Svensk event beskrivning 3",
+          "lt": "Lietuvos event padeda 3"
+        },
+        "infourl" : {
+          "en": "English event help 3",
+          "se": "Svensk event hjälp 3",
+          "lt": "Lietuvos event padeda 3"
+        },
         "data" : [
           {
-            "name": "test data",
+            "name": "test event data 1",
             "description" : {
-              "en": "English description 3",
-              "se": "Svensk beskrivning 3",
-              "lt": "Lietuvos padeda 3"
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "lt": "Lietuvos event data padeda 3"
             },
             "infourl" : {
-              "gb": "English help 3",
-              "se": "Svensk hjälp 3",
-              "lt": "Lietuvos padeda 3"
+              "en": "English event data help 3",
+              "se": "Svensk event data hjälp 3",
+              "lt": "Lietuvos event data padeda 3"
             },
             "bit": [
               {
                 "pos": 0,
                 "width": 3,
-                "default": 0,
+                "default": 4,
                 "min": 0,
                 "max": 7,
                 "access" : "rw",
-                "name" : "English bit or bitfield name",
+                "name" : "Bitfield name 0",
                 "description" : {
-                  "gb": "English description",
-                  "se": "Svensk beskrivning",
-                  "lt": "Lietuvos aprašymas"
+                  "en": "English description bit 0",
+                  "se": "Svensk beskrivning bit 0",
+                  "lt": "Lietuvos aprašymas bit 0"
                 },
                 "infourl" : {
-                  "gb": "English help",
-                  "se": "Svensk hjälp",
-                  "lt": "Lietuvos padeda"
+                  "en": "English help bit 0",
+                  "se": "Svensk hjälp bit 0",
+                  "lt": "Lietuvos padeda bit 0"
                 }
               },
               {
                 "pos": 3,
                 "width": 2,
+                "access" : "r",
                 "default": false,
-                "name" : "English bit or bitfield name",
+                "name" : "Bitfield name 1",
                 "description" : {
-                  "gb": "English description",
-                  "se": "Svensk beskrivning",
-                  "lt": "Lietuvos aprašymas"
+                  "en": "English description bit 1",
+                  "se": "Svensk beskrivning bit 1",
+                  "lt": "Lietuvos aprašymas bit 1"
                 },
                 "infourl" : {
-                  "gb": "English help",
-                  "se": "Svensk hjälp",
-                  "lt": "Lietuvos padeda"
+                  "en": "English help bit 1",
+                  "se": "Svensk hjälp bit 1",
+                  "lt": "Lietuvos padeda bit 1"
                 },
                 "valuelist" : [
                   {
@@ -301,7 +312,7 @@
                       "se" : "Låg hastighet"
                     },
                     "infourl" : {
-                      "gb": "English help 1 vl2",
+                      "en": "English help 1 vl2",
                       "se": "Svensk hjälp 1 vl2",
                       "lt": "Lietuvos padeda 1 vl2"
                     }
@@ -314,7 +325,7 @@
                       "se" : "Medium hastighet"
                     },
                     "infourl" : {
-                      "gb": "English help 2 vl2",
+                      "en": "English help 2 vl2",
                       "se": "Svensk hjälp 2 vl2",
                       "lt": "Lietuvos padeda 2 vl2"
                     }
@@ -327,7 +338,7 @@
                       "se" : "Hög hastighet"
                     },
                     "infourl" : {
-                      "gb": "English help 3 vl2",
+                      "en": "English help 3 vl2",
                       "se": "Svensk hjälp 3 vl2",
                       "lt": "Lietuvos padeda 3 vl2"
                     }
