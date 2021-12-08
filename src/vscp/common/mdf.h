@@ -321,11 +321,11 @@ private:
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 
   // The following is used if the remote variable is a bit or bit field
-  uint8_t m_pos;                // 'pos'      position in bit field 0-7 (from the left (high))
-  uint8_t m_width;              // 'width'    1 (default) for one bit 2-8 for bit-field
-  uint8_t m_default;            // 'default'  Default value for field
-  uint8_t m_min;                // 'min'      Minimum value for field (if applicable)
-  uint8_t m_max;                // 'max'      Maximum value for field (if applicable)
+  uint8_t m_pos;            // 'pos'      position in bit field 0-7 (from the left (high))
+  uint8_t m_width;          // 'width'    1 (default) for one bit 2-8 for bit-field
+  uint8_t m_default;        // 'default'  Default value for field
+  uint8_t m_min;            // 'min'      Minimum value for field (if applicable)
+  uint8_t m_max;            // 'max'      Maximum value for field (if applicable)
   mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
 
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
@@ -675,13 +675,13 @@ public:
       Fetch the name of the remote variable
       @return Name of the remote variable
   */
-  std::string getName(void) { return m_name; };  
+  std::string getName(void) { return m_name; };
 
   /*!
-    Set name of the remote variable 
+    Set name of the remote variable
     @param name Name of the remote variable
   */
- void setName(std::string name) { m_name = name; };
+  void setName(std::string name) { m_name = name; };
 
   /*!
     Get the register description
@@ -768,7 +768,7 @@ public:
     Set Offset for remote variable
     @param offset Offset for remote variable.
   */
-  void setOffset(uint32_t offset) { m_offset = offset; };  
+  void setOffset(uint32_t offset) { m_offset = offset; };
 
   /*!
       Get access mode for remote variable
@@ -778,7 +778,7 @@ public:
 
   /*!
     Set access mode for remote variable
-    @param access Access mode for remote variable.  
+    @param access Access mode for remote variable.
   */
   void setAccess(mdf_access_mode access) { m_access = access; };
 
@@ -839,15 +839,15 @@ private:
   std::string m_strDefault;         // default value
   vscp_remote_variable_type m_type; // One of the predefined types
 
-  uint16_t m_page;              // stored on this page
-  uint32_t m_offset;            // stored at this offset
-  int8_t m_bitpos;              // For booleans (can be a single bit in a byte).
-  uint16_t m_size;              // Size of string.
+  uint16_t m_page;          // stored on this page
+  uint32_t m_offset;        // stored at this offset
+  int8_t m_bitpos;          // For booleans (can be a single bit in a byte).
+  uint16_t m_size;          // Size of string.
   mdf_access_mode m_access; // Access rights
 
   // For VSCP Works usage
 
-  long m_rowInGrid;   // Helper for display (row reg is displayed on)  
+  long m_rowInGrid;   // Helper for display (row reg is displayed on)
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
@@ -881,10 +881,95 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    set Name for action
+  */
+  void setName(std::string name) { m_name = name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get register offset for action parameter
+    @return Register offset
+  */
+  uint32_t getOffset(void) { return m_offset; };
+
+  /*!
+    Set register offset for action parameter
+    @param offset Register offset
+  */
+  void setOffset(uint32_t offset) { m_offset = offset; };
+
+  /*!
+    Set max value for action parameter
+    @param max Max value
+  */
+  void setMax(uint8_t max) { m_max = max; };
+
+  /*!
+    Get max value for action parameter
+    @return Max value
+  */
+  uint8_t getMax(void) { return m_max; };
+
+  /*!
+   Set min value for action parameter
+   @param min Max value
+ */
+  void setMin(uint8_t min) { m_min = min; };
+
+  /*!
+    Get min value for action parameter
+    @return Min value
+  */
+  uint8_t getMin(void) { return m_min; };
+
+  /*!
+   Fetch the bit definition list
+   @return Bit definition list
+ */
+  std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
+
+  /*!
+    Fetch the value definition list
+    @return Value definition list
+  */
+  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+
 private:
-  std::string m_name;
-  std::map<std::string, std::string> m_mapDescription;
-  std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra help information
+  std::string m_name;                                  // Name for action parameter
+  std::map<std::string, std::string> m_mapDescription; // Description of action parameter
+  std::map<std::string, std::string> m_mapInfoURL;     // Url that contain extra help information
 
   uint16_t m_offset; // Offset for parameter (Always zero for level I)
   uint8_t m_min;     // Min value for parameter
@@ -921,6 +1006,61 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    set Name for action
+  */
+  void setName(std::string name) { m_name = name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get action parameter code
+    @return Action parameter code
+  */
+  uint16_t getCode(void) { return m_code; };
+
+  /*!
+    Set action parameter code
+    @param code Action parameter code to set
+  */
+  void setCode(uint16_t code) { m_code = code; };
+
+  /*!
+    Get action parameter list
+    @return Action parameter list
+  */
+  std::deque<CMDF_ActionParameter *> *getListActionParameter(void) { return &m_list_ActionParameter; };
+
 private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -956,6 +1096,84 @@ public:
       Clear storage
   */
   void clearStorage(void);
+
+  /*!
+    Get decision matrix level
+    @return Decision matrix level.
+  */
+  uint8_t getLevel(void) { return m_level; };
+
+  /*!
+    Set decision matrix level
+    @param level Decision matrix level.
+  */
+  void setLevel(uint8_t level) { m_level = level; };
+
+  /*!
+    Get decision matrix start page
+    @return Decision matrix start page.
+  */
+  uint16_t getStartPage(void) { return m_startPage; };
+
+  /*!
+    Set decision matrix start page
+    @param startPage Decision matrix start page.
+  */
+  void setStartPage(uint16_t startPage) { m_startPage = startPage; };
+
+  /*!
+    Get decision matrix start offset
+    @return Decision matrix start offset.
+  */
+  uint32_t getStartOffset(void) { return m_startOffset; };
+
+  /*!
+    Set decision matrix start offset
+    @param startOffset Decision matrix start offset.
+  */
+  void setStartOffset(uint32_t startOffset) { m_startOffset = startOffset; };
+
+  /*!
+    Get decision matrix row count
+    @return Decision matrix row count.
+  */
+  uint16_t getRowCount(void) { return m_rowCount; };
+
+  /*!
+    Set decision matrix row count
+    @param rowCount Decision matrix row count.
+  */
+  void setRowCount(uint16_t rowCount) { m_rowCount = rowCount; };
+
+  /*!
+    Get decision matrix row size
+    @return Decision matrix row size.
+  */
+  uint16_t getRowSize(void) { return m_rowSize; };
+
+  /*!
+    Set decision matrix row size
+    @param rowSize Decision matrix row size.
+  */
+  void setRowSize(uint16_t rowSize) { m_rowSize = rowSize; };
+
+  /*!
+    Check if decision matrix is indexed
+    @return True if decision matrix is indexed.
+  */
+  bool isIndexed(void) { return m_bIndexed; };
+
+  /*!
+    Set decision matrix indexed
+    @param bIndexed True if decision matrix is indexed.
+  */
+  void setIndexed(bool bIndexed = true) { m_bIndexed = bIndexed; };
+
+  /*!
+   Get decision matrix row count
+   @return Decision matrix action list.
+  */
+  std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
 
 private:
   uint8_t m_level;        // 1 or 2 (defaults to 1)
@@ -994,6 +1212,50 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Fetch the bit definition list
+    @return Bit definition list
+  */
+  std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
+
+  /*!
+    Fetch the value definition list
+    @return Value definition list
+  */
+  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+
 private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -1031,6 +1293,38 @@ public:
   */
   void clearStorage(void);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -1066,8 +1360,40 @@ public:
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
 
+  /*!
+    Get bit array name
+    @return Bit array name
+  */
+  std::string getName(void) { return m_name; };
+
+  /*!
+    Get the register description
+    @return Register description
+  */
+  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+
+  /*!
+    Set register description
+    @param lang Language
+    @param desc Register description to set
+  */
+  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+
+  /*!
+    Get the register info URL
+    @return Register info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set register info URL
+    @param lang Language
+    @param url Register info URL to set
+  */
+  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
-  std::string m_strItem;
+  std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 };
@@ -1835,6 +2161,12 @@ public:
       @return Pointer to CMDF_RemoteVariable class if found else NULL.
   */
   CMDF_RemoteVariable *getRemoteVariable(std::string name);
+
+  /*!
+    Get the decision matrix
+    @return Pointer to decision matrix.
+  */
+  CMDF_DecisionMatrix *getDM(void) { return &m_dmInfo; };
 
   // ----------------------------------------------------------------------------
 

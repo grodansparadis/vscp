@@ -49,7 +49,7 @@ TEST(parseMDF, Simple_XML_A)
 
   // Check # info URL's
   ASSERT_EQ(8, mdf.getModuleHelpUrlCount());
-  
+
   // Check name
   ASSERT_TRUE(mdf.getModuleName() == "Simple test");
 
@@ -90,7 +90,7 @@ TEST(parseMDF, Simple_XML_B)
 
   // Check # info URL's
   ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
-  
+
   // Check name
   ASSERT_TRUE(mdf.getModuleName() == "Simple B test");
 
@@ -99,12 +99,11 @@ TEST(parseMDF, Simple_XML_B)
 
   // Check description
   ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "http://www.grodansparadis.com/kelvin1w/index.html");
-  
+
   ASSERT_EQ(128, mdf.getModuleBufferSize());
 
   // Check Manufacturer name
   ASSERT_TRUE(mdf.getManufacturerName() == "Grodans Paradis AB");
-
 }
 
 //-----------------------------------------------------------------------------
@@ -144,7 +143,7 @@ TEST(parseMDF, Simple_Picture_Old_Format)
   ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
 
-  // Get second picture url 
+  // Get second picture url
   pPicture = mdf.getPictureObj(1);
   ASSERT_TRUE("http://www.somewhere.com/images/pict2.png" == pPicture->getUrl());
 
@@ -191,7 +190,7 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
   ASSERT_TRUE("This is a picture description in English" == pPicture->getDescription("en"));
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 1" == pPicture->getDescription("se"));
 
-  // Get second picture url 
+  // Get second picture url
   pPicture = mdf.getPictureObj(1);
   ASSERT_TRUE("http://www.somewhere.com/images/stdpict2.png" == pPicture->getUrl());
 
@@ -226,7 +225,8 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj();
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
+              "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
   ASSERT_TRUE(11 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
   ASSERT_TRUE("2020-05-15" == pFirmware->getDate());
@@ -236,13 +236,15 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
   ASSERT_TRUE(6 == pFirmware->getVersionPatch());
   ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
 
-  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." ==
+              pFirmware->getDescription("en"));
   ASSERT_TRUE("Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor." == pFirmware->getDescription("se"));
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(3);
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" == pFirmware->getUrl());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
+              pFirmware->getUrl());
   ASSERT_TRUE(44 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex16" == pFirmware->getFormat());
   ASSERT_TRUE("2021-11-02" == pFirmware->getDate());
@@ -254,7 +256,6 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
 
   ASSERT_TRUE("Description in English." == pFirmware->getDescription("en"));
   ASSERT_TRUE("Beskrivning på Svenska." == pFirmware->getDescription("se"));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -282,7 +283,8 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(0);
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
+              "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
   ASSERT_TRUE(11 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
   ASSERT_TRUE("2020-05-15" == pFirmware->getDate());
@@ -292,13 +294,15 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
   ASSERT_TRUE(6 == pFirmware->getVersionPatch());
   ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pFirmware->getMd5());
 
-  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." == pFirmware->getDescription("en"));
+  ASSERT_TRUE("Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor." ==
+              pFirmware->getDescription("en"));
   ASSERT_TRUE("Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor." == pFirmware->getDescription("se"));
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(3);
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" == pFirmware->getUrl());
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
+              pFirmware->getUrl());
   ASSERT_TRUE(44 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex16" == pFirmware->getFormat());
   ASSERT_TRUE("2021-11-02" == pFirmware->getDate());
@@ -310,7 +314,6 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 
   ASSERT_TRUE("Description in English." == pFirmware->getDescription("en"));
   ASSERT_TRUE("Beskrivning på Svenska." == pFirmware->getDescription("se"));
-
 }
 
 //-----------------------------------------------------------------------------
@@ -393,17 +396,17 @@ TEST(parseMDF, REALXML)
   path = "xml/1wire_1.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/avr128_02.xml";    
+  path = "xml/avr128_02.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
-  path = "xml/latch_jm1.mdf";  
+  path = "xml/latch_jm1.mdf";
 
-  path = "xml/ntc10KA_2.xml"; 
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
-  
-  path = "xml/paris_010.xml"; 
+  path = "xml/ntc10KA_2.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/sht_001.xml";     
+  path = "xml/paris_010.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  path = "xml/sht_001.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   path = "xml/temp_at90can32.mdf";
@@ -412,10 +415,10 @@ TEST(parseMDF, REALXML)
   path = "xml/accra_1.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/beijing_1.xml";    
+  path = "xml/beijing_1.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/mesp12.xml"; 
+  path = "xml/mesp12.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   path = "xml/ntc10KA_3.xml";
@@ -424,7 +427,7 @@ TEST(parseMDF, REALXML)
   path = "xml/raweth_a.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/simpleA.xml"; 
+  path = "xml/simpleA.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   path = "xml/vilnius_1.xml";
@@ -433,7 +436,7 @@ TEST(parseMDF, REALXML)
   path = "xml/arduino01.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/beijing_2.xml";  
+  path = "xml/beijing_2.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   path = "xml/mesp17.mdf";
@@ -442,9 +445,9 @@ TEST(parseMDF, REALXML)
   path = "xml/odessa001.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-  path = "xml/smart_001.xml"; 
+  path = "xml/smart_001.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
-  
+
   path = "xml/avr128_01.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
@@ -459,15 +462,11 @@ TEST(parseMDF, REALXML)
 
   path = "xml/smart2_001.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
-} 
-
-
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                JSON
 ///////////////////////////////////////////////////////////////////////////////
-
-
 
 //-----------------------------------------------------------------------------
 
@@ -613,7 +612,6 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   ASSERT_TRUE("English 3." == pFirmware->getDescription("en"));
 
-
   // * * * Manual * * *
 
   CMDF_Manual *pManual;
@@ -633,13 +631,11 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE("xx" == pManual->getLanguage());
   ASSERT_TRUE("html" == pManual->getFormat());
 
-
   // * * * Boot * * *
 
   ASSERT_EQ(1, mdf.getBootLoaderObj()->getAlgorithm());
   ASSERT_EQ(8, mdf.getBootLoaderObj()->getBlockSize());
   ASSERT_EQ(4096, mdf.getBootLoaderObj()->getBlockCount());
-
 }
 
 //-----------------------------------------------------------------------------
@@ -699,7 +695,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
-  
+
   // Check register offset
   ASSERT_EQ(0x22, preg->getOffset());
 
@@ -765,7 +761,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
-  
+
   // Check register offset
   ASSERT_EQ(0x31, preg->getOffset());
 
@@ -840,20 +836,16 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // Get background color
   ASSERT_EQ(0x00f3d4, preg->getBackgroundColor());
 
-
-
   // *************************************************************************
   //  63:02   -- Testing bit list
   // *************************************************************************
-
-
 
   // Check register att offset 0x02, page=99
   preg = mdf.getRegister(2, 99);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
-  
+
   // Check register offset
   ASSERT_EQ(2, preg->getOffset());
 
@@ -921,9 +913,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 0");
   ASSERT_TRUE(pBit->getInfoURL("xx") == "");
 
-
   // ******  Bitarray 1 ******
- 
 
   // Check bit definitions
   pBit = pBitList->at(1);
@@ -1047,26 +1037,25 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_TRUE(prvar->getInfoURL("lt") == "Lietuvos padeda remotevar 1");
   ASSERT_TRUE(prvar->getInfoURL("xx") == "");
 
-  
   // Check complete type set/get
   prvar->setType(remote_variable_type_unknown);
   ASSERT_EQ(remote_variable_type_unknown, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_string);
   ASSERT_EQ(remote_variable_type_string, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_boolean);
   ASSERT_EQ(remote_variable_type_boolean, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_int8_t);
   ASSERT_EQ(remote_variable_type_int8_t, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_uint8_t);
   ASSERT_EQ(remote_variable_type_uint8_t, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_int16_t);
   ASSERT_EQ(remote_variable_type_int16_t, prvar->getType());
-  
+
   prvar->setType(remote_variable_type_uint16_t);
   ASSERT_EQ(remote_variable_type_uint16_t, prvar->getType());
 
@@ -1093,7 +1082,6 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
 
   prvar->setType(remote_variable_type_time);
   ASSERT_EQ(remote_variable_type_time, prvar->getType());
-
 
   // ***** Remote variable 2 *****
 
@@ -1173,7 +1161,6 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_EQ(3, vscp_readStringValue(pValue->getValue()));
   ASSERT_EQ("High", pValue->getName());
 
-
   // ***** Remote variable 3 *****
 
   // Test remote variable
@@ -1247,9 +1234,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_TRUE(pBit->getInfoURL("lt") == "Lietuvos padeda bitfield 0");
   ASSERT_TRUE(pBit->getInfoURL("xx") == "");
 
-
   // ******  Bitarray 1 ******
- 
 
   // Check bit definitions
   pBit = pBitList->at(1);
@@ -1284,7 +1269,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
 
   // Value list
 
-   pValueList = pBit->getListValues();
+  pValueList = pBit->getListValues();
   ASSERT_TRUE(nullptr != pValueList);
 
   // Check number of values in list
@@ -1309,8 +1294,6 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
   ASSERT_EQ("Medium", pValue->getName());
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1325,6 +1308,152 @@ TEST(parseMDF, JSON_SIMPLE_DMatrix)
 
   // Check name
   ASSERT_TRUE(mdf.getModuleName() == "Simple DM");
+
+  // Get decision matrix
+  CMDF_DecisionMatrix *pdm = mdf.getDM();
+  ASSERT_NE(nullptr, pdm);
+
+  // Verify level
+  ASSERT_EQ(1, pdm->getLevel());
+
+  // Verify start page
+  ASSERT_EQ(16, pdm->getStartPage());
+
+  // Verify offset
+  ASSERT_EQ(88, pdm->getStartOffset());
+
+  // Verify number of rows
+  ASSERT_EQ(10, pdm->getRowCount());
+
+  // Verify size of rows
+  ASSERT_EQ(8, pdm->getRowSize());
+
+  // Verify indexed
+  ASSERT_EQ(false, pdm->isIndexed());
+
+  {
+
+    // Get action list
+    std::deque<CMDF_Action *> *pActionList = pdm->getActionList();
+
+    // Verify pointer
+    ASSERT_NE(nullptr, pActionList);
+
+    // Verify number of actions
+    ASSERT_EQ(2, pActionList->size());
+
+    // * * Param 1 * *
+
+    {
+
+      // Get action
+      CMDF_Action *paction = pActionList->front();
+
+      // Verify pointer
+      ASSERT_NE(nullptr, paction);
+
+      // Verify action code
+      ASSERT_EQ(1, paction->getCode());
+
+      // Verify action name
+      ASSERT_EQ("action 1", paction->getName());
+
+      ASSERT_EQ(paction->getDescription("en"), "English description dm action 1");
+      ASSERT_EQ(paction->getDescription("se"), "Svensk beskrivning dm action 1");
+      ASSERT_EQ(paction->getDescription("lt"), "Lietuvos padeda dm action 1");
+      ASSERT_EQ(paction->getDescription("xx"), "");
+
+      // Check info URL
+      ASSERT_TRUE(paction->getInfoURL("en") == "English help dm action 1");
+      ASSERT_TRUE(paction->getInfoURL("se") == "Svensk hjälp dm action 1");
+      ASSERT_TRUE(paction->getInfoURL("lt") == "Lietuvos padeda dm action 1");
+      ASSERT_TRUE(paction->getInfoURL("xx") == "");
+
+      // Get action parameter list
+      std::deque<CMDF_ActionParameter *> *pActionParameterList = paction->getListActionParameter();
+
+      // Verify pointer
+      ASSERT_NE(nullptr, pActionParameterList);
+
+      // Verify number of action parameters
+      ASSERT_EQ(2, pActionParameterList->size());
+
+      {
+        // Get action
+        CMDF_ActionParameter *pactionparam = pActionParameterList->front();
+
+        // Verify pointer
+        ASSERT_NE(nullptr, pactionparam);
+
+        ASSERT_EQ(pactionparam->getName(), "parm 1");
+
+        ASSERT_EQ(pactionparam->getDescription("en"), "English description dm param 1");
+        ASSERT_EQ(pactionparam->getDescription("se"), "Svensk beskrivning dm param 1");
+        ASSERT_EQ(pactionparam->getDescription("lt"), "Lietuvos padeda dm param 1");
+        ASSERT_EQ(pactionparam->getDescription("xx"), "");
+
+        // Check info URL
+        ASSERT_TRUE(pactionparam->getInfoURL("en") == "English help dm param 1");
+        ASSERT_TRUE(pactionparam->getInfoURL("se") == "Svensk hjälp dm param 1");
+        ASSERT_TRUE(pactionparam->getInfoURL("lt") == "Lietuvos padeda dm param 1");
+        ASSERT_TRUE(pactionparam->getInfoURL("xx") == "");
+
+        // ******  Bitarray 0 ******
+
+        std::deque<CMDF_Bit *> *pBitList;
+        CMDF_Bit *pBit;
+
+        // Check bit list
+        pBitList = pactionparam->getListBits();
+        ASSERT_TRUE(nullptr != pBitList);
+
+        // Check item count
+        ASSERT_EQ(2, pBitList->size());
+
+        // Check bit definitions
+        pBit = pBitList->at(0);
+        ASSERT_TRUE(nullptr != pBit);
+
+        // Check start for bit array
+        ASSERT_EQ(0, pBit->getPos());
+
+        // Check width for bit array
+        ASSERT_EQ(3, pBit->getWidth());
+
+        // Check width for bit array
+        ASSERT_EQ(7, pBit->getDefault());
+
+        // Get access rights
+        ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
+
+        // Check name
+        ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+      }
+
+      // * * Param 2 * *
+
+      {
+        // Get action
+        CMDF_ActionParameter *pactionparam = pActionParameterList->at(1);
+
+        // Verify pointer
+        ASSERT_NE(nullptr, pactionparam);
+
+        ASSERT_EQ(pactionparam->getName(), "parm 2");
+
+        ASSERT_EQ(pactionparam->getDescription("en"), "English description dm param 2");
+        ASSERT_EQ(pactionparam->getDescription("se"), "Svensk beskrivning dm param 2");
+        ASSERT_EQ(pactionparam->getDescription("lt"), "Lietuvos padeda dm param 2");
+        ASSERT_EQ(pactionparam->getDescription("xx"), "");
+
+        // Check info URL
+        ASSERT_TRUE(pactionparam->getInfoURL("en") == "English help dm param 2");
+        ASSERT_TRUE(pactionparam->getInfoURL("se") == "Svensk hjälp dm param 2");
+        ASSERT_TRUE(pactionparam->getInfoURL("lt") == "Lietuvos padeda dm param 2");
+        ASSERT_TRUE(pactionparam->getInfoURL("xx") == "");
+      }
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1341,13 +1470,9 @@ TEST(parseMDF, JSON_Events)
   ASSERT_TRUE(mdf.getModuleName() == "Simple Events");
 }
 
-
-
 //-----------------------------------------------------------------------------
-//----------------------------------------------------------------------------- 
 //-----------------------------------------------------------------------------
-
-
+//-----------------------------------------------------------------------------
 
 int
 main(int argc, char **argv)
@@ -1356,10 +1481,10 @@ main(int argc, char **argv)
   spdlog::init_thread_pool(8192, 1);
 
   auto console = spdlog::stdout_color_mt("console");
-  
-  //console->set_level(spdlog::level::off);
+
+  // console->set_level(spdlog::level::off);
   console->set_level(spdlog::level::err);
-  //console->set_level(spdlog::level::trace);
+  // console->set_level(spdlog::level::trace);
 
   console->set_pattern("[mdfparser: %c] [%^%l%$] %v");
   spdlog::set_default_logger(console);

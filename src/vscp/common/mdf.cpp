@@ -2152,7 +2152,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenParent == "telephone") {
         if ((gToken == "number") && (gpItemStruct != nullptr)) {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
-          gpItemStruct->m_strItem = strContent;
+          gpItemStruct->m_name = strContent;
         }
         else if (gToken == "description") {
           spdlog::trace(
@@ -2166,7 +2166,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenParent == "fax") && (gpItemStruct != NULL)) {
         if (gToken == "number") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
-          gpItemStruct->m_strItem = strContent;
+          gpItemStruct->m_name = strContent;
         }
         else if (gToken == "description") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}",
@@ -2179,7 +2179,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenParent == "email") && (gpItemStruct != NULL)) {
         if (gToken == "address") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
-          gpItemStruct->m_strItem = strContent;
+          gpItemStruct->m_name = strContent;
         }
         else if (gToken == "description") {
           spdlog::trace(
@@ -2193,7 +2193,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenParent == "email") && (gpItemStruct != NULL)) {
         if ((gToken == "address") || (gToken == "url")) {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
-          gpItemStruct->m_strItem = strContent;
+          gpItemStruct->m_name = strContent;
         }
         else if (gToken == "description") {
           spdlog::trace(
@@ -2821,8 +2821,8 @@ CMDF::parseMDF_JSON(std::string &path)
               json jsub2 = phone.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
-                ptel->m_strItem = jsub2["number"];
-                spdlog::debug("Parse-JSON: Module manufacturer telephone: {0}", ptel->m_strItem);
+                ptel->m_name = jsub2["number"];
+                spdlog::debug("Parse-JSON: Module manufacturer telephone: {0}", ptel->m_name);
               }
 
               // Description is language specific. Can be string or object
@@ -2854,8 +2854,8 @@ CMDF::parseMDF_JSON(std::string &path)
               json jsub2 = fax.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
-                pfax->m_strItem = jsub2["number"];
-                spdlog::debug("Parse-JSON: Module manufacturer fax: {0}", pfax->m_strItem);
+                pfax->m_name = jsub2["number"];
+                spdlog::debug("Parse-JSON: Module manufacturer fax: {0}", pfax->m_name);
               }
 
               // Description is language specific. Can be string or object
@@ -2887,8 +2887,8 @@ CMDF::parseMDF_JSON(std::string &path)
               json jsub2 = email.value();
 
               if (jsub2.contains("address") && jsub2["address"].is_string()) {
-                pemail->m_strItem = jsub2["address"];
-                spdlog::debug("Parse-JSON: Module manufacturer email: {0}", pemail->m_strItem);
+                pemail->m_name = jsub2["address"];
+                spdlog::debug("Parse-JSON: Module manufacturer email: {0}", pemail->m_name);
               }
 
               // Description is language specific. Can be string or object
@@ -2920,12 +2920,12 @@ CMDF::parseMDF_JSON(std::string &path)
               json jsub2 = web.value();
 
               if (jsub2.contains("url") && jsub2["url"].is_string()) {
-                pweb->m_strItem = jsub2["url"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_strItem);
+                pweb->m_name = jsub2["url"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_name);
               }
               else if (jsub2.contains("address") && jsub2["address"].is_string()) {
-                pweb->m_strItem = jsub2["address"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_strItem);
+                pweb->m_name = jsub2["address"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_name);
               }
               else {
                 spdlog::warn("Parse-JSON: No web url/address.");
@@ -3501,7 +3501,7 @@ CMDF::parseMDF_JSON(std::string &path)
       if (j["module"].contains("dmatrix") && j["module"]["dmatrix"].is_object()) {
 
         json jdmatrix = j["module"]["dmatrix"];
-        std::cout << "DM: " << jdmatrix.dump() << '\n';
+        //std::cout << "DM: " << jdmatrix.dump() << '\n';
 
         // Level
         if (jdmatrix.contains("level")) {
@@ -3621,7 +3621,7 @@ CMDF::parseMDF_JSON(std::string &path)
 
         if (jdmatrix.contains("action") && jdmatrix["action"].is_array()) {
           for (auto &action : jdmatrix["action"].items()) {
-            std::cout << "key: " << action.key() << ", value:" << action.value() << '\n';
+            //std::cout << "key: " << action.key() << ", value:" << action.value() << '\n';
             if (action.value().is_object()) {
 
               CMDF_Action *paction = new CMDF_Action();
@@ -3640,6 +3640,19 @@ CMDF::parseMDF_JSON(std::string &path)
               }
               else {
                 spdlog::error("Parse-JSON: No DM action name defined.");
+                return VSCP_ERROR_PARSING;
+              }
+
+              if (jaction.contains("code") && jaction["name"].is_number()) {
+                paction->m_code = jaction["code"];
+                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_name );
+              }
+              else if (jaction.contains("code") && jaction["name"].is_string()) {
+                paction->m_code = vscp_readStringValue(jaction["code"]);
+                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_code );
+              }
+              else {
+                spdlog::error("Parse-JSON: No DM action code defined.");
                 return VSCP_ERROR_PARSING;
               }
 
@@ -3666,76 +3679,75 @@ CMDF::parseMDF_JSON(std::string &path)
 
                   json jparam = param.value();
 
-                  std::cout << "key: " << param.key() << ", value:" << param.value() << '\n';
+                  //std::cout << "key: " << param.key() << ", value:" << param.value() << '\n';
                   if (param.value().is_object()) {
 
                     // name
-                    if (jdmatrix.contains("name") && jdmatrix["name"].is_string()) {
-                      pparam->m_name = vscp_readStringValue(jdmatrix["name"]);
+                    if (jparam.contains("name") && jparam["name"].is_string()) {
+                      pparam->m_name = jparam["name"];
                       spdlog::debug("Parse-JSON: DM action parameter name set to {0}.", pparam->m_name );
                     }
                     else {
-                      m_dmInfo.m_startPage = 0;
                       spdlog::warn("Parse-JSON: No DM action parameter name defined. Set to default (0).");
                     }
 
                     // offset
-                    if (jdmatrix.contains("offset") && jdmatrix["offset"].is_string()) {
-                      pparam->m_offset = vscp_readStringValue(jdmatrix["offset"]);
+                    if (jparam.contains("offset") && jparam["offset"].is_string()) {
+                      pparam->m_offset = vscp_readStringValue(jparam["offset"]);
                       spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset );
                     }
-                    else if (jdmatrix.contains("offset") && jdmatrix["offset"].is_number()) {
-                      pparam->m_offset = jdmatrix["offset"];
+                    else if (jparam.contains("offset") && jparam["offset"].is_number()) {
+                      pparam->m_offset = jparam["offset"];
                       spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset );
                     }
                     else {
-                      m_dmInfo.m_startPage = 0;
+                      pparam->m_offset = 0;
                       spdlog::warn("Parse-JSON: No DM action parameter offset defined. Set to default (0).");
                     }
 
                     // min
-                    if (jdmatrix.contains("min") && jdmatrix["min"].is_string()) {
-                      pparam->m_min = vscp_readStringValue(jdmatrix["min"]);
+                    if (jparam.contains("min") && jparam["min"].is_string()) {
+                      pparam->m_min = vscp_readStringValue(jparam["min"]);
                       spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min );
                     }
-                    else if (jdmatrix.contains("min") && jdmatrix["min"].is_number()) {
-                      pparam->m_min = jdmatrix["min"];
+                    else if (jparam.contains("min") && jparam["min"].is_number()) {
+                      pparam->m_min = jparam["min"];
                       spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min );
                     }
                     else {
-                      m_dmInfo.m_startPage = 0;
+                      pparam->m_min = 0;
                       spdlog::warn("Parse-JSON: No DM action parameter min defined. Set to default (0).");
                     }
 
                     // max
-                    if (jdmatrix.contains("max") && jdmatrix["max"].is_string()) {
-                      pparam->m_max = vscp_readStringValue(jdmatrix["max"]);
+                    if (jparam.contains("max") && jparam["max"].is_string()) {
+                      pparam->m_max = vscp_readStringValue(jparam["max"]);
                       spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max );
                     }
-                    else if (jdmatrix.contains("max") && jdmatrix["max"].is_string()) {
-                      pparam->m_max = jdmatrix["max"];
+                    else if (jparam.contains("max") && jparam["max"].is_string()) {
+                      pparam->m_max = jparam["max"];
                       spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max );
                     }
                     else {
-                      m_dmInfo.m_startPage = 0;
+                      pparam->m_max = 0;
                       spdlog::warn("Parse-JSON: No DM action parameter max defined. Set to default (0).");
                     }
 
-                    if (getDescriptionList(jdmatrix, pparam->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+                    if (getDescriptionList(jparam, pparam->m_mapDescription) != VSCP_ERROR_SUCCESS) {
                       spdlog::warn("Parse-JSON: Failed to get DM parameter bit description.");
                     }
 
-                    if (getInfoUrlList(jdmatrix, pparam->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+                    if (getInfoUrlList(jparam, pparam->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
                       spdlog::warn("Parse-JSON: Failed to get DM parameter bit infourl.");
                     }
 
                     // Register valuelist
-                    if (getValueList(jdmatrix, pparam->m_list_value) != VSCP_ERROR_SUCCESS) {
+                    if (getValueList(jparam, pparam->m_list_value) != VSCP_ERROR_SUCCESS) {
                       spdlog::warn("Parse-JSON: Failed to get DM parameter valuelist.");
                     }
 
                     // Register bitlist
-                    if (getBitList(jdmatrix, pparam->m_list_bit) != VSCP_ERROR_SUCCESS) {
+                    if (getBitList(jparam, pparam->m_list_bit) != VSCP_ERROR_SUCCESS) {
                       spdlog::warn("Parse-JSON: Failed to get DM parameter bitlist.");
                     }
                   }

@@ -237,194 +237,205 @@
         }
       ]
     },
-    "dmatrix" : [
-      {
-        "level" : 1,
-        "start-page" : "0x00",
-        "start-offset": 88,
-        "indexed": false,
-        "rowcnt" : 10,
-        "rowsize" : 8,
-        "action": [
-          {
-            "name": "action 1",
-            "description" : {
-              "en": "English description dm action 1",
-              "se": "Svensk beskrivning dm action 1",
-              "lt": "Lietuvos padeda dm action 1"
-            },
-            "infourl" : {
-              "gb": "English help dm action 1",
-              "se": "Svensk hjälp dm action 1",
-              "lt": "Lietuvos padeda dm action 1"
-            },
-            "param": [
-              {
-                "name" : "parm 1",
-                "description" : {
-                  "en": "English description dm param 1",
-                  "se": "Svensk beskrivning dm param 1",
-                  "lt": "Lietuvos padeda dm param 1"
-                },
-                "infourl" : {
-                  "gb": "English help dm param 1",
-                  "se": "Svensk hjälp dm param 1",
-                  "lt": "Lietuvos padeda dm param 1"
-                },
-                "bit": [
-                  {
-                    "pos": 0,
-                    "width": 3,
-                    "default": 0,
-                    "min": 0,
-                    "max": 7,
-                    "access" : "rw",
-                    "name" : "English bit or bitfield name",
-                    "description" : {
-                      "gb": "English description",
-                      "se": "Svensk beskrivning",
-                      "lt": "Lietuvos aprašymas"
-                    },
-                    "infourl" : {
-                      "gb": "English help",
-                      "se": "Svensk hjälp",
-                      "lt": "Lietuvos padeda"
-                    }
-                  },
-                  {
-                    "pos": 3,
-                    "width": 2,
-                    "default": false,
-                    "name" : "English bit or bitfield name",
-                    "description" : {
-                      "gb": "English description",
-                      "se": "Svensk beskrivning",
-                      "lt": "Lietuvos aprašymas"
-                    },
-                    "infourl" : {
-                      "gb": "English help",
-                      "se": "Svensk hjälp",
-                      "lt": "Lietuvos padeda"
-                    },
-                    "valuelist" : [
-                      {
-                        "value" : "0x00",
-                        "name" : "Low",
-                        "description" : {
-                          "en" : "Low speed",
-                          "se" : "Låg hastighet"
-                        },
-                        "infourl" : {
-                          "gb": "English help 1 vl2",
-                          "se": "Svensk hjälp 1 vl2",
-                          "lt": "Lietuvos padeda 1 vl2"
-                        }
-                      },
-                      {
-                        "value" : "0x01",
-                        "name" : "Medium",
-                        "description" : {
-                          "en" : "Medium speed",
-                          "se" : "Medium hastighet"
-                        },
-                        "infourl" : {
-                          "gb": "English help 2 vl2",
-                          "se": "Svensk hjälp 2 vl2",
-                          "lt": "Lietuvos padeda 2 vl2"
-                        }
-                      },
-                      {
-                        "value" : "0x03",
-                        "name" : "High",
-                        "description" : {
-                          "en" : "High speed",
-                          "se" : "Hög hastighet"
-                        },
-                        "infourl" : {
-                          "gb": "English help 3 vl2",
-                          "se": "Svensk hjälp 3 vl2",
-                          "lt": "Lietuvos padeda 3 vl2"
-                        }
-                      }
-                    ] 
-                  }
-                ]
-              }              
-            ]
+    "dmatrix" : {
+      "level" : 1,
+      "start-page" : "0x10",
+      "start-offset": 88,
+      "indexed": false,
+      "rowcount" : 10,
+      "rowsize" : 8,
+      "action": [
+        {
+          "name": "action 1",
+          "code": "0x01",
+          "description" : {
+            "en": "English description dm action 1",
+            "se": "Svensk beskrivning dm action 1",
+            "lt": "Lietuvos padeda dm action 1"
           },
-          {
-            "name": "action 2",
-            "min": 0,
-            "max": 2,
-            "description" : {
-              "en": "English description dm action 2",
-              "se": "Svensk beskrivning dm action 2",
-              "lt": "Lietuvos padeda dm action 2"
-            },
-            "infourl" : {
-              "gb": "English help dm action 2",
-              "se": "Svensk hjälp dm action 2",
-              "lt": "Lietuvos padeda dm action 2"
-            },
-            "parm": [
-              {
-                "name" : "parm 2",
-                "description" : {
-                  "en": "English description dm param 1",
-                  "se": "Svensk beskrivning dm param 1",
-                  "lt": "Lietuvos padeda dm param 1"
-                },
-                "infourl" : {
-                  "gb": "English help dm param 1",
-                  "se": "Svensk hjälp dm param 1",
-                  "lt": "Lietuvos padeda dm param 1"
-                },
-                "valuelist" : [
-                  {
-                    "value" : "0x00",
-                    "name" : "Low",
-                    "description" : {
-                      "en" : "Low speed",
-                      "se" : "Låg hastighet"
-                    },
-                    "infourl" : {
-                      "gb": "English help 1 vl2",
-                      "se": "Svensk hjälp 1 vl2",
-                      "lt": "Lietuvos padeda 1 vl2"
-                    }
+          "infourl" : {
+            "en": "English help dm action 1",
+            "se": "Svensk hjälp dm action 1",
+            "lt": "Lietuvos padeda dm action 1"
+          },
+          "param": [
+            {
+              "name" : "parm 1",
+              "description" : {
+                "en": "English description dm param 1",
+                "se": "Svensk beskrivning dm param 1",
+                "lt": "Lietuvos padeda dm param 1"
+              },
+              "infourl" : {
+                "en": "English help dm param 1",
+                "se": "Svensk hjälp dm param 1",
+                "lt": "Lietuvos padeda dm param 1"
+              },
+              "bit": [
+                {
+                  "name" : "Bitfield name 0",
+                  "pos": 0,
+                  "width": 3,
+                  "default": 7,
+                  "min": 0,
+                  "max": 7,
+                  "access" : "rw",
+                  "description" : {
+                    "gb": "English description",
+                    "se": "Svensk beskrivning",
+                    "lt": "Lietuvos aprašymas"
                   },
-                  {
-                    "value" : "0x01",
-                    "name" : "Medium",
-                    "description" : {
-                      "en" : "Medium speed",
-                      "se" : "Medium hastighet"
-                    },
-                    "infourl" : {
-                      "gb": "English help 2 vl2",
-                      "se": "Svensk hjälp 2 vl2",
-                      "lt": "Lietuvos padeda 2 vl2"
-                    }
-                  },
-                  {
-                    "value" : "0x02",
-                    "name" : "High",
-                    "description" : {
-                      "en" : "High speed",
-                      "se" : "Hög hastighet"
-                    },
-                    "infourl" : {
-                      "gb": "English help 3 vl2",
-                      "se": "Svensk hjälp 3 vl2",
-                      "lt": "Lietuvos padeda 3 vl2"
-                    }
+                  "infourl" : {
+                    "gb": "English help",
+                    "se": "Svensk hjälp",
+                    "lt": "Lietuvos padeda"
                   }
-                ] 
+                },
+                {
+                  "name" : "Bitfield name 1",
+                  "pos": 3,
+                  "width": 2,
+                  "default": false,
+                  "description" : {
+                    "gb": "English description",
+                    "se": "Svensk beskrivning",
+                    "lt": "Lietuvos aprašymas"
+                  },
+                  "infourl" : {
+                    "gb": "English help",
+                    "se": "Svensk hjälp",
+                    "lt": "Lietuvos padeda"
+                  },
+                  "valuelist" : [
+                    {
+                      "value" : "0x00",
+                      "name" : "Low",
+                      "description" : {
+                        "en" : "Low speed",
+                        "se" : "Låg hastighet"
+                      },
+                      "infourl" : {
+                        "gb": "English help 1 vl2",
+                        "se": "Svensk hjälp 1 vl2",
+                        "lt": "Lietuvos padeda 1 vl2"
+                      }
+                    },
+                    {
+                      "value" : "0x01",
+                      "name" : "Medium",
+                      "description" : {
+                        "en" : "Medium speed",
+                        "se" : "Medium hastighet"
+                      },
+                      "infourl" : {
+                        "gb": "English help 2 vl2",
+                        "se": "Svensk hjälp 2 vl2",
+                        "lt": "Lietuvos padeda 2 vl2"
+                      }
+                    },
+                    {
+                      "value" : "0x03",
+                      "name" : "High",
+                      "description" : {
+                        "en" : "High speed",
+                        "se" : "Hög hastighet"
+                      },
+                      "infourl" : {
+                        "gb": "English help 3 vl2",
+                        "se": "Svensk hjälp 3 vl2",
+                        "lt": "Lietuvos padeda 3 vl2"
+                      }
+                    }
+                  ] 
+                }
+              ]
+            },
+            {
+              "name" : "parm 2",
+              "description" : {
+                "en": "English description dm param 2",
+                "se": "Svensk beskrivning dm param 2",
+                "lt": "Lietuvos padeda dm param 2"
+              },
+              "infourl" : {
+                "en": "English help dm param 2",
+                "se": "Svensk hjälp dm param 2",
+                "lt": "Lietuvos padeda dm param 2"
               }
-            ]
-          }
-        ]
-      }  
-    ]
+            }              
+          ]
+        },
+        {
+          "name": "action 2",
+          "code": "0x02",
+          "description" : {
+            "en": "English description dm action 2",
+            "se": "Svensk beskrivning dm action 2",
+            "lt": "Lietuvos padeda dm action 2"
+          },
+          "infourl" : {
+            "gb": "English help dm action 2",
+            "se": "Svensk hjälp dm action 2",
+            "lt": "Lietuvos padeda dm action 2"
+          },
+          "parm": [
+            {
+              "name" : "parm 2",
+              "description" : {
+                "en": "English description dm param 1",
+                "se": "Svensk beskrivning dm param 1",
+                "lt": "Lietuvos padeda dm param 1"
+              },
+              "infourl" : {
+                "gb": "English help dm param 1",
+                "se": "Svensk hjälp dm param 1",
+                "lt": "Lietuvos padeda dm param 1"
+              },
+              "valuelist" : [
+                {
+                  "value" : "0x00",
+                  "name" : "Low",
+                  "description" : {
+                    "en" : "Low speed",
+                    "se" : "Låg hastighet"
+                  },
+                  "infourl" : {
+                    "gb": "English help 1 vl2",
+                    "se": "Svensk hjälp 1 vl2",
+                    "lt": "Lietuvos padeda 1 vl2"
+                  }
+                },
+                {
+                  "value" : "0x01",
+                  "name" : "Medium",
+                  "description" : {
+                    "en" : "Medium speed",
+                    "se" : "Medium hastighet"
+                  },
+                  "infourl" : {
+                    "gb": "English help 2 vl2",
+                    "se": "Svensk hjälp 2 vl2",
+                    "lt": "Lietuvos padeda 2 vl2"
+                  }
+                },
+                {
+                  "value" : "0x02",
+                  "name" : "High",
+                  "description" : {
+                    "en" : "High speed",
+                    "se" : "Hög hastighet"
+                  },
+                  "infourl" : {
+                    "gb": "English help 3 vl2",
+                    "se": "Svensk hjälp 3 vl2",
+                    "lt": "Lietuvos padeda 3 vl2"
+                  }
+                }
+              ] 
+            }
+          ]
+        }
+      ]
+    }  
   } 
 }
