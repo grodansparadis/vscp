@@ -44,6 +44,8 @@
 
 #include <json.hpp> // Needs C++11  -std=c++11
 
+#include <curl/curl.h>
+
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
 
@@ -59,7 +61,7 @@ typedef enum mdf_access_mode {
 typedef enum mdf_register_type {
   MDF_REG_TYPE_STANDARD = 0,
   MDF_REG_TYPE_DMATRIX1 = 1,
-  MDF_RE_TYPE_BLOCK     = 2
+  MDF_REG_TYPE_BLOCK    = 2
 } mdf_register_type;
 
 // This is the event direction
@@ -1261,7 +1263,7 @@ private:
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  uint16_t m_nOffset;
+  uint16_t m_offset;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
@@ -1311,7 +1313,7 @@ public:
   uint16_t getClass(void) { return m_class; };
 
   /*!
-    Set event class 
+    Set event class
     @param vscpclass Event class
   */
   void setClass(uint16_t vscpclass) { m_class = vscpclass; };
@@ -1323,7 +1325,7 @@ public:
   uint16_t getType(void) { return m_type; };
 
   /*!
-    Set event type 
+    Set event type
     @param vscptype Event type
   */
   void setType(uint16_t vscptype) { m_type = vscptype; };
@@ -1335,7 +1337,7 @@ public:
   uint8_t getPriority(void) { return (m_priority & 7); };
 
   /*!
-    Set event priority 
+    Set event priority
     @param priority Event priority
   */
   void setPriority(uint8_t priority) { m_priority = (priority & 7); };
@@ -1347,7 +1349,7 @@ public:
   mdf_event_direction getDirection(void) { return m_direction; };
 
   /*!
-    Set event direction 
+    Set event direction
     @param direction Event direction
   */
   void setDirection(mdf_event_direction direction) { m_direction = direction; };
@@ -1987,9 +1989,10 @@ public:
       @param remoteFile remote file URL
       @param variable that will receive temporary filename for downloaded
      file.
-      @return Return true if a valid file is downloaded.
+      @return Return CURLE_OK if a valid file is downloaded, else a
+              curl error code.
   */
-  bool downLoadMDF(std::string &remoteFile, std::string &tempFile);
+  CURLcode downLoadMDF(std::string &remoteFile, std::string &tempFile);
 
   /*!
       Load MDF from local or remote storage and parse it into

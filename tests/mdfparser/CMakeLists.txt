@@ -24,6 +24,14 @@ include(FindEXPAT)
 find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
+find_package(CURL REQUIRED) 
+IF(CURL_FOUND)
+  INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+  SET(requiredlibs ${requiredlibs} ${CURL_LIBRARIES} )
+ELSE(CURL_FOUND)
+  MESSAGE(FATAL_ERROR "Could not find the CURL library.")
+ENDIF(CURL_FOUND)
+
 # add the executable
 add_executable(test 
     unittest.cpp
@@ -60,6 +68,7 @@ target_include_directories(test PUBLIC
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}
+    ${CURL_INCLUDE_DIR}
 )
 
 target_link_libraries(test PRIVATE m
@@ -67,6 +76,7 @@ target_link_libraries(test PRIVATE m
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
+    ${CURL_LIBRARIES}
     gtest
     gtest_main
 )    

@@ -53,6 +53,7 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <stdio.h>
 #include <string>
 
 #include <expat.h>
@@ -61,6 +62,12 @@
 
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
+
+#include <curl/curl.h>
+
+// For older cURL versions you will also need
+//#include <curl/types.h>
+//#include <curl/easy.h>
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -82,7 +89,8 @@ using namespace kainjow::mustache;
 
 CMDF_ValueListValue::CMDF_ValueListValue()
 {
-  ;
+  m_name.clear();
+  m_strValue.clear();
 }
 
 CMDF_ValueListValue::~CMDF_ValueListValue()
@@ -91,11 +99,26 @@ CMDF_ValueListValue::~CMDF_ValueListValue()
   m_mapInfoURL.clear();
 }
 
+// ----------------------------------------------------------------------------
+
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 
-CMDF_RemoteVariable::CMDF_RemoteVariable() {}
+CMDF_RemoteVariable::CMDF_RemoteVariable()
+{
+  m_strDefault.clear();
+  m_type   = remote_variable_type_unknown;
+  m_page   = 0;
+  m_offset = 0;
+  m_bitpos = 0;
+  m_size   = 0;
+  m_access = MDF_REG_ACCESS_READ_WRITE;
+
+  m_rowInGrid = -1;
+  m_bgcolor   = 0xffffff;
+  m_fgcolor   = 0x000000;
+}
 
 CMDF_RemoteVariable::~CMDF_RemoteVariable()
 {
@@ -109,6 +132,18 @@ CMDF_RemoteVariable::~CMDF_RemoteVariable()
 void
 CMDF_RemoteVariable::clearStorage(void)
 {
+  m_strDefault.clear();
+  m_type   = remote_variable_type_unknown;
+  m_page   = 0;
+  m_offset = 0;
+  m_bitpos = 0;
+  m_size   = 0;
+  m_access = MDF_REG_ACCESS_READ_WRITE;
+
+  m_rowInGrid = -1;
+  m_bgcolor   = 0xffffff;
+  m_fgcolor   = 0x000000;
+
   // Clearup value list
   std::deque<CMDF_ValueListValue *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
@@ -229,11 +264,11 @@ CMDF_RemoteVariable::getTypeByteCount(void)
       break;
 
     case remote_variable_type_date:
-      size = 3;  // YYMMDD
+      size = 3; // YYMMDD
       break;
 
     case remote_variable_type_time:
-      size = 3;  // HHMMSS
+      size = 3; // HHMMSS
       break;
 
     case remote_variable_type_unknown:
@@ -252,7 +287,13 @@ CMDF_RemoteVariable::getTypeByteCount(void)
 
 CMDF_Bit::CMDF_Bit()
 {
-  ;
+  m_name.clear();
+  m_pos     = 0;
+  m_width   = 1;
+  m_default = 0;
+  m_min     = 0;
+  m_max     = 255;
+  m_access  = MDF_REG_ACCESS_READ_WRITE;
 }
 
 CMDF_Bit::~CMDF_Bit()
@@ -267,6 +308,14 @@ CMDF_Bit::~CMDF_Bit()
 void
 CMDF_Bit::clearStorage(void)
 {
+  m_name.clear();
+  m_pos     = 0;
+  m_width   = 1;
+  m_default = 0;
+  m_min     = 0;
+  m_max     = 255;
+  m_access  = MDF_REG_ACCESS_READ_WRITE;
+
   // Clearup value list
   std::deque<CMDF_ValueListValue *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
@@ -290,7 +339,7 @@ CMDF_Register::CMDF_Register()
 {
   m_page       = 0;
   m_offset     = 0;
-  m_span      = 1;
+  m_span       = 1;
   m_width      = 8;
   m_min        = 0;
   m_max        = 255;
@@ -301,8 +350,8 @@ CMDF_Register::CMDF_Register()
 
   m_rowInGrid = -1;
   m_value     = 0;
-  m_bgcolor   = 0;
-  m_fgcolor   = 0xFFFFFF;
+  m_bgcolor   = 0xffffff;
+  m_fgcolor   = 0x000000;
 }
 
 CMDF_Register::~CMDF_Register()
@@ -326,6 +375,7 @@ CMDF_Register::clearStorage(void)
       pRecordBit = nullptr;
     }
   }
+
   m_list_bit.clear();
 
   // Clear up value list
@@ -341,6 +391,22 @@ CMDF_Register::clearStorage(void)
   m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
+
+  m_page       = 0;
+  m_offset     = 0;
+  m_span       = 1;
+  m_width      = 8;
+  m_min        = 0;
+  m_max        = 255;
+  m_strDefault = "UNDEF";
+  m_access     = MDF_REG_ACCESS_READ_WRITE;
+  m_type       = MDF_REG_TYPE_STANDARD;
+  m_size       = 1;
+
+  m_rowInGrid = -1;
+  m_value     = 0;
+  m_bgcolor   = 0xffffff;
+  m_fgcolor   = 0x000000;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,29 +430,30 @@ CMDF_Register::setValueToDefault(void)
 //  getDefault
 //
 
-bool 
-CMDF_Register::getDefault(uint8_t& default_value) {
-    if (m_strDefault.compare("UNDEF") == 0) {
-      return false;
-    }
-    default_value = (uint8_t)strtol(m_strDefault.c_str(), NULL, 0);
-    return true;
-  };
+bool
+CMDF_Register::getDefault(uint8_t &default_value)
+{
+  if (m_strDefault.compare("UNDEF") == 0) {
+    return false;
+  }
+  default_value = (uint8_t) strtol(m_strDefault.c_str(), NULL, 0);
+  return true;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Assignment
 //
 
-CMDF_Register&
+CMDF_Register &
 CMDF_Register::operator=(const CMDF_Register &other)
 {
-  m_name        = other.m_name;
+  m_name           = other.m_name;
   m_mapDescription = other.m_mapDescription;
   m_mapInfoURL     = other.m_mapInfoURL;
 
   m_page   = other.m_page;
   m_offset = other.m_offset;
-  m_span = other.m_span;
+  m_span   = other.m_span;
   m_width  = other.m_width;
 
   m_type = other.m_type;
@@ -441,7 +508,8 @@ CMDF_Register::operator=(const CMDF_Register &other)
 //
 
 void
-CMDF_Register::setValue(uint8_t value) {
+CMDF_Register::setValue(uint8_t value)
+{
   // A new value can be undone
   // No need for undo if the value is the same as before
   if (m_value != value) {
@@ -455,7 +523,8 @@ CMDF_Register::setValue(uint8_t value) {
 //
 
 int
-CMDF_Register::undo(void) {
+CMDF_Register::undo(void)
+{
   if (m_list_undo_value.size()) {
     m_list_redo_value.push_back(m_value);
     m_value = m_list_undo_value.back();
@@ -469,7 +538,8 @@ CMDF_Register::undo(void) {
 //
 
 int
-CMDF_Register::redo(void) {
+CMDF_Register::redo(void)
+{
   if (m_list_redo_value.size()) {
     m_list_undo_value.push_back(m_value);
     m_value = m_list_redo_value.back();
@@ -484,7 +554,10 @@ CMDF_Register::redo(void) {
 
 CMDF_ActionParameter::CMDF_ActionParameter()
 {
-  ;
+  m_name.clear();
+  m_offset = 0;
+  m_min    = 0;
+  m_max    = 0;
 }
 
 CMDF_ActionParameter::~CMDF_ActionParameter()
@@ -499,6 +572,11 @@ CMDF_ActionParameter::~CMDF_ActionParameter()
 void
 CMDF_ActionParameter::clearStorage(void)
 {
+  m_name.clear();
+  m_offset = 0;
+  m_min    = 0;
+  m_max    = 0;
+
   // Clearup bit list
   std::deque<CMDF_Bit *>::iterator iterBit;
   for (iterBit = m_list_bit.begin(); iterBit != m_list_bit.end(); ++iterBit) {
@@ -508,6 +586,7 @@ CMDF_ActionParameter::clearStorage(void)
       pRecordBit = nullptr;
     }
   }
+
   m_list_bit.clear();
 
   // Clearup value list
@@ -519,6 +598,7 @@ CMDF_ActionParameter::clearStorage(void)
       pRecordValue = nullptr;
     }
   }
+
   m_list_value.clear();
 
   m_mapDescription.clear();
@@ -531,7 +611,8 @@ CMDF_ActionParameter::clearStorage(void)
 
 CMDF_Action::CMDF_Action()
 {
-  ;
+  m_name.clear();
+  m_code = 0;
 }
 
 CMDF_Action::~CMDF_Action()
@@ -546,6 +627,9 @@ CMDF_Action::~CMDF_Action()
 void
 CMDF_Action::clearStorage(void)
 {
+  m_name.clear();
+  m_code = 0;
+
   // Cleanup action parameter list
   std::deque<CMDF_ActionParameter *>::iterator iterActionParam;
   for (iterActionParam = m_list_ActionParameter.begin(); iterActionParam != m_list_ActionParameter.end();
@@ -595,6 +679,7 @@ CMDF_DecisionMatrix::clearStorage()
   m_startOffset = 0;
   m_rowCount    = 0;
   m_rowSize     = 8;
+  m_bIndexed    = false;
 
   m_list_action.clear();
 }
@@ -605,11 +690,15 @@ CMDF_DecisionMatrix::clearStorage()
 
 CMDF_EventData::CMDF_EventData()
 {
-  ;
+  m_name.clear();
+  m_offset = 0;
 }
 
 CMDF_EventData::~CMDF_EventData()
 {
+  m_name.clear();
+  m_offset = 0;
+
   clearStorage();
 }
 
@@ -652,11 +741,21 @@ CMDF_EventData::clearStorage()
 
 CMDF_Event::CMDF_Event()
 {
-  ;
+  m_name.clear();
+  m_class     = 0;
+  m_type      = 0;
+  m_priority  = 7;
+  m_direction = MDF_EVENT_DIR_OUT;
 }
 
 CMDF_Event::~CMDF_Event()
 {
+  m_name.clear();
+  m_class     = 0;
+  m_type      = 0;
+  m_priority  = 7;
+  m_direction = MDF_EVENT_DIR_OUT;
+
   clearStorage();
 }
 
@@ -676,8 +775,8 @@ CMDF_Event::clearStorage()
       pRecordEventData = nullptr;
     }
   }
-  m_list_eventdata.clear();
 
+  m_list_eventdata.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -688,7 +787,7 @@ CMDF_Event::clearStorage()
 
 CMDF_Item::CMDF_Item()
 {
-  ;
+  m_name.clear();
 }
 
 CMDF_Item::~CMDF_Item()
@@ -702,7 +801,9 @@ CMDF_Item::~CMDF_Item()
 
 CMDF_BootLoaderInfo::CMDF_BootLoaderInfo()
 {
-  ;
+  m_nAlgorithm  = 0;
+  m_nBlockSize  = 0;
+  m_nBlockCount = 0;
 }
 
 CMDF_BootLoaderInfo::~CMDF_BootLoaderInfo()
@@ -726,7 +827,10 @@ CMDF_BootLoaderInfo::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Address::CMDF_Address() {}
+CMDF_Address::CMDF_Address()
+{
+  clearStorage();
+}
 
 CMDF_Address::~CMDF_Address()
 {
@@ -755,7 +859,7 @@ CMDF_Address::clearStorage(void)
 
 CMDF_Manufacturer::CMDF_Manufacturer()
 {
-  ;
+  clearStorage();
 }
 
 CMDF_Manufacturer::~CMDF_Manufacturer()
@@ -770,16 +874,7 @@ CMDF_Manufacturer::~CMDF_Manufacturer()
 void
 CMDF_Manufacturer::clearStorage(void)
 {
-  // Cleanup Address list
-  // std::deque<CMDF_Address *>::iterator iterAddress;
-  // for (iterAddress = m_list_Address.begin(); iterAddress != m_list_Address.end(); ++iterAddress) {
-  //   CMDF_Address *pRecordAddress = *iterAddress;
-  //   if (NULL != pRecordAddress) {
-  //     delete pRecordAddress;
-  //     pRecordAddress = nullptr;
-  //   }
-  // }
-  // m_list_Address.clear();
+  m_address.clearStorage();
 
   // Cleanup Phone list
   std::deque<CMDF_Item *>::iterator iterPhone;
@@ -1037,53 +1132,36 @@ CMDF::clearStorage(void)
 ///////////////////////////////////////////////////////////////////////////////
 //  downLoadMDF
 //
+// https://stackoverflow.com/questions/1636333/download-file-using-libcurl-in-c-c
+//
 
-bool
-CMDF::downLoadMDF(std::string &remoteFile, std::string &tempFileName)
+static size_t
+write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-  /* TODO
-  char buf[ 64000 ];
-  size_t cnt;
-  xxFile tempFile;
+  size_t written = fwrite(ptr, size, nmemb, stream);
+  return written;
+}
 
-  tempFileName = wxFileName::CreateTempFileName( "mdf", &tempFile );
-  if ( 0 == tempFileName.length() ) {
-      return false;
+CURLcode
+CMDF::downLoadMDF(std::string &url, std::string &tempFileName)
+{
+  CURL *curl;
+  FILE *fp;
+  CURLcode res;
+  // char *url = "http://localhost/aaa.txt";
+  // char outfilename[FILENAME_MAX] = "C:\\bbb.txt";
+  curl = curl_easy_init();
+  if (curl) {
+    fp = fopen(tempFileName.c_str(), "wb");
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    res = curl_easy_perform(curl);
+    // always cleanup
+    curl_easy_cleanup(curl);
+    fclose(fp);
   }
-
-  m_tempFileName = tempFileName;
-
-  // Create and open http stream
-  xxURL url( remoteFile );
-  if ( xxURL_NOERR != url.GetError() ) {
-      return false;
-  }
-
-  wxInputStream *in_stream;
-  if ( NULL == ( in_stream = url.GetInputStream() ) ) {
-      return false;
-  }
-
-  do  {
-
-      // Read data from server
-      in_stream->Read( buf, sizeof( buf ) );
-
-      // get valid size for buffer
-      cnt = in_stream->LastRead();
-
-      // Write buffer to file
-      tempFile.Write( buf, cnt );
-
-  } while ( cnt == sizeof( buf ) );
-
-  // we are done with the stream object
-  if ( NULL != in_stream ) delete in_stream;
-
-  // Close the file
-  tempFile.Close();
-*/
-  return true;
+  return res;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1596,10 +1674,13 @@ int gdepth_xml_parser = 0;
 bool gbVscp   = false;
 bool gbModule = false;
 
-CMDF_Item *gpItemStruct;         // Holds temporary items
-CMDF_Picture *gpPictureStruct;   // Holds temporary picture items
-CMDF_Firmware *gpFirmwareStruct; // Holds temporary firmware items
-CMDF_Manual *gpManualStruct;     // Holds temporary manual items
+CMDF_Item *gpItemStruct;                     // Holds temporary items
+CMDF_Bit *gpBitStruct;                       // Holds temporary bits
+CMDF_ValueListValue *gpValueListValueStruct; // Holds temporary values
+CMDF_Picture *gpPictureStruct;               // Holds temporary picture items
+CMDF_Firmware *gpFirmwareStruct;             // Holds temporary firmware items
+CMDF_Manual *gpManualStruct;                 // Holds temporary manual items
+CMDF_Register *gpRegisterStruct;             // Holds temporary register items
 
 // ----------------------------------------------------------------------------
 void
@@ -1800,6 +1881,9 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if (gbModule && (0 == strcmp(name, "registers"))) {
         gTokenParent = "register";
       }
+      else if (gbModule && (0 == strcmp(name, "register"))) {
+        gTokenParent = "register";
+      }
       else if (gbModule && (0 == strcmp(name, "abstractions"))) {
         gTokenParent = "remotevar";
       }
@@ -1972,8 +2056,193 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         gTokenParent = "boot";
         // gpBootStruct = new CMDF_Boot;
       }
+      // reg  (register definitions)
+      else if ((0 == strcmp(name, "reg"))) {
+        gTokenParent     = "reg";
+        gpRegisterStruct = new CMDF_Register;
+        if (nullptr == gpRegisterStruct) {
+          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for register");
+          return;
+        }
+
+        pmdf->m_list_register.push_back(gpRegisterStruct);
+
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "name")) {
+            // Register name
+            spdlog::trace("ParseMDF: handleMDFParserData: Register name: {0}", attribute);
+            gpRegisterStruct->m_name = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "page")) {
+            // Register page
+            spdlog::trace("ParseMDF: handleMDFParserData: Register page: {0}", attribute);
+            gpRegisterStruct->m_page = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "offset")) {
+            // Register offset
+            spdlog::trace("ParseMDF: handleMDFParserData: Register offset: {0}", attribute);
+            gpRegisterStruct->m_offset = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "span")) {
+            // Register span
+            spdlog::trace("ParseMDF: handleMDFParserData: Register span: {0}", attribute);
+            gpRegisterStruct->m_span = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "width")) {
+            // Register width
+            spdlog::trace("ParseMDF: handleMDFParserData: Register width: {0}", attribute);
+            gpRegisterStruct->m_width = vscp_readStringValue(attribute);
+            if (gpRegisterStruct->m_width > 8) {
+              gpRegisterStruct->m_width = 8;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "default")) {
+            // Register default
+            spdlog::trace("ParseMDF: handleMDFParserData: Register default: {0}", attribute);
+            gpRegisterStruct->m_strDefault = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "access")) {
+            // Register access
+            std::string strAccess = attribute;
+            vscp_trim(strAccess);
+            vscp_makeLower(strAccess);
+            gpRegisterStruct->m_access = MDF_REG_ACCESS_NONE;
+            if (strAccess == "w") {
+              gpRegisterStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+              spdlog::debug("Parse-JSON: Register access: Read Only");
+            }
+            else if (strAccess == "r") {
+              gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
+              spdlog::debug("Parse-JSON: Register access: Write Only");
+            }
+            else if (strAccess == "rw") {
+              gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
+              spdlog::debug("Parse-JSON: Register access: Read/Write");
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "min")) {
+            // Register min
+            spdlog::trace("ParseMDF: handleMDFParserData: Register min: {0}", attribute);
+            gpRegisterStruct->m_min = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "max")) {
+            // Register max
+            spdlog::trace("ParseMDF: handleMDFParserData: Register max: {0}", attribute);
+            gpRegisterStruct->m_max = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "type")) {
+            // Register type
+            spdlog::trace("ParseMDF: handleMDFParserData: Register type: {0}", attribute);
+            std::string strRegType = attribute;
+            vscp_trim(strRegType);
+            vscp_makeLower(strRegType);
+            gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
+            if ((strRegType == "standard") || (strRegType == "std")) {
+              gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
+              spdlog::debug("Parse-JSON: Register type: standard");
+            }
+            else if ((strRegType == "dmatrix") || (strRegType == "dm")) {
+              gpRegisterStruct->m_type = MDF_REG_TYPE_DMATRIX1;
+              spdlog::debug("Parse-JSON: Register type: dmatrix");
+            }
+            else if ((strRegType == "block") || (strRegType == "blk")) {
+              gpRegisterStruct->m_type = MDF_REG_TYPE_BLOCK;
+              spdlog::debug("Parse-JSON: Register type: dmatrix");
+            }
+            else {
+              gpRegisterStruct->m_type = static_cast<mdf_register_type>(vscp_readStringValue(attribute));
+              spdlog::debug("Parse-JSON: Register type: {0}", gpRegisterStruct->m_type);
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "fgcolor")) {
+            // Register foreground color
+            spdlog::trace("ParseMDF: handleMDFParserData: Register fgcolor: {0}", attribute);
+            gpRegisterStruct->m_fgcolor = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "bgcolor")) {
+            // Register background color
+            spdlog::trace("ParseMDF: handleMDFParserData: Register bgcolor: {0}", attribute);
+            gpRegisterStruct->m_bgcolor = vscp_readStringValue(attribute);
+          }
+        }
+      }
       break;
-  }
+
+    case 4:
+      if ((gTokenParent == "reg") && (gToken == "bit") && (gpRegisterStruct != nullptr)) {
+
+        spdlog::trace("ParseMDF: handleMDFParserData: Bit");
+
+        gpBitStruct = new CMDF_Bit;
+        if (NULL == gpBitStruct) {
+          spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for bit structure");
+          return;
+        }
+
+        gpRegisterStruct->m_list_bit.push_back(gpBitStruct);
+
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "pos")) {
+            gpBitStruct->m_name = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "pos")) {
+            gpBitStruct->m_pos = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "width")) {
+            gpBitStruct->m_width = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "default")) {
+            if (attribute == "true") {
+              gpBitStruct->m_default = true;
+            }
+            else if (attribute == "false") {
+              gpBitStruct->m_default = false;
+            }
+            else {
+              gpBitStruct->m_default = vscp_readStringValue(attribute);
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "min")) {
+            gpBitStruct->m_min = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "max")) {
+            gpBitStruct->m_max = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "access")) {
+            // Register access
+            std::string strAccess = attribute;
+            vscp_trim(strAccess);
+            vscp_makeLower(strAccess);
+            gpBitStruct->m_access = MDF_REG_ACCESS_NONE;
+            if (strAccess == "w") {
+              gpBitStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+              spdlog::debug("Parse-XML: Register access: Read Only");
+            }
+            else if (strAccess == "r") {
+              gpBitStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
+              spdlog::debug("Parse-XML: Register access: Write Only");
+            }
+            else if (strAccess == "rw") {
+              gpBitStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
+              spdlog::debug("Parse-XML: Register access: Read/Write");
+            }
+          }
+          break;
+        }
+      }
+      break;
+
+  } // switch depth
 
   gdepth_xml_parser++;
 }
@@ -2062,7 +2331,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       break;
 
-    case 4: // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix, events
+    case 4: // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix,
+            // events
       if ((gTokenParent == "manufacturer") && (gToken == "name")) {
         // Name of manufacturer
         spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer name: {0} language: {1}",
@@ -2233,6 +2503,36 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
+      else if ((gTokenParent == "reg") && (gpRegisterStruct != NULL)) {
+        if (gToken == "name") {
+          gpRegisterStruct->m_name = strContent;
+        }
+        else if (gToken == "access") {
+          // Register access
+          std::string strAccess = strContent;
+          vscp_trim(strAccess);
+          vscp_makeLower(strAccess);
+          gpRegisterStruct->m_access = MDF_REG_ACCESS_NONE;
+          if (strAccess == "w") {
+            gpRegisterStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+            spdlog::debug("Parse-XML: Register access: Read Only");
+          }
+          else if (strAccess == "r") {
+            gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
+            spdlog::debug("Parse-XML: Register access: Write Only");
+          }
+          else if (strAccess == "rw") {
+            gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
+            spdlog::debug("Parse-XML: Register access: Read/Write");
+          }
+        }
+        else if (gToken == "description") {
+          gpRegisterStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+        else if (gToken == "infourl") {
+          gpRegisterStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        }
+      }
       break;
   }
 }
@@ -2283,6 +2583,12 @@ __endSetupMDFParser(void *data, const char *name)
       }
       else if (0 == strcasecmp(name, "manual")) {
         gpManualStruct = nullptr;
+      }
+      else if (0 == strcasecmp(name, "registers")) {
+        gpRegisterStruct = nullptr;
+      }
+      else if (0 == strcasecmp(name, "register")) {
+        gpRegisterStruct = nullptr;
       }
       break;
 
@@ -2342,6 +2648,8 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   gpPictureStruct  = nullptr;
   gpFirmwareStruct = nullptr;
   gpManualStruct   = nullptr;
+
+  gpRegisterStruct = nullptr;
 
   // Empty old MDF information
   clearStorage();
@@ -2645,7 +2953,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
   return VSCP_ERROR_SUCCESS;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  parseMDF_JSON
 //
@@ -2945,41 +3252,41 @@ CMDF::parseMDF_JSON(std::string &path)
       }
 
       ///////////////////////////////////////////////////////////////////////////
-    //                              Bootloader
-    ///////////////////////////////////////////////////////////////////////////
+      //                              Bootloader
+      ///////////////////////////////////////////////////////////////////////////
 
-    // 'boot' - Is always object
-    if (j["module"].contains("boot") && j["module"]["boot"].is_object()) {
+      // 'boot' - Is always object
+      if (j["module"].contains("boot") && j["module"]["boot"].is_object()) {
 
-      json jsub = j["module"]["boot"];
+        json jsub = j["module"]["boot"];
 
-      if (jsub.contains("algorithm") && jsub["algorithm"].is_string()) {
-        m_bootInfo.m_nAlgorithm = vscp_readStringValue(jsub["algorithm"]);
-        spdlog::debug("Parse-JSON: Boot loader algorithm: {0} ", m_bootInfo.m_nAlgorithm);
-      }
-      else if (jsub.contains("algorithm") && jsub["algorithm"].is_number()) {
-        m_bootInfo.m_nAlgorithm = jsub["algorithm"];
-        spdlog::debug("Parse-JSON: Boot loader algorithm: {0} ", m_bootInfo.m_nAlgorithm);
-      }
+        if (jsub.contains("algorithm") && jsub["algorithm"].is_string()) {
+          m_bootInfo.m_nAlgorithm = vscp_readStringValue(jsub["algorithm"]);
+          spdlog::debug("Parse-JSON: Boot loader algorithm: {0} ", m_bootInfo.m_nAlgorithm);
+        }
+        else if (jsub.contains("algorithm") && jsub["algorithm"].is_number()) {
+          m_bootInfo.m_nAlgorithm = jsub["algorithm"];
+          spdlog::debug("Parse-JSON: Boot loader algorithm: {0} ", m_bootInfo.m_nAlgorithm);
+        }
 
-      if (jsub.contains("blocksize") && jsub["blocksize"].is_string()) {
-        m_bootInfo.m_nBlockSize = vscp_readStringValue(jsub["blocksize"]);
-        spdlog::debug("Parse-JSON: Boot loader block size: {0} ", m_bootInfo.m_nBlockSize);
-      }
-      else if (jsub.contains("blocksize") && jsub["blocksize"].is_number()) {
-        m_bootInfo.m_nBlockSize = jsub["blocksize"];
-        spdlog::debug("Parse-JSON: Boot loader block size: {0} ", m_bootInfo.m_nBlockSize);
-      }
+        if (jsub.contains("blocksize") && jsub["blocksize"].is_string()) {
+          m_bootInfo.m_nBlockSize = vscp_readStringValue(jsub["blocksize"]);
+          spdlog::debug("Parse-JSON: Boot loader block size: {0} ", m_bootInfo.m_nBlockSize);
+        }
+        else if (jsub.contains("blocksize") && jsub["blocksize"].is_number()) {
+          m_bootInfo.m_nBlockSize = jsub["blocksize"];
+          spdlog::debug("Parse-JSON: Boot loader block size: {0} ", m_bootInfo.m_nBlockSize);
+        }
 
-      if (jsub.contains("blockcount") && jsub["blockcount"].is_string()) {
-        m_bootInfo.m_nBlockCount = vscp_readStringValue(jsub["blockcount"]);
-        spdlog::debug("Parse-JSON: MBoot loader block count: {0} ", m_bootInfo.m_nBlockCount);
+        if (jsub.contains("blockcount") && jsub["blockcount"].is_string()) {
+          m_bootInfo.m_nBlockCount = vscp_readStringValue(jsub["blockcount"]);
+          spdlog::debug("Parse-JSON: MBoot loader block count: {0} ", m_bootInfo.m_nBlockCount);
+        }
+        else if (jsub.contains("blockcount") && jsub["blockcount"].is_number()) {
+          m_bootInfo.m_nBlockCount = jsub["blockcount"];
+          spdlog::debug("Parse-JSON: MBoot loader block count: {0} ", m_bootInfo.m_nBlockCount);
+        }
       }
-      else if (jsub.contains("blockcount") && jsub["blockcount"].is_number()) {
-        m_bootInfo.m_nBlockCount = jsub["blockcount"];
-        spdlog::debug("Parse-JSON: MBoot loader block count: {0} ", m_bootInfo.m_nBlockCount);
-      }
-    }
 
       // ------------------------------------------------------------------------
       //                                Registers
@@ -3034,14 +3341,16 @@ CMDF::parseMDF_JSON(std::string &path)
               preg->m_span = jreg["span"];
               spdlog::debug("Parse-JSON: Module register span: {0}", preg->m_span);
               if ((preg->m_span == 0) || (preg->m_span > 8)) {
-                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. Default set (1)");
+                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. "
+                             "Default set (1)");
               }
             }
             else if (jreg.contains("span") && jreg["span"].is_string()) {
               preg->m_span = vscp_readStringValue(jreg["span"]);
               spdlog::debug("Parse-JSON: Module register span: {0}", preg->m_span);
               if ((preg->m_span == 0) || (preg->m_span > 8)) {
-                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. Default set (1)");
+                spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. "
+                             "Default set (1)");
               }
             }
             else {
@@ -3103,8 +3412,8 @@ CMDF::parseMDF_JSON(std::string &path)
               }
             }
             else if (jreg.contains("default") && jreg["default"].is_number()) {
-              preg->m_strDefault = std::to_string((int)jreg["default"]);
-              preg->m_value = jreg["default"];
+              preg->m_strDefault = std::to_string((int) jreg["default"]);
+              preg->m_value      = jreg["default"];
               spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_value);
             }
             else if (jreg.contains("default") && jreg["default"].is_boolean()) {
@@ -3129,7 +3438,6 @@ CMDF::parseMDF_JSON(std::string &path)
                 preg->m_access = MDF_REG_ACCESS_WRITE_ONLY;
                 spdlog::debug("Parse-JSON: Module register access: Write Only");
               }
-              
             }
             else {
               preg->m_max = 0;
@@ -3139,7 +3447,7 @@ CMDF::parseMDF_JSON(std::string &path)
             // Register name
             if (jreg.contains("name") && jreg["name"].is_string()) {
               preg->m_name = jreg["name"];
-              spdlog::info("Parse-JSON: Register name set to {0}.", preg->m_name );
+              spdlog::info("Parse-JSON: Register name set to {0}.", preg->m_name);
             }
             else {
               spdlog::info("Parse-JSON: No register name defined (defaults to empty string).");
@@ -3148,11 +3456,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Grid position (VSCP Works)
             if (jreg.contains("rowpos") && jreg["rowpos"].is_string()) {
               preg->m_rowInGrid = vscp_readStringValue(jreg["rowpos"]);
-              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", preg->m_rowInGrid );
+              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", preg->m_rowInGrid);
             }
             else if (jreg.contains("rowpos") && jreg["rowpos"].is_number()) {
               preg->m_rowInGrid = jreg["rowpos"];
-              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", preg->m_rowInGrid );
+              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", preg->m_rowInGrid);
             }
             else {
               preg->m_rowInGrid = -1;
@@ -3162,11 +3470,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Foreground color (VSCP Works)
             if (jreg.contains("fgcolor") && jreg["fgcolor"].is_string()) {
               preg->m_fgcolor = vscp_readStringValue(jreg["fgcolor"]);
-              spdlog::debug("Parse-JSON: Remote variable foreground color set to {}.", preg->m_fgcolor );
+              spdlog::debug("Parse-JSON: Remote variable foreground color set to {}.", preg->m_fgcolor);
             }
             else if (jreg.contains("fgcolor") && jreg["fgcolor"].is_number()) {
               preg->m_fgcolor = jreg["fgcolor"];
-              spdlog::debug("Parse-JSON: Remote variable foreground color to {}.", preg->m_fgcolor );
+              spdlog::debug("Parse-JSON: Remote variable foreground color to {}.", preg->m_fgcolor);
             }
             else {
               preg->m_fgcolor = 0;
@@ -3176,11 +3484,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Backround color (VSCP Works)
             if (jreg.contains("bgcolor") && jreg["bgcolor"].is_string()) {
               preg->m_bgcolor = vscp_readStringValue(jreg["bgcolor"]);
-              spdlog::debug("Parse-JSON: Remote variable background color set to {}.", preg->m_bgcolor );
+              spdlog::debug("Parse-JSON: Remote variable background color set to {}.", preg->m_bgcolor);
             }
             else if (jreg.contains("bgcolor") && jreg["bgcolor"].is_number()) {
               preg->m_bgcolor = jreg["bgcolor"];
-              spdlog::debug("Parse-JSON: Remote variable background color to {}.", preg->m_bgcolor );
+              spdlog::debug("Parse-JSON: Remote variable background color to {}.", preg->m_bgcolor);
             }
             else {
               preg->m_bgcolor = 0;
@@ -3218,7 +3526,7 @@ CMDF::parseMDF_JSON(std::string &path)
       if (j["module"].contains("remotevar") && j["module"]["remotevar"].is_array()) {
         for (auto &rvar : j["module"]["remotevar"].items()) {
           // std::cout << "key: " << rvar.key() << ", value:" << rvar.value() << '\n';
-          spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", rvar.key(), rvar.value() );
+          spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", rvar.key(), rvar.value());
           if (rvar.value().is_object()) {
 
             CMDF_RemoteVariable *prvar = new CMDF_RemoteVariable();
@@ -3234,7 +3542,7 @@ CMDF::parseMDF_JSON(std::string &path)
             // Remote variable name
             if (jrvar.contains("name") && jrvar["name"].is_string()) {
               prvar->m_name = jrvar["name"];
-              spdlog::debug("Parse-JSON: Remote variable name set to {}.", prvar->m_name );
+              spdlog::debug("Parse-JSON: Remote variable name set to {}.", prvar->m_name);
             }
             else {
               spdlog::error("Parse-JSON: No remote variable name defined.");
@@ -3248,62 +3556,62 @@ CMDF::parseMDF_JSON(std::string &path)
               vscp_makeLower(str);
               if (str == "string") {
                 prvar->m_type = remote_variable_type_string;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", prvar->m_type);
               }
               else if (str == "bool") {
                 prvar->m_type = remote_variable_type_boolean;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", prvar->m_type);
               }
               else if ((str == "int8") || (str == "int8_t")) {
                 prvar->m_type = remote_variable_type_int8_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", prvar->m_type);
               }
               else if ((str == "uint8") || (str == "uint8_t")) {
                 prvar->m_type = remote_variable_type_uint8_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", prvar->m_type);
               }
               else if ((str == "int16") || (str == "int16_t") || (str == "short")) {
                 prvar->m_type = remote_variable_type_int16_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", prvar->m_type);
               }
               else if ((str == "uint16") || (str == "uint16_t")) {
                 prvar->m_type = remote_variable_type_uint16_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", prvar->m_type);
               }
               else if ((str == "int32") || (str == "int32_t") || (str == "long")) {
                 prvar->m_type = remote_variable_type_int32_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", prvar->m_type);
               }
               else if ((str == "uint32") || (str == "uint32_t") || (str == "unsigned")) {
                 prvar->m_type = remote_variable_type_uint32_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", prvar->m_type);
               }
               else if ((str == "int64") || (str == "int64_t") || (str == "longlong")) {
                 prvar->m_type = remote_variable_type_int64_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", prvar->m_type);
               }
               else if ((str == "uint64") || (str == "uint64_t")) {
                 prvar->m_type = remote_variable_type_uint64_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", prvar->m_type);
               }
               else if (str == "float") {
                 prvar->m_type = remote_variable_type_float;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", prvar->m_type);
               }
               else if (str == "double") {
                 prvar->m_type = remote_variable_type_double;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", prvar->m_type);
               }
               else if (str == "date") {
                 prvar->m_type = remote_variable_type_date;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", prvar->m_type);
               }
               else if (str == "time") {
                 prvar->m_type = remote_variable_type_time;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", prvar->m_type );
+                spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", prvar->m_type);
               }
               else {
-                prvar->m_type =remote_variable_type_unknown;
+                prvar->m_type = remote_variable_type_unknown;
               }
             }
             else {
@@ -3316,27 +3624,27 @@ CMDF::parseMDF_JSON(std::string &path)
             // when default is set.
             if (jrvar.contains("default") && jrvar["default"].is_string()) {
               prvar->m_strDefault = jrvar["default"];
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_number()) {
-              prvar->m_strDefault = std::to_string((uint32_t)jrvar["default"]);
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              prvar->m_strDefault = std::to_string((uint32_t) jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_number_integer()) {
-              prvar->m_strDefault = std::to_string((int32_t)jrvar["default"]);
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              prvar->m_strDefault = std::to_string((int32_t) jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_number_unsigned()) {
-              prvar->m_strDefault = std::to_string((uint32_t)jrvar["default"]);
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              prvar->m_strDefault = std::to_string((uint32_t) jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_number_float()) {
-              prvar->m_strDefault = std::to_string((double)jrvar["default"]);
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              prvar->m_strDefault = std::to_string((double) jrvar["default"]);
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_boolean()) {
               prvar->m_strDefault = jrvar["default"] ? "true" : "false";
-              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault );
+              spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else {
               prvar->m_strDefault = "";
@@ -3346,11 +3654,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Page where the remote variable is located
             if (jrvar.contains("page") && jrvar["page"].is_string()) {
               prvar->m_page = vscp_readStringValue(jrvar["page"]);
-              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page );
+              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page);
             }
             else if (jrvar.contains("page") && jrvar["page"].is_number()) {
               prvar->m_page = jrvar["page"];
-              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page );
+              spdlog::debug("Parse-JSON: Remote variable page set to {}.", prvar->m_page);
             }
             else {
               prvar->m_page = 0;
@@ -3360,11 +3668,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Offset where the remote variable is located
             if (jrvar.contains("offset") && jrvar["offset"].is_string()) {
               prvar->m_offset = vscp_readStringValue(jrvar["offset"]);
-              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset );
+              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset);
             }
             else if (jrvar.contains("offset") && jrvar["offset"].is_number()) {
               prvar->m_offset = jrvar["offset"];
-              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset );
+              spdlog::debug("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset);
             }
             else {
               // Must be an offset if a remote variable is there, but we accept
@@ -3377,12 +3685,12 @@ CMDF::parseMDF_JSON(std::string &path)
             // If -1 not used.
             if (jrvar.contains("bitpos") && jrvar["bitpos"].is_string()) {
               prvar->m_bitpos = vscp_readStringValue(jrvar["bitpos"]) & 0x07;
-              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos );
+              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos);
             }
             else if (jrvar.contains("bitpos") && jrvar["bitpos"].is_number()) {
               prvar->m_bitpos = jrvar["bitpos"];
-              prvar->m_bitpos &= 7; 
-              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos );
+              prvar->m_bitpos &= 7;
+              spdlog::debug("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos);
             }
             else {
               prvar->m_bitpos = -1;
@@ -3392,11 +3700,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Size for a string (ignored for all other types)
             if (jrvar.contains("size") && jrvar["size"].is_string()) {
               prvar->m_size = vscp_readStringValue(jrvar["size"]);
-              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size );
+              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size);
             }
             else if (jrvar.contains("size") && jrvar["size"].is_number()) {
               prvar->m_size = jrvar["size"];
-              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size );
+              spdlog::debug("Parse-JSON: Remote variable size set to {}.", prvar->m_size);
             }
             else {
               prvar->m_bitpos = 0;
@@ -3430,11 +3738,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Grid position (VSCP Works)
             if (jrvar.contains("rowpos") && jrvar["rowpos"].is_string()) {
               prvar->m_rowInGrid = vscp_readStringValue(jrvar["rowpos"]);
-              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", prvar->m_rowInGrid );
+              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", prvar->m_rowInGrid);
             }
             else if (jrvar.contains("rowpos") && jrvar["rowpos"].is_number()) {
               prvar->m_rowInGrid = jrvar["rowpos"];
-              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", prvar->m_rowInGrid );
+              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", prvar->m_rowInGrid);
             }
             else {
               prvar->m_rowInGrid = -1;
@@ -3444,11 +3752,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Foreground color (VSCP Works)
             if (jrvar.contains("fgcolor") && jrvar["fgcolor"].is_string()) {
               prvar->m_fgcolor = vscp_readStringValue(jrvar["fgcolor"]);
-              spdlog::debug("Parse-JSON: Remote variable fore ground color set to {}.", prvar->m_fgcolor );
+              spdlog::debug("Parse-JSON: Remote variable fore ground color set to {}.", prvar->m_fgcolor);
             }
             else if (jrvar.contains("fgcolor") && jrvar["fgcolor"].is_number()) {
               prvar->m_fgcolor = jrvar["fgcolor"];
-              spdlog::debug("Parse-JSON: Remote variable fore ground color to {}.", prvar->m_fgcolor );
+              spdlog::debug("Parse-JSON: Remote variable fore ground color to {}.", prvar->m_fgcolor);
             }
             else {
               prvar->m_fgcolor = 0;
@@ -3458,11 +3766,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Backround color (VSCP Works)
             if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_string()) {
               prvar->m_bgcolor = vscp_readStringValue(jrvar["bgcolor"]);
-              spdlog::debug("Parse-JSON: Remote variable background color set to {}.", prvar->m_bgcolor );
+              spdlog::debug("Parse-JSON: Remote variable background color set to {}.", prvar->m_bgcolor);
             }
             else if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_number()) {
               prvar->m_bgcolor = jrvar["bgcolor"];
-              spdlog::debug("Parse-JSON: Remote variable background color to {}.", prvar->m_bgcolor );
+              spdlog::debug("Parse-JSON: Remote variable background color to {}.", prvar->m_bgcolor);
             }
             else {
               prvar->m_bgcolor = 0;
@@ -3486,7 +3794,6 @@ CMDF::parseMDF_JSON(std::string &path)
             if (getBitList(jrvar, prvar->m_list_bit) != VSCP_ERROR_SUCCESS) {
               spdlog::warn("Parse-JSON: Failed to get remote variable bitlist.");
             }
-
           }
         }
       }
@@ -3501,17 +3808,17 @@ CMDF::parseMDF_JSON(std::string &path)
       if (j["module"].contains("dmatrix") && j["module"]["dmatrix"].is_object()) {
 
         json jdmatrix = j["module"]["dmatrix"];
-        //std::cout << "DM: " << jdmatrix.dump() << '\n';
+        // std::cout << "DM: " << jdmatrix.dump() << '\n';
 
         // Level
         if (jdmatrix.contains("level")) {
           if (jdmatrix["level"].is_number()) {
             m_dmInfo.m_level = jdmatrix["level"];
-            spdlog::debug("Parse-JSON: DM level set to {0}.", m_dmInfo.m_level );
+            spdlog::debug("Parse-JSON: DM level set to {0}.", m_dmInfo.m_level);
           }
           else if (jdmatrix["level"].is_string()) {
             m_dmInfo.m_level = vscp_readStringValue(jdmatrix["level"]);
-            spdlog::debug("Parse-JSON: DM level set to {0}.", m_dmInfo.m_level );
+            spdlog::debug("Parse-JSON: DM level set to {0}.", m_dmInfo.m_level);
           }
           else {
             m_dmInfo.m_level = 1;
@@ -3527,11 +3834,11 @@ CMDF::parseMDF_JSON(std::string &path)
         if (jdmatrix.contains("start-page")) {
           if (jdmatrix["start-page"].is_number()) {
             m_dmInfo.m_startPage = jdmatrix["start-page"];
-            spdlog::debug("Parse-JSON: DM start page set to {0}.", m_dmInfo.m_startPage );
+            spdlog::debug("Parse-JSON: DM start page set to {0}.", m_dmInfo.m_startPage);
           }
           else if (jdmatrix["start-page"].is_string()) {
             m_dmInfo.m_startPage = vscp_readStringValue(jdmatrix["start-page"]);
-            spdlog::debug("Parse-JSON: DM start page set to {0}.", m_dmInfo.m_startPage );
+            spdlog::debug("Parse-JSON: DM start page set to {0}.", m_dmInfo.m_startPage);
           }
           else {
             m_dmInfo.m_startPage = 0;
@@ -3547,11 +3854,11 @@ CMDF::parseMDF_JSON(std::string &path)
         if (jdmatrix.contains("start-offset")) {
           if (jdmatrix["start-offset"].is_number()) {
             m_dmInfo.m_startOffset = jdmatrix["start-offset"];
-            spdlog::debug("Parse-JSON: DM start offset set to {0}.", m_dmInfo.m_startOffset );
+            spdlog::debug("Parse-JSON: DM start offset set to {0}.", m_dmInfo.m_startOffset);
           }
           else if (jdmatrix["start-offset"].is_string()) {
             m_dmInfo.m_startOffset = vscp_readStringValue(jdmatrix["start-offset"]);
-            spdlog::debug("Parse-JSON: DM start offset set to {0}.", m_dmInfo.m_startOffset );
+            spdlog::debug("Parse-JSON: DM start offset set to {0}.", m_dmInfo.m_startOffset);
           }
           else {
             m_dmInfo.m_startOffset = 0;
@@ -3567,7 +3874,7 @@ CMDF::parseMDF_JSON(std::string &path)
         if (jdmatrix.contains("indexed")) {
           if (jdmatrix["indexed"].is_boolean()) {
             m_dmInfo.m_bIndexed = jdmatrix["indexed"];
-            spdlog::debug("Parse-JSON: DM indexed set to {0}.", m_dmInfo.m_startOffset ? "true" : "false" );
+            spdlog::debug("Parse-JSON: DM indexed set to {0}.", m_dmInfo.m_startOffset ? "true" : "false");
           }
           else {
             m_dmInfo.m_bIndexed = 0;
@@ -3583,11 +3890,11 @@ CMDF::parseMDF_JSON(std::string &path)
         if (jdmatrix.contains("rowcount")) {
           if (jdmatrix["rowcount"].is_number()) {
             m_dmInfo.m_rowCount = jdmatrix["rowcount"];
-            spdlog::debug("Parse-JSON: DM row count set to {0}.", m_dmInfo.m_rowCount );
+            spdlog::debug("Parse-JSON: DM row count set to {0}.", m_dmInfo.m_rowCount);
           }
           else if (jdmatrix["rowcount"].is_string()) {
             m_dmInfo.m_rowCount = vscp_readStringValue(jdmatrix["rowcount"]);
-            spdlog::debug("Parse-JSON: DM row count set to {0}.", m_dmInfo.m_rowCount );
+            spdlog::debug("Parse-JSON: DM row count set to {0}.", m_dmInfo.m_rowCount);
           }
           else {
             m_dmInfo.m_rowCount = 0;
@@ -3603,11 +3910,11 @@ CMDF::parseMDF_JSON(std::string &path)
         if (jdmatrix.contains("rowsize")) {
           if (jdmatrix["rowsize"].is_number()) {
             m_dmInfo.m_rowSize = jdmatrix["rowsize"];
-            spdlog::debug("Parse-JSON: DM row size set to {0}.", m_dmInfo.m_rowSize );
+            spdlog::debug("Parse-JSON: DM row size set to {0}.", m_dmInfo.m_rowSize);
           }
           else if (jdmatrix["rowsize"].is_string()) {
             m_dmInfo.m_rowSize = vscp_readStringValue(jdmatrix["rowsize"]);
-            spdlog::debug("Parse-JSON: DM row size set to {0}.", m_dmInfo.m_rowSize );
+            spdlog::debug("Parse-JSON: DM row size set to {0}.", m_dmInfo.m_rowSize);
           }
           else {
             m_dmInfo.m_rowSize = 8;
@@ -3621,7 +3928,7 @@ CMDF::parseMDF_JSON(std::string &path)
 
         if (jdmatrix.contains("action") && jdmatrix["action"].is_array()) {
           for (auto &action : jdmatrix["action"].items()) {
-            //std::cout << "key: " << action.key() << ", value:" << action.value() << '\n';
+            // std::cout << "key: " << action.key() << ", value:" << action.value() << '\n';
             if (action.value().is_object()) {
 
               CMDF_Action *paction = new CMDF_Action();
@@ -3636,7 +3943,7 @@ CMDF::parseMDF_JSON(std::string &path)
 
               if (jaction.contains("name") && jaction["name"].is_string()) {
                 paction->m_name = jaction["name"];
-                spdlog::debug("Parse-JSON: DM action name set to {0}.", paction->m_name );
+                spdlog::debug("Parse-JSON: DM action name set to {0}.", paction->m_name);
               }
               else {
                 spdlog::error("Parse-JSON: No DM action name defined.");
@@ -3645,11 +3952,11 @@ CMDF::parseMDF_JSON(std::string &path)
 
               if (jaction.contains("code") && jaction["name"].is_number()) {
                 paction->m_code = jaction["code"];
-                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_name );
+                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_name);
               }
               else if (jaction.contains("code") && jaction["name"].is_string()) {
                 paction->m_code = vscp_readStringValue(jaction["code"]);
-                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_code );
+                spdlog::debug("Parse-JSON: DM action code set to {0}.", paction->m_code);
               }
               else {
                 spdlog::error("Parse-JSON: No DM action code defined.");
@@ -3679,13 +3986,13 @@ CMDF::parseMDF_JSON(std::string &path)
 
                   json jparam = param.value();
 
-                  //std::cout << "key: " << param.key() << ", value:" << param.value() << '\n';
+                  // std::cout << "key: " << param.key() << ", value:" << param.value() << '\n';
                   if (param.value().is_object()) {
 
                     // name
                     if (jparam.contains("name") && jparam["name"].is_string()) {
                       pparam->m_name = jparam["name"];
-                      spdlog::debug("Parse-JSON: DM action parameter name set to {0}.", pparam->m_name );
+                      spdlog::debug("Parse-JSON: DM action parameter name set to {0}.", pparam->m_name);
                     }
                     else {
                       spdlog::warn("Parse-JSON: No DM action parameter name defined. Set to default (0).");
@@ -3694,11 +4001,11 @@ CMDF::parseMDF_JSON(std::string &path)
                     // offset
                     if (jparam.contains("offset") && jparam["offset"].is_string()) {
                       pparam->m_offset = vscp_readStringValue(jparam["offset"]);
-                      spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset );
+                      spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset);
                     }
                     else if (jparam.contains("offset") && jparam["offset"].is_number()) {
                       pparam->m_offset = jparam["offset"];
-                      spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset );
+                      spdlog::debug("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset);
                     }
                     else {
                       pparam->m_offset = 0;
@@ -3708,11 +4015,11 @@ CMDF::parseMDF_JSON(std::string &path)
                     // min
                     if (jparam.contains("min") && jparam["min"].is_string()) {
                       pparam->m_min = vscp_readStringValue(jparam["min"]);
-                      spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min );
+                      spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min);
                     }
                     else if (jparam.contains("min") && jparam["min"].is_number()) {
                       pparam->m_min = jparam["min"];
-                      spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min );
+                      spdlog::debug("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min);
                     }
                     else {
                       pparam->m_min = 0;
@@ -3722,11 +4029,11 @@ CMDF::parseMDF_JSON(std::string &path)
                     // max
                     if (jparam.contains("max") && jparam["max"].is_string()) {
                       pparam->m_max = vscp_readStringValue(jparam["max"]);
-                      spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max );
+                      spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max);
                     }
                     else if (jparam.contains("max") && jparam["max"].is_string()) {
                       pparam->m_max = jparam["max"];
-                      spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max );
+                      spdlog::debug("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max);
                     }
                     else {
                       pparam->m_max = 0;
@@ -3789,17 +4096,17 @@ CMDF::parseMDF_JSON(std::string &path)
             // name
             if (jev.contains("name") && jev["name"].is_string()) {
               pev->m_name = jev["name"];
-              spdlog::debug("Parse-JSON: Event name set to {0}.", pev->m_name );              
+              spdlog::debug("Parse-JSON: Event name set to {0}.", pev->m_name);
             }
 
             // Class
             if (jev.contains("class") && jev["class"].is_string()) {
               pev->m_class = vscp_readStringValue(jev["class"]);
-              spdlog::debug("Parse-JSON: Event class set to {0}.", pev->m_class );              
+              spdlog::debug("Parse-JSON: Event class set to {0}.", pev->m_class);
             }
             else if (jev.contains("class") && jev["class"].is_number()) {
               pev->m_class = jev["class"];
-              spdlog::debug("Parse-JSON: Event class set to {0}.", pev->m_class );
+              spdlog::debug("Parse-JSON: Event class set to {0}.", pev->m_class);
             }
             else {
               spdlog::error("Parse-JSON: No event class defined.");
@@ -3809,11 +4116,11 @@ CMDF::parseMDF_JSON(std::string &path)
             // Type
             if (jev.contains("type") && jev["type"].is_string()) {
               pev->m_type = vscp_readStringValue(jev["type"]);
-              spdlog::debug("Parse-JSON: Event type set to {0}.", pev->m_type );
+              spdlog::debug("Parse-JSON: Event type set to {0}.", pev->m_type);
             }
             else if (jev.contains("type") && jev["type"].is_number()) {
               pev->m_type = jev["type"];
-              spdlog::debug("Parse-JSON: Event type set to {0}.", pev->m_type );
+              spdlog::debug("Parse-JSON: Event type set to {0}.", pev->m_type);
             }
             else {
               spdlog::error("Parse-JSON: No event type defined.");
@@ -3822,7 +4129,7 @@ CMDF::parseMDF_JSON(std::string &path)
 
             // Direction ('in'/'out')
             if (jev.contains("direction") && jev["direction"].is_string()) {
-              
+
               std::string str = jev["direction"];
               vscp_trim(str);
               vscp_makeLower(str);
@@ -3853,26 +4160,25 @@ CMDF::parseMDF_JSON(std::string &path)
               vscp_makeLower(str);
 
               if (str == "low") {
-                pev->m_priority = VSCP_PRIORITY_LOW>>5;
+                pev->m_priority = VSCP_PRIORITY_LOW >> 5;
                 spdlog::debug("Parse-JSON: Event priority set to low.");
               }
               else if (str == "medium") {
-                pev->m_priority = VSCP_PRIORITY_MEDIUM>>5;
+                pev->m_priority = VSCP_PRIORITY_MEDIUM >> 5;
                 spdlog::debug("Parse-JSON: Event priority set to medium.");
               }
               else if (str == "high") {
-                pev->m_priority = VSCP_PRIORITY_HIGH>>5;
+                pev->m_priority = VSCP_PRIORITY_HIGH >> 5;
                 spdlog::debug("Parse-JSON: Event priority set to high.");
               }
               else {
                 pev->m_priority = vscp_readStringValue(jev["priority"]) & 7;
-              spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority );
+                spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority);
               }
-              
             }
             else if (jev.contains("priority") && jev["priority"].is_number()) {
-              pev->m_priority = (uint8_t)jev["priority"] & 7;
-              spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority );
+              pev->m_priority = (uint8_t) jev["priority"] & 7;
+              spdlog::debug("Parse-JSON: Event priority set to {0}.", pev->m_priority);
             }
             else {
               pev->m_priority = 3;
@@ -3904,7 +4210,7 @@ CMDF::parseMDF_JSON(std::string &path)
                   // name
                   if (jevdata.contains("name") && jevdata["name"].is_string()) {
                     pevdata->m_name = jevdata["name"];
-                    spdlog::debug("Parse-JSON: Event name set to {0}.", pevdata->m_name );              
+                    spdlog::debug("Parse-JSON: Event name set to {0}.", pevdata->m_name);
                   }
 
                   if (getDescriptionList(jevdata, pevdata->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -3926,12 +4232,12 @@ CMDF::parseMDF_JSON(std::string &path)
                   }
 
                 } // data object
-              } // for
-            } // data array
+              }   // for
+            }     // data array
 
           } // Event object
-        } // for
-      } // Events array
+        }   // for
+      }     // Events array
       else {
         spdlog::warn("Parse-JSON: Failed to read module events");
       }
@@ -3942,7 +4248,7 @@ CMDF::parseMDF_JSON(std::string &path)
 
       if (j["module"].contains("alarms") && j["module"]["alarms"].is_array()) {
         for (auto &alarm : j["module"]["alarms"].items()) {
-          //std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
+          // std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
           if (alarm.value().is_object()) {
 
             CMDF_Bit *palarm = new CMDF_Bit();
@@ -3958,17 +4264,17 @@ CMDF::parseMDF_JSON(std::string &path)
             // name
             if (jalarm.contains("name") && jalarm["name"].is_string()) {
               palarm->m_name = jalarm["name"];
-              spdlog::debug("Parse-JSON: Alarm name set to {0}.", palarm->m_name );              
+              spdlog::debug("Parse-JSON: Alarm name set to {0}.", palarm->m_name);
             }
 
             // pos
             if (jalarm.contains("pos") && jalarm["pos"].is_string()) {
               palarm->m_pos = vscp_readStringValue(jalarm["pos"]);
-              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos );              
+              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos);
             }
             else if (jalarm.contains("pos") && jalarm["pos"].is_number()) {
               palarm->m_pos = jalarm["pos"];
-              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos );              
+              spdlog::debug("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos);
             }
             else {
               palarm->m_pos = 0;
@@ -3982,7 +4288,6 @@ CMDF::parseMDF_JSON(std::string &path)
             if (getInfoUrlList(jalarm, palarm->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
               spdlog::warn("Parse-JSON: Failed to get event data infourl.");
             }
-
           }
         }
       }
@@ -4245,9 +4550,6 @@ CMDF::parseMDF_JSON(std::string &path)
       }
     }
 
-    
-
-
   } // Module
 
   return rv;
@@ -4401,7 +4703,7 @@ CMDF::getRemoteVariable(std::string name)
   std::deque<CMDF_RemoteVariable *>::iterator iter;
   for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
     CMDF_RemoteVariable *prvar = *iter;
-    std::string rname = prvar->m_name;
+    std::string rname          = prvar->m_name;
     vscp_trim(rname);
     vscp_makeLower(rname);
     if (rname == name) {

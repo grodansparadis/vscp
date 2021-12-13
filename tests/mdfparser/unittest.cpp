@@ -17,6 +17,17 @@
 
 //-----------------------------------------------------------------------------
 
+TEST(parseMDF, Test_MDF_Download)
+{
+  CMDF mdf;
+
+  std::string temppath = "/tmp/test.mdf";
+  std::string url      = "https://www.eurosource.se/paris_010.xml";
+  ASSERT_EQ(CURLE_OK, mdf.downLoadMDF(url, temppath));
+}
+
+//-----------------------------------------------------------------------------
+
 TEST(parseMDF, Invalid_Path)
 {
   CMDF mdf;
@@ -385,6 +396,60 @@ TEST(parseMDF, XML_BOOTLOADER)
 
 //-----------------------------------------------------------------------------
 
+TEST(parseMDF, XML_REGISTERS)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/registers.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // Check # descriptions
+  ASSERT_EQ(1, mdf.getModuleDescriptionSize());
+
+  // Check # info URL's
+  ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
+
+  // Check name
+  ASSERT_TRUE(mdf.getModuleName() == "Register Test");
+
+  // Check description
+  ASSERT_TRUE(mdf.getModuleDescription("en") == "Register test description");
+
+  // Check description
+  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.grodansparadis.com/index.html");
+
+  ASSERT_EQ(12, mdf.getModuleBufferSize());
+
+  // Check Manufacturer name
+  ASSERT_TRUE(mdf.getManufacturerName() == "The company");
+
+  std::set<long> pages;
+  ASSERT_EQ(mdf.getPages(pages), 3);
+  ASSERT_EQ(pages.size(), 3);
+
+  ASSERT_EQ(mdf.getRegisterCount(0), 81);
+  ASSERT_EQ(mdf.getRegisterCount(1), 60);
+  ASSERT_EQ(mdf.getRegisterCount(2), 1);
+
+  CMDF_Register *preg = mdf.getRegister(0, 0);
+  ASSERT_NE(preg, nullptr);
+
+  ASSERT_EQ(preg->getName(), "Zone");
+  ASSERT_EQ(preg->getPage(), 0);
+  ASSERT_EQ(preg->getOffset(), 0);
+  ASSERT_EQ(preg->getSize(), 1);
+  ASSERT_EQ(preg->getSpan(), 1);
+  ASSERT_EQ(preg->getWidth(), 8);
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_STANDARD);
+  ASSERT_EQ(preg->getMin(), 0);
+  ASSERT_EQ(preg->getMax(), 255);
+  ASSERT_EQ(preg->getDefault(), "0x11");
+  ASSERT_EQ(preg->getDescription("en"), "Zone this module belongs to");
+}
+
+//-----------------------------------------------------------------------------
+
 TEST(parseMDF, REALXML)
 {
   std::string path;
@@ -464,9 +529,19 @@ TEST(parseMDF, REALXML)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 }
 
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                JSON
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 
