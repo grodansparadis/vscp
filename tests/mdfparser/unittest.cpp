@@ -720,7 +720,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   std::string path;
   CMDF mdf;
   CMDF_Register *preg;
-  std::deque<CMDF_ValueListValue *> *pValueList;
+  std::deque<CMDF_Value *> *pValueList;
   std::deque<CMDF_Bit *> *pBitList;
   CMDF_Bit *pBit;
 
@@ -882,7 +882,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(3, pValueList->size());
 
   // Check value list
-  CMDF_ValueListValue *pValue;
+  CMDF_Value *pValue;
   pValue = pValueList->at(0);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
@@ -1029,7 +1029,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   std::string path;
   CMDF mdf;
   CMDF_RemoteVariable *prvar;
-  std::deque<CMDF_ValueListValue *> *pValueList;
+  std::deque<CMDF_Value *> *pValueList;
   std::deque<CMDF_Bit *> *pBitList;
   CMDF_Bit *pBit;
 
@@ -1210,7 +1210,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_EQ(3, pValueList->size());
 
   // Check value list
-  CMDF_ValueListValue *pValue;
+  CMDF_Value *pValue;
   pValue = pValueList->at(0);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
@@ -1611,7 +1611,7 @@ TEST(parseMDF, JSON_Events)
       {
         std::deque<CMDF_Bit *> *pBitList;
         CMDF_Bit *pBit;
-        std::deque<CMDF_ValueListValue *> *pValueList;
+        std::deque<CMDF_Value *> *pValueList;
 
         // ******  Bitarray 0 ******
 
@@ -1694,7 +1694,7 @@ TEST(parseMDF, JSON_Events)
         // Check number of values in list
         ASSERT_EQ(3, pValueList->size());
 
-        CMDF_ValueListValue *pValue;
+        CMDF_Value *pValue;
 
         // Check value list
         pValue = pValueList->at(0);

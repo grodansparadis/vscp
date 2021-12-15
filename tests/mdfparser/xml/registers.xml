@@ -136,12 +136,42 @@
             <name lang="en">Sub zone</name>
             <description lang="en">Sub zone this module belongs to</description>
             <access>rw</access>
+            <valuelist>
+              <item name="Item0" value = "0x0">                 
+                  <description lang="en">Description item 0</description>                 
+                  <infourl lang="en">InfoURL item0 0</infourl>                
+              </item>
+              <item name="Item1" value = "0x1">                 
+                  <description lang="en">Description item 1</description>                 
+                  <infourl lang="en">InfoURL item0 1</infourl>                
+              </item>
+              <item name="Item2" value = "0x2">                 
+                  <description lang="en">Description item 2</description>                 
+                  <infourl lang="en">InfoURL item 2</infourl>                
+              </item>
+            </valuelist>
         </reg>
         
-        <reg page="0" offset="2" default="0" bgcolor="0xebd69d" >
-            <name lang="en">Zone channel 0</name>
-            <description lang="en">Zone for channel 0</description>
-            <access>rw</access>
+        <reg page="0" offset="2" default="0" access="rw" bgcolor="0xebd69d" >            
+            <description lang="en">page0 offset2 description</description>
+            <infourl lang="en">http://page0offset2.html</infourl>
+            <valuelist>
+              <item value = "0x0"> 
+                  <name>Item0</name>                
+                  <description lang="en">Description item 0</description>                 
+                  <infourl lang="en">InfoURL item0 0</infourl>                
+              </item>
+              <item value = "0x1">   
+                  <name>Item1</name>               
+                  <description lang="en">Description item 1</description>                 
+                  <infourl lang="en">InfoURL item0 1</infourl>                
+              </item>
+              <item value = "0x2">                 
+                  <name>Item2</name> 
+                  <description lang="en">Description item 2</description>                 
+                  <infourl lang="en">InfoURL item0 2</infourl>                
+              </item>
+            </valuelist>
         </reg>
         
         <reg page="0" offset="3" default="0" bgcolor="0xebd69d">
@@ -226,9 +256,27 @@
             Bit 7 - Reserved.
             </description>
             <access>rw</access>
-            <bit pos="0" default="false" >
+            <bit pos="0" width="2" default="2" >
                 <name lang="en">Reserved</name>
                 <description lang="en">Reserved.</description> 
+                <valuelist>
+                    <item value="0" name="Value 0">
+                      <description lang="en">Value item 0</description>
+                      <infourl lang="en">url0</infourl> 
+                    </item>  
+                    <item value="1" name="Value 1">
+                      <description lang="en">Value item 1</description>
+                      <infourl lang="en">url1</infourl> 
+                    </item>
+                    <item value="2" name="Value 2">
+                      <description lang="en">Value item 2</description>
+                      <infourl lang="en">url2</infourl> 
+                    </item>
+                    <item value="3" name="Value 3">
+                      <description lang="en">Value item 3</description>
+                      <infourl lang="en">url3</infourl> 
+                    </item>
+                </valuelist>
             </bit>
             <bit pos="1" default="false" >
                 <name lang="en">Reserved</name>

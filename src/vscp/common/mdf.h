@@ -90,21 +90,24 @@ typedef enum vscp_remote_variable_type {
 
 // Forward declarations
 class CMDF;
+class CMDF_Bit;
 
 // ----------------------------------------------------------------------------
 
 /*!
-  CMDF_ValueListValue
+  CMDF_Value
  */
 
-class CMDF_ValueListValue {
+class CMDF_Value {
 
 public:
-  CMDF_ValueListValue();
-  ~CMDF_ValueListValue();
+  CMDF_Value();
+  ~CMDF_Value();
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -198,6 +201,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -212,6 +217,12 @@ public:
     @return Bit array name
   */
   std::string getName(void) { return m_name; };
+
+  /*!
+    Set bit array name
+    @return Set array name
+  */
+  void setName(std::string& name) { m_name = name; };
 
   /*!
     Get the register description
@@ -315,7 +326,7 @@ public:
     Fetch the value definition list
     @return Value definition list
   */
-  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+  std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
 private:
   std::string m_name;
@@ -330,7 +341,7 @@ private:
   uint8_t m_max;            // 'max'      Maximum value for field (if applicable)
   mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
 
-  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -349,6 +360,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -547,7 +560,7 @@ public:
     Fetch the value definition list
     @return Value definition list
   */
-  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+  std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
   // * * * VSCP Works Special methods * * *
 
@@ -637,7 +650,7 @@ private:
   mdf_access_mode m_access;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 
   // Below are for VSCP Works use only
   long m_rowInGrid;   // Helper for display (row reg is displayed on)
@@ -664,6 +677,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -788,7 +803,7 @@ public:
     Get value list for remote variable
     @return Value list for remote variable.
   */
-  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+  std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
   /*!
     Get bit list for remote variable
@@ -854,7 +869,7 @@ private:
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -874,6 +889,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -966,7 +983,7 @@ public:
     Fetch the value definition list
     @return Value definition list
   */
-  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+  std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
 private:
   std::string m_name;                                  // Name for action parameter
@@ -979,7 +996,7 @@ private:
   // uint8_t m_width;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -999,6 +1016,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1090,6 +1109,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1205,6 +1226,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1256,7 +1279,7 @@ public:
     Fetch the value definition list
     @return Value definition list
   */
-  std::deque<CMDF_ValueListValue *> *getListValues(void) { return &m_list_value; };
+  std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
 private:
   std::string m_name;
@@ -1266,7 +1289,7 @@ private:
   uint16_t m_offset;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_ValueListValue *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -1286,6 +1309,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1417,6 +1442,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1476,6 +1503,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1526,6 +1555,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(const std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1604,6 +1635,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1661,6 +1694,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1752,6 +1787,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1909,6 +1946,8 @@ public:
 
   // Friend declarations
   friend CMDF;
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1975,6 +2014,8 @@ public:
   ~CMDF();
 
   // Friend declarations
+  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -2280,7 +2321,7 @@ public:
     @param list List to store valuelist items to
     @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
   */
-  int getValueList(json &j, std::deque<CMDF_ValueListValue *> &list);
+  int getValueList(json &j, std::deque<CMDF_Value *> &list);
 
   /*!
     Get items from description list/item
