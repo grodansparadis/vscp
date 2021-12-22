@@ -106,8 +106,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -201,8 +201,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -360,8 +360,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -677,8 +677,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -889,8 +889,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1016,8 +1016,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1109,8 +1109,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1226,8 +1226,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1309,8 +1309,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1442,8 +1442,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1503,8 +1503,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1555,8 +1555,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(const std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(const std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1635,8 +1635,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1694,8 +1694,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1787,8 +1787,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -1946,8 +1946,8 @@ public:
 
   // Friend declarations
   friend CMDF;
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -2014,8 +2014,8 @@ public:
   ~CMDF();
 
   // Friend declarations
-  friend bool __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
-  friend bool __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
   friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
@@ -2237,11 +2237,11 @@ public:
 
   /*!
       Return register definition from register + page
-      @param register Register to search for.
       @param page Page top search for.
+      @param register Register to search for.      
       @return Pointer to CMDF_Register class if found else NULL.
   */
-  CMDF_Register *getRegister(uint32_t reg, uint32_t page = 0);
+  CMDF_Register *getRegister(uint32_t page, uint32_t reg);
 
   /*!
       Get number of register pages used

@@ -398,6 +398,9 @@ TEST(parseMDF, XML_BOOTLOADER)
 
 TEST(parseMDF, XML_REGISTERS)
 {
+  CMDF_Register *preg;
+  std::deque<CMDF_Value *> *pvalues;
+  CMDF_Value *pvalue;
   std::string path;
   CMDF mdf;
 
@@ -425,14 +428,16 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_TRUE(mdf.getManufacturerName() == "The company");
 
   std::set<long> pages;
-  ASSERT_EQ(mdf.getPages(pages), 3);
-  ASSERT_EQ(pages.size(), 3);
+  ASSERT_EQ(mdf.getPages(pages), 2);
+  ASSERT_EQ(pages.size(), 2);
 
-  ASSERT_EQ(mdf.getRegisterCount(0), 81);
-  ASSERT_EQ(mdf.getRegisterCount(1), 60);
+  ASSERT_EQ(mdf.getRegisterCount(0), 4);
+  ASSERT_EQ(mdf.getRegisterCount(1), 0);
   ASSERT_EQ(mdf.getRegisterCount(2), 1);
 
-  CMDF_Register *preg = mdf.getRegister(0, 0);
+
+  // Register 0:0
+  preg = mdf.getRegister(0, 0);
   ASSERT_NE(preg, nullptr);
 
   ASSERT_EQ(preg->getName(), "Zone");
@@ -446,6 +451,53 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(preg->getMax(), 255);
   ASSERT_EQ(preg->getDefault(), "0x11");
   ASSERT_EQ(preg->getDescription("en"), "Zone this module belongs to");
+  ASSERT_EQ(preg->getForegroundColor(), 0x01000);
+  ASSERT_EQ(preg->getBackgroundColor(), 0x0003d4);
+
+  // Register 0:1
+  preg = mdf.getRegister(0, 1);
+  ASSERT_NE(preg, nullptr);
+
+  ASSERT_EQ(preg->getName(), "Sub zone");
+  ASSERT_EQ(preg->getPage(), 0);
+  ASSERT_EQ(preg->getOffset(), 1);
+  ASSERT_EQ(preg->getSize(), 1);
+  ASSERT_EQ(preg->getSpan(), 1);
+  ASSERT_EQ(preg->getWidth(), 8);
+  ASSERT_EQ(preg->getMin(), 0);
+  ASSERT_EQ(preg->getMax(), 255);
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_STANDARD);  
+  ASSERT_EQ(preg->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+  ASSERT_EQ(preg->getDefault(), "88");
+  ASSERT_EQ(preg->getDescription("en"), "Sub zone this module belongs to");
+  ASSERT_EQ(preg->getDescription("se"), "Sub zone för den här modulen");
+  ASSERT_EQ(preg->getForegroundColor(), 0);
+  ASSERT_EQ(preg->getBackgroundColor(), 0xfff3d4);
+
+  pvalues = preg->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 3);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item0");
+  ASSERT_EQ(pvalue->getValue(), "0x0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item1");
+  ASSERT_EQ(pvalue->getValue(), "0x1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item2");
+  ASSERT_EQ(pvalue->getValue(), "0x2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
 }
 
 //-----------------------------------------------------------------------------
@@ -766,7 +818,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x22, page=2
-  preg = mdf.getRegister(0x22, 2);
+  preg = mdf.getRegister(2, 0x22);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
@@ -832,7 +884,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x22, page=2
-  preg = mdf.getRegister(0x31, 2);
+  preg = mdf.getRegister(2, 0x31);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
@@ -916,7 +968,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x02, page=99
-  preg = mdf.getRegister(2, 99);
+  preg = mdf.getRegister(99, 2);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);

@@ -148,7 +148,7 @@ CMDF_RemoteVariable::clearStorage(void)
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -320,7 +320,7 @@ CMDF_Bit::clearStorage(void)
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -370,7 +370,7 @@ CMDF_Register::clearStorage(void)
   std::deque<CMDF_Bit *>::iterator iterBit;
   for (iterBit = m_list_bit.begin(); iterBit != m_list_bit.end(); ++iterBit) {
     CMDF_Bit *pRecordBit = *iterBit;
-    if (NULL != pRecordBit) {
+    if (nullptr != pRecordBit) {
       delete pRecordBit;
       pRecordBit = nullptr;
     }
@@ -382,7 +382,7 @@ CMDF_Register::clearStorage(void)
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -436,7 +436,7 @@ CMDF_Register::getDefault(uint8_t &default_value)
   if (m_strDefault.compare("UNDEF") == 0) {
     return false;
   }
-  default_value = (uint8_t) strtol(m_strDefault.c_str(), NULL, 0);
+  default_value = (uint8_t) strtol(m_strDefault.c_str(), nullptr, 0);
   return true;
 };
 
@@ -476,7 +476,7 @@ CMDF_Register::operator=(const CMDF_Register &other)
   std::deque<CMDF_Bit *>::iterator iterBit;
   for (iterBit = m_list_bit.begin(); iterBit != m_list_bit.end(); ++iterBit) {
     CMDF_Bit *pRecordBit = *iterBit;
-    if (NULL != pRecordBit) {
+    if (nullptr != pRecordBit) {
       delete pRecordBit;
       pRecordBit = nullptr;
     }
@@ -490,7 +490,7 @@ CMDF_Register::operator=(const CMDF_Register &other)
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -581,7 +581,7 @@ CMDF_ActionParameter::clearStorage(void)
   std::deque<CMDF_Bit *>::iterator iterBit;
   for (iterBit = m_list_bit.begin(); iterBit != m_list_bit.end(); ++iterBit) {
     CMDF_Bit *pRecordBit = *iterBit;
-    if (NULL != pRecordBit) {
+    if (nullptr != pRecordBit) {
       delete pRecordBit;
       pRecordBit = nullptr;
     }
@@ -593,7 +593,7 @@ CMDF_ActionParameter::clearStorage(void)
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -635,7 +635,7 @@ CMDF_Action::clearStorage(void)
   for (iterActionParam = m_list_ActionParameter.begin(); iterActionParam != m_list_ActionParameter.end();
        ++iterActionParam) {
     CMDF_ActionParameter *pRecordActionParam = *iterActionParam;
-    if (NULL != pRecordActionParam) {
+    if (nullptr != pRecordActionParam) {
       delete pRecordActionParam;
       pRecordActionParam = nullptr;
     }
@@ -713,7 +713,7 @@ CMDF_EventData::clearStorage()
   std::deque<CMDF_Bit *>::iterator iterBit;
   for (iterBit = m_list_bit.begin(); iterBit != m_list_bit.end(); ++iterBit) {
     CMDF_Bit *pRecordBit = *iterBit;
-    if (NULL != pRecordBit) {
+    if (nullptr != pRecordBit) {
       delete pRecordBit;
       pRecordBit = nullptr;
     }
@@ -724,7 +724,7 @@ CMDF_EventData::clearStorage()
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       delete pRecordValue;
       pRecordValue = nullptr;
     }
@@ -770,7 +770,7 @@ CMDF_Event::clearStorage()
   std::deque<CMDF_EventData *>::iterator iterEventData;
   for (iterEventData = m_list_eventdata.begin(); iterEventData != m_list_eventdata.end(); ++iterEventData) {
     CMDF_EventData *pRecordEventData = *iterEventData;
-    if (NULL != pRecordEventData) {
+    if (nullptr != pRecordEventData) {
       delete pRecordEventData;
       pRecordEventData = nullptr;
     }
@@ -880,7 +880,7 @@ CMDF_Manufacturer::clearStorage(void)
   std::deque<CMDF_Item *>::iterator iterPhone;
   for (iterPhone = m_list_Phone.begin(); iterPhone != m_list_Phone.end(); ++iterPhone) {
     CMDF_Item *pRecordPhone = *iterPhone;
-    if (NULL != pRecordPhone) {
+    if (nullptr != pRecordPhone) {
       delete pRecordPhone;
       pRecordPhone = nullptr;
     }
@@ -891,7 +891,7 @@ CMDF_Manufacturer::clearStorage(void)
   std::deque<CMDF_Item *>::iterator iterFax;
   for (iterFax = m_list_Fax.begin(); iterFax != m_list_Fax.end(); ++iterFax) {
     CMDF_Item *pRecordFax = *iterFax;
-    if (NULL != pRecordFax) {
+    if (nullptr != pRecordFax) {
       delete pRecordFax;
       pRecordFax = nullptr;
     }
@@ -902,7 +902,7 @@ CMDF_Manufacturer::clearStorage(void)
   std::deque<CMDF_Item *>::iterator iterEmail;
   for (iterEmail = m_list_Email.begin(); iterEmail != m_list_Email.end(); ++iterEmail) {
     CMDF_Item *pRecordEmail = *iterEmail;
-    if (NULL != pRecordEmail) {
+    if (nullptr != pRecordEmail) {
       delete pRecordEmail;
     }
   }
@@ -912,7 +912,7 @@ CMDF_Manufacturer::clearStorage(void)
   std::deque<CMDF_Item *>::iterator iterweb;
   for (iterweb = m_list_Web.begin(); iterweb != m_list_Web.end(); ++iterweb) {
     CMDF_Item *pRecordWeb = *iterweb;
-    if (NULL != pRecordWeb) {
+    if (nullptr != pRecordWeb) {
       delete pRecordWeb;
       pRecordWeb = nullptr;
     }
@@ -1035,7 +1035,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Event *>::iterator iterEvent;
   for (iterEvent = m_list_event.begin(); iterEvent != m_list_event.end(); ++iterEvent) {
     CMDF_Event *pRecordEvent = *iterEvent;
-    if (NULL != pRecordEvent) {
+    if (nullptr != pRecordEvent) {
       delete pRecordEvent;
       pRecordEvent = nullptr;
     }
@@ -1046,7 +1046,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Register *>::iterator iterRegister;
   for (iterRegister = m_list_register.begin(); iterRegister != m_list_register.end(); ++iterRegister) {
     CMDF_Register *pRecordRegister = *iterRegister;
-    if (NULL != pRecordRegister) {
+    if (nullptr != pRecordRegister) {
       delete pRecordRegister;
       pRecordRegister = nullptr;
     }
@@ -1058,7 +1058,7 @@ CMDF::clearStorage(void)
   for (iterRemoteVariable = m_list_remotevar.begin(); iterRemoteVariable != m_list_remotevar.end();
        ++iterRemoteVariable) {
     CMDF_RemoteVariable *pRecordRemoteVariable = *iterRemoteVariable;
-    if (NULL != pRecordRemoteVariable) {
+    if (nullptr != pRecordRemoteVariable) {
       delete pRecordRemoteVariable;
       pRecordRemoteVariable = nullptr;
     }
@@ -1069,7 +1069,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Bit *>::iterator iterAlarmBits;
   for (iterAlarmBits = m_list_alarm.begin(); iterAlarmBits != m_list_alarm.end(); ++iterAlarmBits) {
     CMDF_Bit *pRecordAlarmBits = *iterAlarmBits;
-    if (NULL != pRecordAlarmBits) {
+    if (nullptr != pRecordAlarmBits) {
       delete pRecordAlarmBits;
       pRecordAlarmBits = nullptr;
     }
@@ -1096,7 +1096,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Picture *>::iterator iterPicture;
   for (iterPicture = m_list_picture.begin(); iterPicture != m_list_picture.end(); ++iterPicture) {
     CMDF_Picture *pRecordPicture = *iterPicture;
-    if (NULL != pRecordPicture) {
+    if (nullptr != pRecordPicture) {
       pRecordPicture->clearStorage();
       delete pRecordPicture;
       pRecordPicture = nullptr;
@@ -1108,7 +1108,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Firmware *>::iterator iterFirmware;
   for (iterFirmware = m_list_firmware.begin(); iterFirmware != m_list_firmware.end(); ++iterFirmware) {
     CMDF_Firmware *pRecordFirmware = *iterFirmware;
-    if (NULL != pRecordFirmware) {
+    if (nullptr != pRecordFirmware) {
       pRecordFirmware->clearStorage();
       delete pRecordFirmware;
       pRecordFirmware = nullptr;
@@ -1120,7 +1120,7 @@ CMDF::clearStorage(void)
   std::deque<CMDF_Manual *>::iterator iterManual;
   for (iterManual = m_list_manual.begin(); iterManual != m_list_manual.end(); ++iterManual) {
     CMDF_Manual *pRecordManual = *iterManual;
-    if (NULL != pRecordManual) {
+    if (nullptr != pRecordManual) {
       pRecordManual->clearStorage();
       delete pRecordManual;
       pRecordManual = nullptr;
@@ -1668,10 +1668,10 @@ CMDF::getManufacturerStreetAddress(uint8_t index)
 // * * * Parser Helpers * * *
 
 bool
-__getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
+__getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
 {
   CMDF_Value *pValue = new CMDF_Value;
-  if (NULL == pValue) {
+  if (nullptr == pValue) {
     spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for value structure");
     return false;
   }
@@ -1695,10 +1695,10 @@ __getValues(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
 }
 
 bool
-__getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
+__getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
 {
   CMDF_Bit *pBits = new CMDF_Bit;
-  if (NULL == pBits) {
+  if (nullptr == pBits) {
     spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for bit structure");
     return false;
   }
@@ -1762,31 +1762,35 @@ __getBits(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
 
 // ----------------------------------------------------------------------------
 
-//std::string gToken;        // Current token                                 (gTokenList.front())
-//std::string gTokenParent;  // This is the parent to the current token       (gTokenList.at(1))
+// std::string gToken;        // Current token                                 (gTokenList.front())
+// std::string gTokenParent;  // This is the parent to the current token       (gTokenList.at(1))
 std::string gLastLanguage; // Last language ISO two diget code (name/description)
 
 std::deque<std::string> gTokenList;
 
 int gdepth_xml_parser = 0;
 
-//bool gbVscp   = false;  (gTokenList.back() == "vscp")
-//bool gbModule = false;  (gTokenList.at(gTokenList.size()-2) == "module")
+// bool gbVscp   = false;  (gTokenList.back() == "vscp")
+// bool gbModule = false;  (gTokenList.at(gTokenList.size()-2) == "module")
 
-CMDF_Item *gpItemStruct;            // Holds temporary items
-CMDF_Bit *gpBitStruct;              // Holds temporary bits
-CMDF_Value *gpValueStruct; // Holds temporary values
-CMDF_Picture *gpPictureStruct;      // Holds temporary picture items
-CMDF_Firmware *gpFirmwareStruct;    // Holds temporary firmware items
-CMDF_Manual *gpManualStruct;        // Holds temporary manual items
-CMDF_Register *gpRegisterStruct;    // Holds temporary register items
+CMDF_Item *gpItemStruct;           // Holds temporary items
+CMDF_Bit *gpBitStruct;             // Holds temporary bits
+CMDF_Value *gpValueStruct;         // Holds temporary values
+CMDF_Picture *gpPictureStruct;     // Holds temporary picture items
+CMDF_Firmware *gpFirmwareStruct;   // Holds temporary firmware items
+CMDF_Manual *gpManualStruct;       // Holds temporary manual items
+CMDF_Register *gpRegisterStruct;   // Holds temporary register items
+CMDF_RemoteVariable *gpRvarStruct; // Holds temporary remote variable items
+
+// clang-format off
 
 // ----------------------------------------------------------------------------
+
 void
 __startSetupMDFParser(void *data, const char *name, const char **attr)
 {
   CMDF *pmdf = (CMDF *) data;
-  if (NULL == pmdf) {
+  if (nullptr == pmdf) {
     spdlog::trace("ParseMDF: ---> startSetupMDFParser: Data object is invalid");
     return;
   }
@@ -1816,8 +1820,8 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
     }
   }
 
-  // Verify structure
-  if (gdepth_xml_parser >= 2 && (gTokenList.at(gTokenList.size()-2) != "module") || (gTokenList.back() != "vscp")) {
+  // Verify structure <vscp><module>.....</module></vscp>
+  if (gdepth_xml_parser >= 2 && (gTokenList.at(gTokenList.size() - 2) != "module") || (gTokenList.back() != "vscp")) {
     spdlog::error("ParseMDF: startSetupMDFParser: Invalid structure");
     return;
   }
@@ -1837,16 +1841,15 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       break;
 
     case 2:
-      if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "manufacturer")) {
-
-      }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "files")) {
+      if (currentToken == "manufacturer") {}
+      // (gTokenList.at(gTokenList.size()-2) == "module")
+      else if (currentToken == "files") {
         // picture/firmware/manual etc entries under here
       }
       // * * * NOTE! * * *
       // This is an old deprecated form with one picture element
       // Now under the <files> tag
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "picture")) {
+      else if (currentToken == "picture") {
         gpPictureStruct = new CMDF_Picture;
         if (nullptr == gpPictureStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for picture");
@@ -1873,7 +1876,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       // * * * NOTE! * * *
       // This is an old deprecated form with one firmware element
       // Now under the <files> tag
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "firmware")) {
+      else if (currentToken == "firmware") {
         gpFirmwareStruct = new CMDF_Firmware;
         if (nullptr == gpFirmwareStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for firmware");
@@ -1943,7 +1946,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       // * * * NOTE! * * *
       // This is an old deprecated form with one manual element
       // Now under the <files> tag
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "manual")) {
+      else if (currentToken == "manual") {
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
           spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for manual");
@@ -1975,25 +1978,25 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "boot")) {
+      else if (currentToken == "boot") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "registers")) {
+      else if (currentToken == "registers") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "register")) {
+      else if (currentToken == "register") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "abstractions")) {
+      else if (currentToken == "abstractions") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "remotevar")) {
+      else if (currentToken == "remotevar") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "dmatrix")) {
+      else if (currentToken == "dmatrix") {
         ;
       }
-      else if ((gTokenList.at(gTokenList.size()-2) == "module") && (currentToken == "events")) {
+      else if (currentToken == "events") {
         ;
       }
       break;
@@ -2014,7 +2017,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "web")) {
         gpItemStruct = new CMDF_Item;
       }
-      // Picture (standard format)
+      // [3] Picture (standard format)
       else if ((currentToken == "picture")) {
 
         gpPictureStruct = new CMDF_Picture;
@@ -2041,7 +2044,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
-      // Firmware  (standard format)
+      // [3] Firmware  (standard format)
       else if ((currentToken == "firmware")) {
         gpFirmwareStruct = new CMDF_Firmware;
         if (nullptr == gpFirmwareStruct) {
@@ -2109,7 +2112,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
-      // Manual  (standard format)
+      // [3] Manual  (standard format)
       else if ((currentToken == "manual")) {
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
@@ -2146,7 +2149,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "boot")) {
         ;
       }
-      // reg  (register definitions)
+      // [3] reg  (register definitions)
       else if ((currentToken == "reg")) {
         gpRegisterStruct = new CMDF_Register;
         if (nullptr == gpRegisterStruct) {
@@ -2156,6 +2159,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
         pmdf->m_list_register.push_back(gpRegisterStruct);
 
+        // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
 
           std::string attribute = attr[i + 1];
@@ -2260,31 +2264,32 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
-      // reg  (register definitions)
-      else if ((currentToken == "valuelist") && 
-               (gTokenList.at(1) == "reg") && 
-               (gpRegisterStruct != nullptr)) {
-        gpRegisterStruct = new CMDF_Register;
-        if (nullptr == gpRegisterStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for register");
-          return;
-        }
-
-        pmdf->m_list_register.push_back(gpRegisterStruct);
-      }
       break;
 
+
     case 4:
-      if ((gTokenList.at(1) == "reg") && 
-          (currentToken == "bit") && 
+
+      /*
+        <reg>
+          <bit>           <------
+            .....
+          </bit>
+        </reg>
+      */
+      if ((currentToken == "bit") && 
+          (gTokenList.at(1) == "reg") &&
           (gpRegisterStruct != nullptr)) {
 
         spdlog::trace("ParseMDF: handleMDFParserData: Bit");
 
-        if (!__getBits(&gpRegisterStruct->m_list_bit, attr)) {
+        if (!__getBitAttributes(&gpRegisterStruct->m_list_bit, attr)) {
           spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for bit structure");
           return;
         }
+
+        // Set global pointer to added value so other info can be added
+        gpBitStruct = gpRegisterStruct->m_list_bit.back();
+
       }
       /*
         <reg>
@@ -2297,12 +2302,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "valuelist") && 
                (gTokenList.at(1) == "reg") && 
                (gpRegisterStruct != nullptr)) {
- 
-        spdlog::trace("ParseMDF: handleMDFParserData: Valuelist");        
+        // Noting to do here          
+        spdlog::trace("ParseMDF: handleMDFParserData: Valuelist");
       }
       break;
 
-    case 5: 
+    case 5:
       /*
         <reg>
           <valuelist>
@@ -2317,31 +2322,29 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
         spdlog::trace("ParseMDF: handleMDFParserData: register value");
 
-        if (!__getValues(&gpRegisterStruct->m_list_value, attr)) {
+        if (!__getValueAttributes(&gpRegisterStruct->m_list_value, attr)) {
           spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register value values");
           return;
         }
 
         // Set global pointer to added value so other info can be added
         gpValueStruct = gpRegisterStruct->m_list_value.back();
-
       }
       else if ((currentToken == "valuelist") && 
-          (gTokenList.at(1) == "bit") && 
-          (gpRegisterStruct != nullptr) && 
-          (gpBitStruct != nullptr)) {
-   
+               (gTokenList.at(1) == "bit") && 
+               (gpRegisterStruct != nullptr) &&
+               (gpBitStruct != nullptr)) {
+
         spdlog::trace("ParseMDF: handleMDFParserData: bit value item");
 
-        if (!__getValues(&gpBitStruct->m_list_value, attr)) {
+        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
           spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register bit values");
           return;
         }
-        
+
         // Set global pointer to added value so other info can be added
         gpValueStruct = gpBitStruct->m_list_value.back();
-
-      }      
+      }
       break;
 
     /*
@@ -2354,11 +2357,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           </reg>
     */
     case 6:
-      if ((gTokenList.at(1) == "bit") && (currentToken == "item") && (gpRegisterStruct != nullptr)) {
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "bit") &&
+          (gpRegisterStruct != nullptr)) {
 
         spdlog::trace("ParseMDF: handleMDFParserData: Value");
 
-        if (!__getValues(&gpRegisterStruct->m_list_value, attr)) {
+        if (!__getValueAttributes(&gpRegisterStruct->m_list_value, attr)) {
           spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register bit values");
           return;
         }
@@ -2377,7 +2382,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 {
   // Get the pointer to the CMDF object
   CMDF *pmdf = (CMDF *) data;
-  if (NULL == pmdf) {
+  if (nullptr == pmdf) {
     spdlog::error("ParseMDF: ---> handleMDFParserData: Data object is invalid");
     return;
   }
@@ -2416,9 +2421,13 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       break;
 
     case 2:
+      ;
       break;
 
     case 3:
+
+      // std::cout << "3 - " << gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
       if (gTokenList.at(0) == "name") {
         spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent);
         pmdf->m_name = strContent;
@@ -2454,7 +2463,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       break;
 
-    case 4: // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix,
+    case 4: 
+    
+      // std::cout << "4 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix,
             // events
       if ((gTokenList.at(1) == "manufacturer") && (gTokenList.at(0) == "name")) {
         // Name of manufacturer
@@ -2508,13 +2521,16 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(1) == "boot" && (gTokenList.at(0) == "blockcount")) {
         pmdf->m_bootInfo.m_nBlockCount = vscp_readStringValue(strContent);
       }
+      
       break;
 
     case 5:
 
+      // std::cout << "5 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
       // manufacturer: address, telephone, fax, email, web
 
-      // manufacturer: address
+      // [5] manufacturer: address
       if (gTokenList.at(1) == "address") {
         if (gTokenList.at(0) == "street") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address street: {0}", strContent);
@@ -2541,7 +2557,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           pmdf->m_manufacturer.m_address.m_strRegion = strContent;
         }
       }
-      // manufacturer/telephone
+      // [5] manufacturer/telephone
       else if (gTokenList.at(1) == "telephone") {
         if ((gTokenList.at(0) == "number") && (gpItemStruct != nullptr)) {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
@@ -2555,8 +2571,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // manufacturer/fax
-      else if ((gTokenList.at(1) == "fax") && (gpItemStruct != NULL)) {
+      // [5] manufacturer/fax
+      else if ((gTokenList.at(1) == "fax") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "number") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
           gpItemStruct->m_name = strContent;
@@ -2568,8 +2584,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // manufacturer/email
-      else if ((gTokenList.at(1) == "email") && (gpItemStruct != NULL)) {
+      // [5] manufacturer/email
+      else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "address") {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           gpItemStruct->m_name = strContent;
@@ -2582,8 +2598,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // manufacturer/web
-      else if ((gTokenList.at(1) == "email") && (gpItemStruct != NULL)) {
+      // [5] manufacturer/web
+      else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           gpItemStruct->m_name = strContent;
@@ -2596,8 +2612,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // Picture standard format
-      else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != NULL)) {
+      // [5] Picture standard format
+      else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for firmware
           spdlog::trace("ParseMDF: handleMDFParserData: Module picture description: {0} language: {1}",
@@ -2606,8 +2622,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpPictureStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // Firmware standard format
-      else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != NULL)) {
+      // [5] Firmware standard format
+      else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for firmware
           spdlog::trace("ParseMDF: handleMDFParserData: Module firmware description: {0} language: {1}",
@@ -2616,8 +2632,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpFirmwareStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      // Manual standard format
-      else if ((gTokenList.at(1) == "manual") && (gpManualStruct != NULL)) {
+      // [5] Manual standard format
+      else if ((gTokenList.at(1) == "manual") && (gpManualStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for manual
           spdlog::trace("ParseMDF: handleMDFParserData: Module manual description: {0} language: {1}",
@@ -2626,7 +2642,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
         }
       }
-      else if ((gTokenList.at(1) == "reg") && (gpRegisterStruct != NULL)) {
+      // [5] reg
+      else if ((gTokenList.at(1) == "reg") && (gpRegisterStruct != nullptr)) {
+
+        // Old form "name"
         if (gTokenList.at(0) == "name") {
           gpRegisterStruct->m_name = strContent;
         }
@@ -2656,6 +2675,220 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRegisterStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
+      // register valuelist description/info url 
+      else if ((gTokenList.at(2) == "register") &&
+               (gTokenList.at(1) == "valuelist") && 
+               (gTokenList.at(0) == "item")) {
+        // Manual description
+        if (gpRegisterStruct != nullptr) {
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpRegisterStruct->m_mapDescription[gLastLanguage] = strContent;
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
+                        gpRegisterStruct->m_mapDescription.size());
+        }
+      }
+      break;
+
+    case 6: // name,description,item,valuelist
+
+      // std::cout << "6 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // reg/valuelist/item
+      if ((gTokenList.at(0) == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "reg")) {            
+        // Manual description
+        if (gpValueStruct != nullptr) {
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
+                        gpValueStruct->m_mapDescription.size());
+        }
+      }
+
+      // * * * reg bit * * *
+      else if ((gTokenList.at(0) == "bit") && 
+               (gTokenList.at(1) == "valuelist") && 
+               (gTokenList.at(2) == "reg")) {            
+        // Manual description
+        if (gpValueStruct != nullptr) {
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
+                        gpValueStruct->m_mapDescription.size());
+        }
+      }
+
+      // reg/bit/name  - Not preferred form (Better as attribut) 
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_name = strContent;
+      }
+      // reg/bit/description
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // reg/bit/info url
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
+      
+      // * * * action param * * *
+
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "param") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "param") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((gTokenList.at(0) == "valuelist") && 
+               (gTokenList.at(1) == "parm") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+
+      // event data
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((gTokenList.at(0) == "valuelist") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      break;
+
+    case 7:
+
+      // std::cout << "7 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // reg/valuelist/item/value *
+      if ((gTokenList.at(0) == "value") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) { 
+        gpValueStruct->m_strValue = strContent;
+      }
+      // reg/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+      }
+      // reg/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // reg/valuelist/item/infourl *
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }  
+
+      break;
+
+    case 8:
+
+      std::cout << "8 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl; 
+
+      // bit/valuelist/item/value *
+      if ((gTokenList.at(0) == "value") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gpValueStruct != nullptr)) { 
+        gpValueStruct->m_strValue = strContent;
+      }
+      // bit/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+      }
+      // bit/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // bit/valuelist/item/infourl *
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "bit") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }   
+
+      // bit/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+      }
+      // bit/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // bit/valuelist/item/infourl *
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "data") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }  
       break;
   }
 }
@@ -2668,99 +2901,381 @@ __endSetupMDFParser(void *data, const char *name)
   spdlog::trace("ParseMDF: ---> End: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
 
   // Get the pointer to the CMDF object
-  CMDF *pmdf = (CMDF *)data;
-  if (NULL == pmdf) {
+  CMDF *pmdf = (CMDF *) data;
+  if (nullptr == pmdf) {
     spdlog::trace("ParseMDF: ---> endSetupMDFParser: Data object is invalid");
     return;
   }
 
+  std::string currentToken = name;
+  vscp_trim(currentToken);
+  vscp_makeLower(currentToken);
+
   switch (gdepth_xml_parser) {
 
     case 1:
-      if (0 == strcasecmp(name, "vscp")) {
+      if (currentToken == "vscp") {
         ;
       }
       break;
 
     case 2:
-      if (0 == strcasecmp(name, "module")) {
+      if (currentToken == "module") {
         ;
       }
-      else if (0 == strcasecmp(name, "redirect")) {
+      else if (currentToken == "redirect") {
+        ;
       }
       break;
 
     case 3:
-      if (0 == strcasecmp(name, "manufacturer")) {
-        // Nothing to do
+      if (currentToken == "manufacturer") {
+        ; // Nothing to do
       }
-      else if (0 == strcasecmp(name, "firmware")) {
+      else if (currentToken == "firmware") {
         gpFirmwareStruct = nullptr;
       }
       // This is the deprecated form
-      else if (0 == strcasecmp(name, "pictures")) {
+      else if (currentToken == "pictures") {
         gpPictureStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "picture")) {
+      else if (currentToken == "picture") {
         gpPictureStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "manual")) {
+      else if (currentToken == "manual") {
         gpManualStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "registers")) {
+      else if (currentToken == "registers") {
         gpRegisterStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "register")) {
+      else if (currentToken == "register") {
         gpRegisterStruct = nullptr;
       }
       break;
 
     case 4:
-      if (0 == strcasecmp(name, "address")) {
-        // Nothing to do
+      if (currentToken == "address") {
+        ; // Nothing to do
       }
-      else if (0 == strcasecmp(name, "telephone") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "telephone") && (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Phone.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "fax") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "fax") && (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Fax.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "email") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "email") && (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Email.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if (0 == strcasecmp(name, "web") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "web") && (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Web.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if ((0 == strcasecmp(name, "reg")) && (gpRegisterStruct != nullptr)) {
+      else if ((currentToken == "reg") && (gpRegisterStruct != nullptr)) {
         // Nothing to do
         gpRegisterStruct = nullptr;
       }
       break;
 
-    case 5:
-      if ((0 == strcasecmp(name, "bit")) && (gpBitStruct != nullptr)) {
-        // Nothing to do
+    case 5: // name,description,access
+
+      //std::cout << "5 - " << gTokenList.at(2) << " " << gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // Manufacturer
+      if ((currentToken == "street") && 
+               (gTokenList.at(1) == "address") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "city") && 
+               (gTokenList.at(1) == "address") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "town") && 
+               (gTokenList.at(1) == "address") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "postcode") && 
+               (gTokenList.at(1) == "address") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "country") && 
+               (gTokenList.at(1) == "address") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "number") && 
+               (gTokenList.at(1) == "telephone") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "telephone") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "number") && 
+               (gTokenList.at(1) == "fax") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "fax") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "number") && 
+               (gTokenList.at(1) == "email") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "email") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "number") && 
+               (gTokenList.at(1) == "web") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "web") &&
+               (gTokenList.at(2) == "manufacturer") ) {
+        ;
+      }
+      // files
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "picture") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "picture") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "firmware") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "firmware") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "manual") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "manual") &&
+               (gTokenList.at(2) == "files") ) {
+        ;
+      }
+      // registers
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "access") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "reg") &&
+               (gTokenList.at(2) == "registers") ) {
+        ;
+      }
+      else if ((currentToken == "bit") && 
+               (gpBitStruct != nullptr)) {
         gpBitStruct = nullptr;
+      }
+      else if ((currentToken == "item") && 
+               (gpBitStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // Abstractions
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") && 
+               (gpRvarStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") && 
+               (gpRvarStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") && 
+               (gpRvarStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "access") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") && 
+               (gpRvarStruct != nullptr)) {
+        ;
+      }
+      break;
+
+    case 6: // name,description,item,valuelist
+
+      // std::cout << "6 - " gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // reg/valuelist/item
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "reg") &&
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // reg bit
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      // action param
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "param") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "param") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "parm") && 
+               (gTokenList.at(2) == "action") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      // event data
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "sata") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpBitStruct != nullptr)) {
+        ;
+      }
+      break;
+
+    case 7:
+
+      // std::cout << "7 - " gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+
+      // param/valuelist/item
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "param") &&
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // bit/valuelist/item
+      else if ((currentToken == "item") && 
+               (gTokenList.at(1) == "valuelist") && 
+               (gTokenList.at(2) == "bit") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // valuelist/item
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gpValueStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gpValueStruct != nullptr)) {
+        ;
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gpValueStruct != nullptr)) {
+        ;
       }
       break;
   }
 
   // Reset language for 'name' and 'description' to default
-  if ((gTokenList.at(0) == "name") || (gTokenList.at(0) == "description")) {
+  if ((gTokenList.at(0) == "name") || (gTokenList.at(0) == "description") || (gTokenList.at(0) == "infourl")) {
     gLastLanguage = "en";
   }
 
   gTokenList.pop_front(); // remove current token
   gdepth_xml_parser--;
 }
+
+// clang-format on
 
 // ----------------------------------------------------------------------------
 
@@ -2775,16 +3290,16 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 
   // Init. XML parsing globals
   gdepth_xml_parser = 0;
-  //gbVscp            = false;
-  //gbModule          = false;
-  gLastLanguage     = "en";
+
+  gLastLanguage = "en";
 
   gpItemStruct     = nullptr;
   gpPictureStruct  = nullptr;
   gpFirmwareStruct = nullptr;
   gpManualStruct   = nullptr;
-
   gpRegisterStruct = nullptr;
+  gpBitStruct      = nullptr;
+  gpValueStruct    = nullptr;
 
   // Empty old MDF information
   clearStorage();
@@ -4774,7 +5289,7 @@ CMDF::getRegisterCount(uint32_t page)
   std::deque<CMDF_Register *>::iterator iterValue;
   for (iterValue = m_list_register.begin(); iterValue != m_list_register.end(); ++iterValue) {
     CMDF_Register *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       if (page == pRecordValue->m_page)
         nregisters++;
     }
@@ -4796,7 +5311,7 @@ CMDF::getPages(std::set<long> &pages)
   for (iterValue = m_list_register.begin(); iterValue != m_list_register.end(); ++iterValue) {
 
     CMDF_Register *pRecordValue = *iterValue;
-    if (NULL != pRecordValue) {
+    if (nullptr != pRecordValue) {
       // Add page if not already in set
       if (pages.end() == pages.find(pRecordValue->m_page)) {
         pages.insert(pRecordValue->m_page);
@@ -4812,7 +5327,7 @@ CMDF::getPages(std::set<long> &pages)
 //
 
 CMDF_Register *
-CMDF::getRegister(uint32_t reg, uint32_t page)
+CMDF::getRegister(uint32_t page, uint32_t reg)
 {
   std::deque<CMDF_Register *>::iterator iter;
   for (iter = m_list_register.begin(); iter != m_list_register.end(); ++iter) {
@@ -4822,7 +5337,7 @@ CMDF::getRegister(uint32_t reg, uint32_t page)
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4846,5 +5361,5 @@ CMDF::getRemoteVariable(std::string name)
     }
   }
 
-  return NULL;
+  return nullptr;
 }
