@@ -47,6 +47,9 @@ jobs:
     - name: Update before installing packages
       run: sudo apt-get update
 
+    - name: Install libcurl and cpp wrapper for it
+      run: sudo apt-get install libcurl4-openssl-dev libcurlpp-dev  
+
     - name: Install libexpat-dev manually
       run: sudo apt-get install libexpat-dev
       
