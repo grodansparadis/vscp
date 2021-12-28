@@ -246,8 +246,6 @@ if (WIN32)
         src/vscp/common/vscpdatetime.cpp
         src/vscp/common/guid.h
         src/vscp/common/guid.cpp
-        src/vscp/common/mdf.h
-        src/vscp/common/mdf.cpp
         src/vscp/common/vscphelper.h
         src/vscp/common/vscphelper.cpp
         src/vscp/common/canal.h
@@ -304,8 +302,6 @@ else()
         src/vscp/common/vscpdatetime.cpp
         src/vscp/common/guid.h
         src/vscp/common/guid.cpp
-        src/vscp/common/mdf.h
-        src/vscp/common/mdf.cpp
         src/vscp/common/vscphelper.h
         src/vscp/common/vscphelper.cpp
         src/vscp/common/canal.h
