@@ -1672,7 +1672,7 @@ __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
 {
   CMDF_Value *pValue = new CMDF_Value;
   if (nullptr == pValue) {
-    spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for value structure");
+    spdlog::error("Parse-XML: handleMDFParserData: Failed to allocate memory for value structure");
     return false;
   }
 
@@ -1683,6 +1683,7 @@ __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
     std::string attribute = attr[i + 1];
     vscp_trim(attribute);
     vscp_makeLower(attribute);
+    //std::cout << "Attribute: " << attribute << " size: " << pvaluelist->size() << std::endl;
 
     if (0 == strcasecmp(attr[i], "name")) {
       pValue->m_name = attribute;
@@ -1699,7 +1700,7 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
 {
   CMDF_Bit *pBits = new CMDF_Bit;
   if (nullptr == pBits) {
-    spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for bit structure");
+    spdlog::error("Parse-XML: handleMDFParserData: Failed to allocate memory for bit structure");
     return false;
   }
 
@@ -1711,7 +1712,7 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
     vscp_trim(attribute);
     vscp_makeLower(attribute);
 
-    if (0 == strcasecmp(attr[i], "pos")) {
+    if (0 == strcasecmp(attr[i], "name")) {
       pBits->m_name = attribute;
     }
     else if (0 == strcasecmp(attr[i], "pos")) {
@@ -1791,11 +1792,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 {
   CMDF *pmdf = (CMDF *) data;
   if (nullptr == pmdf) {
-    spdlog::trace("ParseMDF: ---> startSetupMDFParser: Data object is invalid");
+    spdlog::trace("Parse-XML: ---> startSetupMDFParser: Data object is invalid");
     return;
   }
 
-  spdlog::trace("ParseMDF: <--- startSetupMDFParser: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
+  spdlog::trace("Parse-XML: <--- startSetupMDFParser: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
 
   // Save token
   std::string currentToken = name;
@@ -1822,7 +1823,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
   // Verify structure <vscp><module>.....</module></vscp>
   if (gdepth_xml_parser >= 2 && (gTokenList.at(gTokenList.size() - 2) != "module") || (gTokenList.back() != "vscp")) {
-    spdlog::error("ParseMDF: startSetupMDFParser: Invalid structure");
+    spdlog::error("Parse-XML: startSetupMDFParser: Invalid structure");
     return;
   }
 
@@ -1852,7 +1853,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if (currentToken == "picture") {
         gpPictureStruct = new CMDF_Picture;
         if (nullptr == gpPictureStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for picture");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for picture");
           return;
         }
         pmdf->m_list_picture.push_back(gpPictureStruct);
@@ -1879,7 +1880,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if (currentToken == "firmware") {
         gpFirmwareStruct = new CMDF_Firmware;
         if (nullptr == gpFirmwareStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for firmware");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for firmware");
           return;
         }
 
@@ -1893,52 +1894,52 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if (0 == strcasecmp(attr[i], "target")) {
             // Target for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware target: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target: {0}", attribute);
             gpFirmwareStruct->m_strTarget = attribute;
           }
           else if (0 == strcasecmp(attr[i], "targetcode")) {
             // Target for for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware target code: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target code: {0}", attribute);
             gpFirmwareStruct->m_targetCode = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "version_major")) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version major: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version major: {0}", attribute);
             gpFirmwareStruct->m_version_major = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "version_minor")) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version minor: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version minor: {0}", attribute);
             gpFirmwareStruct->m_version_minor = vscp_readStringValue(attribute);
           }
           else if ((0 == strcasecmp(attr[i], "version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version patch: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version patch: {0}", attribute);
             gpFirmwareStruct->m_version_patch = vscp_readStringValue(attribute);
           }
           else if ((0 == strcasecmp(attr[i], "url")) || (0 == strcasecmp(attr[i], "path"))) {
             // URL for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware url: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
           else if (0 == strcasecmp(attr[i], "md5sum")) {
             // MD5 for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware md5: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
           }
           else if (0 == strcasecmp(attr[i], "size")) {
             // Size for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware size: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware size: {0}", attribute);
             gpFirmwareStruct->m_size = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "date")) {
             // Date for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware date: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
             gpFirmwareStruct->m_strDate = attribute;
           }
           else if (0 == strcasecmp(attr[i], "format")) {
             // Date for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware date: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
             gpFirmwareStruct->m_strFormat = attribute;
           }
         }
@@ -1949,7 +1950,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if (currentToken == "manual") {
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for manual");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for manual");
           return;
         }
 
@@ -1963,17 +1964,17 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             // Path/url for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual path/url: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
           }
           else if (0 == strcasecmp(attr[i], "lang")) {
             // Language for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual language: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual language: {0}", attribute);
             gpManualStruct->m_strLanguage = attribute;
           }
           else if (0 == strcasecmp(attr[i], "format")) {
             // Format for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual format: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
           }
         }
@@ -2022,7 +2023,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
         gpPictureStruct = new CMDF_Picture;
         if (nullptr == gpPictureStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for picture");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for picture");
           return;
         }
 
@@ -2048,7 +2049,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "firmware")) {
         gpFirmwareStruct = new CMDF_Firmware;
         if (nullptr == gpFirmwareStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for firmware");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for firmware");
           return;
         }
 
@@ -2062,52 +2063,52 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if (0 == strcasecmp(attr[i], "target")) {
             // Target for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware target: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target: {0}", attribute);
             gpFirmwareStruct->m_strTarget = attribute;
           }
           else if (0 == strcasecmp(attr[i], "targetcode")) {
             // Target for for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware target code: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target code: {0}", attribute);
             gpFirmwareStruct->m_targetCode = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "version_major")) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version major: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version major: {0}", attribute);
             gpFirmwareStruct->m_version_major = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "version_minor")) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version minor: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version minor: {0}", attribute);
             gpFirmwareStruct->m_version_minor = vscp_readStringValue(attribute);
           }
           else if ((0 == strcasecmp(attr[i], "version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
             // Version for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware version patch: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware version patch: {0}", attribute);
             gpFirmwareStruct->m_version_patch = vscp_readStringValue(attribute);
           }
           else if ((0 == strcasecmp(attr[i], "url")) || (0 == strcasecmp(attr[i], "path"))) {
             // URL for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware url: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
           else if (0 == strcasecmp(attr[i], "md5sum")) {
             // MD5 for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware md5: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
           }
           else if (0 == strcasecmp(attr[i], "size")) {
             // Size for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware size: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware size: {0}", attribute);
             gpFirmwareStruct->m_size = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "date")) {
             // Date for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware date: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
             gpFirmwareStruct->m_strDate = attribute;
           }
           else if (0 == strcasecmp(attr[i], "format")) {
             // Date for firmware
-            spdlog::trace("ParseMDF: handleMDFParserData: Module firmware date: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
             gpFirmwareStruct->m_strFormat = attribute;
           }
         }
@@ -2116,7 +2117,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "manual")) {
         gpManualStruct = new CMDF_Manual;
         if (nullptr == gpManualStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for manual");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for manual");
           return;
         }
 
@@ -2130,17 +2131,17 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             // Path/url for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual path/url: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
           }
           else if (0 == strcasecmp(attr[i], "lang")) {
             // Language for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual language: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual language: {0}", attribute);
             gpManualStruct->m_strLanguage = attribute;
           }
           else if (0 == strcasecmp(attr[i], "format")) {
             // Format for manual
-            spdlog::trace("ParseMDF: handleMDFParserData: Module manual format: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
           }
         }
@@ -2153,7 +2154,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       else if ((currentToken == "reg")) {
         gpRegisterStruct = new CMDF_Register;
         if (nullptr == gpRegisterStruct) {
-          spdlog::error("ParseMDF: ---> startSetupMDFParser: Failed to allocate memory for register");
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for register");
           return;
         }
 
@@ -2168,27 +2169,27 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if (0 == strcasecmp(attr[i], "name")) {
             // Register name
-            spdlog::trace("ParseMDF: handleMDFParserData: Register name: {0}", attribute);
-            gpRegisterStruct->m_name = vscp_readStringValue(attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register name: {0}", attribute);
+            gpRegisterStruct->m_name = attribute;
           }
           else if (0 == strcasecmp(attr[i], "page")) {
             // Register page
-            spdlog::trace("ParseMDF: handleMDFParserData: Register page: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register page: {0}", attribute);
             gpRegisterStruct->m_page = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "offset")) {
             // Register offset
-            spdlog::trace("ParseMDF: handleMDFParserData: Register offset: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register offset: {0}", attribute);
             gpRegisterStruct->m_offset = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "span")) {
             // Register span
-            spdlog::trace("ParseMDF: handleMDFParserData: Register span: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register span: {0}", attribute);
             gpRegisterStruct->m_span = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "width")) {
             // Register width
-            spdlog::trace("ParseMDF: handleMDFParserData: Register width: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register width: {0}", attribute);
             gpRegisterStruct->m_width = vscp_readStringValue(attribute);
             if (gpRegisterStruct->m_width > 8) {
               gpRegisterStruct->m_width = 8;
@@ -2196,7 +2197,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
           else if (0 == strcasecmp(attr[i], "default")) {
             // Register default
-            spdlog::trace("ParseMDF: handleMDFParserData: Register default: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register default: {0}", attribute);
             gpRegisterStruct->m_strDefault = attribute;
           }
           else if (0 == strcasecmp(attr[i], "access")) {
@@ -2220,17 +2221,17 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
           else if (0 == strcasecmp(attr[i], "min")) {
             // Register min
-            spdlog::trace("ParseMDF: handleMDFParserData: Register min: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register min: {0}", attribute);
             gpRegisterStruct->m_min = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "max")) {
             // Register max
-            spdlog::trace("ParseMDF: handleMDFParserData: Register max: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register max: {0}", attribute);
             gpRegisterStruct->m_max = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "type")) {
             // Register type
-            spdlog::trace("ParseMDF: handleMDFParserData: Register type: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register type: {0}", attribute);
             std::string strRegType = attribute;
             vscp_trim(strRegType);
             vscp_makeLower(strRegType);
@@ -2254,13 +2255,153 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
           else if (0 == strcasecmp(attr[i], "fgcolor")) {
             // Register foreground color
-            spdlog::trace("ParseMDF: handleMDFParserData: Register fgcolor: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register fgcolor: {0}", attribute);
             gpRegisterStruct->m_fgcolor = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "bgcolor")) {
             // Register background color
-            spdlog::trace("ParseMDF: handleMDFParserData: Register bgcolor: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Register bgcolor: {0}", attribute);
             gpRegisterStruct->m_bgcolor = vscp_readStringValue(attribute);
+          }
+        }
+      }
+      // [3] reg  (register definitions)
+      else if ((currentToken == "remotevar") || (currentToken == "abstraction")) {
+        gpRvarStruct = new CMDF_RemoteVariable;
+        if (nullptr == gpRvarStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for remote variable");
+          return;
+        }
+
+        pmdf->m_list_remotevar.push_back(gpRvarStruct);
+
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "name")) {
+            // Remote variable name
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable name: {0}", attribute);
+            gpRvarStruct->m_name = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "default")) {
+            // Remote variable default value
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable default: {0}", attribute);
+            gpRvarStruct->m_strDefault = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "bitpos")) {
+            // Remote variable bit position for boolean
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bitpos: {0}", attribute);
+            gpRvarStruct->m_bitpos = vscp_readStringValue(attribute) & 7;
+          }
+          else if (0 == strcasecmp(attr[i], "size")) {
+            // Remote variable string max size
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable string max size: {0}", attribute);
+            gpRvarStruct->m_size = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "access")) {
+            // Remote variable access
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable access: {0}", attribute);
+            gpRvarStruct->m_size = vscp_readStringValue(attribute);
+            gpRvarStruct->m_access = MDF_REG_ACCESS_NONE;
+            if (attribute == "w") {
+              gpRvarStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+              spdlog::trace("Parse-XML: Register access: Read Only");
+            }
+            else if (attribute == "r") {
+              gpRvarStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
+              spdlog::trace("Parse-XML: Register access: Write Only");
+            }
+            else if (attribute == "rw") {
+              gpRvarStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
+              spdlog::trace("Parse-XML: Register access: Read/Write");
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "type")) {
+            // Remote variable type
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+            if (attribute == "string") {
+              gpRvarStruct->m_type = remote_variable_type_string;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", gpRvarStruct->m_type);
+            }
+            else if (attribute == "bool") {
+              gpRvarStruct->m_type = remote_variable_type_boolean;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "int8") || (attribute == "int8_t")) {
+              gpRvarStruct->m_type = remote_variable_type_int8_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "uint8") || (attribute == "uint8_t")) {
+              gpRvarStruct->m_type = remote_variable_type_uint8_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
+              gpRvarStruct->m_type = remote_variable_type_int16_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "uint16") || (attribute == "uint16_t")) {
+              gpRvarStruct->m_type = remote_variable_type_uint16_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
+              gpRvarStruct->m_type = remote_variable_type_int32_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
+              gpRvarStruct->m_type = remote_variable_type_uint32_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
+              gpRvarStruct->m_type = remote_variable_type_int64_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", gpRvarStruct->m_type);
+            }
+            else if ((attribute == "uint64") || (attribute == "uint64_t")) {
+              gpRvarStruct->m_type = remote_variable_type_uint64_t;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", gpRvarStruct->m_type);
+            }
+            else if (attribute == "float") {
+              gpRvarStruct->m_type = remote_variable_type_float;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", gpRvarStruct->m_type);
+            }
+            else if (attribute == "double") {
+              gpRvarStruct->m_type = remote_variable_type_double;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", gpRvarStruct->m_type);
+            }
+            else if (attribute == "date") {
+              gpRvarStruct->m_type = remote_variable_type_date;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", gpRvarStruct->m_type);
+            }
+            else if (attribute == "time") {
+              gpRvarStruct->m_type = remote_variable_type_time;
+              spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", gpRvarStruct->m_type);
+            }
+            else {
+              gpRvarStruct->m_type = remote_variable_type_unknown;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "page")) {
+            // Register page
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+            gpRvarStruct->m_page = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "offset")) {
+            // Register offset
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+            gpRvarStruct->m_offset = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "fgcolor")) {
+            // Register foreground color
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+            gpRvarStruct->m_fgcolor = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "bgcolor")) {
+            // Register background color
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bgcolor: {0}", attribute);
+            gpRvarStruct->m_bgcolor = vscp_readStringValue(attribute);
           }
         }
       }
@@ -2280,10 +2421,10 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           (gTokenList.at(1) == "reg") &&
           (gpRegisterStruct != nullptr)) {
 
-        spdlog::trace("ParseMDF: handleMDFParserData: Bit");
+        spdlog::trace("Parse-XML: handleMDFParserData: Bit");
 
         if (!__getBitAttributes(&gpRegisterStruct->m_list_bit, attr)) {
-          spdlog::error("ParseMDF: handleMDFParserData: Failed to allocate memory for bit structure");
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to allocate memory for bit structure");
           return;
         }
 
@@ -2303,7 +2444,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
                (gTokenList.at(1) == "reg") && 
                (gpRegisterStruct != nullptr)) {
         // Noting to do here          
-        spdlog::trace("ParseMDF: handleMDFParserData: Valuelist");
+        spdlog::trace("Parse-XML: handleMDFParserData: Valuelist start");
       }
       break;
 
@@ -2318,12 +2459,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       */
       if ((currentToken == "item") && 
           (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "reg") &&
           (gpRegisterStruct != nullptr)) {
 
-        spdlog::trace("ParseMDF: handleMDFParserData: register value");
+        spdlog::trace("Parse-XML: handleMDFParserData: register value");
 
         if (!__getValueAttributes(&gpRegisterStruct->m_list_value, attr)) {
-          spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register value values");
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register value values");
           return;
         }
 
@@ -2332,22 +2474,18 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
       else if ((currentToken == "valuelist") && 
                (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "reg") &&
                (gpRegisterStruct != nullptr) &&
                (gpBitStruct != nullptr)) {
-
-        spdlog::trace("ParseMDF: handleMDFParserData: bit value item");
-
-        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
-          spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register bit values");
-          return;
-        }
-
-        // Set global pointer to added value so other info can be added
-        gpValueStruct = gpBitStruct->m_list_value.back();
+        // Noting to do here
+        spdlog::trace("Parse-XML: handleMDFParserData: bit value list starts");
       }
       break;
 
-    /*
+    
+    case 6:
+
+      /*
           <reg>
             <bit>
               <valuelist>
@@ -2356,19 +2494,25 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             </bit>
           </reg>
     */
-    case 6:
-      if ((currentToken == "item") && 
-          (gTokenList.at(1) == "bit") &&
-          (gpRegisterStruct != nullptr)) {
+    if ((currentToken == "item") && 
+        (gTokenList.at(1) == "valuelist") &&
+        (gTokenList.at(2) == "bit") &&
+        (gTokenList.at(3) == "reg") &&
+        (gpRegisterStruct != nullptr) &&
+        (gpBitStruct != nullptr)) {
 
-        spdlog::trace("ParseMDF: handleMDFParserData: Value");
+      spdlog::trace("Parse-XML: handleMDFParserData: Value");
 
-        if (!__getValueAttributes(&gpRegisterStruct->m_list_value, attr)) {
-          spdlog::error("ParseMDF: handleMDFParserData: Failed to parse register bit values");
-          return;
-        }
+      //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+      if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+        spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+        return;
       }
-      break;
+
+      // Set global pointer to added value so other info can be added
+      gpValueStruct = gpBitStruct->m_list_value.back();
+    }
+    break;
 
   } // switch depth
 
@@ -2383,19 +2527,19 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
   // Get the pointer to the CMDF object
   CMDF *pmdf = (CMDF *) data;
   if (nullptr == pmdf) {
-    spdlog::error("ParseMDF: ---> handleMDFParserData: Data object is invalid");
+    spdlog::error("Parse-XML: ---> handleMDFParserData: Data object is invalid");
     return;
   }
 
   // Must be some content to work on
   if (!content) {
-    spdlog::error("ParseMDF: ---> handleMDFParserData: No content");
+    spdlog::error("Parse-XML: ---> handleMDFParserData: No content");
     return;
   }
 
   // No use to work without the <vscp> tag
   if (!(gTokenList.back() == "vscp")) {
-    spdlog::error("ParseMDF: ---> handleMDFParserData: No vscp tag");
+    spdlog::error("Parse-XML: ---> handleMDFParserData: No vscp tag");
     return;
   }
 
@@ -2405,17 +2549,17 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
     return;
   }
 
-  spdlog::trace("ParseMDF: XML Data: {}", strContent);
+  spdlog::trace("Parse-XML: XML Data: {}", strContent);
 
   switch (gdepth_xml_parser) {
 
     case 1: // On module level
       if (gTokenList.at(0) == "redirect") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module redirect: {0}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module redirect: {0}", strContent);
         pmdf->m_redirectUrl = strContent;
       }
       else if (gTokenList.at(0) == "name") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
         pmdf->m_name = strContent;
       }
       break;
@@ -2429,36 +2573,36 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // std::cout << "3 - " << gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
 
       if (gTokenList.at(0) == "name") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
         pmdf->m_name = strContent;
       }
       else if (gTokenList.at(0) == "model") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         pmdf->m_strModule_Model = strContent;
       }
       else if (gTokenList.at(0) == "version") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module name: {0}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         pmdf->m_strModule_Version = strContent;
       }
       else if (gTokenList.at(0) == "changed") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module Changedate: {0}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module Changedate: {0}", strContent);
         pmdf->m_strModule_changeDate = strContent;
       }
       else if (gTokenList.at(0) == "description") {
         if (gTokenList.at(1) == "module") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module Description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Module Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           pmdf->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Module Description size: {0}", pmdf->m_mapDescription.size());
+          spdlog::trace("Parse-XML: handleMDFParserData: Module Description size: {0}", pmdf->m_mapDescription.size());
         }
       }
       else if (gTokenList.at(0) == "infourl") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
         pmdf->m_mapInfoURL[gLastLanguage] = strContent;
       }
       else if (gTokenList.at(0) == "buffersize") {
-        spdlog::trace("ParseMDF: handleMDFParserData: Module buffer size: {0}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module buffer size: {0}", strContent);
         pmdf->m_module_bufferSize = vscp_readStringValue(strContent);
       }
       break;
@@ -2471,7 +2615,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             // events
       if ((gTokenList.at(1) == "manufacturer") && (gTokenList.at(0) == "name")) {
         // Name of manufacturer
-        spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer name: {0} language: {1}",
+        spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer name: {0} language: {1}",
                       strContent,
                       gLastLanguage);
         pmdf->m_manufacturer.m_strName = strContent;
@@ -2480,11 +2624,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(1) == "picture" && (gTokenList.at(0) == "description")) {
         // Picture description
         if (gpPictureStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Picture Description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Picture Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpPictureStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Picture  Description size: {0}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Picture  Description size: {0}",
                         gpPictureStruct->m_mapDescription.size());
         }
       }
@@ -2492,11 +2636,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(1) == "firmware" && (gTokenList.at(0) == "description")) {
         // Firmware description
         if (gpFirmwareStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Firmware Description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Firmware Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpFirmwareStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Firmware  Description size: {0}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Firmware  Description size: {0}",
                         gpFirmwareStruct->m_mapDescription.size());
         }
       }
@@ -2504,11 +2648,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(1) == "manual" && (gTokenList.at(0) == "description")) {
         // Manual description
         if (gpManualStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Manual Description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Manual Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Manual Description size: {0}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Manual Description size: {0}",
                         gpManualStruct->m_mapDescription.size());
         }
       }
@@ -2533,39 +2677,39 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // [5] manufacturer: address
       if (gTokenList.at(1) == "address") {
         if (gTokenList.at(0) == "street") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address street: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address street: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strStreet = strContent;
         }
         else if (gTokenList.at(0) == "city") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address city: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address city: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strCity = strContent;
         }
         else if (gTokenList.at(0) == "town") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address town: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address town: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strTown = strContent;
         }
         else if (gTokenList.at(0) == "postcode") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address postcode: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address postcode: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strPostCode = strContent;
         }
         else if (gTokenList.at(0) == "country") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address country: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address country: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strCountry = strContent;
         }
         else if (gTokenList.at(0) == "region") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address region: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address region: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strRegion = strContent;
         }
       }
       // [5] manufacturer/telephone
       else if (gTokenList.at(1) == "telephone") {
         if ((gTokenList.at(0) == "number") && (gpItemStruct != nullptr)) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
-            "ParseMDF: handleMDFParserData: Module manufacturer address telephone description: {0} Language: {1}",
+            "Parse-XML: handleMDFParserData: Module manufacturer address telephone description: {0} Language: {1}",
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2574,11 +2718,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // [5] manufacturer/fax
       else if ((gTokenList.at(1) == "fax") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "number") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}",
                         strContent,
                         gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2587,12 +2731,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // [5] manufacturer/email
       else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "address") {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
-            "ParseMDF: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
+            "Parse-XML: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2601,12 +2745,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // [5] manufacturer/web
       else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manufacturer email address: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
-            "ParseMDF: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
+            "Parse-XML: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2616,7 +2760,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for firmware
-          spdlog::trace("ParseMDF: handleMDFParserData: Module picture description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpPictureStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2626,7 +2770,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for firmware
-          spdlog::trace("ParseMDF: handleMDFParserData: Module firmware description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Module firmware description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpFirmwareStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2636,7 +2780,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "manual") && (gpManualStruct != nullptr)) {
         if (gTokenList.at(0) == "description") {
           // Description for manual
-          spdlog::trace("ParseMDF: handleMDFParserData: Module manual description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manual description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
@@ -2648,6 +2792,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         // Old form "name"
         if (gTokenList.at(0) == "name") {
           gpRegisterStruct->m_name = strContent;
+          vscp_trim(gpRegisterStruct->m_name);
+          vscp_makeLower(gpRegisterStruct->m_name);
         }
         else if (gTokenList.at(0) == "access") {
           // Register access
@@ -2675,17 +2821,53 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRegisterStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
+      // [5] reg
+      else if (((gTokenList.at(1) == "remotevar") || (gTokenList.at(1) == "abstraction")) && 
+               (gpRvarStruct != nullptr)) {
+
+        // Old form "name"
+        if (gTokenList.at(0) == "name") {
+          gpRvarStruct->m_name = strContent;
+          vscp_trim(gpRvarStruct->m_name);
+          vscp_makeLower(gpRvarStruct->m_name);
+        }
+        else if (gTokenList.at(0) == "access") {
+          // Register access
+          std::string strAccess = strContent;
+          vscp_trim(strAccess);
+          vscp_makeLower(strAccess);
+          gpRvarStruct->m_access = MDF_REG_ACCESS_NONE;
+          if (strAccess == "w") {
+            gpRvarStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
+            spdlog::debug("Parse-XML: Register access: Read Only");
+          }
+          else if (strAccess == "r") {
+            gpRvarStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
+            spdlog::debug("Parse-XML: Register access: Write Only");
+          }
+          else if (strAccess == "rw") {
+            gpRvarStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
+            spdlog::debug("Parse-XML: Register access: Read/Write");
+          }
+        }
+        else if (gTokenList.at(0) == "description") {
+          gpRvarStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        }
+      }
       // register valuelist description/info url 
       else if ((gTokenList.at(2) == "register") &&
                (gTokenList.at(1) == "valuelist") && 
                (gTokenList.at(0) == "item")) {
         // Manual description
         if (gpRegisterStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpRegisterStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
+          spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description size: {0}",
                         gpRegisterStruct->m_mapDescription.size());
         }
       }
@@ -2698,31 +2880,25 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // reg/valuelist/item
       if ((gTokenList.at(0) == "item") && 
           (gTokenList.at(1) == "valuelist") && 
-          (gTokenList.at(2) == "reg")) {            
+          (gTokenList.at(2) == "reg") &&
+          (gpValueStruct != nullptr) ) {            
         // Manual description
-        if (gpValueStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
-                        strContent,
-                        gLastLanguage);
-          gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
-                        gpValueStruct->m_mapDescription.size());
-        }
+        spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+                      strContent,
+                      gLastLanguage);
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
       }
 
       // * * * reg bit * * *
       else if ((gTokenList.at(0) == "bit") && 
                (gTokenList.at(1) == "valuelist") && 
-               (gTokenList.at(2) == "reg")) {            
+               (gTokenList.at(2) == "reg") &&
+               (gpValueStruct != nullptr)) {            
         // Manual description
-        if (gpValueStruct != nullptr) {
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description: {0} language: {1}",
-                        strContent,
-                        gLastLanguage);
-          gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("ParseMDF: handleMDFParserData: Register valuelist Description size: {0}",
-                        gpValueStruct->m_mapDescription.size());
-        }
+        spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
+                      strContent,
+                      gLastLanguage);
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
       }
 
       // reg/bit/name  - Not preferred form (Better as attribut) 
@@ -2731,6 +2907,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
+        vscp_trim(gpBitStruct->m_name);
+        vscp_makeLower(gpBitStruct->m_name);
       }
       // reg/bit/description
       else if ((gTokenList.at(0) == "description") && 
@@ -2740,7 +2918,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
       }
       // reg/bit/info url
-      else if ((gTokenList.at(0) == "description") && 
+      else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
@@ -2808,6 +2986,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "reg") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
       }
       // reg/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -2825,12 +3005,19 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }  
+      else if ((gTokenList.at(0) == "item") && 
+               (gTokenList.at(1) == "valuelist") && 
+               (gTokenList.at(2) == "bit") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) {
+        gpItemStruct = new CMDF_Item;
+      } 
 
       break;
 
     case 8:
 
-      std::cout << "8 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl; 
+      //std::cout << "8 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl; 
 
       // bit/valuelist/item/value *
       if ((gTokenList.at(0) == "value") && 
@@ -2847,6 +3034,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "bit") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
       }
       // bit/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -2872,6 +3061,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "data") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
       }
       // bit/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -2898,12 +3089,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 void
 __endSetupMDFParser(void *data, const char *name)
 {
-  spdlog::trace("ParseMDF: ---> End: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
+  spdlog::trace("Parse-XML: ---> End: Tag: {0} Depth: {1}", name, gdepth_xml_parser);
 
   // Get the pointer to the CMDF object
   CMDF *pmdf = (CMDF *) data;
   if (nullptr == pmdf) {
-    spdlog::trace("ParseMDF: ---> endSetupMDFParser: Data object is invalid");
+    spdlog::trace("Parse-XML: ---> endSetupMDFParser: Data object is invalid");
     return;
   }
 
@@ -2950,7 +3141,7 @@ __endSetupMDFParser(void *data, const char *name)
       }
       else if (currentToken == "register") {
         gpRegisterStruct = nullptr;
-      }
+      }      
       break;
 
     case 4:
@@ -2980,6 +3171,12 @@ __endSetupMDFParser(void *data, const char *name)
       else if ((currentToken == "reg") && (gpRegisterStruct != nullptr)) {
         // Nothing to do
         gpRegisterStruct = nullptr;
+      }
+      else if ((currentToken == "abstraction") && (gpRvarStruct != nullptr)) {
+        gpRvarStruct = nullptr;
+      }
+      else if ((currentToken == "remotevar") && (gpRvarStruct != nullptr)) {
+        gpRvarStruct = nullptr;
       }
       break;
 
@@ -3088,41 +3285,68 @@ __endSetupMDFParser(void *data, const char *name)
       else if ((currentToken == "name") && 
                (gTokenList.at(1) == "reg") &&
                (gTokenList.at(2) == "registers") ) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "description") && 
                (gTokenList.at(1) == "reg") &&
                (gTokenList.at(2) == "registers") ) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "infourl") && 
                (gTokenList.at(1) == "reg") &&
                (gTokenList.at(2) == "registers") ) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "access") && 
                (gTokenList.at(1) == "reg") &&
                (gTokenList.at(2) == "registers") ) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "valuelist") && 
                (gTokenList.at(1) == "reg") &&
                (gTokenList.at(2) == "registers") ) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "bit") && 
                (gTokenList.at(1) == "reg") &&
-               (gTokenList.at(2) == "registers") ) {
-        ;
-      }
-      else if ((currentToken == "bit") && 
-               (gpBitStruct != nullptr)) {
+               (gTokenList.at(2) == "registers") &&
+               (gpBitStruct != nullptr) ) {
         gpBitStruct = nullptr;
       }
-      else if ((currentToken == "item") && 
-               (gpBitStruct != nullptr)) {
-        gpValueStruct = nullptr;
+
+      // remotevar
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") ) {
+        // No need to do anything here
       }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") ) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") ) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "access") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") ) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") ) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "remotevar") &&
+               (gTokenList.at(2) == "remotevars") &&
+               (gpBitStruct != nullptr) ) {
+        gpBitStruct = nullptr;
+      }
+
       // Abstractions
       else if ((currentToken == "name") && 
                (gTokenList.at(1) == "abstraction") &&
@@ -3148,13 +3372,25 @@ __endSetupMDFParser(void *data, const char *name)
                (gpRvarStruct != nullptr)) {
         ;
       }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") ) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "abstraction") &&
+               (gTokenList.at(2) == "abstractions") &&
+               (gpBitStruct != nullptr) ) {
+        gpBitStruct = nullptr;
+      }
       break;
 
     case 6: // name,description,item,valuelist
 
       // std::cout << "6 - " gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
 
-      // reg/valuelist/item
+      // registers
+
       if ((currentToken == "item") && 
           (gTokenList.at(1) == "valuelist") && 
           (gTokenList.at(2) == "reg") &&
@@ -3166,27 +3402,97 @@ __endSetupMDFParser(void *data, const char *name)
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "description") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        ;
+        // No need to do anything here
       }
       else if ((currentToken == "valuelist") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        ;
+        // No need to do anything here
       }
+
+      // remotevar
+
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "remotevar") &&
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // reg bit
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "remotevar") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "remotevar") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "remotevar") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "remotevar") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+
+      // abstraction
+
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "abstraction") &&
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
+      // reg bit
+      else if ((currentToken == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "abstraction") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "abstraction") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "abstraction") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "abstraction") &&
+               (gpBitStruct != nullptr)) {
+        // No need to do anything here
+      }
+
       // action param
+
       else if ((currentToken == "description") && 
                (gTokenList.at(1) == "param") && 
                (gTokenList.at(2) == "action") &&
@@ -3234,15 +3540,15 @@ __endSetupMDFParser(void *data, const char *name)
       if ((currentToken == "item") && 
           (gTokenList.at(1) == "valuelist") && 
           (gTokenList.at(2) == "param") &&
-          (gpValueStruct != nullptr)) {
-        gpValueStruct = nullptr;
+          (gpItemStruct != nullptr)) {
+        gpItemStruct = nullptr;
       }
       // bit/valuelist/item
       else if ((currentToken == "item") && 
                (gTokenList.at(1) == "valuelist") && 
                (gTokenList.at(2) == "bit") &&
-               (gpValueStruct != nullptr)) {
-        gpValueStruct = nullptr;
+               (gpItemStruct != nullptr)) {
+        gpItemStruct = nullptr;
       }
       // valuelist/item
       else if ((currentToken == "name") && 
@@ -3264,6 +3570,15 @@ __endSetupMDFParser(void *data, const char *name)
         ;
       }
       break;
+
+    case 8:
+      if ( (gTokenList.at(0) == "item") && 
+               (gTokenList.at(1) == "valuelist") &&
+               (gTokenList.at(2) == "bit") &&
+               (gTokenList.at(3) == "reg") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }  
   }
 
   // Reset language for 'name' and 'description' to default
@@ -3422,6 +3737,8 @@ CMDF::getValueList(json &j, std::deque<CMDF_Value *> &list)
 
         if (jvalue.contains("name") && jvalue["name"].is_string()) {
           pvalue->m_name = jvalue["name"];
+          vscp_trim(pvalue->m_name);
+          vscp_makeLower(pvalue->m_name);
           spdlog::debug("Parse-JSON: Value list name: {0}", pvalue->m_name);
         }
         else {
@@ -3480,6 +3797,8 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
 
         if (j.contains("name") && j["name"].is_string()) {
           pbit->m_name = j["name"];
+          vscp_trim(pbit->m_name);
+          vscp_makeLower(pbit->m_name);
           spdlog::debug("Parse-JSON: Bitlist name: {0}", pbit->m_name);
         }
         else {
@@ -4097,6 +4416,8 @@ CMDF::parseMDF_JSON(std::string &path)
             // Register name
             if (jreg.contains("name") && jreg["name"].is_string()) {
               preg->m_name = jreg["name"];
+              vscp_trim(preg->m_name);
+              vscp_makeLower(preg->m_name);
               spdlog::info("Parse-JSON: Register name set to {0}.", preg->m_name);
             }
             else {
@@ -4192,6 +4513,8 @@ CMDF::parseMDF_JSON(std::string &path)
             // Remote variable name
             if (jrvar.contains("name") && jrvar["name"].is_string()) {
               prvar->m_name = jrvar["name"];
+              vscp_trim(prvar->m_name);
+              vscp_makeLower(prvar->m_name);
               spdlog::debug("Parse-JSON: Remote variable name set to {}.", prvar->m_name);
             }
             else {
@@ -4593,6 +4916,8 @@ CMDF::parseMDF_JSON(std::string &path)
 
               if (jaction.contains("name") && jaction["name"].is_string()) {
                 paction->m_name = jaction["name"];
+                vscp_trim(paction->m_name);
+                vscp_makeLower(paction->m_name);
                 spdlog::debug("Parse-JSON: DM action name set to {0}.", paction->m_name);
               }
               else {
@@ -4642,6 +4967,8 @@ CMDF::parseMDF_JSON(std::string &path)
                     // name
                     if (jparam.contains("name") && jparam["name"].is_string()) {
                       pparam->m_name = jparam["name"];
+                      vscp_trim(pparam->m_name);
+                      vscp_makeLower(pparam->m_name);
                       spdlog::debug("Parse-JSON: DM action parameter name set to {0}.", pparam->m_name);
                     }
                     else {
@@ -4746,6 +5073,8 @@ CMDF::parseMDF_JSON(std::string &path)
             // name
             if (jev.contains("name") && jev["name"].is_string()) {
               pev->m_name = jev["name"];
+              vscp_trim(pev->m_name);
+              vscp_makeLower(pev->m_name);
               spdlog::debug("Parse-JSON: Event name set to {0}.", pev->m_name);
             }
 
@@ -4860,6 +5189,8 @@ CMDF::parseMDF_JSON(std::string &path)
                   // name
                   if (jevdata.contains("name") && jevdata["name"].is_string()) {
                     pevdata->m_name = jevdata["name"];
+                    vscp_trim(pevdata->m_name);
+                    vscp_makeLower(pevdata->m_name);
                     spdlog::debug("Parse-JSON: Event name set to {0}.", pevdata->m_name);
                   }
 
@@ -4914,6 +5245,8 @@ CMDF::parseMDF_JSON(std::string &path)
             // name
             if (jalarm.contains("name") && jalarm["name"].is_string()) {
               palarm->m_name = jalarm["name"];
+              vscp_trim(palarm->m_name);
+              vscp_makeLower(palarm->m_name);
               spdlog::debug("Parse-JSON: Alarm name set to {0}.", palarm->m_name);
             }
 
@@ -5223,11 +5556,11 @@ CMDF::parseMDF(std::string &path)
   int rv = VSCP_ERROR_ERROR;
   std::ifstream ifs;
 
-  spdlog::debug("parseMDF: Parsing MDF file {}", path);
+  spdlog::debug("Parse-XML: Parsing MDF file {}", path);
 
   // Check if file exists
   if (!vscp_fileExists(path)) {
-    spdlog::debug("parseMDF: MDF file {} does not exist", path);
+    spdlog::debug("Parse-XML: MDF file {} does not exist", path);
     return VSCP_ERROR_INVALID_PATH;
   }
 
@@ -5242,7 +5575,7 @@ CMDF::parseMDF(std::string &path)
     ifs.open(path, std::ifstream::in);
   }
   catch (...) {
-    spdlog::error("parseMDF: Failed to open file {}", path);
+    spdlog::error("Parse-XML: Failed to open file {}", path);
     return VSCP_ERROR_NOT_OPEN;
   }
 
@@ -5251,26 +5584,26 @@ CMDF::parseMDF(std::string &path)
 
   while (std::getline(ifs, str)) {
     // if (!ifs.gcount()) {
-    //   spdlog::error("parseMDF: Failed to read file {}", path);
+    //   spdlog::error("Parse-XML: Failed to read file {}", path);
     //   ifs.close();
     //   return false;
     // }
     vscp_trim(str);
     if ((pos = str.find('{')) != std::string::npos) {
-      spdlog::debug("parseMDF: MDF file format is JSON");
+      spdlog::debug("Parse-XML: MDF file format is JSON");
       ifs.close();
       rv = parseMDF_JSON(path);
       break;
     }
     else if ((pos = str.find('<')) != std::string::npos) {
-      spdlog::debug("parseMDF: MDF file format is XML");
+      spdlog::debug("Parse-XML: MDF file format is XML");
       rv = parseMDF_XML(ifs);
       ifs.close();
       break;
     }
     else {
       rv = VSCP_ERROR_INVALID_SYNTAX;
-      spdlog::error("parseMDF: MDF file format not supported");
+      spdlog::error("Parse-XML: MDF file format not supported");
     }
   }
 

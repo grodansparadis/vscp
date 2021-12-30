@@ -649,8 +649,8 @@ private:
 
   mdf_access_mode m_access;
 
-  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_Value *> m_list_value; // List with selectable values
+  std::deque<CMDF_Bit *> m_list_bit;        // List with bit defines
+  std::deque<CMDF_Value *> m_list_value;    // List with selectable values
 
   // Below are for VSCP Works use only
   long m_rowInGrid;   // Helper for display (row reg is displayed on)
@@ -2250,7 +2250,9 @@ public:
   */
   uint32_t getPages(std::set<long> &pages);
 
+
   //-----------------------------------------------------------------------------
+
 
   /*!
     Get number of defined remote variables
@@ -2264,6 +2266,16 @@ public:
       @return Pointer to CMDF_RemoteVariable class if found else NULL.
   */
   CMDF_RemoteVariable *getRemoteVariable(std::string name);
+
+  /*!
+    Return remote variable list from its name      
+    @return Pointer to CMDF_RemoteVariable class list
+  */
+  std::deque<CMDF_RemoteVariable *> *getRemoteVariableList(void) { return &m_list_remotevar; };
+
+
+  //-----------------------------------------------------------------------------
+
 
   /*!
     Get the decision matrix

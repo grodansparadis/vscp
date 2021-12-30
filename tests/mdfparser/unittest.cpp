@@ -400,7 +400,9 @@ TEST(parseMDF, XML_REGISTERS)
 {
   CMDF_Register *preg;
   std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
   CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
   std::string path;
   CMDF mdf;
 
@@ -440,7 +442,7 @@ TEST(parseMDF, XML_REGISTERS)
   preg = mdf.getRegister(0, 0);
   ASSERT_NE(preg, nullptr);
 
-  ASSERT_EQ(preg->getName(), "Zone");
+  ASSERT_EQ(preg->getName(), "zone");
   ASSERT_EQ(preg->getPage(), 0);
   ASSERT_EQ(preg->getOffset(), 0);
   ASSERT_EQ(preg->getSize(), 1);
@@ -458,7 +460,7 @@ TEST(parseMDF, XML_REGISTERS)
   preg = mdf.getRegister(0, 1);
   ASSERT_NE(preg, nullptr);
 
-  ASSERT_EQ(preg->getName(), "Sub zone");
+  ASSERT_EQ(preg->getName(), "sub zone");
   ASSERT_EQ(preg->getPage(), 0);
   ASSERT_EQ(preg->getOffset(), 1);
   ASSERT_EQ(preg->getSize(), 1);
@@ -479,28 +481,277 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(pvalues->size(), 3);
 
   pvalue = pvalues->at(0);
-  ASSERT_NE(pvalues, nullptr);
+  ASSERT_NE(pvalue, nullptr);
   ASSERT_EQ(pvalue->getName(), "item0");
   ASSERT_EQ(pvalue->getValue(), "0x0");
   ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
 
   pvalue = pvalues->at(1);
-  ASSERT_NE(pvalues, nullptr);
+  ASSERT_NE(pvalue, nullptr);
   ASSERT_EQ(pvalue->getName(), "item1");
   ASSERT_EQ(pvalue->getValue(), "0x1");
   ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
 
   pvalue = pvalues->at(2);
-  ASSERT_NE(pvalues, nullptr);
+  ASSERT_NE(pvalue, nullptr);
   ASSERT_EQ(pvalue->getName(), "item2");
   ASSERT_EQ(pvalue->getValue(), "0x2");
   ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
+
+  // Register 0:12
+  preg = mdf.getRegister(0, 12);
+  ASSERT_NE(preg, nullptr);
+
+  ASSERT_EQ(preg->getName(), "register 12");
+  ASSERT_EQ(preg->getPage(), 0);
+  ASSERT_EQ(preg->getOffset(), 12);
+  ASSERT_EQ(preg->getSize(), 1);
+  ASSERT_EQ(preg->getSpan(), 1);
+  ASSERT_EQ(preg->getWidth(), 8);
+  ASSERT_EQ(preg->getMin(), 0);
+  ASSERT_EQ(preg->getMax(), 255);
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_STANDARD);  
+  ASSERT_EQ(preg->getAccess(), MDF_REG_ACCESS_WRITE_ONLY);
+  ASSERT_EQ(preg->getDefault(), "123");
+  ASSERT_EQ(preg->getDescription("en"), "page0 offset12 description");
+  ASSERT_EQ(preg->getDescription("se"), "Sida0 offset12 Beskrivning");
+  ASSERT_EQ(preg->getInfoURL("en"), "http://page0offset12.html");
+  ASSERT_EQ(preg->getInfoURL("se"), "http://sida0offset12.html");
+  ASSERT_EQ(preg->getForegroundColor(), 0x112233);
+  ASSERT_EQ(preg->getBackgroundColor(), 0x776655);
+
+  pvalues = preg->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item0");
+  ASSERT_EQ(pvalue->getValue(), "0x00");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item1");
+  ASSERT_EQ(pvalue->getValue(), "0x01");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item2");
+  ASSERT_EQ(pvalue->getValue(), "0x02");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item3");
+  ASSERT_EQ(pvalue->getValue(), "0x03");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
+
+  // Register 0:14
+  preg = mdf.getRegister(0, 14);
+  ASSERT_NE(preg, nullptr);
+
+  ASSERT_EQ(preg->getName(), "module control");
+  ASSERT_EQ(preg->getPage(), 0);
+  ASSERT_EQ(preg->getOffset(), 14);
+  ASSERT_EQ(preg->getSize(), 1);
+  ASSERT_EQ(preg->getSpan(), 1);
+  ASSERT_EQ(preg->getWidth(), 8);
+  ASSERT_EQ(preg->getMin(), 0);
+  ASSERT_EQ(preg->getMax(), 255);
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_STANDARD);  
+  ASSERT_EQ(preg->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+  ASSERT_EQ(preg->getDefault(), "0x11");
+  ASSERT_EQ(preg->getDescription("en"), "Module control register");
+  ASSERT_EQ(preg->getForegroundColor(), 0x332211);
+  ASSERT_EQ(preg->getBackgroundColor(), 0x9873d4);
+
+  pbits = preg->getListBits();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 8);
+
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 2);
+  ASSERT_EQ(pbit->getDefault(), 2);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved.");
+  ASSERT_EQ(pbit->getDescription("se"), "Reserverad.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "en url0");
+  ASSERT_EQ(pbit->getInfoURL("se"), "se url0");
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 0");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 1");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 2");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 3");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "3");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 3");
+  ASSERT_EQ(pvalue->getDescription("se"), "Bit värde beskrivning item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url3");
+  ASSERT_EQ(pvalue->getInfoURL("se"), "Bit url3 se");
+
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved1");
+  ASSERT_EQ(pbit->getPos(), 1);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved1.");
+
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved2");
+  ASSERT_EQ(pbit->getPos(), 2);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved2.");
+
+  pbit = pbits->at(3);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved3");
+  ASSERT_EQ(pbit->getPos(), 3);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved3.");
+
+  pbit = pbits->at(4);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved4");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved4.");
+
+  pbit = pbits->at(5);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved5");
+  ASSERT_EQ(pbit->getPos(), 5);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved5.");
+
+  pbit = pbits->at(6);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved6");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved6.");
+
+  pbit = pbits->at(7);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved7");
+  ASSERT_EQ(pbit->getPos(), 7);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
 }
 
+
 //-----------------------------------------------------------------------------
+
+
+TEST(parseMDF, XML_Abstractions)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/registers.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(mdf.getRemoteVariableCount(), 40);
+
+  // Invalid remote variable
+  prvar = mdf.getRemoteVariable("i-dont-exist");
+  ASSERT_EQ(prvar, nullptr); 
+
+  prvar = mdf.getRemoteVariable("ch0_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 19);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDefault(), "1234");
+  ASSERT_EQ(prvar->getForegroundColor(), 0x112233);
+  ASSERT_EQ(prvar->getBackgroundColor(), 0xE0E0FF);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 0.");
+  ASSERT_EQ(prvar->getDescription("se"), "A/D värde för kanal 0.");
+  ASSERT_EQ(prvar->getInfoURL("en"), "Remote var url3");
+  ASSERT_EQ(prvar->getInfoURL("se"), "Remote var url3 se");
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(parseMDF, XML_RemoteVariables)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/registers.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+   
+}
+
+
+//-----------------------------------------------------------------------------
+
 
 TEST(parseMDF, REALXML)
 {
@@ -848,7 +1099,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(99, vscp_readStringValue(preg->getDefault()));
 
   // Check name
-  ASSERT_TRUE(preg->getName() == "Register example 1");
+  ASSERT_TRUE(preg->getName() == "register example 1");
 
   // Check description
   ASSERT_TRUE(preg->getDescription("en") == "Just a byte register with color settings");
@@ -914,7 +1165,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(253, vscp_readStringValue(preg->getDefault()));
 
   // Check name
-  ASSERT_TRUE(preg->getName() == "Register example 2");
+  ASSERT_TRUE(preg->getName() == "register example 2");
 
   // Check description
   ASSERT_TRUE(preg->getDescription("en") == "Register with value list");
@@ -938,7 +1189,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   pValue = pValueList->at(0);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("Off", pValue->getName());
+  ASSERT_EQ("off", pValue->getName());
   ASSERT_EQ("The device is off", pValue->getDescription("en"));
   ASSERT_EQ("Enheten är av", pValue->getDescription("se"));
   ASSERT_EQ("", pValue->getDescription("xx"));
@@ -998,7 +1249,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(0x55, vscp_readStringValue(preg->getDefault()));
 
   // Check name
-  ASSERT_TRUE(preg->getName() == "Register example 3");
+  ASSERT_TRUE(preg->getName() == "register example 3");
 
   // ******  Bitarray 0 ******
 
@@ -1026,7 +1277,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
 
   // Check name
-  ASSERT_TRUE(pBit->getName() == "English bit or bitfield name 0");
+  ASSERT_TRUE(pBit->getName() == "english bit or bitfield name 0");
 
   // Check description
   ASSERT_EQ("English description bitfield 0", pBit->getDescription("gb"));
@@ -1059,7 +1310,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
 
   // Check name
-  ASSERT_TRUE(pBit->getName() == "English bit or bitfield name 1");
+  ASSERT_TRUE(pBit->getName() == "english bit or bitfield name 1");
 
   // Check description
   ASSERT_EQ("English description bitfield 1", pBit->getDescription("gb"));
@@ -1123,7 +1374,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_NE(nullptr, prvar);
 
   // Check name
-  ASSERT_TRUE(prvar->getName() == "Remote variable 1");
+  ASSERT_TRUE(prvar->getName() == "remote variable 1");
 
   // Check type "short" == int16_t
   ASSERT_EQ(remote_variable_type_int16_t, prvar->getType());
@@ -1217,7 +1468,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_NE(nullptr, prvar);
 
   // Check name
-  ASSERT_TRUE(prvar->getName() == "Remote variable 2");
+  ASSERT_TRUE(prvar->getName() == "remote variable 2");
 
   // Check type "byte" == uint8_t
   ASSERT_EQ(remote_variable_type_uint8_t, prvar->getType());
@@ -1266,7 +1517,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   pValue = pValueList->at(0);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("Low", pValue->getName());
+  ASSERT_EQ("low", pValue->getName());
   ASSERT_EQ("Low speed", pValue->getDescription("en"));
   ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
   ASSERT_EQ("??????????", pValue->getDescription("lt"));
@@ -1281,12 +1532,12 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   pValue = pValueList->at(1);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("Medium", pValue->getName());
+  ASSERT_EQ("medium", pValue->getName());
 
   pValue = pValueList->at(2);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(3, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("High", pValue->getName());
+  ASSERT_EQ("high", pValue->getName());
 
   // ***** Remote variable 3 *****
 
@@ -1295,7 +1546,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_NE(nullptr, prvar);
 
   // Check name
-  ASSERT_TRUE(prvar->getName() == "Remote variable 3");
+  ASSERT_TRUE(prvar->getName() == "remote variable 3");
 
   // Check type "byte" == uint8_t
   ASSERT_EQ(remote_variable_type_uint32_t, prvar->getType());
@@ -1347,7 +1598,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
 
   // Check name
-  ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+  ASSERT_TRUE(pBit->getName() == "bitfield name 0");
 
   // Check description
   ASSERT_EQ("English description bitfield 0", pBit->getDescription("gb"));
@@ -1380,7 +1631,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
 
   // Check name
-  ASSERT_TRUE(pBit->getName() == "Bitfield name 1");
+  ASSERT_TRUE(pBit->getName() == "bitfield name 1");
 
   // Check description
   ASSERT_EQ("English description bitfield 1", pBit->getDescription("gb"));
@@ -1406,7 +1657,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   pValue = pValueList->at(0);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("Low", pValue->getName());
+  ASSERT_EQ("low", pValue->getName());
   ASSERT_EQ("Low speed", pValue->getDescription("en"));
   ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
   ASSERT_EQ("", pValue->getDescription("xx"));
@@ -1420,7 +1671,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   pValue = pValueList->at(1);
   ASSERT_TRUE(nullptr != pValue);
   ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
-  ASSERT_EQ("Medium", pValue->getName());
+  ASSERT_EQ("medium", pValue->getName());
 }
 
 //-----------------------------------------------------------------------------
@@ -1554,7 +1805,7 @@ TEST(parseMDF, JSON_SIMPLE_DMatrix)
         ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
 
         // Check name
-        ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+        ASSERT_TRUE(pBit->getName() == "bitfield name 0");
       }
 
       // * * Param 2 * *
@@ -1691,7 +1942,7 @@ TEST(parseMDF, JSON_Events)
         ASSERT_EQ(MDF_REG_ACCESS_READ_WRITE, pBit->getAccess());
 
         // Check name
-        ASSERT_TRUE(pBit->getName() == "Bitfield name 0");
+        ASSERT_TRUE(pBit->getName() == "bitfield name 0");
 
         // Check description
         ASSERT_EQ("English description bit 0", pBit->getDescription("en"));
@@ -1724,7 +1975,7 @@ TEST(parseMDF, JSON_Events)
         ASSERT_EQ(MDF_REG_ACCESS_READ_ONLY, pBit->getAccess());
 
         // Check name
-        ASSERT_TRUE(pBit->getName() == "Bitfield name 1");
+        ASSERT_TRUE(pBit->getName() == "bitfield name 1");
 
         // Check description
         ASSERT_EQ("English description bit 1", pBit->getDescription("en"));
@@ -1752,7 +2003,7 @@ TEST(parseMDF, JSON_Events)
         pValue = pValueList->at(0);
         ASSERT_TRUE(nullptr != pValue);
         ASSERT_EQ(0, vscp_readStringValue(pValue->getValue()));
-        ASSERT_EQ("Low", pValue->getName());
+        ASSERT_EQ("low", pValue->getName());
         ASSERT_EQ("Low speed", pValue->getDescription("en"));
         ASSERT_EQ("Låg hastighet", pValue->getDescription("se"));
         ASSERT_EQ("", pValue->getDescription("xx"));
@@ -1766,7 +2017,7 @@ TEST(parseMDF, JSON_Events)
         pValue = pValueList->at(1);
         ASSERT_TRUE(nullptr != pValue);
         ASSERT_EQ(1, vscp_readStringValue(pValue->getValue()));
-        ASSERT_EQ("Medium", pValue->getName());
+        ASSERT_EQ("medium", pValue->getName());
       }
     }
   }
