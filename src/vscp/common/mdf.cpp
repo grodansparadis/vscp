@@ -2325,59 +2325,59 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
             if (attribute == "string") {
               gpRvarStruct->m_type = remote_variable_type_string;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'string' {}.", gpRvarStruct->m_type);
             }
             else if (attribute == "bool") {
               gpRvarStruct->m_type = remote_variable_type_boolean;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'boolena' {}.", gpRvarStruct->m_type);
             }
-            else if ((attribute == "int8") || (attribute == "int8_t")) {
+            else if ((attribute == "int8") || (attribute == "int8_t") || (attribute == "char")) {
               gpRvarStruct->m_type = remote_variable_type_int8_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int8_t' {}.", gpRvarStruct->m_type);
             }
-            else if ((attribute == "uint8") || (attribute == "uint8_t")) {
+            else if ((attribute == "uint8") || (attribute == "uint8_t") || (attribute == "byte")) {
               gpRvarStruct->m_type = remote_variable_type_uint8_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint8_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
               gpRvarStruct->m_type = remote_variable_type_int16_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int16_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint16") || (attribute == "uint16_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint16_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint16_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
               gpRvarStruct->m_type = remote_variable_type_int32_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int32_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
               gpRvarStruct->m_type = remote_variable_type_uint32_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint32_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
               gpRvarStruct->m_type = remote_variable_type_int64_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int64_t' {}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint64") || (attribute == "uint64_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint64_t;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint64_t' {}.", gpRvarStruct->m_type);
             }
             else if (attribute == "float") {
               gpRvarStruct->m_type = remote_variable_type_float;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'float' {}.", gpRvarStruct->m_type);
             }
             else if (attribute == "double") {
               gpRvarStruct->m_type = remote_variable_type_double;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'double' {}.", gpRvarStruct->m_type);
             }
             else if (attribute == "date") {
               gpRvarStruct->m_type = remote_variable_type_date;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'date' {}.", gpRvarStruct->m_type);
             }
             else if (attribute == "time") {
               gpRvarStruct->m_type = remote_variable_type_time;
-              spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'time' {}.", gpRvarStruct->m_type);
             }
             else {
               gpRvarStruct->m_type = remote_variable_type_unknown;
@@ -2446,6 +2446,30 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Noting to do here          
         spdlog::trace("Parse-XML: handleMDFParserData: Valuelist start");
       }
+
+      /*
+        <rvar>
+          <bit>           <------
+            .....
+          </bit>
+        </rvar>
+      */
+      if ((currentToken == "bit") && 
+          ((gTokenList.at(1) == "rvalue") ||(gTokenList.at(1) == "abstraction") ) &&
+          (gpRvarStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Bit");
+
+        if (!__getBitAttributes(&gpRvarStruct->m_list_bit, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to allocate memory for bit structure");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpBitStruct = gpRvarStruct->m_list_bit.back();
+
+      }
+
       break;
 
     case 5:
@@ -2480,6 +2504,38 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Noting to do here
         spdlog::trace("Parse-XML: handleMDFParserData: bit value list starts");
       }
+
+      /*
+        <rvar>
+          <valuelist>
+            <item>....</item>   <------
+            <item>....</item>
+          </valuelist>
+        </rvar>
+      */
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
+          (gpRvarStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: remote variable value");
+
+        if (!__getValueAttributes(&gpRvarStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse remote variable value values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpRvarStruct->m_list_value.back();
+      }
+      else if ((currentToken == "valuelist") && 
+               (gTokenList.at(1) == "bit") && 
+               ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
+               (gpRvarStruct != nullptr) &&
+               (gpBitStruct != nullptr)) {
+        // Noting to do here
+        spdlog::trace("Parse-XML: handleMDFParserData: bit remote variable list starts");
+      }
       break;
 
     
@@ -2499,6 +2555,33 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         (gTokenList.at(2) == "bit") &&
         (gTokenList.at(3) == "reg") &&
         (gpRegisterStruct != nullptr) &&
+        (gpBitStruct != nullptr)) {
+
+      spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+      //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+      if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+        spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+        return;
+      }
+
+      // Set global pointer to added value so other info can be added
+      gpValueStruct = gpBitStruct->m_list_value.back();
+    }
+    /*
+          <rvar>
+            <bit>
+              <valuelist>
+                <item></item>
+              </valuelist>
+            </bit>
+          </rvar>
+    */
+    else if ((currentToken == "item") && 
+        (gTokenList.at(1) == "valuelist") &&
+        (gTokenList.at(2) == "bit") &&
+        ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
+        (gpRvarStruct != nullptr) &&
         (gpBitStruct != nullptr)) {
 
       spdlog::trace("Parse-XML: handleMDFParserData: Value");
@@ -2857,52 +2940,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
-      // register valuelist description/info url 
-      else if ((gTokenList.at(2) == "register") &&
-               (gTokenList.at(1) == "valuelist") && 
-               (gTokenList.at(0) == "item")) {
-        // Manual description
-        if (gpRegisterStruct != nullptr) {
-          spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
-                        strContent,
-                        gLastLanguage);
-          gpRegisterStruct->m_mapDescription[gLastLanguage] = strContent;
-          spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description size: {0}",
-                        gpRegisterStruct->m_mapDescription.size());
-        }
-      }
       break;
 
     case 6: // name,description,item,valuelist
 
       // std::cout << "6 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
 
-      // reg/valuelist/item
-      if ((gTokenList.at(0) == "item") && 
-          (gTokenList.at(1) == "valuelist") && 
-          (gTokenList.at(2) == "reg") &&
-          (gpValueStruct != nullptr) ) {            
-        // Manual description
-        spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
-                      strContent,
-                      gLastLanguage);
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
-      }
-
-      // * * * reg bit * * *
-      else if ((gTokenList.at(0) == "bit") && 
-               (gTokenList.at(1) == "valuelist") && 
-               (gTokenList.at(2) == "reg") &&
-               (gpValueStruct != nullptr)) {            
-        // Manual description
-        spdlog::trace("Parse-XML: handleMDFParserData: Register valuelist Description: {0} language: {1}",
-                      strContent,
-                      gLastLanguage);
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
-      }
-
       // reg/bit/name  - Not preferred form (Better as attribut) 
-      else if ((gTokenList.at(0) == "name") && 
+      if ((gTokenList.at(0) == "name") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
@@ -2921,6 +2966,32 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
+
+      // * * * Abstraction * * *
+
+      // rvar/bit/name  - Not preferred form (Better as attribut) 
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_name = strContent;
+        vscp_trim(gpBitStruct->m_name);
+        vscp_makeLower(gpBitStruct->m_name);
+      }
+      // rvar/bit/description
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // rvar/bit/info url
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
@@ -2969,18 +3040,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
     case 7:
 
-      // std::cout << "7 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+      //std::cout << "7 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl;
 
-      // reg/valuelist/item/value *
-      if ((gTokenList.at(0) == "value") && 
-               (gTokenList.at(1) == "item") && 
-               (gTokenList.at(2) == "valuelist") &&
-               (gTokenList.at(3) == "reg") &&
-               (gpValueStruct != nullptr)) { 
-        gpValueStruct->m_strValue = strContent;
-      }
+      // * * * registers * * *
+
       // reg/valuelist/item/name *
-      else if ((gTokenList.at(0) == "name") && 
+      if ((gTokenList.at(0) == "name") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") &&
                (gTokenList.at(3) == "reg") &&
@@ -3004,15 +3069,36 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "reg") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
-      }  
-      else if ((gTokenList.at(0) == "item") && 
-               (gTokenList.at(1) == "valuelist") && 
-               (gTokenList.at(2) == "bit") &&
-               (gTokenList.at(3) == "reg") &&
-               (gpValueStruct != nullptr)) {
-        gpItemStruct = new CMDF_Item;
-      } 
+      }
 
+      // * * * Remote variables   * * *
+      
+      // rvar/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) && 
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
+      }
+      // rvar/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // rvar/valuelist/item/infourl *
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      } 
       break;
 
     case 8:
@@ -4535,11 +4621,11 @@ CMDF::parseMDF_JSON(std::string &path)
                 prvar->m_type = remote_variable_type_boolean;
                 spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", prvar->m_type);
               }
-              else if ((str == "int8") || (str == "int8_t")) {
+              else if ((str == "int8") || (str == "int8_t") || (str == "char")) {
                 prvar->m_type = remote_variable_type_int8_t;
                 spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", prvar->m_type);
               }
-              else if ((str == "uint8") || (str == "uint8_t")) {
+              else if ((str == "uint8") || (str == "uint8_t") || (str == "byte")) {
                 prvar->m_type = remote_variable_type_uint8_t;
                 spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", prvar->m_type);
               }

@@ -869,7 +869,7 @@ private:
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_Value *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value;          // List with selectable values
 };
 
 // ----------------------------------------------------------------------------

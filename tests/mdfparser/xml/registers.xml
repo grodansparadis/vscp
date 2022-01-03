@@ -279,9 +279,9 @@
       
       <abstraction type="uint16_t"  
                           page = "0" offset = "21" 
-                          bgcolor="0xE0E0FF" >
-        <name lang="en">ch1_value</name>
-        <description lang="en">A/D value for channel 1.\n</description>
+                          bgcolor="0xE0E0FF"
+                          name="ch1_value" >
+        <description lang="en">A/D value for channel 1.</description>
         <access>r</access>
       </abstraction>
       
@@ -555,7 +555,7 @@
                           page = "1" offset = "12" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_k</name>
-        <description lang="en">Linearization k-constant for channel 0.\n</description>
+        <description lang="en">Linearization k-constant for channel 0.</description>
         <access>rw</access>
       </abstraction>
       
@@ -599,20 +599,95 @@
         <access>rw</access>
       </abstraction>
       
-      <abstraction type="float" default="1"  
+      <abstraction type="byte" default="1"  
                           page = "1" offset = "24" 
-                          bgcolor="0xD8F2F5" >
-        <name lang="en">ch3_k</name>
-        <description lang="en">Linearization k-constant for channel 3.\n</description>
+                          bgcolor="0xD8F2F5"
+                          name="value_test1">
+        <description lang="en">Value test 1</description>
         <access>rw</access>
+        <valuelist>
+          <item value = "0x00"> 
+              <name>Item0</name>                
+              <description lang="en">Description item 0</description>                 
+              <infourl lang="en">InfoURL item 0</infourl>                
+          </item>
+          <item value = "0x01" name="Item1">                
+              <description lang="en">Description item 1</description>                 
+              <infourl lang="en">InfoURL item 1</infourl>                
+          </item>
+          <item value = "0x02">                 
+              <name>Item2</name> 
+              <description lang="en">Description item 2</description>                 
+              <infourl lang="en">InfoURL item 2</infourl>                
+          </item>
+          <item value = "0x03">                 
+              <name>Item3</name> 
+              <description lang="en">Description item 3</description>                 
+              <infourl lang="en">InfoURL item 3</infourl>                
+          </item>
+        </valuelist>
       </abstraction>
 
-      <abstraction type="float" default="0"  
+      <abstraction type="byte" default="0"  
                           page = "1" offset = "40" 
-                          bgcolor="0xD8F2F5" >
-        <name lang="en">ch3_m</name>
-        <description lang="en">Linearization m-constant for channel 3.\n</description>
-        <access>rw</access>     
+                          bgcolor="0xD8F2F5"
+                          name="bit_test1" >
+        <description lang="en">Bit test 1.</description>
+        <access>rw</access>    
+        <bit pos="0" width="2" default="2" >
+            <name>Reserved</name>
+            <description lang="en">Reserved.</description> 
+            <description lang="se">Reserverad.</description>
+            <infourl lang="en">en url0</infourl>
+            <infourl lang="se">se url0</infourl> 
+            <valuelist>
+              <item value="0" name="Bit value 0">
+                <description lang="en">Bit value description item 0</description>
+                <infourl lang="en">Bit url0</infourl> 
+              </item>  
+              <item value="1" name="Bit value 1">
+                <description lang="en">Bit value description item 1</description>
+                <infourl lang="en">Bit url1</infourl> 
+              </item>
+              <item value="2" name="Bit value 2">
+                <description lang="en">Bit value description item 2</description>
+                <infourl lang="en">Bit url2</infourl> 
+              </item>
+              <item value="3" name="Bit value 3">
+                <description lang="en">Bit value description item 3</description>
+                <description lang="se">Bit värde beskrivning item 3</description>
+                <infourl lang="en">Bit url3</infourl> 
+                <infourl lang="se">Bit url3 se</infourl> 
+              </item>
+            </valuelist>
+          </bit>
+          <bit pos="1" default="false" name="Reserved1">
+            <description lang="en">Reserved1.</description> 
+          </bit>
+          <bit pos="2" default="false" >
+            <name>Reserved2</name>
+            <description lang="en">Reserved2.</description> 
+          </bit>
+          <bit pos="3" default="false" >
+            <name>Reserved3</name>
+            <description lang="en">Reserved3.</description> 
+          </bit>
+          <bit pos="4" default="false" >
+            <name>Reserved4</name>
+            <description lang="en">Reserved4.</description> 
+          </bit>
+          <bit pos="5" default="false" >
+            <name>Reserved5</name>
+            <description lang="en">Reserved5.</description> 
+          </bit>
+          <bit pos="6" default="false" >
+            <name>Reserved6</name>
+            <description lang="en">Reserved6.</description> 
+          </bit>
+          <bit pos="7" default="false" >
+            <name>Reserved7</name>
+            <description lang="en">Reserved7.</description> 
+          </bit> 
       </abstraction>
      
    </abstractions>

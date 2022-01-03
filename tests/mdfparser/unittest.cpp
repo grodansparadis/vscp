@@ -708,6 +708,10 @@ TEST(parseMDF, XML_Abstractions)
 
   ASSERT_EQ(mdf.getRemoteVariableCount(), 40);
 
+  // Get pointer to all remote variables
+  prvars = mdf.getRemoteVariableList();
+  ASSERT_NE(prvars, nullptr);
+
   // Invalid remote variable
   prvar = mdf.getRemoteVariable("i-dont-exist");
   ASSERT_EQ(prvar, nullptr); 
@@ -726,6 +730,203 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(prvar->getDescription("se"), "A/D värde för kanal 0.");
   ASSERT_EQ(prvar->getInfoURL("en"), "Remote var url3");
   ASSERT_EQ(prvar->getInfoURL("se"), "Remote var url3 se");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_ONLY);
+
+  // Remote variable 'ch0_value' is at pos 0
+  prvar = prvars->at(0);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch1_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 21);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 1.");
+
+  // Remote variable 'ch1_value' is at pos 1
+  prvar = prvars->at(1);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch0_k");
+  ASSERT_NE(prvar, nullptr);  
+
+  // Remote variable with floating point value
+  ASSERT_EQ(prvar->getName(), "ch0_k");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 12);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_float);
+  ASSERT_EQ(prvar->getDescription("en"), "Linearization k-constant for channel 0.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  // * * * value list * * *
+
+  prvar = mdf.getRemoteVariable("value_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  pvalues = prvar->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item0");
+  ASSERT_EQ(pvalue->getValue(), "0x00");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item1");
+  ASSERT_EQ(pvalue->getValue(), "0x01");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item2");
+  ASSERT_EQ(pvalue->getValue(), "0x02");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item3");
+  ASSERT_EQ(pvalue->getValue(), "0x03");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
+
+  // * * * bitfield * * *
+
+
+  prvar = mdf.getRemoteVariable("bit_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  // Remote variable with bit field
+  ASSERT_EQ(prvar->getName(), "bit_test1");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 40);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint8_t);
+  ASSERT_EQ(prvar->getDescription("en"), "Bit test 1.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  pbits = prvar->getListBits();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 8);
+
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 2);
+  ASSERT_EQ(pbit->getDefault(), 2);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved.");
+  ASSERT_EQ(pbit->getDescription("se"), "Reserverad.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "en url0");
+  ASSERT_EQ(pbit->getInfoURL("se"), "se url0");
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 0");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 1");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 2");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 3");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "3");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 3");
+  ASSERT_EQ(pvalue->getDescription("se"), "Bit värde beskrivning item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url3");
+  ASSERT_EQ(pvalue->getInfoURL("se"), "Bit url3 se");
+
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved1");
+  ASSERT_EQ(pbit->getPos(), 1);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved1.");
+
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved2");
+  ASSERT_EQ(pbit->getPos(), 2);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved2.");
+
+  pbit = pbits->at(3);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved3");
+  ASSERT_EQ(pbit->getPos(), 3);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved3.");
+
+  pbit = pbits->at(4);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved4");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved4.");
+
+  pbit = pbits->at(5);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved5");
+  ASSERT_EQ(pbit->getPos(), 5);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved5.");
+
+  pbit = pbits->at(6);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved6");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved6.");
+
+  pbit = pbits->at(7);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved7");
+  ASSERT_EQ(pbit->getPos(), 7);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
 }
 
 
