@@ -801,6 +801,7 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pvalue->getDescription("en"), "Description item 3");
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
 
+
   // * * * bitfield * * *
 
 
@@ -927,6 +928,84 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pbit->getWidth(), 1);
   ASSERT_EQ(pbit->getDefault(), 0);
   ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
+
+  // * * * Alarm * * *
+
+  pbits = mdf.getAlarmList();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 8);
+
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved7");
+  ASSERT_EQ(pbit->getPos(), 7);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 7.");
+
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved6");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 6.");
+
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved5");
+  ASSERT_EQ(pbit->getPos(), 5);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 5.");
+
+  pbit = pbits->at(3);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved4");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 4.");
+
+  pbit = pbits->at(4);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved3");
+  ASSERT_EQ(pbit->getPos(), 3);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 3.");
+
+  pbit = pbits->at(5);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved2");
+  ASSERT_EQ(pbit->getPos(), 2);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved 2.");
+
+  pbit = pbits->at(6);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "high_alarm");
+  ASSERT_EQ(pbit->getPos(), 1);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "High alarm. The value of one of the A/D channels has gone above the high alarm level.");
+
+  pbit = pbits->at(7);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "low alarm");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Low alarm. The value of one of the A/D channels has gone under the low alarm level.");
 }
 
 

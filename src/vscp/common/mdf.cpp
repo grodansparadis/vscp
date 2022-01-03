@@ -2002,7 +2002,10 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
       break;
 
+    // ------------------------------------------------------------------------
+
     case 3:
+
       if ((currentToken == "address")) {
         ;
       }
@@ -2404,6 +2407,27 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             gpRvarStruct->m_bgcolor = vscp_readStringValue(attribute);
           }
         }
+      }
+      /*
+        <alarm>
+          <bit>           <------
+            .....
+          </bit>
+        </alarm>
+      */
+      else if ((currentToken == "bit") && 
+          (gTokenList.at(1) == "alarm")) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Bit");
+
+        if (!__getBitAttributes(&pmdf->m_list_alarm, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to allocate memory for bit structure");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpBitStruct = pmdf->m_list_alarm.back();
+
       }
       break;
 
@@ -2940,6 +2964,31 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
+      // * * * alarm * * *
+
+      // alarm/bit/name  - Not preferred form (Better as attribut) 
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "alarm") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_name = strContent;
+        vscp_trim(gpBitStruct->m_name);
+        vscp_makeLower(gpBitStruct->m_name);
+      }
+      // alarm/bit/description
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "alarm") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      // alarm/bit/info url
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "alarm") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
       break;
 
     case 6: // name,description,item,valuelist
@@ -2970,7 +3019,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
 
+
       // * * * Abstraction * * *
+
 
       // rvar/bit/name  - Not preferred form (Better as attribut) 
       else if ((gTokenList.at(0) == "name") && 
@@ -2995,8 +3046,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
+
       
       // * * * action param * * *
+
 
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "param") && 
@@ -3228,42 +3281,57 @@ __endSetupMDFParser(void *data, const char *name)
       else if (currentToken == "register") {
         gpRegisterStruct = nullptr;
       }      
+      else if (currentToken == "alarm") {        
+        // Noting to do here
+      }      
       break;
 
     case 4:
       if (currentToken == "address") {
         ; // Nothing to do
       }
-      else if ((currentToken == "telephone") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "alarm") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct = nullptr;
+      } 
+      else if ((currentToken == "telephone") && 
+               (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Phone.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if ((currentToken == "fax") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "fax") && 
+               (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Fax.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if ((currentToken == "email") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "email") && 
+               (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Email.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if ((currentToken == "web") && (gpItemStruct != nullptr)) {
+      else if ((currentToken == "web") && 
+               (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Web.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
-      else if ((currentToken == "reg") && (gpRegisterStruct != nullptr)) {
+      else if ((currentToken == "reg") && 
+               (gpRegisterStruct != nullptr)) {
         // Nothing to do
         gpRegisterStruct = nullptr;
       }
-      else if ((currentToken == "abstraction") && (gpRvarStruct != nullptr)) {
+      else if ((currentToken == "abstraction") && 
+               (gpRvarStruct != nullptr)) {
         gpRvarStruct = nullptr;
       }
-      else if ((currentToken == "remotevar") && (gpRvarStruct != nullptr)) {
+      else if ((currentToken == "remotevar") && 
+               (gpRvarStruct != nullptr)) {
         gpRvarStruct = nullptr;
-      }
+      }      
       break;
 
     case 5: // name,description,access
@@ -3468,7 +3536,7 @@ __endSetupMDFParser(void *data, const char *name)
                (gTokenList.at(2) == "abstractions") &&
                (gpBitStruct != nullptr) ) {
         gpBitStruct = nullptr;
-      }
+      }      
       break;
 
     case 6: // name,description,item,valuelist

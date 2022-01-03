@@ -696,61 +696,60 @@
     
 
     <alarm>
-    <bit pos="7">
-        <name lang="en">Reserved</name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="6">
-        <name lang="en">Reserved</name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="5">
-        <name lang="en"></name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="4">
-        <name lang="en">Reserved</name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="3">
-        <name lang="en">Reserved</name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="2">
-        <name lang="en">Reserved</name>
-        <description lang="en">
-        Reserved.
-        </description>
-    </bit>
-    
-    <bit pos="1">
-        <name lang="en">Low alarm</name>
-        <description lang="en">
-        Low alarm. The value of one of the A/D channels has gone above the high alarm level.
-        </description>
-    </bit>
-    
-    <bit pos="0">
-        <name lang="en">Low alarm</name>
-        <description lang="en">
-        Low alarm. The value of one of the A/D channels has gone under the low alarm level.
-        </description>
-    </bit>                          
+      <bit pos="7" name="Reserved7">
+          <description lang="en">
+          Reserved 7.
+          </description>
+      </bit>
+      
+      <bit pos="6">
+          <name lang="en">Reserved6</name>
+          <description lang="en">
+          Reserved 6.
+          </description>
+      </bit>
+      
+      <bit pos="5">
+          <name lang="en">Reserved5</name>
+          <description lang="en">
+          Reserved 5.
+          </description>
+      </bit>
+      
+      <bit pos="4">
+          <name lang="en">Reserved4</name>
+          <description lang="en">
+          Reserved 4.
+          </description>
+      </bit>
+      
+      <bit pos="3">
+          <name lang="en">Reserved3</name>
+          <description lang="en">
+          Reserved 3.
+          </description>
+      </bit>
+      
+      <bit pos="2">
+          <name lang="en">Reserved2</name>
+          <description lang="en">
+          Reserved 2.
+          </description>
+      </bit>
+      
+      <bit pos="1">
+          <name lang="en">High_alarm</name>
+          <description lang="en">
+          High alarm. The value of one of the A/D channels has gone above the high alarm level.
+          </description>
+      </bit>
+      
+      <bit pos="0">
+          <name lang="en">Low alarm</name>
+          <description lang="en">
+          Low alarm. The value of one of the A/D channels has gone under the low alarm level.
+          </description>
+      </bit>                          
     </alarm>
     
     
