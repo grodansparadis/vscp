@@ -36,4 +36,4 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 <a href="https://github.com/grodansparadis/vscp_html5">HTML5 websocket UI repository</a>.
 </p>
 
-Copyright © 2000-2021 Ake Hedman, the VSCP project - MIT license.
+Copyright © 2000-2022 Ake Hedman, the VSCP project - MIT license.

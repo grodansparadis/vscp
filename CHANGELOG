@@ -1,6 +1,7 @@
 Change log for the VSCP Daemon
 ==============================
 
+220103 AKHE nlohmann Updated json lib to 3.10.5
 211122 AKHE libcurl is now a dependency for mdf parts
 211122 AKHE Remove bitfild and guid as abstract variable types
 211105 AKHE Removed vscp_getDeviceHtmlStatusInfo from vscphelper
