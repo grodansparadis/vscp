@@ -1774,14 +1774,16 @@ int gdepth_xml_parser = 0;
 // bool gbVscp   = false;  (gTokenList.back() == "vscp")
 // bool gbModule = false;  (gTokenList.at(gTokenList.size()-2) == "module")
 
-CMDF_Item *gpItemStruct;           // Holds temporary items
-CMDF_Bit *gpBitStruct;             // Holds temporary bits
-CMDF_Value *gpValueStruct;         // Holds temporary values
-CMDF_Picture *gpPictureStruct;     // Holds temporary picture items
-CMDF_Firmware *gpFirmwareStruct;   // Holds temporary firmware items
-CMDF_Manual *gpManualStruct;       // Holds temporary manual items
-CMDF_Register *gpRegisterStruct;   // Holds temporary register items
-CMDF_RemoteVariable *gpRvarStruct; // Holds temporary remote variable items
+CMDF_Item *gpItemStruct;                    // Holds temporary items
+CMDF_Bit *gpBitStruct;                      // Holds temporary bits
+CMDF_Value *gpValueStruct;                  // Holds temporary values
+CMDF_Picture *gpPictureStruct;              // Holds temporary picture items
+CMDF_Firmware *gpFirmwareStruct;            // Holds temporary firmware items
+CMDF_Manual *gpManualStruct;                // Holds temporary manual items
+CMDF_Register *gpRegisterStruct;            // Holds temporary register items
+CMDF_RemoteVariable *gpRvarStruct;          // Holds temporary remote variable items
+CMDF_ActionParameter *gpActionParamStruct;  // Holds temporary action parameter items
+CMDF_Action *gpActionStruct;                // Holds temporary action items
 
 // clang-format off
 
@@ -1995,7 +1997,51 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         ;
       }
       else if (currentToken == "dmatrix") {
-        ;
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "level")) {
+            // DM level
+            spdlog::trace("Parse-XML: handleMDFParserData: DM level: {0}", attribute);
+            pmdf->getDM()->m_level = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "page")) {
+            // DM page
+            spdlog::trace("Parse-XML: handleMDFParserData: DM page: {0}", attribute);
+            pmdf->getDM()->m_startPage = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "offset")) {
+            // DM offset
+            spdlog::trace("Parse-XML: handleMDFParserData: DM offset: {0}", attribute);
+            pmdf->getDM()->m_startOffset = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "rowcnt")) {
+            // DM eow count
+            spdlog::trace("Parse-XML: handleMDFParserData: DM row count: {0}", attribute);
+            pmdf->getDM()->m_rowCount = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "rowsize")) {
+            // DM row size
+            spdlog::trace("Parse-XML: handleMDFParserData: DM row size: {0}", attribute);
+            pmdf->getDM()->m_rowSize = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "indexed")) {
+            // DM indexed
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: indexed {0}", attribute);
+            if (attribute == "true") {
+              pmdf->getDM()->setIndexed(true);
+            }
+            else if (attribute == "false") {
+              pmdf->getDM()->setIndexed(false);
+            }
+            else {
+              pmdf->getDM()->setIndexed(vscp_readStringValue(attribute) ? true : false);
+            }
+          }
+        }
       }
       else if (currentToken == "events") {
         ;
@@ -2429,6 +2475,43 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         gpBitStruct = pmdf->m_list_alarm.back();
 
       }
+      /*
+        <dmatrix>
+          <action>           <------
+            .....
+          </action>
+        </dmatrix>
+      */
+      else if ((currentToken == "action") && 
+          (gTokenList.at(1) == "dmatrix")) {
+
+        gpActionStruct = new CMDF_Action;
+        if (nullptr == gpActionStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for dmatrix action");
+          return;
+        }
+
+        pmdf->getDM()->m_list_action.push_back(gpActionStruct);
+
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "code")) {
+            // dmatix action code            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action code: {0}", attribute);
+            gpActionStruct->m_code = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "name")) {
+            // dmatix action code
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action name: {0}", attribute);
+            gpActionStruct->m_name = attribute;
+          }
+        }    
+      }
       break;
 
 
@@ -2493,7 +2576,58 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         gpBitStruct = gpRvarStruct->m_list_bit.back();
 
       }
+      /*
+        <dmatrix>
+          <action>
+            <param>           <------
+              .....
+            </param>  
+          </action>
+        </dmatrix>
+      */
+      else if ((currentToken == "param") &&
+               (gTokenList.at(1) == "action") &&
+               (gTokenList.at(2) == "dmatrix") &&
+               (gpActionStruct != nullptr)) {
 
+        gpActionParamStruct = new CMDF_ActionParameter;
+        if (nullptr == gpActionParamStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for dmatrix action parameter");
+          return;
+        }
+
+        gpActionStruct->m_list_ActionParameter.push_back(gpActionParamStruct);
+
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "offset")) {
+            // dmatrix action parametr offset            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter offset: {0}", attribute);
+            gpActionParamStruct->m_offset = vscp_readStringValue(attribute);
+          }
+          if (0 == strcasecmp(attr[i], "min")) {
+            // dmatrix action parameter min            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter min: {0}", attribute);
+            gpActionParamStruct->m_min = vscp_readStringValue(attribute);
+          }
+          if (0 == strcasecmp(attr[i], "max")) {
+            // dmatrix action parameter max            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter max: {0}", attribute);
+            gpActionParamStruct->m_max = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "name")) {
+            // dmatix action parameter name
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action paramerter name: {0}", attribute);
+            gpActionParamStruct->m_name = attribute;
+          }
+        }
+      }
+      
       break;
 
     case 5:
@@ -2560,6 +2694,35 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Noting to do here
         spdlog::trace("Parse-XML: handleMDFParserData: bit remote variable list starts");
       }
+
+      /*
+          <dmatrix>
+            <action>
+              <param>
+                <bit></bit>  <------
+              </param>
+            </action>
+          </dmatrix>
+      */
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "param") &&
+               (gTokenList.at(2) == "action") &&
+               (gTokenList.at(3) == "dmatrix") &&
+               (gpActionStruct != nullptr) &&
+               (gpActionParamStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: action param Bit");
+
+        //std::cout << "Size: " << gpActionParamStruct->m_list_value.size() << std::endl;
+        if (!__getBitAttributes(&gpActionParamStruct->m_list_bit, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpBitStruct = gpActionParamStruct->m_list_bit.back();    
+      } 
+
       break;
 
     
@@ -2573,53 +2736,147 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               </valuelist>
             </bit>
           </reg>
-    */
-    if ((currentToken == "item") && 
-        (gTokenList.at(1) == "valuelist") &&
-        (gTokenList.at(2) == "bit") &&
-        (gTokenList.at(3) == "reg") &&
-        (gpRegisterStruct != nullptr) &&
-        (gpBitStruct != nullptr)) {
+      */
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "bit") &&
+          (gTokenList.at(3) == "reg") &&
+          (gpRegisterStruct != nullptr) &&
+          (gpBitStruct != nullptr)) {
 
-      spdlog::trace("Parse-XML: handleMDFParserData: Value");
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
 
-      //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
-      if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
-        spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
-        return;
+        //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpBitStruct->m_list_value.back();
+      }
+      /*
+            <rvar>
+              <bit>
+                <valuelist>
+                  <item></item>
+                </valuelist>
+              </bit>
+            </rvar>
+      */
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "bit") &&
+          ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
+          (gpRvarStruct != nullptr) &&
+          (gpBitStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+        //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpBitStruct->m_list_value.back();
       }
 
-      // Set global pointer to added value so other info can be added
-      gpValueStruct = gpBitStruct->m_list_value.back();
-    }
-    /*
-          <rvar>
-            <bit>
-              <valuelist>
-                <item></item>
-              </valuelist>
-            </bit>
-          </rvar>
-    */
-    else if ((currentToken == "item") && 
-        (gTokenList.at(1) == "valuelist") &&
-        (gTokenList.at(2) == "bit") &&
-        ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
-        (gpRvarStruct != nullptr) &&
-        (gpBitStruct != nullptr)) {
+      /*
+            <action>
+              <param>
+                <valuelist>
+                  <item>...</item>
+                </valuelist>
+              </param>
+            </action>
+      */
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "param") &&
+          ((gTokenList.at(3) == "action")) &&
+          (gpActionStruct != nullptr) &&
+          (gpActionParamStruct != nullptr)) {
 
-      spdlog::trace("Parse-XML: handleMDFParserData: Value");
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
 
-      //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
-      if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
-        spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
-        return;
+        //std::cout << "Size: " << gpActionParamStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpActionParamStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpActionParamStruct->m_list_value.back();
       }
 
-      // Set global pointer to added value so other info can be added
-      gpValueStruct = gpBitStruct->m_list_value.back();
-    }
-    break;
+      /*
+            <action>
+              <param>
+                <bit>
+                  <item>...</item>
+                </bit>
+              </param>
+            </action>
+      */
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "param") &&
+          ((gTokenList.at(3) == "action")) &&
+          (gpActionStruct != nullptr) &&
+          (gpActionParamStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+        //std::cout << "Size: " << gpActionParamStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpActionParamStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpActionParamStruct->m_list_value.back();
+      }
+
+      break;
+
+    case 7:
+      /*
+          <dmatrix>
+            <action>
+              <param>
+                <bit>
+                  <valuelist>
+                    <item></item> <-----
+                  </valuelist>
+                </bit>
+              <param>
+            </action>
+          </dmatrix>
+      */
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "bit") &&
+          (gTokenList.at(3) == "param") &&
+          (gTokenList.at(4) == "action") &&
+          (gTokenList.at(5) == "dmatrix") &&
+          (gpActionStruct != nullptr) &&
+          (gpActionParamStruct != nullptr) &&
+          (gpBitStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+        //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpBitStruct->m_list_value.back();
+      }
+      break;
 
   } // switch depth
 
@@ -2672,12 +2929,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       break;
 
     case 2:
-      ;
+
       break;
 
     case 3:
 
-      // std::cout << "3 - " << gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+      //std::cout << "3 - " << gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl;
 
       if (gTokenList.at(0) == "name") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
@@ -2711,15 +2968,16 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(0) == "buffersize") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module buffer size: {0}", strContent);
         pmdf->m_module_bufferSize = vscp_readStringValue(strContent);
-      }
+      }                  
+
       break;
 
     case 4: 
     
-      // std::cout << "4 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << currentToken << std::endl;
+      //std::cout << "4 - " << gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl;
 
       // manufacturer, picture, files, manual, boot, registers abstractions/remotevar, alarm, dmatrix,
-            // events
+      // events
       if ((gTokenList.at(1) == "manufacturer") && (gTokenList.at(0) == "name")) {
         // Name of manufacturer
         spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer name: {0} language: {1}",
@@ -2762,14 +3020,53 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Manual Description size: {0}",
                         gpManualStruct->m_mapDescription.size());
         }
+      }      
+
+      // Decision matrix
+
+      else if ((gTokenList.at(0) == "level") &&
+               (gTokenList.at(1) == "dmatrix")) {
+        spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: level {0}", strContent);
+        pmdf->getDM()->setLevel(vscp_readStringValue(strContent));
       }
-      else if (gTokenList.at(1) == "boot" && (gTokenList.at(0) == "algorithm")) {
+      else if ((gTokenList.at(0) == "rowcnt") &&
+               (gTokenList.at(1) == "dmatrix")) {
+        spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row count {0}", strContent);
+        pmdf->getDM()->setRowCount(vscp_readStringValue(strContent));
+      }
+      else if ((gTokenList.at(0) == "rowsize") &&
+               (gTokenList.at(1) == "dmatrix")) {
+        spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row size {0}", strContent);
+        pmdf->getDM()->setRowSize(vscp_readStringValue(strContent));
+      }
+      else if ((gTokenList.at(0) == "indexed") &&
+               (gTokenList.at(1) == "dmatrix")) {
+        spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row size {0}", strContent);
+        {
+          std::string str = strContent;
+          vscp_makeLower(str);
+          vscp_trim(str);
+          if (str == "true") {
+            pmdf->getDM()->setIndexed(true);
+          }
+          else if (str == "false") {
+            pmdf->getDM()->setIndexed(false);
+          }
+          else {
+            pmdf->getDM()->setIndexed(vscp_readStringValue(strContent) ? true : false);
+          }
+        }
+      }
+
+      // Bootloader
+
+      else if ((gTokenList.at(1) == "boot") && (gTokenList.at(0) == "algorithm")) {
         pmdf->m_bootInfo.m_nAlgorithm = vscp_readStringValue(strContent);
       }
-      else if (gTokenList.at(1) == "boot" && (gTokenList.at(0) == "blocksize")) {
+      else if ((gTokenList.at(1) == "boot") && (gTokenList.at(0) == "blocksize")) {
         pmdf->m_bootInfo.m_nBlockSize = vscp_readStringValue(strContent);
       }
-      else if (gTokenList.at(1) == "boot" && (gTokenList.at(0) == "blockcount")) {
+      else if ((gTokenList.at(1) == "boot") && (gTokenList.at(0) == "blockcount")) {
         pmdf->m_bootInfo.m_nBlockCount = vscp_readStringValue(strContent);
       }
       
@@ -2964,6 +3261,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
+
       // * * * alarm * * *
 
       // alarm/bit/name  - Not preferred form (Better as attribut) 
@@ -2988,6 +3286,32 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "alarm") &&
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }      
+
+      // dmatrix
+
+      // dmatrix/action/name
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "action") && 
+               (gTokenList.at(2) == "dmatrix") &&
+               (gpActionStruct != nullptr)) {
+        vscp_trim(strContent);
+        vscp_makeLower(strContent);         
+        gpActionStruct->m_name  = strContent;
+      }
+      // dmatrix/action/description
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "action") && 
+               (gTokenList.at(2) == "dmatrix") &&
+               (gpActionStruct != nullptr)) {
+        gpActionStruct->m_mapDescription[gLastLanguage] += strContent;
+      }
+      // dmatrix/action/infourl
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "action") && 
+               (gTokenList.at(2) == "dmatrix") &&
+               (gpActionStruct != nullptr)) {
+        gpActionStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
       break;
 
@@ -3048,27 +3372,34 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
 
       
-      // * * * action param * * *
+      // * * * dmatrix -- action param * * *
 
 
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "param") && 
+               (gTokenList.at(2) == "action") &&
+               (gTokenList.at(3) == "dmatrix") &&
+               (gpActionParamStruct != nullptr)) {
+        gpActionParamStruct->m_name = strContent;
+        vscp_trim(gpActionParamStruct->m_name);
+        vscp_makeLower(gpActionParamStruct->m_name);
+      }
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "param") && 
                (gTokenList.at(2) == "action") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gTokenList.at(3) == "dmatrix") &&
+               (gpActionParamStruct != nullptr)) {
+        gpActionParamStruct->m_mapDescription[gLastLanguage] = strContent;
       }
-      else if ((gTokenList.at(0) == "infourl") && 
-               (gTokenList.at(1) == "param") && 
+      else if ((gTokenList.at(0) == "infourl") &&
+               (gTokenList.at(1) == "param") &&
                (gTokenList.at(2) == "action") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gTokenList.at(3) == "dmatrix") &&
+               (gpActionParamStruct != nullptr)) {
+        gpActionParamStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
-      else if ((gTokenList.at(0) == "valuelist") && 
-               (gTokenList.at(1) == "parm") && 
-               (gTokenList.at(2) == "action") &&
-               (gpBitStruct != nullptr)) {
-        ;
-      }
+
+      // * * * event data * * *
 
       // event data
       else if ((gTokenList.at(0) == "description") && 
@@ -3152,13 +3483,49 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
       } 
+
+      // dmatrix bits
+
+      else if ((gTokenList.at(0) == "name") &&
+               (gTokenList.at(1) == "bit") &&
+               (gTokenList.at(2) == "param") &&
+               (gTokenList.at(3) == "action") &&
+               (gTokenList.at(4) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_name = strContent;
+        vscp_trim(gpBitStruct->m_name);
+        vscp_makeLower(gpBitStruct->m_name);
+      }
+      else if ((gTokenList.at(0) == "description") &&
+               (gTokenList.at(1) == "bit") &&
+               (gTokenList.at(2) == "param") &&
+               (gTokenList.at(3) == "action") &&
+               (gTokenList.at(4) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpBitStruct != nullptr) ) {
+        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      else if ((gTokenList.at(0) == "infourl") &&
+               (gTokenList.at(1) == "bit") &&
+               (gTokenList.at(2) == "param") &&
+               (gTokenList.at(3) == "action") &&
+               (gTokenList.at(4) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
+
+      
+
       break;
 
     case 8:
 
-      //std::cout << "8 - " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl; 
+      //std::cout << "8 - " <<  gTokenList.at(4) << " " <<  gTokenList.at(3) << " " <<  gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl; 
 
-      // bit/valuelist/item/value *
+      // reg/cmatrix action
+      //     bit/valuelist/item/value *
       if ((gTokenList.at(0) == "value") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") &&
@@ -3166,7 +3533,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) { 
         gpValueStruct->m_strValue = strContent;
       }
-      // bit/valuelist/item/name *
+      // reg/bit/valuelist/item/name *
       else if ((gTokenList.at(0) == "name") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") &&
@@ -3193,33 +3560,139 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }   
 
-      // bit/valuelist/item/name *
-      else if ((gTokenList.at(0) == "name") && 
-               (gTokenList.at(1) == "item") && 
+      // dmatrix value
+
+      else if ((gTokenList.at(0) == "value") &&
+               (gTokenList.at(1) == "item") &&
                (gTokenList.at(2) == "valuelist") &&
-               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(3) == "param") &&
+               (gTokenList.at(4) == "action") &&
+               (gTokenList.at(5) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpValueStruct != nullptr) ) {
+        gpValueStruct->m_strValue = strContent;
+      }
+
+      else if ((gTokenList.at(0) == "name") &&
+               (gTokenList.at(1) == "item") &&
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "param") &&
+               (gTokenList.at(4) == "action") &&
+               (gTokenList.at(5) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
         vscp_makeLower(gpValueStruct->m_name);
       }
-      // bit/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") &&
+               (gTokenList.at(1) == "item") &&
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "param") &&
+               (gTokenList.at(4) == "action") &&
+               (gTokenList.at(5) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpValueStruct != nullptr) ) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      else if ((gTokenList.at(0) == "infourl") &&
+               (gTokenList.at(1) == "item") &&
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "param") &&
+               (gTokenList.at(4) == "action") &&
+               (gTokenList.at(5) == "dmatrix") &&
+               (gpActionParamStruct != nullptr) &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
+      
+      break;
+
+    case 9:
+
+      // dmatrix action
+
+      if ((gTokenList.at(0) == "value") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "param") &&
+               (gTokenList.at(5) == "action") &&
+               (gpValueStruct != nullptr)) { 
+        gpValueStruct->m_strValue = strContent;
+      }
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "param") &&
+               (gTokenList.at(5) == "action") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+      }
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "param") &&
+               (gTokenList.at(5) == "action") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "param") &&
+               (gTokenList.at(5) == "action") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
+
+      // event data
+
+      // event/valuelist/item/value *
+      else if ((gTokenList.at(0) == "value") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gpValueStruct != nullptr)) { 
+        gpValueStruct->m_strValue = strContent;
+      }
+
+      // event/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
+      }
+
+      // event/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") &&
                (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
       }
-      // bit/valuelist/item/infourl *
+
+      // event/valuelist/item/infourl *
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") && 
                (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
-      }  
-      break;
+      }
+      break;  
   }
 }
 
@@ -3283,7 +3756,10 @@ __endSetupMDFParser(void *data, const char *name)
       }      
       else if (currentToken == "alarm") {        
         // Noting to do here
-      }      
+      }   
+      else if (currentToken == "dmatrix") {        
+        // Noting to do here
+      }    
       break;
 
     case 4:
@@ -3295,6 +3771,11 @@ __endSetupMDFParser(void *data, const char *name)
                (gpBitStruct != nullptr)) {
         gpBitStruct = nullptr;
       } 
+      else if ((currentToken == "action") && 
+               (gTokenList.at(1) == "dmatrix") &&
+               (gpActionStruct != nullptr)) {
+        gpActionStruct = nullptr;
+      }
       else if ((currentToken == "telephone") && 
                (gpItemStruct != nullptr)) {
         // Save address data in list
@@ -3662,12 +4143,12 @@ __endSetupMDFParser(void *data, const char *name)
       else if ((currentToken == "valuelist") && 
                (gTokenList.at(1) == "parm") && 
                (gTokenList.at(2) == "action") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gpActionStruct != nullptr)) {
+        int i = 0;
       }
       // event data
       else if ((currentToken == "description") && 
-               (gTokenList.at(1) == "sata") && 
+               (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
                (gpBitStruct != nullptr)) {
         ;
@@ -3723,6 +4204,15 @@ __endSetupMDFParser(void *data, const char *name)
                (gpValueStruct != nullptr)) {
         ;
       }
+      // dmatrix/action/param/valuelist/item
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") && 
+          (gTokenList.at(2) == "param") &&
+          (gTokenList.at(3) == "action") &&
+          (gTokenList.at(4) == "dmatrix") &&
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
       break;
 
     case 8:
@@ -3732,7 +4222,16 @@ __endSetupMDFParser(void *data, const char *name)
                (gTokenList.at(3) == "reg") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct = nullptr;
-      }  
+      }        
+      // dmatrix/action/param/bit/valuelist/item
+      else if ((currentToken == "item") && 
+               (gTokenList.at(1) == "valuelist") && 
+               (gTokenList.at(2) == "bit") &&
+               (gTokenList.at(3) == "param") &&
+               (gTokenList.at(4) == "action") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
+      }
   }
 
   // Reset language for 'name' and 'description' to default
@@ -3769,6 +4268,8 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   gpRegisterStruct = nullptr;
   gpBitStruct      = nullptr;
   gpValueStruct    = nullptr;
+  gpActionParamStruct = nullptr;
+  gpActionStruct = nullptr;
 
   // Empty old MDF information
   clearStorage();

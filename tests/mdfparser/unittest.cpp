@@ -697,9 +697,13 @@ TEST(parseMDF, XML_Abstractions)
   std::deque<CMDF_RemoteVariable *> *prvars;
   std::deque<CMDF_Value *> *pvalues;
   std::deque<CMDF_Bit *> *pbits;
+  std::deque<CMDF_Action *> *pactions;
+  std::deque<CMDF_ActionParameter *> *pparams;
   CMDF_RemoteVariable *prvar;
   CMDF_Value *pvalue;
   CMDF_Bit *pbit;
+  CMDF_Action *paction;
+  CMDF_ActionParameter *pparam;
   std::string path;
   CMDF mdf;
 
@@ -1006,6 +1010,267 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pbit->getWidth(), 1);
   ASSERT_EQ(pbit->getDefault(), 0);
   ASSERT_EQ(pbit->getDescription("en"), "Low alarm. The value of one of the A/D channels has gone under the low alarm level.");
+
+
+  // * * * Decision matrix * * *
+
+
+  CMDF_DecisionMatrix *pdm = mdf.getDM();
+  ASSERT_NE(pdm, nullptr);
+
+  ASSERT_EQ(pdm->getLevel(), 1);
+  ASSERT_EQ(pdm->getRowCount(), 4);
+  ASSERT_EQ(pdm->getRowSize(), 8);
+  ASSERT_EQ(pdm->isIndexed(), false);
+
+  // Get actions list
+  pactions = pdm->getActionList();
+  ASSERT_NE(pactions, nullptr);
+  ASSERT_EQ(pactions->size(), 7);
+
+  // * * * Action 0 * * *
+
+  paction = pactions->at(0);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 0);
+  ASSERT_EQ(paction->getName(), "noop");
+  ASSERT_EQ(paction->getDescription("en"), "No operation.");
+  ASSERT_EQ(paction->getDescription("se"), "Ingen operation.");
+  ASSERT_EQ(paction->getInfoURL("en"), "url0_en");
+  ASSERT_EQ(paction->getInfoURL("se"), "url0_se");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 0);
+
+  // * * * Action 1 * * *
+
+  paction = pactions->at(1);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 1);
+  ASSERT_EQ(paction->getName(), "start counter");
+  ASSERT_EQ(paction->getDescription("en"), "Set the enable bit and thereby start the counter givenby the argument which should be a value of 0-3 representingcounter0 - counter3.");
+  ASSERT_EQ(paction->getDescription("se"), "Sätt aktiveringsbiten och starta den räknare som anges avargumentet vilket skall vara ett värde 0-3 förcounter0 - counter3.");
+  ASSERT_EQ(paction->getInfoURL("en"), "url1_en");
+  ASSERT_EQ(paction->getInfoURL("se"), "url1_se");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  // Value 0
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+
+  ASSERT_EQ(pvalue->getValue(), "0x00");
+  ASSERT_EQ(pvalue->getName(), "counter 0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Counter 0.");
+  ASSERT_EQ(pvalue->getDescription("se"), "Räknare 0.");
+
+  // Value 1
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+
+  ASSERT_EQ(pvalue->getValue(), "0x01");
+  ASSERT_EQ(pvalue->getName(), "counter 1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Counter 1.");
+  ASSERT_EQ(pvalue->getDescription("se"), "Räknare 1.");
+
+  // Value 2
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+
+  ASSERT_EQ(pvalue->getValue(), "0x02");
+  ASSERT_EQ(pvalue->getName(), "counter2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Counter 2.");
+  ASSERT_EQ(pvalue->getDescription("se"), "Räknare 2.");
+
+  // Value 3
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+
+  ASSERT_EQ(pvalue->getValue(), "0x33");
+  ASSERT_EQ(pvalue->getName(), "counter 3");
+  ASSERT_EQ(pvalue->getDescription("en"), "Counter 3.");
+  ASSERT_EQ(pvalue->getDescription("se"), "Räknare 3.");
+
+  // * * * Action 2 * * *
+
+  paction = pactions->at(2);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 2);
+  ASSERT_EQ(paction->getName(), "stop counter");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  // * * * Action 3 * * *
+
+  paction = pactions->at(3);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 3);
+  ASSERT_EQ(paction->getName(), "clear counter");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  // * * * Action 4 * * *
+
+  paction = pactions->at(4);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 4);
+  ASSERT_EQ(paction->getName(), "reload counter");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  // * * * Action 5 * * *
+
+  paction = pactions->at(5);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 5);
+  ASSERT_EQ(paction->getName(), "count");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 2);
+
+  // * * * Action 6 * * *
+
+  paction = pactions->at(6);
+  ASSERT_NE(paction, nullptr);
+
+  ASSERT_EQ(paction->getCode(), 6);
+  ASSERT_EQ(paction->getName(), "actionbits");
+
+  // Get parameter list
+  pparams = paction->getListActionParameter();
+  ASSERT_NE(pparams, nullptr);
+  ASSERT_EQ(pparams->size(), 1);
+
+  pparam = pparams->at(0);
+  ASSERT_NE(pparam, nullptr);
+
+  // Parameter value list
+  pvalues = pparam->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 0);
+
+  // Parameter bit list
+  pbits = pparam->getListBits();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 3);
+
+  // Bit 0
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "lowbits");
+  ASSERT_EQ(pbit->getDescription("en"), "Test bit description low bits.");
+  ASSERT_EQ(pbit->getDescription("se"), "Test bit beskrivning low bits.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "test infourl low bits");
+  ASSERT_EQ(pbit->getInfoURL("se"), "test infourl låga bitar");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 4);
+
+  // Bit 1
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+  ASSERT_EQ(pbit->getName(), "highbits");
+  ASSERT_EQ(pbit->getDescription("en"), "Test bit description high bits.");
+  ASSERT_EQ(pbit->getDescription("se"), "Test bit beskrivning high bits.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "test infourl high bits");
+  ASSERT_EQ(pbit->getInfoURL("se"), "test infourl höga bitar");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 2);
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 0);
+
+  // Bit 2
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+  ASSERT_EQ(pbit->getName(), "valuebits");
+  ASSERT_EQ(pbit->getDescription("en"), "Value list in bit array.");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 2);
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 2);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalues, nullptr);
+
+  ASSERT_EQ(pvalue->getName(), "Value1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Value1 description.");
+  ASSERT_EQ(pvalue->getDescription("se"), "Beskrivning av värde.");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Value1 infourl.");
+  ASSERT_EQ(pvalue->getInfoURL("se"), "Värde 1 infourl.");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalues, nullptr);
+
+  ASSERT_EQ(pvalue->getName(), "Value2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Value2 description.");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Value2 infourl.");
+  
 }
 
 

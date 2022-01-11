@@ -996,7 +996,7 @@ private:
   // uint8_t m_width;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_Value *> m_list_value; // List with selectable values
+  std::deque<CMDF_Value *> m_list_value;          // List with selectable values
 };
 
 // ----------------------------------------------------------------------------

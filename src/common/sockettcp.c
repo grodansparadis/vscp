@@ -9,7 +9,7 @@
 // Copyright (c) 2013-2017 the Civetweb developers ()
 //
 // Adopted for VSCP, Small changes  additions
-// Copyright (C) 2018-2021 Ake Hedman, the VSCP project
+// Copyright (C) 2018-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
