@@ -1012,6 +1012,32 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pbit->getDescription("en"), "Low alarm. The value of one of the A/D channels has gone under the low alarm level.");
 
 
+  
+  
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(parseMDF, XML_DM)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  std::deque<CMDF_Action *> *pactions;
+  std::deque<CMDF_ActionParameter *> *pparams;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  CMDF_Action *paction;
+  CMDF_ActionParameter *pparam;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/dm.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
   // * * * Decision matrix * * *
 
 
@@ -1270,7 +1296,6 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pvalue->getName(), "Value2");
   ASSERT_EQ(pvalue->getDescription("en"), "Value2 description.");
   ASSERT_EQ(pvalue->getInfoURL("en"), "Value2 infourl.");
-  
 }
 
 
