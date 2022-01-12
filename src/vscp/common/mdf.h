@@ -1270,6 +1270,18 @@ public:
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
+    Get event data offset
+    @return Event data offset
+  */
+  uint16_t getOffset(void) { return m_offset; };
+
+  /*!
+    Set event data offset
+    @param offset Event data offset
+  */
+  void setOffset(uint16_t offset) { m_offset = offset; };
+
+  /*!
     Fetch the bit definition list
     @return Bit definition list
   */
@@ -1288,7 +1300,7 @@ private:
 
   uint16_t m_offset;
 
-  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
+  std::deque<CMDF_Bit *> m_list_bit;     // List with bit defines
   std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
@@ -1341,13 +1353,13 @@ public:
     Set event class
     @param vscpclass Event class
   */
-  void setClass(uint16_t vscpclass) { m_class = vscpclass; };
+  void setClass(int vscpclass) { m_class = vscpclass; };
 
   /*!
     Get event type
     @return Event type
   */
-  uint16_t getType(void) { return m_type; };
+  int getType(void) { return m_type; };
 
   /*!
     Set event type
@@ -1416,8 +1428,8 @@ private:
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  uint16_t m_class;
-  uint16_t m_type;
+  int m_class;   // Event class (-1 is all)
+  int m_type;    // Event type (-1 is all)
   uint8_t m_priority;
   mdf_event_direction m_direction;
 

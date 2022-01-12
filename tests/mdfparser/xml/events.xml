@@ -260,11 +260,11 @@
     </registers>
     
     
-    <remotevars>
+    <abstractions>
 
       <!-- A/D value -->
   
-      <remotevar type="uint16_t"
+      <abstraction type="uint16_t"
                           default="1234"  
                           page = "0" offset = "19" 
                           fgcolor="0x112233"
@@ -275,203 +275,203 @@
         <infourl lang="en">Remote var url3</infourl> 
         <infourl lang="se">Remote var url3 se</infourl> 
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "21" 
                           bgcolor="0xE0E0FF"
                           name="ch1_value" >
         <description lang="en">A/D value for channel 1.</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "23" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_value</name>
         <description lang="en">A/D value for channel 2.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "25" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch3_value</name>
         <description lang="en">A/D value for channel 3.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
       <!-- Measurement value -->
       
-      <remotevar type="float"  
+      <abstraction type="float"  
                           page = "1" offset = "44" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch0_measurement_value</name>
         <description lang="en">Measurement value for channel 0.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float"  
+      <abstraction type="float"  
                           page = "1" offset = "48" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_measurement_value</name>
         <description lang="en">Measurement value for channel 1.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float"  
+      <abstraction type="float"  
                           page = "1" offset = "52" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch2_measurement_value</name>
         <description lang="en">Measurement value for channel 2.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float"  
+      <abstraction type="float"  
                           page = "1" offset = "56" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch3_measurement_value</name>
         <description lang="en">Measurement value for channel 3.\n</description>
         <access>r</access>
-      </remotevar>
+      </abstraction>
       
       <!-- A/D report interval -->
   
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "27" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_report_interval</name>
         <description lang="en">Report interval in milliseconds for channel 0. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "29" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch1_report_interval</name>
         <description lang="en">Report interval in milliseconds for channel 1. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "31" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_report_interval</name>
         <description lang="en">Report interval in milliseconds for channel 2. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "33" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch3_report_interval</name>
         <description lang="en">Report interval in milliseconds for channel 3. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       
       <!-- Measurement report interval -->
   
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "55" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch0_report_interval</name>
         <description lang="en">Report interval in milliseconds for measurements A/D channel 0. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "57" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_measurement_report_interval</name>
         <description lang="en">Report interval in milliseconds for measurements A/D channel 1. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "59" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch2_measurement_report_interval</name>
         <description lang="en">Report interval in milliseconds for measurements A/D channel 2. Set to zero to disable.\n</description>
         <access>rw</access>
-        </remotevar>
+        </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "61" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch3_measurement_report_interval</name>
         <description lang="en">Report interval in milliseconds for measurements A/D channel 3. Set to zero to disable.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       
       <!-- Low alarm setpoint -->
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "35" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_low_alarm</name>
         <description lang="en">Low alarm set point for channel 0.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "37" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch1_low_alarm</name>
         <description lang="en">Low alarm set point for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "39" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_low_alarm</name>
         <description lang="en">Low alarm set point for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "41" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch3_low_alarm</name>
         <description lang="en">Low alarm set point for channel 3.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       <!-- High alarm setpoint -->
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "43" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch0_high_alarm</name>
         <description lang="en">High alarm set point for channel 0.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "45" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_high_alarm</name>
         <description lang="en">High alarm set point for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "47" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch2_high_alarm</name>
         <description lang="en">High alarm set point for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "49" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch3_high_alarm</name>
         <description lang="en">High alarm set point for channel 3.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       
       
@@ -479,127 +479,127 @@
       
       
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "63" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_low</name>
         <description lang="en">Absolute low value for channel 0.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "65" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch1_low</name>
         <description lang="en">Absolute low value for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "67" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_low</name>
         <description lang="en">Absolute low value for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "69" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch3_low</name>
         <description lang="en">Absolute low value for channel 3.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       
       <!-- Absolute high value -->
       
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "71" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch0_high</name>
         <description lang="en">Absolute high value for channel 0.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "73" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_high</name>
         <description lang="en">Absolute high value for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "75" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch2_high</name>
         <description lang="en">Absolute high value for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="uint16_t"  
+      <abstraction type="uint16_t"  
                           page = "0" offset = "77" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch3_high</name>
         <description lang="en">Absolute high value for channel 3.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
       
       <!-- Linearization k values -->    
       
       
-      <remotevar type="float" default="1"  
+      <abstraction type="float" default="1"  
                           page = "1" offset = "12" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_k</name>
         <description lang="en">Linearization k-constant for channel 0.</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float" default="0"  
+      <abstraction type="float" default="0"  
                           page = "1" offset = "28" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch0_m</name>
         <description lang="en">Linearization m-constant for channel 0.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float" default="1"  
+      <abstraction type="float" default="1"  
                           page = "1" offset = "16" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_k</name>
         <description lang="en">Linearization k-constant for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float" default="0"  
+      <abstraction type="float" default="0"  
                           page = "1" offset = "32" 
                           bgcolor="0xD8F2F5" >
         <name lang="en">ch1_m</name>
         <description lang="en">Linearization m-constant for channel 1.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float" default="1"  
+      <abstraction type="float" default="1"  
                           page = "1" offset = "20" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_k</name>
         <description lang="en">Linearization k-constant for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="float" default="0"  
+      <abstraction type="float" default="0"  
                           page = "1" offset = "36" 
                           bgcolor="0xE0E0FF" >
         <name lang="en">ch2_m</name>
         <description lang="en">Linearization m-constant for channel 2.\n</description>
         <access>rw</access>
-      </remotevar>
+      </abstraction>
       
-      <remotevar type="byte" default="1"  
+      <abstraction type="byte" default="1"  
                           page = "1" offset = "24" 
                           bgcolor="0xD8F2F5"
                           name="value_test1">
@@ -626,9 +626,9 @@
               <infourl lang="en">InfoURL item 3</infourl>                
           </item>
         </valuelist>
-      </remotevar>
+      </abstraction>
 
-      <remotevar type="byte" default="0"  
+      <abstraction type="byte" default="0"  
                           page = "1" offset = "40" 
                           bgcolor="0xD8F2F5"
                           name="bit_test1" >
@@ -688,9 +688,9 @@
             <name>Reserved7</name>
             <description lang="en">Reserved7.</description> 
           </bit> 
-      </remotevar>
+      </abstraction>
      
-   </remotevars>
+   </abstractions>
     
     
     
@@ -988,27 +988,25 @@
     
     <events>
     
-      <event class="0x00f" type="0x06" >
-        <name lang="en">Counter data</name>                     
-        <description lang="en">
-          Count data steam event sent on regular intervals if activated. Coding: Integer. Unit: none.  
-        </description>  
-        <priority>4</priority>
-        <data offset="0" >                      
-          <name lang="en">Datacoding</name>
-          <description lang="en">
-            Will contain 0b01100xxx where xxx is the counter (0-3/4-7) and
-            where 0-3 is the counter 32-bit value and 4-7 is the 32-bits of the
-            64-bit counter value stored internally.
-          </description>          
+      <event name="Event1" class="0x00f" type="0x06" priority="normal" direction="in">
+        <description lang="en">test event description.</description>
+        <description lang="se">test event beskrivning.</description>
+        <infourl lang="en">test event url1 en</infourl>
+        <infourl lang="se">test event url1 se</infourl>
+        <data offset="0" name="Datacoding">
+          <description lang="en">test data description.</description>
+          <description lang="se">test data beskrivning.</description>
+          <infourl lang="en">test data url1 en</infourl>
+          <infourl lang="se">test data url1 se</infourl>
         </data>
         <data offset="1" >                      
           <name lang="en">MSB of counter</name>
           <description lang="en">
           Byte 0 (MSB) of 32-bit counter value.
-          </description>          
+          </description>    
+          <infourl lang="en">test data url2 en</infourl>      
         </data>
-          <data offset="2" >
+        <data offset="2" >
           <name lang="en">Counter value</name>
           <description lang="en">
           Byte 1 of 32-bit counter value.
@@ -1028,13 +1026,13 @@
         </data>
       </event>
       
-      <event class="0x001" type="0x01" >
-        <name lang="en">Alarm occured</name>                    
+      <event class="0x001" type="0x01">
+        <name>Alarm occurred</name>                    
         <description lang="en">
-        If an alarm is armed this event is sent when it occurs and the corresponding 
-        alarm bit is set in the alarm register.
+        If an alarm is armed this event is sent when it occurs and the corresponding alarm bit is set in the alarm register.
         </description>  
         <priority>4</priority>
+        <direction>in</direction>
         <data offset="0" >                      
           <name lang="en">Index</name>
           <description lang="en">
@@ -1058,8 +1056,7 @@
       <event class="0x00A" type="0x09" >
         <name lang="en">Frequency measurement</name>                    
         <description lang="en">
-        Frequency measurement event sent on regular intervals if activated. 
-        Coding: 32-bit integer. Unit: Hertz.
+        Frequency measurement event sent on regular intervals if activated. Coding: 32-bit integer. Unit: Hertz.
         </description>  
         <priority>4</priority>
         <data offset="0" >                      
@@ -1100,7 +1097,7 @@
         Measurement values of all kinds can be sent as a result of linearization. 
         For example can an input counting S0 pulses be translated to KWh and watt  
         </description>  
-        <priority>4</priority>
+        <priority>normal</priority>
         <data offset="0" >                      
           <name lang="en">Datacoding</name>
           <description lang="en">
@@ -1137,7 +1134,49 @@
           </description>          
         </data>
       </event>
-        
+
+      <event class="111" type="0" name="Valuetest" direction="in" priority="1">                  
+        <description lang="en">Test of values.</description>  
+        <data offset="0" >                      
+          <name lang="en">Temperature</name>
+          <description lang="en"></description>
+          <valuelist>
+            <item value="0" name="Kelvin">
+              <description lang="en">Temperature in Kelvin.</description>
+            </item>
+            <item value="1" name="Celsius">
+              <description lang="en">Temperature in Celsius.</description>
+            </item>
+            <item value="2" name="Fahrenheit">
+              <description lang="en">Temperature in Fahrenheit.</description>
+            </item>
+          </valuelist>
+        </data>
+        <data offset="0" >
+          <name lang="en">BitTest</name>
+          <description lang="en">Event bittest</description>
+          <bit pos="0" width="2">
+            <name lang="en">BitsValue</name>
+            <description lang="en">Bit definition with valuelist.</description>
+            <valuelist>
+              <item value="0" name="val0">
+                <description lang="en">Value 0.</description>
+              </item>
+              <item value="1" name="val1">
+                <description lang="en">Value 1.</description>
+              </item>
+              <item value="2" name="val2">
+                <description lang="en">Value 2.</description>
+              </item>
+            </valuelist>
+          </bit>
+          <bit pos="0x03" >
+            <name lang="en">singlebit</name>
+            <description lang="en">Singlebit Test.</description>
+          </bit>  
+        </data>
+      </event>  
+
     </events>
         
 </module>   

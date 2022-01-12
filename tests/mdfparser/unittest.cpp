@@ -692,7 +692,7 @@ TEST(parseMDF, XML_REGISTERS)
 //-----------------------------------------------------------------------------
 
 
-TEST(parseMDF, XML_Abstractions)
+TEST(parseMDF, XML_Remotevars)
 {
   std::deque<CMDF_RemoteVariable *> *prvars;
   std::deque<CMDF_Value *> *pvalues;
@@ -707,7 +707,7 @@ TEST(parseMDF, XML_Abstractions)
   std::string path;
   CMDF mdf;
 
-  path = "xml/registers.xml";
+  path = "xml/remotevars.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   ASSERT_EQ(mdf.getRemoteVariableCount(), 40);
@@ -933,6 +933,519 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pbit->getDefault(), 0);
   ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
 
+  
+  
+  
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(parseMDF, XML_RemoteVariables)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/remotevars.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+   ASSERT_EQ(mdf.getRemoteVariableCount(), 40);
+
+  // Get pointer to all remote variables
+  prvars = mdf.getRemoteVariableList();
+  ASSERT_NE(prvars, nullptr);
+
+  // Invalid remote variable
+  prvar = mdf.getRemoteVariable("i-dont-exist");
+  ASSERT_EQ(prvar, nullptr); 
+
+  prvar = mdf.getRemoteVariable("ch0_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 19);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDefault(), "1234");
+  ASSERT_EQ(prvar->getForegroundColor(), 0x112233);
+  ASSERT_EQ(prvar->getBackgroundColor(), 0xE0E0FF);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 0.");
+  ASSERT_EQ(prvar->getDescription("se"), "A/D värde för kanal 0.");
+  ASSERT_EQ(prvar->getInfoURL("en"), "Remote var url3");
+  ASSERT_EQ(prvar->getInfoURL("se"), "Remote var url3 se");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_ONLY);
+
+  // Remote variable 'ch0_value' is at pos 0
+  prvar = prvars->at(0);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch1_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 21);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 1.");
+
+  // Remote variable 'ch1_value' is at pos 1
+  prvar = prvars->at(1);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch0_k");
+  ASSERT_NE(prvar, nullptr);  
+
+  // Remote variable with floating point value
+  ASSERT_EQ(prvar->getName(), "ch0_k");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 12);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_float);
+  ASSERT_EQ(prvar->getDescription("en"), "Linearization k-constant for channel 0.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  // * * * value list * * *
+
+  prvar = mdf.getRemoteVariable("value_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  pvalues = prvar->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item0");
+  ASSERT_EQ(pvalue->getValue(), "0x00");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item1");
+  ASSERT_EQ(pvalue->getValue(), "0x01");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item2");
+  ASSERT_EQ(pvalue->getValue(), "0x02");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item3");
+  ASSERT_EQ(pvalue->getValue(), "0x03");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
+
+
+  // * * * bitfield * * *
+
+
+  prvar = mdf.getRemoteVariable("bit_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  // Remote variable with bit field
+  ASSERT_EQ(prvar->getName(), "bit_test1");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 40);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint8_t);
+  ASSERT_EQ(prvar->getDescription("en"), "Bit test 1.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  pbits = prvar->getListBits();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 8);
+
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 2);
+  ASSERT_EQ(pbit->getDefault(), 2);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved.");
+  ASSERT_EQ(pbit->getDescription("se"), "Reserverad.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "en url0");
+  ASSERT_EQ(pbit->getInfoURL("se"), "se url0");
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 0");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 1");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 2");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 3");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "3");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 3");
+  ASSERT_EQ(pvalue->getDescription("se"), "Bit värde beskrivning item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url3");
+  ASSERT_EQ(pvalue->getInfoURL("se"), "Bit url3 se");
+
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved1");
+  ASSERT_EQ(pbit->getPos(), 1);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved1.");
+
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved2");
+  ASSERT_EQ(pbit->getPos(), 2);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved2.");
+
+  pbit = pbits->at(3);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved3");
+  ASSERT_EQ(pbit->getPos(), 3);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved3.");
+
+  pbit = pbits->at(4);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved4");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved4.");
+
+  pbit = pbits->at(5);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved5");
+  ASSERT_EQ(pbit->getPos(), 5);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved5.");
+
+  pbit = pbits->at(6);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved6");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved6.");
+
+  pbit = pbits->at(7);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved7");
+  ASSERT_EQ(pbit->getPos(), 7);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
+}
+
+TEST(parseMDF, XML_Abstractions)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  std::deque<CMDF_Action *> *pactions;
+  std::deque<CMDF_ActionParameter *> *pparams;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  CMDF_Action *paction;
+  CMDF_ActionParameter *pparam;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/abstractions.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+   ASSERT_EQ(mdf.getRemoteVariableCount(), 40);
+
+  // Get pointer to all remote variables
+  prvars = mdf.getRemoteVariableList();
+  ASSERT_NE(prvars, nullptr);
+
+  // Invalid remote variable
+  prvar = mdf.getRemoteVariable("i-dont-exist");
+  ASSERT_EQ(prvar, nullptr); 
+
+  prvar = mdf.getRemoteVariable("ch0_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 19);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDefault(), "1234");
+  ASSERT_EQ(prvar->getForegroundColor(), 0x112233);
+  ASSERT_EQ(prvar->getBackgroundColor(), 0xE0E0FF);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 0.");
+  ASSERT_EQ(prvar->getDescription("se"), "A/D värde för kanal 0.");
+  ASSERT_EQ(prvar->getInfoURL("en"), "Remote var url3");
+  ASSERT_EQ(prvar->getInfoURL("se"), "Remote var url3 se");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_ONLY);
+
+  // Remote variable 'ch0_value' is at pos 0
+  prvar = prvars->at(0);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch0_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch1_value");
+  ASSERT_NE(prvar, nullptr);  
+
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+  ASSERT_EQ(prvar->getPage(), 0);
+  ASSERT_EQ(prvar->getOffset(), 21);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint16_t);
+  ASSERT_EQ(prvar->getDescription("en"), "A/D value for channel 1.");
+
+  // Remote variable 'ch1_value' is at pos 1
+  prvar = prvars->at(1);
+  ASSERT_NE(prvar, nullptr); 
+  ASSERT_EQ(prvar->getName(), "ch1_value");
+
+  // name as attribute
+  prvar = mdf.getRemoteVariable("ch0_k");
+  ASSERT_NE(prvar, nullptr);  
+
+  // Remote variable with floating point value
+  ASSERT_EQ(prvar->getName(), "ch0_k");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 12);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_float);
+  ASSERT_EQ(prvar->getDescription("en"), "Linearization k-constant for channel 0.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  // * * * value list * * *
+
+  prvar = mdf.getRemoteVariable("value_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  pvalues = prvar->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item0");
+  ASSERT_EQ(pvalue->getValue(), "0x00");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item1");
+  ASSERT_EQ(pvalue->getValue(), "0x01");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item2");
+  ASSERT_EQ(pvalue->getValue(), "0x02");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "item3");
+  ASSERT_EQ(pvalue->getValue(), "0x03");
+  ASSERT_EQ(pvalue->getDescription("en"), "Description item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
+
+
+  // * * * bitfield * * *
+
+
+  prvar = mdf.getRemoteVariable("bit_test1");
+  ASSERT_NE(prvar, nullptr); 
+
+  // Remote variable with bit field
+  ASSERT_EQ(prvar->getName(), "bit_test1");
+  ASSERT_EQ(prvar->getPage(), 1);
+  ASSERT_EQ(prvar->getOffset(), 40);
+  ASSERT_EQ(prvar->getType(), remote_variable_type_uint8_t);
+  ASSERT_EQ(prvar->getDescription("en"), "Bit test 1.");
+  ASSERT_EQ(prvar->getAccess(), MDF_REG_ACCESS_READ_WRITE);
+
+  pbits = prvar->getListBits();
+  ASSERT_NE(pbits, nullptr);
+  ASSERT_EQ(pbits->size(), 8);
+
+  pbit = pbits->at(0);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved");
+  ASSERT_EQ(pbit->getPos(), 0);
+  ASSERT_EQ(pbit->getWidth(), 2);
+  ASSERT_EQ(pbit->getDefault(), 2);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved.");
+  ASSERT_EQ(pbit->getDescription("se"), "Reserverad.");
+  ASSERT_EQ(pbit->getInfoURL("en"), "en url0");
+  ASSERT_EQ(pbit->getInfoURL("se"), "se url0");
+
+  pvalues = pbit->getListValues();
+  ASSERT_NE(pvalues, nullptr);
+  ASSERT_EQ(pvalues->size(), 4);
+
+  pvalue = pvalues->at(0);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 0");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "0");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 0");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url0");
+
+  pvalue = pvalues->at(1);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 1");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "1");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 1");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url1");
+
+  pvalue = pvalues->at(2);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 2");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "2");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 2");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url2");
+
+  pvalue = pvalues->at(3);
+  ASSERT_NE(pvalue, nullptr);
+  ASSERT_EQ(pvalue->getName(), "bit value 3");  // Always lower case
+  ASSERT_EQ(pvalue->getValue(), "3");
+  ASSERT_EQ(pvalue->getDescription("en"), "Bit value description item 3");
+  ASSERT_EQ(pvalue->getDescription("se"), "Bit värde beskrivning item 3");
+  ASSERT_EQ(pvalue->getInfoURL("en"), "Bit url3");
+  ASSERT_EQ(pvalue->getInfoURL("se"), "Bit url3 se");
+
+  pbit = pbits->at(1);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved1");
+  ASSERT_EQ(pbit->getPos(), 1);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved1.");
+
+  pbit = pbits->at(2);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved2");
+  ASSERT_EQ(pbit->getPos(), 2);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved2.");
+
+  pbit = pbits->at(3);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved3");
+  ASSERT_EQ(pbit->getPos(), 3);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved3.");
+
+  pbit = pbits->at(4);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved4");
+  ASSERT_EQ(pbit->getPos(), 4);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved4.");
+
+  pbit = pbits->at(5);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved5");
+  ASSERT_EQ(pbit->getPos(), 5);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved5.");
+
+  pbit = pbits->at(6);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved6");
+  ASSERT_EQ(pbit->getPos(), 6);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved6.");
+
+  pbit = pbits->at(7);
+  ASSERT_NE(pbit, nullptr);
+
+  ASSERT_EQ(pbit->getName(), "reserved7");
+  ASSERT_EQ(pbit->getPos(), 7);
+  ASSERT_EQ(pbit->getWidth(), 1);
+  ASSERT_EQ(pbit->getDefault(), 0);
+  ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
+  
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+
+TEST(parseMDF, XML_Alarms)
+{
+  std::deque<CMDF_RemoteVariable *> *prvars;
+  std::deque<CMDF_Value *> *pvalues;
+  std::deque<CMDF_Bit *> *pbits;
+  std::deque<CMDF_Action *> *pactions;
+  std::deque<CMDF_ActionParameter *> *pparams;
+  CMDF_RemoteVariable *prvar;
+  CMDF_Value *pvalue;
+  CMDF_Bit *pbit;
+  CMDF_Action *paction;
+  CMDF_ActionParameter *pparam;
+  std::string path;
+  CMDF mdf;
+
+  path = "xml/alarm.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
   // * * * Alarm * * *
 
   pbits = mdf.getAlarmList();
@@ -1012,8 +1525,6 @@ TEST(parseMDF, XML_Abstractions)
   ASSERT_EQ(pbit->getDescription("en"), "Low alarm. The value of one of the A/D channels has gone under the low alarm level.");
 
 
-  
-  
 }
 
 
@@ -1037,6 +1548,7 @@ TEST(parseMDF, XML_DM)
 
   path = "xml/dm.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
 
   // * * * Decision matrix * * *
 
@@ -1302,21 +1814,154 @@ TEST(parseMDF, XML_DM)
 //-----------------------------------------------------------------------------
 
 
-TEST(parseMDF, XML_RemoteVariables)
+TEST(parseMDF, XML_Events)
 {
   std::deque<CMDF_RemoteVariable *> *prvars;
   std::deque<CMDF_Value *> *pvalues;
   std::deque<CMDF_Bit *> *pbits;
+  std::deque<CMDF_Action *> *pactions;
+  std::deque<CMDF_ActionParameter *> *pparams;
+  std::deque<CMDF_Event *> *pevents;
+  std::deque<CMDF_EventData *> *peventdata;
   CMDF_RemoteVariable *prvar;
   CMDF_Value *pvalue;
   CMDF_Bit *pbit;
+  CMDF_Action *paction;
+  CMDF_ActionParameter *pparam;
+  CMDF_Event *pevent;
+  CMDF_EventData *pdata;
   std::string path;
   CMDF mdf;
 
-  path = "xml/registers.xml";
+  path = "xml/events.xml";
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
-   
+  // Get list of events
+  pevents = mdf.getEventList();
+  ASSERT_NE(pevents, nullptr);
+  ASSERT_EQ(pevents->size(), 5);
+
+  // * * * Event 1 * * *
+
+  pevent = pevents->at(0);
+  ASSERT_NE(pevent, nullptr);
+
+  ASSERT_EQ(pevent->getClass(), 15);
+  ASSERT_EQ(pevent->getType(), 6);
+  ASSERT_EQ(pevent->getPriority(), 3);
+  ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_IN);
+
+  ASSERT_EQ(pevent->getName(), "event1");
+  ASSERT_EQ(pevent->getDescription("en"), "test event description.");
+  ASSERT_EQ(pevent->getDescription("se"), "test event beskrivning.");
+  ASSERT_EQ(pevent->getInfoURL("en"), "test event url1 en");
+  ASSERT_EQ(pevent->getInfoURL("se"), "test event url1 se");
+
+  // Get data description
+  peventdata = pevent->getListEventData();
+  ASSERT_NE(peventdata, nullptr);
+  ASSERT_EQ(peventdata->size(), 5);
+
+  // event data 0
+
+  pdata = peventdata->at(0);
+  ASSERT_NE(pdata, nullptr);
+
+  ASSERT_EQ(pdata->getOffset(), 0);
+  ASSERT_EQ(pdata->getName(), "datacoding");
+  ASSERT_EQ(pdata->getDescription("en"), "test data description.");
+  ASSERT_EQ(pdata->getDescription("se"), "test data beskrivning.");
+  ASSERT_EQ(pdata->getInfoURL("en"), "test data url1 en");
+  ASSERT_EQ(pdata->getInfoURL("se"), "test data url1 se");
+
+  // event data 1
+
+  pdata = peventdata->at(1);
+  ASSERT_NE(pdata, nullptr);
+
+  ASSERT_EQ(pdata->getOffset(), 1);
+  ASSERT_EQ(pdata->getName(), "msb of counter");
+  ASSERT_EQ(pdata->getDescription("en"), "Byte 0 (MSB) of 32-bit counter value.");
+  ASSERT_EQ(pdata->getInfoURL("en"), "test data url2 en");
+
+  // event data 2
+
+  pdata = peventdata->at(2);
+  ASSERT_NE(pdata, nullptr);
+
+  ASSERT_EQ(pdata->getOffset(), 2);
+  ASSERT_EQ(pdata->getName(), "counter value");
+  ASSERT_EQ(pdata->getDescription("en"), "Byte 1 of 32-bit counter value.");
+
+  // event data 3
+
+  pdata = peventdata->at(3);
+  ASSERT_NE(pdata, nullptr);
+
+  ASSERT_EQ(pdata->getOffset(), 3);
+  ASSERT_EQ(pdata->getName(), "counter value");
+  ASSERT_EQ(pdata->getDescription("en"), "Byte 2 of 32-bit counter value.");
+
+  // event data 4
+
+  pdata = peventdata->at(4);
+  ASSERT_NE(pdata, nullptr);
+
+  ASSERT_EQ(pdata->getOffset(), 4);
+  ASSERT_EQ(pdata->getName(), "counter value");
+  ASSERT_EQ(pdata->getDescription("en"), "Byte 3 (LSB) of 32-bit counter value.");
+
+  // * * * Event 2 * * *
+
+  pevent = pevents->at(1);
+  ASSERT_NE(pevent, nullptr);
+
+  ASSERT_EQ(pevent->getClass(), 1);
+  ASSERT_EQ(pevent->getType(), 1);
+  ASSERT_EQ(pevent->getPriority(), 4);
+  ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_IN);
+
+  ASSERT_EQ(pevent->getName(), "alarm occurred");
+  ASSERT_EQ(pevent->getDescription("en"), "If an alarm is armed this event is sent when it occurs and the corresponding alarm bit is set in the alarm register.");
+
+  // * * * Event 3 * * *
+
+  pevent = pevents->at(2);
+  ASSERT_NE(pevent, nullptr);
+
+  ASSERT_EQ(pevent->getClass(), 10);
+  ASSERT_EQ(pevent->getType(), 9);
+  ASSERT_EQ(pevent->getPriority(), 4);
+  ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_OUT);
+
+  ASSERT_EQ(pevent->getName(), "frequency measurement");
+  ASSERT_EQ(pevent->getDescription("en"), "Frequency measurement event sent on regular intervals if activated. Coding: 32-bit integer. Unit: Hertz.");
+
+  // * * * Event 4 * * *
+
+  pevent = pevents->at(3);
+  ASSERT_NE(pevent, nullptr);
+
+  ASSERT_EQ(pevent->getClass(), 10);
+  ASSERT_EQ(pevent->getType(), -1);
+  ASSERT_EQ(pevent->getPriority(), 3);
+  ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_OUT);
+
+  // * * * Event 5 * * *
+  // valuelist
+  pevent = pevents->at(4);
+  ASSERT_NE(pevent, nullptr);
+
+  ASSERT_EQ(pevent->getClass(), 111);
+  ASSERT_EQ(pevent->getType(), 0);
+  ASSERT_EQ(pevent->getPriority(), 1);
+  ASSERT_EQ(pevent->getDirection(), MDF_EVENT_DIR_IN);
+
+  // Get data description
+  peventdata = pevent->getListEventData();
+  ASSERT_NE(peventdata, nullptr);
+  ASSERT_EQ(peventdata->size(), 2);
+
 }
 
 

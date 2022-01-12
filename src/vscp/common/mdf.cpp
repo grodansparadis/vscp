@@ -1784,6 +1784,8 @@ CMDF_Register *gpRegisterStruct;            // Holds temporary register items
 CMDF_RemoteVariable *gpRvarStruct;          // Holds temporary remote variable items
 CMDF_ActionParameter *gpActionParamStruct;  // Holds temporary action parameter items
 CMDF_Action *gpActionStruct;                // Holds temporary action items
+CMDF_Event *gpEventStruct;                  // Holds temporary event items
+CMDF_EventData *gpEventDataStruct;          // Holds temporary event data items
 
 // clang-format off
 
@@ -1997,51 +1999,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         ;
       }
       else if (currentToken == "dmatrix") {
-        for (int i = 0; attr[i]; i += 2) {
-
-          std::string attribute = attr[i + 1];
-          vscp_trim(attribute);
-          vscp_makeLower(attribute);
-
-          if (0 == strcasecmp(attr[i], "level")) {
-            // DM level
-            spdlog::trace("Parse-XML: handleMDFParserData: DM level: {0}", attribute);
-            pmdf->getDM()->m_level = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "page")) {
-            // DM page
-            spdlog::trace("Parse-XML: handleMDFParserData: DM page: {0}", attribute);
-            pmdf->getDM()->m_startPage = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "offset")) {
-            // DM offset
-            spdlog::trace("Parse-XML: handleMDFParserData: DM offset: {0}", attribute);
-            pmdf->getDM()->m_startOffset = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "rowcnt")) {
-            // DM eow count
-            spdlog::trace("Parse-XML: handleMDFParserData: DM row count: {0}", attribute);
-            pmdf->getDM()->m_rowCount = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "rowsize")) {
-            // DM row size
-            spdlog::trace("Parse-XML: handleMDFParserData: DM row size: {0}", attribute);
-            pmdf->getDM()->m_rowSize = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "indexed")) {
-            // DM indexed
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: indexed {0}", attribute);
-            if (attribute == "true") {
-              pmdf->getDM()->setIndexed(true);
-            }
-            else if (attribute == "false") {
-              pmdf->getDM()->setIndexed(false);
-            }
-            else {
-              pmdf->getDM()->setIndexed(vscp_readStringValue(attribute) ? true : false);
-            }
-          }
-        }
+        ;
       }
       else if (currentToken == "events") {
         ;
@@ -2512,6 +2470,96 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }    
       }
+      /*
+        <events>
+          <event>           <------
+            .....
+          </event>
+        </events>
+      */
+      else if ((currentToken == "event") && 
+          (gTokenList.at(1) == "events")) {
+
+        gpEventStruct = new CMDF_Event;
+        if (nullptr == gpEventStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for event");
+          return;
+        }
+
+        pmdf->m_list_event.push_back(gpEventStruct);
+
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "name")) {           
+            spdlog::trace("Parse-XML: handleMDFParserData: event name: {0}", attribute);
+            gpEventStruct->m_name = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "class")) {           
+            spdlog::trace("Parse-XML: handleMDFParserData: event class: {0}", attribute);
+            if (attribute == "-") {
+              gpEventStruct->m_class = -1;
+            }
+            else {
+              gpEventStruct->m_class = vscp_readStringValue(attribute);
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "type")) {
+            spdlog::trace("Parse-XML: handleMDFParserData: event type: {0}", attribute);
+            if (attribute == "-") {
+              gpEventStruct->m_type = -1;
+            }
+            else {
+              gpEventStruct->m_type = vscp_readStringValue(attribute);
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "direction")) {
+            spdlog::trace("Parse-XML: handleMDFParserData: event direction: {0}", attribute);
+            gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+            vscp_trim(attribute);
+            vscp_makeLower(attribute);
+            if (attribute == "in") {
+              gpEventStruct->m_direction = MDF_EVENT_DIR_IN;
+            }
+            else if (attribute == "out") {
+              gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+            }
+            else {
+              gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+            }            
+          }            
+          else if (0 == strcasecmp(attr[i], "priority")) {
+            spdlog::trace("Parse-XML: handleMDFParserData: event priority: {0}", attribute);
+            gpEventStruct->m_priority = 3;
+            vscp_trim(attribute);
+            vscp_makeLower(attribute);
+            if (attribute == "low") {
+              gpEventStruct->m_priority = VSCP_PRIORITY_LOW >> 5;
+              spdlog::debug("Parse-XML: Event priority set to low.");
+            }
+            else if (attribute == "normal") {
+              gpEventStruct->m_priority = VSCP_PRIORITY_NORMAL >> 5;
+              spdlog::debug("Parse-XML: Event priority set to medium.");
+            }
+            else if (attribute == "medium") {
+              gpEventStruct->m_priority = VSCP_PRIORITY_MEDIUM >> 5;
+              spdlog::debug("Parse-XML: Event priority set to medium.");
+            }
+            else if (attribute == "high") {
+              gpEventStruct->m_priority = VSCP_PRIORITY_HIGH >> 5;
+              spdlog::debug("Parse-XML: Event priority set to high.");
+            }
+            else {
+              gpEventStruct->m_priority = vscp_readStringValue(attribute) & 7;
+              spdlog::debug("Parse-XML: Event priority set to {0}.", gpEventStruct->m_priority);
+            }
+          }
+        }     
+      }
       break;
 
 
@@ -2562,7 +2610,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         </rvar>
       */
       if ((currentToken == "bit") && 
-          ((gTokenList.at(1) == "rvalue") ||(gTokenList.at(1) == "abstraction") ) &&
+          ((gTokenList.at(1) == "remotevar") ||(gTokenList.at(1) == "abstraction") ) &&
           (gpRvarStruct != nullptr)) {
 
         spdlog::trace("Parse-XML: handleMDFParserData: Bit");
@@ -2627,6 +2675,43 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
+
+      /*
+        <events>
+          <event>           
+            <data>....</data>  <------
+          </event>
+        </events>
+      */
+      else if ((currentToken == "data") && 
+               (gTokenList.at(1) == "event") && 
+               (gTokenList.at(2) == "events")) {
+
+        gpEventDataStruct = new CMDF_EventData;
+        if (nullptr == gpEventDataStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for event");
+          return;
+        }
+
+        gpEventStruct->m_list_eventdata.push_back(gpEventDataStruct);
+
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "name")) {           
+            spdlog::trace("Parse-XML: handleMDFParserData: event data name: {0}", attribute);
+            gpEventDataStruct->m_name = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "offset")) {           
+            spdlog::trace("Parse-XML: handleMDFParserData: event data offset: {0}", attribute);
+            gpEventDataStruct->m_offset = vscp_readStringValue(attribute);
+          }
+        }
+      }
       
       break;
 
@@ -2664,12 +2749,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       }
 
       /*
-        <rvar>
+        <remotevar>
           <valuelist>
             <item>....</item>   <------
             <item>....</item>
           </valuelist>
-        </rvar>
+        </remotevar>
       */
       else if ((currentToken == "item") && 
           (gTokenList.at(1) == "valuelist") && 
@@ -2722,6 +2807,34 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Set global pointer to added value so other info can be added
         gpBitStruct = gpActionParamStruct->m_list_bit.back();    
       } 
+
+      /*
+          <events>
+            <event>
+              <data>
+                <bit></bit>  <------
+              </data>
+            </event>
+          </events>
+      */
+      else if ((currentToken == "bit") && 
+               (gTokenList.at(1) == "data") &&
+               (gTokenList.at(2) == "event") &&
+               (gTokenList.at(3) == "events") &&
+               (gpEventStruct != nullptr) &&
+               (gpEventDataStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: event data Bit");
+
+        //std::cout << "Size: " << gpActionParamStruct->m_list_value.size() << std::endl;
+        if (!__getBitAttributes(&gpEventDataStruct->m_list_bit, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse event data bit");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpBitStruct = gpEventDataStruct->m_list_bit.back();    
+      }
 
       break;
 
@@ -2839,6 +2952,37 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         gpValueStruct = gpActionParamStruct->m_list_value.back();
       }
 
+      /*
+          <events>  
+            <event>
+              <data>
+                <valuelist>
+                  <item>...</item>  <-----
+                </valuelist>
+              </data>
+            </event>
+          </events>  
+      */
+      else if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "data") &&
+          (gTokenList.at(3) == "event") &&
+          ((gTokenList.at(4) == "events")) &&
+          (gpEventStruct != nullptr) &&
+          (gpEventDataStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+        //std::cout << "Size: " << gpActionParamStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpEventDataStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpEventDataStruct->m_list_value.back();
+      }
+
       break;
 
     case 7:
@@ -2876,6 +3020,42 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Set global pointer to added value so other info can be added
         gpValueStruct = gpBitStruct->m_list_value.back();
       }
+
+      /*
+          <events>
+            <event>
+              <data>
+                <bit>
+                  <valuelist>
+                    <item></item> <-----
+                  </valuelist>
+                </bit>
+              <action>
+            </event>
+          </events>
+      */
+      if ((currentToken == "item") && 
+          (gTokenList.at(1) == "valuelist") &&
+          (gTokenList.at(2) == "bit") &&
+          (gTokenList.at(3) == "data") &&
+          (gTokenList.at(4) == "event") &&
+          (gTokenList.at(5) == "events") &&
+          (gpEventStruct != nullptr) &&
+          (gpEventDataStruct != nullptr) &&
+          (gpBitStruct != nullptr)) {
+
+        spdlog::trace("Parse-XML: handleMDFParserData: Value");
+
+        //std::cout << "Size: " << gpBitStruct->m_list_value.size() << std::endl;
+        if (!__getValueAttributes(&gpBitStruct->m_list_value, attr)) {
+          spdlog::error("Parse-XML: handleMDFParserData: Failed to parse register bit values");
+          return;
+        }
+
+        // Set global pointer to added value so other info can be added
+        gpValueStruct = gpBitStruct->m_list_value.back();
+      }      
+      
       break;
 
   } // switch depth
@@ -3261,6 +3441,64 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
         }
       }
+      // Event
+      else if ((gTokenList.at(1) == "event") && 
+               (gpEventStruct != nullptr)) {
+
+        // Old form "name"
+        if (gTokenList.at(0) == "name") {
+          gpEventStruct->m_name = strContent;
+          vscp_trim(gpEventStruct->m_name);
+          vscp_makeLower(gpEventStruct->m_name);
+        }
+        else if (gTokenList.at(0) == "description") {
+          gpEventStruct->m_mapDescription[gLastLanguage] = strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          gpEventStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        }
+        else if (gTokenList.at(0) == "priority") {
+          spdlog::trace("Parse-XML: handleMDFParserData: event priority: {0}", strContent);
+          gpEventStruct->m_priority = 3;
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          if (strContent == "low") {
+            gpEventStruct->m_priority = VSCP_PRIORITY_LOW >> 5;
+            spdlog::debug("Parse-XML: Event priority set to low.");
+          }
+          else if (strContent == "normal") {
+            gpEventStruct->m_priority = VSCP_PRIORITY_NORMAL >> 5;
+            spdlog::debug("Parse-XML: Event priority set to medium.");
+          }
+          else if (strContent == "medium") {
+            gpEventStruct->m_priority = VSCP_PRIORITY_MEDIUM >> 5;
+            spdlog::debug("Parse-XML: Event priority set to medium.");
+          }
+          else if (strContent == "high") {
+            gpEventStruct->m_priority = VSCP_PRIORITY_HIGH >> 5;
+            spdlog::debug("Parse-XML: Event priority set to high.");
+          }
+          else {
+            gpEventStruct->m_priority = vscp_readStringValue(strContent) & 7;
+            spdlog::debug("Parse-XML: Event priority set to {0}.", gpEventStruct->m_priority);
+          }
+        }
+        else if (gTokenList.at(0) == "direction") {
+          spdlog::trace("Parse-XML: handleMDFParserData: event direction: {0}", strContent);
+          gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          if (strContent == "in") {
+            gpEventStruct->m_direction = MDF_EVENT_DIR_IN;
+          }
+          else if (strContent == "out") {
+            gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+          }
+          else {
+            gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
+          }    
+        }
+      }
 
       // * * * alarm * * *
 
@@ -3402,24 +3640,35 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // * * * event data * * *
 
       // event data
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "data") && 
+               (gTokenList.at(2) == "event") &&
+               (gpEventDataStruct != nullptr)) {
+        gpEventDataStruct->m_name = strContent;
+        vscp_trim(gpEventDataStruct->m_name);
+        vscp_makeLower(gpEventDataStruct->m_name);
+      }
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gpEventDataStruct != nullptr)) {
+        gpEventDataStruct->m_mapDescription[gLastLanguage] = strContent;
       }
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gpEventDataStruct != nullptr)) {
+        gpEventDataStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
       else if ((gTokenList.at(0) == "valuelist") && 
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
-               (gpBitStruct != nullptr)) {
-        ;
+               (gpEventDataStruct != nullptr)) {
+        int i = 9;
       }
+
+      
+
       break;
 
     case 7:
@@ -3516,7 +3765,36 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
 
-      
+      // event data
+
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "data") &&
+               (gTokenList.at(3) == "event") &&
+               (gTokenList.at(4) == "events") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
+      }
+
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "data") &&
+               (gTokenList.at(3) == "event") &&
+               (gTokenList.at(4) == "events") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "bit") && 
+               (gTokenList.at(2) == "data") &&
+               (gTokenList.at(3) == "event") &&
+               (gTokenList.at(4) == "events") &&
+               (gpBitStruct != nullptr)) {
+        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
 
       break;
 
@@ -3605,6 +3883,54 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
+
+      // event data
+
+      // event/valuelist/item/value *
+      else if ((gTokenList.at(0) == "value") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(5) == "events") &&
+               (gpValueStruct != nullptr)) { 
+        gpValueStruct->m_strValue = strContent;
+      }
+
+      // event/valuelist/item/name *
+      else if ((gTokenList.at(0) == "name") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(5) == "events") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_name = strContent;
+        vscp_trim(gpValueStruct->m_name);
+        vscp_makeLower(gpValueStruct->m_name);
+      }
+
+      // event/valuelist/item/description *
+      else if ((gTokenList.at(0) == "description") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") &&
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(5) == "events") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+      }
+
+      // event/valuelist/item/infourl *
+      else if ((gTokenList.at(0) == "infourl") && 
+               (gTokenList.at(1) == "item") && 
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "data") &&
+               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(5) == "events") &&
+               (gpValueStruct != nullptr)) {
+        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+      }
       
       break;
 
@@ -3651,47 +3977,52 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
       // event data
 
-      // event/valuelist/item/value *
       else if ((gTokenList.at(0) == "value") && 
                (gTokenList.at(1) == "item") && 
-               (gTokenList.at(2) == "valuelist") &&
-               (gTokenList.at(3) == "data") &&
-               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "data") &&
+               (gTokenList.at(5) == "event") &&
+               (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) { 
         gpValueStruct->m_strValue = strContent;
       }
 
-      // event/valuelist/item/name *
       else if ((gTokenList.at(0) == "name") && 
                (gTokenList.at(1) == "item") && 
-               (gTokenList.at(2) == "valuelist") &&
-               (gTokenList.at(3) == "data") &&
-               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "data") &&
+               (gTokenList.at(5) == "event") &&
+               (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
         vscp_makeLower(gpValueStruct->m_name);
       }
 
-      // event/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "item") && 
-               (gTokenList.at(2) == "valuelist") &&
-               (gTokenList.at(3) == "data") &&
-               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(2) == "valuelist") && 
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "data") &&
+               (gTokenList.at(5) == "event") &&
+               (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
       }
 
-      // event/valuelist/item/infourl *
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "item") && 
                (gTokenList.at(2) == "valuelist") && 
-               (gTokenList.at(3) == "data") &&
-               (gTokenList.at(4) == "event") &&
+               (gTokenList.at(3) == "bit") &&
+               (gTokenList.at(4) == "data") &&
+               (gTokenList.at(5) == "event") &&
+               (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
       }
+
       break;  
   }
 }
@@ -4261,15 +4592,17 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 
   gLastLanguage = "en";
 
-  gpItemStruct     = nullptr;
-  gpPictureStruct  = nullptr;
-  gpFirmwareStruct = nullptr;
-  gpManualStruct   = nullptr;
-  gpRegisterStruct = nullptr;
-  gpBitStruct      = nullptr;
-  gpValueStruct    = nullptr;
+  gpItemStruct        = nullptr;
+  gpPictureStruct     = nullptr;
+  gpFirmwareStruct    = nullptr;
+  gpManualStruct      = nullptr;
+  gpRegisterStruct    = nullptr;
+  gpBitStruct         = nullptr;
+  gpValueStruct       = nullptr;
   gpActionParamStruct = nullptr;
-  gpActionStruct = nullptr;
+  gpActionStruct      = nullptr;
+  gpEventStruct       = nullptr;
+  gpEventDataStruct   = nullptr;
 
   // Empty old MDF information
   clearStorage();
@@ -5735,7 +6068,12 @@ CMDF::parseMDF_JSON(std::string &path)
 
             // Class
             if (jev.contains("class") && jev["class"].is_string()) {
-              pev->m_class = vscp_readStringValue(jev["class"]);
+              if (jev["class"]) {
+                pev->m_class = -1;
+              }
+              else {
+                pev->m_class = vscp_readStringValue(jev["class"]);
+              }
               spdlog::debug("Parse-JSON: Event class set to {0}.", pev->m_class);
             }
             else if (jev.contains("class") && jev["class"].is_number()) {
@@ -5749,7 +6087,12 @@ CMDF::parseMDF_JSON(std::string &path)
 
             // Type
             if (jev.contains("type") && jev["type"].is_string()) {
-              pev->m_type = vscp_readStringValue(jev["type"]);
+              if (jev["type"]) {
+                pev->m_type = -1;
+              }
+              else {
+                pev->m_type = vscp_readStringValue(jev["type"]);
+              }
               spdlog::debug("Parse-JSON: Event type set to {0}.", pev->m_type);
             }
             else if (jev.contains("type") && jev["type"].is_number()) {
@@ -5796,6 +6139,10 @@ CMDF::parseMDF_JSON(std::string &path)
               if (str == "low") {
                 pev->m_priority = VSCP_PRIORITY_LOW >> 5;
                 spdlog::debug("Parse-JSON: Event priority set to low.");
+              }
+              else if (str == "normal") {
+                pev->m_priority = VSCP_PRIORITY_NORMAL >> 5;
+                spdlog::debug("Parse-JSON: Event priority set to normal.");
               }
               else if (str == "medium") {
                 pev->m_priority = VSCP_PRIORITY_MEDIUM >> 5;
