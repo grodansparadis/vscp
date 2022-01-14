@@ -1764,6 +1764,19 @@ public:
     }
   };
 
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
   /*!
     Path to picture file
@@ -1772,6 +1785,105 @@ private:
 
   /*!
     Picture type
+  */
+  std::string m_strFormat;
+
+  /*!
+      Description of file
+  */
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
+};
+
+// ----------------------------------------------------------------------------
+
+class CMDF_Video {
+
+public:
+  CMDF_Video();
+  ~CMDF_Video();
+
+  // Friend declarations
+  friend CMDF;
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+    Get URL for video
+    @return URL for video
+  */
+  std::string getUrl(void) { return m_strURL; };
+
+  /*!
+    Set URL for video
+    @param strURL URL for video
+  */
+  void setUrl(std::string &strURL) { m_strURL = strURL; };
+
+  /*!
+    Get format for video
+    @return format for video
+  */
+  std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Set format for video
+    @param strFormat Format for video
+  */
+  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+
+  /*!
+    Set description for video
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for video
+    @param strLanguage Language for description (default="en")
+    @return Description for video as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+private:
+  /*!
+    Path to video file
+  */
+  std::string m_strURL;
+
+  /*!
+    video type
   */
   std::string m_strFormat;
 
@@ -1893,6 +2005,19 @@ public:
     }
   };
 
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
   /*!
       Path/url to firmware hex file
@@ -1950,6 +2075,183 @@ private:
 
 // ---------------------------------------------------------------------------
 
+/*!
+  CMDF_Driver
+
+  Holds information about one driver for the module
+
+ */
+
+class CMDF_Driver {
+
+public:
+  CMDF_Driver();
+  ~CMDF_Driver();
+
+  // Friend declarations
+  friend CMDF;
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+    Get URL for CMDF_Driver
+    @return URL for CMDF_Driver
+  */
+  std::string getUrl(void) { return m_strURL; };
+
+  /*!
+    Get driver type for CMDF_Driver
+    @return Target string for CMDF_Driver
+  */
+  std::string getType(void) { return m_strType; };
+
+  /*!
+    Get id for driver
+    @return id for driver
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Get OS (Operation System) for driver
+    @return OS for driver
+  */
+  std::string getOS(void) { return m_strOS; };
+
+  /*!
+    Get OS version for the driver
+    @return OS version for driver
+  */
+  std::string getOSVer(void) { return m_strOSVer; };
+
+  /*!
+    Get version major for driver
+    @return Version major for driver
+  */
+  uint16_t getVersionMajor(void) { return m_version_major; };
+
+  /*!
+    Get version minor for driver
+    @return Version minor for driver
+  */
+  uint16_t getVersionMinor(void) { return m_version_minor; };
+
+  /*!
+    Get version patch for driver
+    @return Version patch for driver
+  */
+  uint16_t getVersionPatch(void) { return m_version_patch; };  
+
+  /*!
+    Get MD5 for driver file on hex string format
+    @return md5 hash for driver file on string format.
+  */
+  std::string getMd5(void) { return m_strMd5; };
+
+  /*!
+    Get ISO date for driver
+    @return ISO date on string form
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set description for picture
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for firmware
+    @param strLanguage Language for description (default="en")
+    @return Description for firmware as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+private:
+
+  /*!
+      Unique name for driver
+  */
+  std::string m_strName;
+
+  /*!
+      Path/url to driver file
+  */
+  std::string m_strURL;
+
+  /*!
+    Target system or processor for this driver
+  */
+  std::string m_strType;
+
+  /*! 
+    Operation system for driver
+  */
+  std::string m_strOS;
+
+  /*!
+    Operation system version for driver
+  */
+  std::string m_strOSVer;  
+
+  /// Major version number
+  uint16_t m_version_major;
+
+  /// Minor version number
+  uint16_t m_version_minor;
+
+  /// Subminor version number
+  uint16_t m_version_patch;
+
+  /// Date for driver
+  std::string m_strDate;
+
+  /*!
+    MD5 hash on hex string form for firmware file
+  */
+  std::string m_strMd5;
+
+  /*!
+      Description of file
+  */
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
+};
+
+// ---------------------------------------------------------------------------
+
+
+
 class CMDF_Manual {
 
 public:
@@ -1987,6 +2289,42 @@ public:
   */
   std::string getLanguage(void) { return m_strLanguage; };
 
+  /*!
+    Set description for picture
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for picture
+    @param strLanguage Language for description (default="en")
+    @return Description for picture as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
 private:
   /*!
     URL for manual file
@@ -2010,7 +2348,13 @@ private:
   std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
 
+
+
+
 // ----------------------------------------------------------------------------
+
+
+
 
 /*!
   CMDF
@@ -2399,7 +2743,9 @@ private:
 
   // File lists
   std::deque<CMDF_Picture *> m_list_picture;   // Picture file(s)
+  std::deque<CMDF_Video *> m_list_video;       // Picture file(s)
   std::deque<CMDF_Firmware *> m_list_firmware; // Firmware file(s)
+  std::deque<CMDF_Driver *> m_list_driver;     // Picture file(s)
   std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
 
   CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix

@@ -944,6 +944,34 @@ CMDF_Picture::clearStorage(void)
   m_strURL.clear();
   m_strFormat.clear();
   m_mapDescription.clear();
+  m_mapInfoURL.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor/Destructor
+//
+
+CMDF_Video::CMDF_Video()
+{
+  clearStorage();
+}
+
+CMDF_Video::~CMDF_Video()
+{
+  ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearStorage
+//
+
+void
+CMDF_Video::clearStorage(void)
+{
+  m_strURL.clear();
+  m_strFormat.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -980,7 +1008,45 @@ CMDF_Firmware::clearStorage(void)
   m_version_patch = 0;
 
   m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor/Destructor
+//
+
+CMDF_Driver::CMDF_Driver()
+{
+  clearStorage();
+}
+
+CMDF_Driver::~CMDF_Driver()
+{
+  ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearStorage
+//
+
+void
+CMDF_Driver::clearStorage(void)
+{
+  m_strURL.clear();
+  m_strName.clear();
+  m_strDate.clear();
+  m_strOS.clear();
+  m_strOSVer.clear();
+  m_strMd5.clear();
+
+  m_version_major = 0;
+  m_version_minor = 0;
+  m_version_patch = 0;
+
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
@@ -1006,6 +1072,7 @@ CMDF_Manual::clearStorage(void)
   m_strURL.clear();
   m_strFormat.clear();
   m_mapDescription.clear();
+  m_mapInfoURL.clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -1104,6 +1171,18 @@ CMDF::clearStorage(void)
   }
   m_list_picture.clear();
 
+  // Clean up video list
+  std::deque<CMDF_Video *>::iterator iterVideo;
+  for (iterVideo = m_list_video.begin(); iterVideo != m_list_video.end(); ++iterVideo) {
+    CMDF_Video *pRecordVideo = *iterVideo;
+    if (nullptr != pRecordVideo) {
+      pRecordVideo->clearStorage();
+      delete pRecordVideo;
+      pRecordVideo = nullptr;
+    }
+  }
+  m_list_video.clear();
+
   // Clean up firmware list
   std::deque<CMDF_Firmware *>::iterator iterFirmware;
   for (iterFirmware = m_list_firmware.begin(); iterFirmware != m_list_firmware.end(); ++iterFirmware) {
@@ -1115,6 +1194,18 @@ CMDF::clearStorage(void)
     }
   }
   m_list_firmware.clear();
+
+  // Clean up driver list
+  std::deque<CMDF_Driver *>::iterator iterDriver;
+  for (iterDriver = m_list_driver.begin(); iterDriver != m_list_driver.end(); ++iterDriver) {
+    CMDF_Driver *pRecordDriver = *iterDriver;
+    if (nullptr != pRecordDriver) {
+      pRecordDriver->clearStorage();
+      delete pRecordDriver;
+      pRecordDriver = nullptr;
+    }
+  }
+  m_list_driver.clear();
 
   // Clean up manual list
   std::deque<CMDF_Manual *>::iterator iterManual;
@@ -1299,308 +1390,6 @@ CMDF::mdfDescriptionFormat(std::string &str)
   str = strWork;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// getDeviceHtmlStatusInfo
-//
-
-/*  TODO
-std::string
-CMDF::vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
-{
-  static std::string strHTML;
-  std::string str;
-
-  strHTML = "<html><body>";
-  strHTML += "<h4>Clear text node data</h4>";
-  strHTML += "<font color=\"#009900\">";
-
-  strHTML += "nodeid = ";
-  str = vscp_str_format("%d", registers[0x91]);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "GUID = ";
-  vscp_writeGuidArrayToString(str, registers + 0xd0);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "MDF URL = ";
-  char url[33];
-  memset(url, 0, sizeof(url));
-  memcpy(url, registers + 0xe0, 32);
-  str = std::string(url);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "Alarm: ";
-  if (registers[0x80]) {
-    strHTML += "Yes";
-  }
-  else {
-    strHTML += "No";
-  }
-  strHTML += "<br>";
-
-  strHTML += "Node Control Flags: ";
-  if (registers[0x83] & 0x10) {
-    strHTML += "[Register Write Protect] ";
-  }
-  else {
-    strHTML += "[Register Read/Write] ";
-  }
-  switch ((registers[0x83] & 0xC0) >> 6) {
-    case 1:
-      strHTML += " [Initialized] ";
-      break;
-    default:
-      strHTML += " [Uninitialized] ";
-      break;
-  }
-  strHTML += "<br>";
-
-  strHTML += "Firmware VSCP conformance : ";
-  strHTML += vscp_str_format("%d.%d", registers[0x81], registers[0x82]);
-  strHTML += "<br>";
-
-  strHTML += "User ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d.%d",
-                             registers[0x84],
-                             registers[0x85],
-                             registers[0x86],
-                             registers[0x87],
-                             registers[0x88]);
-  strHTML += "<br>";
-
-  strHTML += "Manufacturer device ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d", registers[0x89], registers[0x8A], registers[0x8B], registers[0x8C]);
-  strHTML += "<br>";
-
-  strHTML += "Manufacturer sub device ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d", registers[0x8d], registers[0x8e], registers[0x8f], registers[0x90]);
-  strHTML += "<br>";
-
-  strHTML += "Page select: ";
-  strHTML +=
-    vscp_str_format("%d (MSB=%d LSB=%d)", registers[0x92] * 256 + registers[0x93], registers[0x92], registers[0x93]);
-  strHTML += "<br>";
-
-  strHTML += "Firmware version: ";
-  strHTML += vscp_str_format("%d.%d.%d", registers[0x94], registers[0x95], registers[0x96]);
-  strHTML += "<br>";
-
-  strHTML += "Boot loader algorithm: ";
-  strHTML += vscp_str_format("%d - ", registers[0x97]);
-  switch (registers[0x97]) {
-
-    case 0x00:
-      strHTML += "VSCP universal algorithm 0";
-      break;
-
-    case 0x01:
-      strHTML += "Microchip PIC algorithm 0";
-      break;
-
-    case 0x10:
-      strHTML += "Atmel AVR algorithm 0";
-      break;
-
-    case 0x20:
-      strHTML += "NXP ARM algorithm 0";
-      break;
-
-    case 0x30:
-      strHTML += "ST ARM algorithm 0";
-      break;
-
-    default:
-      strHTML += "Unknown algorithm.";
-      break;
-  }
-
-  strHTML += "<br>";
-
-  strHTML += "Buffer size: ";
-  strHTML += vscp_str_format("%d bytes. ", registers[0x98]);
-  if (!registers[0x98]) {
-    strHTML += " ( == default size (8 or 487 bytes) )";
-  }
-  strHTML += "<br>";
-
-  strHTML += "Number of register pages: ";
-  strHTML += vscp_str_format("%d", registers[0x99]);
-  if (registers[0x99] > 22) {
-    strHTML += " (Note: VSCP Works display max 22 pages.) ";
-  }
-  strHTML += "<br>";
-
-  // Decision matrix info.
-  if (nullptr != pmdf) {
-
-    unsigned char data[8];
-    memset(data, 0, 8);
-
-    strHTML += "Decison Matrix: Rows=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowCount);
-    strHTML += " Offset=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartOffset);
-    strHTML += " Page start=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartPage);
-    strHTML += " Row Size=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowSize);
-    strHTML += " Level=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nLevel);
-    strHTML += " # actions define =";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_list_action.size());
-    strHTML += "<br>";
-  }
-  else {
-    strHTML += "No Decision Matrix is available on this device.";
-    strHTML += "<br>";
-  }
-
-  if (nullptr != pmdf) {
-
-    // MDF Info
-    strHTML += "<h1>MDF Information</h1>";
-    strHTML += "<font color=\"#009900\">";
-
-    // Manufacturer data
-    strHTML += "<b>Module name :</b> ";
-    strHTML += pmdf->m_mapModule_Name["en"]; // TODO Make language aware
-    strHTML += "<br>";
-
-    strHTML += "<b>Module model:</b> ";
-    strHTML += pmdf->m_strModule_Model;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module version:</b> ";
-    strHTML += pmdf->m_strModule_Version;
-
-    strHTML += "<b>Module last change:</b> ";
-    strHTML += pmdf->m_strModule_changeDate;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module description:</b> ";
-    strHTML += pmdf->m_mapModule_Description["en"];  // TODO Make language aware
-    strHTML += "<br>";
-
-    strHTML += "<b>Module URL</b> : ";
-    strHTML += "<a href=\"";
-    strHTML += pmdf->m_mapModule_InfoURL["en"]; // TODO Make language aware
-    strHTML += "\">";
-    strHTML += pmdf->m_mapModule_InfoURL["en"]; // TODO Make language aware
-    strHTML += "</a>";
-    strHTML += "<br>";
-
-    //std::deque<CMDF_Manufacturer *>::iterator iter;
-    //for (iter = pmdf->m_list_manufacturer.begin(); iter != pmdf->m_list_manufacturer.end(); ++iter) {
-
-    strHTML += "<hr><br>";
-
-    //CMDF_Manufacturer *manufacturer = *iter;
-    strHTML += "<b>Manufacturer:</b> ";
-    strHTML += m_manufacturer->m_strName;
-    strHTML += "<br>";
-
-    //std::deque<CMDF_Address *>::iterator iterAddr;
-    // for (iterAddr = pmdf->m_manufacturer->m_address.begin(); iterAddr != manufacturer->m_list_Address.end();
-    //      ++iterAddr) {
-
-    //CMDF_Address *address = *iterAddr;
-    strHTML += "<h4>Address</h4>";
-    strHTML += "<b>Street:</b> ";
-    strHTML += m_manufacturer->m_address->m_strStreet;
-    strHTML += "<br>";
-    strHTML += "<b>Town:</b> ";
-    strHTML += m_manufacturer->m_address->m_strTown;
-    strHTML += "<br>";
-    strHTML += "<b>City:</b> ";
-    strHTML += m_manufacturer->m_address->m_strCity;
-    strHTML += "<br>";
-    strHTML += "<b>Post Code:</b> ";
-    strHTML += m_manufacturer->m_address->m_strPostCode;
-    strHTML += "<br>";
-    strHTML += "<b>State:</b> ";
-    strHTML += m_manufacturer->m_address->m_strState;
-    strHTML += "<br>";
-    strHTML += "<b>Region:</b> ";
-    strHTML += m_manufacturer->m_address->m_strRegion;
-    strHTML += "<br>";
-    strHTML += "<b>Country:</b> ";
-    strHTML += m_manufacturer->m_address->m_strCountry;
-    strHTML += "<br><br>";
-      //}
-
-    std::deque<CMDF_Item *>::iterator iterPhone;
-    for (iterPhone = m_manufacturer->m_list_Phone.begin();
-          iterPhone != m_manufacturer->m_list_Phone.end();
-          ++iterPhone) {
-
-    CMDF_Item *phone = *iterPhone;
-    strHTML += "<b>Phone:</b> ";
-    strHTML += phone->m_strItem;
-    strHTML += " ";
-    strHTML += phone->m_mapDescription["en"]; // TODO
-    strHTML += "<br>";
-      //}
-
-    std::deque<CMDF_Item *>::iterator iterFax;
-    for (iterFax = m_manufacturer->m_list_Fax.begin();
-          iterFax != m_manufacturer->m_list_Fax.end();
-          ++iterFax) {
-
-      CMDF_Item *fax = *iterFax;
-      strHTML += "<b>Fax:</b> ";
-      strHTML += fax->m_strItem;
-      strHTML += " ";
-      strHTML += fax->m_mapDescription["en"]; // TODO
-      strHTML += "<br>";
-    }
-
-    std::deque<CMDF_Item *>::iterator iterEmail;
-    for (iterEmail = m_manufacturer->m_list_Email.begin();
-          iterEmail != m_manufacturer->m_list_Email.end();
-          ++iterEmail) {
-
-      CMDF_Item *email = *iterEmail;
-      strHTML += "<b>Email:</b> <a href=\"";
-      strHTML += email->m_strItem;
-      strHTML += "\" >";
-      strHTML += email->m_strItem;
-      strHTML += "</a> ";
-      strHTML += email->m_mapDescription["en"]; // TODO
-      strHTML += "<br>";
-    }
-
-    std::deque<CMDF_Item *>::iterator iterWeb;
-    for (iterWeb = m_manufacturer->m_list_Web.begin();
-          iterWeb != m_manufacturer->m_list_Web.end();
-          ++iterWeb) {
-
-      CMDF_Item *web = *iterWeb;
-      strHTML += "<b>Web:</b> <a href=\"";
-      strHTML += web->m_strItem;
-      strHTML += "\">";
-      strHTML += web->m_strItem;
-      strHTML += "</a> ";
-      strHTML += web->m_mapDescription["en"]; // TODO
-      strHTML += "<br>";
-    }
-
-    //} // manufacturer
-  }
-  else {
-    strHTML += "No MDF info available.";
-    strHTML += "<br>";
-  }
-
-  strHTML += "</font>";
-  strHTML += "</body></html>";
-
-  return strHTML;
-}
-*/
-
 ///////////////////////////////////////////////////////////////////////////////
 // getModuleDescription
 //
@@ -1778,7 +1567,9 @@ CMDF_Item *gpItemStruct;                    // Holds temporary items
 CMDF_Bit *gpBitStruct;                      // Holds temporary bits
 CMDF_Value *gpValueStruct;                  // Holds temporary values
 CMDF_Picture *gpPictureStruct;              // Holds temporary picture items
+CMDF_Video *gpVideoStruct;                  // Holds temporary video items
 CMDF_Firmware *gpFirmwareStruct;            // Holds temporary firmware items
+CMDF_Driver *gpDriverStruct;                // Holds temporary driver items
 CMDF_Manual *gpManualStruct;                // Holds temporary manual items
 CMDF_Register *gpRegisterStruct;            // Holds temporary register items
 CMDF_RemoteVariable *gpRvarStruct;          // Holds temporary remote variable items
@@ -1984,25 +1775,25 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
       }
       else if (currentToken == "boot") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "registers") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "register") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "abstractions") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "remotevar") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "dmatrix") {
-        ;
+        // Nothing to do here
       }
       else if (currentToken == "events") {
-        ;
+        // Nothing to do here
       }
       break;
 
@@ -2052,6 +1843,33 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         }
       }
+      // [3] Video (standard format)
+      else if ((currentToken == "video")) {
+
+        gpVideoStruct = new CMDF_Video;
+        if (nullptr == gpVideoStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for video");
+          return;
+        }
+
+        pmdf->m_list_video.push_back(gpVideoStruct);
+
+        for (int i = 0; attr[i]; i += 2) {
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+            if (!attribute.empty()) {
+              gpPictureStruct->m_strURL = attribute;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "format")) {
+            if (!attribute.empty()) {
+              gpPictureStruct->m_strFormat = attribute;
+            }
+          }
+        }
+      }      
       // [3] Firmware  (standard format)
       else if ((currentToken == "firmware")) {
         gpFirmwareStruct = new CMDF_Firmware;
@@ -2117,6 +1935,73 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Date for firmware
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
             gpFirmwareStruct->m_strFormat = attribute;
+          }
+        }
+      }
+      // [3] Driver (standard format)
+      else if ((currentToken == "driver")) {
+
+        gpDriverStruct = new CMDF_Driver;
+        if (nullptr == gpDriverStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for driver");
+          return;
+        }
+
+        pmdf->m_list_driver.push_back(gpDriverStruct);
+
+        for (int i = 0; attr[i]; i += 2) {
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+          if (0 == strcasecmp(attr[i], "name")) {
+            // Name of driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver name: {0}", attribute);
+            gpDriverStruct->m_strName = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "type")) {
+            // Driver type
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver type: {0}", attribute);
+            gpDriverStruct->m_strType = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "version_major")) {
+            // Version for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver version major: {0}", attribute);
+            gpDriverStruct->m_version_major = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "version_minor")) {
+            // Version for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver version minor: {0}", attribute);
+            gpDriverStruct->m_version_minor = vscp_readStringValue(attribute);
+          }
+          else if ((0 == strcasecmp(attr[i], "version_patch")) || (0 == strcasecmp(attr[i], "version_subminor"))) {
+            // Version for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver version patch: {0}", attribute);
+            gpDriverStruct->m_version_patch = vscp_readStringValue(attribute);
+          }
+          else if ((0 == strcasecmp(attr[i], "url")) || (0 == strcasecmp(attr[i], "path"))) {
+            // URL for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver url: {0}", attribute);
+            gpDriverStruct->m_strURL = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "md5sum")) {
+            // MD5 for driver file
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver md5: {0}", attribute);
+            gpDriverStruct->m_strMd5 = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "os")) {
+            // OS for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver OS: {0}", attribute);
+            gpDriverStruct->m_strOS = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "osver")) {
+            // OS versin for driver
+            spdlog::trace("Parse-XML: handleMDFParserData: Driver OS: {0}", attribute);
+            gpDriverStruct->m_strOS = attribute;
+          }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for firmware
+            spdlog::trace("Parse-XML: handleMDFParserData: Module firmware date: {0}", attribute);
+            gpDriverStruct->m_strDate = attribute;
           }
         }
       }
@@ -3137,13 +3022,13 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          pmdf->m_mapDescription[gLastLanguage] = strContent;
+          pmdf->m_mapDescription[gLastLanguage] += strContent;
           spdlog::trace("Parse-XML: handleMDFParserData: Module Description size: {0}", pmdf->m_mapDescription.size());
         }
       }
       else if (gTokenList.at(0) == "infourl") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module infoUrl: {0} language: {1}", strContent, gLastLanguage);
-        pmdf->m_mapInfoURL[gLastLanguage] = strContent;
+        pmdf->m_mapInfoURL[gLastLanguage] += strContent;
       }
       else if (gTokenList.at(0) == "buffersize") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module buffer size: {0}", strContent);
@@ -3172,7 +3057,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Picture Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpPictureStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpPictureStruct->m_mapDescription[gLastLanguage] += strContent;
           spdlog::trace("Parse-XML: handleMDFParserData: Picture  Description size: {0}",
                         gpPictureStruct->m_mapDescription.size());
         }
@@ -3184,7 +3069,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Firmware Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpFirmwareStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpFirmwareStruct->m_mapDescription[gLastLanguage] += strContent;
           spdlog::trace("Parse-XML: handleMDFParserData: Firmware  Description size: {0}",
                         gpFirmwareStruct->m_mapDescription.size());
         }
@@ -3196,7 +3081,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Manual Description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpManualStruct->m_mapDescription[gLastLanguage] += strContent;
           spdlog::trace("Parse-XML: handleMDFParserData: Manual Description size: {0}",
                         gpManualStruct->m_mapDescription.size());
         }
@@ -3296,7 +3181,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             "Parse-XML: handleMDFParserData: Module manufacturer address telephone description: {0} Language: {1}",
             strContent,
             gLastLanguage);
-          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
       }
       // [5] manufacturer/fax
@@ -3309,7 +3194,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}",
                         strContent,
                         gLastLanguage);
-          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
       }
       // [5] manufacturer/email
@@ -3323,7 +3208,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             "Parse-XML: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
             strContent,
             gLastLanguage);
-          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
       }
       // [5] manufacturer/web
@@ -3337,7 +3222,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             "Parse-XML: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
             strContent,
             gLastLanguage);
-          gpItemStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
       }
       // [5] Picture standard format
@@ -3347,7 +3232,35 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpPictureStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpPictureStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != nullptr)) {
+        if (gTokenList.at(0) == "infourl") {
+          // Info URL for firmware
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpPictureStruct->m_mapInfoURL[gLastLanguage] += strContent;
+        }
+      }
+      // [5] Video standard format
+      else if ((gTokenList.at(1) == "video") && (gpVideoStruct != nullptr)) {
+        if (gTokenList.at(0) == "description") {
+          // Description for video
+          spdlog::trace("Parse-XML: handleMDFParserData: Module video description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpVideoStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      else if ((gTokenList.at(1) == "video") && (gpVideoStruct != nullptr)) {
+        if (gTokenList.at(0) == "infourl") {
+          // Info URL for video
+          spdlog::trace("Parse-XML: handleMDFParserData: Module video infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpVideoStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] Firmware standard format
@@ -3357,7 +3270,35 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module firmware description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpFirmwareStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpFirmwareStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != nullptr)) {
+        if (gTokenList.at(0) == "infourl") {
+          // Info URL for firmware
+          spdlog::trace("Parse-XML: handleMDFParserData: Module firmware infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpFirmwareStruct->m_mapInfoURL[gLastLanguage] += strContent;
+        }
+      }
+      // [5] Driver standard format
+      else if ((gTokenList.at(1) == "driver") && (gpDriverStruct != nullptr)) {
+        if (gTokenList.at(0) == "description") {
+          // Description for driver
+          spdlog::trace("Parse-XML: handleMDFParserData: Module driver description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpDriverStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      else if ((gTokenList.at(1) == "firmware") && (gpDriverStruct != nullptr)) {
+        if (gTokenList.at(0) == "infourl") {
+          // Info URL for driver
+          spdlog::trace("Parse-XML: handleMDFParserData: Module driver infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpDriverStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] Manual standard format
@@ -3367,7 +3308,16 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manual description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
-          gpManualStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpManualStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      else if ((gTokenList.at(1) == "manual") && (gpManualStruct != nullptr)) {
+        if (gTokenList.at(0) == "infourl") {
+          // Info URL for manual
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manual infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpManualStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] reg
@@ -3399,10 +3349,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           }
         }
         else if (gTokenList.at(0) == "description") {
-          gpRegisterStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpRegisterStruct->m_mapDescription[gLastLanguage] += strContent;
         }
         else if (gTokenList.at(0) == "infourl") {
-          gpRegisterStruct->m_mapInfoURL[gLastLanguage] = strContent;
+          gpRegisterStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] reg
@@ -3435,10 +3385,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           }
         }
         else if (gTokenList.at(0) == "description") {
-          gpRvarStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpRvarStruct->m_mapDescription[gLastLanguage] += strContent;
         }
         else if (gTokenList.at(0) == "infourl") {
-          gpRvarStruct->m_mapInfoURL[gLastLanguage] = strContent;
+          gpRvarStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // Event
@@ -3452,10 +3402,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           vscp_makeLower(gpEventStruct->m_name);
         }
         else if (gTokenList.at(0) == "description") {
-          gpEventStruct->m_mapDescription[gLastLanguage] = strContent;
+          gpEventStruct->m_mapDescription[gLastLanguage] += strContent;
         }
         else if (gTokenList.at(0) == "infourl") {
-          gpEventStruct->m_mapInfoURL[gLastLanguage] = strContent;
+          gpEventStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
         else if (gTokenList.at(0) == "priority") {
           spdlog::trace("Parse-XML: handleMDFParserData: event priority: {0}", strContent);
@@ -3516,14 +3466,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "alarm") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpBitStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // alarm/bit/info url
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "alarm") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpBitStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }      
 
       // dmatrix
@@ -3571,14 +3521,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpBitStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // reg/bit/info url
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                (gTokenList.at(2) == "reg") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpBitStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
 
@@ -3599,14 +3549,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(1) == "bit") && 
                ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpBitStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // rvar/bit/info url
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "bit") && 
                ((gTokenList.at(2) == "remotevar") || (gTokenList.at(2) == "abstraction")) &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpBitStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       
@@ -3627,14 +3577,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "action") &&
                (gTokenList.at(3) == "dmatrix") &&
                (gpActionParamStruct != nullptr)) {
-        gpActionParamStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpActionParamStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "infourl") &&
                (gTokenList.at(1) == "param") &&
                (gTokenList.at(2) == "action") &&
                (gTokenList.at(3) == "dmatrix") &&
                (gpActionParamStruct != nullptr)) {
-        gpActionParamStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpActionParamStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       // * * * event data * * *
@@ -3652,13 +3602,13 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
                (gpEventDataStruct != nullptr)) {
-        gpEventDataStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpEventDataStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
                (gpEventDataStruct != nullptr)) {
-        gpEventDataStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpEventDataStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "valuelist") && 
                (gTokenList.at(1) == "data") && 
@@ -3693,7 +3643,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") &&
                (gTokenList.at(3) == "reg") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // reg/valuelist/item/infourl *
       else if ((gTokenList.at(0) == "infourl") && 
@@ -3701,7 +3651,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") &&
                (gTokenList.at(3) == "reg") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       // * * * Remote variables   * * *
@@ -3722,7 +3672,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") &&
                ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // rvar/valuelist/item/infourl *
       else if ((gTokenList.at(0) == "infourl") && 
@@ -3730,7 +3680,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") &&
                ((gTokenList.at(3) == "remotevar") || (gTokenList.at(3) == "abstraction")) &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       } 
 
       // dmatrix bits
@@ -3753,7 +3703,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "dmatrix") &&
                (gpActionParamStruct != nullptr) &&
                (gpBitStruct != nullptr) ) {
-        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpBitStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "infourl") &&
                (gTokenList.at(1) == "bit") &&
@@ -3762,7 +3712,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "dmatrix") &&
                (gpActionParamStruct != nullptr) &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpBitStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       // event data
@@ -3784,7 +3734,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "event") &&
                (gTokenList.at(4) == "events") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpBitStruct->m_mapDescription[gLastLanguage] += strContent;
       }
 
       else if ((gTokenList.at(0) == "infourl") && 
@@ -3793,7 +3743,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(3) == "event") &&
                (gTokenList.at(4) == "events") &&
                (gpBitStruct != nullptr)) {
-        gpBitStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpBitStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       break;
@@ -3827,7 +3777,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") &&
                (gTokenList.at(3) == "bit") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       // bit/valuelist/item/infourl *
       else if ((gTokenList.at(0) == "infourl") && 
@@ -3835,7 +3785,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "valuelist") && 
                (gTokenList.at(3) == "bit") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }   
 
       // dmatrix value
@@ -3871,7 +3821,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(5) == "dmatrix") &&
                (gpActionParamStruct != nullptr) &&
                (gpValueStruct != nullptr) ) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "infourl") &&
                (gTokenList.at(1) == "item") &&
@@ -3881,7 +3831,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(5) == "dmatrix") &&
                (gpActionParamStruct != nullptr) &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       // event data
@@ -3918,7 +3868,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "event") &&
                (gTokenList.at(5) == "events") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
 
       // event/valuelist/item/infourl *
@@ -3929,7 +3879,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "event") &&
                (gTokenList.at(5) == "events") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
       
       break;
@@ -3963,7 +3913,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "param") &&
                (gTokenList.at(5) == "action") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
       else if ((gTokenList.at(0) == "infourl") && 
                (gTokenList.at(1) == "item") && 
@@ -3972,7 +3922,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "param") &&
                (gTokenList.at(5) == "action") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       // event data
@@ -4009,7 +3959,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(5) == "event") &&
                (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapDescription[gLastLanguage] = strContent;
+        gpValueStruct->m_mapDescription[gLastLanguage] += strContent;
       }
 
       else if ((gTokenList.at(0) == "infourl") && 
@@ -4020,7 +3970,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(5) == "event") &&
                (gTokenList.at(6) == "events") &&
                (gpValueStruct != nullptr)) {
-        gpValueStruct->m_mapInfoURL[gLastLanguage] = strContent;
+        gpValueStruct->m_mapInfoURL[gLastLanguage] += strContent;
       }
 
       break;  
@@ -4069,12 +4019,18 @@ __endSetupMDFParser(void *data, const char *name)
       else if (currentToken == "firmware") {
         gpFirmwareStruct = nullptr;
       }
+      else if (currentToken == "driver") {
+        gpDriverStruct = nullptr;
+      }
       // This is the deprecated form
       else if (currentToken == "pictures") {
         gpPictureStruct = nullptr;
       }
       else if (currentToken == "picture") {
         gpPictureStruct = nullptr;
+      }
+      else if (currentToken == "video") {
+        gpVideoStruct = nullptr;
       }
       else if (currentToken == "manual") {
         gpManualStruct = nullptr;
@@ -4594,7 +4550,9 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 
   gpItemStruct        = nullptr;
   gpPictureStruct     = nullptr;
+  gpVideoStruct    = nullptr;
   gpFirmwareStruct    = nullptr;
+  gpDriverStruct    = nullptr;
   gpManualStruct      = nullptr;
   gpRegisterStruct    = nullptr;
   gpBitStruct         = nullptr;
@@ -6324,11 +6282,51 @@ CMDF::parseMDF_JSON(std::string &path)
           }
 
           if (getDescriptionList(jpic, ppicture->m_mapDescription) != VSCP_ERROR_SUCCESS) {
-            spdlog::warn("Parse-JSON: Failed to get event data description.");
+            spdlog::warn("Parse-JSON: Failed to get picture description.");
           }
 
           if (getInfoUrlList(jpic, ppicture->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
-            spdlog::warn("Parse-JSON: Failed to get event data infourl.");
+            spdlog::warn("Parse-JSON: Failed to get picture infourl.");
+          }
+        }
+      }
+
+      // * * * Video * * *
+      if (jsub.contains("video") && jsub["video"].is_array()) {
+        for (auto &item : jsub["video"].items()) {
+
+          CMDF_Video *pvideo = new CMDF_Video();
+          if (pvideo == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for video item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_video.push_back(pvideo);
+
+          json jvideo = item.value();
+
+          if (jvideo.contains("url") && jvideo["url"].is_string()) {
+            pvideo->m_strURL = jvideo["url"];
+            spdlog::debug("Parse-JSON: Video URL: {0} ", jvideo["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No video url.");
+          }
+
+          if (jvideo.contains("format") && jvideo["format"].is_string()) {
+            pvideo->m_strFormat = jvideo["format"];
+            spdlog::debug("Parse-JSON: Video Format: {0} ", jvideo["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No video format.");
+          }
+
+          if (getDescriptionList(jvideo, pvideo->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get video description.");
+          }
+
+          if (getInfoUrlList(jvideo, pvideo->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get video infourl.");
           }
         }
       }
@@ -6481,6 +6479,137 @@ CMDF::parseMDF_JSON(std::string &path)
           }
 
           if (getInfoUrlList(jfirmware, pfirmware->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get event data infourl.");
+          }
+        }
+      }
+
+      // * * * Driver * * *
+      if (jsub.contains("driver") && jsub["driver"].is_array()) {
+        for (auto &item : jsub["driver"].items()) {
+
+          CMDF_Driver *pdriver = new CMDF_Driver();
+          if (pdriver == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for firmware item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_driver.push_back(pdriver);
+
+          json jdriver = item.value();
+
+          if (jdriver.contains("url") && jdriver["url"].is_string()) {
+            pdriver->m_strURL = jdriver["url"];
+            spdlog::debug("Parse-JSON: Driver URL: {0} ", jdriver["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver url.");
+          }
+
+          if (jdriver.contains("name") && jdriver["name"].is_string()) {
+            pdriver->m_strName = jdriver["name"];
+            spdlog::debug("Parse-JSON: Driver name: {0} ", jdriver["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver name.");
+          }
+
+          // Type
+          if (jdriver.contains("type") && jdriver["type"].is_string()) {
+            pdriver->m_strType = jdriver["type"];
+            spdlog::debug("Parse-JSON: driver type: {0} ", jdriver["type"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver type.");
+          }
+
+          // OS
+          if (jdriver.contains("os") && jdriver["os"].is_string()) {
+            pdriver->m_strOS = jdriver["os"];
+            spdlog::debug("Parse-JSON: driver OS: {0} ", jdriver["os"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver OS.");
+          }
+
+          // OS version
+          if (jdriver.contains("osver") && jdriver["osver"].is_string()) {
+            pdriver->m_strOSVer = jdriver["osver"];
+            spdlog::debug("Parse-JSON: driver OS version: {0} ", jdriver["osver"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver OS version.");
+          }
+
+          if (jdriver.contains("date") && jdriver["date"].is_string()) {
+            pdriver->m_strDate = jdriver["date"];
+            spdlog::debug("Parse-JSON: Driver date: {0} ", jdriver["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver date");
+          }
+
+          if (jdriver.contains("version_major") && jdriver["version_major"].is_number()) {
+            pdriver->m_version_major = jdriver["version_major"];
+            spdlog::debug("Parse-JSON: Driver version major: {0} ", jdriver["version_major"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version_major");
+          }
+
+          if (jdriver.contains("version_major") && jdriver["version_major"].is_string()) {
+            pdriver->m_version_major = vscp_readStringValue(jdriver["version_major"]);
+            spdlog::debug("Parse-JSON: Driver version major: {0} ", jdriver["version_major"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version_major");
+          }
+
+          if (jdriver.contains("version_minor") && jdriver["version_minor"].is_number()) {
+            pdriver->m_version_minor = jdriver["version_minor"];
+            spdlog::debug("Parse-JSON: Driver version minor: {0} ", jdriver["version_minor"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version_minor");
+          }
+
+          if (jdriver.contains("version_minor") && jdriver["version_minor"].is_string()) {
+            pdriver->m_version_minor = vscp_readStringValue(jdriver["version_minor"]);
+            spdlog::debug("Parse-JSON: Driver version minor: {0} ", jdriver["version_minor"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version_minor");
+          }
+
+          if (jdriver.contains("version_patch") && jdriver["version_patch"].is_number()) {
+            pdriver->m_version_patch = jdriver["version_patch"];
+            spdlog::debug("Parse-JSON: Driver version patch: {0} ", jdriver["version_patch"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version patch");
+          }
+
+          if (jdriver.contains("version_patch") && jdriver["version_patch"].is_string()) {
+            pdriver->m_version_patch = vscp_readStringValue(jdriver["version_patch"]);
+            spdlog::debug("Parse-JSON: Driver version patch: {0} ", jdriver["version_patch"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version patch");
+          }
+
+          if (jdriver.contains("md5sum") && jdriver["md5sum"].is_string()) {
+            pdriver->m_strMd5 = jdriver["md5sum"];
+            spdlog::debug("Parse-JSON: Driver version md5: {0} ", jdriver["md5sum"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver version md5sum");
+          }
+
+          if (getDescriptionList(jdriver, pdriver->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get event data description.");
+          }
+
+          if (getInfoUrlList(jdriver, pdriver->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
             spdlog::warn("Parse-JSON: Failed to get event data infourl.");
           }
         }

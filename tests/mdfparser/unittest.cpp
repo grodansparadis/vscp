@@ -1785,7 +1785,7 @@ TEST(parseMDF, XML_DM)
   pbit = pbits->at(2);
   ASSERT_NE(pbit, nullptr);
   ASSERT_EQ(pbit->getName(), "valuebits");
-  ASSERT_EQ(pbit->getDescription("en"), "Value list in bit array.");
+  ASSERT_EQ(pbit->getDescription("en"), "Test bit description value bits.Value list in bit array.");
   ASSERT_EQ(pbit->getPos(), 6);
   ASSERT_EQ(pbit->getWidth(), 2);
 
