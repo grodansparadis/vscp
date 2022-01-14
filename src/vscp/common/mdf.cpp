@@ -1860,12 +1860,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_makeLower(attribute);
           if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
-              gpPictureStruct->m_strURL = attribute;
+              gpVideoStruct->m_strURL = attribute;
             }
           }
           else if (0 == strcasecmp(attr[i], "format")) {
             if (!attribute.empty()) {
-              gpPictureStruct->m_strFormat = attribute;
+              gpVideoStruct->m_strFormat = attribute;
             }
           }
         }
@@ -1996,7 +1996,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           else if (0 == strcasecmp(attr[i], "osver")) {
             // OS versin for driver
             spdlog::trace("Parse-XML: handleMDFParserData: Driver OS: {0}", attribute);
-            gpDriverStruct->m_strOS = attribute;
+            gpDriverStruct->m_strOSVer = attribute;
           }
           else if (0 == strcasecmp(attr[i], "date")) {
             // Date for firmware

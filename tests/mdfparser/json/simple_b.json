@@ -96,6 +96,24 @@
           }          
         }
       ],
+      "video" : [
+        {
+          "format": "avi",
+          "url": "http://www.grodansparadis.com/logo.avi",
+          "description": {
+            "en": "This is a video description in English.",
+            "se": "Det här är en svensk beskrivning av video 1."
+          }          
+        },
+        {
+          "format": "mpeg",
+          "url": "http://www.somewhere.com/videos/pict2.mpeg",
+          "description": {
+            "en": "This is a video 2 description in English.",
+            "se": "Det här är en svensk beskrivning av video 2."
+          }          
+        }
+      ],
       "firmware" : [
         {
           "target": "pic18f2580",
@@ -204,6 +222,132 @@
         {
           "target": "pic18f2580",
           "targetcode": 66,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2012-01-01",
+          "version_major":"1",
+          "version_minor":"0", 
+          "version_spatch":"0",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 7."
+          }
+        }
+      ],
+      "driver" : [
+        {
+          "name": "driver1",
+          "osver": "11",
+          "os": "linux debian",
+          "url": "https://xxx.yy/1.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major": 1,
+          "version_minor": 1, 
+          "version_patch": 6,
+          "md5sum":"0x595f44fec1e92a71d3e9e77456ba80d1",
+          "description" : {
+            "en": "English 1.",
+            "se": "Svenska 1."
+          }
+        },
+        {
+          "name": "driver2",
+          "osver": "22",
+          "os": "linux",
+          "url": "https://xxx.yy/2.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"0x01",
+          "version_minor":"0x01", 
+          "version_patch":"0x06",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 1."
+          }
+        },
+        {
+          "name": "driver3",
+          "osver": "33",
+          "os": "apple",
+          "url": "https://xxx.yy/3.hex", 
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"6",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 2"
+          }
+        },
+        {
+          "name": "driver4",
+          "osver": "10",
+          "os": "windows",
+          "url": "https://xxx.yy/4.hex", 
+          "date":"2021-11-02",
+          "size":"0x2000",
+          "version_major":"0x99",
+          "version_minor":"0x08", 
+          "version_patch":"0x17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 3."
+          }
+        },
+        {
+          "name": "driver5",
+          "osver": "33",
+          "os": "linux",
+          "url": "https://xxx.yy/5.hex", 
+          "format":"intelhex8",
+          "date":"2015-11-12",
+          "size":"8192",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"2",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 4."
+          }
+        },
+        {
+          "name": "driver6",
+          "osver": "44",
+          "os": "linux",
+          "url": "https://xxx.yy/6.hex", 
+          "format":"intelhex16",
+          "date":"2021-11-02",
+          "version_major":"99",
+          "version_minor":"8", 
+          "version_patch":"17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 5."
+          }
+        },
+        {
+          "name": "driver7",
+          "osver": "55",
+          "os": "linux",
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2015-03-20",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"0",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 6."
+          }
+        },
+        {
+          "name": "driver8",
+          "osver": "66",
+          "os": "linux",
           "url": "https://xxx.yy/7.hex", 
           "format":"intelhex16",
           "date":"2012-01-01",

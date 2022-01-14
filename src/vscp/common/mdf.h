@@ -2539,6 +2539,22 @@ public:
   };
 
   /*!
+    Get number of module videos
+    @return Number of videos available.
+  */
+  size_t getVideoCount(void) { return m_list_video.size(); };
+
+  /*!
+    Get a video object from it's index
+    @param index Index of video to get.
+    @return Pointer to video object or NULL if index is out of range.
+  */
+  CMDF_Video *getVideoObj(uint16_t index = 0)
+  {
+    return ((m_list_video.size() <= index) ? nullptr : m_list_video[index]);
+  };
+
+  /*!
     Get number of module firmware files
     @return Number of firmware files available.
   */
@@ -2552,6 +2568,22 @@ public:
   CMDF_Firmware *getFirmwareObj(uint16_t index = 0)
   {
     return ((m_list_firmware.size() <= index) ? nullptr : m_list_firmware[index]);
+  };
+
+  /*!
+    Get number of driver files
+    @return Number of driver available.
+  */
+  size_t getDriverCount(void) { return m_list_driver.size(); };
+
+  /*!
+    Get a driver object from it's index
+    @param index Index of driver to get.
+    @return Pointer to driver object or NULL if index is out of range.
+  */
+  CMDF_Driver *getDriverObj(uint16_t index = 0)
+  {
+    return ((m_list_driver.size() <= index) ? nullptr : m_list_driver[index]);
   };
 
   /*!

@@ -213,6 +213,53 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
 
 //-----------------------------------------------------------------------------
 
+TEST(parseMDF, Simple_Video_Standard_Format)
+{
+  CMDF mdf;
+  CMDF_Video *pVideo;
+
+  std::string path = "xml/simple_video_standard_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(2, mdf.getVideoCount());
+
+  uint16_t index = 0;
+  ASSERT_TRUE(nullptr != mdf.getVideoObj());
+  ASSERT_TRUE(nullptr != mdf.getVideoObj(0));
+  ASSERT_TRUE(nullptr != mdf.getVideoObj(1));
+  ASSERT_TRUE(nullptr == mdf.getVideoObj(2));
+  ASSERT_TRUE(mdf.getVideoObj() == mdf.getVideoObj(0));
+
+  // Get first video url
+  pVideo = mdf.getVideoObj();
+  ASSERT_TRUE("http://www.somewhere.com/images/stdvideo1.jpg" == pVideo->getUrl());
+
+  ASSERT_TRUE("jpg" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video description in English" == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 1" == pVideo->getDescription("se"));
+
+  // Get first video url again
+  pVideo = mdf.getVideoObj(0);
+  ASSERT_TRUE("http://www.somewhere.com/images/stdvideo1.jpg" == pVideo->getUrl());
+
+  ASSERT_TRUE("jpg" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video description in English" == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 1" == pVideo->getDescription("se"));
+
+  // Get second video url
+  pVideo = mdf.getVideoObj(1);
+  ASSERT_TRUE("http://www.somewhere.com/images/stdvideo2.png" == pVideo->getUrl());
+
+  ASSERT_TRUE("png" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video 2 description in English" == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 2" == pVideo->getDescription("se"));
+}
+
+//-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_Firmware_Standard_Format)
 {
   CMDF mdf;
@@ -325,6 +372,55 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 
   ASSERT_TRUE("Description in English." == pFirmware->getDescription("en"));
   ASSERT_TRUE("Beskrivning på Svenska." == pFirmware->getDescription("se"));
+}
+
+//-----------------------------------------------------------------------------
+
+TEST(parseMDF, Simple_Driver_Standard_Format)
+{
+  CMDF mdf;
+  CMDF_Driver *pDriver;
+
+  std::string path = "xml/simple_driver_standard_format.xml";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  ASSERT_EQ(7, mdf.getDriverCount());
+
+  ASSERT_TRUE(nullptr != mdf.getDriverObj());
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(0));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(1));
+
+  ASSERT_TRUE(mdf.getDriverObj() == mdf.getDriverObj(0));
+
+  // Get first driver url
+  pDriver = mdf.getDriverObj();
+  ASSERT_TRUE("vscp-driver-1" == pDriver->getName());
+  ASSERT_TRUE("https://somewhere.com/driver1.zip" == pDriver->getUrl());
+  ASSERT_TRUE("windows" == pDriver->getOS());
+  ASSERT_TRUE("10" == pDriver->getOSVer());
+  ASSERT_TRUE("2020-05-15" == pDriver->getDate());
+  ASSERT_TRUE(1 == pDriver->getVersionMajor());
+  ASSERT_TRUE(1 == pDriver->getVersionMinor());
+  ASSERT_TRUE(6 == pDriver->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pDriver->getMd5());
+
+  ASSERT_TRUE(pDriver->getDescription("en") == "Description driver 1.");
+  ASSERT_TRUE(pDriver->getDescription("se") == "Beskrivning Driver 1.");
+
+  // Get driver url 7
+  pDriver = mdf.getDriverObj(6);
+  ASSERT_TRUE("vscp-driver-7" == pDriver->getName());
+  ASSERT_TRUE("https://somewhere.com/driver7.zip" == pDriver->getUrl());
+  ASSERT_TRUE("linux debian" == pDriver->getOS());
+  ASSERT_TRUE("7" == pDriver->getOSVer());
+  ASSERT_TRUE("2020-05-15" == pDriver->getDate());
+  ASSERT_TRUE(1 == pDriver->getVersionMajor());
+  ASSERT_TRUE(1 == pDriver->getVersionMinor());
+  ASSERT_TRUE(6 == pDriver->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pDriver->getMd5());
+
+  ASSERT_TRUE(pDriver->getDescription("en") == "Description driver 7.");
+  ASSERT_TRUE(pDriver->getDescription("se") == "Beskrivning Driver 7.");
 }
 
 //-----------------------------------------------------------------------------
@@ -2156,6 +2252,45 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE("This is a picture 2 description in English." == pPicture->getDescription("en"));
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 2." == pPicture->getDescription("se"));
 
+  // * * * Video * * *
+
+  CMDF_Video *pVideo;
+
+  ASSERT_EQ(2, mdf.getVideoCount());
+
+  index = 0;
+  ASSERT_TRUE(nullptr != mdf.getVideoObj());
+  ASSERT_TRUE(nullptr != mdf.getVideoObj(0));
+  ASSERT_TRUE(nullptr != mdf.getVideoObj(1));
+  ASSERT_TRUE(nullptr == mdf.getVideoObj(2));
+  ASSERT_TRUE(mdf.getVideoObj() == mdf.getVideoObj(0));
+
+  // Get first video url
+  pVideo = mdf.getVideoObj();
+  ASSERT_TRUE("http://www.grodansparadis.com/logo.avi" == pVideo->getUrl());
+
+  ASSERT_TRUE("avi" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video description in English." == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 1." == pVideo->getDescription("se"));
+
+  pVideo = mdf.getVideoObj(0);
+  ASSERT_TRUE("http://www.grodansparadis.com/logo.avi" == pVideo->getUrl());
+
+  ASSERT_TRUE("avi" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video description in English." == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 1." == pVideo->getDescription("se"));
+
+  // Get first picture url again
+  pVideo = mdf.getVideoObj(1);
+  ASSERT_TRUE("http://www.somewhere.com/videos/pict2.mpeg" == pVideo->getUrl());
+
+  ASSERT_TRUE("mpeg" == pVideo->getFormat());
+
+  ASSERT_TRUE("This is a video 2 description in English." == pVideo->getDescription("en"));
+  ASSERT_TRUE("Det här är en svensk beskrivning av video 2." == pVideo->getDescription("se"));
+
   // * * * Firmware * * *
 
   CMDF_Firmware *pFirmware;
@@ -2204,6 +2339,53 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE("43c191bf6d6c3f263a8cd0efd4a058ab" == pFirmware->getMd5());
 
   ASSERT_TRUE("English 3." == pFirmware->getDescription("en"));
+
+  // * * * Driver * * *
+
+  CMDF_Driver *pDriver;
+
+  ASSERT_EQ(8, mdf.getDriverCount());
+
+  ASSERT_TRUE(nullptr != mdf.getDriverObj());
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(0));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(1));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(2));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(3));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(4));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(5));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(6));
+  ASSERT_TRUE(nullptr != mdf.getDriverObj(7));
+  ASSERT_TRUE(nullptr == mdf.getDriverObj(8));
+  ASSERT_TRUE(mdf.getDriverObj() == mdf.getDriverObj(0));
+
+  // Get first firmare url
+  pDriver = mdf.getDriverObj(0);
+  ASSERT_TRUE("driver1" == pDriver->getName());
+  ASSERT_TRUE("https://xxx.yy/1.hex" == pDriver->getUrl());
+  ASSERT_TRUE("linux debian" == pDriver->getOS());
+  ASSERT_TRUE("11" == pDriver->getOSVer());  
+  ASSERT_TRUE("2020-05-15" == pDriver->getDate());
+  ASSERT_TRUE(1 == pDriver->getVersionMajor());
+  ASSERT_TRUE(1 == pDriver->getVersionMinor());
+  ASSERT_TRUE(6 == pDriver->getVersionPatch());
+  ASSERT_TRUE("0x595f44fec1e92a71d3e9e77456ba80d1" == pDriver->getMd5());
+
+  ASSERT_TRUE("English 1." == pDriver->getDescription("en"));
+  ASSERT_TRUE("Svenska 1." == pDriver->getDescription("se"));
+
+  // Get first firmare url
+  pDriver = mdf.getDriverObj(3);
+  ASSERT_TRUE("driver4" == pDriver->getName());
+  ASSERT_TRUE("https://xxx.yy/4.hex" == pDriver->getUrl());
+  ASSERT_TRUE("windows" == pDriver->getOS());
+  ASSERT_TRUE("10" == pDriver->getOSVer());
+  ASSERT_TRUE("2021-11-02" == pDriver->getDate());
+  ASSERT_TRUE(0x99 == pDriver->getVersionMajor());
+  ASSERT_TRUE(0x08 == pDriver->getVersionMinor());
+  ASSERT_TRUE(0x17 == pDriver->getVersionPatch());
+  ASSERT_TRUE("43c191bf6d6c3f263a8cd0efd4a058ab" == pDriver->getMd5());
+
+  ASSERT_TRUE("English 3." == pDriver->getDescription("en"));
 
   // * * * Manual * * *
 
