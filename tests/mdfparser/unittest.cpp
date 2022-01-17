@@ -659,11 +659,11 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(preg->getPage(), 0);
   ASSERT_EQ(preg->getOffset(), 14);
   ASSERT_EQ(preg->getSize(), 1);
-  ASSERT_EQ(preg->getSpan(), 1);
+  ASSERT_EQ(preg->getSpan(), 8);
   ASSERT_EQ(preg->getWidth(), 8);
   ASSERT_EQ(preg->getMin(), 0);
   ASSERT_EQ(preg->getMax(), 255);
-  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_STANDARD);  
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_BLOCK);  
   ASSERT_EQ(preg->getAccess(), MDF_REG_ACCESS_READ_WRITE);
   ASSERT_EQ(preg->getDefault(), "0x11");
   ASSERT_EQ(preg->getDescription("en"), "Module control register");
@@ -782,6 +782,16 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(pbit->getWidth(), 1);
   ASSERT_EQ(pbit->getDefault(), 0);
   ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
+
+  // Register 2:0
+  preg = mdf.getRegister(2, 0);
+  ASSERT_NE(preg, nullptr);
+
+  ASSERT_EQ(preg->getName(), "decision matrix");
+  ASSERT_EQ(preg->getPage(), 2);
+  ASSERT_EQ(preg->getOffset(), 0);
+  ASSERT_EQ(preg->getSpan(), 32);
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_DMATRIX1);  
 }
 
 
@@ -2479,6 +2489,9 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
 
   // Check register span
   ASSERT_EQ(1, preg->getSpan());
+
+  // Get type
+  ASSERT_EQ(MDF_REG_TYPE_STANDARD, preg->getType());
 
   // Check register width
   ASSERT_EQ(8, preg->getWidth());

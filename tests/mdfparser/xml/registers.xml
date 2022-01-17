@@ -184,7 +184,7 @@
         
         <!-- Control registers -->
         
-        <reg page="0" offset="14" default="0x11" fgcolor="0x332211" bgcolor="0x9873d4" >
+        <reg page="0" offset="14" default="0x11" type="block" span="8" fgcolor="0x332211" bgcolor="0x9873d4" >
           <name lang="en">Module control</name>
           <description>
             Module control register
@@ -252,7 +252,7 @@
         ///////////////////////////////////////////////////////////////////////     
         -->
 
-        <reg page="2" offset="0" type="dmatrix1" size="32" >
+        <reg page="2" offset="0" type="dmatrix1" span="32" >
             <name lang="en">Decision matrix</name>
             <description lang="en">Decision matrix for Vilnius</description> 
         </reg>

@@ -2132,7 +2132,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
               spdlog::debug("Parse-JSON: Register type: standard");
             }
-            else if ((strRegType == "dmatrix") || (strRegType == "dm")) {
+            else if ((strRegType == "dmatrix") || (strRegType == "dmatrix1") || (strRegType == "dm")) {
               gpRegisterStruct->m_type = MDF_REG_TYPE_DMATRIX1;
               spdlog::debug("Parse-JSON: Register type: dmatrix");
             }
@@ -5296,7 +5296,7 @@ CMDF::parseMDF_JSON(std::string &path)
                 preg->m_type = MDF_REG_TYPE_STANDARD;
                 spdlog::debug("Parse-JSON: Module register type: standard {0}", preg->m_type);
               }
-              else if (strType == "dmatrix1") {
+              else if ((strType == "dmatrix1") || (strType == "dm") || (strType == "dmatrix")) {
                 preg->m_type = MDF_REG_TYPE_DMATRIX1;
                 spdlog::debug("Parse-JSON: Module register type: dmatrix1 {0}", preg->m_type);
               }
