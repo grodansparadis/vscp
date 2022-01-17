@@ -2449,7 +2449,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(16, mdf.getModuleBufferSize());
 
   // Check number of registers that is defined
-  ASSERT_EQ(3, mdf.getRegisterCount());
+  ASSERT_EQ(4, mdf.getRegisterCount());
 
   // Check number of registers that is defined on page == 0
   ASSERT_EQ(2, mdf.getRegisterCount(2));
@@ -2629,6 +2629,9 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
 
   // Check register span
   ASSERT_EQ(3, preg->getSpan());
+
+  // Get type
+  ASSERT_EQ(MDF_REG_TYPE_BLOCK, preg->getType());
 
   // Check register width
   ASSERT_EQ(8, preg->getWidth());

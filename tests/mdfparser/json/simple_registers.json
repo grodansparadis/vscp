@@ -332,6 +332,7 @@
         "default": "0x55",
         "width" : 8,
         "span" : 3,
+        "type" : "block",
         "min" : 0,
         "max" : 255,
         "access" : "w",
@@ -387,6 +388,13 @@
             }
           }
         ]
+      },
+      {
+        "name" : "Register example 4",
+        "page": 12,
+        "offset": 22,
+        "span":128,
+        "type": "dmatrix1"
       }
     ]    
   } 

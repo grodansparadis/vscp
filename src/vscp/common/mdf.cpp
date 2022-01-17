@@ -5287,6 +5287,34 @@ CMDF::parseMDF_JSON(std::string &path)
               spdlog::info("Parse-JSON: No register width defined (defaults to eight bits).");
             }
 
+            // Register type
+            if (jreg.contains("type") && jreg["type"].is_string()) {
+              std::string strType = jreg["type"];
+              vscp_trim(strType);
+              vscp_lower(strType);
+              if (strType == "std") {
+                preg->m_type = MDF_REG_TYPE_STANDARD;
+                spdlog::debug("Parse-JSON: Module register type: standard {0}", preg->m_type);
+              }
+              else if (strType == "dmatrix1") {
+                preg->m_type = MDF_REG_TYPE_DMATRIX1;
+                spdlog::debug("Parse-JSON: Module register type: dmatrix1 {0}", preg->m_type);
+              }
+              else if (strType == "block") {
+                preg->m_type = MDF_REG_TYPE_BLOCK;
+                spdlog::debug("Parse-JSON: Module register type: block {0}", preg->m_type);
+              }
+              else {
+                spdlog::warn("Invalid block type: {0} - will be set to standard", strType);
+                preg->m_type = MDF_REG_TYPE_STANDARD;
+                spdlog::debug("Parse-JSON: Module register type: standard {0}", preg->m_type);
+              }
+            }
+            else {
+              preg->m_type = MDF_REG_TYPE_STANDARD;
+              spdlog::info("Parse-JSON: No register type defined (Set to standard).");
+            }
+
             // Register min
             if (jreg.contains("min") && jreg["min"].is_number()) {
               preg->m_min = jreg["min"];
