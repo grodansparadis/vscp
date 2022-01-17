@@ -500,6 +500,16 @@ extern "C"
 #define VSCP_STD_REGISTER_BUFFER_SIZE 0x98
 #define VSCP_STD_REGISTER_PAGES_COUNT 0x99
 
+/* Unsigned 32-bit integer for family code */
+#define VSCP_STD_REGISTER_PAGES_FAMILY_CODE 0x9A
+
+/* Unsigned 32-bit integer for device type */
+#define VSCP_STD_REGISTER_PAGES_DEVICE_TYPE 0x9E
+
+/* Firmware code for device. */
+#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_MSB 0xA3 
+#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_LSB 0xA4
+
 /* 0xd0 - 0xdf  - GUID                      */
 #define VSCP_STD_REGISTER_GUID 0xD0
 
