@@ -62,7 +62,7 @@ TEST(parseMDF, Simple_XML_A)
   ASSERT_EQ(8, mdf.getModuleHelpUrlCount());
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple test");
+  ASSERT_TRUE(mdf.getModuleName() == "simple test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english description");
@@ -103,7 +103,7 @@ TEST(parseMDF, Simple_XML_B)
   ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple B test");
+  ASSERT_TRUE(mdf.getModuleName() == "simple b test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
@@ -138,6 +138,7 @@ TEST(parseMDF, Simple_Picture_Old_Format)
 
   // Get first picture url
   pPicture = mdf.getPictureObj();
+  ASSERT_EQ(pPicture->getName(), "picture1");
   ASSERT_TRUE("http://www.somewhere.com/images/pict1.jpg" == pPicture->getUrl());
 
   ASSERT_TRUE("jpg" == pPicture->getFormat());
@@ -147,6 +148,7 @@ TEST(parseMDF, Simple_Picture_Old_Format)
 
   // Get first picture url again
   pPicture = mdf.getPictureObj(0);
+  ASSERT_EQ(pPicture->getName(), "picture1");
   ASSERT_TRUE("http://www.somewhere.com/images/pict1.jpg" == pPicture->getUrl());
 
   ASSERT_TRUE("jpg" == pPicture->getFormat());
@@ -156,6 +158,7 @@ TEST(parseMDF, Simple_Picture_Old_Format)
 
   // Get second picture url
   pPicture = mdf.getPictureObj(1);
+  ASSERT_EQ(pPicture->getName(), "picture2");
   ASSERT_TRUE("http://www.somewhere.com/images/pict2.png" == pPicture->getUrl());
 
   ASSERT_TRUE("png" == pPicture->getFormat());
@@ -185,6 +188,7 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
 
   // Get first picture url
   pPicture = mdf.getPictureObj();
+  ASSERT_EQ(pPicture->getName(), "picture1");
   ASSERT_TRUE("http://www.somewhere.com/images/stdpict1.jpg" == pPicture->getUrl());
 
   ASSERT_TRUE("jpg" == pPicture->getFormat());
@@ -194,6 +198,7 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
 
   // Get first picture url again
   pPicture = mdf.getPictureObj(0);
+  ASSERT_EQ(pPicture->getName(), "picture1");
   ASSERT_TRUE("http://www.somewhere.com/images/stdpict1.jpg" == pPicture->getUrl());
 
   ASSERT_TRUE("jpg" == pPicture->getFormat());
@@ -203,6 +208,7 @@ TEST(parseMDF, Simple_Picture_Standard_Format)
 
   // Get second picture url
   pPicture = mdf.getPictureObj(1);
+  ASSERT_EQ(pPicture->getName(), "picture2");
   ASSERT_TRUE("http://www.somewhere.com/images/stdpict2.png" == pPicture->getUrl());
 
   ASSERT_TRUE("png" == pPicture->getFormat());
@@ -232,6 +238,7 @@ TEST(parseMDF, Simple_Video_Standard_Format)
 
   // Get first video url
   pVideo = mdf.getVideoObj();
+  ASSERT_EQ(pVideo->getName(), "video1");
   ASSERT_TRUE("http://www.somewhere.com/images/stdvideo1.jpg" == pVideo->getUrl());
 
   ASSERT_TRUE("jpg" == pVideo->getFormat());
@@ -241,6 +248,7 @@ TEST(parseMDF, Simple_Video_Standard_Format)
 
   // Get first video url again
   pVideo = mdf.getVideoObj(0);
+  ASSERT_EQ(pVideo->getName(), "video1");
   ASSERT_TRUE("http://www.somewhere.com/images/stdvideo1.jpg" == pVideo->getUrl());
 
   ASSERT_TRUE("jpg" == pVideo->getFormat());
@@ -250,6 +258,7 @@ TEST(parseMDF, Simple_Video_Standard_Format)
 
   // Get second video url
   pVideo = mdf.getVideoObj(1);
+  ASSERT_EQ(pVideo->getName(), "video2");
   ASSERT_TRUE("http://www.somewhere.com/images/stdvideo2.png" == pVideo->getUrl());
 
   ASSERT_TRUE("png" == pVideo->getFormat());
@@ -282,6 +291,7 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj();
+  ASSERT_EQ(pFirmware->getName(), "firmware1");
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
   ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
               "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
@@ -300,6 +310,7 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_EQ(pFirmware->getName(), "firmware4");
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
   ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
               pFirmware->getUrl());
@@ -340,6 +351,7 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(0);
+  ASSERT_EQ(pFirmware->getName(), "firmware1");
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
   ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
               "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
@@ -358,6 +370,7 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_EQ(pFirmware->getName(), "firmware4");
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
   ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
               pFirmware->getUrl());
@@ -439,11 +452,13 @@ TEST(parseMDF, Simple_Manual_Standard_Format)
   ASSERT_TRUE(nullptr != mdf.getManualObj(0));
 
   pManual = mdf.getManualObj(0);
+  ASSERT_EQ(pManual->getName(), "manual1");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
   ASSERT_TRUE("en" == pManual->getLanguage());
   ASSERT_TRUE("pdf" == pManual->getFormat());
 
   pManual = mdf.getManualObj(1);
+  ASSERT_EQ(pManual->getName(), "manual2");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
   ASSERT_TRUE("xx" == pManual->getLanguage());
   ASSERT_TRUE("html" == pManual->getFormat());
@@ -465,11 +480,13 @@ TEST(parseMDF, Simple_Manual_Old_Format)
   ASSERT_TRUE(nullptr != mdf.getManualObj(0));
 
   pManual = mdf.getManualObj(0);
+  ASSERT_EQ(pManual->getName(), "manual1");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
   ASSERT_TRUE("en" == pManual->getLanguage());
   ASSERT_TRUE("pdf" == pManual->getFormat());
 
   pManual = mdf.getManualObj(1);
+  ASSERT_EQ(pManual->getName(), "manual2");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
   ASSERT_TRUE("xx" == pManual->getLanguage());
   ASSERT_TRUE("html" == pManual->getFormat());
@@ -512,7 +529,7 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(1, mdf.getModuleHelpUrlCount());
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Register Test");
+  ASSERT_TRUE(mdf.getModuleName() == "register test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "Register test description");
@@ -2178,7 +2195,7 @@ TEST(parseMDF, JSON_SIMPLE_A)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple A test");
+  ASSERT_TRUE(mdf.getModuleName() == "simple a test");
 
   // Check description
   ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english description");
@@ -2215,11 +2232,11 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple B test");
+  ASSERT_EQ(mdf.getModuleName(),"simple b test");
 
-  ASSERT_TRUE(mdf.getModuleDescription("en") == "This is an english BBB description");
+  ASSERT_EQ(mdf.getModuleDescription("en"),"This is an english BBB description");
 
-  ASSERT_TRUE(mdf.getModuleHelpUrl("en") == "https://www.BBBenglishBBB.en");
+  ASSERT_EQ(mdf.getModuleHelpUrl("en"),"https://www.BBBenglishBBB.en");
 
   ASSERT_EQ(64, mdf.getModuleBufferSize());
 
@@ -2246,6 +2263,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE("Det här är en svensk beskrivning av bild 1." == pPicture->getDescription("se"));
 
   pPicture = mdf.getPictureObj(0);
+  ASSERT_EQ(pPicture->getName(),"picture1");
   ASSERT_TRUE("http://www.grodansparadis.com/logo.png" == pPicture->getUrl());
 
   ASSERT_TRUE("png" == pPicture->getFormat());
@@ -2255,6 +2273,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   // Get first picture url again
   pPicture = mdf.getPictureObj(1);
+  ASSERT_EQ(pPicture->getName(),"picture2");
   ASSERT_TRUE("http://www.somewhere.com/images/pict2.png" == pPicture->getUrl());
 
   ASSERT_TRUE("png" == pPicture->getFormat());
@@ -2274,9 +2293,11 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE(nullptr != mdf.getVideoObj(1));
   ASSERT_TRUE(nullptr == mdf.getVideoObj(2));
   ASSERT_TRUE(mdf.getVideoObj() == mdf.getVideoObj(0));
+  
 
   // Get first video url
   pVideo = mdf.getVideoObj();
+  ASSERT_EQ(pVideo->getName(),"video1");
   ASSERT_TRUE("http://www.grodansparadis.com/logo.avi" == pVideo->getUrl());
 
   ASSERT_TRUE("avi" == pVideo->getFormat());
@@ -2321,6 +2342,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(0);
+  ASSERT_EQ(pFirmware->getName(),"firmware1");
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
   ASSERT_TRUE("https://xxx.yy/1.hex" == pFirmware->getUrl());
   ASSERT_TRUE(11 == pFirmware->getTargetCode());
@@ -2337,6 +2359,7 @@ TEST(parseMDF, JSON_SIMPLE_B)
 
   // Get first firmare url
   pFirmware = mdf.getFirmwareObj(3);
+  ASSERT_EQ(pFirmware->getName(),"firmware4");
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
   ASSERT_TRUE("https://xxx.yy/4.hex" == pFirmware->getUrl());
   ASSERT_TRUE(0x33 == pFirmware->getTargetCode());
@@ -2407,20 +2430,50 @@ TEST(parseMDF, JSON_SIMPLE_B)
   ASSERT_TRUE(nullptr != mdf.getManualObj(0));
 
   pManual = mdf.getManualObj(0);
+  ASSERT_EQ(pManual->getName(),"manual1");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual1.pdf" == pManual->getUrl());
   ASSERT_TRUE("en" == pManual->getLanguage());
   ASSERT_TRUE("pdf" == pManual->getFormat());
 
   pManual = mdf.getManualObj(1);
+  ASSERT_EQ(pManual->getName(),"manual2");
   ASSERT_TRUE("https://www.grodansparadis.com/paris/manual2" == pManual->getUrl());
   ASSERT_TRUE("xx" == pManual->getLanguage());
   ASSERT_TRUE("html" == pManual->getFormat());
+
+  // * * * Setup * * *
+
+  CMDF_Setup *pSetup;
+
+  ASSERT_EQ(2, mdf.getSetupCount());
+
+  ASSERT_TRUE(nullptr != mdf.getSetupObj());
+  ASSERT_TRUE(nullptr != mdf.getSetupObj(0));
+
+  pSetup = mdf.getSetupObj(0);
+  ASSERT_EQ(pSetup->getName(), "setup1");
+  ASSERT_EQ(pSetup->getUrl(), "https://xxx.yy/1.js");
+  ASSERT_EQ(pSetup->getFormat(), "11");
+  ASSERT_EQ(pSetup->getDescription("en"), "This is a setup description in English 1.");
+  ASSERT_EQ(pSetup->getDescription("se"), "Det här är en svensk beskrivning av setup 1.");
+  ASSERT_EQ(pSetup->getInfoURL("en"), "https://www.someurl.com/1en.html");
+  ASSERT_EQ(pSetup->getInfoURL("se"), "https://www.someurl.com/1se.html");
+
+  pSetup = mdf.getSetupObj(1);
+  ASSERT_EQ(pSetup->getName(), "setup2");
+  ASSERT_EQ(pSetup->getUrl(), "https://xxx.yy/2.js");
+  ASSERT_EQ(pSetup->getFormat(), "22");
+  ASSERT_EQ(pSetup->getDescription("en"), "This is a setup description in English 2.");
+  ASSERT_EQ(pSetup->getDescription("se"), "Det här är en svensk beskrivning av setup 2.");
+  ASSERT_EQ(pSetup->getInfoURL("en"), "https://www.someurl.com/2en.html");
+  ASSERT_EQ(pSetup->getInfoURL("se"), "https://www.someurl.com/2se.html");
 
   // * * * Boot * * *
 
   ASSERT_EQ(1, mdf.getBootLoaderObj()->getAlgorithm());
   ASSERT_EQ(8, mdf.getBootLoaderObj()->getBlockSize());
   ASSERT_EQ(4096, mdf.getBootLoaderObj()->getBlockCount());
+
 }
 
 //-----------------------------------------------------------------------------
@@ -2438,7 +2491,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple registers");
+  ASSERT_TRUE(mdf.getModuleName() == "simple registers");
 
   // Check module version
   ASSERT_TRUE(mdf.getModuleVersion() == "Special version");
@@ -2753,7 +2806,7 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple remotevar");
+  ASSERT_TRUE(mdf.getModuleName() == "simple remotevar");
 
   // Check module version
   ASSERT_TRUE(mdf.getModuleVersion() == "var2022");
@@ -3098,7 +3151,7 @@ TEST(parseMDF, JSON_SIMPLE_DMatrix)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_TRUE(mdf.getModuleName() == "Simple DM");
+  ASSERT_TRUE(mdf.getModuleName() == "simple dm");
 
   // Get decision matrix
   CMDF_DecisionMatrix *pdm = mdf.getDM();
@@ -3258,7 +3311,7 @@ TEST(parseMDF, JSON_Events)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_EQ(mdf.getModuleName(), "Simple Events");
+  ASSERT_EQ(mdf.getModuleName(), "simple events");
 
   // Get events list
   std::deque<CMDF_Event *> *pEventList = mdf.getEventList();
@@ -3448,7 +3501,7 @@ TEST(parseMDF, JSON_Alarm)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
 
   // Check name
-  ASSERT_EQ(mdf.getModuleName(), "Simple Alarm");
+  ASSERT_EQ(mdf.getModuleName(), "simple alarm");
 
   // Check bit list
   pAlarmList = mdf.getAlarmList();

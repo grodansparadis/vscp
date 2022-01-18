@@ -941,6 +941,7 @@ CMDF_Picture::~CMDF_Picture()
 void
 CMDF_Picture::clearStorage(void)
 {
+  m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
   m_mapDescription.clear();
@@ -968,6 +969,7 @@ CMDF_Video::~CMDF_Video()
 void
 CMDF_Video::clearStorage(void)
 {
+  m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
   m_mapDescription.clear();
@@ -995,6 +997,7 @@ CMDF_Firmware::~CMDF_Firmware()
 void
 CMDF_Firmware::clearStorage(void)
 {
+  m_strName.clear();
   m_strURL.clear();
   m_strTarget.clear();
   m_strDate.clear();
@@ -1032,6 +1035,7 @@ CMDF_Driver::~CMDF_Driver()
 void
 CMDF_Driver::clearStorage(void)
 {
+  m_strName.clear();
   m_strURL.clear();
   m_strName.clear();
   m_strDate.clear();
@@ -1069,6 +1073,35 @@ CMDF_Manual::~CMDF_Manual()
 void
 CMDF_Manual::clearStorage(void)
 {
+  m_strName.clear();
+  m_strURL.clear();
+  m_strFormat.clear();
+  m_mapDescription.clear();
+  m_mapInfoURL.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor/Destructor
+//
+
+CMDF_Setup::CMDF_Setup()
+{
+  clearStorage();
+}
+
+CMDF_Setup::~CMDF_Setup()
+{
+  ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearStorage
+//
+
+void
+CMDF_Setup::clearStorage(void)
+{
+  m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
   m_mapDescription.clear();
@@ -1218,6 +1251,18 @@ CMDF::clearStorage(void)
     }
   }
   m_list_manual.clear();
+
+  // Clean up setup list
+  std::deque<CMDF_Setup *>::iterator iterSetup;
+  for (iterSetup = m_list_setup.begin(); iterSetup != m_list_setup.end(); ++iterSetup) {
+    CMDF_Setup *pRecordSetup = *iterSetup;
+    if (nullptr != pRecordSetup) {
+      pRecordSetup->clearStorage();
+      delete pRecordSetup;
+      pRecordSetup = nullptr;
+    }
+  }
+  m_list_setup.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1502,6 +1547,8 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
     vscp_makeLower(attribute);
 
     if (0 == strcasecmp(attr[i], "name")) {
+      vscp_trim(attribute);
+      vscp_makeLower(attribute);
       pBits->m_name = attribute;
     }
     else if (0 == strcasecmp(attr[i], "pos")) {
@@ -1571,6 +1618,7 @@ CMDF_Video *gpVideoStruct;                  // Holds temporary video items
 CMDF_Firmware *gpFirmwareStruct;            // Holds temporary firmware items
 CMDF_Driver *gpDriverStruct;                // Holds temporary driver items
 CMDF_Manual *gpManualStruct;                // Holds temporary manual items
+CMDF_Setup *gpSetupStruct;                  // Holds temporary setup items
 CMDF_Register *gpRegisterStruct;            // Holds temporary register items
 CMDF_RemoteVariable *gpRvarStruct;          // Holds temporary remote variable items
 CMDF_ActionParameter *gpActionParamStruct;  // Holds temporary action parameter items
@@ -1657,7 +1705,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
-          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpPictureStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
               gpPictureStruct->m_strURL = attribute;
             }
@@ -1687,7 +1740,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_trim(attribute);
           vscp_makeLower(attribute);
 
-          if (0 == strcasecmp(attr[i], "target")) {
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpFirmwareStruct->m_strName = attribute;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "target")) {
             // Target for firmware
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target: {0}", attribute);
             gpFirmwareStruct->m_strTarget = attribute;
@@ -1757,7 +1815,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_trim(attribute);
           vscp_makeLower(attribute);
 
-          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpManualStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             // Path/url for manual
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
@@ -1831,7 +1894,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
-          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpPictureStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
               gpPictureStruct->m_strURL = attribute;
             }
@@ -1858,7 +1927,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
-          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpVideoStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             if (!attribute.empty()) {
               gpVideoStruct->m_strURL = attribute;
             }
@@ -1886,7 +1961,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_trim(attribute);
           vscp_makeLower(attribute);
 
-          if (0 == strcasecmp(attr[i], "target")) {
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpFirmwareStruct->m_strName = attribute;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "target")) {
             // Target for firmware
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware target: {0}", attribute);
             gpFirmwareStruct->m_strTarget = attribute;
@@ -1953,7 +2033,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
           vscp_makeLower(attribute);
+
           if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpDriverStruct->m_strName = attribute;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "name")) {
             // Name of driver
             spdlog::trace("Parse-XML: handleMDFParserData: Driver name: {0}", attribute);
             gpDriverStruct->m_strName = attribute;
@@ -2021,7 +2107,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_trim(attribute);
           vscp_makeLower(attribute);
 
-          if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpManualStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
             // Path/url for manual
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
@@ -2035,6 +2126,39 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             // Format for manual
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
+          }
+        }
+      }
+      // [3] Picture (standard format)
+      else if ((currentToken == "setup")) {
+
+        gpSetupStruct = new CMDF_Setup;
+        if (nullptr == gpSetupStruct) {
+          spdlog::error("Parse-XML: ---> startSetupMDFParser: Failed to allocate memory for setup");
+          return;
+        }
+
+        pmdf->m_list_setup.push_back(gpSetupStruct);
+
+        for (int i = 0; attr[i]; i += 2) {
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "name")) {
+            if (!attribute.empty()) {
+              gpSetupStruct->m_strName = attribute;
+            }
+          }
+          else if ((0 == strcasecmp(attr[i], "path")) || (0 == strcasecmp(attr[i], "url"))) {
+            if (!attribute.empty()) {
+              gpSetupStruct->m_strURL = attribute;
+            }
+          }
+          else if (0 == strcasecmp(attr[i], "format")) {
+            if (!attribute.empty()) {
+              gpSetupStruct->m_strFormat = attribute;
+            }
           }
         }
       }
@@ -2989,6 +3113,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       else if (gTokenList.at(0) == "name") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        vscp_trim(strContent);
+        vscp_makeLower(strContent);
         pmdf->m_name = strContent;
       }
       break;
@@ -3003,6 +3129,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
       if (gTokenList.at(0) == "name") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        vscp_trim(strContent);
+        vscp_makeLower(strContent);
         pmdf->m_name = strContent;
       }
       else if (gTokenList.at(0) == "model") {
@@ -3050,6 +3178,17 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                       gLastLanguage);
         pmdf->m_manufacturer.m_strName = strContent;
       }
+      // Old form of picture name
+      else if (gTokenList.at(1) == "picture" && (gTokenList.at(0) == "name")) {
+        // Picture description
+        if (gpPictureStruct != nullptr) {
+          spdlog::trace("Parse-XML: handleMDFParserData: Picture name: {0}",
+                        strContent );
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          gpPictureStruct->m_strName = strContent;
+        }
+      }
       // Old form of picture description
       else if (gTokenList.at(1) == "picture" && (gTokenList.at(0) == "description")) {
         // Picture description
@@ -3062,7 +3201,18 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                         gpPictureStruct->m_mapDescription.size());
         }
       }
-      // Old form of firmware
+      // Old form of firmware name
+      else if (gTokenList.at(1) == "firmware" && (gTokenList.at(0) == "name")) {
+        // Firmware name
+        if (gpFirmwareStruct != nullptr) {
+          spdlog::trace("Parse-XML: handleMDFParserData: Firmware name: {0}",
+                        strContent );
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          gpFirmwareStruct->m_strName = strContent;
+        }
+      }
+      // Old form of firmware description
       else if (gTokenList.at(1) == "firmware" && (gTokenList.at(0) == "description")) {
         // Firmware description
         if (gpFirmwareStruct != nullptr) {
@@ -3074,7 +3224,18 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                         gpFirmwareStruct->m_mapDescription.size());
         }
       }
-      // Old form of manual
+      // Old form of firmware name
+      else if (gTokenList.at(1) == "manual" && (gTokenList.at(0) == "name")) {
+        // Namual name
+        if (gpManualStruct != nullptr) {
+          spdlog::trace("Parse-XML: handleMDFParserData: Manual name: {0}",
+                        strContent );
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          gpManualStruct->m_strName = strContent;
+        }
+      }
+      // Old form of manual description
       else if (gTokenList.at(1) == "manual" && (gTokenList.at(0) == "description")) {
         // Manual description
         if (gpManualStruct != nullptr) {
@@ -3174,6 +3335,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if (gTokenList.at(1) == "telephone") {
         if ((gTokenList.at(0) == "number") && (gpItemStruct != nullptr)) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -3188,6 +3351,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "fax") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "number") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -3201,6 +3366,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if (gTokenList.at(0) == "address") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -3215,6 +3382,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -3227,17 +3396,23 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       // [5] Picture standard format
       else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != nullptr)) {
-        if (gTokenList.at(0) == "description") {
-          // Description for firmware
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture name: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpPictureStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
+          // Description for picture
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpPictureStruct->m_mapDescription[gLastLanguage] += strContent;
         }
-      }
-      else if ((gTokenList.at(1) == "picture") && (gpPictureStruct != nullptr)) {
-        if (gTokenList.at(0) == "infourl") {
-          // Info URL for firmware
+        else if (gTokenList.at(0) == "infourl") {
+          // Info URL for picture
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture infourl: {0} language: {1}",
                         strContent,
                         gLastLanguage);
@@ -3246,16 +3421,22 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       // [5] Video standard format
       else if ((gTokenList.at(1) == "video") && (gpVideoStruct != nullptr)) {
-        if (gTokenList.at(0) == "description") {
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module video name: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpVideoStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
           // Description for video
           spdlog::trace("Parse-XML: handleMDFParserData: Module video description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpVideoStruct->m_mapDescription[gLastLanguage] += strContent;
         }
-      }
-      else if ((gTokenList.at(1) == "video") && (gpVideoStruct != nullptr)) {
-        if (gTokenList.at(0) == "infourl") {
+        else if (gTokenList.at(0) == "infourl") {
           // Info URL for video
           spdlog::trace("Parse-XML: handleMDFParserData: Module video infourl: {0} language: {1}",
                         strContent,
@@ -3265,16 +3446,22 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       // [5] Firmware standard format
       else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != nullptr)) {
-        if (gTokenList.at(0) == "description") {
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpFirmwareStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
           // Description for firmware
           spdlog::trace("Parse-XML: handleMDFParserData: Module firmware description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpFirmwareStruct->m_mapDescription[gLastLanguage] += strContent;
         }
-      }
-      else if ((gTokenList.at(1) == "firmware") && (gpFirmwareStruct != nullptr)) {
-        if (gTokenList.at(0) == "infourl") {
+        else if (gTokenList.at(0) == "infourl") {
           // Info URL for firmware
           spdlog::trace("Parse-XML: handleMDFParserData: Module firmware infourl: {0} language: {1}",
                         strContent,
@@ -3284,16 +3471,22 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       // [5] Driver standard format
       else if ((gTokenList.at(1) == "driver") && (gpDriverStruct != nullptr)) {
-        if (gTokenList.at(0) == "description") {
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpDriverStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
           // Description for driver
           spdlog::trace("Parse-XML: handleMDFParserData: Module driver description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpDriverStruct->m_mapDescription[gLastLanguage] += strContent;
         }
-      }
-      else if ((gTokenList.at(1) == "firmware") && (gpDriverStruct != nullptr)) {
-        if (gTokenList.at(0) == "infourl") {
+        else if (gTokenList.at(0) == "infourl") {
           // Info URL for driver
           spdlog::trace("Parse-XML: handleMDFParserData: Module driver infourl: {0} language: {1}",
                         strContent,
@@ -3302,22 +3495,54 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         }
       }
       // [5] Manual standard format
+      
       else if ((gTokenList.at(1) == "manual") && (gpManualStruct != nullptr)) {
-        if (gTokenList.at(0) == "description") {
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpManualStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
           // Description for manual
           spdlog::trace("Parse-XML: handleMDFParserData: Module manual description: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpManualStruct->m_mapDescription[gLastLanguage] += strContent;
         }
-      }
-      else if ((gTokenList.at(1) == "manual") && (gpManualStruct != nullptr)) {
-        if (gTokenList.at(0) == "infourl") {
+        else if (gTokenList.at(0) == "infourl") {
           // Info URL for manual
           spdlog::trace("Parse-XML: handleMDFParserData: Module manual infourl: {0} language: {1}",
                         strContent,
                         gLastLanguage);
           gpManualStruct->m_mapInfoURL[gLastLanguage] += strContent;
+        }
+      }
+      // [5] Setup standard format
+      else if ((gTokenList.at(1) == "setup") && (gpSetupStruct != nullptr)) {
+        if (gTokenList.at(0) == "name") {
+          // Description for picture
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
+                        strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);              
+          gpSetupStruct->m_strName = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
+          // Description for setup
+          spdlog::trace("Parse-XML: handleMDFParserData: Module setup description: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpSetupStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          // Info URL for setup
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture infourl: {0} language: {1}",
+                        strContent,
+                        gLastLanguage);
+          gpSetupStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] reg
@@ -4031,6 +4256,12 @@ __endSetupMDFParser(void *data, const char *name)
       }
       else if (currentToken == "video") {
         gpVideoStruct = nullptr;
+      }
+      else if (currentToken == "driver") {
+        gpDriverStruct = nullptr;
+      }
+      else if (currentToken == "setup") {
+        gpSetupStruct = nullptr;
       }
       else if (currentToken == "manual") {
         gpManualStruct = nullptr;
@@ -4909,6 +5140,8 @@ CMDF::parseMDF_JSON(std::string &path)
 
       if (j["module"]["name"].is_string()) {
         m_name = j["module"]["name"];
+        vscp_trim(m_name);
+        vscp_makeLower(m_name);
         spdlog::trace("Parse-JSON: Module name: {0} language: 'en' ", m_name);
       }
       else {
@@ -6293,6 +6526,14 @@ CMDF::parseMDF_JSON(std::string &path)
 
           json jpic = item.value();
 
+          if (jpic.contains("name") && jpic["name"].is_string()) {
+            ppicture->m_strName = jpic["name"];
+            spdlog::debug("Parse-JSON: Picture name: {0} ", jpic["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No picture name.");
+          }
+
           if (jpic.contains("url") && jpic["url"].is_string()) {
             ppicture->m_strURL = jpic["url"];
             spdlog::debug("Parse-JSON: Picture URL: {0} ", jpic["url"]);
@@ -6332,6 +6573,14 @@ CMDF::parseMDF_JSON(std::string &path)
           m_list_video.push_back(pvideo);
 
           json jvideo = item.value();
+
+          if (jvideo.contains("name") && jvideo["name"].is_string()) {
+            pvideo->m_strName = jvideo["name"];
+            spdlog::debug("Parse-JSON: Video name: {0} ", jvideo["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No video name.");
+          }
 
           if (jvideo.contains("url") && jvideo["url"].is_string()) {
             pvideo->m_strURL = jvideo["url"];
@@ -6373,12 +6622,20 @@ CMDF::parseMDF_JSON(std::string &path)
 
           json jfirmware = item.value();
 
-          if (jfirmware.contains("url") && jfirmware["url"].is_string()) {
-            pfirmware->m_strURL = jfirmware["url"];
-            spdlog::debug("Parse-JSON: Picture URL: {0} ", jfirmware["url"]);
+          if (jfirmware.contains("name") && jfirmware["name"].is_string()) {
+            pfirmware->m_strName = jfirmware["name"];
+            spdlog::debug("Parse-JSON: Fiirmware name: {0} ", jfirmware["name"]);
           }
           else {
-            spdlog::warn("Parse-JSON: No picture url.");
+            spdlog::warn("Parse-JSON: No firmware name.");
+          }
+
+          if (jfirmware.contains("url") && jfirmware["url"].is_string()) {
+            pfirmware->m_strURL = jfirmware["url"];
+            spdlog::debug("Parse-JSON: Firmware URL: {0} ", jfirmware["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No firmware url.");
           }
 
           if (jfirmware.contains("target") && jfirmware["target"].is_string()) {
@@ -6526,6 +6783,14 @@ CMDF::parseMDF_JSON(std::string &path)
 
           json jdriver = item.value();
 
+          if (jdriver.contains("name") && jdriver["name"].is_string()) {
+            pdriver->m_strName = jdriver["name"];
+            spdlog::debug("Parse-JSON: Driver name: {0} ", jdriver["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No driver name.");
+          }
+
           if (jdriver.contains("url") && jdriver["url"].is_string()) {
             pdriver->m_strURL = jdriver["url"];
             spdlog::debug("Parse-JSON: Driver URL: {0} ", jdriver["url"]);
@@ -6657,6 +6922,14 @@ CMDF::parseMDF_JSON(std::string &path)
 
           json jmanual = item.value();
 
+          if (jmanual.contains("name") && jmanual["name"].is_string()) {
+            pmanual->m_strName = jmanual["name"];
+            spdlog::debug("Parse-JSON: Manual name: {0} ", jmanual["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No manual name.");
+          }
+
           if (jmanual.contains("url") && jmanual["url"].is_string()) {
             pmanual->m_strURL = jmanual["url"];
             spdlog::debug("Parse-JSON: Manual URL: {0} ", jmanual["url"]);
@@ -6687,6 +6960,54 @@ CMDF::parseMDF_JSON(std::string &path)
 
           if (getInfoUrlList(jmanual, pmanual->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
             spdlog::warn("Parse-JSON: Failed to get event data infourl.");
+          }
+        }
+      }
+
+      // * * * setup * * *
+      if (jsub.contains("setup") && jsub["setup"].is_array()) {
+        for (auto &item : jsub["setup"].items()) {
+
+          CMDF_Setup *psetup = new CMDF_Setup();
+          if (psetup == nullptr) {
+            spdlog::error("Parse-JSON: Failed to allocate memory for setup item.");
+            return VSCP_ERROR_PARSING;
+          }
+
+          m_list_setup.push_back(psetup);
+
+          json jsetup = item.value();
+
+          if (jsetup.contains("name") && jsetup["name"].is_string()) {
+            psetup->m_strName = jsetup["name"];
+            spdlog::debug("Parse-JSON: Setup name: {0} ", jsetup["name"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No setup name.");
+          }
+
+          if (jsetup.contains("url") && jsetup["url"].is_string()) {
+            psetup->m_strURL = jsetup["url"];
+            spdlog::debug("Parse-JSON: Setup URL: {0} ", jsetup["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No setup url.");
+          }
+
+          if (jsetup.contains("format") && jsetup["format"].is_string()) {
+            psetup->m_strFormat = jsetup["format"];
+            spdlog::debug("Parse-JSON: Setup Format: {0} ", jsetup["url"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No setup format.");
+          }
+
+          if (getDescriptionList(jsetup, psetup->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get setup description.");
+          }
+
+          if (getInfoUrlList(jsetup, psetup->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to get setup infourl.");
           }
         }
       }

@@ -80,6 +80,7 @@
     "files" : {
       "picture" : [
         {
+          "name": "picture1",
           "format": "png",
           "url": "http://www.grodansparadis.com/logo.png",
           "description": {
@@ -88,6 +89,7 @@
           }          
         },
         {
+          "name": "picture2",
           "format": "png",
           "url": "http://www.somewhere.com/images/pict2.png",
           "description": {
@@ -98,6 +100,7 @@
       ],
       "video" : [
         {
+          "name": "video1",
           "format": "avi",
           "url": "http://www.grodansparadis.com/logo.avi",
           "description": {
@@ -106,7 +109,8 @@
           }          
         },
         {
-          "format": "mpeg",
+          "name": "video2",
+          "format": "mpeg",          
           "url": "http://www.somewhere.com/videos/pict2.mpeg",
           "description": {
             "en": "This is a video 2 description in English.",
@@ -116,6 +120,7 @@
       ],
       "firmware" : [
         {
+          "name": "firmware1",
           "target": "pic18f2580",
           "targetcode": 11,
           "url": "https://xxx.yy/1.hex", 
@@ -132,6 +137,7 @@
           }
         },
         {
+          "name": "firmware2",
           "target": "pic18f26K80",
           "targetcode": 22,
           "url": "https://xxx.yy/2.hex", 
@@ -147,6 +153,7 @@
           }
         },
         {
+          "name": "firmware3",
           "target": "pic18f2580",
           "targetcode": 33,
           "url": "https://xxx.yy/3.hex", 
@@ -162,6 +169,7 @@
           }
         },
         {
+          "name": "firmware4",
           "target": "esp32c3",
           "targetcode": "0x33",
           "url": "https://xxx.yy/4.hex", 
@@ -177,6 +185,7 @@
           }
         },
         {
+          "name": "firmware5",
           "target": "pic18f2580",
           "targetcode": 33,
                 "url": "https://xxx.yy/5.hex", 
@@ -192,6 +201,7 @@
            }
         },
         {
+          "name": "firmware6",
           "target": "pic18f2580",
           "targetcode": 44,
           "url": "https://xxx.yy/6.hex", 
@@ -206,6 +216,7 @@
           }
         },
         {
+          "name": "firmware7",
           "target": "pic18f2580",
           "targetcode": 55,
           "url": "https://xxx.yy/7.hex", 
@@ -220,6 +231,7 @@
           }
         },
         {
+          "name": "firmware8",
           "target": "pic18f2580",
           "targetcode": 66,
           "url": "https://xxx.yy/7.hex", 
@@ -362,6 +374,7 @@
       ],
       "manual" : [
         {
+          "name": "manual1",
           "url": "https://www.grodansparadis.com/paris/manual1.pdf",
           "format": "pdf",
           "lang": "en",
@@ -371,6 +384,7 @@
           }
         },
         {
+          "name": "manual2",
           "url": "https://www.grodansparadis.com/paris/manual2",
           "format": "html",
           "lang": "xx",
@@ -378,6 +392,34 @@
             "en" : "Full web based English manual for the Paris module.",
             "se" : "Fullständig webbaserad Svensk manual för Paris modulen."
           }
+        }
+      ],
+      "setup" : [
+        {
+          "name": "setup1",
+          "format": "11",
+          "url": "https://xxx.yy/1.js",
+          "description": {
+            "en": "This is a setup description in English 1.",
+            "se": "Det här är en svensk beskrivning av setup 1."
+          },
+          "infourl": {
+            "en": "https://www.someurl.com/1en.html",
+            "se": "https://www.someurl.com/1se.html"
+          } 
+        },
+        {
+          "name": "setup2",
+          "format": "22",
+          "url": "https://xxx.yy/2.js",
+          "description": {
+            "en": "This is a setup description in English 2.",
+            "se": "Det här är en svensk beskrivning av setup 2."
+          },
+          "infourl": {
+            "en": "https://www.someurl.com/2en.html",
+            "se": "https://www.someurl.com/2se.html"
+          } 
         }
       ]
     }

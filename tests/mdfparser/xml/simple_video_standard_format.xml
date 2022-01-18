@@ -42,12 +42,12 @@
 
     <!-- Standard video format -->
     <files>
-      <video path="http://www.somewhere.com/images/stdvideo1.jpg" format="jpg" >
+      <video path="http://www.somewhere.com/images/stdvideo1.jpg" format="jpg" name="video1">
         <description lang="en">This is a video description in English</description>
         <description lang="se">Det här är en svensk beskrivning av video 1</description>
       </video>
 
-      <video path="http://www.somewhere.com/images/stdvideo2.png" format="png" >
+      <video path="http://www.somewhere.com/images/stdvideo2.png" format="png" name="video2">
         <description lang="en">This is a video 2 description in English</description>
         <description lang="se">Det här är en svensk beskrivning av video 2</description>
       </video>

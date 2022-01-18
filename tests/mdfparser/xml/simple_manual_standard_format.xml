@@ -132,12 +132,12 @@
         <description lang="en"> Firmware version 1.0.0 for the Paris relay module with PIC18f2580 processo. </description>
       </firmware>
 
-      <manual path="https://www.grodansparadis.com/paris/manual1.pdf" lang="en" format="pdf">
+      <manual path="https://www.grodansparadis.com/paris/manual1.pdf" lang="en" format="pdf" name="manual1">
         <description lang="en">Full pdf manual English for the Paris module.</description>
         <description lang="se">Fullständig pdf manual på Svenska för Paris modulen.</description>
       </manual>
 
-      <manual path="https://www.grodansparadis.com/paris/manual2" lang="xx" format="html">
+      <manual path="https://www.grodansparadis.com/paris/manual2" lang="xx" format="html" name="manual2">
         <description lang="en">Full web based English manual for the Paris module.</description>
         <description lang="se">Fullständig webbaserad Sbensk manual för Paris modulen.</description>
       </manual>

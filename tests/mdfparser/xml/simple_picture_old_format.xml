@@ -42,11 +42,13 @@
 
     <!-- Old format picture format -->
     <picture url="http://www.somewhere.com/images/pict1.jpg" format="jpg">
+      <name>picture1</name>
       <description lang="en">This is a picture description in English</description>
       <description lang="se">Det här är en svensk beskrivning av bild 1</description>
     </picture>
 
     <picture path="http://www.somewhere.com/images/pict2.png" format="png">
+      <name>picture2</name>
       <description lang="en">This is a picture 2 description in English</description>
       <description lang="se">Det här är en svensk beskrivning av bild 2</description>
     </picture>

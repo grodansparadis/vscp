@@ -51,7 +51,8 @@
       <description lang="se">Det här är en svensk beskrivning av bild 2</description>
     </picture>
 
-    <firmware target="pic18f2580"
+    <firmware name="firmware1"
+                target="pic18f2580"
                 targetcode="11"
                 path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" 
                 format="intelhex8" 
@@ -65,7 +66,8 @@
       <description lang="se"> Firmware för CAN4VSCP Paris relay modul med PIC18f2580 processor. </description>
     </firmware>
 
-    <firmware target="pic18f26K80" 
+    <firmware name="firmware2"
+                target="pic18f26K80" 
                 targetcode="22"
                 path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f26k80_1_1_6_relocated.hex" 
                 format="intelhex8" 
@@ -78,7 +80,8 @@
       <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f26K80 processor. </description>
     </firmware>
 
-    <firmware target="pic18f2580" 
+    <firmware name="firmware3"
+                target="pic18f2580" 
                 targetcode="33"
                 path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.2/paris_relay_1_1_2.hex" 
                 format="intelhex8" 
@@ -91,7 +94,8 @@
       <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processor. </description>
     </firmware>
 
-    <firmware target="esp32c3" 
+    <firmware name="firmware4"
+                target="esp32c3" 
                 targetcode="44"
                 path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" 
                 format="intelhex16" 
@@ -104,7 +108,8 @@
       <description lang="se">Beskrivning på Svenska.</description>
     </firmware>
 
-    <firmware target="pic18f2580" 
+    <firmware name="firmware5"
+                target="pic18f2580" 
                 targetcode="55"
                 path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.0/paris_relay_1_1_0.hex" 
                 format="intelhex8" 
@@ -117,7 +122,8 @@
       <description lang="en"> Firmware for the CAN4VSCP Paris relay module with PIC18f2580 processo. </description>
     </firmware>
 
-    <firmware target="pic18f2580" 
+    <firmware name="firmware6"
+                target="pic18f2580" 
                 targetcode="66"
                 path="http://www.auto.grodansparadis.com/kelvin/firmware_paris_1_0_0.hex" 
                 format="intelhex8" 

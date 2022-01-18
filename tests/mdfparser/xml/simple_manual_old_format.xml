@@ -131,11 +131,13 @@
     </firmware>
 
     <manual path="https://www.grodansparadis.com/paris/manual1.pdf" lang="en" format="pdf">
+      <name>manual1</name>
       <description lang="en">Full pdf manual English for the Paris module.</description>
       <description lang="se">Fullständig pdf manual på Svenska för Paris modulen.</description>
     </manual>
 
     <manual path="https://www.grodansparadis.com/paris/manual2" lang="xx" format="html">
+      <name>manual2</name>
       <description lang="en">Full web based English manual for the Paris module.</description>
       <description lang="se">Fullständig webbaserad Sbensk manual för Paris modulen.</description>
     </manual>

@@ -1718,6 +1718,18 @@ public:
   void clearStorage(void);
 
   /*!
+    Get name of picture
+    @return name for picture
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of picture
+    @param strURL name
+  */
+  void setName(std::string &name) { m_strName = name; };
+
+  /*!
     Get URL for picture
     @return URL for picture
   */
@@ -1778,6 +1790,12 @@ public:
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
 private:
+
+  /*!
+    Name of picture
+  */
+  std::string m_strName;  
+
   /*!
     Path to picture file
   */
@@ -1815,6 +1833,18 @@ public:
       Clear storage
   */
   void clearStorage(void);
+
+  /*!
+    Get name of video
+    @return name for video
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of video
+    @param strURL name
+  */
+  void setName(std::string &name) { m_strName = name; };
 
   /*!
     Get URL for video
@@ -1877,6 +1907,12 @@ public:
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
 private:
+
+  /*!
+    Name of video
+  */
+  std::string m_strName;
+
   /*!
     Path to video file
   */
@@ -1921,6 +1957,18 @@ public:
       Clear storage
   */
   void clearStorage(void);
+
+  /*!
+    Get name of firmware
+    @return name for firmware
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of firmware
+    @param strURL name
+  */
+  void setName(std::string &name) { m_strName = name; };
 
   /*!
     Get URL for firmware
@@ -2019,6 +2067,10 @@ public:
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
 private:
+
+  // Nam of firmware
+  std::string m_strName;
+
   /*!
       Path/url to firmware hex file
   */
@@ -2102,6 +2154,18 @@ public:
   void clearStorage(void);
 
   /*!
+    Get name of setup
+    @return name for setup
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of setup
+    @param strURL name
+  */
+  void setName(std::string &name) { m_strName = name; };
+
+  /*!
     Get URL for CMDF_Driver
     @return URL for CMDF_Driver
   */
@@ -2112,12 +2176,6 @@ public:
     @return Target string for CMDF_Driver
   */
   std::string getType(void) { return m_strType; };
-
-  /*!
-    Get id for driver
-    @return id for driver
-  */
-  std::string getName(void) { return m_strName; };
 
   /*!
     Get OS (Operation System) for driver
@@ -2248,6 +2306,123 @@ private:
   std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
 
+// ----------------------------------------------------------------------------
+
+class CMDF_Setup {
+
+public:
+  CMDF_Setup();
+  ~CMDF_Setup();
+
+  // Friend declarations
+  friend CMDF;
+  friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
+  friend bool __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr);
+  friend void __startSetupMDFParser(void *data, const char *name, const char **attr);
+  friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
+  friend void __endSetupMDFParser(void *data, const char *name);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+    Get name of setup
+    @return name for setup
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of setup
+    @param strURL name
+  */
+  void setName(std::string &name) { m_strName = name; };
+
+  /*!
+    Get URL for picture
+    @return URL for picture
+  */
+  std::string getUrl(void) { return m_strURL; };
+
+  /*!
+    Set URL for picture
+    @param strURL URL for picture
+  */
+  void setUrl(std::string &strURL) { m_strURL = strURL; };
+
+  /*!
+    Get format for picture
+    @return format for picture
+  */
+  std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Set format for picture
+    @param strFormat Format for picture
+  */
+  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+
+  /*!
+    Set description for picture
+  */
+  void setDescription(std::string &strDescription, std::string &strLanguage)
+  {
+    m_mapDescription[strLanguage] = strDescription;
+  };
+
+  /*!
+    Get description for picture
+    @param strLanguage Language for description (default="en")
+    @return Description for picture as string
+  */
+  std::string getDescription(std::string strLanguage = "en")
+  {
+    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+      return m_mapDescription[strLanguage];
+    }
+    else {
+      return "";
+    }
+  };
+
+  /*!
+    Get the value info URL
+    @return Value info URL
+  */
+  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+
+  /*!
+    Set value info URL
+    @param lang Language
+    @param url Value info URL to set
+  */
+  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+private:
+
+  /*!
+    Name of setup file
+  */
+  std::string m_strName;
+
+  /*!
+    Path to picture file
+  */
+  std::string m_strURL;
+
+  /*!
+    Picture type
+  */
+  std::string m_strFormat;
+
+  /*!
+      Description of file
+  */
+  std::map<std::string, std::string> m_mapDescription;
+  std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
+};
+
 // ---------------------------------------------------------------------------
 
 
@@ -2270,6 +2445,18 @@ public:
       Clear storage
   */
   void clearStorage(void);
+
+  /*!
+    Get name of manual
+    @return name for  manual
+  */
+  std::string getName(void) { return m_strName; };
+
+  /*!
+    Set name of manual
+    @param strURL manual
+  */
+  void setName(std::string &name) { m_strName = name; }
 
   /*!
     Get URL for manual
@@ -2326,6 +2513,12 @@ public:
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
 private:
+
+  /*!
+    name manual file
+  */
+  std::string m_strName;
+
   /*!
     URL for manual file
   */
@@ -2587,6 +2780,22 @@ public:
   };
 
   /*!
+    Get number of setup files
+    @return Number of setup available.
+  */
+  size_t getSetupCount(void) { return m_list_setup.size(); };
+
+  /*!
+    Get a setup object from it's index
+    @param index Index of setup to get.
+    @return Pointer to setup object or NULL if index is out of range.
+  */
+  CMDF_Setup *getSetupObj(uint16_t index = 0)
+  {
+    return ((m_list_setup.size() <= index) ? nullptr : m_list_setup[index]);
+  };
+
+  /*!
     Get number of module manual files
     @return Number of manual files available.
   */
@@ -2779,6 +2988,7 @@ private:
   std::deque<CMDF_Firmware *> m_list_firmware; // Firmware file(s)
   std::deque<CMDF_Driver *> m_list_driver;     // Picture file(s)
   std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
+  std::deque<CMDF_Setup *> m_list_setup;       // Setup file(s)
 
   CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
   CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
