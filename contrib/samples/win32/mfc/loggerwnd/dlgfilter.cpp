@@ -1,7 +1,7 @@
 // DlgFilter.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include <pch.h>
 #include "loggerWnd.h"
 #include "DlgFilter.h"
 

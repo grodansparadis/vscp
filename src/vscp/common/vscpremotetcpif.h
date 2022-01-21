@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -83,35 +83,38 @@
 
     This is the overall time to wait for a +OK respose.
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT 2000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000  // ms
+
+/*!
+*   Default connect timeout
+*/
+#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   15    // Seconds
 
 /*!
     @def DEFAULT_INNER_RESPONSE_TIMEOUT
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT 0
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
 
-#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP 0 // TODO remove !!!!!!!!!
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define TCPIP_REGISTER_READ_RESEND_TIMEOUT 1000
-#define TCPIP_REGISTER_READ_ERROR_TIMEOUT 5000
-#define TCPIP_REGISTER_READ_MAX_TRIES 3
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT      1000
+#define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
+#define TCPIP_REGISTER_READ_MAX_TRIES           3
 
-#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS 15 // Seconds
+
 /*!
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION 0x00000010
+#define TCPIP_DLL_VERSION                       0x000f0002      // 15.0.2
 /*!
     @def TCPIP_VENDOR_STRING
-    Pseudo vendor string
+    Vendor string
  */
-#define TCPIP_VENDOR_STRING "the VSCP project, Sweden"
-
+#define TCPIP_VENDOR_STRING "the VSCP project, https://www.vscp.org"
 #define DRIVER_INFO_STRING ""
 
 /*!
@@ -206,8 +209,7 @@ class VscpRemoteTcpIf
      */
     bool isConnected(void)
     {
-        return ((NULL != m_conn) &&
-                (STCP_CONN_STATE_CONNECTED == m_conn->conn_state));
+        return ((NULL != m_conn) && (STCP_CONN_STATE_CONNECTED == m_conn->conn_state));
     };
 
     /*!
@@ -255,9 +257,13 @@ class VscpRemoteTcpIf
 
     /*!
         Open communication interface.
-        @param strInterface should contain "username;password;ip-addr;port" if
+        @param strInterface should contain "ip-addr:port;username;password" if
        used. All including port are optional and defaults to no
        username/password, server as "localhost" and "9598" as default port.
+       Interface can be given as
+          tcp://host:port;username;password
+          or
+          host:port;username;password
         @param flags are not used at the moment.
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if
        error or the channel is already opened or other error occur.

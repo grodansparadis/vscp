@@ -1,0 +1,57 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Copyright C) 2016 Ake Hedman, Grodans Paradis AB -->
+<!-- <akhe@grodansparadis.com> -->
+<vscp>
+  <module>
+    <name>Simple B test</name>
+    <model>Simple B model</model>
+    <version></version>
+    <changed>2021-11-02</changed>
+    <description lang="en">This is an english BBB description</description>
+    <infourl>http://www.grodansparadis.com/kelvin1w/index.html</infourl>
+    <buffersize>128</buffersize>
+    <manufacturer>
+      <name>Grodans Paradis AB</name>
+      <address>
+          <street>Brattbergavägen 17</street>
+          <city>Los</city>
+          <postcode>82770</postcode>
+          <country>Sweden</country>
+      </address>
+      <telephone>
+          <number>+46 8 40011835 </number>
+          <description lang="en" >Main Reception</description>
+      </telephone>
+      <email>
+          <address>support@grodansparadis.com</address>
+          <description>Support email</description>
+      </email>
+      <email>
+          <address>sales@grodansparadis.com</address>
+          <description>Sales inquires email</description>
+      </email>
+      <email>
+          <address>info@grodansparadis.com</address>
+          <description>General email</description>
+      </email>
+      <web>
+          <address>http://www.grodansparadis.com</address>
+          <description>Main web site</description>
+      </web> 
+    </manufacturer>  
+
+    <!-- Standard video format -->
+    <files>
+      <video path="http://www.somewhere.com/images/stdvideo1.jpg" format="jpg" name="video1">
+        <description lang="en">This is a video description in English</description>
+        <description lang="se">Det här är en svensk beskrivning av video 1</description>
+      </video>
+
+      <video path="http://www.somewhere.com/images/stdvideo2.png" format="png" name="video2">
+        <description lang="en">This is a video 2 description in English</description>
+        <description lang="se">Det här är en svensk beskrivning av video 2</description>
+      </video>
+    </files>
+
+  </module>
+</vscp>

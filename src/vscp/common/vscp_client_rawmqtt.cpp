@@ -1,6 +1,6 @@
 // vscp_client_rawmqtt.cpp
 //
-// tcp/ip client communication classes.
+// Raw MQTT client communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include "vscp_client_rawmqtt.h"

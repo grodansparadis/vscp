@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@
 // SOFTWARE.
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include <string>
@@ -96,8 +96,9 @@ VscpCanalDeviceIf::init()
 #ifdef WIN32
 #else        
         syslog(LOG_ERR,
-               "Devicethread: Unable to load dynamic library. path = %s",
-               m_strPath.c_str());
+                "Devicethread: Unable to load dynamic library. path = %s error=%s",
+                m_strPath.c_str(),
+                dlerror());
 #endif               
         return CANAL_ERROR_PARAMETER;
     }
@@ -135,6 +136,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -151,6 +153,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -166,6 +169,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -182,6 +186,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -197,6 +202,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -213,6 +219,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -229,6 +236,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -245,6 +253,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -260,6 +269,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -276,6 +286,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -292,6 +303,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -308,6 +320,7 @@ VscpCanalDeviceIf::init()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_LIBRARY;
     }
 
@@ -383,11 +396,14 @@ startInitXMLParser(void *data, const char *name, const char **attr)
             std::string attribute = attr[i + 1];
             if (0 == strcmp(attr[i], "path")) {
                 pObj->setPath(attribute);
-            } else if (0 == strcmp(attr[i], "config")) {
+            }
+            else if (0 == strcmp(attr[i], "config")) {
                 pObj->setParameter(attribute);
-            } else if (0 == strcmp(attr[i], "flags")) {
+            }
+            else if (0 == strcmp(attr[i], "flags")) {
                 pObj->setFlags(vscp_readStringValue(attribute));
-            } else if (0 == strcmp(attr[i], "basync")) {
+            }
+            else if (0 == strcmp(attr[i], "basync")) {
                 for (auto &c : attribute) c = toupper(c);
                 if (std::string::npos != attribute.find("TRUE")) {
                     pObj->setbAsync(true);
@@ -429,7 +445,8 @@ VscpCanalDeviceIf::init(std::string objInit, uint8_t nFormat)
 
         XML_ParserFree(xmlParser);
 
-    } else if (CANAL_FORMAT_CAN_JSON == nFormat) {
+    }
+    else if (CANAL_FORMAT_CAN_JSON == nFormat) {
         try {
             auto j = json::parse(objInit.c_str());
 
@@ -488,6 +505,11 @@ VscpCanalDeviceIf::init(std::string strpath,
 int
 VscpCanalDeviceIf::CanalOpen()
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must NOT be open
     if (0 != m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -507,6 +529,7 @@ VscpCanalDeviceIf::CanalOpen()
                m_strPath.c_str());
 #endif               
         dlclose(m_hdll);
+        m_hdll = NULL;
         return CANAL_ERROR_NOT_OPEN;
     }
 
@@ -523,6 +546,10 @@ VscpCanalDeviceIf::CanalOpen()
 int
 VscpCanalDeviceIf::CanalClose()
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
 
     // Must be open
     if (0 == m_openHandle) {
@@ -534,6 +561,8 @@ VscpCanalDeviceIf::CanalClose()
         return rv;
     }
 
+    m_openHandle = 0;
+
     return CANAL_ERROR_SUCCESS;
 }
 
@@ -544,6 +573,11 @@ VscpCanalDeviceIf::CanalClose()
 int
 VscpCanalDeviceIf::CanalSend(const PCANALMSG pCanMsg)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -741,6 +775,11 @@ VscpCanalDeviceIf::CanalSend(std::string& strObj, uint8_t nFormat)
     canalMsg msg;
     memset(&msg, 0, sizeof(canalMsg) );
 
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     if ( !constructCanalMsg( &msg, strObj, nFormat ) ) {
         return CANAL_ERROR_PARAMETER;
     }
@@ -759,6 +798,11 @@ VscpCanalDeviceIf::CanalBlockingSend( canalMsg *pmsg,
     // Check pointer
     if ( NULL == pmsg ) {
         return CANAL_ERROR_PARAMETER;
+    }
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
     }
 
     // Check if generation 2
@@ -781,6 +825,11 @@ VscpCanalDeviceIf::CanalBlockingSend( std::string &strObj,
 {
     canalMsg msg;
     memset(&msg, 0, sizeof(canalMsg) );;
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
 
     // Check if generation 2
     if (NULL == m_proc_CanalBlockingSend) {
@@ -882,6 +931,11 @@ VscpCanalDeviceIf::CanalReceive(canalMsg *pmsg)
         return CANAL_ERROR_PARAMETER;
     }
 
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -899,6 +953,11 @@ int
 VscpCanalDeviceIf::CanalReceive(std::string& strObj, uint8_t nFormat)
 {
     canalMsg CanMsg;
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
 
     // Must be open
     if (0 == m_openHandle) {
@@ -929,6 +988,11 @@ VscpCanalDeviceIf::CanalBlockingReceive(canalMsg *pmsg, uint32_t timeout)
         return CANAL_ERROR_PARAMETER;
     }
 
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -948,6 +1012,11 @@ VscpCanalDeviceIf::CanalBlockingReceive(std::string &strObj,
                                         uint8_t nFormat)
 {
     canalMsg CanMsg;
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
 
     // Must be open
     if (0 == m_openHandle) {
@@ -973,6 +1042,11 @@ VscpCanalDeviceIf::CanalBlockingReceive(std::string &strObj,
 int
 VscpCanalDeviceIf::CanalDataAvailable()
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return 0;
+    }
+
     int rv = m_proc_CanalDataAvailable(m_openHandle);
     return rv;
 }
@@ -999,6 +1073,11 @@ int
 VscpCanalDeviceIf::CanalGetStatus(std::string &objStatus, uint8_t nFormat)
 {
     canalStatus status;
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
 
     // Must be open
     if (0 == m_openHandle) {
@@ -1063,6 +1142,11 @@ VscpCanalDeviceIf::CanalGetStatistics( std::string& objStatistics,
 {
     canalStatistics CanalStatistics;
 
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -1109,6 +1193,11 @@ VscpCanalDeviceIf::CanalGetStatistics( std::string& objStatistics,
 int
 VscpCanalDeviceIf::CanalSetFilter(uint32_t filter)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -1128,6 +1217,11 @@ VscpCanalDeviceIf::CanalSetFilter(uint32_t filter)
 int
 VscpCanalDeviceIf::CanalSetMask(uint32_t mask)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -1147,6 +1241,11 @@ VscpCanalDeviceIf::CanalSetMask(uint32_t mask)
 int
 VscpCanalDeviceIf::CanalSetBaudrate(uint32_t baudrate)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
@@ -1166,6 +1265,11 @@ VscpCanalDeviceIf::CanalSetBaudrate(uint32_t baudrate)
 uint32_t
 VscpCanalDeviceIf::CanalGetVersion(void)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return 0;
+    }
+
     return m_proc_CanalGetVersion();
 }
 
@@ -1176,6 +1280,11 @@ VscpCanalDeviceIf::CanalGetVersion(void)
 uint32_t
 VscpCanalDeviceIf::CanalGetDllVersion(void)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return 0;
+    }
+
     return m_proc_CanalGetDllVersion();
 }
 
@@ -1186,6 +1295,11 @@ VscpCanalDeviceIf::CanalGetDllVersion(void)
 const char *
 VscpCanalDeviceIf::CanalGetVendorString(void)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return NULL;
+    }
+
     return m_proc_CanalGetVendorString();
 }
 
@@ -1196,6 +1310,11 @@ VscpCanalDeviceIf::CanalGetVendorString(void)
 const char *
 VscpCanalDeviceIf::CanalGetDriverInfo(void)
 {
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return NULL;
+    }
+
     // Check if generation 2
     if (NULL == m_proc_CanalGetdriverInfo) {
         return NULL;

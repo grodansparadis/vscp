@@ -3,7 +3,7 @@
 
 
 
-#include "stdafx.h"
+#include <pch.h>
 
 
 #ifdef __GNUG__

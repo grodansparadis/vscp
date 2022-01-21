@@ -25,7 +25,7 @@
 // $Author: akhe $                                              
 // $Revision: 1.2 $ 
 
-#include "stdafx.h"
+#include <pch.h>
 #include "testIf.h"
 #include "testIfDlg.h"
 

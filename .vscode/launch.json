@@ -110,6 +110,27 @@
             "miDebuggerPath": "/usr/bin/gdb"
         },
         {
+          "name": "(gdb) test remotetcpif",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/home/akhe/development/VSCP/vscp/tests/remotetcpif/build/test_vscpremotetcpif",
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "gdb",
+          "setupCommands": [
+              {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              }
+          ],
+          "preLaunchTask": "build test remotetcpif",
+          "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
             "name": "(gdb) vscp-client-mqtt",
             "type": "cppdbg",
             "request": "launch",
@@ -129,6 +150,27 @@
             ],
             "preLaunchTask": "build test code for vscp-client-mqtt",
             "miDebuggerPath": "/usr/bin/gdb"
-        }
+        },
+        {
+          "name": "(gdb) mdfparser",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}/tests/mdfparser/build/test",            
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}/tests/mdfparser/",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "gdb",
+          "setupCommands": [
+              {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              }
+          ],
+          "preLaunchTask": "build test code for mdfparser",
+          "miDebuggerPath": "/usr/bin/gdb"
+      }
     ]
 }

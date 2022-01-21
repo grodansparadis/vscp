@@ -4,7 +4,7 @@
 // For compilers that support precompilation, includes "wx/wx.h".
 
 
-#include "stdafx.h"
+#include <pch.h>
 
 #ifdef __GNUG__
     //#pragma implementation

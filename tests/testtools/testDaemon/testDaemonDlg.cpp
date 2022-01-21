@@ -28,7 +28,7 @@
 //		021107 - AKHE	Started this file
 //
 
-#include "stdafx.h"
+#include <pch.h>
 #include "../common/vscp.h"
 #include "testDaemon.h"
 #include "testDaemonDlg.h"

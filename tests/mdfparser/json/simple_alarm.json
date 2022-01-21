@@ -1,0 +1,452 @@
+{
+  "_copyright": "Copyright C) 2022 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
+
+  "module": {
+    "name": "Simple Alarm",
+    "model": "Simple Alarm",
+    "version": "B",
+    "changed": "2021-11-02",
+    "description": "This is an english BBB description",
+    "infourl": "https://www.BBBenglishBBB.en",
+    "buffersize": 64,
+  
+    "manufacturer": {
+        "name" : "Grodans Paradis AB",
+         "address": {
+               "street": "Brattbergavägen 17",
+               "city": "Los",
+               "town": "Loos",
+               "postcode": "82770",
+               "state": "HA",
+               "Region": "Hälsingland",
+               "country" : "Sweden"
+         },
+         "telephone": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Main Reception",
+                  "se": "Huvudreception"
+               }
+            }
+         ],
+         "fax": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Non working fax",
+                  "se": "Icke fungerande fax"
+               }
+            }
+         ],
+         "email": [
+            {
+               "address": "support@grodansparadis.com",
+               "description": {
+            	   "en": "Support email"
+               }
+            },
+            {
+               "address": "sales@grodansparadis.com",
+               "description": "Sales inquires email"
+            },
+            {
+               "address": "info@grodansparadis.com",
+               "<description": {
+            	   "en": "General email"
+               }
+            }
+         ],
+         "web": [
+            {
+               "address": "http://www.grodansparadis.com",
+               "description": {
+            	   "en": "Main web site"
+               }
+            },
+            {
+               "url": "http://shop.grodansparadis.com",
+               "description": {
+            	   "en": "on-line store"
+               }
+            }
+         ]
+    },
+    "boot" : {
+      "algorithm": 1,
+      "blocksize" : 8,
+      "blockcount" : 4096
+    },
+    "files" : {
+      "picture" : [
+        {
+          "format": "png",
+          "url": "http://www.grodansparadis.com/logo.png",
+          "description": {
+            "en": "This is a picture description in English.",
+            "se": "Det här är en svensk beskrivning av bild 1."
+          }          
+        },
+        {
+          "format": "png",
+          "url": "http://www.somewhere.com/images/pict2.png",
+          "description": {
+            "en": "This is a picture 2 description in English.",
+            "se": "Det här är en svensk beskrivning av bild 2."
+          }          
+        }
+      ],
+      "firmware" : [
+        {
+          "target": "pic18f2580",
+          "targetcode": 11,
+          "url": "https://xxx.yy/1.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major": 1,
+          "version_minor": 1, 
+          "version_patch": 6,
+          "md5sum":"0x595f44fec1e92a71d3e9e77456ba80d1",
+          "description" : {
+            "en": "English 1.",
+            "se": "Svenska 1."
+          }
+        },
+        {
+          "target": "pic18f26K80",
+          "targetcode": 22,
+          "url": "https://xxx.yy/2.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"0x01",
+          "version_minor":"0x01", 
+          "version_patch":"0x06",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 1."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 33,
+          "url": "https://xxx.yy/3.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"6",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 2"
+          }
+        },
+        {
+          "target": "esp32c3",
+          "targetcode": "0x33",
+          "url": "https://xxx.yy/4.hex", 
+          "format":"xxx123",
+          "date":"2021-11-02",
+          "size":"0x2000",
+          "version_major":"0x99",
+          "version_minor":"0x08", 
+          "version_patch":"0x17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 3."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 33,
+                "url": "https://xxx.yy/5.hex", 
+                "format":"intelhex8",
+                "date":"2015-11-12",
+                "size":"8192",
+                "version_major":"1",
+                "version_minor":"1", 
+                "version_patch":"2",
+                "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+           "description" : {
+             "en": "English 4."
+           }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 44,
+          "url": "https://xxx.yy/6.hex", 
+          "format":"intelhex16",
+          "date":"2021-11-02",
+          "version_major":"99",
+          "version_minor":"8", 
+          "version_patch":"17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 5."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 55,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2015-03-20",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"0",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 6."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 66,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2012-01-01",
+          "version_major":"1",
+          "version_minor":"0", 
+          "version_spatch":"0",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 7."
+          }
+        }
+      ],
+      "manual" : [
+        {
+          "url": "https://www.grodansparadis.com/paris/manual1.pdf",
+          "format": "pdf",
+          "lang": "en",
+          "description": {
+            "en" : "Full pdf manual English for the Paris module.",
+            "se" : "Fullständig pdf manual på Svenska för Paris modulen"
+          }
+        },
+        {
+          "url": "https://www.grodansparadis.com/paris/manual2",
+          "format": "html",
+          "lang": "xx",
+          "description": {
+            "en" : "Full web based English manual for the Paris module.",
+            "se" : "Fullständig webbaserad Svensk manual för Paris modulen."
+          }
+        }
+      ]
+    },
+    "events" : [
+      {
+        "name": "test event 1",
+        "class" : 10,
+        "type": 6,
+        "direction": "in",
+        "priority": "low",
+        "description" : {
+          "en": "English event description 3",
+          "se": "Svensk event beskrivning 3",
+          "lt": "Lietuvos event padeda 3"
+        },
+        "infourl" : {
+          "en": "English event help 3",
+          "se": "Svensk event hjälp 3",
+          "lt": "Lietuvos event padeda 3"
+        },
+        "data" : [
+          {
+            "name": "test event data 1",
+            "description" : {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "lt": "Lietuvos event data padeda 3"
+            },
+            "infourl" : {
+              "en": "English event data help 3",
+              "se": "Svensk event data hjälp 3",
+              "lt": "Lietuvos event data padeda 3"
+            },
+            "bit": [
+              {
+                "pos": 0,
+                "width": 3,
+                "default": 4,
+                "min": 0,
+                "max": 7,
+                "access" : "rw",
+                "name" : "Bitfield name 0",
+                "description" : {
+                  "en": "English description bit 0",
+                  "se": "Svensk beskrivning bit 0",
+                  "lt": "Lietuvos aprašymas bit 0"
+                },
+                "infourl" : {
+                  "en": "English help bit 0",
+                  "se": "Svensk hjälp bit 0",
+                  "lt": "Lietuvos padeda bit 0"
+                }
+              },
+              {
+                "pos": 3,
+                "width": 2,
+                "access" : "r",
+                "default": false,
+                "name" : "Bitfield name 1",
+                "description" : {
+                  "en": "English description bit 1",
+                  "se": "Svensk beskrivning bit 1",
+                  "lt": "Lietuvos aprašymas bit 1"
+                },
+                "infourl" : {
+                  "en": "English help bit 1",
+                  "se": "Svensk hjälp bit 1",
+                  "lt": "Lietuvos padeda bit 1"
+                },
+                "valuelist" : [
+                  {
+                    "value" : "0x00",
+                    "name" : "Low",
+                    "description" : {
+                      "en" : "Low speed",
+                      "se" : "Låg hastighet"
+                    },
+                    "infourl" : {
+                      "en": "English help 1 vl2",
+                      "se": "Svensk hjälp 1 vl2",
+                      "lt": "Lietuvos padeda 1 vl2"
+                    }
+                  },
+                  {
+                    "value" : "0x01",
+                    "name" : "Medium",
+                    "description" : {
+                      "en" : "Medium speed",
+                      "se" : "Medium hastighet"
+                    },
+                    "infourl" : {
+                      "en": "English help 2 vl2",
+                      "se": "Svensk hjälp 2 vl2",
+                      "lt": "Lietuvos padeda 2 vl2"
+                    }
+                  },
+                  {
+                    "value" : "0x03",
+                    "name" : "High",
+                    "description" : {
+                      "en" : "High speed",
+                      "se" : "Hög hastighet"
+                    },
+                    "infourl" : {
+                      "en": "English help 3 vl2",
+                      "se": "Svensk hjälp 3 vl2",
+                      "lt": "Lietuvos padeda 3 vl2"
+                    }
+                  }
+                ] 
+              }
+            ]           
+          }
+        ]        
+      }    
+    ],
+    "alarms" : [
+      {
+        "pos": 0,
+        "name": "Alarm 0",
+        "description" : {
+          "en" : "Description Alarm 0",
+          "se" : "Beskrivning Alarm 0"
+        },
+        "infourl" : {
+          "en": "English info alarm 0",
+          "se": "Svensk info alarm 0"
+        }
+      },
+      {
+        "pos": 1,
+        "name": "Alarm 1",
+        "description" : {
+          "en" : "Description Alarm 1",
+          "se" : "Beskrivning Alarm 1"
+        },
+        "infourl" : {
+          "en": "English info alarm 1",
+          "se": "Svensk info alarm 1"
+        }
+      },
+      {
+        "pos": 2,
+        "name": "Alarm 2",
+        "description" : {
+          "en" : "Description Alarm 2",
+          "se" : "Beskrivning Alarm 2"
+        },
+        "infourl" : {
+          "en": "English info alarm 2",
+          "se": "Svensk info alarm 2"
+        }
+      },
+      {
+        "pos": 3,
+        "name": "Alarm 3",
+        "description" : {
+          "en" : "Description Alarm 3",
+          "se" : "Beskrivning Alarm 3"
+        },
+        "infourl" : {
+          "en": "English info alarm 3",
+          "se": "Svensk info alarm 3"
+        }
+      },
+      {
+        "pos": 4,
+        "name": "Alarm 4",
+        "description" : {
+          "en" : "Description Alarm 4",
+          "se" : "Beskrivning Alarm 4"
+        },
+        "infourl" : {
+          "en": "English info alarm 4",
+          "se": "Svensk info alarm 4"
+        }
+      },
+      {
+        "pos": 5,
+        "name": "Alarm 5",
+        "description" : {
+          "en" : "Description Alarm 5",
+          "se" : "Beskrivning Alarm 5"
+        },
+        "infourl" : {
+          "en": "English info alarm 5",
+          "se": "Svensk info alarm 5"
+        }
+      },
+      {
+        "pos": "0x06",
+        "name": "Alarm 6",
+        "description" : {
+          "en" : "Description Alarm 6",
+          "se" : "Beskrivning Alarm 6"
+        },
+        "infourl" : {
+          "en": "English info alarm 6",
+          "se": "Svensk info alarm 6"
+        }
+      },
+      {
+        "pos": 7,
+        "name": "Alarm 7",
+        "description" : {
+          "en" : "Description Alarm 7",
+          "se" : "Beskrivning Alarm 7"
+        },
+        "infourl" : {
+          "en": "English info alarm 7",
+          "se": "Svensk info alarm 7"
+        }
+      }
+    ] 
+  }
+}

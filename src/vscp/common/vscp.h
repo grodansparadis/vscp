@@ -5,7 +5,7 @@
 
  The MIT License (MIT)
 
- Copyright © 2000-2021 Ake Hedman, the VSCP project
+ Copyright © 2000-2022 Ake Hedman, the VSCP project
  <info@vscp.org>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -500,6 +500,16 @@ extern "C"
 #define VSCP_STD_REGISTER_BUFFER_SIZE 0x98
 #define VSCP_STD_REGISTER_PAGES_COUNT 0x99
 
+/* Unsigned 32-bit integer for family code */
+#define VSCP_STD_REGISTER_PAGES_FAMILY_CODE 0x9A
+
+/* Unsigned 32-bit integer for device type */
+#define VSCP_STD_REGISTER_PAGES_DEVICE_TYPE 0x9E
+
+/* Firmware code for device. */
+#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_MSB 0xA3 
+#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_LSB 0xA4
+
 /* 0xd0 - 0xdf  - GUID                      */
 #define VSCP_STD_REGISTER_GUID 0xD0
 
@@ -608,7 +618,10 @@ extern "C"
 #define VSCP_ERROR_INVALID_TYPE         56 /* Item (variable) is of wrong type */
 #define VSCP_ERROR_PERMISSION           57 /* Does hot have permission to do that */
 #define VSCP_ERROR_INVALID_SYNTAX       58 /* Syntax is invalid */
-#define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */
+#define VSCP_ERROR_INDEX_OOB            59 /* Index is out of bounds */  
+#define VSCP_ERROR_MTU                  60 /* Frame does not fit */
+#define VSCP_ERROR_SOCKET               61 /* Unable to create socket or other socket error*/
+#define VSCP_ERROR_PARSING              62 /* Failed to parse input */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

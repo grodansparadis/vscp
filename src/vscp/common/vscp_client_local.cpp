@@ -1,6 +1,6 @@
 // vscp_client_local.cpp
 //
-// RS-232 client communication classes.
+// Localclient communication classes.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include "vscp_client_local.h"

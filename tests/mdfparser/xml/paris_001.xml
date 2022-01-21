@@ -1,0 +1,2488 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Version 0.0.1C -->
+<!-- 2005-08-01  Ake Hedman, eurosource -->
+<vscp>
+<module>
+	<name>Paris Relay controller</name>
+ 	<model>A</model>
+	<version>0.0.2</version>
+	<changed>2009-10-07</changed>
+   <description lang="en">With this VSCP module it is possible to control up to seven relays.</description>
+  	<infourl>http://www.vscp.org/wiki/doku.php/smart_relay_control_-_intelligent_relay_control_module</infourl>
+  	<buffersize>8</buffersize>
+   <manufacturer>	
+   	<name>eurosource</name>
+      <address>
+      	<street>Brattbergavägen 17</street>
+         <city>Los</city>
+         <postcode>82050</postcode>
+         <country>Sweden</country>
+     	</address>
+      <telephone>									
+      	<number>+46 730 533146</number>
+        <description lang="en" >Main Reception</description>
+   	</telephone>
+   	<email>
+		<address>support@eurosource.se</address>
+		<description>Support email</description>
+	</email>
+   	<email>
+		<address>sales@eurosource.se</address>
+		<description>Sales inquires email</description>
+	</email>
+   	<email>
+		<address>info@eurosource.se</address>
+		<description>General email</description>
+	</email>	
+        <web>
+		<address>http://www.eurosource.se</address>
+		<description>Main web site</description>
+	</web>					
+	</manufacturer>  
+	
+	
+	<boot>
+		<algorithm>1</algorithm>
+		<blocksize>8</blocksize>
+		<blockcount>4096</blockcount>
+	</boot>
+	
+	
+	<registers>        
+
+      <reg page="0" offset="0" >
+			<name lang="en">Zone</name>
+			<description lang="en">Zone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="1" >
+			<name lang="en">Subzone</name>
+			<description lang="en">Subzone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="2" >
+			<name lang="en">Relay 1 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 1 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 1 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 1 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="3" >
+			<name lang="en">Relay 2 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 2 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 2 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 2 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="4" >
+			<name lang="en">Relay 3 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 3 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 3 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 3 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+				
+		<reg page="0" offset="5" >
+			<name lang="en">Relay 4 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 4 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 4 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 4 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+				
+		<reg page="0" offset="6" >
+			<name lang="en">Relay 5 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 5 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 5 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 5 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="7" >
+			<name lang="en">Relay 6 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 6 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 6 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 6 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="8" >
+			<name lang="en">Relay 7 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 7 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 7 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 7 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>
+		
+		<reg page="0" offset="9" >
+			<name lang="en">Relay 8 status register</name>
+      	<description lang="en">
+      	Writing a value to the relay control register will activate/deactivate the relay output.\n 
+      	0 - The relay is inactivated.\n
+			1 - The relay is activated.\n
+			2 - The relay is pulse activated/deactivated (opposite form rest state).\n
+			Reading a value from the relay control register is read as a one if the relay is activated and a 0 if the relay is deactivated.\n
+			When the pulse activation/deactivating is used the actual relay state is read. That is, if a 2 is written to relay 1 a one will be read while the relay is activated, after which a zero will be read.\n
+      	</description>
+      	<access>rw</access>
+      	<valuelist>
+      		<item value = "0x0">
+        			<name lang="en">Off</name>
+         		<description lang="en">
+         		The relay channel 8 is in its off state or if written set in is off state.
+         		</description>
+       		</item>
+       		<item value = "0x1">
+        			<name lang="en">On</name>
+         		<description lang="en">
+         		The relay channel 8 is in its on state or if written set in is on state.
+         		</description>
+       		</item>
+       		<item value = "0x2">
+        			<name lang="en">Pulse</name>
+         		<description lang="en">
+         		The relay channel 8 is in its pulsing state or if written set in is pulsing state.
+         		</description>
+       		</item>
+       	</valuelist>
+		</reg>													
+
+		<reg page="0" offset="10" >
+			<name lang="en">Relay 1 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="11" >
+			<name lang="en">Relay 2 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="12" >
+			<name lang="en">Relay 3 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="13" >
+			<name lang="en">Relay 4 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="14" >
+			<name lang="en">Relay 5 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="15" >
+			<name lang="en">Relay 6 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="16" >
+			<name lang="en">Relay 7 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="17" >
+			<name lang="en">Relay 8 control register</name>
+			<description lang="en">
+			The relay control bits enable/disable intelligent relay functionality:\n
+			Bit 0 - Reserved.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when relay goes to active state.\n
+			Bit 4 - Send Off event when relay goes to inactive state.\n
+			Bit 5 - Send Started event when relay goes to active state.\n
+			Bit 6 - Send Stopped event when relay goes to active state.\n
+			Bit 7 - If set to one the relay is enabled.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate relay channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Started event on activate enable</name>
+      	    <description lang="en">
+      	    If set: A started event will be sent when the relay is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Stopped event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: A stopped event will be sent when the relay is turned off.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="false" >
+      	    <name lang="en">Enable relay</name>
+      	    <description lang="en">
+      	    Set this bit to make the relay controlable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="18" >
+			<name lang="en">Relay pulse time register for relay 1 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="19" >
+			<name lang="en">Relay pulse time register for relay 1 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="20" >
+			<name lang="en">Relay pulse time register for relay 2 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="21" >
+			<name lang="en">Relay pulse time register for relay 2 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<reg page="0" offset="22" >
+			<name lang="en">Relay pulse time register for relay 3 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="23" >
+			<name lang="en">Relay pulse time register for relay 3 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<reg page="0" offset="24" >
+			<name lang="en">Relay pulse time register for relay 4 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="25" >
+			<name lang="en">Relay pulse time register for relay 4 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<reg page="0" offset="26" >
+			<name lang="en">Relay pulse time register for relay 5 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="27" >
+			<name lang="en">Relay pulse time register for relay 5 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="28" >
+			<name lang="en">Relay pulse time register for relay 6 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="29" >
+			<name lang="en">Relay pulse time register for relay 6 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="30" >
+			<name lang="en">Relay pulse time register for relay 7 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="31" >
+			<name lang="en">Relay pulse time register for relay 7 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="32" >
+			<name lang="en">Relay pulse time register for relay 8 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="33" >
+			<name lang="en">Relay pulse time register for relay 8 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>		
+
+		<reg page="0" offset="34" >
+			<name lang="en">Relay protection time register for relay 1 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="35" >
+			<name lang="en">Relay protection time register for relay 1 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="36" >
+			<name lang="en">Relay protection time register for relay 2 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="37" >
+			<name lang="en">Relay protection time register for relay 2 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="38" >
+			<name lang="en">Relay protection time register for relay 3 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="39" >
+			<name lang="en">Relay protection time register for relay 3 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="40" >
+			<name lang="en">Relay protection time register for relay 4 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="41" >
+			<name lang="en">Relay protection time register for relay 4 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="42" >
+			<name lang="en">Relay protection time register for relay 5 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="43" >
+			<name lang="en">Relay protection time register for relay 5 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="44" >
+			<name lang="en">Relay protection time register for relay 6 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="45" >
+			<name lang="en">Relay protection time register for relay 6 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="46" >
+			<name lang="en">Relay protection time register for relay 7 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="47" >
+			<name lang="en">Relay protection time register for relay 7 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="48" >
+			<name lang="en">Relay protection time register for relay 8 MSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="49" >
+			<name lang="en">Relay protection time register for relay 8 LSB</name>
+			<description lang="en">
+			This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="50" >
+			<name lang="en">Subzone for relay 1</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>		
+	
+		<reg page="0" offset="51" >
+			<name lang="en">Subzone for relay 2</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="52" >
+			<name lang="en">Subzone for relay 3</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="53" >
+			<name lang="en">Subzone for relay 4</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="54" >
+			<name lang="en">Subzone for relay 5</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="55" >
+			<name lang="en">Subzone for relay 6</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="56" >
+			<name lang="en">Subzone for relay 7</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="57" >
+			<name lang="en">Subzone for relay 8</name>
+			<description lang="en">
+			This is a subzone related to this specific relay. If zero the the module Zone/subzone will be used else the modules zone and the relays sub zone will be used. 
+			</description>
+			<access>rw</access>
+		</reg>				
+			
+		
+		
+		<!-- DM Row 1 -->
+		<reg page="0" offset="72" >
+			<name lang="en">Decision matrix row 1: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="73" >
+			<name lang="en">Decision matrix row 1: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="74" >
+			<name lang="en">Decision matrix row 1: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="75" >
+			<name lang="en">Decision matrix row 1: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="76" >
+			<name lang="en">Decision matrix row 1: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="77" >
+			<name lang="en">Decision matrix row 1: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="78" >
+			<name lang="en">Decision matrix row 1: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="79" >
+			<name lang="en">Decision matrix row 1: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 2 -->
+		<reg page="0" offset="80" >
+			<name lang="en">Decision matrix row 2: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="81" >
+			<name lang="en">Decision matrix row 2: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="82" >
+			<name lang="en">Decision matrix row 2: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="83" >
+			<name lang="en">Decision matrix row 2: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="84" >
+			<name lang="en">Decision matrix row 2: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="85" >
+			<name lang="en">Decision matrix row 2: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="86" >
+			<name lang="en">Decision matrix row 2: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="87" >
+			<name lang="en">Decision matrix row 2: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 3 -->
+		<reg page="0" offset="88" >
+			<name lang="en">Decision matrix row 3: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="89" >
+			<name lang="en">Decision matrix row 3: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="90" >
+			<name lang="en">Decision matrix row 3: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="91" >
+			<name lang="en">Decision matrix row 3: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="92" >
+			<name lang="en">Decision matrix row 3: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="93" >
+			<name lang="en">Decision matrix row 3: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="94" >
+			<name lang="en">Decision matrix row 3: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="95" >
+			<name lang="en">Decision matrix row 3: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>					
+		
+		<!-- DM Row 4 -->
+		<reg page="0" offset="96" >
+			<name lang="en">Decision matrix row 4: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="97" >
+			<name lang="en">Decision matrix row 4: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="98" >
+			<name lang="en">Decision matrix row 4: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="99" >
+			<name lang="en">Decision matrix row 4: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="100" >
+			<name lang="en">Decision matrix row 4: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="101" >
+			<name lang="en">Decision matrix row 4: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="102" >
+			<name lang="en">Decision matrix row 4: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="103" >
+			<name lang="en">Decision matrix row 4: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 5 -->
+		<reg page="0" offset="104" >
+			<name lang="en">Decision matrix row 5: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="105" >
+			<name lang="en">Decision matrix row 5: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="106" >
+			<name lang="en">Decision matrix row 5: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="107" >
+			<name lang="en">Decision matrix row 5: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="108" >
+			<name lang="en">Decision matrix row 5: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="109" >
+			<name lang="en">Decision matrix row 5: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="110" >
+			<name lang="en">Decision matrix row 5: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="111" >
+			<name lang="en">Decision matrix row 5: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 6 -->
+		<reg page="0" offset="112" >
+			<name lang="en">Decision matrix row 6: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="113" >
+			<name lang="en">Decision matrix row 6: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="114" >
+			<name lang="en">Decision matrix row 6: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="115" >
+			<name lang="en">Decision matrix row 6: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="116" >
+			<name lang="en">Decision matrix row 6: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="117" >
+			<name lang="en">Decision matrix row 6: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="118" >
+			<name lang="en">Decision matrix row 6: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="119" >
+			<name lang="en">Decision matrix row 6: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<!-- DM Row 7 -->
+		<reg page="0" offset="120" >
+			<name lang="en">Decision matrix row 7: Oaddr </name>
+			<description lang="en">
+			Row 1 of decision matrix. Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0×00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="121" >
+			<name lang="en">Decision matrix row 7: flags </name>
+			<description lang="en">
+			Row 1 of decision matrix. Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decion matrix row while it is edited.\n
+			The zone and use subzone bits can be activated to have a check on the zone/subzone information of an event. That is the zone/subzone of the machine must match the one of the event to trigger the DM row.\n  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hardcoded</name>
+      	   <description lang="en">If set to one the originating address should be hardcoded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="0" offset="122" >
+			<name lang="en">Decision matrix row 7: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="123" >
+			<name lang="en">Decision matrix row 7: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="124" >
+			<name lang="en">Decision matrix row 7: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="125" >
+			<name lang="en">Decision matrix row 7: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="0" offset="126" >
+			<name lang="en">Decision matrix row 7: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0×00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="127" >
+			<name lang="en">Decision matrix row 7: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+								
+	</registers>
+	
+	
+	
+	
+	<abstractions>
+
+		<abstraction type="short" 
+							page = "0" offset = "18" >
+   		<name lang="en">Relay pulse time register for relay 1</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   
+		<abstraction type="short" 
+							page = "0" offset = "20" >
+   		<name lang="en">Relay pulse time register for relay 2</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+ 		<abstraction type="short" 
+							page = "0" offset = "22" >
+   		<name lang="en">Relay pulse time register for relay 3</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>  	 
+   
+		<abstraction type="short" 
+							page = "0" offset = "24" >
+   		<name lang="en">Relay pulse time register for relay 4</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "26" >
+   		<name lang="en">Relay pulse time register for relay 5</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "28" >
+   		<name lang="en">Relay pulse time register for relay 6</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "30" >
+   		<name lang="en">Relay pulse time register for relay 7</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "32" >
+   		<name lang="en">Relay pulse time register for relay 8</name>
+      	<description lang="en">
+      	This is the pulse time for the each relay expressed in seconds. This can be used to have a relay turn on and off with a certain preset interval. The min pulse time is 1 second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) for no pulse time i.e. the relay will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then write 2 to the relay status register to start the output. The pulse train is terminated by writing on or off (1 or 0) to the relay status register. \n
+      	</description>
+      	<access>rw</access>
+   	</abstraction>   
+   	
+		<abstraction type="short" 
+							page = "0" offset = "34" >
+   		<name lang="en">Relay protection time register relay 1</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction> 
+   	
+		<abstraction type="short" 
+							page = "0" offset = "36" >
+   		<name lang="en">Relay protection time register relay 2</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "38" >
+   		<name lang="en">Relay protection time register relay 3</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "40" >
+   		<name lang="en">Relay protection time register relay 4</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "42" >
+   		<name lang="en">Relay protection time register relay 5</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "44" >
+   		<name lang="en">Relay protection time register relay 6</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "46" >
+   		<name lang="en">Relay protection time register relay 7</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>
+   	
+		<abstraction type="short" 
+							page = "0" offset = "48" >
+   		<name lang="en">Relay protection time register relay 8</name>
+      	<description lang="en">
+      	This is the relay protection time. A relay will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the relay.\n 
+      	</description>
+      	<access>rw</access>
+   	</abstraction>   	   	   	   	   	   	   	    		   	   	   	  
+   	 
+   </abstractions>
+	
+	
+	
+
+	<alarm>
+   	<bit pos="7">
+   		<name lang="en">Protection timer relay 8</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="6">
+   		<name lang="en">Protection timer relay 7</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="5">
+   		<name lang="en">Protection timer relay 6</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="4">
+   		<name lang="en">Protection timer relay 5</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="3">
+   		<name lang="en">Protection timer relay 4</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="2">
+   		<name lang="en">Protection timer relay 3</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="1">
+   		<name lang="en">Protection timer relay 2</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>
+   	
+    	<bit pos="0">
+   		<name lang="en">Protection timer relay 1</name>
+      	<description lang="en">
+      	When the protection timer for the relay is tiggering a relay action this bit is set.
+      	</description>
+   	</bit>  	   	   	   	   	   	
+	</alarm>
+	
+	
+	<!-- Decison matrix -->
+	<dmatrix>
+  
+		<level>1</level>					
+		<start page="0" offset="72"/> 	
+		<rowcnt>7</rowcnt>			 
+					
+    	<action code="0x01">				
+      	<name lang="en">Activate relay(s)</name>
+        	<description lang="en">
+			Activate relay(s) given by argument. The argument is a bit array where bit 0 is relay 1 and so on.\n 
+         Byte 1 is Zone and byte 2 is zone page and must be equal to register content to trigger action.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bitarry for relay</name> 
+      	   <description lang="en">
+				A bitarray where the first bit represents relay one and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Relay 2</name>
+      		   <description lang="en">Set to one to select relay 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Relay 3</name>
+      		   <description lang="en">Set to one to select relay 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Relay 4</name>
+      		   <description lang="en">Set to one to select relay 4</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Relay 5</name>
+      		   <description lang="en">Set to one to select relay 5</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Relay 6</name>
+      		   <description lang="en">Set to one to select relay 6</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Relay 7</name>
+      		   <description lang="en">Set to one to select relay 7</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x02">				
+      	<name lang="en">Deactivate relay(s)</name>
+        	<description lang="en">
+			Deactivate relay(s) given by argument. The argument is a bit array where bit 0 is relay 1 and so on.\n 
+         Byte 1 is Zone and byte 2 is zone page and must be equal to register content to trigger action.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bitarry for relay</name> 
+      	   <description lang="en">
+				A bitarray where the first bit represents relay one and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Relay 2</name>
+      		   <description lang="en">Set to one to select relay 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Relay 3</name>
+      		   <description lang="en">Set to one to select relay 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Relay 4</name>
+      		   <description lang="en">Set to one to select relay 4</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Relay 5</name>
+      		   <description lang="en">Set to one to select relay 5</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Relay 6</name>
+      		   <description lang="en">Set to one to select relay 6</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Relay 7</name>
+      		   <description lang="en">Set to one to select relay 7</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x03">				
+      	<name lang="en">Pulse relay(s)</name>
+        	<description lang="en">
+			Pulse relay(s) given by argument. The argument is a bit array where bit 0 is relay 1 and so on.\n 
+         Byte 1 is Zone and byte 2 is zone page and must be equal to register content to trigger action.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bitarry for relay</name> 
+      	   <description lang="en">
+				A bitarray where the first bit represents relay one and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Relay 2</name>
+      		   <description lang="en">Set to one to select relay 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Relay 3</name>
+      		   <description lang="en">Set to one to select relay 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Relay 4</name>
+      		   <description lang="en">Set to one to select relay 4</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Relay 5</name>
+      		   <description lang="en">Set to one to select relay 5</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Relay 6</name>
+      		   <description lang="en">Set to one to select relay 6</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Relay 7</name>
+      		   <description lang="en">Set to one to select relay 7</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+		
+    	<action code="0x0A">				
+      	<name lang="en">Send status for relay(s)</name>
+        	<description lang="en">
+			Send status for relay(s) given by argument. The argument is a bit array where bit 0 is relay 1 and so on.\n 
+         Byte 1 is Zone and byte 2 is zone page and must be equal to register content to trigger action.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bitarry for relay</name> 
+      	   <description lang="en">
+				A bitarray where the first bit represents relay one and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Relay 2</name>
+      		   <description lang="en">Set to one to select relay 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Relay 3</name>
+      		   <description lang="en">Set to one to select relay 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Relay 4</name>
+      		   <description lang="en">Set to one to select relay 4</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Relay 5</name>
+      		   <description lang="en">Set to one to select relay 5</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Relay 6</name>
+      		   <description lang="en">Set to one to select relay 6</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Relay 7</name>
+      		   <description lang="en">Set to one to select relay 7</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>	
+		
+    	<action code="0x10">				
+      	<name lang="en">Disable relay(s)</name>
+        	<description lang="en">
+			Disable relay(s) given by argument. The argument is a bit array where bit 0 is relay 1 and so on.\n 
+         Byte 1 is Zone and byte 2 is zone page and must be equal to register content to trigger action.\n   	
+        	</description>
+        	<param>							
+      		<name lang="en">Bitarry for relay</name> 
+      	   <description lang="en">
+				A bitarray where the first bit represents relay one and so on.	      	   
+      	   </description>
+      	   
+      	   <bit pos="0" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>
+      		<bit pos="1" default="false">
+      			<name lang="en">Relay 1</name>
+      		   <description lang="en">Set to one to select relay 1</description> 
+      		</bit>  
+      		<bit pos="2" default="false">
+      			<name lang="en">Relay 2</name>
+      		   <description lang="en">Set to one to select relay 2</description> 
+      		</bit>  
+      		<bit pos="3" default="false">
+      			<name lang="en">Relay 3</name>
+      		   <description lang="en">Set to one to select relay 3</description> 
+      		</bit>  
+      		<bit pos="4" default="false">
+      			<name lang="en">Relay 4</name>
+      		   <description lang="en">Set to one to select relay 4</description> 
+      		</bit>  
+      		<bit pos="5" default="false">
+      			<name lang="en">Relay 5</name>
+      		   <description lang="en">Set to one to select relay 5</description> 
+      		</bit>  
+      		<bit pos="6" default="false">
+      			<name lang="en">Relay 6</name>
+      		   <description lang="en">Set to one to select relay 6</description> 
+      		</bit>  
+      		<bit pos="7" default="false">
+      			<name lang="en">Relay 7</name>
+      		   <description lang="en">Set to one to select relay 7</description> 
+      		</bit>        		      		      		      		      		
+			</param>
+		</action>				
+		 
+	</dmatrix>
+	
+	
+	
+	<events>
+	
+		<event class="0x014" type="0x03" >
+			<name lang="en">On Event</name> 					
+			<description lang="en">
+			A relay has been set in its ON position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating relay n+1
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		 Set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		 Set to the subzone for the relay or if it is zero to the subzone for the module..
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x014" type="0x04" >
+			<name lang="en">Off Event</name> 					
+			<description lang="en">
+			A relay has been set in its OFF position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating relay n+1
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		 Set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		 Set to the subzone for the relay or if it is zero to the subzone for the module..
+      		</description>      	
+			</data>
+		</event>		
+		
+		<event class="0x014" type="0x18" >
+			<name lang="en">Started Event</name> 					
+			<description lang="en">
+			A relay has been set in its ON position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating relay n+1
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		 Set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		 Set to the subzone for the relay or if it is zero to the subzone for the module..
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x014" type="0x19" >
+			<name lang="en">Stopped Event</name> 					
+			<description lang="en">
+			A relay has been set in its ON position. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Set to n indicating relay n+1
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		 Set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Subzone</name>
+      		<description lang="en">
+      		 Set to the subzone for the relay or if it is zero to the subzone for the module..
+      		</description>      	
+			</data>
+		</event>		
+		
+		
+	</events>
+	
+</module>	
+</vscp>	

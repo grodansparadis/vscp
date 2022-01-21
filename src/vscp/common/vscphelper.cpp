@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include <limits.h>
@@ -88,6 +88,11 @@
 #include <string>
 #include <vector>
 
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 #define UNUSED(expr)                                                                                                   \
   do {                                                                                                                 \
     (void) (expr);                                                                                                     \
@@ -112,7 +117,6 @@
 #endif
 
 #define vsnprintf_impl vsnprintf
-
 #define XML_BUFF_SIZE 0xffff
 
 using namespace std;
@@ -610,8 +614,9 @@ vscp_rstrstr(const char *s1, const char *s2)
   }
 
   for (s = (char *) s1 + s1len - s2len; s >= s1; --s) {
-    if (0 == strncmp(s, s2, s2len))
+    if (0 == strncmp(s, s2, s2len)) {
       return s;
+    }
   }
 
   return nullptr;
@@ -715,14 +720,14 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
   }
 
 #if !defined(REENTRANT_TIME)
-  struct tm tbuf;
   struct tm *tm;
 
-  #ifdef WIN32
+#ifdef WIN32
   tm = ((t != nullptr) ? gmtime(t) : nullptr);
-  #else
+#else
+  struct tm tbuf;
   tm = ((t != nullptr) ? gmtime_r(t, &tbuf) : nullptr);
-  #endif
+#endif
   if (tm != nullptr) {
 #else
   struct tm _tm;
@@ -756,11 +761,11 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
   if (nullptr == t) {
     return false;
   }
-
-  struct tm tbuf;
+  
 #ifdef WIN32
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
 #else
+  struct tm tbuf;
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime_r(t, &tbuf));
 #endif
 
@@ -1016,13 +1021,8 @@ vscp_getPortFromInterface(const std::string &iface)
   std::string str = iface;
   vscp_trim(str);
 
-  // tcp:// stcp:// udp:// sudp:// ....
-  if (std::string::npos == (pos = str.find("://"))) {
-    str = str.substr(pos + 1);
-  }
-
-  if (std::string::npos == (pos = str.find(":"))) {
-    str = str.substr(pos);
+  if (std::string::npos != (pos = str.rfind(":"))) {
+    str = str.substr(pos+1);
   }
 
   port = atoi(str.c_str());
@@ -1186,6 +1186,12 @@ vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
     if (pEvent->sizeData >= 16) {
       datacoding_byte = pEvent->pdata[16];
     }
+  }
+  else if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
+    datacoding_byte = 0x40; // string
+  }
+  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
+    datacoding_byte = 0xC0; // float
   }
 
   return datacoding_byte;
@@ -1477,8 +1483,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
     uint8_t buf[8];
 
     // Must be correct data
-    if (12 != pEvent->sizeData)
+    if (12 != pEvent->sizeData) {
       return false;
+    }
 
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pEvent->pdata + 4, 8); // Double
@@ -1509,8 +1516,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
     uint8_t buf[4];
 
     // Must be correct data
-    if ((16 + 4) != pEvent->sizeData)
+    if ((16 + 4) != pEvent->sizeData) {
       return false;
+    }
 
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pEvent->pdata + 16, 4); // float
@@ -1845,16 +1853,18 @@ vscp_getMeasurementUnit(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[3];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[3];
   }
@@ -1934,16 +1944,18 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[0];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[0];
   }
@@ -2023,16 +2035,18 @@ vscp_getMeasurementZone(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
@@ -2107,16 +2121,18 @@ vscp_getMeasurementSubZone(const vscpEvent *pEvent)
   else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4))
+    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[offset + 2];
   }
   else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData))
+    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
       return VSCP_ERROR_ERROR;
+    }
 
     return pEvent->pdata[2];
   }
@@ -2439,7 +2455,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
   data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    data[1]          = value;
+    data[1]          = (uint8_t)value;
     pEvent->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -2587,7 +2603,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
   pEventEx->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    pEventEx->data[1]  = value;
+    pEventEx->data[1]  = (uint8_t)value;
     pEventEx->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -3636,8 +3652,9 @@ vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet)
 
     crc = crcFast(pbuf, sizeof(pbuf));
 
-    if (bSet)
+    if (bSet) {
       pEvent->crc = crc;
+    }
 
     free(pbuf);
   }
@@ -3742,8 +3759,9 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
       pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
       tokens.pop_front();
       // If no tokens left no use to continue
-      if (tokens.size())
+      if (tokens.size()) {
         break;
+      }
     }
   }
 
@@ -3773,8 +3791,9 @@ vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
   std::deque<std::string> tokens;
   vscp_split(tokens, strGUID, ":");
   while (tokens.size()) {
-    if (cnt > 15)
+    if (cnt > 15) {
       return false;
+    }
     std::size_t pos;
     pGUID[cnt++] = (uint8_t) std::stoul(tokens.front(), &pos, 16);
     tokens.pop_front();
@@ -4166,8 +4185,9 @@ vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
   if (pEventFrom->sizeData) {
 
     pEventTo->pdata = new unsigned char[pEventFrom->sizeData];
-    if (nullptr == pEventTo->pdata)
+    if (nullptr == pEventTo->pdata) {
       return false;
+    }
 
     memcpy(pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData);
   }
@@ -4453,7 +4473,7 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
 
     // GUID
     memset(pEvent->GUID, 0, 16);
-    if (j.contains("vscpGuid") && j["vscpType"].is_string()) {
+    if (j.contains("vscpGuid") && j["vscpGuid"].is_string()) {
       std::string guidStr = j.at("vscpGuid").get<std::string>();
       cguid guid;
       guid.getFromString(guidStr);
@@ -5066,14 +5086,14 @@ vscp_setEventToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -5099,13 +5119,13 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
   }
 
   time_t rawtime;
-  struct tm tbuf;
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -6065,8 +6085,9 @@ vscp_setEventDataFromString(vscpEvent *pEvent, const std::string &str)
     std::string token = tokens.front();
     tokens.pop_front();
     data[pEvent->sizeData++] = vscp_readStringValue(token);
-    if (pEvent->sizeData >= VSCP_MAX_DATA)
+    if (pEvent->sizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   if (pEvent->sizeData > 0) {
@@ -6104,8 +6125,9 @@ vscp_setEventExDataFromString(vscpEventEx *pEventEx, const std::string &str)
     tokens.pop_front();
     pEventEx->data[pEventEx->sizeData] = vscp_readStringValue(token);
     pEventEx->sizeData++;
-    if (pEventEx->sizeData >= VSCP_MAX_DATA)
+    if (pEventEx->sizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   return true;
@@ -6136,8 +6158,9 @@ vscp_setDataArrayFromString(uint8_t *pData, uint16_t *psizeData, const std::stri
     tokens.pop_front();
     pData[*psizeData] = vscp_readStringValue(token);
     (*psizeData)++;
-    if (*psizeData >= VSCP_MAX_DATA)
+    if (*psizeData >= VSCP_MAX_DATA) {
       break;
+    }
   }
 
   return true;
@@ -6213,14 +6236,14 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -6246,14 +6269,14 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
     return false;
   }
 
-  time_t rawtime;
-  struct tm tbuf;
+  time_t rawtime;  
   struct tm *ptm;
 
   time(&rawtime);
 #ifdef WIN32
   ptm = gmtime(&rawtime);
 #else
+  struct tm tbuf;
   ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -6555,300 +6578,6 @@ vscp_makeHtml(std::string &str)
       str += strOriginal.at(i);
     }
   }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// getDeviceHtmlStatusInfo
-//
-
-std::string &
-vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
-{
-  static std::string strHTML;
-  std::string str;
-
-  strHTML = "<html><body>";
-  strHTML += "<h4>Clear text node data</h4>";
-  strHTML += "<font color=\"#009900\">";
-
-  strHTML += "nodeid = ";
-  str = vscp_str_format("%d", registers[0x91]);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "GUID = ";
-  vscp_writeGuidArrayToString(str, registers + 0xd0);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "MDF URL = ";
-  char url[33];
-  memset(url, 0, sizeof(url));
-  memcpy(url, registers + 0xe0, 32);
-  str = std::string(url);
-  strHTML += str;
-  strHTML += "<br>";
-
-  strHTML += "Alarm: ";
-  if (registers[0x80]) {
-    strHTML += "Yes";
-  }
-  else {
-    strHTML += "No";
-  }
-  strHTML += "<br>";
-
-  strHTML += "Node Control Flags: ";
-  if (registers[0x83] & 0x10) {
-    strHTML += "[Register Write Protect] ";
-  }
-  else {
-    strHTML += "[Register Read/Write] ";
-  }
-  switch ((registers[0x83] & 0xC0) >> 6) {
-    case 1:
-      strHTML += " [Initialized] ";
-      break;
-    default:
-      strHTML += " [Uninitialized] ";
-      break;
-  }
-  strHTML += "<br>";
-
-  strHTML += "Firmware VSCP conformance : ";
-  strHTML += vscp_str_format("%d.%d", registers[0x81], registers[0x82]);
-  strHTML += "<br>";
-
-  strHTML += "User ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d.%d",
-                             registers[0x84],
-                             registers[0x85],
-                             registers[0x86],
-                             registers[0x87],
-                             registers[0x88]);
-  strHTML += "<br>";
-
-  strHTML += "Manufacturer device ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d", registers[0x89], registers[0x8A], registers[0x8B], registers[0x8C]);
-  strHTML += "<br>";
-
-  strHTML += "Manufacturer sub device ID: ";
-  strHTML += vscp_str_format("%d.%d.%d.%d", registers[0x8d], registers[0x8e], registers[0x8f], registers[0x90]);
-  strHTML += "<br>";
-
-  strHTML += "Page select: ";
-  strHTML +=
-    vscp_str_format("%d (MSB=%d LSB=%d)", registers[0x92] * 256 + registers[0x93], registers[0x92], registers[0x93]);
-  strHTML += "<br>";
-
-  strHTML += "Firmware version: ";
-  strHTML += vscp_str_format("%d.%d.%d", registers[0x94], registers[0x95], registers[0x96]);
-  strHTML += "<br>";
-
-  strHTML += "Boot loader algorithm: ";
-  strHTML += vscp_str_format("%d - ", registers[0x97]);
-  switch (registers[0x97]) {
-
-    case 0x00:
-      strHTML += "VSCP universal algorithm 0";
-      break;
-
-    case 0x01:
-      strHTML += "Microchip PIC algorithm 0";
-      break;
-
-    case 0x10:
-      strHTML += "Atmel AVR algorithm 0";
-      break;
-
-    case 0x20:
-      strHTML += "NXP ARM algorithm 0";
-      break;
-
-    case 0x30:
-      strHTML += "ST ARM algorithm 0";
-      break;
-
-    default:
-      strHTML += "Unknown algorithm.";
-      break;
-  }
-
-  strHTML += "<br>";
-
-  strHTML += "Buffer size: ";
-  strHTML += vscp_str_format("%d bytes. ", registers[0x98]);
-  if (!registers[0x98]) {
-    strHTML += " ( == default size (8 or 487 bytes) )";
-  }
-  strHTML += "<br>";
-
-  strHTML += "Number of register pages: ";
-  strHTML += vscp_str_format("%d", registers[0x99]);
-  if (registers[0x99] > 22) {
-    strHTML += " (Note: VSCP Works display max 22 pages.) ";
-  }
-  strHTML += "<br>";
-
-  // Decision matrix info.
-  if (nullptr != pmdf) {
-
-    unsigned char data[8];
-    memset(data, 0, 8);
-
-    strHTML += "Decison Matrix: Rows=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowCount);
-    strHTML += " Offset=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartOffset);
-    strHTML += " Page start=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartPage);
-    strHTML += " Row Size=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowSize);
-    strHTML += " Level=";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nLevel);
-    strHTML += " # actions define =";
-    strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_list_action.size());
-    strHTML += "<br>";
-  }
-  else {
-    strHTML += "No Decision Matrix is available on this device.";
-    strHTML += "<br>";
-  }
-
-  if (nullptr != pmdf) {
-
-    // MDF Info
-    strHTML += "<h1>MDF Information</h1>";
-
-    strHTML += "<font color=\"#009900\">";
-
-    // Manufacturer data
-    strHTML += "<b>Module name :</b> ";
-    strHTML += pmdf->m_strModule_Name;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module model:</b> ";
-    strHTML += pmdf->m_strModule_Model;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module version:</b> ";
-    strHTML += pmdf->m_strModule_Version;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module last change:</b> ";
-    strHTML += pmdf->m_changeDate;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module description:</b> ";
-    strHTML += pmdf->m_strModule_Description;
-    strHTML += "<br>";
-
-    strHTML += "<b>Module URL</b> : ";
-    strHTML += "<a href=\"";
-    strHTML += pmdf->m_strModule_InfoURL;
-    strHTML += "\">";
-    strHTML += pmdf->m_strModule_InfoURL;
-    strHTML += "</a>";
-    strHTML += "<br>";
-
-    std::deque<CMDF_Manufacturer *>::iterator iter;
-    for (iter = pmdf->m_list_manufacturer.begin(); iter != pmdf->m_list_manufacturer.end(); ++iter) {
-
-      strHTML += "<hr><br>";
-
-      CMDF_Manufacturer *manufacturer = *iter;
-      strHTML += "<b>Manufacturer:</b> ";
-      strHTML += manufacturer->m_strName;
-      strHTML += "<br>";
-
-      std::deque<CMDF_Address *>::iterator iterAddr;
-      for (iterAddr = manufacturer->m_list_Address.begin(); iterAddr != manufacturer->m_list_Address.end();
-           ++iterAddr) {
-
-        CMDF_Address *address = *iterAddr;
-        strHTML += "<h4>Address</h4>";
-        strHTML += "<b>Street:</b> ";
-        strHTML += address->m_strStreet;
-        strHTML += "<br>";
-        strHTML += "<b>Town:</b> ";
-        strHTML += address->m_strTown;
-        strHTML += "<br>";
-        strHTML += "<b>City:</b> ";
-        strHTML += address->m_strCity;
-        strHTML += "<br>";
-        strHTML += "<b>Post Code:</b> ";
-        strHTML += address->m_strPostCode;
-        strHTML += "<br>";
-        strHTML += "<b>State:</b> ";
-        strHTML += address->m_strState;
-        strHTML += "<br>";
-        strHTML += "<b>Region:</b> ";
-        strHTML += address->m_strRegion;
-        strHTML += "<br>";
-        strHTML += "<b>Country:</b> ";
-        strHTML += address->m_strCountry;
-        strHTML += "<br><br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterPhone;
-      for (iterPhone = manufacturer->m_list_Phone.begin(); iterPhone != manufacturer->m_list_Phone.end(); ++iterPhone) {
-
-        CMDF_Item *phone = *iterPhone;
-        strHTML += "<b>Phone:</b> ";
-        strHTML += phone->m_strItem;
-        strHTML += " ";
-        strHTML += phone->m_strDescription;
-        strHTML += "<br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterFax;
-      for (iterFax = manufacturer->m_list_Fax.begin(); iterFax != manufacturer->m_list_Fax.end(); ++iterFax) {
-
-        CMDF_Item *fax = *iterFax;
-        strHTML += "<b>Fax:</b> ";
-        strHTML += fax->m_strItem;
-        strHTML += " ";
-        strHTML += fax->m_strDescription;
-        strHTML += "<br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterEmail;
-      for (iterEmail = manufacturer->m_list_Email.begin(); iterEmail != manufacturer->m_list_Email.end(); ++iterEmail) {
-
-        CMDF_Item *email = *iterEmail;
-        strHTML += "<b>Email:</b> <a href=\"";
-        strHTML += email->m_strItem;
-        strHTML += "\" >";
-        strHTML += email->m_strItem;
-        strHTML += "</a> ";
-        strHTML += email->m_strDescription;
-        strHTML += "<br>";
-      }
-
-      std::deque<CMDF_Item *>::iterator iterWeb;
-      for (iterWeb = manufacturer->m_list_Web.begin(); iterWeb != manufacturer->m_list_Web.end(); ++iterWeb) {
-
-        CMDF_Item *web = *iterWeb;
-        strHTML += "<b>Web:</b> <a href=\"";
-        strHTML += web->m_strItem;
-        strHTML += "\">";
-        strHTML += web->m_strItem;
-        strHTML += "</a> ";
-        strHTML += web->m_strDescription;
-        strHTML += "<br>";
-      }
-
-    } // manufacturer
-  }
-  else {
-    strHTML += "No MDF info available.";
-    strHTML += "<br>";
-  }
-
-  strHTML += "</font>";
-  strHTML += "</body></html>";
-
-  return strHTML;
 }
 
 // -----------------------------------------------------------------------------
@@ -7196,13 +6925,13 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       (0 == pEvent->minute) && (0 == pEvent->second)) {
 
     time_t rawtime;
-    struct tm tbuf;
     struct tm *ptm;
 
     time(&rawtime);
 #ifdef WIN32
     ptm = gmtime(&rawtime);
 #else
+    struct tm tbuf;
     ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
@@ -7684,11 +7413,12 @@ vscp_getHostFromInterface(const std::string &iface)
   vscp_trim(str);
 
   // tcp:// stcp:// udp:// sudp:// ....
-  if (std::string::npos == (pos = str.find("://"))) {
-    str = str.substr(pos + 1);
+  if (std::string::npos != (pos = str.find("://"))) {
+    str = str.substr(pos + 3);
   }
 
-  if (std::string::npos == (pos = str.find(":"))) {
+  // Remove port if set
+  if (std::string::npos != (pos = str.find(":"))) {
     str = str.substr(0, pos);
   }
 
@@ -7768,14 +7498,16 @@ parse_address(const char *input, ip_address_t *result)
 #else
       char *copy = strdup(input);
 #endif
-      if (copy == nullptr)
+      if (copy == nullptr) {
         return false;
+      }
       int index   = (int) (ptr - input);
       copy[index] = '\0';
       if (copy[index - 1] == ']' && copy[0] == '[') {
         copy[index - 1] = '\0';
-        if (parse_ipv6_address(copy + 1, result))
+        if (parse_ipv6_address(copy + 1, result)) {
           success = true;
+        }
       }
       else if (parse_ipv4_address(copy, result)) {
         success = true;

@@ -201,9 +201,6 @@ public:
     // CANAL functionality
     VscpCanalDeviceIf m_canalif;
 
-    LPFNDLL_EV_CALLBACK m_evcallback;   // Event callback
-    LPFNDLL_EX_CALLBACK m_excallback;   // Event ex callback
-
 private:
 
     /*!

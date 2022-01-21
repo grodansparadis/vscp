@@ -34,11 +34,14 @@ if(NOT DEFINED MINOR_VERSION)
     SET(MINOR_VERSION "0")
 endif()
 if(NOT DEFINED PATCH_VERSION)
-    SET(PATCH_VERSION "0")
+    SET(PATCH_VERSION "2")
 endif()
 
 # Disable abi warnings (nlohmann)
+if(WIN32)
+else()
 SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi -D WITH_SYSTEMD")
+endif()
 # Profiling
 #SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
 
@@ -152,7 +155,8 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
 if(WIN32)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	  add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-DWIN32_LEAN_AND_MEANS)
     add_definitions(-DOPENSSL_API_1_1)
     add_definitions(-D_POSIX_C_SOURCE)    
@@ -242,8 +246,6 @@ if (WIN32)
         src/vscp/common/vscpdatetime.cpp
         src/vscp/common/guid.h
         src/vscp/common/guid.cpp
-        src/vscp/common/mdf.h
-        src/vscp/common/mdf.cpp
         src/vscp/common/vscphelper.h
         src/vscp/common/vscphelper.cpp
         src/vscp/common/canal.h
@@ -254,6 +256,10 @@ if (WIN32)
         src/vscp/common/canal_xmlconfig.cpp
         src/vscp/common/register.h
         src/vscp/common/register.cpp
+        src/vscp/common/vscp_client_base.h
+        src/vscp/common/vscp_client_base.cpp
+        src/vscp/common/vscp_client_mqtt.h
+        src/vscp/common/vscp_client_mqtt.cpp
         src/common/third_party/mustache.hpp
         src/common/third_party/civetweb-1.15/include/civetweb.h
         src/common/third_party/civetweb-1.15/src/civetweb.c
@@ -296,8 +302,6 @@ else()
         src/vscp/common/vscpdatetime.cpp
         src/vscp/common/guid.h
         src/vscp/common/guid.cpp
-        src/vscp/common/mdf.h
-        src/vscp/common/mdf.cpp
         src/vscp/common/vscphelper.h
         src/vscp/common/vscphelper.cpp
         src/vscp/common/canal.h
@@ -389,7 +393,7 @@ if(WIN32)
         ${MOSQUITTO_LIBRARIES}
         expat::expat
         dlfcn-win32::dl
-        spdlog::spdlog spdlog::spdlog_header_only
+#        spdlog::spdlog spdlog::spdlog_header_only
     )
 else()
     target_link_libraries(vscpd PRIVATE     

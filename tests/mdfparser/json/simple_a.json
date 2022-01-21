@@ -1,0 +1,30 @@
+{
+    "module": {
+	    "name": "Simple A test",
+	    "model": "Simple A model",
+	    "version": "A",
+	    "changed": "2021-11-02",
+	    "description": {
+	      "en": "This is an english description",
+	      "es": "Esta es una descripción en inglés",
+	      "pt": "Esta é uma descrição em inglês",
+	      "zh": "这是英文说明",
+	      "se": "Det här är en engelsk beskrivning",
+	      "lt": "Tai yra angliškas aprašymas",
+	      "de": "Dies ist eine englische Beschreibung",
+	      "eo": "Ĉi tio estas angla priskribo"
+	    },
+	    "infourl": {
+	      "en": "https://www.english.en",
+	      "es": "https://www.spanish.es",
+	      "pt": "https://www.portuguese.pt",
+	      "zh": "https://www.chineese.zh",
+	      "se": "https://www.swedish.se",
+	      "lt": "https://www.lithuanian.lt",
+	      "de": "https://www.german.de",
+	      "eo": "https://www.esperanto.eo"
+	    },
+	    "buffersize": 8
+  }
+}
+

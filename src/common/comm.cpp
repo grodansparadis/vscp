@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright © 2000-2021 Ake Hedman, the VSCP project <info@vscp.org>
+// Copyright © 2000-2022 Ake Hedman, the VSCP project <info@vscp.org>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "stdafx.h"
+#include <pch.h>
 #include "Comm.h"
 
 #ifdef _DEBUG

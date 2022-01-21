@@ -1,0 +1,4275 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Ake Hedman, Grodans Paradis AB -->
+<vscp>
+<module>
+	<name>Beijing IO controller</name>
+	<model>B</model>
+	<version>9</version>
+	<changed>2020-05-14</changed>
+	<description lang="en">
+		With this VSCP module it is possible to control up to ten digital IO
+		channels where each can be configured as an input or an output.
+	</description>
+	<infourl>http://www.grodansparadis.com/beijing/beijing.html</infourl>
+	<buffersize>8</buffersize>
+	<manufacturer>
+		<name>Grodans Paradis AB</name>
+		<address>
+			<street>Brattbergavägen 17</street>
+			<city>Los</city>
+			<postcode>82770</postcode>
+			<country>Sweden</country>
+		</address>
+		<telephone>
+			<number>+46 8 40011835 </number>
+			<description lang="en" >Main Reception</description>
+		</telephone>
+		<email>
+			<address>support@grodansparadis.com</address>
+			<description>Support email</description>
+		</email>
+		<email>
+			<address>sales@grodansparadis.com</address>
+			<description>Sales inquires email</description>
+		</email>
+		<email>
+			<address>info@grodansparadis.com</address>
+			<description>General email</description>
+		</email>	
+		<web>
+			<address>http://www.grodansparadis.com</address>
+			<description>Main web site</description>
+		</web>					
+	</manufacturer>  
+	
+	<!-- Picture of device -->
+	<picture path="http://www.grodansparadis.com/beijing/images/beijing6.png" 
+		format="jpg" >
+		<description lang="en" >
+		Picture of Paris Beijing module.
+		</description>
+	</picture>
+	
+	<!-- Firmware for the device -->
+	<files>
+	
+	<firmware target="pic18f2580" 
+		path="https://github.com/grodansparadis/can4vscp_beijing/releases/download/v1.1.6/Bejing_2580_1_1_6.hex"
+		format="intelhex8" 
+		date="2020-05-14" 
+		version_major="1" 
+		version_minor="1" 
+		version_subminor="6">
+		<description lang="en">
+		Firmware for the Beijing I/O module with for use with the VSCP Bootloader wizard.
+               </description>
+        </firmware>
+        
+        <firmware target="pic18f26K80" 
+		path="https://github.com/grodansparadis/can4vscp_beijing/releases/download/v1.1.6/Bejing_26K80.1_1_6.hex"
+		format="intelhex8" 
+		date="2020-05-14" 
+		version_major="1" 
+		version_minor="1" 
+		version_subminor="6">
+		<description lang="en">
+		Firmware for the Beijing I/O module with for use with the VSCP Bootloader wizard.
+               </description>
+        </firmware>
+	
+	<firmware path="https://github.com/grodansparadis/can4vscp_beijing/releases/download/v1.1.0/Bejing_1_1_0.hex" 
+		format="intelhex8"
+		date="2015-11-15"
+		version_major="1"
+		version_minor="1"
+		version_subminor="0">
+		<description lang="en" >
+		Firmware version 1.1.0 for the Beijing module.
+		</description> 
+	</firmware>
+	
+	<firmware path="https://github.com/grodansparadis/can4vscp_beijing/releases/download/v1.0.0/Bejing_1_0_0.hex" 
+		format="intelhex8"
+		date="2015-07-07"
+		version_major="1"
+		version_minor="0"
+		version_subminor="0">
+		<description lang="en" >
+		Firmware version 1.0.0 for the Beijing module.
+		</description> 
+	</firmware>
+	</files>
+    
+    <firmware path="https://github.com/grodansparadis/can4vscp_beijing/releases/download/v1.1.0/Bejing_1_1_0.hex" 
+		format="intelhex8"
+		date="2015-11-15"
+		version_major="1"
+		version_minor="1"
+		version_subminor="0">
+		<description lang="en" >
+		Firmware version 1.1.0 for the Beijing module.
+		</description> 
+	</firmware>
+
+	<!-- Full documentation for the device -->
+	<manual path="http://www.grodansparadis.com/beijing/manual/doku.php?id=start" 	
+		lang="en"
+		format="html">
+    	<description lang="en" >
+		Full manual for the Beijing module.
+		</description>
+	</manual>
+	
+	<boot>
+		<algorithm>1</algorithm>
+		<blocksize>8</blocksize>
+		<blockcount>4096</blockcount>
+	</boot>
+	
+	
+	<registers>        
+
+		<reg page="0" offset="0" default="0" fgcolor="0x000000" bgcolor="0xfff3d4" >
+			<name lang="en">Zone</name>
+			<description lang="en">Zone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="1" default="0" bgcolor="0xfff3d4" >
+			<name lang="en">Sub zone</name>
+			<description lang="en">Sub zone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="2" default="0" bgcolor="0xebd69d" >
+			<name lang="en">Sub zone I/O 0</name>
+			<description lang="en">Sub zone for I/O channel 0</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="3" default="1" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 1</name>
+			<description lang="en">Sub zone for I/O channel 1</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="4" default="2" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 2</name>
+			<description lang="en">Sub zone for I/O channel 2</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="5" default="3" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 3</name>
+			<description lang="en">Sub zone for I/O channel 3</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="6" default="4" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 4</name>
+			<description lang="en">Sub zone for I/O channel 4</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="7" default="5" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 5</name>
+			<description lang="en">Sub zone for I/O channel 5</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="8" default="6" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 6</name>
+			<description lang="en">Sub zone for I/O channel 6</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="9" default="7" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 7</name>
+			<description lang="en">Sub zone for I/O channel 7</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="10" default="8" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 8</name>
+			<description lang="en">Sub zone for I/O channel 8</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="11" default="9" bgcolor="0xebd69d">
+			<name lang="en">Sub zone I/O 9</name>
+			<description lang="en">Sub zone for I/O channel 9</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="12" default="0" bgcolor="0xB2F0FF">
+			<name lang="en">I/O direction MSB</name>
+			<description lang="en">
+			Most significant part of I/O directions register. 
+			Set bit to zero for output and one for input.\n\n
+			Bit 7 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 5 - Reserved.\n
+			Bit 4 - Reserved.\n
+			Bit 3 - Reserved.\n
+			Bit 2 - Reserved.\n
+			Bit 1 - Direction for I/O channel 9 - (RA0). 0=output. 1=input.\n
+			Bit 0 - Direction for I/O channel 8 - (RA1). 0=output. 1=input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 8</name>
+				<description lang="en">Direction for I/O channel 8 - (RA1). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+				<name lang="en">Direction 9</name>
+				<description lang="en">Direction for I/O channel 9 - (RA0). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+			<bit pos="6" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">Reserved.</description> 
+        	</bit>
+		</reg>
+		
+		<reg page="0" offset="13" default="0" bgcolor="0xB2F0FF">
+			<name lang="en">I/O direction LSB</name>
+			<description lang="en">
+			Least significant part of I/O directions register.
+			Set bit to zero for output and one for input.\n\n
+			Bit 7 - Direction for I/O channel 7 - (RA2). 0=output. 1=input.\n
+			Bit 6 - Direction for I/O channel 6 - (RC7). 0=output. 1=input.\n
+			Bit 5 - Direction for I/O channel 5 - (RC6). 0=output. 1=input.\n
+			Bit 4 - Direction for I/O channel 4 - (RC5). 0=output. 1=input.\n
+			Bit 3 - Direction for I/O channel 3 - (RC4). 0=output. 1=input.\n
+			Bit 2 - Direction for I/O channel 2 - (RC3). 0=output. 1=input.\n
+			Bit 1 - Direction for I/O channel 1 - (RB1). 0=output. 1=input.\n
+			Bit 0 - Direction for I/O channel 0 - (RB0). 0=output. 1=input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 0</name>
+				<description lang="en">Direction for I/O channel 0 - (RB0). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 1</name>
+				<description lang="en">Direction for I/O channel 1 - (RB1). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 2</name>
+				<description lang="en">Direction for I/O channel 2 - (RC3). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 3</name>
+				<description lang="en">Direction for I/O channel 3 - (RC4). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 4</name>
+				<description lang="en">Direction for I/O channel 4 - (RC5). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 5</name>
+				<description lang="en">Direction for I/O channel 5 - ((RC6). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 6</name>
+				<description lang="en">Direction for I/O channel 6 - ((RC7). 0=output. 1=input.</description> 
+        	</bit>
+			<bit pos="0" default="false" >
+				<name lang="en">Direction 7</name>
+				<description lang="en">Direction for I/O channel 7 - (RA2). 0=output. 1=input.</description> 
+        	</bit>
+		</reg>
+		
+		<reg page="0" offset="14" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 0 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="15" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 1 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="16" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 2 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="17" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 3 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="18" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 4 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="19" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 5 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="20" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 6 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="21" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 7 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="22" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 8 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+		
+		<reg page="0" offset="23" bgcolor="0x99FF99" >
+			<name lang="en">I/O channel 9 status register</name>
+			<description lang="en">
+			Read or write the state of I/O channel 0 in this register.\n
+			0 - is returned for an inactive input or a low output. A written zero will set an output channel low.\n
+			1 - is returned for an active input or a high output. A written one will set an output channel high.\n
+			</description>
+			<access>rw</access>
+			<valuelist>
+				<item value = "0x0">
+        			<name lang="en">Off</name>
+					<description lang="en">
+					Read: channel is in low state. Write: set output channel to its low state.
+					</description>
+				</item>
+				<item value = "0x1">
+        			<name lang="en">On</name>
+					<description lang="en">
+					Read: channel is in high state. Write: set output channel to its high state.
+					</description>
+				</item>
+			</valuelist>
+		</reg>
+												
+		<reg page="0" offset="24" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 0 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="25" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 1 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="26" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 2 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="27" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 3 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		
+		<reg page="0" offset="28" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 4 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="29" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 5 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="30" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 6 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="31" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 7 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="32" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 8 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="false" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="33" default="0x98" bgcolor="0xF0F5F5" >
+			<name lang="en">Output 9 control register</name>
+			<description lang="en">
+			The output control bits enable/disable intelligent functionality for a channel set as output.\n
+			Bit 0 - Enable pulse.\n
+			Bit 1 - If set: Alarm sent when protection timer triggers.\n
+			Bit 2 - Protection timer enable.\n
+			Bit 3 - Send On event when output goes to active state.\n
+			Bit 4 - Send Off event when output goes to inactive state.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Enable output.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Enable pulse</name>
+      	    <description lang="en">Enable pulse on output</description> 
+        	</bit>
+			<bit pos="1" default="false" >
+      	    <name lang="en">Protection alarm</name>
+      	    <description lang="en">If set: Alarm sent when protection timer triggers.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">Protection timer enable</name>
+      	    <description lang="en">
+      	    If set: Protection timer is enabled and will deactivate output channel when the timer times out.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="true" >
+      	    <name lang="en">On event on activate enable</name>
+      	    <description lang="en">
+      	    If set: An on event will be sent when the output is turned on.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="true" >
+      	    <name lang="en">Off event on deactivate enable</name>
+      	    <description lang="en">
+      	    If set: An off event will be sent when the output is turned off.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">
+      	    Reserved
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable channel</name>
+      	    <description lang="en">
+      	    Set this bit to make the output controllable.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="34" default="0x83" bgcolor="0xE6E6F0" >
+			<name lang="en">Input 0 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                    Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="35" default="0x83" bgcolor="0xE6E6F0" >
+			<name lang="en">Input 1 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="36" default="0x83" bgcolor="0xE6E6F0" >
+			<name lang="en">Input 2 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="37" default="0x83" bgcolor="0xE6E6F0" >
+			<name lang="en">Input 3 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="38" default="0x83" bgcolor="0xE6E6F0">
+			<name lang="en">Input 4 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode.</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="39" default="0x83" bgcolor="0xE6E6F0" >
+			<name lang="en">Input 5 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="40" default="0x83" bgcolor="0xE6E6F0">
+			<name lang="en">Input 6 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="41" default="0x83" bgcolor="0xE6E6F0">
+			<name lang="en">Input 7 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="42" default="0x83" bgcolor="0xE6E6F0">
+			<name lang="en">Input 8 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n            
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="43" default="0x83" bgcolor="0xE6E6F0">
+			<name lang="en">Input 9 control register</name>
+			<description lang="en">
+			The input control bits enable/disable intelligent functionality for a channel set as input.\n
+			Bit 0 - Send On/TurnOn event when input goes to active state.\n
+			Bit 1 - Send Off/TurnOff event when input goes to inactive state.\n
+			Bit 2 - 0 = Send On/off events. 1=Send turnon/turnoff events (if activated).\n
+                Different meaning in button input mode where 0 = TurnOn and 1 = TurnOff.\n
+			Bit 3 - Alarm event sent if input goes low.\n
+			Bit 4 - Alarm event sent if input goes high.\n
+			Bit 5 - Continuous alarm.\n
+			Bit 6 - Activate Button imput mode. Only TurnOff or TurnOn is sent when an input goes low and button input mode is activated.\n
+			Bit 7 - Enable input.\n
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="true" >
+      	    <name lang="en">Activate ON/TURNON-event</name>
+      	    <description lang="en">Send On/TurnOn event when input goes to active state.</description> 
+        	</bit>
+			<bit pos="1" default="true" >
+      	    <name lang="en">Activate OFF/TURNOFF-event</name>
+      	    <description lang="en">Send Off/TurnOff event when input goes to inactive state.</description> 
+        	</bit>
+ 			<bit pos="2" default="false" >
+      	    <name lang="en">State event select.</name>
+      	    <description lang="en">
+      	    Set to one to send turnon/turnoff events (if activated).
+      	    </description> 
+        	</bit>  
+ 			<bit pos="3" default="false" >
+      	    <name lang="en">Alarm on low</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes low.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="4" default="false" >
+      	    <name lang="en">Alarm on high</name>
+      	    <description lang="en">
+      	    An alarm event is sent if input goes high.
+      	    </description> 
+        	</bit> 
+ 			<bit pos="5" default="false" >
+      	    <name lang="en">Continuous alarm</name>
+      	    <description lang="en">
+      	    Alarm events are sent continuously while the state is active.
+      	    </description> 
+        	</bit>  
+ 			<bit pos="6" default="false" >
+      	    <name lang="en">Activate button input mode</name>
+      	    <description lang="en">
+      	    Activate Button input mode. Only TurnOff or TurnOn is sent when an input goes low and button 
+            input mode is activated. Which of them is sent is specified by bit 3 in the Input Control register. 
+            If it is set to 0 TurnOn is sent and if it is set to 1 TurnOff is sent.
+      	    </description> 
+        	</bit>    
+  			<bit pos="7" default="true" >
+      	    <name lang="en">Enable input</name>
+      	    <description lang="en">
+      	    Set this bit to make the input active.
+      	    </description> 
+        	</bit>        	  	       	      	     	
+		</reg>
+		
+		<reg page="0" offset="44" default="0" bgcolor="0xCCFFEB" >
+			<name lang="en">Module Control register</name>
+      	<description lang="en">
+      	It is possible to control general module behaviour in this register.\n
+		Bit 0 - Turn of input event repeat.\n
+		Bit 1 - Reserved.\n
+		Bit 2 - Reserved.\n
+		Bit 3 - Reserved.\n
+		Bit 4 - Reserved.\n
+		Bit 5 - Reserved.\n
+		Bit 6 - Reserved.\n
+		Bit 7 - Enable weak pullups.\n
+      	</description>
+      	<access>rw</access>
+		<bit pos="0" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="1" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="2" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="3" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="4" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="5" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="6" default="false" >
+			<name lang="en">Reserved</name>
+			<description lang="en">
+      	    Reserved.
+      	    </description> 
+        </bit>
+		<bit pos="7" default="false" >
+			<name lang="en">Enable pullups</name>
+			<description lang="en">
+      	    Enable weak pullups if set to 1.
+      	    </description> 
+        </bit>
+		</reg>
+		
+		<reg page="0" offset="45" default="0" bgcolor="0x80FFCC">
+		<name lang="en">Input stream sample time</name>
+      	<description lang="en">
+      	This is the time in seconds between input stream samples. Set to zero to disable.\n
+		CLASS1.DATA is sent with data coding=0(bits), unit=0, sensor=0 for the inputs/outputs 
+		as set here. First byte is outputs, second byte is inputs.
+      	</description>
+      	<access>rw</access>
+		</reg>
+        
+        <reg page="0" offset="46" default="3" bgcolor="0xCCFFEB">
+		<name lang="en">Debounce count</name>
+      	<description lang="en">
+      	This is the number of counts a button input signal should be low to
+        be regarded as actice. Each count represents 10 ms.
+      	</description>
+      	<access>rw</access>
+		</reg>
+        
+        <reg page="0" offset="47" default="0" bgcolor="0x80FFCC">
+		<name lang="en">Short pulse duration</name>
+      	<description lang="en">
+      	This is the duration for the short pulse action. Each count represents 10 ms. 
+        A zero vaue gives a pulse that is the shortest possible.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		
+		///////////////////////////////////////////////////////////////////////
+		// Register Page 1 - Timing
+		///////////////////////////////////////////////////////////////////////
+		
+		// * * *   Pulse time  * * *   
+		
+		<reg page="1" offset="0" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 0 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="1" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 0 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="2" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 1 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="3" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 1 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="1" offset="4" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 2 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="5" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 2 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="6" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 3 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="7" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 3 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="8" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 4 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="9" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 4 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="10" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 5 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="11" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 5 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="12" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 6 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="13" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 6 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="14" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 7 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="15" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 7 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="16" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 8 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="17" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 8 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="18" default="0" bgcolor="0xE6E6F0" >
+			<name lang="en">Output pulse time register for output 9 MSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="19" default="0" bgcolor="0xE0EBEB" >
+			<name lang="en">Output pulse time register for output 9 LSB</name>
+			<description lang="en">
+			This is the pulse time for the each output expressed in seconds. This can be used to 
+			make an output turn on and off with a certain preset interval. The min pulse time is 1 
+			second and the max time is 65535 seconds which is about 18 hours. Set to zero (default) 
+			for no pulse time i.e. the output will be steady on/off.\n
+			To start a pulse sequence first write the pulse time to this register and then set the 
+			corresponding bit in the output status register to start the output. The pulse train is 
+			terminated by writing on or off (1 or 0) to the output status register.\n 
+			</description>
+			<access>rw</access>
+		</reg>
+		
+
+		
+		// * * *   Output protection  * * *
+		
+		
+		<reg page="1" offset="20" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 0 MSB</name>
+			<description lang="en">
+			This is the output protection time. An output will be inactivated if not written to before 
+			this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output 
+			is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="21" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 0 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="22" default="0" bgcolor="0xFFF5FA">
+			<name lang="en">Output protection time register for output 1 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="23" default="0" bgcolor="0xFFEBF5"  >
+			<name lang="en">Output protection time register for output 1 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="24" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 2 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="25" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 2 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="26" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 3 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="27" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 3 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="28" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 4 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="29" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 4 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="1" offset="30" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 5 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="31" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 5 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="32" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 6 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="33" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 6 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="34" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 7 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="35" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 7 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="36" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 8 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="37" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 8 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="38" default="0" bgcolor="0xFFF5FA" >
+			<name lang="en">Output protection time register for output 9 MSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="1" offset="39" default="0" bgcolor="0xFFEBF5" >
+			<name lang="en">Output protection time register for output 9 LSB</name>
+			<description lang="en">
+			This is the output protection time. A output will be inactivated if not written to before this time has elapsed.\n
+			Set to zero to disable (default). The max time is 65535 seconds which is about 18 hours.\n
+			The registers can be as an example be used as a security feature to ensure that an output is deactivated after a preset time even if the controlling device failed to deactivate the output.  
+			</description>
+			<access>rw</access>
+		</reg>
+				
+				
+		///////////////////////////////////////////////////////////////////////
+		// Register Page 2 - Decision Matrix
+		///////////////////////////////////////////////////////////////////////		
+				
+			
+		<!-- DM Row 0 -->
+		<reg page="2" offset="0" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0x00 
+			is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not 
+			be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="1" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone information of 
+			an event. That is the zone/sub zone of the machine must match the one of the event to trigger the DM 
+			row. 
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Sub zone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry		   action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="2" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="3" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of thsi decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="4" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="5" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="6" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action code 0x00 is predefined and means No-Operation. All other codes are application specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="7" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 0: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 1 -->
+		<reg page="2" offset="8" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0x00 
+			is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will 
+			not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="9" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/subzone information of 
+			an event. That is the zone/sub zone of the machine must match the one of the event to trigger the 
+			DM row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Sub zone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="10" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="11" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="12" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="13" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="14" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action 
+			code 0x00 is predefined and means No-Operation. All other codes are application specific and typical 
+			application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="15" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 1: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>						
+		
+		<!-- DM Row 2 -->
+		<reg page="2" offset="16" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0x00 
+			is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not 
+			be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="17" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone information of 
+			an event. That is the zone/sub zone of the machine must match the one of the event to trigger the DM 
+			row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Sub zone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="18" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="19" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="20" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="21" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="22" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action 
+			code 0x00 is predefined and means No-Operation. All other codes are application specific and typical 
+			application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="23" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 2: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>					
+		
+		<!-- DM Row 3 -->
+		<reg page="2" offset="24" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0x00 
+			is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will 
+			not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="25" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone information 
+			of an event. That is the zone/sub zone of the machine must match the one of the event to trigger 
+			the DM row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="26" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action of 
+			this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="27" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action 
+			of this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="28" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="29" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="30" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only action 
+			code 0x00 is predefined and means No-Operation. All other codes are application specific and typical 
+			application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="31" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 3: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 4 -->
+		<reg page="2" offset="32" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 0x00 
+			is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr will not
+			be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="33" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone 
+			information of an event. That is the zone/sub zone of the machine must match the one of 
+			the event to trigger the DM row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Sub zone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="34" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the 
+			action of this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="35" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the 
+			action of this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="36" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="37" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="38" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only 
+			action code 0x00 is predefined and means No-Operation. All other codes are application specific 
+			and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="39" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 4: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>		
+		
+		<!-- DM Row 5 -->
+		<reg page="2" offset="40" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger 
+	        action. 
+			Oaddr is the originating address. We are only interested in messages from the node given 
+			here. 0x00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags 
+			is set oaddr will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="41" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone 
+			information of an event. That is the zone/sub zone of the machine must match the one of the 
+			event to trigger the DM row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one subzone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="42" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the 
+			action of this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="43" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the 
+			action of this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="44" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix 
+			row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="45" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix 
+			row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="46" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. 
+			Only action code 0x00 is predefined and means No-Operation. All other codes are application 
+			specific and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="47" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 5: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<!-- DM Row 6 -->
+		<reg page="2" offset="48" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger 
+			action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 
+			0x00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr 
+			will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="49" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone information 
+			of an event. That is the zone/subzone one of the machine must match the one of the event to trigger 
+			the DM row. 
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Subzone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decison matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="50" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action 
+			of this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="51" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action 
+			of this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="52" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="53" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="54" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only 
+			action code 0x00 is predefined and means No-Operation. All other codes are application specific 
+			and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="55" default="0" bgcolor="0xCCCCCC" >
+			<name lang="en">Decision matrix row 6: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		
+		<!-- DM Row 7 -->
+		<reg page="2" offset="56" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Oaddr </name>
+			<description lang="en">
+			Originating address. Set to nickname for node that should trigger 
+			action. 
+			Oaddr is the originating address. We are only interested in messages from the node given here. 
+			0x00 is segment controller and 0xff is a node without a nickname. If bit 6 of flags is set oaddr 
+			will not be checked and events from all nodes will be accepted. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="57" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: flags </name>
+			<description lang="en">
+			Flags. Set selection behaviour.\n
+			The enable bit can be used to disable a decision matrix row while it is edited.\n
+			The zone and use sub zone bits can be activated to have a check on the zone/sub zone information 
+			of an event. That is the zone/subzone one of the machine must match the one of the event to trigger 
+			the DM row.  
+			</description>
+			<access>rw</access>
+			<bit pos="0" default="0" >
+				<name lang="en">Class filter bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class filter.</description> 
+			</bit>
+			<bit pos="1" default="0" >
+				<name lang="en">Class mask bit 8</name>
+      	   <description lang="en">Defines the ninth bit of the class mask.</description> 
+			</bit>			
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved bit</name>
+      	   <description lang="en">This bit is not used.</description> 
+			</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Sub zone match</name>
+      	   <description lang="en">If set to one sub zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Zone match</name>
+      	   <description lang="en">If set to one zone should be matched to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Hard coded</name>
+      	   <description lang="en">If set to one the originating address should be hard coded to trigger DM entry action.</description> 
+			</bit>	
+			<bit pos="6" default="false" >
+				<name lang="en">Check Originating address</name>
+      	   <description lang="en">If set to one the originating address should be checked and match to trigger DM entry action.</description> 
+			</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Enable</name>
+      	   <description lang="en">Enable (1) or disable (0)the decision matrix row.</description> 
+			</bit>												
+		</reg>		
+		
+		<reg page="2" offset="58" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Class mask (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class mask that defines the events that should trigger the action 
+			of this decision matrix row.\n
+			Bit 8 of the class mask is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="59" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Class filter (low eight bits) </name>
+			<description lang="en">
+			The lowest eight bits of the class filter that defines the events that should trigger the action 
+			of this decision matrix row.\n
+			Bit 8 of the class filter is stored in bit 1 of the flag byte. 			
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="60" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Type mask</name>
+			<description lang="en">
+			Type mask that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="61" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Type filter</name>
+			<description lang="en">
+			Type filter that defines the events that should trigger the action of this decision matrix row.		
+			</description>
+			<access>rw</access>
+		</reg>	
+		
+		<reg page="2" offset="62" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Action</name>
+			<description lang="en">
+			This is the action or operation that should be performed if the filtering is satisfied. Only 
+			action code 0x00 is predefined and means No-Operation. All other codes are application specific 
+			and typical application defined codes could do measurement, send predefined event etc.		
+			</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="2" offset="63" default="0" bgcolor="0xE6E6E6" >
+			<name lang="en">Decision matrix row 7: Action parameter</name>
+			<description lang="en">
+			A numeric action parameter can be set and its meaning is application specific.
+			</description>
+			<access>rw</access>
+		</reg>
+								
+	</registers>
+	
+	
+	
+	
+	<abstractions>
+
+		<abstraction type="short" default="0"  
+							page = "1" offset = "0" 
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output pulse time register for channel 0</name>
+      	<description lang="en">
+		This is the pulse time for output 0 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "2"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output pulse time register for channel 1</name>
+      	<description lang="en">
+		This is the pulse time for output 1 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "4"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output pulse time register for channel 2</name>
+      	<description lang="en">
+		This is the pulse time for output 2 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "6"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output pulse time register for channel 3</name>
+      	<description lang="en">
+		This is the pulse time for channel 3 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "8"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output pulse time register for channel 4</name>
+      	<description lang="en">
+		This is the pulse time for channel 4 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "10"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output pulse time register for channel 5</name>
+      	<description lang="en">
+		This is the pulse time for channel 5 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "12"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output pulse time register for channel 6</name>
+      	<description lang="en">
+		This is the pulse time for channel 6 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "14"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output pulse time register for channel 7</name>
+      	<description lang="en">
+		This is the pulse time for channel 7 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "16"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output pulse time register for channel 8</name>
+      	<description lang="en">
+		This is the pulse time for channel 8 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "18"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output pulse time register for channel 9</name>
+      	<description lang="en">
+		This is the pulse time for channel 9 expressed in seconds. 
+		It can be used to have an output turn on and off with a certain 
+		preset interval. The min. pulse time is 1 second and the max time 
+		is 65535 seconds which is about 18 hours. Set to zero (default) 
+		for no pulse time i.e. the output will be steady on/off.\n\n
+		To start a pulse sequence first write the pulse time to this 
+		register and then write to output status register to start 
+		the output sequence. The pulse train is terminated by writing on or off 
+		(1 or 0) to the output status register.\n
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+
+		<abstraction type="short" default="0"  
+							page = "1" offset = "20"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output protection time register channel 0</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+   	
+		<abstraction type="short" default="0"  
+							page = "1" offset = "22"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output protection time register channel 1</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "24"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output protection time register channel 2</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "26"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output protection time register channel 3</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction> 
+
+		<abstraction type="short" default="0"  
+							page = "1" offset = "28"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output protection time register channel 4</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "30"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output protection time register channel 5</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "32"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output protection time register channel 6</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "34"
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output protection time register channel 7</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page = "1" offset = "36"
+							bgcolor="0xE0E0FF" >
+   		<name lang="en">Output protection time register channel 8</name>
+      	<description lang="en">
+		This is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+		
+		<abstraction type="short" default="0"  
+							page="1" offset="38" 
+							bgcolor="0xF0F0FF" >
+   		<name lang="en">Output protection time register channel 9</name>
+      	<description lang="en">TThis is the output protection time. A output will be inactivated if 
+		not written to before this time has elapsed.\n\n
+		Set to zero to disable (default). The max time is 65535 seconds 
+		which is about 18 hours.\n\n
+		The registers can be as an example be used as a security feature 
+		to ensure that an output is deactivated after a preset time even 
+		if the controlling device failed to deactivate the output.\n 
+      	</description>
+      	<access>rw</access>
+		</abstraction>
+   	 
+   </abstractions>
+	
+	
+	
+
+	<alarm>
+   	<bit pos="7">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="6">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="5">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="4">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="3">
+   		<name lang="en">Reserved</name>
+      	<description lang="en">
+      	Reserved.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="2">
+   		<name lang="en">Low alarm</name>
+      	<description lang="en">
+      	An input bit has gone low and the alarm condition for it is enabled.
+      	</description>
+   	</bit>
+   	
+   	<bit pos="1">
+   		<name lang="en">High alarms</name>
+      	<description lang="en">
+      	An input bit has gone high and the alarm condition for it is enabled.
+      	</description>
+   	</bit>
+   	
+    <bit pos="0">
+   		<name lang="en">Protection timer elapsed</name>
+      	<description lang="en">
+      	A protection timer has elapsed.
+      	</description>
+   	</bit>  	   	   	   	   	   	
+	</alarm>
+	
+	
+	<!-- Decision matrix -->
+	<dmatrix>
+  
+		<level>1</level>					
+		<start page="2" offset="0"/> 	
+		<rowcnt>8</rowcnt>			 
+				
+		<action code="0x00">				
+      	<name lang="en">NOOP</name>
+		<description lang="en">No operation</description>
+		</action>
+		
+    	<action code="0x01">				
+      	<name lang="en">Set output of I/O channel high</name>
+        	<description lang="en">
+			Set the output of the I/O channel given by the argument to its high state. 
+			The argument is an integer where 0 is output 0 and so on and can be in the range 0-9.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to set state high on</name> 
+      	    <description lang="en">
+			Integer representing I/O channel to set state high on.	      	   
+      	    </description>
+			<valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>
+			</param>
+		</action>
+		
+    	<action code="0x02">				
+      	<name lang="en">Set output of I/O channel low</name>
+        	<description lang="en">
+			Set the output of the I/O channel given by the argument to its low state. 
+			The argument is an integer where 0 is output 0 and so on and can be in the range 0-9.\n     	
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to set state low on</name> 
+      	    <description lang="en">
+			Integer representing I/O channel to set state low on.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>
+		
+    	<action code="0x03">				
+      	<name lang="en">Turn on pulse on output I/O channel</name>
+        	<description lang="en">
+			Turn on pulse output on the output I/O channel given by the argument. 
+			The argument is an integer where 0 is output 0 and so on and can be in 
+			the range 0-9. Does not have any meaning for a channel set as input.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to activate pulse output on.</name> 
+      	    <description lang="en">
+			Integer representing I/O channel to pulse.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>
+
+		<action code="0x04">				
+      	<name lang="en">Turn off pulse on output I/O channel</name>
+        	<description lang="en">
+			Turn off pulse output on the output I/O channel given by the argument. 
+			The argument is an integer where 0 is output 0 and so on and can be in 
+			the range 0-9. Does not have any meaning for a channel set as input.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to activate pulse output on.</name> 
+      	    <description lang="en">
+			Integer representing I/O channel to pulse.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>
+		
+		<action code="0x05">				
+      	<name lang="en">Toggle output for channel</name>
+        	<description lang="en">
+			Toggle output four output I/O channel given by argument. The argument is an integer 
+			where 0 is output 0 and so on and can be in the range 0-9. Does not have any meaning 
+			for a channel set as input.\n  	
+        	</description>
+        	<param>							
+      		<name lang="en">Output I/O channel to toggle</name> 
+      	    <description lang="en">
+			Integer representing output I/O channel to toggle.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>	
+		
+    	<action code="0x06">				
+      	<name lang="en">Send status for I/O channel</name>
+        	<description lang="en">
+			Send status for an I/O channel given by the argument. The argument is an integer 
+			where 0 is output 0 and so on and can be in the range 0-9.\n 
+			For a channel set as output the status is the output applied and for a channel 
+			set as input the actual input state.
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to send status for</name> 
+      	    <description lang="en">
+			Integer representing the I/O channel to send status for.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>
+
+		<action code="0x07">				
+      	<name lang="en">Send status for all I/O channels.</name>
+        	<description lang="en">
+			Send status for all I/O channels starting with channel 0 and 
+			then taking each channel up to channel 9.
+        	</description>
+        	<param>							
+      		<name lang="en">Not used</name> 
+      	    <description lang="en">
+			Not used.
+			</description>
+			</param>
+		</action>
+        
+        <action code="0x08">				
+      	<name lang="en">Send short pulse on I/O channel</name>
+        	<description lang="en">
+			Send a short pulse on the I/O channel given by the argument. The argument is an integer 
+			where 0 is output 0 and so on and can be in the range 0-9.\n 
+            Register 0:47 set the pulse duration time.
+        	</description>
+        	<param>							
+      		<name lang="en">Channel to send status for</name> 
+      	    <description lang="en">
+			Integer representing the I/O channel to send status for.	      	   
+      	    </description>
+      	    <valuelist>
+			<item value = "0x0">                 
+				<name lang="en">Channel 0</name>                 
+				<description lang="en">I/O channel 0</description>                
+			</item>
+			<item value = "0x01">                 
+				<name lang="en">Channel 1</name>                 
+				<description lang="en">I/O channel 1</description>                
+			</item>
+			<item value = "0x02">                 
+				<name lang="en">Channel 2</name>                 
+				<description lang="en">I/O channel 2</description>                
+			</item>
+			<item value = "0x03">                 
+				<name lang="en">Channel 3</name>                 
+				<description lang="en">I/O channel 3</description>                
+			</item>
+			<item value = "0x04">                 
+				<name lang="en">Channel 4</name>                 
+				<description lang="en">I/O channel 4</description>                
+			</item>
+			<item value = "0x05">                 
+				<name lang="en">Channel 5</name>                 
+				<description lang="en">I/O channel 5</description>                
+			</item>
+			<item value = "0x06">                 
+				<name lang="en">Channel 6</name>                 
+				<description lang="en">I/O channel 6</description>                
+			</item>
+			<item value = "0x07">                 
+				<name lang="en">Channel 7</name>                 
+				<description lang="en">I/O channel 7</description>                
+			</item>
+			<item value = "0x08">                 
+				<name lang="en">Channel 8</name>                 
+				<description lang="en">I/O channel 8</description>                
+			</item>
+			<item value = "0x09">                 
+				<name lang="en">Channel 9</name>                 
+				<description lang="en">I/O channel 9</description>                
+			</item>
+			</valuelist>       		      		      		      		      		
+			</param>
+		</action>
+		
+	</dmatrix>
+	
+	
+	<events>
+	
+		<event class="0x014" type="0x03" >
+			<name lang="en">On Event</name> 					
+			<description lang="en">
+			An I/O channel has been set to its ON position. For an output this means
+			that it has been set high. For a channel set as an input it means the channel
+			input turned high. The channel is checked every second for a change.
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Contains the channel(0-9).
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Sub zone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the channel.
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x014" type="0x04" >
+			<name lang="en">Off Event</name> 					
+			<description lang="en">
+			An I/O channel has been set to its OFF position. For an output this means
+			that it has been set low. For a channel set as an input it means the channel
+			input turned low. The channel is checked every second for a change. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Contains the channel(0-9).
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Sub zone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the channel.
+      		</description>      	
+			</data>
+		</event>	
+
+		<event class="0x01E" type="0x05" >
+			<name lang="en">TurnOn Event</name> 					
+			<description lang="en">
+			An I/O channel has been set to its ON position. The channel is checked every 
+			second for a change. This is only valid for a channel configured as input.
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Contains the channel(0-9).
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Sub zone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the channel.
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x01E" type="0x06" >
+			<name lang="en">TurnOff Event</name> 					
+			<description lang="en">
+			An I/O channel has been set to its OFF position. The channel is checked every 
+			second for a change. This is only valid for a channel configured as input. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Contains the channel(0-9).
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Is set to the zone for the module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Sub zone</name>
+      		<description lang="en">
+      		Is set to the sub zone for the channel.
+      		</description>      	
+			</data>
+		</event>
+			
+		<event class="0x00F" type="0x01" >
+			<name lang="en">I/O Data event</name> 					
+			<description lang="en">
+			Input/Output data steam event sent on regular intervals if activated. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Data coding</name>
+      		<description lang="en">
+      		Set to zero for bit coding, unit=0, sensor=0.
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Outputs states</name>
+      		<description lang="en">
+      		State for outputs. Bit 0 is output 0 and so on.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Input states</name>
+      		<description lang="en">
+      		State for inputs. Bit 0 is input 0 and so on.
+      		</description>      	
+			</data>
+		</event>
+		
+		<event class="0x001" type="0x02" >
+			<name lang="en">I/O alarm event</name> 					
+			<description lang="en">
+			If an alarm is armed this event is sent when it occurs and 
+			the corresponding alarm bit is set in the alarm register. 
+			</description> 	
+			<priority>4</priority>
+			<data offset="0" >						
+   			<name lang="en">Index</name>
+      		<description lang="en">
+      		Channel where the alarm ocured.
+      		</description>      	
+			</data>
+			<data offset="1" >						
+   			<name lang="en">Zone</name>
+      		<description lang="en">
+      		Zone for module.
+      		</description>      	
+			</data>
+			<data offset="2" >
+   			<name lang="en">Sub zone</name>
+      		<description lang="en">
+      		Sub zone for channel or sub zone for module if channel sub zone is zero.
+      		</description>      	
+			</data>
+		</event>
+		
+	</events>
+	
+	<setup>
+		<recipe>
+			<name lang="en">Blink channel 0</name>
+      		<description lang="en">
+      		Set channel 0 to output and blink with 10 Hz.
+      		</description>
+			<!-- Set channel as output -->
+			<bit-in-reg pos="0" page="0" offset="" value="false" />
+			<register page="0" offset="0" value="0" />
+			<!-- Read frequency from user -->
+			<messagebox>
+				<function>input</function>
+				<head lang="en">Beijing I/O node</head>
+				<description lang="en">With what frequency should channel blink?</description>
+				<variable type="byte" name="frequency"/>
+			</messagebox>
+			<!-- Write frequency to abstraction register -->
+			<abstraction name="blink-frequency0" value="$frequency" />
+		</recipe>
+	</setup>
+	
+</module>	
+</vscp>	

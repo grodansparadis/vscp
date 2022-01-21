@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-09-14 09:51:40.337559
+                        Generated: 2021-10-06 18:25:22.195803
 */
  
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");

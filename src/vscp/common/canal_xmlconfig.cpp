@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@
 // SOFTWARE.
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #include <limits>
 #endif
 
@@ -45,7 +45,7 @@
 
 #include "canal_xmlconfig.h"
 
-#include <climits>
+#include <limits>
 #include <cfloat>
 
 // Uncomment to get some debug info
@@ -81,7 +81,7 @@ static wizardStepChoice *lastItemChoice = NULL;
 // it here. This pointer is set to NULL in the end bit tag
 static wizardFlagBitChoice *lastBitChoice = NULL;
 
-void
+static void
 startSetupParser( void *data, const char *name, const char **attr ) 
 {
     canalXmlConfig *pConfig = (canalXmlConfig *)data;
@@ -371,7 +371,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
 }
 
-void
+static void
 handle_data(void *data, const char *content, int length)
 {
     canalXmlConfig *pConfig = (canalXmlConfig *)data;
@@ -413,7 +413,7 @@ handle_data(void *data, const char *content, int length)
     }
 }
 
-void
+static void
 endSetupParser( void *data, const char *name ) 
 {
     depth_setup_parser--;

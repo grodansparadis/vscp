@@ -1,0 +1,1144 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Ake Hedman, Grodans Paradis AB, akhe@grodansparads.com -->
+<vscp>
+<module>
+    <name>Register Test</name>
+    <model>B1</model>
+    <version>1467</version>
+    <changed>2020-11-02</changed>
+    <description lang="en">Register test description</description>
+    <infourl>https://www.grodansparadis.com/index.html</infourl>
+    <buffersize>12</buffersize>
+    <manufacturer>
+        <name>The company</name>
+        <address>
+            <street>Brattbergavägen 17</street>
+            <city>Los</city>
+            <postcode>82770</postcode>
+            <country>Sweden</country>
+        </address>
+        <telephone>
+            <number>+46 8 40011835 </number>
+            <description lang="en" >Main Reception</description>
+        </telephone>
+        <email>
+            <address>support@grodansparadis.com</address>
+            <description>Support email</description>
+        </email>
+        <email>
+            <address>sales@grodansparadis.com</address>
+            <description>Sales inquires email</description>
+        </email>
+        <email>
+            <address>info@grodansparadis.com</address>
+            <description>General email</description>
+        </email>    
+        <web>
+            <address>http://www.grodansparadis.com</address>
+            <description>Main web site</description>
+        </web>                  
+    </manufacturer>  
+    
+    <!-- Picture of device -->
+    <picture path="https://www.grodansparadis.com/vilnius/images/vilnius2_small.png" 
+        format="jpg" >
+        <description lang="en" >
+        Picture of the Vilnius A/D module.
+        </description>
+    </picture>
+    
+    <!-- Firmware for the device -->
+    <files>
+    
+    <firmware target="pic18f2558"
+    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.04/Vilnius_pic18f2580_1_0_4_relocated.hex" 
+        format="intelhex8"
+        date="2020-05-15"
+        version_major="1"
+        version_minor="0"
+        version_subminor="4">
+        <description lang="en" >
+        Firmware (PIC18F2580) for the Vilnius A/D module for use with the VSCP Bootloader wizard.
+        </description> 
+    </firmware>
+    
+    <firmware target="pic18f26k58"
+    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.3/Vilnius_2580_1_0_3.hex" 
+        format="intelhex8"
+        date="2016-03-23"
+        version_major="1"
+        version_minor="0"
+        version_subminor="4">
+        <description lang="en" >
+        Firmware (PIC18F26K80) for the Vilnius A/D module for use with the VSCP Bootloader wizard.
+        </description> 
+    </firmware>
+    
+    <firmware target="pic18f2558"
+    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
+        format="intelhex8"
+        date="2015-07-07"
+        version_major="1"
+        version_minor="0"
+        version_subminor="3">
+        <description lang="en" >
+        Firmware for the Vilnius A/D module for use with the VSCP Bootloader wizard.
+        </description> 
+    </firmware>
+    
+    <firmware target="pic18f2558"
+    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
+        format="intelhex8"
+        date="2015-07-07"
+        version_major="1"
+        version_minor="0"
+        version_subminor="0">
+        <description lang="en" >
+        Firmware for the Vilnius A/D module for use with the VSCP Bootloader wizard.
+        </description> 
+    </firmware>
+    
+    </files>
+    
+    <!-- Full documentation for the device -->
+    <manual path="http://www.grodansparadis.com/vilnius/manual/doku.php?id=start"     
+        lang="en"
+        format="html">
+        <description lang="en" >
+        Manual for the Vilnius counter module.
+        </description>
+    </manual>
+    
+    <boot>
+        <algorithm>1</algorithm>
+        <blocksize>8</blocksize>
+        <blockcount>4096</blockcount>
+    </boot>
+    
+    
+    <registers>        
+
+        <!--
+        ///////////////////////////////////////////////////////////////////////
+        // Register Page 0 - Main page
+        ///////////////////////////////////////////////////////////////////////
+        -->
+    
+        <!-- Zones -->
+    
+        <reg page="0" offset="0" default="0x11" fgcolor="0x01000" bgcolor="0x0003d4" >
+            <name lang="en">Zone</name>
+            <description lang="en">Zone this module belongs to</description>
+            <access>rw</access>
+        </reg>
+
+        <reg page="0" offset="1" default="88" bgcolor="0xfff3d4" >
+            <name lang="en">Sub zone</name>
+            <description lang="en">Sub zone this module belongs to</description>
+            <description lang="se">Sub zone för den här modulen</description>
+            <access>rw</access>
+            <valuelist>
+              <item name="Item0" value = "0x0">                 
+                  <description lang="en">Description item 0</description>                 
+                  <infourl lang="en">InfoURL item 0</infourl>                
+              </item>
+              <item name="Item1" value = "0x1">                 
+                  <description lang="en">Description item 1</description>                 
+                  <infourl lang="en">InfoURL item 1</infourl>                
+              </item>
+              <item name="Item2" value = "0x2">                 
+                  <description lang="en">Description item 2</description>                 
+                  <infourl lang="en">InfoURL item 2</infourl>                
+              </item>
+            </valuelist>
+        </reg>
+        
+        <reg page="0" offset="12" default="123" access="w" fgcolor="0x112233" bgcolor="0x776655" name="register 12" >
+            <description lang="en">page0 offset12 description</description>
+            <description lang="se">Sida0 offset12 Beskrivning</description>
+            <infourl lang="en">http://page0offset12.html</infourl>
+            <infourl lang="se">http://sida0offset12.html</infourl>
+            <valuelist>
+              <item value = "0x00"> 
+                  <name>Item0</name>                
+                  <description lang="en">Description item 0</description>                 
+                  <infourl lang="en">InfoURL item 0</infourl>                
+              </item>
+              <item value = "0x01">   
+                  <name>Item1</name>               
+                  <description lang="en">Description item 1</description>                 
+                  <infourl lang="en">InfoURL item 1</infourl>                
+              </item>
+              <item value = "0x02">                 
+                  <name>Item2</name> 
+                  <description lang="en">Description item 2</description>                 
+                  <infourl lang="en">InfoURL item 2</infourl>                
+              </item>
+              <item value = "0x03">                 
+                  <name>Item3</name> 
+                  <description lang="en">Description item 3</description>                 
+                  <infourl lang="en">InfoURL item 3</infourl>                
+              </item>
+            </valuelist>
+        </reg>
+        
+        <!-- Control registers -->
+        
+        <reg page="0" offset="14" default="0x11" fgcolor="0x332211" bgcolor="0x9873d4" >
+          <name lang="en">Module control</name>
+          <description>
+            Module control register
+          </description>
+          <access>rw</access>
+          <bit pos="0" width="2" default="2" >
+            <name>Reserved</name>
+            <description lang="en">Reserved.</description> 
+            <description lang="se">Reserverad.</description>
+            <infourl lang="en">en url0</infourl>
+            <infourl lang="se">se url0</infourl> 
+            <valuelist>
+              <item value="0" name="Bit value 0">
+                <description lang="en">Bit value description item 0</description>
+                <infourl lang="en">Bit url0</infourl> 
+              </item>  
+              <item value="1" name="Bit value 1">
+                <description lang="en">Bit value description item 1</description>
+                <infourl lang="en">Bit url1</infourl> 
+              </item>
+              <item value="2" name="Bit value 2">
+                <description lang="en">Bit value description item 2</description>
+                <infourl lang="en">Bit url2</infourl> 
+              </item>
+              <item value="3" name="Bit value 3">
+                <description lang="en">Bit value description item 3</description>
+                <description lang="se">Bit värde beskrivning item 3</description>
+                <infourl lang="en">Bit url3</infourl> 
+                <infourl lang="se">Bit url3 se</infourl> 
+              </item>
+            </valuelist>
+          </bit>
+          <bit pos="1" default="false" name="Reserved1">
+            <description lang="en">Reserved1.</description> 
+          </bit>
+          <bit pos="2" default="false" >
+            <name>Reserved2</name>
+            <description lang="en">Reserved2.</description> 
+          </bit>
+          <bit pos="3" default="false" >
+            <name>Reserved3</name>
+            <description lang="en">Reserved3.</description> 
+          </bit>
+          <bit pos="4" default="false" >
+            <name>Reserved4</name>
+            <description lang="en">Reserved4.</description> 
+          </bit>
+          <bit pos="5" default="false" >
+            <name>Reserved5</name>
+            <description lang="en">Reserved5.</description> 
+          </bit>
+          <bit pos="6" default="false" >
+            <name>Reserved6</name>
+            <description lang="en">Reserved6.</description> 
+          </bit>
+          <bit pos="7" default="false" >
+            <name>Reserved7</name>
+            <description lang="en">Reserved7.</description> 
+          </bit>
+        </reg>
+        
+        <!--
+        ///////////////////////////////////////////////////////////////////////
+        // Register Page 2 - Decision Matrix
+        ///////////////////////////////////////////////////////////////////////     
+        -->
+
+        <reg page="2" offset="0" type="dmatrix1" size="32" >
+            <name lang="en">Decision matrix</name>
+            <description lang="en">Decision matrix for Vilnius</description> 
+        </reg>
+                                        
+    </registers>
+    
+    
+    <remotevars>
+
+      <!-- A/D value -->
+  
+      <remotevar type="uint16_t"
+                          default="1234"  
+                          page = "0" offset = "19" 
+                          fgcolor="0x112233"
+                          bgcolor="0xE0E0FF" >
+        <name>ch0_value</name>
+        <description lang="en">A/D value for channel 0.</description>
+        <description lang="se">A/D värde för kanal 0.</description>
+        <infourl lang="en">Remote var url3</infourl> 
+        <infourl lang="se">Remote var url3 se</infourl> 
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "21" 
+                          bgcolor="0xE0E0FF"
+                          name="ch1_value" >
+        <description lang="en">A/D value for channel 1.</description>
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "23" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_value</name>
+        <description lang="en">A/D value for channel 2.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "25" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch3_value</name>
+        <description lang="en">A/D value for channel 3.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <!-- Measurement value -->
+      
+      <remotevar type="float"  
+                          page = "1" offset = "44" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch0_measurement_value</name>
+        <description lang="en">Measurement value for channel 0.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="float"  
+                          page = "1" offset = "48" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_measurement_value</name>
+        <description lang="en">Measurement value for channel 1.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="float"  
+                          page = "1" offset = "52" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch2_measurement_value</name>
+        <description lang="en">Measurement value for channel 2.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <remotevar type="float"  
+                          page = "1" offset = "56" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch3_measurement_value</name>
+        <description lang="en">Measurement value for channel 3.\n</description>
+        <access>r</access>
+      </remotevar>
+      
+      <!-- A/D report interval -->
+  
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "27" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch0_report_interval</name>
+        <description lang="en">Report interval in milliseconds for channel 0. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "29" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch1_report_interval</name>
+        <description lang="en">Report interval in milliseconds for channel 1. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "31" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_report_interval</name>
+        <description lang="en">Report interval in milliseconds for channel 2. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "33" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch3_report_interval</name>
+        <description lang="en">Report interval in milliseconds for channel 3. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      
+      <!-- Measurement report interval -->
+  
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "55" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch0_report_interval</name>
+        <description lang="en">Report interval in milliseconds for measurements A/D channel 0. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "57" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_measurement_report_interval</name>
+        <description lang="en">Report interval in milliseconds for measurements A/D channel 1. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "59" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch2_measurement_report_interval</name>
+        <description lang="en">Report interval in milliseconds for measurements A/D channel 2. Set to zero to disable.\n</description>
+        <access>rw</access>
+        </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "61" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch3_measurement_report_interval</name>
+        <description lang="en">Report interval in milliseconds for measurements A/D channel 3. Set to zero to disable.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      
+      <!-- Low alarm setpoint -->
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "35" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch0_low_alarm</name>
+        <description lang="en">Low alarm set point for channel 0.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "37" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch1_low_alarm</name>
+        <description lang="en">Low alarm set point for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "39" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_low_alarm</name>
+        <description lang="en">Low alarm set point for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "41" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch3_low_alarm</name>
+        <description lang="en">Low alarm set point for channel 3.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <!-- High alarm setpoint -->
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "43" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch0_high_alarm</name>
+        <description lang="en">High alarm set point for channel 0.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "45" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_high_alarm</name>
+        <description lang="en">High alarm set point for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "47" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch2_high_alarm</name>
+        <description lang="en">High alarm set point for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "49" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch3_high_alarm</name>
+        <description lang="en">High alarm set point for channel 3.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      
+      
+      <!-- Absolute low value -->
+      
+      
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "63" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch0_low</name>
+        <description lang="en">Absolute low value for channel 0.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "65" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch1_low</name>
+        <description lang="en">Absolute low value for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "67" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_low</name>
+        <description lang="en">Absolute low value for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "69" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch3_low</name>
+        <description lang="en">Absolute low value for channel 3.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      
+      <!-- Absolute high value -->
+      
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "71" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch0_high</name>
+        <description lang="en">Absolute high value for channel 0.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "73" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_high</name>
+        <description lang="en">Absolute high value for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "75" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch2_high</name>
+        <description lang="en">Absolute high value for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="uint16_t"  
+                          page = "0" offset = "77" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch3_high</name>
+        <description lang="en">Absolute high value for channel 3.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      
+      <!-- Linearization k values -->    
+      
+      
+      <remotevar type="float" default="1"  
+                          page = "1" offset = "12" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch0_k</name>
+        <description lang="en">Linearization k-constant for channel 0.</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="float" default="0"  
+                          page = "1" offset = "28" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch0_m</name>
+        <description lang="en">Linearization m-constant for channel 0.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="float" default="1"  
+                          page = "1" offset = "16" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_k</name>
+        <description lang="en">Linearization k-constant for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="float" default="0"  
+                          page = "1" offset = "32" 
+                          bgcolor="0xD8F2F5" >
+        <name lang="en">ch1_m</name>
+        <description lang="en">Linearization m-constant for channel 1.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="float" default="1"  
+                          page = "1" offset = "20" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_k</name>
+        <description lang="en">Linearization k-constant for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="float" default="0"  
+                          page = "1" offset = "36" 
+                          bgcolor="0xE0E0FF" >
+        <name lang="en">ch2_m</name>
+        <description lang="en">Linearization m-constant for channel 2.\n</description>
+        <access>rw</access>
+      </remotevar>
+      
+      <remotevar type="byte" default="1"  
+                          page = "1" offset = "24" 
+                          bgcolor="0xD8F2F5"
+                          name="value_test1">
+        <description lang="en">Value test 1</description>
+        <access>rw</access>
+        <valuelist>
+          <item value = "0x00"> 
+              <name>Item0</name>                
+              <description lang="en">Description item 0</description>                 
+              <infourl lang="en">InfoURL item 0</infourl>                
+          </item>
+          <item value = "0x01" name="Item1">                
+              <description lang="en">Description item 1</description>                 
+              <infourl lang="en">InfoURL item 1</infourl>                
+          </item>
+          <item value = "0x02">                 
+              <name>Item2</name> 
+              <description lang="en">Description item 2</description>                 
+              <infourl lang="en">InfoURL item 2</infourl>                
+          </item>
+          <item value = "0x03">                 
+              <name>Item3</name> 
+              <description lang="en">Description item 3</description>                 
+              <infourl lang="en">InfoURL item 3</infourl>                
+          </item>
+        </valuelist>
+      </remotevar>
+
+      <remotevar type="byte" default="0"  
+                          page = "1" offset = "40" 
+                          bgcolor="0xD8F2F5"
+                          name="bit_test1" >
+        <description lang="en">Bit test 1.</description>
+        <access>rw</access>    
+        <bit pos="0" width="2" default="2" >
+            <name>Reserved</name>
+            <description lang="en">Reserved.</description> 
+            <description lang="se">Reserverad.</description>
+            <infourl lang="en">en url0</infourl>
+            <infourl lang="se">se url0</infourl> 
+            <valuelist>
+              <item value="0" name="Bit value 0">
+                <description lang="en">Bit value description item 0</description>
+                <infourl lang="en">Bit url0</infourl> 
+              </item>  
+              <item value="1" name="Bit value 1">
+                <description lang="en">Bit value description item 1</description>
+                <infourl lang="en">Bit url1</infourl> 
+              </item>
+              <item value="2" name="Bit value 2">
+                <description lang="en">Bit value description item 2</description>
+                <infourl lang="en">Bit url2</infourl> 
+              </item>
+              <item value="3" name="Bit value 3">
+                <description lang="en">Bit value description item 3</description>
+                <description lang="se">Bit värde beskrivning item 3</description>
+                <infourl lang="en">Bit url3</infourl> 
+                <infourl lang="se">Bit url3 se</infourl> 
+              </item>
+            </valuelist>
+          </bit>
+          <bit pos="1" default="false" name="Reserved1">
+            <description lang="en">Reserved1.</description> 
+          </bit>
+          <bit pos="2" default="false" >
+            <name>Reserved2</name>
+            <description lang="en">Reserved2.</description> 
+          </bit>
+          <bit pos="3" default="false" >
+            <name>Reserved3</name>
+            <description lang="en">Reserved3.</description> 
+          </bit>
+          <bit pos="4" default="false" >
+            <name>Reserved4</name>
+            <description lang="en">Reserved4.</description> 
+          </bit>
+          <bit pos="5" default="false" >
+            <name>Reserved5</name>
+            <description lang="en">Reserved5.</description> 
+          </bit>
+          <bit pos="6" default="false" >
+            <name>Reserved6</name>
+            <description lang="en">Reserved6.</description> 
+          </bit>
+          <bit pos="7" default="false" >
+            <name>Reserved7</name>
+            <description lang="en">Reserved7.</description> 
+          </bit> 
+      </remotevar>
+     
+   </remotevars>
+    
+    
+    
+
+    <alarm>
+      <bit pos="7" name="Reserved7">
+          <description lang="en">
+          Reserved 7.
+          </description>
+      </bit>
+      
+      <bit pos="6">
+          <name lang="en">Reserved6</name>
+          <description lang="en">
+          Reserved 6.
+          </description>
+      </bit>
+      
+      <bit pos="5">
+          <name lang="en">Reserved5</name>
+          <description lang="en">
+          Reserved 5.
+          </description>
+      </bit>
+      
+      <bit pos="4">
+          <name lang="en">Reserved4</name>
+          <description lang="en">
+          Reserved 4.
+          </description>
+      </bit>
+      
+      <bit pos="3">
+          <name lang="en">Reserved3</name>
+          <description lang="en">
+          Reserved 3.
+          </description>
+      </bit>
+      
+      <bit pos="2">
+          <name lang="en">Reserved2</name>
+          <description lang="en">
+          Reserved 2.
+          </description>
+      </bit>
+      
+      <bit pos="1">
+          <name lang="en">High_alarm</name>
+          <description lang="en">
+          High alarm. The value of one of the A/D channels has gone above the high alarm level.
+          </description>
+      </bit>
+      
+      <bit pos="0">
+          <name lang="en">Low alarm</name>
+          <description lang="en">
+          Low alarm. The value of one of the A/D channels has gone under the low alarm level.
+          </description>
+      </bit>                          
+    </alarm>
+    
+    
+    <!-- Decision matrix -->
+    <dmatrix>
+  
+        <level>1</level>                    
+        <start page="3" offset="0"/>    
+        <rowcnt>4</rowcnt>           
+                
+        <action code="0x00">                
+          <name>NOOP</name>
+          <description lang="en">No operation.</description>
+          <description lang="se">Ingen operation.</description>
+          <infourl lang="en">url0_en</infourl>
+          <infourl lang="se">url0_se</infourl>
+        </action>
+        
+        <action code="0x01">                
+          <name lang="en">Start counter</name>
+          <description lang="en">
+            Set the enable bit and thereby start the counter given
+            by the argument which should be a value of 0-3 representing
+            counter0 - counter3.
+          </description>
+          <description lang="se">
+            Sätt aktiveringsbiten och starta den räknare som anges av         
+            argumentet vilket skall vara ett värde 0-3 för
+            counter0 - counter3.
+          </description>
+          <infourl lang="en">url1_en</infourl>
+          <infourl lang="se">url1_se</infourl>
+          <param offset="0" min="0" max="3">                         
+            <name lang="en">Counter</name> 
+            <description lang="en">
+              Counter 0-3 to start.
+            </description>
+            <valuelist>
+            <item value = "0x00">
+              <name>Counter 0</name>
+              <description lang="en">Counter 0.</description>
+              <description lang="se">Räknare 0.</description>
+              <infourl lang="en">url0_en</infourl>
+              <infourl lang="se">url0_se</infourl>
+            </item>
+            <item value = "0x01">
+              <name lang="en">Counter 1</name>
+              <description lang="en">Counter 1.</description>
+              <description lang="se">Räknare 1.</description>
+              <infourl lang="en">cnt_url1_en</infourl>
+              <infourl lang="se">cnt_url1_se</infourl>
+            </item>
+            <item value = "0x02" name="counter2">
+              <description lang="en">Counter 2.</description>
+              <description lang="se">Räknare 2.</description>
+              <infourl lang="en">cnt_url2_en</infourl>
+              <infourl lang="se">cnt_url2_se</infourl>
+            </item>
+            <item value = "0x33">
+              <name lang="en">Counter 3</name>
+              <description lang="en">Counter 3.</description>
+              <description lang="se">Räknare 3.</description>
+              <infourl lang="en">cnt_url3_en</infourl>
+              <infourl lang="se">cnt_url3_se</infourl>
+            </item>
+            </valuelist>
+            </param>
+        </action>
+        
+        <action code="0x02" name="Stop counter">                
+          <description lang="en">
+          Clear the enable bit and thereby stop the counter given
+          by the argument which should be a value of 0-3 representing
+          counter0 - counter3.
+          </description>
+          <param>                         
+            <name lang="en">Counter</name> 
+            <description lang="en">
+            Counter 0-3 to start.              
+            </description>
+            <valuelist>
+              <item value = "0x0">                 
+                  <name lang="en">Counter 0</name>                 
+                  <description lang="en">Counter 0</description>                
+              </item>
+              <item value = "0x01">                 
+                  <name lang="en">Counter 1</name>                 
+                  <description lang="en">Counter 1</description>                
+              </item>
+              <item value = "0x02">                 
+                  <name lang="en">Counter 2</name>                 
+                  <description lang="en">Counter 2</description>                
+              </item>
+              <item value = "0x03">                 
+                  <name lang="en">Counter 3</name>                 
+                  <description lang="en">Counter 3</description>                
+              </item>         
+            </valuelist>
+          </param>
+        </action>
+        
+        <action code="0x03">                
+          <name lang="en">Clear counter</name>
+          <description lang="en">
+          Clear the the value for the counter given by the argument which 
+          should be a value of 0-3 representing counter0 - counter3.
+          </description>
+          <param>                         
+            <name lang="en">Counter</name> 
+            <description lang="en">
+            Counter 0-3 to start.              
+            </description>
+            <valuelist>
+              <item value = "0x0">                 
+                  <name lang="en">Counter 0</name>                 
+                  <description lang="en">Counter 0</description>                
+              </item>
+              <item value = "0x01">                 
+                  <name lang="en">Counter 1</name>                 
+                  <description lang="en">Counter 1</description>                
+              </item>
+              <item value = "0x02">                 
+                  <name lang="en">Counter 2</name>                 
+                  <description lang="en">Counter 2</description>                
+              </item>
+              <item value = "0x03">                 
+                  <name lang="en">Counter 3</name>                 
+                  <description lang="en">Counter 3</description>                
+              </item>      
+              </valuelist>
+          </param>
+        </action>
+        
+        <action code="0x04">                
+          <name lang="en">Reload counter</name>
+          <description lang="en">
+          Load the reload value to the counter given by the argument which 
+          should be a value of 0-3 representing counter0 - counter3.
+          </description>
+          <param>                         
+            <name lang="en">Counter</name> 
+            <description lang="en">
+            Counter 0-3 to start.              
+            </description>
+            <valuelist>
+              <item value = "0x0">                 
+                  <name lang="en">Counter 0</name>                 
+                  <description lang="en">Counter 0</description>                
+              </item>
+              <item value = "0x01">                 
+                  <name lang="en">Counter 1</name>                 
+                  <description lang="en">Counter 1</description>                
+              </item>
+              <item value = "0x02">                 
+                  <name lang="en">Counter 2</name>                 
+                  <description lang="en">Counter 2</description>                
+              </item>
+              <item value = "0x03">                 
+                  <name lang="en">Counter 3</name>                 
+                  <description lang="en">Counter 3</description>                
+              </item>         
+            </valuelist>
+          </param>
+        </action>
+        
+        <action code="0x05">                
+          <name lang="en">Count</name>
+          <description lang="en">
+          Add or subtract one from a counter depening on its count direction
+          setting.
+          </description>
+          <param>                         
+            <name lang="en">Counter</name> 
+            <description lang="en">
+            Counter 0-3 to start.              
+            </description>
+            <valuelist>
+              <item value = "0x0">                 
+                  <name lang="en">Counter 0</name>                 
+                  <description lang="en">Counter 0</description>                
+              </item>
+              <item value = "0x01">                 
+                  <name lang="en">Counter 1</name>                 
+                  <description lang="en">Counter 1</description>                
+              </item>       
+            </valuelist>
+          </param>            
+        </action>
+
+        <action code="0x06">                
+          <name lang="en">ActionBits</name>
+          <description>Action With Bits</description>
+          <param>                         
+            <name lang="en">ParamBits</name> 
+            <description lang="en">Param With Bits</description>
+            <bit pos="0" width="4" name="Lowbits">
+              <description lang="en">Test bit description low bits.</description>
+              <description lang="se">Test bit beskrivning low bits.</description>
+              <infourl lang="en">test infourl low bits</infourl>
+              <infourl lang="se">test infourl låga bitar</infourl>
+            </bit> 
+            <bit pos="4" width="2">
+              <name>Highbits</name>
+              <description lang="en">Test bit description high bits.</description>
+              <description lang="se">Test bit beskrivning high bits.</description>
+              <infourl lang="en">test infourl high bits</infourl>
+              <infourl lang="se">test infourl höga bitar</infourl>
+            </bit>
+            <bit pos="6" width="2">
+              <name>ValueBits</name>
+              <description lang="en">Test bit description value bits.</description>
+              <description lang="se">Test bit beskrivning value bits.</description>
+              <infourl lang="en">test infourl value bits</infourl>
+              <infourl lang="se">test infourl value bitar</infourl>
+              <description lang="en">Value list in bit array.</description>
+              <valuelist>
+                <item>
+                  <name lang="en">Value1</name>
+                  <description lang="en">Value1 description.</description>
+                  <description lang="se">Beskrivning av värde.</description>
+                  <infourl lang="en">Value1 infourl.</infourl>
+                  <infourl lang="se">Värde 1 infourl.</infourl>
+                </item>
+                <item>
+                  <name lang="en">Value2</name>
+                  <description lang="en">Value2 description.</description>
+                  <infourl lang="en">Value2 infourl.</infourl>
+                </item>    
+              </valuelist>
+            </bit>
+          </param>  
+        </action>
+        
+    </dmatrix>
+    
+    
+    <events>
+    
+      <event class="0x00f" type="0x06" >
+        <name lang="en">Counter data</name>                     
+        <description lang="en">
+          Count data steam event sent on regular intervals if activated. Coding: Integer. Unit: none.  
+        </description>  
+        <priority>4</priority>
+        <data offset="0" >                      
+          <name lang="en">Datacoding</name>
+          <description lang="en">
+            Will contain 0b01100xxx where xxx is the counter (0-3/4-7) and
+            where 0-3 is the counter 32-bit value and 4-7 is the 32-bits of the
+            64-bit counter value stored internally.
+          </description>          
+        </data>
+        <data offset="1" >                      
+          <name lang="en">MSB of counter</name>
+          <description lang="en">
+          Byte 0 (MSB) of 32-bit counter value.
+          </description>          
+        </data>
+          <data offset="2" >
+          <name lang="en">Counter value</name>
+          <description lang="en">
+          Byte 1 of 32-bit counter value.
+          </description>          
+        </data>
+        <data offset="3" >
+          <name lang="en">Counter value</name>
+          <description lang="en">
+          Byte 2 of 32-bit counter value.
+          </description>          
+        </data>
+        <data offset="4" >
+          <name lang="en">Counter value</name>
+          <description lang="en">
+          Byte 3 (LSB) of 32-bit counter value.
+          </description>          
+        </data>
+      </event>
+      
+      <event class="0x001" type="0x01" >
+        <name lang="en">Alarm occured</name>                    
+        <description lang="en">
+        If an alarm is armed this event is sent when it occurs and the corresponding 
+        alarm bit is set in the alarm register.
+        </description>  
+        <priority>4</priority>
+        <data offset="0" >                      
+          <name lang="en">Index</name>
+          <description lang="en">
+          Counter alarm has occured on (0-3).
+          </description>          
+        </data>
+        <data offset="1" >                      
+          <name lang="en">Zone</name>
+          <description lang="en">
+          Is set to the zone for the module.
+          </description>          
+        </data>
+        <data offset="2" >
+          <name lang="en">Sub zone</name>
+          <description lang="en">
+          Sub zone for channel or sub zone for module if channel sub zone is zero.
+          </description>          
+        </data>
+      </event>    
+
+      <event class="0x00A" type="0x09" >
+        <name lang="en">Frequency measurement</name>                    
+        <description lang="en">
+        Frequency measurement event sent on regular intervals if activated. 
+        Coding: 32-bit integer. Unit: Hertz.
+        </description>  
+        <priority>4</priority>
+        <data offset="0" >                      
+          <name lang="en">Data coding</name>
+          <description lang="en">
+          Datacoding: 0b01100xxx where xxx is the counter (0-3)
+          </description>          
+        </data>
+        <data offset="1" >                      
+          <name lang="en">Frequency 32-bit value (MSB)</name>
+          <description lang="en">
+          Frequency value as 32-bit floating point value with MSB in first byte.
+          </description>          
+        </data>
+        <data offset="2" >                      
+          <name lang="en">Frequency 32-bit value</name>
+          <description lang="en">
+          Frequency value as 32-bit floating point value with MSB in first byte.
+          </description>          
+        </data>
+        <data offset="3" >                      
+          <name lang="en">Frequency 32-bit value</name>
+          <description lang="en">
+          Frequency value as 32-bit floating point value with MSB in first byte.
+          </description>          
+        </data>
+        <data offset="4" >                      
+          <name lang="en">Frequency 32-bit value (LSB)</name>
+          <description lang="en">
+          Frequency value as 32-bit floating point value with MSB in first byte.
+          </description>          
+        </data>
+      </event>
+      
+      <event class="0x00A" type="-" >
+        <name lang="en">Measurement Event</name>                    
+        <description lang="en">
+        Measurement values of all kinds can be sent as a result of linearization. 
+        For example can an input counting S0 pulses be translated to KWh and watt  
+        </description>  
+        <priority>4</priority>
+        <data offset="0" >                      
+          <name lang="en">Datacoding</name>
+          <description lang="en">
+          Datacoding: Always as a 32-bit floating point value. 0b101yyxxx where yy is 
+          the unit and xxx is the counter (0-3)
+          </description>          
+        </data>
+        <data offset="1" >                      
+          <name lang="en">32-bit floating point value (MSB)</name>
+          <description lang="en">
+          MSB of the 32-bit floating point value that has been calculated from 
+          the linearization equation.
+          </description>          
+        </data>
+        <data offset="2" >                      
+          <name lang="en">32-bit floating point value</name>
+          <description lang="en">
+          32-bit floating point value that has been calculated from 
+          the linearization equation.
+          </description>          
+        </data>
+        <data offset="3" >                      
+          <name lang="en">32-bit floating point value</name>
+          <description lang="en">
+          32-bit floating point value that has been calculated from 
+          the linearization equation.
+          </description>          
+        </data>
+        <data offset="4" >                      
+          <name lang="en">32-bit floating point value (LSB)</name>
+          <description lang="en">
+          LSB of the 32-bit floating point value that has been calculated from 
+          the linearization equation.
+          </description>          
+        </data>
+      </event>
+        
+    </events>
+        
+</module>   
+</vscp> 

@@ -1,0 +1,402 @@
+{
+  "_copyright": "Copyright C) 2022 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
+
+  "module": {
+    "name": "Simple registers",
+    "model": "Simple reg model",
+    "version": "Special version",
+    "changed": "2029-11-02",
+    "description": "This is a simple reg description",
+    "infourl": "https://www.simplereg.en",
+    "buffersize": 16,
+  
+    "manufacturer": {
+        "name" : "Grodans Paradis AB",
+         "address": {
+               "street": "Brattbergavägen 17",
+               "city": "Los",
+               "town": "Loos",
+               "postcode": "82770",
+               "state": "HA",
+               "Region": "Hälsingland",
+               "country" : "Sweden"
+         },
+         "telephone": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Main Reception",
+                  "se": "Huvudreception"
+               }
+            }
+         ],
+         "fax": [
+            {
+               "number": "+46 8 40011835",
+               "description": {
+                  "en": "Non working fax",
+                  "se": "Icke fungerande fax"
+               }
+            }
+         ],
+         "email": [
+            {
+               "address": "support@grodansparadis.com",
+               "description": {
+            	   "en": "Support email"
+               }
+            },
+            {
+               "address": "sales@grodansparadis.com",
+               "description": "Sales inquires email"
+            },
+            {
+               "address": "info@grodansparadis.com",
+               "<description": {
+            	   "en": "General email"
+               }
+            }
+         ],
+         "web": [
+            {
+               "address": "http://www.grodansparadis.com",
+               "description": {
+            	   "en": "Main web site"
+               }
+            },
+            {
+               "url": "http://shop.grodansparadis.com",
+               "description": {
+            	   "en": "on-line store"
+               }
+            }
+         ]
+    },
+    "boot" : {
+      "algorithm": 1,
+      "blocksize" : 8,
+      "blockcount" : 4096
+    },
+    "files" : {
+      "picture" : [
+        {
+          "format": "png",
+          "url": "http://www.grodansparadis.com/logo.png",
+          "description": {
+            "en": "This is a picture description in English.",
+            "se": "Det här är en svensk beskrivning av bild 1."
+          }          
+        },
+        {
+          "format": "png",
+          "url": "http://www.somewhere.com/images/pict2.png",
+          "description": {
+            "en": "This is a picture 2 description in English.",
+            "se": "Det här är en svensk beskrivning av bild 2."
+          }          
+        }
+      ],
+      "firmware" : [
+        {
+          "target": "pic18f2580",
+          "targetcode": 11,
+          "url": "https://xxx.yy/1.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major": 1,
+          "version_minor": 1, 
+          "version_patch": 6,
+          "md5sum":"0x595f44fec1e92a71d3e9e77456ba80d1",
+          "description" : {
+            "en": "English 1.",
+            "se": "Svenska 1."
+          }
+        },
+        {
+          "target": "pic18f26K80",
+          "targetcode": 22,
+          "url": "https://xxx.yy/2.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"0x01",
+          "version_minor":"0x01", 
+          "version_patch":"0x06",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 1."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 33,
+          "url": "https://xxx.yy/3.hex", 
+          "format":"intelhex8",
+          "date":"2020-05-15",
+          "size":"8192",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"6",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 2"
+          }
+        },
+        {
+          "target": "esp32c3",
+          "targetcode": "0x33",
+          "url": "https://xxx.yy/4.hex", 
+          "format":"xxx123",
+          "date":"2021-11-02",
+          "size":"0x2000",
+          "version_major":"0x99",
+          "version_minor":"0x08", 
+          "version_patch":"0x17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 3."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 33,
+                "url": "https://xxx.yy/5.hex", 
+                "format":"intelhex8",
+                "date":"2015-11-12",
+                "size":"8192",
+                "version_major":"1",
+                "version_minor":"1", 
+                "version_patch":"2",
+                "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+           "description" : {
+             "en": "English 4."
+           }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 44,
+          "url": "https://xxx.yy/6.hex", 
+          "format":"intelhex16",
+          "date":"2021-11-02",
+          "version_major":"99",
+          "version_minor":"8", 
+          "version_patch":"17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 5."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 55,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2015-03-20",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"0",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 6."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 66,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2012-01-01",
+          "version_major":"1",
+          "version_minor":"0", 
+          "version_spatch":"0",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 7."
+          }
+        }
+      ],
+      "manual" : [
+        {
+          "url": "https://www.grodansparadis.com/paris/manual1.pdf",
+          "format": "pdf",
+          "lang": "en",
+          "description": {
+            "en" : "Full pdf manual English for the Paris module.",
+            "se" : "Fullständig pdf manual på Svenska för Paris modulen"
+          }
+        },
+        {
+          "url": "https://www.grodansparadis.com/paris/manual2",
+          "format": "html",
+          "lang": "xx",
+          "description": {
+            "en" : "Full web based English manual for the Paris module.",
+            "se" : "Fullständig webbaserad Svensk manual för Paris modulen."
+          }
+        }
+      ]
+    },
+    "register" : [
+      {
+        "page": 2,
+        "offset": "0x22",
+        "span": 1,
+        "width": 8,
+        "min" : 2,
+        "max" : 128,
+        "access" : "rw",
+        "default": 99,
+        "rowpos" : 11,
+        "bgcolor" : "0xfff3d4",
+        "fgcolor" : "0x001200",        
+        "name" : "Register example 1",
+        "description" : {
+          "en" : "Just a byte register with color settings",
+          "se" : "Ett vanligt register med färginställningar"
+        },
+        "infourl" : {
+          "en" : "https://one.com",
+          "se" : "https://two.com"
+        }
+      },
+      {
+        "page": "0x02",
+        "offset": "0x31",
+        "default": "0x88",
+        "width": "0x04",
+        "span": "0x01",
+        "min" : "0x00",
+        "max" : "0x000f",
+        "access" : "r",
+        "default": "0xfd",
+        "rowpos" : "0xaa",
+        "bgcolor" : "0x00f3d4",
+        "fgcolor" : "0x100000",
+        "name" : "Register example 2",
+        "description" : {
+          "en" : "Register with value list",
+          "se" : "Beskrivning med värde lista"
+        },
+        "infourl" : {
+          "gb": "English help",
+          "se": "Svensk hjälp",
+          "lt": "Lietuvos padeda"
+        },
+        "valuelist" : [
+          {
+            "value" : "0x00",
+            "name" : "Off",
+            "description" : {
+              "en" : "The device is off",
+              "se" : "Enheten är av"
+            },
+            "infourl" : {
+              "gb": "English help url",
+              "se": "Svensk hjälp url",
+              "lt": "Lietuvos padeda url"
+            }
+          },
+          {
+            "value" : "0x01",
+            "name" : "On",
+            "description" : {
+              "en" : "The device is on",
+              "se" : "Enheten är på"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          },
+          {
+            "value" : "0xff",
+            "name" : "Disabled",
+            "description" : {
+              "en" : "Device is disabled",
+              "se" : "Enheten är avstängd"
+            },
+            "infourl" : {
+              "gb": "English help",
+              "se": "Svensk hjälp",
+              "lt": "Lietuvos padeda"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "Register example 3",
+        "page": 99,
+        "offset": 2,
+        "default": "0x55",
+        "width" : 8,
+        "span" : 3,
+        "type" : "block",
+        "min" : 0,
+        "max" : 255,
+        "access" : "w",
+        "rowpos" : "200",
+        "bgcolor" : "0xfffff3d4",
+        "fgcolor" : "0xffffffff",        
+        "description" : {
+          "en" : "Register with bits",
+          "se" : "Beskrivning med bitar"
+        },
+        "infourl" : {
+          "gb": "English help bits",
+          "se": "Svensk hjälp bits",
+          "lt": "Lietuvos padeda bits"
+        },
+        "bit": [
+          {
+            "pos": 0,
+            "width": 3,
+            "default": 4,
+            "min": 0,
+            "max": 7,
+            "access" : "rw",
+            "name" : "English bit or bitfield name 0",
+            "description" : {
+              "gb": "English description bitfield 0",
+              "se": "Svensk beskrivning bitfield 0",
+              "lt": "Lietuvos aprašymas bitfield 0"
+            },
+            "infourl" : {
+              "gb": "English help bitfield 0",
+              "se": "Svensk hjälp bitfield 0",
+              "lt": "Lietuvos padeda bitfield 0"
+            }
+          },
+          {
+            "pos": "0x03",
+            "width": "0x02",
+            "default": false,
+            "access": "r",
+            "min": "0x01",
+            "max": "0x07",
+            "name" : "English bit or bitfield name 1",
+            "description" : {
+              "gb": "English description bitfield 1",
+              "se": "Svensk beskrivning bitfield 1",
+              "lt": "Lietuvos aprašymas bitfield 1"
+            },
+            "infourl" : {
+              "gb": "English help bitfield 1",
+              "se": "Svensk hjälp bitfield 1",
+              "lt": "Lietuvos padeda bitfield 1"
+            }
+          }
+        ]
+      },
+      {
+        "name" : "Register example 4",
+        "page": 12,
+        "offset": 22,
+        "span":128,
+        "type": "dmatrix1"
+      }
+    ]    
+  } 
+}
+

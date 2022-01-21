@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1954,15 +1954,7 @@ vscp_convertStringToEventEx(vscpEventEx *pEventEx, const std::string &str);
 void
 vscp_makeHtml(std::string &str);
 
-/*
-    Get device HTML status from device
-    @param registers Array with all 256 registers for the device
-    @param pmdf Optional pointer to CMDF class which gives more info
-    about the device if it is supplied.
-*/
 
-std::string &
-vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
 
 ////////////////////////////////////////////////////////////////////////////
 //                           Encrypted frames

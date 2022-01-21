@@ -172,21 +172,28 @@ mqtt-options/protocol-version can be set to 310/311/500
 #endif
 
 #ifdef WIN32
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_LOG ) ( struct mosquitto *mosq, void *pParent, int level, const char *logmsg );
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_CONNECT ) ( struct mosquitto *mosq, void *pData, int rv );
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_DISCONNECT ) ( struct mosquitto *mosq, void *pData, int rv );  
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_PUBLISH ) ( struct mosquitto *mosq, void *pData, int mid ); 
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_SUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid, int qos_count, const int *granted_qos );
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_UNSUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid );     
-  typedef void ( __stdcall * LPFN_PARENT_CALLBACK_MESSAGE ) ( struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg );
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_LOG)(struct mosquitto *mosq, void *pParent, int level, const char *logmsg);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_CONNECT)(struct mosquitto *mosq, void *pData, int rv);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_DISCONNECT)(struct mosquitto *mosq, void *pData, int rv);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_PUBLISH)(struct mosquitto *mosq, void *pData, int mid);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_SUBSCRIBE)(struct mosquitto *mosq,
+                                                        void *pData,
+                                                        int mid,
+                                                        int qos_count,
+                                                        const int *granted_qos);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_UNSUBSCRIBE)(struct mosquitto *mosq, void *pData, int mid);
+typedef void(__stdcall *LPFN_PARENT_CALLBACK_MESSAGE)(struct mosquitto *mosq,
+                                                      void *pData,
+                                                      const struct mosquitto_message *pMsg);
 #else
-  typedef void ( *LPFN_PARENT_CALLBACK_LOG ) ( struct mosquitto *mosq, void *pParent, int level, const char *logmsg ); 
-  typedef void ( *LPFN_PARENT_CALLBACK_CONNECT ) ( struct mosquitto *mosq, void *pData, int rv );  
-  typedef void ( *LPFN_PARENT_CALLBACK_DISCONNECT ) ( struct mosquitto *mosq, void *pData, int rv ); 
-  typedef void ( *LPFN_PARENT_CALLBACK_PUBLISH ) ( struct mosquitto *mosq, void *pData, int mid ); 
-  typedef void ( *LPFN_PARENT_CALLBACK_SUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid, int qos_count, const int *granted_qos );
-  typedef void ( *LPFN_PARENT_CALLBACK_UNSUBSCRIBE ) ( struct mosquitto *mosq, void *pData, int mid ); 
-  typedef void ( *LPFN_PARENT_CALLBACK_MESSAGE ) ( struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg );   
+typedef void (*LPFN_PARENT_CALLBACK_LOG)(struct mosquitto *mosq, void *pParent, int level, const char *logmsg);
+typedef void (*LPFN_PARENT_CALLBACK_CONNECT)(struct mosquitto *mosq, void *pData, int rv);
+typedef void (*LPFN_PARENT_CALLBACK_DISCONNECT)(struct mosquitto *mosq, void *pData, int rv);
+typedef void (*LPFN_PARENT_CALLBACK_PUBLISH)(struct mosquitto *mosq, void *pData, int mid);
+typedef void (
+  *LPFN_PARENT_CALLBACK_SUBSCRIBE)(struct mosquitto *mosq, void *pData, int mid, int qos_count, const int *granted_qos);
+typedef void (*LPFN_PARENT_CALLBACK_UNSUBSCRIBE)(struct mosquitto *mosq, void *pData, int mid);
+typedef void (*LPFN_PARENT_CALLBACK_MESSAGE)(struct mosquitto *mosq, void *pData, const struct mosquitto_message *pMsg);
 #endif
 
 class publishTopic {
@@ -315,6 +322,11 @@ public:
   ~vscpClientMqtt();
 
   /*!
+      Initialize MQTT
+  */
+  bool init(void);
+
+  /*!
       Handle incoming message
       @param pmsg Incoming MQTT message
       @return true on success, false on failure.
@@ -436,12 +448,7 @@ public:
       @param config JSON representation as string
       @return True on success, false on failure.
   */
-  virtual bool initFromJson(const std::string &config);
-
-  /*!
-      Initialize MQTT
-  */
-  bool init(void);
+  virtual bool initFromJson(const std::string &config);  
 
   /*!
     Add subscription
@@ -487,10 +494,14 @@ public:
   virtual uint32_t getResponseTimeout(void) { return m_timeoutResponse; };
 
   /*!
-      Getter for remote host
-
-      @return Return remote host as string
+    Getters/Setter for remote host
+    @param host Remote host as string (host:port)
   */
+  void setHost(std::string &host) { 
+    m_host = vscp_getHostFromInterface(host); 
+    m_port = vscp_getPortFromInterface(host);
+  }
+
   std::string getHost(void)
   {
     std::string str = m_host;
@@ -498,8 +509,34 @@ public:
   }
 
   /*!
-      Getter for remote port
-      @return remote host port.
+    Getter/setter for user
+  */
+  void setUser(std::string &user) { m_username = user; };
+  std::string getUser(void) { return m_username; };
+
+  /*!
+     Getter/setter for password 
+  */
+  void setPassword(std::string &password)   
+    { m_password = password; };
+  std::string getPassword(void) { return m_password; };
+
+  /*!
+    Getter/setter for client id
+  */
+  void setClientId(std::string &clientId)   
+    { m_clientid = clientId; };
+  std::string getClientId(void) { return m_clientid; };
+
+  /*!
+    Getter/setter for keep alive
+  */
+  void setKeepAlive(uint16_t keepAlive) { m_keepAlive = keepAlive; };  
+  uint32_t getKeepAlive(void) { return m_keepAlive; };
+
+  /*!
+    Getter for remote port
+    @return remote host port.
   */
   unsigned short getPort(void)
   {
@@ -542,16 +579,15 @@ public:
     If key is already defined it will get a new value.
     @param key User escape key. Used as "{{key}} it will be replaced
       by "value".
-    @param value The value for the user escape.  
+    @param value The value for the user escape.
   */
- void setUserEscape(const std::string key, const std::string value) 
-  { m_mapUserEscapes[key] = value; };
+  void setUserEscape(const std::string key, const std::string value) { m_mapUserEscapes[key] = value; };
 
-   /*!
-    Set parent object pointer
-  */
+  /*!
+   Set parent object pointer
+ */
   void setParent(void *pParent) { m_pParent = pParent; };
-  
+
   /*!
     Set parent log callback
   */
@@ -625,7 +661,7 @@ public:
   std::deque<vscpEvent *> m_receiveQueue;
 
   // * * * Parent callbacks * * *
-  
+
   /*!
     Pointer to parent object
   */
@@ -722,7 +758,6 @@ private:
   */
   cguid m_ifguid;
 
-
   /*!
       Extracted from host address or set directly
   */
@@ -772,7 +807,7 @@ private:
   /*!
       Keep alive interval in seconds
   */
-  int m_keepalive;
+  uint32_t m_keepAlive;
 
   /*!
       Start a clean session if set to true
@@ -848,7 +883,7 @@ private:
   std::string m_will_topic;   // Topic for last will
   int m_will_qos;             // qos for last will
   bool m_will_bretain;        // Enable retain for last will
-  std::string m_will_payload; // Payload for last will  
+  std::string m_will_payload; // Payload for last will
 
   struct mosquitto *m_mosq; // Handel for connection
   int m_mid;                // Message id

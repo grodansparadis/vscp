@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2021 Ake Hedman, the VSCP project
+// Copyright © 2000-2022 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,13 +26,18 @@
 // SOFTWARE.
 //
 
-#include "devicelist.h"
-
 #define _POSIX
 
-#ifndef WIN32
+#ifdef WIN32
+#include <pch.h>
+#else
 #include <unistd.h>
 #endif
+
+#include "devicelist.h"
+
+
+
 
 #include <errno.h>
 #include <fcntl.h>

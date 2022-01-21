@@ -1,0 +1,492 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Ake Hedman, Grodans Paradis AB -->
+<vscp>
+<module>
+	<name>Odessa demo firmware</name>
+	<model>A</model>
+	<version>1.0.0</version>
+	<changed>2020-05-15</changed>
+	<description lang="en">
+		With this VSCP module it is possible to control up to control 18
+		different binary output pins.
+	</description>
+	<infourl>http://www.grodansparadis.com/odessa/odessa.html</infourl>
+	<buffersize>8</buffersize>
+	<manufacturer>
+		<name>Grodans Paradis AB</name>
+		<address>
+			<street>Brattbergavägen 17</street>
+			<city>Los</city>
+			<postcode>82770</postcode>
+			<country>Sweden</country>
+		</address>
+		<telephone>
+			<number>+46 8 40011835 </number>
+			<description lang="en" >Main Reception</description>
+		</telephone>
+		<email>
+			<address>support@grodansparadis.com</address>
+			<description>Support email</description>
+		</email>
+		<email>
+			<address>sales@grodansparadis.com</address>
+			<description>Sales inquires email</description>
+		</email>
+		<email>
+			<address>info@grodansparadis.com</address>
+			<description>General email</description>
+		</email>	
+		<web>
+			<address>http://www.grodansparadis.com</address>
+			<description>Main web site</description>
+		</web>					
+	</manufacturer>  
+	
+	<!-- Picture of device -->
+	<picture path="http://www.grodansparadis.com/odessa/images/odessa17.png" >
+		<description lang="en" >
+				Picture of Odessa module.
+		</description>
+	</picture>
+	
+	<!-- Firmware for the device -->
+	<files>
+	
+	<firmware target="pic18f26k80"
+	        path="http://www.auto.grodansparadis.com/odessa/download/firmware_odessa_1_0_0.hex" 
+		format="intelhex8"
+		size="32000"
+		date="2020-05-15"
+		version_major="1"
+		version_minor="0"
+		version_subminor="3">
+		<description lang="en" >
+			Firmware version 1.0.3 for the Odessa module with pic18f25k80.
+		</description> 
+	</firmware>
+	
+	<firmware target="pic18f26k80"
+	        path="http://www.auto.grodansparadis.com/odessa/download/firmware_odessa_1_0_0.hex" 
+		format="intelhex8"
+		size="32000"
+		date="2015-04-21"
+		version_major="1"
+		version_minor="0"
+		version_subminor="0">
+		<description lang="en" >
+			Firmware version 1.0.0 for the Odessa module  with pic18f25k80.
+		</description> 
+	</firmware>
+	
+	</files>
+
+	<!-- Full documentation for the device -->
+	<manual path="http://www.grodansparadis.com/odessa/manual/doku.php?id=start" 	
+		lang="en"
+		format="html">
+    	<description lang="en" >
+			Manual for the Odessa module.
+		</description>
+	</manual>
+	
+	<boot>
+		<algorithm>1</algorithm>
+		<blocksize>8</blocksize>
+		<blockcount>4096</blockcount>
+	</boot>
+	
+	
+	<registers>        
+
+      <reg page="0" offset="0" default="0" >
+			<name lang="en">Zone</name>
+			<description lang="en">Zone this module belongs to.</description>
+			<access>rw</access>
+		</reg>
+
+		<reg page="0" offset="1" default="0" >
+			<name lang="en">Subzone for module</name>
+			<description lang="en">Sub zone this module belongs to.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="2" default="0" >
+			<name lang="en">Control register 0</name>
+			<description lang="en">
+			Writing a value to the control register will activate/deactivate the  
+			output.\n\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n\n
+			Reading a value from the control register is read as a one if the output is 
+			activated and a 0 if the output is deactivated.\n\n
+			Bit 0 - Output on pin 3.\n
+			Bit 1 - Output on pin 4.\n
+			Bit 2 - Output on pin 5.\n
+			Bit 3 - Output on pin 6.\n
+			Bit 4 - Output on pin 7.\n
+			Bit 5 - Output on pin 8.\n
+			Bit 6 - Output on pin 9.\n
+			Bit 7 - Output on pin 10.
+			</description>
+			<access>rw</access>
+			
+			<bit pos="0" default="false" >
+      	    <name lang="en">Output on pin 3</name>
+      	    <description lang="en">Controls digital output on pin 3.</description> 
+        	</bit>
+			
+			<bit pos="1" default="false" >
+      	    <name lang="en">Output on pin 4</name>
+      	    <description lang="en">Controls digital output on pin 4.</description> 
+        	</bit>
+			
+			<bit pos="2" default="false" >
+      	    <name lang="en">Output on pin 5</name>
+      	    <description lang="en">Controls digital output on pin 5.</description> 
+        	</bit>
+			
+			<bit pos="3" default="false" >
+      	    <name lang="en">Output on pin 6</name>
+      	    <description lang="en">Controls digital output on pin 6.</description> 
+        	</bit>
+			
+			<bit pos="4" default="false" >
+      	    <name lang="en">Output on pin 7</name>
+      	    <description lang="en">Controls digital output on pin 7.</description> 
+        	</bit>
+			
+			<bit pos="5" default="false" >
+      	    <name lang="en">Output on pin 8</name>
+      	    <description lang="en">Controls digital output on pin 8.</description> 
+        	</bit>
+			
+			<bit pos="6" default="false" >
+      	    <name lang="en">Output on pin 9</name>
+      	    <description lang="en">Controls digital output on pin 9.</description> 
+        	</bit>
+			
+			<bit pos="7" default="false" >
+      	    <name lang="en">Output on pin 10</name>
+      	    <description lang="en">Controls digital output on pin 10.</description> 
+        	</bit>
+			
+		</reg>
+		
+		<reg page="0" offset="3" default="0" >
+			<name lang="en">Control register 1</name>
+			<description lang="en">
+			Writing a value to the control register will activate/deactivate the  
+			output.\n\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n\n
+			Reading a value from the control register is read as a one if the output is 
+			activated and a 0 if the output is deactivated.\n\n
+			Bit 0 - Output on pin 11.\n
+			Bit 1 - Output on pin 12.\n
+			Bit 2 - Pin 13. Not connected.\n
+			Bit 3 - Pin 14. Reste.\n
+			Bit 4 - Output on pin 15.\n
+			Bit 5 - Output on pin 16.\n
+			Bit 6 - Output on pin 17.\n
+			Bit 7 - Output on pin 18.
+			</description>
+			<access>rw</access>
+			
+			<bit pos="0" default="false" >
+      	    <name lang="en">Output on pin 11</name>
+      	    <description lang="en">Controls digital output on pin 11.</description> 
+        	</bit>
+			
+			<bit pos="1" default="false" >
+      	    <name lang="en">Output on pin 12</name>
+      	    <description lang="en">Controls digital output on pin 12.</description> 
+        	</bit>
+			
+			<bit pos="2" default="false" >
+      	    <name lang="en">Reserved pin 13</name>
+      	    <description lang="en">Reserved pin 13, not connected.</description> 
+        	</bit>
+			
+			<bit pos="3" default="false" >
+      	    <name lang="en">Reserved pin 14</name>
+      	    <description lang="en">Reserved pin 14, RESET.</description> 
+        	</bit>
+			
+			<bit pos="4" default="false" >
+      	    <name lang="en">Output on pin 15</name>
+      	    <description lang="en">Controls digital output on pin 15.</description> 
+        	</bit>
+			
+			<bit pos="5" default="false" >
+      	    <name lang="en">Output on pin 16</name>
+      	    <description lang="en">Controls digital output on pin 16.</description> 
+        	</bit>
+			
+			<bit pos="6" default="false" >
+      	    <name lang="en">Output on pin 17</name>
+      	    <description lang="en">Controls digital output on pin 17.</description> 
+        	</bit>
+			
+			<bit pos="7" default="false" >
+      	    <name lang="en">Output on pin 18</name>
+      	    <description lang="en">Controls digital output on pin 18.</description> 
+        	</bit>
+			
+		</reg>
+		
+		<reg page="0" offset="4"  default="0" >
+			<name lang="en">Control register 2</name>
+			<description lang="en">
+			Writing a value to the control register will activate/deactivate the  
+			output.\n\n 
+			0 - The output is inactivated.\n
+			1 - The output is activated.\n\n
+			Reading a value from the control register is read as a one if the output is 
+			activated and a 0 if the output is deactivated.\n\n
+			Bit 0 - Output on pin 19.\n
+			Bit 1 - Output on pin 20.\n
+			Bit 2 - Reserved.\n
+			Bit 3 - Reserved.\n
+			Bit 4 - Reserved.\n
+			Bit 5 - Reserved.\n
+			Bit 6 - Reserved.\n
+			Bit 7 - Reserved.
+			</description>
+			<access>rw</access>
+			
+			<bit pos="0" default="false" >
+      	    <name lang="en">Output on pin 11</name>
+      	    <description lang="en">Controls digital output on pin 11.</description> 
+        	</bit>
+			
+			<bit pos="1" default="false" >
+      	    <name lang="en">Output on pin 12</name>
+      	    <description lang="en">Controls digital output on pin 12.</description> 
+        	</bit>
+			
+			<bit pos="2" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+			<bit pos="3" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+			<bit pos="4" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+			<bit pos="5" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+			<bit pos="6" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+			<bit pos="7" default="false" >
+      	    <name lang="en">Reserved</name>
+      	    <description lang="en">Reserved for possible future use.</description> 
+        	</bit>
+			
+		</reg>
+		
+		<reg page="0" offset="5" default="3" bgcolor="0xFF3300" fgcolor="0x000000" >
+			<name lang="en">SubzonePin3</name>
+			<description lang="en">Sub zone for pin 3.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="6" default="4" bgcolor="0xFF9900" fgcolor="0x000000" >
+			<name lang="en">SubzonePin4</name>
+			<description lang="en">Sub zone for pin 4.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="7" default="5" bgcolor="0xFFFF00" fgcolor="0x000000" >
+			<name lang="en">SubzonePin5</name>
+			<description lang="en">Sub zone for pin 5.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="8" default="6" bgcolor="0x66FF33" fgcolor="0x000000" >
+			<name lang="en">SubzonePin6</name>
+			<description lang="en">Sub zone for pin 6.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="9" default="7" bgcolor="0x00FFFF" fgcolor="0x000000" >
+			<name lang="en">SubzonePin7</name>
+			<description lang="en">Sub zone for pin 7.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="10" default="8" bgcolor="0x003399" fgcolor="0x000000" >
+			<name lang="en">SubzonePin8</name>
+			<description lang="en">Sub zone for pin 8.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="11" default="9" bgcolor="0x6600FF" fgcolor="0x000000" >
+			<name lang="en">SubzonePin9</name>
+			<description lang="en">Sub zone for pin 9.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="12" default="10" bgcolor="0xFF00FF" fgcolor="0x000000" >
+			<name lang="en">SubzonePin10</name>
+			<description lang="en">Sub zone for pin 10.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="13" default="11" >
+			<name lang="en">SubzonePin11</name>
+			<description lang="en">Sub zone for pin 11.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="14" default="12" >
+			<name lang="en">SubzonePin12</name>
+			<description lang="en">Sub zone for pin 12.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="15" default="13" >
+			<name lang="en">SubzonePin13</name>
+			<description lang="en">Sub zone for pin 13.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="15" default="14" >
+			<name lang="en">SubzonePin14</name>
+			<description lang="en">Sub zone for pin 14.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="17" default="15" >
+			<name lang="en">SubzonePin15</name>
+			<description lang="en">Sub zone for pin 15.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="18" default="16" >
+			<name lang="en">SubzonePin16</name>
+			<description lang="en">Sub zone for pin 16.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="19" default="17" >
+			<name lang="en">SubzonePin17</name>
+			<description lang="en">Sub zone for pin 17.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="20" default="18" >
+			<name lang="en">SubzonePin18</name>
+			<description lang="en">Sub zone for pin 18.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="21" default="19" >
+			<name lang="en">SubzonePin19</name>
+			<description lang="en">Sub zone for pin 19.</description>
+			<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="22" default="20" >
+			<name lang="en">SubzonePin20</name>
+			<description lang="en">Sub zone for pin 20.</description>
+			<access>rw</access>
+		</reg>
+				
+		<reg page="1" offset="0" type="dmatrix1" size="64" bgcolor="0xf0f0f0" fgcolor="0x000000" >
+			<name lang="en">Decision matrix</name>
+			<description lang="en">Decision matrix for Odessa</description> 
+			<access>rw</access>
+		</reg>
+								
+	</registers>
+	
+	
+	
+	
+	<abstractions>
+	<!-- No abstractions -->	
+	</abstractions>
+	
+
+	<alarm>
+   	<!-- No alarm bits defined --> 	   	   	   	   	   	
+	</alarm>
+	
+	
+	<!-- Decision matrix -->
+	<dmatrix>
+  
+		<level>1</level>					
+		<start page="1" offset="0"/> 	
+		<rowcnt>8</rowcnt>			 
+					
+    	<action code="0x00">				
+      	<name lang="en">NOOP</name>
+        	<description lang="en">
+			No operation  	
+        	</description>        	
+		</action>
+		
+		<action code="0x01">				
+      	<name lang="en">SET</name>
+        	<description lang="en">
+			Set output to active value.  	
+        	</description>  
+			<param>							
+				<name lang="en">Port</name> 
+				<description lang="en">
+				Port number 3-20 to set to active value.	      	   
+				</description>
+		   </param>
+		</action>
+		
+		<action code="0x02">				
+      	<name lang="en">CLR</name>
+        	<description lang="en">
+			Set output to inactive value.  	
+        	</description>  
+			<param>							
+				<name lang="en">Port</name> 
+				<description lang="en">
+				Port number 3-20 to set to inactive value.	      	   
+				</description>
+		   </param>
+		</action>
+		
+		<action code="0x03">				
+      	<name lang="en">SETALL</name>
+        	<description lang="en">
+			Set all outputs to there active value.  	
+        	</description>  
+		</action>	
+
+		<action code="0x04">				
+      	<name lang="en">CLRALL</name>
+        	<description lang="en">
+			Set all outputs to there inactive value.  	
+        	</description>  
+		</action>
+		
+	</dmatrix>
+	
+	
+	<events>
+	
+		<!-- This module send no events -->
+			
+	</events>
+	
+</module>	
+</vscp>	

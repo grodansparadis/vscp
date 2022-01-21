@@ -24,7 +24,7 @@
 //
 
 #ifdef WIN32
-#include <StdAfx.h>
+#include <pch.h>
 #endif
 
 #include "vscp_client_mqtt.h"
@@ -83,7 +83,7 @@ int
 password_callback(char *buf, int size, int rwflag, void *userdata)
 {
   strcpy(buf, "secret");
-  return strlen(buf);
+  return (int)strlen(buf);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -584,20 +584,20 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_mapMqttIntOptions["receive-maximum"]  = 20;
   m_mapMqttIntOptions["send-maximum"]     = 20;
 
-  m_bConnected          = false;   // Not connected
-  m_bJsonMeasurementAdd = true;    // Add measurement block to JSON publish event
-  m_bindInterface       = "";      // No bind interface
-  m_mosq                = nullptr; // No mosquitto conection
-  m_publish_format      = jsonfmt; // Publish inm JSON if not configured to do something else
-  m_subscribe_format    = autofmt; // Automatically detect payload format
-  m_bRun                = true;    // Run to the Hills...
-  m_host                = "";      // tcp://localhost:1883
-  m_port                = 1883;    // Default port
-  m_clientid            = "";      // No client id set
-  m_username            = "";      // No username set
-  m_password            = "";      // No password set
-  m_keepalive           = 30;      // 30 seconds for keepalive
-  m_bCleanSession       = false;   // Do not start with a clean session
+  m_bConnected          = false;        // Not connected
+  m_bJsonMeasurementAdd = true;         // Add measurement block to JSON publish event
+  m_bindInterface       = "";           // No bind interface
+  m_mosq                = nullptr;      // No mosquitto conection
+  m_publish_format      = jsonfmt;      // Publish inm JSON if not configured to do something else
+  m_subscribe_format    = autofmt;      // Automatically detect payload format
+  m_bRun                = true;         // Run to the Hills...
+  m_host                = "localhost";  // tcp://localhost:1883
+  m_port                = 1883;         // Default port
+  m_clientid            = "";           // No client id set
+  m_username            = "";           // No username set
+  m_password            = "";           // No password set
+  m_keepAlive           = 30;           // 30 seconds for keepalive
+  m_bCleanSession       = false;        // Do not start with a clean session
 
   m_bTLS                 = false;
   m_tls_cafile           = "";
@@ -722,6 +722,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
       m_host = j["host"].get<std::string>();
       spdlog::debug("json mqtt init: host set to {}.", m_host);
 
+      // Get hostname
       vscp_trim(m_host);
       if (0 == m_host.find("tcp://")) {
         m_host = m_host.substr(6);
@@ -734,6 +735,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
         spdlog::debug("json mqtt init: Secure connection {}.", m_host);
       }
 
+      // Get port
       size_t pos;
       if (std::string::npos != (pos = m_host.rfind(":"))) {
         m_port = vscp_readStringValue(m_host.substr(pos + 1));
@@ -925,8 +927,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     // Keep Alive
     if (j.contains("keepalive") && j["keepalive"].is_number()) {
-      m_keepalive = j["keepalive"].get<int>();
-      spdlog::debug("json mqtt init: 'keepalive' Set to {}.", m_keepalive);
+      m_keepAlive = j["keepalive"].get<int>();
+      spdlog::debug("json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
     }
 
     // Enable measurement block
@@ -1718,7 +1720,7 @@ vscpClientMqtt::init(void)
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set_v5(m_mosq,
                                                     strTopic.c_str(),
-                                                    m_will_payload.length(),
+                                                    (int)m_will_payload.length(),
                                                     m_will_payload.c_str(),
                                                     m_will_qos,
                                                     m_will_bretain,
@@ -1737,7 +1739,7 @@ vscpClientMqtt::init(void)
     else {
       if (MOSQ_ERR_SUCCESS != mosquitto_will_set(m_mosq,
                                                  strTopic.c_str(),
-                                                 m_will_payload.length(),
+                                                 (int)m_will_payload.length(),
                                                  m_will_payload.c_str(),
                                                  m_will_qos,
                                                  m_will_bretain)) {
@@ -1902,17 +1904,17 @@ vscpClientMqtt::connect(void)
   if (m_bindInterface.length()) {
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
     if (m_mapMqttIntOptions["protocol-version"] >= 500) {
-      rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str(), nullptr);
+      rv = mosquitto_connect_bind_v5(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str(), nullptr);
     }
     else {
-      rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
+      rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str());
     }
 #else
-    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepalive, m_bindInterface.c_str());
+    rv = mosquitto_connect_bind(m_mosq, m_host.c_str(), m_port, m_keepAlive, m_bindInterface.c_str());
 #endif
   }
   else {
-    rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepalive);
+    rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepAlive);
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
@@ -2011,6 +2013,24 @@ vscpClientMqtt::connect(void)
   // Start worker thread if a callback has been defined
   if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
     int rv = pthread_create(&m_tid, nullptr, workerThread, this);
+    switch(rv) {
+
+        case EAGAIN:
+            spdlog::error("Failed to start MQTT callback thread - Insufficient resources to create another thread.");
+            break;
+
+        case EINVAL:
+            spdlog::error("Failed to start MQTT callback thread - Invalid settings in attr");
+            break;
+
+        case EPERM:
+            spdlog::error("Failed to start MQTT callback thread - No permission to set the scheduling policy");
+            break;
+
+        default:
+            spdlog::debug("Started MQTT callback thread");
+            break;
+    }
   }
 
   return VSCP_ERROR_SUCCESS;
