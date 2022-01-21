@@ -5124,6 +5124,13 @@ CMDF::parseMDF_JSON(std::string &path)
 
   spdlog::trace("Parse-JSON: <<{}>>", j.dump());
 
+  // REDIRECT  <-----
+  if (j.contains("redirect") && j["redirect"].is_string()) {
+    spdlog::trace("Parse-JSON: REDIRECT found '{0}', parsing aborted.", m_name);
+    m_redirectUrl = j["redirect"];
+    return VSCP_ERROR_SUCCESS;
+  }
+
   // ********************************************************************************
   //                                  Module
   // ********************************************************************************
@@ -5148,6 +5155,7 @@ CMDF::parseMDF_JSON(std::string &path)
         spdlog::error("Parse-JSON: Failed to read module name (not string, not object)");
         return VSCP_ERROR_PARSING;
       }
+
     }
     else {
       spdlog::debug("Parse-JSON: Failed to read module name.");

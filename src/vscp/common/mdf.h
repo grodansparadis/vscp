@@ -225,28 +225,28 @@ public:
   void setName(std::string& name) { m_name = name; };
 
   /*!
-    Get the register description
-    @return Register description
+    Get the bit description
+    @return bit description
   */
   std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
 
   /*!
-    Set register description
+    Set bit description
     @param lang Language
-    @param desc Register description to set
+    @param desc bit description to set
   */
   void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
-    Get the register info URL
-    @return Register info URL
+    Get the bit info URL
+    @return bit info URL
   */
   std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
 
   /*!
-    Set register info URL
+    Set bit info URL
     @param lang Language
-    @param url Register info URL to set
+    @param url bit info URL to set
   */
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
@@ -2031,7 +2031,7 @@ public:
   std::string getMd5(void) { return m_strMd5; };
 
   /*!
-    Set description for picture
+    Set description for firmware
   */
   void setDescription(std::string &strDescription, std::string &strLanguage)
   {
@@ -2340,31 +2340,31 @@ public:
   void setName(std::string &name) { m_strName = name; };
 
   /*!
-    Get URL for picture
-    @return URL for picture
+    Get URL for setup
+    @return URL for setup
   */
   std::string getUrl(void) { return m_strURL; };
 
   /*!
-    Set URL for picture
-    @param strURL URL for picture
+    Set URL for setup
+    @param strURL URL for setup
   */
   void setUrl(std::string &strURL) { m_strURL = strURL; };
 
   /*!
-    Get format for picture
-    @return format for picture
+    Get format for setup
+    @return format for setup
   */
   std::string getFormat(void) { return m_strFormat; };
 
   /*!
-    Set format for picture
-    @param strFormat Format for picture
+    Set format for setup
+    @param strFormat Format for setup
   */
   void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
 
   /*!
-    Set description for picture
+    Set description for setup
   */
   void setDescription(std::string &strDescription, std::string &strLanguage)
   {
@@ -2372,9 +2372,9 @@ public:
   };
 
   /*!
-    Get description for picture
+    Get description for setup
     @param strLanguage Language for description (default="en")
-    @return Description for picture as string
+    @return Description for setup as string
   */
   std::string getDescription(std::string strLanguage = "en")
   {
@@ -2407,12 +2407,12 @@ private:
   std::string m_strName;
 
   /*!
-    Path to picture file
+    Path to setup file
   */
   std::string m_strURL;
 
   /*!
-    Picture type
+    setup type
   */
   std::string m_strFormat;
 
@@ -2477,7 +2477,7 @@ public:
   std::string getLanguage(void) { return m_strLanguage; };
 
   /*!
-    Set description for picture
+    Set description for manual item
   */
   void setDescription(std::string &strDescription, std::string &strLanguage)
   {
@@ -2485,9 +2485,9 @@ public:
   };
 
   /*!
-    Get description for picture
+    Get description for manual item
     @param strLanguage Language for description (default="en")
-    @return Description for picture as string
+    @return Description for manual as string
   */
   std::string getDescription(std::string strLanguage = "en")
   {
@@ -2530,7 +2530,7 @@ private:
   std::string m_strFormat;
 
   /*!
-    Language format for manual
+    Language [format for manual
   */
   std::string m_strLanguage;
 
