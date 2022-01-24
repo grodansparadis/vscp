@@ -69,7 +69,7 @@
 #include <vscpmd5.h>
 
 #include <guid.h>
-#include <mdf.h>
+//#include <mdf.h>
 #include <vscp.h>
 #include <vscphelper.h>
 
