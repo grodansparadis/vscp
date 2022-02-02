@@ -35,8 +35,44 @@
 
 #include <vscp.h>
 #include <vscphelper.h>
+#include <vscp_client_base.h>
 #include <mdf.h>
-#include <register.h>
+#include <vscp_register.h>
+
+///////////////////////////////////////////////////////////////////////////////
+//  readRegister
+//
+
+/*!
+  value (0-255) or error code if negative
+*/
+
+int readRegister( CVscpClient& client,
+                    cguid& guidNode,
+                    cguid& guidInterface,
+                    uint32_t page, 
+                    uint32_t offset)
+{
+  // If an interface is specified we should use it
+  if (guidInterface.isNULL()) {
+    CVscpClient::connType conntype = client.getType();
+  }
+  // No interface specified. We work with GUID/nickname
+  else {
+
+  }
+  return VSCP_ERROR_ERROR;
+}
+
+int writeRegister( CVscpClient& client,
+                    cguid& guidNode,
+                    cguid& guidIf,
+                    uint32_t page, 
+                    uint32_t offset, 
+                    uint8_t value)
+{
+  return VSCP_ERROR_ERROR;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

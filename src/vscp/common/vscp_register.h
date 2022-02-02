@@ -41,6 +41,45 @@
 #define FORMAT_ABSTRACTION_HEX          1
 
 /*!
+  Read VSCP register
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+*/
+int vscp_readRegister( const CVscpClient& client,
+                    cguid& guidNode,
+                    cguid& guidInterface,
+                    uint32_t page, 
+                    uint32_t offset, 
+                    uint32_t timeout=0);
+
+/*!
+  Write VSCP register
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out. 
+  @param guid GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param value Value to write.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.               
+*/
+int vscp_writeRegister( const CVscpClient& client,
+                    const cguid& guid,
+                    uint32_t page, 
+                    uint32_t offset, 
+                    uint8_t value, 
+                    uint32_t timeout=0 );
+
+/*!
     \class CDecisionMatrix
     \brief Encapsulates the decision matrix of a device
 */
