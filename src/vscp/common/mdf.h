@@ -746,7 +746,7 @@ public:
   std::string getTypeString(void);
 
   /*!
-      Get number of bytes for an remote variable type
+      Get number of bytes for a remote variable type
       @return Number of bytes for remote variable type.
    */
   uint16_t getTypeByteCount(void);

@@ -52,12 +52,12 @@
   @param offset Register offset on page to read from.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
 */
-int vscp_readRegister( const CVscpClient& client,
-                    cguid& guidNode,
-                    cguid& guidInterface,
-                    uint32_t page, 
-                    uint32_t offset, 
-                    uint32_t timeout=0);
+int vscp_readLevel1Register( const CVscpClient& client,
+                              cguid& guidNode,
+                              cguid& guidInterface,
+                              uint16_t page, 
+                              uint8_t offset, 
+                              uint32_t timeout=0);
 
 /*!
   Write VSCP register
@@ -72,64 +72,175 @@ int vscp_readRegister( const CVscpClient& client,
   @param value Value to write.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.               
 */
-int vscp_writeRegister( const CVscpClient& client,
-                    const cguid& guid,
-                    uint32_t page, 
-                    uint32_t offset, 
-                    uint8_t value, 
-                    uint32_t timeout=0 );
+int vscp_writeLevel1Register( CVscpClient& client,
+                                cguid& guid,
+                                uint16_t page, 
+                                uint8_t offset, 
+                                uint8_t value, 
+                                uint32_t timeout=0 );
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 /*!
-    \class CDecisionMatrix
-    \brief Encapsulates the decision matrix of a device
+    \class CRegistersPage
+    \brief Encapsulates one page of user registers of a device
+
+    This class encapsulates one page of user registers of a device. For a 
+    level II device this is the page 0x00 (the only page).
 */
-class CDecisionMatrix
+class CRegisterPage
+{
+
+public:
+  /*!
+    Constructor
+    @param level - Level of device.
+    @param page - Page this set of registers is located on.
+  */
+  CRegisterPage(uint8_t level = 0, uint16_t page = 0);
+  ~CRegisterPage();
+
+  /*!
+    Read register content on a register page.
+    Register must exist.
+
+    @param offset Register to read
+    @return Register content or -1 on failure.
+  */
+  int getReg(uint32_t offset);
+
+  /*!
+      Write value to a register on a register page.
+      Register is created if it does not exist.
+
+      @param offset Register to write to.
+      @param value to write to register.
+      @return Register content or -1 on failure.
+  */
+  int putReg(uint32_t offset, uint8_t value);
+
+  /*!
+    Get the register map for this page
+  */
+  std::map<uint32_t, uint8_t> *getRegisterMap(void);
+
+private:
+
+  /*!
+    The level for the device this registerset belongs to.
+    VSCP_LEVEL1 or VSCP_LEVEL2
+  */
+  uint8_t m_level;
+
+  /*!
+    The page for this register set. If a level II register set
+    there is only one page.
+  */
+  uint16_t m_page;
+
+  /*! 
+    Defined registers on the register page [offset, value]
+    
+    Level I devices: 0-127
+    Level II devices have a single page of registers in the 
+    range 0x00000000 - 0xffff0000.
+  */
+  std::map<uint32_t, uint8_t> m_registers;
+};
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+/*!
+    \class CUserRegisters
+    \brief Encapsulates the user registers (all pages) for a Level I or Level 
+            II device
+*/
+class CUserRegisters
 {
 
 public:
 
-    /*!
-        Default Constructor
+  CUserRegisters( uint8_t level = VSCP_LEVEL1 );
+  ~CUserRegisters();
+  
+  /*!
+    Get register from specific page
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return Register content or -1 on failure.
+  */                                                
+  int getReg(uint32_t reg, uint32_t page);
+
+  /*!
+      Set value for register
+      @param reg Register to set value for
+      @param val Value to set register to
+  */
+  bool putReg(uint32_t reg, uint32_t page, uint8_t value);
+
+  /*!
+    Return a pointer to the register storage map for a page of registers
+    @return A pointer to the register storage map
+  */
+  std::map<uint32_t, uint8_t> *getRegisterMap( uint16_t page );
+
+  /*!
+    Get pointer to a user register page
+    @param page Page of user register to get
+    @return Pointer to user register object
+  */
+  //std::map<uint32_t, uint8_t> *
+  CRegisterPage *getRegisterPage(uint16_t page);
+
+  /*!
+    Get the register content from a register at a specific page
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return Register content or -1 on failure.
+  */
+  int getRegister(uint16_t page, uint32_t offset);
+
+  /*!
+      Get abstraction value from registers into string value.
+      @param abstraction Abstraction record from MDF.
+      @param strValue Abstraction value in string form on return if call successful.
+      @return true on success.
+  */
+  bool remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
+                                  std::string& strValue,
+                                  uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+
+  /*
+    * Store abstraction value in string format in corresponding registers.
+    * @param abstraction Abstraction record from MDF.
+    * @param strValue Abstraction value in string form.
+    * @return true on success.
     */
-    CDecisionMatrix( CMDF_DecisionMatrix *pdm, bool bIndexed = false );
-
-    /*!
-        Default Destructor
-    */
-    ~CDecisionMatrix( void );
-
-    /*!
-
-    */
-    bool loadMatrix();
-
-    /*!
-        Load a DM row
-        @param row Row to load.
-        @param pRow Pointer t array which must hold eight bytes and
-                    will receive the row.
-    */
-    bool getRow( uint32_t row, uint8_t *pRow );
-
+  bool remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
+                                  std::string &strValue);
 
 private:
 
     /*!
-        True if the matrix is indexed. That is if it consist
-        of one row precided by an index into the matrix.
+        Tells if this is Level I or Level II registers
     */
-    bool m_bIndexedDM;
+    uint8_t m_level;
 
-    /*!
-        A memory array holding the full decision matrix
-    */
-    uint8_t *m_pdm;
+    // set with valid register pages
+    std::set<long> m_pages;
 
-    /*!
-        Pointer to decsion matrix info from MDF
-    */
-    CMDF_DecisionMatrix *m_pmdfdm;
+    // pages {page number, defined registers}
+    std::map<uint16_t, CRegisterPage *> m_registerPageMap;
+
+    
 };
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,65 +266,165 @@ public:
     */
     ~CStandardRegisters( void );
 
-    void getMDF( std::string& remoteFile );
+    /*!
+      Get MDF URL
+      @param url - Reference to string to store URL in.
+    */
+    std::string getMDF(void);
 
+    /*!
+      Get pointer to GUID array
+    */
     const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
 
+    /*!
+      Get guid as GUID class
+    */
     void getGUID( cguid *pguid ) { pguid->getFromArray( m_reg + 0xD0 - 0x80 ); };
 
+    /*! 
+      Get buffer size
+    */
     uint8_t getBufferSize( void ) { return m_reg[ 0x98 - 0x80 ]; };
 
+    /*!
+      Get bootloader algorithm
+    */
     uint8_t getBootloaderAlgorithm( void ) { return m_reg[ 0x97 - 0x80 ]; };
 
+    /*!
+      Get firmware major version
+    */
     uint8_t getMajorVersion( void ) { return m_reg[ 0x94 - 0x80 ]; };
 
+    /*!
+      Get firmware minor version
+    */
     uint8_t getMinorVersion( void ) { return m_reg[ 0x95 - 0x80 ]; };
 
+    /*!
+      Get formware sub minor version
+    */
     uint8_t getSubMinorVersion( void ) { return m_reg[ 0x96 - 0x80 ]; };
 
+    /*!
+      Get firmware version as string
+    */
     std::string getFirmwareVersionString( void );
 
-    uint16_t getPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
+    /*!
+      Get register page
+    */
+    uint16_t getRegisterPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
                                     m_reg[ 0x93 - 0x80 ] ); };
 
+    /*!
+      Get nickname id
+    */
     uint8_t getNickname( void ) { return m_reg[ 0x91 - 0x80 ]; };
 
+    /*!
+      Get alarm byte
+    */
     uint8_t getAlarm( void ) { return m_reg[ 0x80 - 0x80 ]; };
 
+    /*!
+      Get VSCP protocol conformance major version
+    */
     uint8_t getConfirmanceVersionMajor( void ) { return m_reg[ 0x81 - 0x80 ]; };
 
-    uint8_t getConfirmanceVersonMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
+    /*!
+      Get VSCP protocol conformance minor version
+    */
+    uint8_t getConfirmanceVersionMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
 
-    uint8_t getNodeControl( void ) { return m_reg[ 0x83 - 0x80 ]; };
+    /*!
+      Get node error counter
+      (This was the node control byte in specs prior to 1.6)
+      @return error counter
+    */
+    uint8_t getErrorCounter( void ) { return m_reg[ 0x83 - 0x80 ]; };
 
+    /*!
+      Get user ID
+      @param index Index of user ID to get.
+      @return User ID
+    */
+    uint8_t getUserId( uint8_t index ) { return m_reg[ 0x84 - 0x80 + index ]; };
+
+    /*!
+      Get number of register pages
+      Deprecated
+    */
     uint8_t getNumberOfRegisterPages( void ) { return m_reg[ 0x99 - 0x80 ]; };
 
-    uint32_t getManufacturerSubDeviceID( void )
-                                { return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x8E - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x8F - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x90 - 0x80 ] ) ); };
-
+    /*!
+      Get manufacturer device id
+    */
     uint32_t getManufacturerDeviceID( void )
                                 { return ( ( m_reg[ 0x89 - 0x80 ] << 24 ) +
                                             ( m_reg[ 0x8A - 0x80 ] << 16 ) +
                                             ( m_reg[ 0x8B - 0x80 ] << 8 ) +
                                             ( m_reg[ 0x8C - 0x80 ] ) ); };
 
+    /*!
+      Get manufacturer sub device id
+    */
+    uint32_t getManufacturerSubDeviceID( void )
+                                { return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
+                                            ( m_reg[ 0x8E - 0x80 ] << 16 ) +
+                                            ( m_reg[ 0x8F - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0x90 - 0x80 ] ) ); };
 
-    uint8_t getStandardReg( uint8_t reg );
+    
 
     /*!
-        Return a pointer to the register storage
+      Get standard family code (added in spec 1.9)
+      @return Standard family code as 32-bit unsigned integer.
     */
-    unsigned char *getRegs( void ) { return m_reg; };
+    uint32_t getStandardDeviceFamilyCode(void) 
+                                { return ( ( m_reg[ 0x9A - 0x80 ] << 24 ) +
+                                            ( m_reg[ 0x9B - 0x80 ] << 16 ) +
+                                            ( m_reg[ 0x9C - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0x9D - 0x80 ] ) ); };
+
+    /*!
+      Get standard family type (added in spec 1.9)
+      @return Standard family type as 32-bit unsigned integer.
+    */
+    uint32_t getStandardDeviceFamilyType(void) 
+                                { return ( ( m_reg[ 0x9E - 0x80 ] << 24 ) +
+                                            ( m_reg[ 0x9F - 0x80 ] << 16 ) +
+                                            ( m_reg[ 0xA0 - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0xA1 - 0x80 ] ) ); };
+
+    /*!
+      Get firmare device code (added in 1.13)
+      @return Firmware device code as 16-bit unsigned integer
+    */
+    uint16_t getFirmwareDeviceCode(void)
+                                { return (  ( m_reg[ 0xA3 - 0x80 ] << 8 ) +
+                                            ( m_reg[ 0xA4 - 0x80 ] ) ); };
+
+    /*!
+      Get a standard register from offset
+      @param reg Offset of standard register to read
+      @return Register content of standard register or -1 on failure.
+    */
+    int getStandardReg( uint8_t reg );
+
+    /*!
+      Return a pointer to the register storage
+      @return A pointer to standard register storage
+    */
+    unsigned char *getRegPointer( void ) { return m_reg; };
 
     /*!
         Set value for register
         @param reg Register to set value for
         @param val Value to set register to
     */
-    void setReg( uint8_t reg, uint8_t val ) { m_reg[ reg ] = val; };
+    void setReg( uint8_t reg, uint8_t val ) { m_reg[ reg - 0x80 ] = val; };
 
 
     /*!
@@ -221,9 +432,15 @@ public:
         @param reg Register to get value for
         @return Value of requested register.
     */
-    uint8_t getReg( uint8_t reg ) { return m_reg[ reg ]; };
+    int getReg( uint8_t reg ) { return m_reg[ reg - 0x80 ]; };
 
 private:
+
+    /*!
+      The level for the device this registerset belongs to.
+      VSCP_LEVEL1 or VSCP_LEVEL2
+    */
+    uint8_t m_level;
 
     /// Standard register storage
     uint8_t m_reg[ 128 ];
@@ -235,115 +452,40 @@ private:
 
 
 /*!
-    \class CRegistersPage
-    \brief Encapsulates one page of user registers of a device
+  Class that describes a full node of a VSCP device
 */
-class CRegisterPage
+
+class CVscpNode
 {
 
 public:
-    CRegisterPage( uint8_t level = VSCP_LEVEL1 );
-    ~CRegisterPage();
+  CVscpNode(void);
+  ~CVscpNode(void);
 
-    /*!
-        Read register content on a register page.
-        Register must exist.
+  /*!
+    Get pointer to user register object
+    @return Pointer to user register object
+  */
+  CUserRegisters *getUserRegs(void) {return &m_reg;};
 
-        @param reg Register to read
-        @return Register content or -1 on failure.
-    */
-    int readReg( uint32_t reg );
-
-    /*!
-        Write value to a register on a register page.
-        Register is created if it does not exist.
-
-        @param reg Register to write to.
-        @param value to write to register.
-        @return True if write was successful, false if not.
-    */
-   bool writeReg( uint32_t reg, uint8_t value );
+  /*!
+    Get pointer to standard register object
+    @return Pointer to standard register object
+  */
+  CStandardRegisters *getStandardRegs( void ) {return &m_stdReg;};
 
 private:
 
-    // VSCP level
-    uint8_t m_level;
+  /*!
+    Holds the user registers of the device
+  */
+  CUserRegisters m_reg;
 
-    // Defined registers on a user page
-    std::map<uint32_t,uint8_t> m_registers;
+  /*!
+    Holds the standard registers of the device
+  */
+  CStandardRegisters m_stdReg;
+
 };
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-/*!
-    \class CUserRegisters
-    \brief Encapsulates the user registers for a Level I or Level II device
-*/
-class CUserRegisters
-{
-
-public:
-    CUserRegisters( uint8_t level = VSCP_LEVEL1 );
-    ~CUserRegisters();
-
-    /*!
-        Get the value for a specific register on a page. Register must be previously
-        defined.
-        @return Register content (0-255) if page and register is valid. Otherwise -1
-                is returned indicating an error.
-    */
-    int readReg( uint32_t reg, uint32_t page = 0 );
-
-    /*!
-        Write data to a register. If the register is not yet defined
-        it is added.
-
-        @param page Page for register. (0-127 for Level I, 0 - 0xfffffff0 for
-                Level II device. )
-        @param reg Register to write to. (0-127 for Level I, 0 - 0xffffffff for
-                Level II device. )
-        @param value Value to write to register.
-        @return true for a valid write. An invalid write means registers are
-                out of bound.
-    */
-    bool writeReg( uint32_t reg, uint32_t page, uint8_t value );
-
-
-
-    /*!
-        Get abstraction value from registers into string value.
-        @param abstraction Abstraction record from MDF.
-        @param strValue Abstraction value in string form on return if call successful.
-        @return true on success.
-    */
-    bool abstractionValueFromRegsToString( CMDF_RemoteVariable *pRemoteVar,
-                                                std::string &strValue,
-                                                uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
-
-    /*
-     * Store abstraction value in string format in corresponding registers.
-     * @param abstraction Abstraction record from MDF.
-     * @param strValue Abstraction value in string form.
-     * @return true on success.
-     */
-    bool abstractionValueFromStringToRegs( CMDF_RemoteVariable *pRemoteVar,
-                                                std::string &strValue );
-
-private:
-
-    /*!
-        Tells if thie is Level I or Level II registers
-    */
-    uint8_t m_level;
-
-    // set with valid register pages
-    std::set<long> m_pages;
-
-    // pages {page number, defined registers}
-    std::map<uint32_t,CRegisterPage *> m_registerPages;
-};
-
 
 #endif

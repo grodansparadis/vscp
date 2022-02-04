@@ -254,8 +254,6 @@ if (WIN32)
         src/vscp/common/vscpcanaldeviceif.cpp
         src/vscp/common/canal_xmlconfig.h
         src/vscp/common/canal_xmlconfig.cpp
-        src/vscp/common/vscp_register.h
-        src/vscp/common/vscp_register.cpp
         src/vscp/common/vscp_client_base.h
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
@@ -310,8 +308,6 @@ else()
         src/vscp/common/vscpcanaldeviceif.cpp
         src/vscp/common/canal_xmlconfig.h
         src/vscp/common/canal_xmlconfig.cpp
-        src/vscp/common/vscp_register.h
-        src/vscp/common/vscp_register.cpp
         src/vscp/common/vscp_client_base.h
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
