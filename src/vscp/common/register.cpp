@@ -38,7 +38,7 @@
 #include <mdf.h>
 #include <vscp.h>
 #include <vscp_client_base.h>
-#include <vscp_register.h>
+#include <register.h>
 #include <vscphelper.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,24 +50,23 @@
 */
 
 int
-vscp_readLevel1Register(CVscpClient &client,
-                        cguid &guidNode,
-                        cguid &guidInterface,
-                        uint16_t page,
-                        uint8_t offset,
-                        uint32_t timeout = 0)
+vscp_readLevel1Register(CVscpClient& client,
+                          cguid& guidNode,
+                          cguid& guidInterface,
+                          uint16_t page,
+                          uint8_t offset,
+                          uint8_t& value,
+                          uint32_t timeout)
 {
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
+
   CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
 
-  // Offset max 127
-  if (offset > 127) return VSCP_ERROR_PARAMETER;
-
   ex.head = VSCP_PRIORITY_NORMAL;
-  ex.vscp_class = VSCP_CLASS1_PROTOCOL;
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidInterface.isNULL() ? 0 : 512);
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
   ex.sizeData   = ifoffset + 5;
   if (ifoffset) memcpy(ex.data, guidInterface.getGUID(), 16);
@@ -88,17 +87,26 @@ vscp_readLevel1Register(CVscpClient &client,
   // Wait for reponse
 
   do {
-
     // Get response
-    if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
-      return rv;
-    }
+    uint16_t count;
+    rv = client.getcount(&count);
+    if (count &&
+        VSCP_ERROR_SUCCESS == rv) {
 
-    if (VSCP_CLASS2_LEVEL1_PROTOCOL == ex.vscp_class) {
-      if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-        if ((ex.GUID[15] = nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
-            (ex.data[1] == (page >> 8) & 0x0ff) && (ex.data[2] == page & 0x0ff) && (ex.data[3] == offset)) {
-          return ex.data[4];
+      if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+        return rv;
+      }
+
+      if (VSCP_CLASS1_PROTOCOL == ex.vscp_class &&
+          VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
+        if ((ex.GUID[15] = nickname) && 
+              (ex.sizeData >= 5) && 
+              (ex.data[0] == 0) &&
+              (ex.data[1] == (page >> 8) & 0x0ff) && 
+              (ex.data[2] == page & 0x0ff) && 
+              (ex.data[3] == offset)) {
+          value = ex.data[4];
+          return VSCP_ERROR_SUCCESS;
         }
       }
     }
@@ -107,6 +115,7 @@ vscp_readLevel1Register(CVscpClient &client,
       rv = VSCP_ERROR_TIMEOUT;
       break;
     }
+    
 
 #ifdef WIN32
     win_usleep(2000);    
@@ -124,13 +133,13 @@ vscp_readLevel1Register(CVscpClient &client,
 //
 
 int
-vscp_writeLevel1Register(CVscpClient &client,
-                          cguid &guidNode,
-                          cguid &guidInterface,
-                          uint32_t page,
-                          uint32_t offset,
+vscp_writeLevel1Register(CVscpClient& client,
+                          cguid& guidNode,
+                          cguid& guidInterface,
+                          uint16_t page,
+                          uint8_t offset,
                           uint8_t value,
-                          uint32_t timeout = 0)
+                          uint32_t timeout)
 {
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
@@ -139,7 +148,7 @@ vscp_writeLevel1Register(CVscpClient &client,
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
 
   ex.head = VSCP_PRIORITY_NORMAL;
-  ex.vscp_class = VSCP_CLASS1_PROTOCOL;
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL+ (guidInterface.isNULL() ? 0 : 512);;
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE;
   ex.sizeData   = ifoffset + 5;
   if (ifoffset) memcpy(ex.data, guidInterface.getGUID(), 16);
@@ -154,28 +163,32 @@ vscp_writeLevel1Register(CVscpClient &client,
     return rv;
   }
 
-  // uint32_t resendTime = m_registerOpResendTimeout;
   uint32_t startTime = vscp_getMsTimeStamp();
 
   // Wait for reponse
   
   do {
-
     // Get response
-    if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
-      return rv;
-    }
+    uint16_t count;
+    rv = client.getcount(&count);
+    if (count &&
+        VSCP_ERROR_SUCCESS == rv) {
 
-    if (VSCP_CLASS2_LEVEL1_PROTOCOL == ex.vscp_class) {
-      if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-        if ((ex.GUID[15] = nickname) && 
-            (ex.sizeData >= 5) && 
-            (ex.data[0] == 0) &&
-            (ex.data[1] == (page >> 8) & 0x0ff) && 
-            (ex.data[2] == page & 0x0ff) && 
-            (ex.data[3] == offset) && 
-            (ex.data[4] == value)) {
-          return VSCP_ERROR_SUCCESS;
+      if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+        return rv;
+      }
+
+      if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
+        if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
+          if ((ex.GUID[15] = nickname) && 
+              (ex.sizeData >= 5) && 
+              (ex.data[0] == 0) &&
+              (ex.data[1] == (page >> 8) & 0x0ff) && 
+              (ex.data[2] == page & 0x0ff) && 
+              (ex.data[3] == offset) && 
+              (ex.data[4] == value)) {
+            return VSCP_ERROR_SUCCESS;
+          }
         }
       }
     }
@@ -197,7 +210,121 @@ vscp_writeLevel1Register(CVscpClient &client,
 }
 
 
-//-----------------------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_scanForDevices
+//
+
+int vscp_scanForDevices(CVscpClient& client,
+                          cguid& guid,
+                          std::set<uint8_t> &found,
+                          uint32_t timeout)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+  uint8_t offset = guid.isNULL() ? 0 : 16;
+  vscpEventEx ex;
+
+  memset(&ex, 0, sizeof(vscpEventEx));
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guid.isNULL() ? 0 : 512);
+  ex.vscp_type  = VSCP_TYPE_PROTOCOL_WHO_IS_THERE;
+  memcpy(ex.data + offset, guid.getGUID(), 16); // Use GUID of interface
+  memset(ex.GUID, 0, 16); // Use GUID of interface
+  ex.sizeData   = 17;  
+  ex.data[16] = 0xff;  // all devices
+
+  if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
+    return rv;
+  }
+
+  uint32_t startTime = vscp_getMsTimeStamp();
+
+  while (true) {
+    uint16_t cnt;
+    client.getcount(&cnt);
+    if (cnt) {
+      rv = client.receive(ex);
+    }
+    if (VSCP_ERROR_SUCCESS == rv) {
+      if ( ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
+          ex.vscp_type == VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE ) {
+        found.insert(ex.GUID[15]);
+      }
+    }
+
+    // Check timeout
+    if ((vscp_getMsTimeStamp() - startTime) > 500) {
+      rv = VSCP_ERROR_TIMEOUT;
+      break;
+    }
+  }
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_scanSlowForDevices
+//
+
+int vscp_scanSlowForDevices(CVscpClient& client,
+                              cguid& guid,
+                              std::set<uint8_t> &found_nodes,
+                              uint8_t start_node,
+                              uint8_t end_node,
+                              uint32_t delay,
+                              uint32_t timeout)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+  vscpEventEx ex;
+  for (int idx = start_node; idx<end_node; idx++) {    
+    memset(&ex, 0, sizeof(vscpEventEx));
+    ex.vscp_class = VSCP_CLASS1_PROTOCOL + 512;
+    ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+    memcpy(ex.data, guid.getGUID(), 16); // Use GUID of interface
+    memset(ex.GUID, 0, 16); // Use GUID of interface
+    ex.sizeData   = 18;
+    
+    ex.data[16] = idx;  // nodeid
+    ex.data[17] = 0xd0; // register: First byte of GUID
+
+    rv = client.send(ex);
+    if (VSCP_ERROR_SUCCESS != rv) {
+      return rv;
+    }
+
+#ifdef WIN32
+    win_usleep(delay);
+#else
+    usleep(delay);
+#endif    
+  } 
+
+  uint32_t startTime = vscp_getMsTimeStamp();
+
+  while (true) {
+    uint16_t cnt;
+
+    rv = client.getcount(&cnt);
+    if (cnt) {      
+      rv = client.receive(ex);
+      if (VSCP_ERROR_SUCCESS != rv) {
+        return rv;
+      }
+      if ( VSCP_ERROR_SUCCESS == rv && 
+          ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
+          ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE ) {
+        found_nodes.insert(ex.GUID[15]);
+      }     
+    }
+
+    if ((vscp_getMsTimeStamp() - startTime) > timeout) {
+      break;
+    }
+  }
+
+  return rv;
+}
+
+
+// --------------------------------------------------------------------------
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

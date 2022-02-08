@@ -41,8 +41,16 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpdatetime.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpdatetime.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscphelper.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpremotetcpif.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpremotetcpif.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_tcp.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_tcp.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/mdf.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/mdf.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/register.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/register.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c
@@ -56,6 +64,8 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.c
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.h
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../src/common/sockettcp.h
+    ${PROJECT_SOURCE_DIR}/../../src/common/sockettcp.c
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/json.hpp
 )
 

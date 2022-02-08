@@ -36,9 +36,14 @@
 #include <vscp_type.h>
 #include <canal.h>
 #include <guid.h>
+#include <vscp_client_base.h>
 
 #define FORMAT_ABSTRACTION_DECIMAL      0
 #define FORMAT_ABSTRACTION_HEX          1
+
+class CRegisterPage;
+class CUserRegisters;
+class CStandardRegisters;
 
 /*!
   Read VSCP register
@@ -51,13 +56,15 @@
   @param page Register page to read from. 
   @param offset Register offset on page to read from.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
 */
-int vscp_readLevel1Register( const CVscpClient& client,
+int vscp_readLevel1Register( CVscpClient& client,
                               cguid& guidNode,
                               cguid& guidInterface,
                               uint16_t page, 
-                              uint8_t offset, 
-                              uint32_t timeout=0);
+                              uint8_t offset,
+                              uint8_t& value,  
+                              uint32_t timeout = 1000);
 
 /*!
   Write VSCP register
@@ -70,17 +77,62 @@ int vscp_readLevel1Register( const CVscpClient& client,
   @param page Register page to read from. 
   @param offset Register offset on page to read from.
   @param value Value to write.
-  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.               
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.           
 */
 int vscp_writeLevel1Register( CVscpClient& client,
+                                cguid& guidNode,
+                                cguid& guidInterface,
+                                uint16_t page,
+                                uint8_t offset,
+                                uint8_t value,
+                                uint32_t timeout = 1000 );
+
+/*!
+  Read all standard registers
+*/
+int vscp_readStandardRegisters(CVscpClient& client,
                                 cguid& guid,
-                                uint16_t page, 
-                                uint8_t offset, 
-                                uint8_t value, 
-                                uint32_t timeout=0 );
+                                CStandardRegisters& stdregs,
+                                uint32_t timeout = 0 );
+
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param found A set with nodeid's for found nodes.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanForDevices(CVscpClient& client,
+                                cguid& guid,
+                                std::set<uint8_t> &found,
+                                uint32_t timeout = 1000);
+
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param found_nodes A set with nodeid's for found nodes.
+  @param start_nodeid Start nodeid to search from.
+  @param end_nodeid End nodeid to search to.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanSlowForDevices(CVscpClient& client,
+                                cguid& guid,
+                                std::set<uint8_t> &found_nodes,
+                                uint8_t start_node = 0,
+                                uint8_t end_node = 255,
+                                uint32_t delay = 10000,
+                                uint32_t timeout = 2000);
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
 
 
 /*!
@@ -124,7 +176,7 @@ public:
   /*!
     Get the register map for this page
   */
-  std::map<uint32_t, uint8_t> *getRegisterMap(void);
+  std::map<uint32_t, uint8_t> *getRegisterMap(void) { return &m_registers; }; 
 
 private:
 
