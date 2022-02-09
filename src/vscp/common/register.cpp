@@ -34,6 +34,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <iostream>
 
 #include <mdf.h>
 #include <vscp.h>
@@ -209,6 +210,237 @@ vscp_writeLevel1Register(CVscpClient& client,
   return rv;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_readLevel1RegisterBlock
+//
+
+int vscp_readLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    uint8_t offset,
+                                    uint8_t count,
+                                    std::map<uint8_t,uint8_t>& values,
+                                    uint32_t timeout)
+{
+  int rv = VSCP_ERROR_ERROR;
+  uint8_t rcvcnt = 0;   // Number of registers read
+  vscpEventEx ex;
+  CVscpClient::connType conntype = client.getType();
+  uint8_t nickname               = guidNode.getNickname();
+  uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
+  
+  /*
+    Frames may not come in order on all interfaces
+  */
+  std::set<int> frameset;
+  for (int i=0; i<count/4; i++) {
+    frameset.insert(i);    
+  }
+  if (count%4) {
+    frameset.insert(count/4);
+  }
+
+  ex.head = VSCP_PRIORITY_NORMAL;
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidInterface.isNULL() ? 0 : 512);
+  ex.vscp_type  = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
+  ex.sizeData   = ifoffset + 5;
+  if (ifoffset) memcpy(ex.data, guidInterface.getGUID(), 16);
+  ex.data[0 + ifoffset]    = nickname;
+  ex.data[1 + ifoffset]    = (page >> 8) & 0x0ff;
+  ex.data[2 + ifoffset]    = page & 0x0ff;
+  ex.data[3 + ifoffset]    = offset;
+  ex.data[4 + ifoffset]    = count;
+
+  // Send event
+  if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
+    return rv;
+  }
+
+  uint32_t startTime = vscp_getMsTimeStamp();
+
+  // Wait for reponse
+  
+  do {
+    // Get response
+    uint16_t cntRead;
+    rv = client.getcount(&cntRead);
+    if (cntRead && VSCP_ERROR_SUCCESS == rv) {
+
+      if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+        return rv;
+      }
+
+      if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
+        if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
+          if ((ex.GUID[15] = nickname) && 
+              (ex.sizeData >= 5) && 
+              /* ex.data[0] is frame index */
+              (ex.data[1] == (page >> 8) & 0x0ff) && 
+              (ex.data[2] == page & 0x0ff) && 
+              (ex.data[3] == offset + rcvcnt) ) {
+
+            // Another frame received    
+            frameset.erase(ex.data[0]); 
+            //printf("%d %d\n",(int)ex.data[0],frameset.size());
+            
+            // Get read data 
+            for (int i = 0; i < ex.sizeData-4; i++) {
+              values[offset + rcvcnt] = ex.data[4 + i];
+              rcvcnt++;
+            }
+
+            // Check if we are ready
+            if (rcvcnt == count && frameset.empty()) {
+              return VSCP_ERROR_SUCCESS;
+            }
+          }
+        }
+      }
+    }
+
+    if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
+      rv = VSCP_ERROR_TIMEOUT;
+      break;
+    }
+
+#ifdef WIN32
+    win_usleep(2000);    
+#else
+    usleep(2000);
+#endif
+
+  } while (true);
+
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_writeLevel1RegisterBlock
+//
+
+int vscp_writeLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    std::map<uint8_t,uint8_t>& regvalues,
+                                    uint32_t timeout)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+  CVscpClient::connType conntype = client.getType();
+  uint8_t nickname               = guidNode.getNickname();
+  uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
+  int reg = -99;
+  int count = 0;
+  vscpEventEx ex;
+  uint8_t offset_data = 0;
+  std::map<uint8_t,uint8_t> startmap; 
+  
+  // The startregs map contains reg, count for each sequence start
+  for (auto const& item : regvalues) {
+    if (item.first != (reg + count)) {
+      reg = item.first;
+      startmap[item.first] = count = 1;
+    }
+    else {
+      startmap[reg]++;
+      count = startmap[reg];
+    }
+  }
+
+  // Write out
+  for (auto const& start : startmap) {
+
+    std::cout << "Writing reg: " << (int)start.first << " count: " << (int)start.second << std::endl;
+    
+    // Find out how many frames to send
+    uint8_t nwrites = start.second/4;
+    if (start.second%4) nwrites++;
+
+    for (int i=0; i<nwrites; i++) {
+
+      uint8_t bytes2write = start.second - (i*4);
+      if (bytes2write > 4) bytes2write = 4;
+
+      ex.head = VSCP_PRIORITY_NORMAL;
+      ex.vscp_class = VSCP_CLASS1_PROTOCOL+ (guidInterface.isNULL() ? 0 : 512);;
+      ex.vscp_type  = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE;
+      ex.sizeData   = ifoffset + 4 + bytes2write;
+      if (ifoffset) memcpy(ex.data, guidInterface.getGUID(), 16);
+      ex.data[0 + ifoffset]    = nickname;
+      ex.data[1 + ifoffset]    = (page >> 8) & 0x0ff;
+      ex.data[2 + ifoffset]    = page & 0x0ff;
+      ex.data[3 + ifoffset]    = start.first + i*4;
+
+      // Fill data 
+      for (int j=0; j<bytes2write; j++) {
+        ex.data[4 + ifoffset + j] = regvalues[start.first + i*4 + j];
+      }
+
+      // Send event
+      if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
+        return rv;
+      }
+
+      uint32_t startTime = vscp_getMsTimeStamp();
+
+      // Wait for reponse
+      
+      do {
+        // Get response
+        uint16_t count;
+        rv = client.getcount(&count);
+        if (count && VSCP_ERROR_SUCCESS == rv) {
+
+          if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+            return rv;
+          }
+
+          if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
+            if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
+              if ((ex.GUID[15] = nickname) && 
+                  (ex.sizeData >= 5) && 
+                  (ex.data[0] == 0) &&
+                  (ex.data[1] == (page >> 8) & 0x0ff) && 
+                  (ex.data[2] == page & 0x0ff)) {
+       
+                for (int k=4; k<ex.sizeData; k++) {
+                  if (ex.data[k] == regvalues[ex.data[3]+k-4]) {
+                    regvalues.erase(ex.data[3]+k-4);
+                  }
+                  std::cout << "   Erased reg: " << (int)ex.data[3]+k-4 << std::endl;
+                }
+                
+                if (regvalues.empty()) {
+                  return VSCP_ERROR_SUCCESS;
+                }
+
+                break; // Always do next set
+              }
+            }
+          }
+        }
+
+        if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
+          rv = VSCP_ERROR_TIMEOUT;
+          break;
+        }
+
+    #ifdef WIN32
+        win_usleep(2000);    
+    #else
+        usleep(2000);
+    #endif
+
+      } while (timeout);
+
+    } // writes
+
+  } // startmap
+
+  return rv;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  vscp_scanForDevices
@@ -273,13 +505,16 @@ int vscp_scanSlowForDevices(CVscpClient& client,
 {
   int rv = VSCP_ERROR_SUCCESS;
   vscpEventEx ex;
+  CVscpClient::connType conntype = client.getType();
+  
+  memset(&ex, 0, sizeof(vscpEventEx));
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + 512;
+  ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+  memcpy(ex.data, guid.getGUID(), 16); // Use GUID of interface
+  memset(ex.GUID, 0, 16); // Use GUID of interface
+  ex.sizeData   = 18;
+
   for (int idx = start_node; idx<end_node; idx++) {    
-    memset(&ex, 0, sizeof(vscpEventEx));
-    ex.vscp_class = VSCP_CLASS1_PROTOCOL + 512;
-    ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-    memcpy(ex.data, guid.getGUID(), 16); // Use GUID of interface
-    memset(ex.GUID, 0, 16); // Use GUID of interface
-    ex.sizeData   = 18;
     
     ex.data[16] = idx;  // nodeid
     ex.data[17] = 0xd0; // register: First byte of GUID
@@ -321,6 +556,8 @@ int vscp_scanSlowForDevices(CVscpClient& client,
 
   return rv;
 }
+
+
 
 
 // --------------------------------------------------------------------------

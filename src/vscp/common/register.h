@@ -55,6 +55,7 @@ class CStandardRegisters;
                 if no interface.                
   @param page Register page to read from. 
   @param offset Register offset on page to read from.
+  @param value Value read from register.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
   @return VSCP_ERROR_SUCCESS on success.
 */
@@ -89,10 +90,56 @@ int vscp_writeLevel1Register( CVscpClient& client,
                                 uint32_t timeout = 1000 );
 
 /*!
+  Read VSCP register block.
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param count Number of registers to read. Zero means read 256 registers (0-255).
+  @param values Pointer to map with registers to read.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int vscp_readLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    uint8_t offset,
+                                    uint8_t count,
+                                    std::map<uint8_t,uint8_t>& values,
+                                    uint32_t timeout = 1000);
+
+/*!
+  Write VSCP register block.
+  The function tries to group register writes wherever
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param values Pointer to map with register values to write.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int vscp_writeLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    std::map<uint8_t,uint8_t>& values,
+                                    uint32_t timeout = 1000);
+
+/*!
   Read all standard registers
 */
 int vscp_readStandardRegisters(CVscpClient& client,
                                 cguid& guid,
+                                cguid& guidInterface,
                                 CStandardRegisters& stdregs,
                                 uint32_t timeout = 0 );
 

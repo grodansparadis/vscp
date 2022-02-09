@@ -77,7 +77,6 @@ TEST(Register, Test_API_ReadLevel1Register_Interface)
 TEST(Register, Test_API_WriteLevel1Register_Interface)
 {
   int rv;
-  std::set<uint8_t> found_nodes;
 
   // Internal device pi5
   vscpClientTcp client;
@@ -108,6 +107,124 @@ TEST(Register, Test_API_WriteLevel1Register_Interface)
   rv = client.disconnect();
   ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
 
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(Register, Test_API_ReadLevel1RegisterBlock_Interface)
+{
+  int rv;
+  std::map<uint8_t, uint8_t> regs;
+
+  // Internal device pi5
+  vscpClientTcp client;
+  rv = client.init("tcp://192.168.1.32:9598", "admin", "secret");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  rv = client.connect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  // CAN4VSCP interface
+  cguid guidInterface("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00");
+
+  // Node 1 Beijing I/O
+  cguid guidNode("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01");
+
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0xd0, 16, regs, 5000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+  ASSERT_EQ(regs.size(), 16);
+  ASSERT_EQ(regs[0xd0], 1);
+  ASSERT_EQ(regs[0xd1], 0);
+  ASSERT_EQ(regs[0xd2], 0);
+  ASSERT_EQ(regs[0xd3], 0);
+  ASSERT_EQ(regs[0xd4], 0);
+  ASSERT_EQ(regs[0xd5], 0);
+  ASSERT_EQ(regs[0xd6], 0);
+  ASSERT_EQ(regs[0xd7], 0);
+  ASSERT_EQ(regs[0xd8], 0);
+  ASSERT_EQ(regs[0xd9], 0);
+  ASSERT_EQ(regs[0xda], 0);
+  ASSERT_EQ(regs[0xdb], 0);
+  ASSERT_EQ(regs[0xdc], 6);
+  ASSERT_EQ(regs[0xdd], 0);
+  ASSERT_EQ(regs[0xde], 0);
+  ASSERT_EQ(regs[0xdf], 15);
+
+  regs.clear();
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0xd0, 2, regs, 5000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+  ASSERT_EQ(regs.size(), 2);
+  ASSERT_EQ(regs[0xd0], 1);
+  ASSERT_EQ(regs[0xd1], 0);
+
+  regs.clear();
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0xd0, 12, regs, 5000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+  ASSERT_EQ(regs.size(), 12);
+  ASSERT_EQ(regs[0xd0], 1);
+  ASSERT_EQ(regs[0xd1], 0);
+  ASSERT_EQ(regs[0xd2], 0);
+  ASSERT_EQ(regs[0xd3], 0);
+  ASSERT_EQ(regs[0xd4], 0);
+  ASSERT_EQ(regs[0xd5], 0);
+  ASSERT_EQ(regs[0xd6], 0);
+  ASSERT_EQ(regs[0xd7], 0);
+  ASSERT_EQ(regs[0xd8], 0);
+  ASSERT_EQ(regs[0xd9], 0);
+  ASSERT_EQ(regs[0xda], 0);
+  ASSERT_EQ(regs[0xdb], 0);
+
+  rv = client.disconnect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(Register, Test_API_writeLevel1RegisterBlock_Interface)
+{
+  int rv;
+  std::set<uint8_t> found_nodes;
+
+  // Internal device pi5
+  vscpClientTcp client;
+  rv = client.init("tcp://192.168.1.32:9598", "admin", "secret");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  rv = client.connect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  // CAN4VSCP interface
+  cguid guidInterface("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00");
+
+  // Node GUID
+  cguid guidNode("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01");
+
+  // Regvalues - Use DM on page 2 for test
+  std::map<uint8_t, uint8_t> regvalue;
+  regvalue[0x19] = 0x01;
+  regvalue[0x1A] = 0x02;
+  regvalue[0x1B] = 0x03;
+
+  regvalue[0x1D] = 0x04;
+  regvalue[0x1E] = 0x05;
+
+  regvalue[0x20] = 0x06;
+
+  rv = vscp_writeLevel1RegisterBlock( client,
+                                      guidNode,
+                                      guidInterface,
+                                      2, // page
+                                      regvalue,
+                                      1000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);                                    
+
+  rv = client.disconnect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
 }
 
 
@@ -240,6 +357,8 @@ TEST(Register, Test_Local_Slow_Find_Nodes_Interface)
 
     rv = client.send(ex);
     ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+    rv = client.send(ex);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
     usleep(10000);
 
     // std::cout << std::hex << "index:" << idx << std::endl;
@@ -265,7 +384,7 @@ TEST(Register, Test_Local_Slow_Find_Nodes_Interface)
       }
     }
 
-    if ((vscp_getMsTimeStamp() - startTime) > 2000) {
+    if ((vscp_getMsTimeStamp() - startTime) > 5000) {
       // std::cout << std::dec << " End timestamp: " << (vscp_getMsTimeStamp()-startTime) << std::endl;
       break;
     }
@@ -300,7 +419,7 @@ TEST(Register, Test_API_Slow_Find_Nodes_Interface)
   cguid guid("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00");
   // std::cout << "GUID " << guid.getAsString() << std::endl;
 
-  rv = vscp_scanSlowForDevices(client, guid, found_nodes, 0, 255, 10000, 5000);
+  rv = vscp_scanSlowForDevices(client, guid, found_nodes, 0, 255, 20000, 5000);
   ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
 
   ASSERT_EQ(6, found_nodes.size());
@@ -308,12 +427,8 @@ TEST(Register, Test_API_Slow_Find_Nodes_Interface)
   rv = client.disconnect();
   ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
 
-  // std::cout << std::dec << "   Found: " << nodes.size() << " nodes" << std::endl;
-  // for (auto nodeid : nodes) {
-  //   std::cout << "   nodeid: " << (int)nodeid << std::endl;
-  // }
-  ASSERT_EQ(6, found_nodes.size());
 }
+
 
 
 
