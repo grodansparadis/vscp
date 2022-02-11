@@ -351,7 +351,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
   // Write out
   for (auto const& start : startmap) {
 
-    std::cout << "Writing reg: " << (int)start.first << " count: " << (int)start.second << std::endl;
+    //std::cout << "Writing reg: " << (int)start.first << " count: " << (int)start.second << std::endl;
     
     // Find out how many frames to send
     uint8_t nwrites = start.second/4;
@@ -408,7 +408,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
                   if (ex.data[k] == regvalues[ex.data[3]+k-4]) {
                     regvalues.erase(ex.data[3]+k-4);
                   }
-                  std::cout << "   Erased reg: " << (int)ex.data[3]+k-4 << std::endl;
+                  //std::cout << "   Erased reg: " << (int)ex.data[3]+k-4 << std::endl;
                 }
                 
                 if (regvalues.empty()) {
@@ -618,16 +618,52 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
 //  Constructor
 //
 
-CStandardRegisters::CStandardRegisters()
+CStandardRegisters::CStandardRegisters(uint8_t level)
 {
-  ;
+  m_level = level;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Destructor
 //
 
-CStandardRegisters::~CStandardRegisters() {}
+CStandardRegisters::~CStandardRegisters() 
+{
+  ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getFirmwareVersionString.
+//
+
+int CStandardRegisters::init(CVscpClient& client,
+                              cguid& guidNode,
+                              cguid& guidInterface,
+                              uint32_t timeout) 
+{
+  int rv;
+  m_regs.clear();
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, timeout);
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  restoreStandardConfig.
+//
+
+int restoreStandardConfig(CVscpClient& client,
+                            cguid& guidNode,
+                            cguid& guidInterface,
+                            uint32_t timeout)
+{
+  int rv;
+  rv = vscp_writeLevel1Register(client, guidNode, guidInterface, 0, 0xA2, 0x55, timeout);
+  if ( VSCP_ERROR_SUCCESS != rv ) {
+    return rv;
+  }
+  rv = vscp_writeLevel1Register(client, guidNode, guidInterface, 0, 0xA2, 0xAA, timeout);
+  return rv;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  getFirmwareVersionString.
@@ -638,8 +674,21 @@ CStandardRegisters::getFirmwareVersionString(void)
 {
   std::string str;
 
-  str = str = vscp_str_format("%d.%d.%d", m_reg[0x94 - 0x80], m_reg[0x95 - 0x80], m_reg[0x96 - 0x80]);
+  str = str = vscp_str_format("%d.%d.%d", m_regs[0x94 - 0x80], m_regs[0x95 - 0x80], m_regs[0x96 - 0x80]);
   return str;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  getGUID
+//
+
+void CStandardRegisters::getGUID(cguid& guid) 
+{ 
+  for (int i=0; i<16; i++) {
+    //std::cout << std::hex << (int)m_regs[0xd0 + i] << std::endl;
+    guid.setAt(i, m_regs[0xd0 + i]);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -651,11 +700,12 @@ CStandardRegisters::getMDF(void)
 {
   char url[33];
   std::string remoteFile;
-  
-  memset(url, 0, sizeof(url));
-  memcpy(url, (m_reg + 0xe0 - 0x80), 32);
-  remoteFile = "http://";
-  remoteFile += std::string(url);
+
+  for (int i = 0; i < 32; i++) {
+    url[i] = m_regs[0xe0 + i];
+  }
+
+  remoteFile = std::string(url);
   return(remoteFile);
 }
 

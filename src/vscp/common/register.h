@@ -358,12 +358,187 @@ public:
     /*!
         Default Constructor
     */
-    CStandardRegisters( void );
+    CStandardRegisters(uint8_t level = VSCP_LEVEL1);
 
     /*!
         Default Destructor
     */
-    ~CStandardRegisters( void );
+    ~CStandardRegisters(void);
+
+    /*! 
+      Read all standard register content
+      @param client The communication interface to use
+      @param guidNode GUID for node. Only LSB is used for level I node.
+      @param guidInterface GUID for interface. If zero no interface is used.
+      @param timeout Timeout in milliseconds. Zero means no timeout
+      @return VSCP_ERROR_SUCCESS on success.
+    */
+    int init(CVscpClient& client,
+                cguid& guidNode,
+                cguid& guidInterface,
+                uint32_t timeout = 1000);
+
+    /*!
+      Get alarm byte
+      @return VSCP alarm byte
+    */
+    uint8_t getAlarm(void) { return m_regs[0x80]; };
+
+    
+    /*!
+      Get VSCP protocol conformance major version
+      @return VSCP protocol conformance major version
+    */
+    uint8_t getConfirmanceVersionMajor(void) { return m_regs[0x81]; };
+
+    /*!
+      Get VSCP protocol conformance minor version
+      @return VSCP protocol conformance minor version
+    */
+    uint8_t getConfirmanceVersionMinor(void) { return m_regs[0x82]; };
+
+    /*!
+      Get node error counter
+      (This was the node control byte in specs prior to 1.6)
+      @return error counter
+    */
+    uint8_t getErrorCounter(void) { return m_regs[0x83]; };
+
+    /*!
+      Get user ID
+      @param index Index of user ID to get.
+      @return User ID for pos
+    */
+    uint8_t getUserId(uint8_t index) {return m_regs[ 0x84 + index ];};
+
+    /*!
+      Get user ID
+      @param uid Buffer of five bytes for user id.
+    */
+    void getUserId(uint8_t *puid) 
+                          { 
+                            puid[0] = m_regs[0x84];
+                            puid[1] = m_regs[0x85];
+                            puid[2] = m_regs[0x86];
+                            puid[3] = m_regs[0x87];
+                            puid[4] = m_regs[0x88];
+                          };
+
+    /*!
+      Get manufacturer device id
+      @return Manufacturer device id
+    */
+    uint32_t getManufacturerDeviceID(void)
+                                { return ( ( m_regs[0x89] << 24 ) +
+                                            ( m_regs[0x8A] << 16 ) +
+                                            ( m_regs[0x8B] << 8 ) +
+                                            ( m_regs[0x8C] ) ); };
+    /*!
+      Get manufacturer sub device id
+      @return Manufacturer sub device id
+    */
+    uint32_t getManufacturerSubDeviceID(void)
+                                { return ( ( m_regs[0x8D] << 24 ) +
+                                            ( m_regs[0x8E] << 16 ) +
+                                            ( m_regs[0x8F] << 8 ) +
+                                            ( m_regs[0x90] ) ); };
+
+    /*!
+      Get nickname id
+      @return nickname id
+    */
+    uint8_t getNickname(void) {return m_regs[0x91];};
+
+    /*!
+      Get register page
+      @return register page
+    */
+    uint16_t getRegisterPage(void) { return ( m_regs[0x92] * 256 +
+                                              m_regs[0x93] ); };
+
+    /*!
+      Get firmware major version
+    */
+    uint8_t getFirmwareMajorVersion(void) 
+                                    {return m_regs[0x94];};
+
+    /*!
+      Get firmware minor version
+    */
+    uint8_t getFirmwareMinorVersion(void) 
+                                    {return m_regs[0x95];};
+
+    /*!
+      Get firmware sub minor version
+    */
+    uint8_t getFirmwareSubMinorVersion(void) 
+                                    {return m_regs[0x96];};
+
+    /*!
+      Get firmware version as string
+    */
+    std::string getFirmwareVersionString(void);
+
+    /*!
+      Get bootloader algorithm
+      @return bootloader algorithm
+    */
+    uint8_t getBootloaderAlgorithm(void) 
+                                    {return m_regs[0x97];};
+
+    /*! 
+      Get buffer size
+      @return buffer size
+    */
+    uint8_t getBufferSize(void) {return m_regs[0x98];};                                    
+
+    /*!
+      Get number of register pages !!!DEPRECATED!!!
+      @return number of register pages
+    */
+    uint8_t getNumberOfRegisterPages(void) {return m_regs[0x99]; };
+
+    /*!
+      Get standard family code (added in spec 1.9)
+      @return Standard family code as 32-bit unsigned integer.
+    */
+    uint32_t getStandardDeviceFamilyCode(void) 
+                                { return ( ( m_regs[0x9A] << 24 ) +
+                                            ( m_regs[0x9B] << 16 ) +
+                                            ( m_regs[0x9C] << 8 ) +
+                                            ( m_regs[0x9D] ) ); };
+
+    /*!
+      Get standard family type (added in spec 1.9)
+      @return Standard family type as 32-bit unsigned integer.
+    */
+    uint32_t getStandardDeviceFamilyType(void) 
+                                { return ( ( m_regs[0x9E] << 24 ) +
+                                            ( m_regs[0x9F] << 16 ) +
+                                            ( m_regs[0xA0] << 8 ) +
+                                            ( m_regs[0xA1] ) ); };
+
+    /*!
+      Restore standard configuration for node
+    */
+    int restoreStandardConfig(CVscpClient& client,
+                                cguid& guidNode,
+                                cguid& guidInterface,
+                                uint32_t timeout = 1000);
+
+    /*!
+      Get firmare device code (added in 1.13)
+      @return Firmware device code as 16-bit unsigned integer
+    */
+    uint16_t getFirmwareDeviceCode(void)
+                                { return ( (m_regs[0xA3] << 8 ) +
+                                           (m_regs[0xA4] ) ); };
+    
+    /*!
+      Get guid as GUID class
+    */
+    void getGUID(cguid& guid);
+
 
     /*!
       Get MDF URL
@@ -371,178 +546,30 @@ public:
     */
     std::string getMDF(void);
 
-    /*!
-      Get pointer to GUID array
-    */
-    const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
 
     /*!
-      Get guid as GUID class
-    */
-    void getGUID( cguid *pguid ) { pguid->getFromArray( m_reg + 0xD0 - 0x80 ); };
-
-    /*! 
-      Get buffer size
-    */
-    uint8_t getBufferSize( void ) { return m_reg[ 0x98 - 0x80 ]; };
-
-    /*!
-      Get bootloader algorithm
-    */
-    uint8_t getBootloaderAlgorithm( void ) { return m_reg[ 0x97 - 0x80 ]; };
-
-    /*!
-      Get firmware major version
-    */
-    uint8_t getMajorVersion( void ) { return m_reg[ 0x94 - 0x80 ]; };
-
-    /*!
-      Get firmware minor version
-    */
-    uint8_t getMinorVersion( void ) { return m_reg[ 0x95 - 0x80 ]; };
-
-    /*!
-      Get formware sub minor version
-    */
-    uint8_t getSubMinorVersion( void ) { return m_reg[ 0x96 - 0x80 ]; };
-
-    /*!
-      Get firmware version as string
-    */
-    std::string getFirmwareVersionString( void );
-
-    /*!
-      Get register page
-    */
-    uint16_t getRegisterPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
-                                    m_reg[ 0x93 - 0x80 ] ); };
-
-    /*!
-      Get nickname id
-    */
-    uint8_t getNickname( void ) { return m_reg[ 0x91 - 0x80 ]; };
-
-    /*!
-      Get alarm byte
-    */
-    uint8_t getAlarm( void ) { return m_reg[ 0x80 - 0x80 ]; };
-
-    /*!
-      Get VSCP protocol conformance major version
-    */
-    uint8_t getConfirmanceVersionMajor( void ) { return m_reg[ 0x81 - 0x80 ]; };
-
-    /*!
-      Get VSCP protocol conformance minor version
-    */
-    uint8_t getConfirmanceVersionMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
-
-    /*!
-      Get node error counter
-      (This was the node control byte in specs prior to 1.6)
-      @return error counter
-    */
-    uint8_t getErrorCounter( void ) { return m_reg[ 0x83 - 0x80 ]; };
-
-    /*!
-      Get user ID
-      @param index Index of user ID to get.
-      @return User ID
-    */
-    uint8_t getUserId( uint8_t index ) { return m_reg[ 0x84 - 0x80 + index ]; };
-
-    /*!
-      Get number of register pages
-      Deprecated
-    */
-    uint8_t getNumberOfRegisterPages( void ) { return m_reg[ 0x99 - 0x80 ]; };
-
-    /*!
-      Get manufacturer device id
-    */
-    uint32_t getManufacturerDeviceID( void )
-                                { return ( ( m_reg[ 0x89 - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x8A - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x8B - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x8C - 0x80 ] ) ); };
-
-    /*!
-      Get manufacturer sub device id
-    */
-    uint32_t getManufacturerSubDeviceID( void )
-                                { return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x8E - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x8F - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x90 - 0x80 ] ) ); };
-
-    
-
-    /*!
-      Get standard family code (added in spec 1.9)
-      @return Standard family code as 32-bit unsigned integer.
-    */
-    uint32_t getStandardDeviceFamilyCode(void) 
-                                { return ( ( m_reg[ 0x9A - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x9B - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x9C - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x9D - 0x80 ] ) ); };
-
-    /*!
-      Get standard family type (added in spec 1.9)
-      @return Standard family type as 32-bit unsigned integer.
-    */
-    uint32_t getStandardDeviceFamilyType(void) 
-                                { return ( ( m_reg[ 0x9E - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x9F - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0xA0 - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0xA1 - 0x80 ] ) ); };
-
-    /*!
-      Get firmare device code (added in 1.13)
-      @return Firmware device code as 16-bit unsigned integer
-    */
-    uint16_t getFirmwareDeviceCode(void)
-                                { return (  ( m_reg[ 0xA3 - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0xA4 - 0x80 ] ) ); };
-
-    /*!
-      Get a standard register from offset
+      Get a standard register value from offset
       @param reg Offset of standard register to read
       @return Register content of standard register or -1 on failure.
     */
-    int getStandardReg( uint8_t reg );
-
-    /*!
-      Return a pointer to the register storage
-      @return A pointer to standard register storage
-    */
-    unsigned char *getRegPointer( void ) { return m_reg; };
+    int getReg(uint8_t reg) { return m_regs[reg & 0x7F]; };
 
     /*!
         Set value for register
         @param reg Register to set value for
         @param val Value to set register to
     */
-    void setReg( uint8_t reg, uint8_t val ) { m_reg[ reg - 0x80 ] = val; };
+    void setReg(uint8_t reg, uint8_t val) { m_regs[reg & 0x7F] = val; };
 
 
-    /*!
-        Get value for register
-        @param reg Register to get value for
-        @return Value of requested register.
-    */
-    int getReg( uint8_t reg ) { return m_reg[ reg - 0x80 ]; };
 
 private:
 
-    /*!
-      The level for the device this registerset belongs to.
-      VSCP_LEVEL1 or VSCP_LEVEL2
-    */
+    /// LEVEL1 or LEVELII    
     uint8_t m_level;
 
     /// Standard register storage
-    uint8_t m_reg[ 128 ];
+    std::map<uint8_t,uint8_t> m_regs;
 
 };
 

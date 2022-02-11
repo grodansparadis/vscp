@@ -176,6 +176,61 @@ TEST(Register, Test_API_ReadLevel1RegisterBlock_Interface)
   ASSERT_EQ(regs[0xda], 0);
   ASSERT_EQ(regs[0xdb], 0);
 
+  regs.clear();
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, regs, 5000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+  ASSERT_EQ(regs.size(), 0x80);
+  ASSERT_EQ(regs[0xd0], 1);
+  ASSERT_EQ(regs[0xd1], 0);
+  ASSERT_EQ(regs[0xd2], 0);
+  ASSERT_EQ(regs[0xd3], 0);
+  ASSERT_EQ(regs[0xd4], 0);
+  ASSERT_EQ(regs[0xd5], 0);
+  ASSERT_EQ(regs[0xd6], 0);
+  ASSERT_EQ(regs[0xd7], 0);
+  ASSERT_EQ(regs[0xd8], 0);
+  ASSERT_EQ(regs[0xd9], 0);
+  ASSERT_EQ(regs[0xda], 0);
+  ASSERT_EQ(regs[0xdb], 0);
+  ASSERT_EQ(regs[0xdc], 6);
+  ASSERT_EQ(regs[0xdd], 0);
+  ASSERT_EQ(regs[0xde], 0);
+  ASSERT_EQ(regs[0xdf], 0x0f);
+
+  ASSERT_EQ(regs[0xe0], 0x77);
+  ASSERT_EQ(regs[0xe1], 0x77);
+  ASSERT_EQ(regs[0xe2], 0x77);
+  ASSERT_EQ(regs[0xe3], 0x2e);
+  ASSERT_EQ(regs[0xe4], 0x65);
+  ASSERT_EQ(regs[0xe5], 0x75);
+  ASSERT_EQ(regs[0xe6], 0x72);
+  ASSERT_EQ(regs[0xe7], 0x6f);
+  ASSERT_EQ(regs[0xe8], 0x73);
+  ASSERT_EQ(regs[0xe9], 0x6f);
+  ASSERT_EQ(regs[0xea], 0x75);
+  ASSERT_EQ(regs[0xeb], 0x72);
+  ASSERT_EQ(regs[0xec], 0x63);
+  ASSERT_EQ(regs[0xed], 0x65);
+  ASSERT_EQ(regs[0xee], 0x2e);
+  ASSERT_EQ(regs[0xef], 0x73);
+
+  ASSERT_EQ(regs[0xf0], 0x65);
+  ASSERT_EQ(regs[0xf1], 0x2f);
+  ASSERT_EQ(regs[0xf2], 0x62);
+  ASSERT_EQ(regs[0xf3], 0x65);
+  ASSERT_EQ(regs[0xf4], 0x69);
+  ASSERT_EQ(regs[0xf5], 0x6a);
+  ASSERT_EQ(regs[0xf6], 0x69);
+  ASSERT_EQ(regs[0xf7], 0x6e);
+  ASSERT_EQ(regs[0xf8], 0x67);
+  ASSERT_EQ(regs[0xf9], 0x5f);
+  ASSERT_EQ(regs[0xfa], 0x32);
+  ASSERT_EQ(regs[0xfb], 0x2e);
+  ASSERT_EQ(regs[0xfc], 0x78);
+  ASSERT_EQ(regs[0xfd], 0x6d);
+  ASSERT_EQ(regs[0xfe], 0x6c);
+  ASSERT_EQ(regs[0xff], 0x00);
+
   rv = client.disconnect();
   ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
 
@@ -225,6 +280,86 @@ TEST(Register, Test_API_writeLevel1RegisterBlock_Interface)
 
   rv = client.disconnect();
   ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+TEST(Register, Test_Class_CStandardRegisters)
+{
+  int rv;
+  std::set<uint8_t> nodes;
+
+  // Internal device pi5
+  vscpClientTcp client;
+  rv = client.init("tcp://192.168.1.32:9598", "admin", "secret");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  rv = client.connect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  cguid guidNode("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01");
+
+  // CAN4VSCP interface
+  cguid guidInterface("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00");
+  // std::cout << "GUID " << guid.getAsString() << std::endl;
+
+  CStandardRegisters stdregs;
+  rv = stdregs.init(client, guidNode, guidInterface);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  // Check alarm byte
+  ASSERT_EQ(0, stdregs.getAlarm());
+
+  // Check confirmance version
+  ASSERT_EQ(1, stdregs.getConfirmanceVersionMajor());
+  ASSERT_EQ(6, stdregs.getConfirmanceVersionMinor());
+
+  // User id bytes can vary in content so no check here
+
+  // Check manufacturer id
+  ASSERT_EQ(0x000f0b16, stdregs.getManufacturerDeviceID());
+  ASSERT_EQ(0x01000000, stdregs.getManufacturerSubDeviceID());
+
+  // Check nickname
+  ASSERT_EQ(1, stdregs.getNickname());
+
+  // Check firmware version
+  ASSERT_EQ(1, stdregs.getFirmwareMajorVersion());
+  ASSERT_EQ(1, stdregs.getFirmwareMinorVersion());
+  ASSERT_EQ(6, stdregs.getFirmwareSubMinorVersion());
+
+  // Get bootloader algorithm
+  ASSERT_EQ(1, stdregs.getBootloaderAlgorithm());
+
+  // Buffer size
+  ASSERT_EQ(8, stdregs.getBufferSize());
+
+  // Number of register pages
+  ASSERT_EQ(3, stdregs.getNumberOfRegisterPages());
+
+  // Standard device family code
+  ASSERT_EQ(0, stdregs.getStandardDeviceFamilyCode());
+
+  // Standard device family type
+  ASSERT_EQ(0, stdregs.getStandardDeviceFamilyType());
+
+  // Firmware device code
+  ASSERT_EQ(0, stdregs.getFirmwareDeviceCode());
+
+  // Get GUID
+  cguid guid;
+  stdregs.getGUID(guid);
+  ASSERT_EQ("01:00:00:00:00:00:00:00:00:00:00:00:06:00:00:0F", guid.getAsString());
+
+ 
+  std::string str = stdregs.getMDF();
+  //std::cout << "MDF: " << str << std::endl;
+  ASSERT_EQ("www.eurosource.se/beijing_2.xml", str);
+
+  rv = client.disconnect();
+  
 }
 
 
@@ -357,6 +492,7 @@ TEST(Register, Test_Local_Slow_Find_Nodes_Interface)
 
     rv = client.send(ex);
     ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+    usleep(10000);
     rv = client.send(ex);
     ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
     usleep(10000);
@@ -384,7 +520,7 @@ TEST(Register, Test_Local_Slow_Find_Nodes_Interface)
       }
     }
 
-    if ((vscp_getMsTimeStamp() - startTime) > 5000) {
+    if ((vscp_getMsTimeStamp() - startTime) > 10000) {
       // std::cout << std::dec << " End timestamp: " << (vscp_getMsTimeStamp()-startTime) << std::endl;
       break;
     }
