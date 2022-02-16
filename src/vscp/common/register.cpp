@@ -580,6 +580,32 @@ CRegisterPage::~CRegisterPage()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// putLevel1Registers
+//
+
+void 
+CRegisterPage::putLevel1Registers(std::map<uint8_t,uint8_t>& registers)
+{
+  for (auto const& reg : registers) {
+    putReg(reg.first, reg.second);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getLevel1Registers
+//
+
+void 
+CRegisterPage::getLevel1Registers(std::map<uint8_t,uint8_t>& registers)
+{
+  for (auto const& reg : m_registers) {
+    if (reg.first < 128) {
+      registers[reg.first] = reg.second;
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getReg
 //
 
@@ -609,10 +635,19 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
+  // If this is a different value other than the current
+  // mark register position as changed
+  if (m_registers[reg] != value) {
+    m_change[reg] = true;
+  }
   return m_registers[reg] = value; // Assign value
 }
 
+
+
 //-----------------------------------------------------------------------------
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor
@@ -643,6 +678,7 @@ int CStandardRegisters::init(CVscpClient& client,
 {
   int rv;
   m_regs.clear();
+  m_change.clear();
   rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, timeout);
   return rv;
 }
@@ -731,6 +767,41 @@ CUserRegisters::CUserRegisters(uint8_t level)
 CUserRegisters::~CUserRegisters() 
 {
   ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  init
+//
+
+int CUserRegisters::init(CVscpClient& client,
+                          cguid& guidNode,
+                          cguid& guidInterface,
+                          std::set<uint16_t>& pages, 
+                          uint32_t timeout)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+
+  for (auto const& page : pages) {
+    std::map<uint8_t, uint8_t> registers;
+    m_registerPageMap[page] = new CRegisterPage(m_level, page);
+    rv = vscp_readLevel1RegisterBlock(client, 
+                                        guidNode, 
+                                        guidInterface,
+                                        page,
+                                        0,
+                                        128,
+                                        registers,
+                                        timeout);
+    if ( VSCP_ERROR_SUCCESS != rv ) {
+      return rv;
+    }
+
+    // Transfer data to register page
+    m_registerPageMap[page]->putLevel1Registers(registers);
+    m_registerPageMap[page]->clearChanges();
+    //std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
+  }
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -824,19 +895,17 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 //  remoteVarFromRegToString
 //
 
-bool
+int
 CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar, 
                                           std::string& strValue, 
                                           uint8_t format)
 {
 
-  bool rv = false;
+  int rv = VSCP_ERROR_SUCCESS;
   CRegisterPage *ppage;
 
-  // Get register page
-  if (NULL == (ppage = getRegisterPage(remoteVar.getPage()))) {
-    return false;
-  }
+  // Get register page (will always return a page even if it does not exists)
+  ppage = getRegisterPage(remoteVar.getPage());
 
   // vscp_remote_variable_type
   switch (remoteVar.getType()) {
@@ -854,13 +923,12 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         }
         strValue = (const char *)pstr;
         delete [] pstr;
-        return true;
       }
       break;
 
     case remote_variable_type_boolean:
       {
-        strValue = ppage->getReg(remoteVar.getOffset()) ? "true" : "false";
+        strValue = ppage->getReg(remoteVar.getOffset() & (1<<remoteVar.getBitPos())) ? "true" : "false";
       }
       break;
 
@@ -1061,7 +1129,8 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
     default:
         strValue = "";
         break;
-    }
+  }
+
   return rv;
 }
 
@@ -1069,93 +1138,181 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 //  remoteVarFromStringToReg
 //
 
-bool
+int
 CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::string &strValue)
 {
-  bool rv = false;
+  bool rv = VSCP_ERROR_SUCCESS;
+  CRegisterPage *ppage = getRegisterPage( remoteVar.getPage() );
+
   switch (remoteVar.getType()) {
 
     case remote_variable_type_string:
       {
-
+        /*!
+          It is possible to write registers here that is out of bonds
+          for a level I device but that is not a problem as they never
+          will be written to the device.
+        */
+        for (int i=0; i<strValue.length(); i++) {
+          ppage->putReg(remoteVar.getOffset() + i, strValue[i]);
+        }
       }
       break;
 
     case remote_variable_type_boolean:
       {
-
+        uint8_t val = ppage->getReg(remoteVar.getOffset());
+        if ( 0 == strValue.compare("true") ) {
+          val |= (1 << remoteVar.getBitPos());
+        }
+        else if ( 0 == strValue.compare("false") ) {
+          val &=  ~(1 << remoteVar.getBitPos());
+        }
+        else {
+          val = (uint8_t)vscp_readStringValue(strValue);
+        }    
+        
+        ppage->putReg(remoteVar.getOffset(), val);  
       }
       break;
 
     case remote_variable_type_int8_t:
       {
-
+        int8_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), val);
       }
       break;
 
     case remote_variable_type_uint8_t:
       {
-
+        uint8_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), val);
       }
       break;
 
     case remote_variable_type_int16_t:
       {
-
+        int16_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, val & 0xff);
       }
       break;
 
     case remote_variable_type_uint16_t:
       {
-
+        uint16_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, val & 0xff);
       }
       break;
 
     case remote_variable_type_int32_t:
       {
-
+        int32_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 24) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, (val >> 16) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 2, (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 3, val & 0xff);
       }
       break;
 
     case remote_variable_type_uint32_t:
       {
-
+        uint32_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 24) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, (val >> 16) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 2, (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 3, val & 0xff);
       }
       break;
 
     case remote_variable_type_int64_t:
       {
-        
+        int64_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 56) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, (val >> 48) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 2, (val >> 40) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 3, (val >> 32) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 4, (val >> 24) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 5, (val >> 16) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 6, (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 7, val & 0xff);  
       }
       break;
 
     case remote_variable_type_uint64_t:
       {
-        
+        uint64_t val = vscp_readStringValue(strValue);
+        ppage->putReg(remoteVar.getOffset(), (val >> 56) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, (val >> 48) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 2, (val >> 40) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 3, (val >> 32) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 4, (val >> 24) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 5, (val >> 16) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 6, (val >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 7, val & 0xff);  
       }
       break;
 
     case remote_variable_type_float:
       {
-        
+        float val = vscp_readStringValue(strValue);
+        uint8_t *p = (uint8_t *)&val;
+        val = VSCP_INT32_SWAP_ON_LE(*((int64_t *)p));
+        ppage->putReg(remoteVar.getOffset(), (*p >> 24) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 1, (*p >> 16) & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 2, (*p >> 8)  & 0xff);
+        ppage->putReg(remoteVar.getOffset() + 3, *p & 0xff);
       }
       break;
 
     case remote_variable_type_double:
       {
-
+        double val = vscp_readStringValue(strValue);
+        uint8_t *p = (uint8_t *)&val;
+#ifndef __BIG_ENDIAN__
+        val = Swap8Bytes(*((int64_t *)p));
+#endif        
+        ppage->putReg(remoteVar.getOffset(), *p);
+        ppage->putReg(remoteVar.getOffset() + 1, *(p+1));
+        ppage->putReg(remoteVar.getOffset() + 2, *(p+2));
+        ppage->putReg(remoteVar.getOffset() + 3, *(p+3));
+        ppage->putReg(remoteVar.getOffset() + 4, *(p+4));
+        ppage->putReg(remoteVar.getOffset() + 5, *(p+5));
+        ppage->putReg(remoteVar.getOffset() + 6, *(p+6));
+        ppage->putReg(remoteVar.getOffset() + 7, *(p+7));
       }
       break;
 
+    // YY:MM:DD
     case remote_variable_type_date:
       {
- 
+        std::deque<std::string> vec;
+        vscp_split(vec, strValue, ":");
+        if (vec.size() == 3) {
+          uint8_t val = vscp_readStringValue(vec[0]);
+          ppage->putReg(remoteVar.getOffset(), val);
+          val = vscp_readStringValue(vec[1]);
+          ppage->putReg(remoteVar.getOffset() + 1, val);
+          val = vscp_readStringValue(vec[2]);
+          ppage->putReg(remoteVar.getOffset() + 2, val);
+        }
       }
       break;
 
+    // HH:MM:SS
     case remote_variable_type_time:
       {
-
+        std::deque<std::string> vec;
+        vscp_split(vec, strValue, ":");
+        if (vec.size() == 3) {
+          uint8_t val = vscp_readStringValue(vec[0]);
+          ppage->putReg(remoteVar.getOffset(), val);
+          val = vscp_readStringValue(vec[1]);
+          ppage->putReg(remoteVar.getOffset() + 1, val);
+          val = vscp_readStringValue(vec[2]);
+          ppage->putReg(remoteVar.getOffset() + 2, val);
+        }
       }
       break;
 

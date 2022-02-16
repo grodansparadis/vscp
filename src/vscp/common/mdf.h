@@ -800,6 +800,18 @@ public:
   void setAccess(mdf_access_mode access) { m_access = access; };
 
   /*!
+    Get bit position for boolean
+    @return Page for remote variable.
+  */
+  uint16_t getBitPos(void) { return m_bitpos & 0x07; };
+
+  /*!
+    Set bit position for boolean
+    @param bitpos Bit postion 0-7.
+  */
+  void setBitPos(uint8_t bitpos) { m_bitpos = bitpos & 0x07; };
+
+  /*!
     Get value list for remote variable
     @return Value list for remote variable.
   */

@@ -202,6 +202,18 @@ public:
   ~CRegisterPage();
 
   /*!
+    Write level 1 register map to page map
+    @param registers - Registers to write
+  */
+  void putLevel1Registers(std::map<uint8_t,uint8_t>& registers);
+
+  /*!
+    Get level 1 register map 
+    @param registers - Registers to write
+  */
+  void getLevel1Registers(std::map<uint8_t,uint8_t>& registers);
+
+  /*!
     Read register content on a register page.
     Register must exist.
 
@@ -219,6 +231,17 @@ public:
       @return Register content or -1 on failure.
   */
   int putReg(uint32_t offset, uint8_t value);
+
+  /*!
+    Clear the register changes marks
+  */
+  void clearChanges(void) { m_change.clear(); };
+
+  /*!
+    Get the register changes
+    @return Register changes
+  */
+  std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
   /*!
     Get the register map for this page
@@ -247,6 +270,12 @@ private:
     range 0x00000000 - 0xffff0000.
   */
   std::map<uint32_t, uint8_t> m_registers;
+
+  /*!
+    Here a register position is true for a register that
+    has received a value it did not have before.
+  */
+  std::map<uint32_t, bool> m_change;
 };
 
 
@@ -267,6 +296,21 @@ public:
 
   CUserRegisters( uint8_t level = VSCP_LEVEL1 );
   ~CUserRegisters();
+
+  /*! 
+      Read all user register content
+      @param client The communication interface to use
+      @param guidNode GUID for node. Only LSB is used for level I node.
+      @param guidInterface GUID for interface. If zero no interface is used.
+      @param pages A set holding the valied pages
+      @param timeout Timeout in milliseconds. Zero means no timeout
+      @return VSCP_ERROR_SUCCESS on success.
+    */
+  int init(CVscpClient& client,
+              cguid& guidNode,
+              cguid& guidInterface,
+              std::set<uint16_t>& pages, 
+              uint32_t timeout = 1000);
   
   /*!
     Get register from specific page
@@ -309,9 +353,9 @@ public:
       Get abstraction value from registers into string value.
       @param abstraction Abstraction record from MDF.
       @param strValue Abstraction value in string form on return if call successful.
-      @return true on success.
+      @return VSCP_ERROR_SUCCES on success and error code else.
   */
-  bool remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
+  int remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
                                   std::string& strValue,
                                   uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
 
@@ -319,9 +363,9 @@ public:
     * Store abstraction value in string format in corresponding registers.
     * @param abstraction Abstraction record from MDF.
     * @param strValue Abstraction value in string form.
-    * @return true on success.
+    * @return VSCP_ERROR_SUCCES on success and error code else.
     */
-  bool remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
+  int remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
                                   std::string &strValue);
 
 private:
@@ -355,222 +399,236 @@ class CStandardRegisters
 
 public:
 
-    /*!
-        Default Constructor
-    */
-    CStandardRegisters(uint8_t level = VSCP_LEVEL1);
+  /*!
+      Default Constructor
+  */
+  CStandardRegisters(uint8_t level = VSCP_LEVEL1);
 
-    /*!
-        Default Destructor
-    */
-    ~CStandardRegisters(void);
+  /*!
+      Default Destructor
+  */
+  ~CStandardRegisters(void);
 
-    /*! 
-      Read all standard register content
-      @param client The communication interface to use
-      @param guidNode GUID for node. Only LSB is used for level I node.
-      @param guidInterface GUID for interface. If zero no interface is used.
-      @param timeout Timeout in milliseconds. Zero means no timeout
-      @return VSCP_ERROR_SUCCESS on success.
-    */
-    int init(CVscpClient& client,
-                cguid& guidNode,
-                cguid& guidInterface,
-                uint32_t timeout = 1000);
+  /*! 
+    Read all standard register content
+    @param client The communication interface to use
+    @param guidNode GUID for node. Only LSB is used for level I node.
+    @param guidInterface GUID for interface. If zero no interface is used.
+    @param timeout Timeout in milliseconds. Zero means no timeout
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int init(CVscpClient& client,
+              cguid& guidNode,
+              cguid& guidInterface,
+              uint32_t timeout = 1000);
 
-    /*!
-      Get alarm byte
-      @return VSCP alarm byte
-    */
-    uint8_t getAlarm(void) { return m_regs[0x80]; };
+  /*!
+    Get alarm byte
+    @return VSCP alarm byte
+  */
+  uint8_t getAlarm(void) { return m_regs[0x80]; };
 
-    
-    /*!
-      Get VSCP protocol conformance major version
-      @return VSCP protocol conformance major version
-    */
-    uint8_t getConfirmanceVersionMajor(void) { return m_regs[0x81]; };
+  
+  /*!
+    Get VSCP protocol conformance major version
+    @return VSCP protocol conformance major version
+  */
+  uint8_t getConfirmanceVersionMajor(void) { return m_regs[0x81]; };
 
-    /*!
-      Get VSCP protocol conformance minor version
-      @return VSCP protocol conformance minor version
-    */
-    uint8_t getConfirmanceVersionMinor(void) { return m_regs[0x82]; };
+  /*!
+    Get VSCP protocol conformance minor version
+    @return VSCP protocol conformance minor version
+  */
+  uint8_t getConfirmanceVersionMinor(void) { return m_regs[0x82]; };
 
-    /*!
-      Get node error counter
-      (This was the node control byte in specs prior to 1.6)
-      @return error counter
-    */
-    uint8_t getErrorCounter(void) { return m_regs[0x83]; };
+  /*!
+    Get node error counter
+    (This was the node control byte in specs prior to 1.6)
+    @return error counter
+  */
+  uint8_t getErrorCounter(void) { return m_regs[0x83]; };
 
-    /*!
-      Get user ID
-      @param index Index of user ID to get.
-      @return User ID for pos
-    */
-    uint8_t getUserId(uint8_t index) {return m_regs[ 0x84 + index ];};
+  /*!
+    Get user ID
+    @param index Index of user ID to get.
+    @return User ID for pos
+  */
+  uint8_t getUserId(uint8_t index) {return m_regs[ 0x84 + index ];};
 
-    /*!
-      Get user ID
-      @param uid Buffer of five bytes for user id.
-    */
-    void getUserId(uint8_t *puid) 
-                          { 
-                            puid[0] = m_regs[0x84];
-                            puid[1] = m_regs[0x85];
-                            puid[2] = m_regs[0x86];
-                            puid[3] = m_regs[0x87];
-                            puid[4] = m_regs[0x88];
-                          };
+  /*!
+    Get user ID
+    @param uid Buffer of five bytes for user id.
+  */
+  void getUserId(uint8_t *puid) 
+                        { 
+                          puid[0] = m_regs[0x84];
+                          puid[1] = m_regs[0x85];
+                          puid[2] = m_regs[0x86];
+                          puid[3] = m_regs[0x87];
+                          puid[4] = m_regs[0x88];
+                        };
 
-    /*!
-      Get manufacturer device id
-      @return Manufacturer device id
-    */
-    uint32_t getManufacturerDeviceID(void)
-                                { return ( ( m_regs[0x89] << 24 ) +
-                                            ( m_regs[0x8A] << 16 ) +
-                                            ( m_regs[0x8B] << 8 ) +
-                                            ( m_regs[0x8C] ) ); };
-    /*!
-      Get manufacturer sub device id
-      @return Manufacturer sub device id
-    */
-    uint32_t getManufacturerSubDeviceID(void)
-                                { return ( ( m_regs[0x8D] << 24 ) +
-                                            ( m_regs[0x8E] << 16 ) +
-                                            ( m_regs[0x8F] << 8 ) +
-                                            ( m_regs[0x90] ) ); };
+  /*!
+    Get manufacturer device id
+    @return Manufacturer device id
+  */
+  uint32_t getManufacturerDeviceID(void)
+                              { return ( ( m_regs[0x89] << 24 ) +
+                                          ( m_regs[0x8A] << 16 ) +
+                                          ( m_regs[0x8B] << 8 ) +
+                                          ( m_regs[0x8C] ) ); };
+  /*!
+    Get manufacturer sub device id
+    @return Manufacturer sub device id
+  */
+  uint32_t getManufacturerSubDeviceID(void)
+                              { return ( ( m_regs[0x8D] << 24 ) +
+                                          ( m_regs[0x8E] << 16 ) +
+                                          ( m_regs[0x8F] << 8 ) +
+                                          ( m_regs[0x90] ) ); };
 
-    /*!
-      Get nickname id
-      @return nickname id
-    */
-    uint8_t getNickname(void) {return m_regs[0x91];};
+  /*!
+    Get nickname id
+    @return nickname id
+  */
+  uint8_t getNickname(void) {return m_regs[0x91];};
 
-    /*!
-      Get register page
-      @return register page
-    */
-    uint16_t getRegisterPage(void) { return ( m_regs[0x92] * 256 +
-                                              m_regs[0x93] ); };
+  /*!
+    Get register page
+    @return register page
+  */
+  uint16_t getRegisterPage(void) { return ( m_regs[0x92] * 256 +
+                                            m_regs[0x93] ); };
 
-    /*!
-      Get firmware major version
-    */
-    uint8_t getFirmwareMajorVersion(void) 
-                                    {return m_regs[0x94];};
+  /*!
+    Get firmware major version
+  */
+  uint8_t getFirmwareMajorVersion(void) 
+                                  {return m_regs[0x94];};
 
-    /*!
-      Get firmware minor version
-    */
-    uint8_t getFirmwareMinorVersion(void) 
-                                    {return m_regs[0x95];};
+  /*!
+    Get firmware minor version
+  */
+  uint8_t getFirmwareMinorVersion(void) 
+                                  {return m_regs[0x95];};
 
-    /*!
-      Get firmware sub minor version
-    */
-    uint8_t getFirmwareSubMinorVersion(void) 
-                                    {return m_regs[0x96];};
+  /*!
+    Get firmware sub minor version
+  */
+  uint8_t getFirmwareSubMinorVersion(void) 
+                                  {return m_regs[0x96];};
 
-    /*!
-      Get firmware version as string
-    */
-    std::string getFirmwareVersionString(void);
+  /*!
+    Get firmware version as string
+  */
+  std::string getFirmwareVersionString(void);
 
-    /*!
-      Get bootloader algorithm
-      @return bootloader algorithm
-    */
-    uint8_t getBootloaderAlgorithm(void) 
-                                    {return m_regs[0x97];};
+  /*!
+    Get bootloader algorithm
+    @return bootloader algorithm
+  */
+  uint8_t getBootloaderAlgorithm(void) 
+                                  {return m_regs[0x97];};
 
-    /*! 
-      Get buffer size
-      @return buffer size
-    */
-    uint8_t getBufferSize(void) {return m_regs[0x98];};                                    
+  /*! 
+    Get buffer size
+    @return buffer size
+  */
+  uint8_t getBufferSize(void) {return m_regs[0x98];};                                    
 
-    /*!
-      Get number of register pages !!!DEPRECATED!!!
-      @return number of register pages
-    */
-    uint8_t getNumberOfRegisterPages(void) {return m_regs[0x99]; };
+  /*!
+    Get number of register pages !!!DEPRECATED!!!
+    @return number of register pages
+  */
+  uint8_t getNumberOfRegisterPages(void) {return m_regs[0x99]; };
 
-    /*!
-      Get standard family code (added in spec 1.9)
-      @return Standard family code as 32-bit unsigned integer.
-    */
-    uint32_t getStandardDeviceFamilyCode(void) 
-                                { return ( ( m_regs[0x9A] << 24 ) +
-                                            ( m_regs[0x9B] << 16 ) +
-                                            ( m_regs[0x9C] << 8 ) +
-                                            ( m_regs[0x9D] ) ); };
+  /*!
+    Get standard family code (added in spec 1.9)
+    @return Standard family code as 32-bit unsigned integer.
+  */
+  uint32_t getStandardDeviceFamilyCode(void) 
+                              { return ( ( m_regs[0x9A] << 24 ) +
+                                          ( m_regs[0x9B] << 16 ) +
+                                          ( m_regs[0x9C] << 8 ) +
+                                          ( m_regs[0x9D] ) ); };
 
-    /*!
-      Get standard family type (added in spec 1.9)
-      @return Standard family type as 32-bit unsigned integer.
-    */
-    uint32_t getStandardDeviceFamilyType(void) 
-                                { return ( ( m_regs[0x9E] << 24 ) +
-                                            ( m_regs[0x9F] << 16 ) +
-                                            ( m_regs[0xA0] << 8 ) +
-                                            ( m_regs[0xA1] ) ); };
+  /*!
+    Get standard family type (added in spec 1.9)
+    @return Standard family type as 32-bit unsigned integer.
+  */
+  uint32_t getStandardDeviceFamilyType(void) 
+                              { return ( ( m_regs[0x9E] << 24 ) +
+                                          ( m_regs[0x9F] << 16 ) +
+                                          ( m_regs[0xA0] << 8 ) +
+                                          ( m_regs[0xA1] ) ); };
 
-    /*!
-      Restore standard configuration for node
-    */
-    int restoreStandardConfig(CVscpClient& client,
-                                cguid& guidNode,
-                                cguid& guidInterface,
-                                uint32_t timeout = 1000);
+  /*!
+    Restore standard configuration for node
+  */
+  int restoreStandardConfig(CVscpClient& client,
+                              cguid& guidNode,
+                              cguid& guidInterface,
+                              uint32_t timeout = 1000);
 
-    /*!
-      Get firmare device code (added in 1.13)
-      @return Firmware device code as 16-bit unsigned integer
-    */
-    uint16_t getFirmwareDeviceCode(void)
-                                { return ( (m_regs[0xA3] << 8 ) +
-                                           (m_regs[0xA4] ) ); };
-    
-    /*!
-      Get guid as GUID class
-    */
-    void getGUID(cguid& guid);
-
-
-    /*!
-      Get MDF URL
-      @param url - Reference to string to store URL in.
-    */
-    std::string getMDF(void);
+  /*!
+    Get firmare device code (added in 1.13)
+    @return Firmware device code as 16-bit unsigned integer
+  */
+  uint16_t getFirmwareDeviceCode(void)
+                              { return ( (m_regs[0xA3] << 8 ) +
+                                          (m_regs[0xA4] ) ); };
+  
+  /*!
+    Get guid as GUID class
+  */
+  void getGUID(cguid& guid);
 
 
-    /*!
-      Get a standard register value from offset
-      @param reg Offset of standard register to read
-      @return Register content of standard register or -1 on failure.
-    */
-    int getReg(uint8_t reg) { return m_regs[reg & 0x7F]; };
-
-    /*!
-        Set value for register
-        @param reg Register to set value for
-        @param val Value to set register to
-    */
-    void setReg(uint8_t reg, uint8_t val) { m_regs[reg & 0x7F] = val; };
+  /*!
+    Get MDF URL
+    @param url - Reference to string to store URL in.
+  */
+  std::string getMDF(void);
 
 
+  /*!
+    Get a standard register value from offset
+    @param reg Offset of standard register to read
+    @return Register content of standard register or -1 on failure.
+  */
+  int getReg(uint8_t reg) { return m_regs[reg & 0x7F]; };
+
+  /*!
+      Set value for register
+      @param reg Register to set value for
+      @param val Value to set register to
+  */
+  void setReg(uint8_t reg, uint8_t val) { m_regs[reg & 0x7F] = val; };
+
+  /*!
+    Clear the register changes marks
+  */
+  void clearChanges(void) { m_change.clear(); };
+
+  /*!
+    Get the register changes
+    @return Register changes
+  */
+  std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
 private:
 
-    /// LEVEL1 or LEVELII    
-    uint8_t m_level;
+  /// LEVEL1 or LEVEL2    
+  uint8_t m_level;
 
-    /// Standard register storage
-    std::map<uint8_t,uint8_t> m_regs;
+  /// Standard register storage
+  std::map<uint8_t,uint8_t> m_regs;
 
+  /*!
+    Here a register position is true for a register that
+    has received a value it did not have before.
+  */
+  std::map<uint32_t, bool> m_change;
 };
 
 

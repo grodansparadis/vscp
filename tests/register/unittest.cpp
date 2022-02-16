@@ -363,6 +363,84 @@ TEST(Register, Test_Class_CStandardRegisters)
 }
 
 
+
+//-----------------------------------------------------------------------------
+
+
+TEST(Register, Test_Class_CUserRegisters)
+{
+  int rv;
+  uint8_t value;
+  std::set<uint8_t> nodes;
+  CRegisterPage *pregpage;
+
+  // Internal device pi5
+  vscpClientTcp client;
+  rv = client.init("tcp://192.168.1.32:9598", "admin", "secret");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  rv = client.connect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  cguid guidNode("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:01");
+
+  // CAN4VSCP interface
+  cguid guidInterface("FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00");
+  // std::cout << "GUID " << guid.getAsString() << std::endl;
+
+  std::set<uint16_t> pages = {0, 1, 2};
+  CUserRegisters userregs;
+
+  rv = userregs.init(client, guidNode, guidInterface, pages);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, rv);
+
+  // Page 0
+  pregpage = userregs.getRegisterPage(0);
+  ASSERT_NE(nullptr, pregpage);
+
+  value = pregpage->getReg(0x00);
+  ASSERT_EQ(0x00, value);
+
+  value = pregpage->getReg(0x01);
+  ASSERT_EQ(0x00, value);
+
+  value = pregpage->getReg(0x02);
+  ASSERT_EQ(0x00, value);
+
+  value = pregpage->getReg(0x03);
+  ASSERT_EQ(0x01, value);
+
+  value = pregpage->getReg(0x04);
+  ASSERT_EQ(0x02, value);
+
+  value = pregpage->getReg(0x05);
+  ASSERT_EQ(0x03, value);
+
+  value = pregpage->getReg(0x06);
+  ASSERT_EQ(0x04, value);
+
+  // -------------------------------------------------------------------------
+
+  // Page 2
+  pregpage = userregs.getRegisterPage(2);
+  ASSERT_NE(nullptr, pregpage);
+
+  value = pregpage->getReg(0x19);
+  ASSERT_EQ(0x01, value);
+
+  value = pregpage->getReg(0x1A);
+  ASSERT_EQ(0x02, value);
+
+  value = pregpage->getReg(0x1B);
+  ASSERT_EQ(0x03, value);
+
+  value = pregpage->getReg(0x1C);
+  ASSERT_EQ(0x00, value);
+
+  rv = client.disconnect();
+}
+
+
 //-----------------------------------------------------------------------------
 
 
