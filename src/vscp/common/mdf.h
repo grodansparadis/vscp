@@ -746,7 +746,7 @@ public:
   std::string getTypeString(void);
 
   /*!
-      Get number of bytes for an remote variable type
+      Get number of bytes for a remote variable type
       @return Number of bytes for remote variable type.
    */
   uint16_t getTypeByteCount(void);
@@ -798,6 +798,18 @@ public:
     @param access Access mode for remote variable.
   */
   void setAccess(mdf_access_mode access) { m_access = access; };
+
+  /*!
+    Get bit position for boolean
+    @return Page for remote variable.
+  */
+  uint16_t getBitPos(void) { return m_bitpos & 0x07; };
+
+  /*!
+    Set bit position for boolean
+    @param bitpos Bit postion 0-7.
+  */
+  void setBitPos(uint8_t bitpos) { m_bitpos = bitpos & 0x07; };
 
   /*!
     Get value list for remote variable
@@ -2826,6 +2838,20 @@ public:
   size_t getRegisterCount(void) { return m_list_register.size(); };
 
   /*!
+    Get the complete register list
+    @return Pointer to register list.
+  */
+  std::deque<CMDF_Register *> *getRegisterList(void) { return &m_list_register; };
+
+  /*!
+    Get all registers for a specific page
+    @param page Page to get registers for.
+    @return Pointer to register definition for page ot a nullpointer if page
+              does not exist.
+  */
+  void getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs);
+
+  /*!
       Get number of defined registers
       @param page Register page to check
       @return Number of registers used.
@@ -2845,7 +2871,7 @@ public:
       @param array Reference to array with pages
       @return Number of register pages used.
   */
-  uint32_t getPages(std::set<long> &pages);
+  uint32_t getPages(std::set<uint16_t> &pages);
 
 
   //-----------------------------------------------------------------------------

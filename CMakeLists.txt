@@ -2,7 +2,7 @@
 #
 # Build instructions for the VSCP daemon.
 #
-# Copyright (c) 2000-2021 Åke Hedman, the VSCP project
+# Copyright (c) 2000-2022 Åke Hedman, the VSCP project
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,8 +90,8 @@ endif()
 
 option(USE_SSL "Use SSL" TRUE)
 
-## --- C++11 build flags ---
-set(CMAKE_CXX_STANDARD 11)
+## --- C++14 build flags ---
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
@@ -254,8 +254,6 @@ if (WIN32)
         src/vscp/common/vscpcanaldeviceif.cpp
         src/vscp/common/canal_xmlconfig.h
         src/vscp/common/canal_xmlconfig.cpp
-        src/vscp/common/register.h
-        src/vscp/common/register.cpp
         src/vscp/common/vscp_client_base.h
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
@@ -310,8 +308,6 @@ else()
         src/vscp/common/vscpcanaldeviceif.cpp
         src/vscp/common/canal_xmlconfig.h
         src/vscp/common/canal_xmlconfig.cpp
-        src/vscp/common/register.h
-        src/vscp/common/register.cpp
         src/vscp/common/vscp_client_base.h
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h

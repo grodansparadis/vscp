@@ -258,7 +258,7 @@ int vscpClientCanal::receive(vscpEvent &ev)
 
     return vscp_convertCanalToEvent(&ev,
                                     &canalMsg,
-                                    guid);
+                                    guid) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ int vscpClientCanal::receive(vscpEventEx &ex)
 
     return vscp_convertCanalToEventEx(&ex,
                                         &canalMsg,
-                                        guid);
+                                        guid) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

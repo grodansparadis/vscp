@@ -36,19 +36,14 @@ class vscpdatetime
 {
 
   public:
+  
     // some trivial ones
     static const int MONTHS_IN_YEAR = 12;
-
     static const int SEC_PER_MIN = 60;
-
     static const int MIN_PER_HOUR = 60;
-
     static const long SECONDS_PER_HOUR = 3600;
-
     static const long SECONDS_PER_DAY = 86400l;
-
     static const int DAYS_PER_WEEK = 7;
-
     static const long MILLISECONDS_PER_DAY = 86400000l;
 
     // this is the integral part of JDN of the midnight of Jan 1, 1970

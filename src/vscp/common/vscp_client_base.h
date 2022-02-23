@@ -77,7 +77,7 @@ public:
     - RAWMQTT - Handle standard MQTT. 
 */
 
-    enum class connType {
+    typedef enum class connType {
         NONE=0, 
         LOCAL, 
         TCPIP, 
@@ -94,7 +94,7 @@ public:
         RS485, 
         RAWCAN, 
         RAWMQTT
-    };
+    } connType;
 
     /*!
         Connect to remote host
@@ -247,7 +247,7 @@ public:
         Get connection type
         @return Type for the connection
     */
-    connType getType(void);
+    connType getType(void) {return m_type; };
 
     /*!
         Set name for communication object

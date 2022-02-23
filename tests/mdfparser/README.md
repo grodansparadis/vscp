@@ -1,6 +1,6 @@
-# Unittests for the userlist and useritem class
+# Unittests for the mdf xml/json parser
 
-Unittests for the CUserItem and CUserList classes
+Unittests for the MDF xml/json parser
 
 ```bash
 mkdir build

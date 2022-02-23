@@ -171,6 +171,27 @@
           ],
           "preLaunchTask": "build test code for mdfparser",
           "miDebuggerPath": "/usr/bin/gdb"
-      }
+        },
+        {
+          "name": "(gdb) test register",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/home/akhe/development/VSCP/vscp/tests/register/build/test",
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "gdb",
+          "setupCommands": [
+              {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+              }
+          ],
+          "preLaunchTask": "build test code for register-test",
+          "miDebuggerPath": "/usr/bin/gdb"
+        }
     ]
 }

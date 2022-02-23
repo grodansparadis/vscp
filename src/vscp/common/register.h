@@ -36,65 +36,353 @@
 #include <vscp_type.h>
 #include <canal.h>
 #include <guid.h>
+#include <vscp_client_base.h>
 
 #define FORMAT_ABSTRACTION_DECIMAL      0
 #define FORMAT_ABSTRACTION_HEX          1
 
+class CRegisterPage;
+class CUserRegisters;
+class CStandardRegisters;
+
 /*!
-    \class CDecisionMatrix
-    \brief Encapsulates the decision matrix of a device
+  Read VSCP register
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param value Value read from register.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
 */
-class CDecisionMatrix
-{
+int vscp_readLevel1Register( CVscpClient& client,
+                              cguid& guidNode,
+                              cguid& guidInterface,
+                              uint16_t page, 
+                              uint8_t offset,
+                              uint8_t& value,  
+                              uint32_t timeout = 1000);
 
-public:
+/*!
+  Write VSCP register
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out. 
+  @param guid GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param value Value to write.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.           
+*/
+int vscp_writeLevel1Register( CVscpClient& client,
+                                cguid& guidNode,
+                                cguid& guidInterface,
+                                uint16_t page,
+                                uint8_t offset,
+                                uint8_t value,
+                                uint32_t timeout = 1000 );
 
-    /*!
-        Default Constructor
-    */
-    CDecisionMatrix( CMDF_DecisionMatrix *pdm, bool bIndexed = false );
+/*!
+  Read VSCP register block.
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param offset Register offset on page to read from.
+  @param count Number of registers to read. Zero means read 256 registers (0-255).
+  @param values Pointer to map with registers to read.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int vscp_readLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    uint8_t offset,
+                                    uint8_t count,
+                                    std::map<uint8_t,uint8_t>& values,
+                                    uint32_t timeout = 1000);
 
-    /*!
-        Default Destructor
-    */
-    ~CDecisionMatrix( void );
+/*!
+  Write VSCP register block.
+  The function tries to group register writes wherever
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guidNode GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication. 
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.                
+  @param page Register page to read from. 
+  @param values Pointer to map with register values to write.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int vscp_writeLevel1RegisterBlock( CVscpClient& client,
+                                    cguid& guidNode,
+                                    cguid& guidInterface,
+                                    uint16_t page, 
+                                    std::map<uint8_t,uint8_t>& values,
+                                    uint32_t timeout = 1000);
 
-    /*!
+/*!
+  Read all standard registers
+*/
+int vscp_readStandardRegisters(CVscpClient& client,
+                                cguid& guid,
+                                cguid& guidInterface,
+                                CStandardRegisters& stdregs,
+                                uint32_t timeout = 0 );
 
-    */
-    bool loadMatrix();
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param found A set with nodeid's for found nodes.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanForDevices(CVscpClient& client,
+                                cguid& guid,
+                                std::set<uint8_t> &found,
+                                uint32_t timeout = 1000);
 
-    /*!
-        Load a DM row
-        @param row Row to load.
-        @param pRow Pointer t array which must hold eight bytes and
-                    will receive the row.
-    */
-    bool getRow( uint32_t row, uint8_t *pRow );
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param found_nodes A set with nodeid's for found nodes.
+  @param start_nodeid Start nodeid to search from.
+  @param end_nodeid End nodeid to search to.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanSlowForDevices(CVscpClient& client,
+                                cguid& guid,
+                                std::set<uint8_t> &found_nodes,
+                                uint8_t start_node = 0,
+                                uint8_t end_node = 255,
+                                uint32_t delay = 10000,
+                                uint32_t timeout = 2000);
 
-
-private:
-
-    /*!
-        True if the matrix is indexed. That is if it consist
-        of one row precided by an index into the matrix.
-    */
-    bool m_bIndexedDM;
-
-    /*!
-        A memory array holding the full decision matrix
-    */
-    uint8_t *m_pdm;
-
-    /*!
-        Pointer to decsion matrix info from MDF
-    */
-    CMDF_DecisionMatrix *m_pmdfdm;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
+/*!
+    \class CRegistersPage
+    \brief Encapsulates one page of user registers of a device
+
+    This class encapsulates one page of user registers of a device. For a 
+    level II device this is the page 0x00 (the only page).
+*/
+class CRegisterPage
+{
+
+public:
+  /*!
+    Constructor
+    @param level - Level of device.
+    @param page - Page this set of registers is located on.
+  */
+  CRegisterPage(uint8_t level = 0, uint16_t page = 0);
+  ~CRegisterPage();
+
+  /*!
+    Write level 1 register map to page map
+    @param registers - Registers to write
+  */
+  void putLevel1Registers(std::map<uint8_t, uint8_t>& registers);
+
+  /*!
+    Get level 1 register map 
+    @param registers - Registers to write
+  */
+  void getLevel1Registers(std::map<uint8_t, uint8_t>& registers);
+
+  /*!
+    Read register content on a register page.
+    Register must exist.
+
+    @param offset Register to read
+    @return Register content or -1 on failure.
+  */
+  int getReg(uint32_t offset);
+
+  /*!
+      Write value to a register on a register page.
+      Register is created if it does not exist.
+
+      @param offset Register to write to.
+      @param value to write to register.
+      @return Register content or -1 on failure.
+  */
+  int putReg(uint32_t offset, uint8_t value);
+
+  /*!
+    Clear the register changes marks
+  */
+  void clearChanges(void) { m_change.clear(); };
+
+  /*!
+    Get the register changes
+    @return Register changes
+  */
+  std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
+
+  /*!
+    Get the register map for this page
+  */
+  std::map<uint32_t, uint8_t> *getRegisterMap(void) { return &m_registers; }; 
+
+private:
+
+  /*!
+    The level for the device this registerset belongs to.
+    VSCP_LEVEL1 or VSCP_LEVEL2
+  */
+  uint8_t m_level;
+
+  /*!
+    The page for this register set. If a level II register set
+    there is only one page.
+  */
+  uint16_t m_page;
+
+  /*! 
+    Defined registers on the register page [offset, value]
+    
+    Level I devices: 0-127
+    Level II devices have a single page of registers in the 
+    range 0x00000000 - 0xffff0000.
+  */
+  std::map<uint32_t, uint8_t> m_registers;
+
+  /*!
+    Here a register position is true for a register that
+    has received a value it did not have before.
+  */
+  std::map<uint32_t, bool> m_change;
+};
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+/*!
+    \class CUserRegisters
+    \brief Encapsulates the user registers (all pages) for a Level I or Level 
+            II device
+*/
+class CUserRegisters
+{
+
+public:
+
+  CUserRegisters( uint8_t level = VSCP_LEVEL1 );
+  ~CUserRegisters();
+
+  /*! 
+      Read all user register content
+      @param client The communication interface to use
+      @param guidNode GUID for node. Only LSB is used for level I node.
+      @param guidInterface GUID for interface. If zero no interface is used.
+      @param pages A set holding the valied pages
+      @param timeout Timeout in milliseconds. Zero means no timeout
+      @return VSCP_ERROR_SUCCESS on success.
+    */
+  int init(CVscpClient& client,
+              cguid& guidNode,
+              cguid& guidInterface,
+              std::set<uint16_t>& pages, 
+              uint32_t timeout = 1000);
+
+  /*!
+      Set value for register
+      @param reg Register to set value for
+      @param val Value to set register to
+  */
+  bool putReg(uint32_t reg, uint32_t page, uint8_t value);
+
+  /*!
+    Return a pointer to the register storage map for a page of registers
+    @return A pointer to the register storage map
+  */
+  std::map<uint32_t, uint8_t> *getRegisterMap( uint16_t page );
+
+  /*!
+    Get pointer to a user register page
+    @param page Page of user register to get
+    @return Pointer to user register object
+  */
+  //std::map<uint32_t, uint8_t> *
+  CRegisterPage *getRegisterPage(uint16_t page);
+
+  /*!
+    Get the register content from a register at a specific page
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return Register content or -1 on failure.
+  */
+  int getReg(uint16_t page, uint32_t offset);
+
+  /*!
+      Get abstraction value from registers into string value.
+      @param abstraction Abstraction record from MDF.
+      @param strValue Abstraction value in string form on return if call successful.
+      @return VSCP_ERROR_SUCCES on success and error code else.
+  */
+  int remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
+                                  std::string& strValue,
+                                  uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+
+  /*
+    * Store abstraction value in string format in corresponding registers.
+    * @param abstraction Abstraction record from MDF.
+    * @param strValue Abstraction value in string form.
+    * @return VSCP_ERROR_SUCCES on success and error code else.
+    */
+  int remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
+                                  std::string &strValue);
+
+private:
+
+    /*!
+        Tells if this is Level I or Level II registers
+    */
+    uint8_t m_level;
+
+    // set with valid register pages
+    std::set<long> m_pages;
+
+    // pages {page number, defined registers}
+    std::map<uint16_t, CRegisterPage *> m_registerPageMap;
+
+    
+};
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+#define __GUID_STDREG_DESCRIPTION__ __MDF_STDREG_DESCRIPTION__
+#define __MDF_STDREG_DESCRIPTION__ "Module Description File URL. A zero terminates the ASCII string if not exactly 32 bytes long. The URL points to a file that gives further information about where drivers for different environments are located. Can be returned as a zero string for devices with low memory. For a node with an embedded MDF return a zero string. The CLASS1.PROTOCOL, Type=34/35 can then be used to get the information if available."  
 
 
 /*!
@@ -106,89 +394,337 @@ class CStandardRegisters
 
 public:
 
-    /*!
-        Default Constructor
-    */
-    CStandardRegisters( void );
+  /*!
+      Default Constructor
+  */
+  CStandardRegisters(uint8_t level = VSCP_LEVEL1);
 
-    /*!
-        Default Destructor
-    */
-    ~CStandardRegisters( void );
+  /*!
+      Default Destructor
+  */
+  ~CStandardRegisters(void);
 
-    void getMDF( std::string& remoteFile );
+  /*!
+    Standard register definitions
+  */
 
-    const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
-
-    void getGUID( cguid *pguid ) { pguid->getFromArray( m_reg + 0xD0 - 0x80 ); };
-
-    uint8_t getBufferSize( void ) { return m_reg[ 0x98 - 0x80 ]; };
-
-    uint8_t getBootloaderAlgorithm( void ) { return m_reg[ 0x97 - 0x80 ]; };
-
-    uint8_t getMajorVersion( void ) { return m_reg[ 0x94 - 0x80 ]; };
-
-    uint8_t getMinorVersion( void ) { return m_reg[ 0x95 - 0x80 ]; };
-
-    uint8_t getSubMinorVersion( void ) { return m_reg[ 0x96 - 0x80 ]; };
-
-    std::string getFirmwareVersionString( void );
-
-    uint16_t getPage( void ) { return ( m_reg[ 0x92 - 0x80 ] * 256 +
-                                    m_reg[ 0x93 - 0x80 ] ); };
-
-    uint8_t getNickname( void ) { return m_reg[ 0x91 - 0x80 ]; };
-
-    uint8_t getAlarm( void ) { return m_reg[ 0x80 - 0x80 ]; };
-
-    uint8_t getConfirmanceVersionMajor( void ) { return m_reg[ 0x81 - 0x80 ]; };
-
-    uint8_t getConfirmanceVersonMinor( void ) { return m_reg[ 0x82 - 0x80 ]; };
-
-    uint8_t getNodeControl( void ) { return m_reg[ 0x83 - 0x80 ]; };
-
-    uint8_t getNumberOfRegisterPages( void ) { return m_reg[ 0x99 - 0x80 ]; };
-
-    uint32_t getManufacturerSubDeviceID( void )
-                                { return ( ( m_reg[ 0x8D - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x8E - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x8F - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x90 - 0x80 ] ) ); };
-
-    uint32_t getManufacturerDeviceID( void )
-                                { return ( ( m_reg[ 0x89 - 0x80 ] << 24 ) +
-                                            ( m_reg[ 0x8A - 0x80 ] << 16 ) +
-                                            ( m_reg[ 0x8B - 0x80 ] << 8 ) +
-                                            ( m_reg[ 0x8C - 0x80 ] ) ); };
+  struct __struct_standard_register_defs {
+    uint16_t pos;
+    uint8_t access;  // 0 = read only, 1 = read/write, 2 = write only
+    std::string name;
+    std::string description;
+  };
 
 
-    uint8_t getStandardReg( uint8_t reg );
+  const __struct_standard_register_defs m_vscp_standard_registers_defs[85] =
+  {
+    {0x80,0,"Alarm status register","Alarm status register content (!= 0 indicates alarm). Condition is reset by a read operation. The bits represent different alarm conditions."},
+    {0x81,0,"VSCP specification major version number conformance","VSCP Major version number this device is constructed for."},
+    {0x82,0,"VSCP specification minor version number conformance","VSCP Minor version number this device is constructed for."},
+    {0x83,0,"Error counter (was node control flag prior to version 1.6)","VSCP error counter is increased when an error occurs on the device. Reset error counter by reading it."},
+    {0x84,0,"User id 0","Client user node-ID byte 0. Use for location info or similar."},
+    {0x85,1,"User id 1","Client user node-ID byte 1. Use for location info or similar."},
+    {0x86,1,"User id 2","Client user node-ID byte 2. Use for location info or similar."},
+    {0x87,1,"User id 3","Client user node-ID byte 3. Use for location info or similar."},
+    {0x88,1,"User id 4","Client user node-ID byte 4. Use for location info or similar."},
+    {0x89,0,"Manufacturer device id 0","Manufacturer device ID byte 0. For hardware/firmware/manufacturing info."},
+    {0x8A,0,"Manufacturer device id 1","Manufacturer device ID byte 1. For hardware/firmware/manufacturing info."},
+    {0x8B,0,"Manufacturer device id 2","Manufacturer device ID byte 2. For hardware/firmware/manufacturing info."},
+    {0x8C,0,"Manufacturer device id 3","Manufacturer device ID byte 3. For hardware/firmware/manufacturing info."},
+    {0x8D,0,"Manufacturer sub device id 0","Manufacturer sub device ID byte 0. For hardware/firmware/manufacturing info."},
+    {0x8E,0,"Manufacturer sub device id 1","Manufacturer sub device ID byte 1. For hardware/firmware/manufacturing info."},  
+    {0x8F,0,"Manufacturer sub device id 2","Manufacturer sub device ID byte 2. For hardware/firmware/manufacturing info."},
+    {0x90,0,"Manufacturer sub device id 3","Manufacturer sub device ID byte 3. For hardware/firmware/manufacturing info."},
+    {0x91,0,"Nickname id","Nickname for the device"},
+    {0x92,1,"Page select MSB","MSB byte of current selected register page."},
+    {0x93,1,"Page select LSB","LSB byte of current selected register page."},
+    {0x94,0,"Firmware major version number","Major version number for device firmware."},
+    {0x95,0,"Firmware minor version number","Minor version number for device firmware."},
+    {0x96,0,"Firmware build version number","Build version of device firmware."},
+    {0x97,0,"Boot loader algorithm","Boot loader algorithm used to bootload this device. Code 0xFF is used for no boot loader support. All defined codes for algorithms are specified <a href=\"https://grodansparadis.github.io/vscp-doc-spec/#/./class1.protocol?id=id\">here</a>"},
+    {0x98,0,"Buffer size","Buffer size. The value here gives an indication for clients that want to talk to this node if it can support the larger mid level Level I control events which has the full GUID. If set to 0 the default size should used. That is 8 bytes for Level I and 512-25 for Level II."},
+    {0x99,0,"Deprecated: Number of register pages used","Number of register pages used. If not implemented one page is assumed. Set to zero if your device have more then 255 pages. <b>Deprecated</b>: Use the MDF instead as the central place for information about actual number of pages."},
+    {0x9A,0,"Standard device family code MSB","Standard device family code (MSB) Devices can belong to a common register structure standard. For such devices this describes the family coded as a 32-bit integer. Set all bytes to zero if not used. Also 0xff is reserved and should be interpreted as zero was read. <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9B,0,"Standard device family code","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9C,0,"Standard device family code","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9D,0,"Standard device family code LSB","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9E,0,"Standard device type MSB","Standard device type (MSB) This is part of the code that specifies a device that adopts to a common register standard. This is the type code represented by a 32-bit integer and defines the type belonging to a specific standard. <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9F,0,"Standard device type","Standard device family code. <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA0,0,"Standard device type","Standard device family code. <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA1,0,"Standard device type LSB","Standard device family code (LSB). <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA2,2,"Restore factory defaults (Added in version 1.10)}","Standard configuration should be restored for a unit if first 0x55 and then 0xAA is written to this location and is done so withing one second. <i>Added in version 1.10.0 of the specification</i>."},
+    {0xA3,0,"Firmware device code MSB (Added in version 1.13)","Firmware device code MSB. <i>Added in version 1.13.0 of the specification</i>."},
+    {0xA4,0,"Firmware device code LSB (Added in version 1.13)","Firmware device code LSB. <i>Added in version 1.13.0 of the specification</i>."},
+    {0xD0,0,"GUID byte 0 MSB",__MDF_STDREG_DESCRIPTION__},
+    {0xD1,0,"GUID byte 1",__MDF_STDREG_DESCRIPTION__},
+    {0xD2,0,"GUID byte 2",__MDF_STDREG_DESCRIPTION__},
+    {0xD3,0,"GUID byte 3",__MDF_STDREG_DESCRIPTION__},
+    {0xD4,0,"GUID byte 4",__MDF_STDREG_DESCRIPTION__},
+    {0xD5,0,"GUID byte 5",__MDF_STDREG_DESCRIPTION__},
+    {0xD6,0,"GUID byte 6",__MDF_STDREG_DESCRIPTION__},
+    {0xD7,0,"GUID byte 7",__MDF_STDREG_DESCRIPTION__},
+    {0xD8,0,"GUID byte 8",__MDF_STDREG_DESCRIPTION__},
+    {0xD9,0,"GUID byte 9",__MDF_STDREG_DESCRIPTION__},
+    {0xDA,0,"GUID byte 10",__MDF_STDREG_DESCRIPTION__},
+    {0xDB,0,"GUID byte 11",__MDF_STDREG_DESCRIPTION__},
+    {0xDC,0,"GUID byte 12",__MDF_STDREG_DESCRIPTION__},
+    {0xDD,0,"GUID byte 13",__MDF_STDREG_DESCRIPTION__},
+    {0xDE,0,"GUID byte 14",__MDF_STDREG_DESCRIPTION__},
+    {0xDF,0,"GUID byte 15 LSB",__MDF_STDREG_DESCRIPTION__},  
+    {0xE0,0,"MDF byte 0 MSB",__MDF_STDREG_DESCRIPTION__},
+    {0xE1,0,"MDF byte 1",__MDF_STDREG_DESCRIPTION__},
+    {0xE2,0,"MDF byte 2",__MDF_STDREG_DESCRIPTION__},
+    {0xE3,0,"MDF byte 3",__MDF_STDREG_DESCRIPTION__},
+    {0xE4,0,"MDF byte 4",__MDF_STDREG_DESCRIPTION__},
+    {0xE5,0,"MDF byte 5",__MDF_STDREG_DESCRIPTION__},
+    {0xE6,0,"MDF byte 6",__MDF_STDREG_DESCRIPTION__},
+    {0xE7,0,"MDF byte 7",__MDF_STDREG_DESCRIPTION__},
+    {0xE8,0,"MDF byte 8",__MDF_STDREG_DESCRIPTION__},
+    {0xE9,0,"MDF byte 9",__MDF_STDREG_DESCRIPTION__},
+    {0xEA,0,"MDF byte 10",__MDF_STDREG_DESCRIPTION__},
+    {0xEB,0,"MDF byte 11",__MDF_STDREG_DESCRIPTION__},
+    {0xEC,0,"MDF byte 12",__MDF_STDREG_DESCRIPTION__},
+    {0xED,0,"MDF byte 13",__MDF_STDREG_DESCRIPTION__},
+    {0xEE,0,"MDF byte 14",__MDF_STDREG_DESCRIPTION__},
+    {0xEF,0,"MDF byte 15",__MDF_STDREG_DESCRIPTION__}, 
+    {0xF0,0,"MDF byte 16",__MDF_STDREG_DESCRIPTION__},
+    {0xF1,0,"MDF byte 17",__MDF_STDREG_DESCRIPTION__},
+    {0xF2,0,"MDF byte 18",__MDF_STDREG_DESCRIPTION__},
+    {0xF3,0,"MDF byte 19",__MDF_STDREG_DESCRIPTION__},
+    {0xF4,0,"MDF byte 20",__MDF_STDREG_DESCRIPTION__},
+    {0xF5,0,"MDF byte 21",__MDF_STDREG_DESCRIPTION__},
+    {0xF6,0,"MDF byte 22",__MDF_STDREG_DESCRIPTION__},
+    {0xF7,0,"MDF byte 23",__MDF_STDREG_DESCRIPTION__},
+    {0xF8,0,"MDF byte 24",__MDF_STDREG_DESCRIPTION__},
+    {0xF9,0,"MDF byte 25",__MDF_STDREG_DESCRIPTION__},
+    {0xFA,0,"MDF byte 26",__MDF_STDREG_DESCRIPTION__},
+    {0xFB,0,"MDF byte 27",__MDF_STDREG_DESCRIPTION__},
+    {0xFC,0,"MDF byte 28",__MDF_STDREG_DESCRIPTION__},
+    {0xFD,0,"MDF byte 29",__MDF_STDREG_DESCRIPTION__},
+    {0xFE,0,"MDF byte 30",__MDF_STDREG_DESCRIPTION__},
+    {0xFF,0,"MDF byte 31 LSB",__MDF_STDREG_DESCRIPTION__}
+  };
 
-    /*!
-        Return a pointer to the register storage
-    */
-    unsigned char *getRegs( void ) { return m_reg; };
+  /*! 
+    Read all standard register content
+    @param client The communication interface to use
+    @param guidNode GUID for node. Only LSB is used for level I node.
+    @param guidInterface GUID for interface. If zero no interface is used.
+    @param timeout Timeout in milliseconds. Zero means no timeout
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int init(CVscpClient& client,
+              cguid& guidNode,
+              cguid& guidInterface,
+              uint32_t timeout = 1000);
 
-    /*!
-        Set value for register
-        @param reg Register to set value for
-        @param val Value to set register to
-    */
-    void setReg( uint8_t reg, uint8_t val ) { m_reg[ reg ] = val; };
+  /*!
+    Get alarm byte
+    @return VSCP alarm byte
+  */
+  uint8_t getAlarm(void) { return m_regs[0x80]; };
+
+  
+  /*!
+    Get VSCP protocol conformance major version
+    @return VSCP protocol conformance major version
+  */
+  uint8_t getConformanceVersionMajor(void) { return m_regs[0x81]; };
+
+  /*!
+    Get VSCP protocol conformance minor version
+    @return VSCP protocol conformance minor version
+  */
+  uint8_t getConformanceVersionMinor(void) { return m_regs[0x82]; };
+
+  /*!
+    Get node error counter
+    (This was the node control byte in specs prior to 1.6)
+    @return error counter
+  */
+  uint8_t getErrorCounter(void) { return m_regs[0x83]; };
+
+  /*!
+    Get user ID
+    @param index Index of user ID to get.
+    @return User ID for pos
+  */
+  uint8_t getUserId(uint8_t index) {return m_regs[ 0x84 + index ];};
+
+  /*!
+    Get user ID
+    @param uid Buffer of five bytes for user id.
+  */
+  void getUserId(uint8_t *puid) 
+                        { 
+                          puid[0] = m_regs[0x84];
+                          puid[1] = m_regs[0x85];
+                          puid[2] = m_regs[0x86];
+                          puid[3] = m_regs[0x87];
+                          puid[4] = m_regs[0x88];
+                        };
+
+  /*!
+    Get manufacturer device id
+    @return Manufacturer device id
+  */
+  uint32_t getManufacturerDeviceID(void)
+                              { return ( ( m_regs[0x89] << 24 ) +
+                                          ( m_regs[0x8A] << 16 ) +
+                                          ( m_regs[0x8B] << 8 ) +
+                                          ( m_regs[0x8C] ) ); };
+  /*!
+    Get manufacturer sub device id
+    @return Manufacturer sub device id
+  */
+  uint32_t getManufacturerSubDeviceID(void)
+                              { return ( ( m_regs[0x8D] << 24 ) +
+                                          ( m_regs[0x8E] << 16 ) +
+                                          ( m_regs[0x8F] << 8 ) +
+                                          ( m_regs[0x90] ) ); };
+
+  /*!
+    Get nickname id
+    @return nickname id
+  */
+  uint8_t getNickname(void) {return m_regs[0x91];};
+
+  /*!
+    Get register page
+    @return register page
+  */
+  uint16_t getRegisterPage(void) { return ( m_regs[0x92] * 256 +
+                                            m_regs[0x93] ); };
+
+  /*!
+    Get firmware major version
+  */
+  uint8_t getFirmwareMajorVersion(void) 
+                                  {return m_regs[0x94];};
+
+  /*!
+    Get firmware minor version
+  */
+  uint8_t getFirmwareMinorVersion(void) 
+                                  {return m_regs[0x95];};
+
+  /*!
+    Get firmware sub minor version
+  */
+  uint8_t getFirmwareSubMinorVersion(void) 
+                                  {return m_regs[0x96];};
+
+  /*!
+    Get firmware version as string
+  */
+  std::string getFirmwareVersionString(void);
+
+  /*!
+    Get bootloader algorithm
+    @return bootloader algorithm
+  */
+  uint8_t getBootloaderAlgorithm(void) 
+                                  {return m_regs[0x97];};
+
+  /*! 
+    Get buffer size
+    @return buffer size
+  */
+  uint8_t getBufferSize(void) {return m_regs[0x98];};                                    
+
+  /*!
+    Get number of register pages !!!DEPRECATED!!!
+    @return number of register pages
+  */
+  uint8_t getNumberOfRegisterPages(void) {return m_regs[0x99]; };
+
+  /*!
+    Get standard family code (added in spec 1.9)
+    @return Standard family code as 32-bit unsigned integer.
+  */
+  uint32_t getStandardDeviceFamilyCode(void) 
+                              { return ( ( m_regs[0x9A] << 24 ) +
+                                          ( m_regs[0x9B] << 16 ) +
+                                          ( m_regs[0x9C] << 8 ) +
+                                          ( m_regs[0x9D] ) ); };
+
+  /*!
+    Get standard family type (added in spec 1.9)
+    @return Standard family type as 32-bit unsigned integer.
+  */
+  uint32_t getStandardDeviceFamilyType(void) 
+                              { return ( ( m_regs[0x9E] << 24 ) +
+                                          ( m_regs[0x9F] << 16 ) +
+                                          ( m_regs[0xA0] << 8 ) +
+                                          ( m_regs[0xA1] ) ); };
+
+  /*!
+    Restore standard configuration for node
+  */
+  int restoreStandardConfig(CVscpClient& client,
+                              cguid& guidNode,
+                              cguid& guidInterface,
+                              uint32_t timeout = 1000);
+
+  /*!
+    Get firmare device code (added in 1.13)
+    @return Firmware device code as 16-bit unsigned integer
+  */
+  uint16_t getFirmwareDeviceCode(void)
+                              { return ( (m_regs[0xA3] << 8 ) +
+                                          (m_regs[0xA4] ) ); };
+  
+  /*!
+    Get guid as GUID class
+  */
+  void getGUID(cguid& guid);
 
 
-    /*!
-        Get value for register
-        @param reg Register to get value for
-        @return Value of requested register.
-    */
-    uint8_t getReg( uint8_t reg ) { return m_reg[ reg ]; };
+  /*!
+    Get MDF URL
+    @param url - Reference to string to store URL in.
+  */
+  std::string getMDF(void);
+
+
+  /*!
+    Get a standard register value from offset
+    @param reg Offset of standard register to read
+    @return Register content of standard register or -1 on failure.
+  */
+  int getReg(uint8_t reg) { return m_regs[reg & 0x7F]; };
+
+  /*!
+      Set value for register
+      @param reg Register to set value for
+      @param val Value to set register to
+  */
+  void setReg(uint8_t reg, uint8_t val) { m_regs[reg & 0x7F] = val; };
+
+  /*!
+    Clear the register changes marks
+  */
+  void clearChanges(void) { m_change.clear(); };
+
+  /*!
+    Get the register changes
+    @return Register changes
+  */
+  std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
 private:
 
-    /// Standard register storage
-    uint8_t m_reg[ 128 ];
+  /// LEVEL1 or LEVEL2    
+  uint8_t m_level;
 
+  /// Standard register storage
+  std::map<uint8_t,uint8_t> m_regs;
+
+  /*!
+    Here a register position is true for a register that
+    has received a value it did not have before.
+  */
+  std::map<uint32_t, bool> m_change;
 };
 
 
@@ -196,115 +732,40 @@ private:
 
 
 /*!
-    \class CRegistersPage
-    \brief Encapsulates one page of user registers of a device
+  Class that describes a full node of a VSCP device
 */
-class CRegisterPage
+
+class CVscpNode
 {
 
 public:
-    CRegisterPage( uint8_t level = VSCP_LEVEL1 );
-    ~CRegisterPage();
+  CVscpNode(void);
+  ~CVscpNode(void);
 
-    /*!
-        Read register content on a register page.
-        Register must exist.
+  /*!
+    Get pointer to user register object
+    @return Pointer to user register object
+  */
+  CUserRegisters *getUserRegs(void) {return &m_reg;};
 
-        @param reg Register to read
-        @return Register content or -1 on failure.
-    */
-    int readReg( uint32_t reg );
-
-    /*!
-        Write value to a register on a register page.
-        Register is created if it does not exist.
-
-        @param reg Register to write to.
-        @param value to write to register.
-        @return True if write was successful, false if not.
-    */
-   bool writeReg( uint32_t reg, uint8_t value );
+  /*!
+    Get pointer to standard register object
+    @return Pointer to standard register object
+  */
+  CStandardRegisters *getStandardRegs( void ) {return &m_stdReg;};
 
 private:
 
-    // VSCP level
-    uint8_t m_level;
+  /*!
+    Holds the user registers of the device
+  */
+  CUserRegisters m_reg;
 
-    // Defined registers on a user page
-    std::map<uint32_t,uint8_t> m_registers;
+  /*!
+    Holds the standard registers of the device
+  */
+  CStandardRegisters m_stdReg;
+
 };
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-/*!
-    \class CUserRegisters
-    \brief Encapsulates the user registers for a Level I or Level II device
-*/
-class CUserRegisters
-{
-
-public:
-    CUserRegisters( uint8_t level = VSCP_LEVEL1 );
-    ~CUserRegisters();
-
-    /*!
-        Get the value for a specific register on a page. Register must be previously
-        defined.
-        @return Register content (0-255) if page and register is valid. Otherwise -1
-                is returned indicating an error.
-    */
-    int readReg( uint32_t reg, uint32_t page = 0 );
-
-    /*!
-        Write data to a register. If the register is not yet defined
-        it is added.
-
-        @param page Page for register. (0-127 for Level I, 0 - 0xfffffff0 for
-                Level II device. )
-        @param reg Register to write to. (0-127 for Level I, 0 - 0xffffffff for
-                Level II device. )
-        @param value Value to write to register.
-        @return true for a valid write. An invalid write means registers are
-                out of bound.
-    */
-    bool writeReg( uint32_t reg, uint32_t page, uint8_t value );
-
-
-
-    /*!
-        Get abstraction value from registers into string value.
-        @param abstraction Abstraction record from MDF.
-        @param strValue Abstraction value in string form on return if call successful.
-        @return true on success.
-    */
-    bool abstractionValueFromRegsToString( CMDF_RemoteVariable *pRemoteVar,
-                                                std::string &strValue,
-                                                uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
-
-    /*
-     * Store abstraction value in string format in corresponding registers.
-     * @param abstraction Abstraction record from MDF.
-     * @param strValue Abstraction value in string form.
-     * @return true on success.
-     */
-    bool abstractionValueFromStringToRegs( CMDF_RemoteVariable *pRemoteVar,
-                                                std::string &strValue );
-
-private:
-
-    /*!
-        Tells if thie is Level I or Level II registers
-    */
-    uint8_t m_level;
-
-    // set with valid register pages
-    std::set<long> m_pages;
-
-    // pages {page number, defined registers}
-    std::map<uint32_t,CRegisterPage *> m_registerPages;
-};
-
 
 #endif
