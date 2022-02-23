@@ -55,10 +55,12 @@
 #include <set>
 #include <stdio.h>
 #include <string>
+#include <memory>
 
 #include <expat.h>
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <json.hpp>         // Needs C++11  -std=c++11
 #include <mustache.hpp>
+#include <maddy/parser.h>   // Markdown -> HTML
 
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
