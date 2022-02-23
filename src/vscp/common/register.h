@@ -205,13 +205,13 @@ public:
     Write level 1 register map to page map
     @param registers - Registers to write
   */
-  void putLevel1Registers(std::map<uint8_t,uint8_t>& registers);
+  void putLevel1Registers(std::map<uint8_t, uint8_t>& registers);
 
   /*!
     Get level 1 register map 
     @param registers - Registers to write
   */
-  void getLevel1Registers(std::map<uint8_t,uint8_t>& registers);
+  void getLevel1Registers(std::map<uint8_t, uint8_t>& registers);
 
   /*!
     Read register content on a register page.
@@ -311,14 +311,6 @@ public:
               cguid& guidInterface,
               std::set<uint16_t>& pages, 
               uint32_t timeout = 1000);
-  
-  /*!
-    Get register from specific page
-    @param page Page to read from.
-    @param offset Register offset on page to read from.
-    @return Register content or -1 on failure.
-  */                                                
-  int getReg(uint32_t reg, uint32_t page);
 
   /*!
       Set value for register
@@ -347,7 +339,7 @@ public:
     @param offset Register offset on page to read from.
     @return Register content or -1 on failure.
   */
-  int getRegister(uint16_t page, uint32_t offset);
+  int getReg(uint16_t page, uint32_t offset);
 
   /*!
       Get abstraction value from registers into string value.
@@ -389,6 +381,9 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#define __GUID_STDREG_DESCRIPTION__ __MDF_STDREG_DESCRIPTION__
+#define __MDF_STDREG_DESCRIPTION__ "Module Description File URL. A zero terminates the ASCII string if not exactly 32 bytes long. The URL points to a file that gives further information about where drivers for different environments are located. Can be returned as a zero string for devices with low memory. For a node with an embedded MDF return a zero string. The CLASS1.PROTOCOL, Type=34/35 can then be used to get the information if available."  
+
 
 /*!
     \class CStandardRegisters
@@ -408,6 +403,107 @@ public:
       Default Destructor
   */
   ~CStandardRegisters(void);
+
+  /*!
+    Standard register definitions
+  */
+
+  struct __struct_standard_register_defs {
+    uint16_t pos;
+    uint8_t access;  // 0 = read only, 1 = read/write, 2 = write only
+    std::string name;
+    std::string description;
+  };
+
+
+  const __struct_standard_register_defs m_vscp_standard_registers_defs[85] =
+  {
+    {0x80,0,"Alarm status register","Alarm status register content (!= 0 indicates alarm). Condition is reset by a read operation. The bits represent different alarm conditions."},
+    {0x81,0,"VSCP specification major version number conformance","VSCP Major version number this device is constructed for."},
+    {0x82,0,"VSCP specification minor version number conformance","VSCP Minor version number this device is constructed for."},
+    {0x83,0,"Error counter (was node control flag prior to version 1.6)","VSCP error counter is increased when an error occurs on the device. Reset error counter by reading it."},
+    {0x84,0,"User id 0","Client user node-ID byte 0. Use for location info or similar."},
+    {0x85,1,"User id 1","Client user node-ID byte 1. Use for location info or similar."},
+    {0x86,1,"User id 2","Client user node-ID byte 2. Use for location info or similar."},
+    {0x87,1,"User id 3","Client user node-ID byte 3. Use for location info or similar."},
+    {0x88,1,"User id 4","Client user node-ID byte 4. Use for location info or similar."},
+    {0x89,0,"Manufacturer device id 0","Manufacturer device ID byte 0. For hardware/firmware/manufacturing info."},
+    {0x8A,0,"Manufacturer device id 1","Manufacturer device ID byte 1. For hardware/firmware/manufacturing info."},
+    {0x8B,0,"Manufacturer device id 2","Manufacturer device ID byte 2. For hardware/firmware/manufacturing info."},
+    {0x8C,0,"Manufacturer device id 3","Manufacturer device ID byte 3. For hardware/firmware/manufacturing info."},
+    {0x8D,0,"Manufacturer sub device id 0","Manufacturer sub device ID byte 0. For hardware/firmware/manufacturing info."},
+    {0x8E,0,"Manufacturer sub device id 1","Manufacturer sub device ID byte 1. For hardware/firmware/manufacturing info."},  
+    {0x8F,0,"Manufacturer sub device id 2","Manufacturer sub device ID byte 2. For hardware/firmware/manufacturing info."},
+    {0x90,0,"Manufacturer sub device id 3","Manufacturer sub device ID byte 3. For hardware/firmware/manufacturing info."},
+    {0x91,0,"Nickname id","Nickname for the device"},
+    {0x92,1,"Page select MSB","MSB byte of current selected register page."},
+    {0x93,1,"Page select LSB","LSB byte of current selected register page."},
+    {0x94,0,"Firmware major version number","Major version number for device firmware."},
+    {0x95,0,"Firmware minor version number","Minor version number for device firmware."},
+    {0x96,0,"Firmware build version number","Build version of device firmware."},
+    {0x97,0,"Boot loader algorithm","Boot loader algorithm used to bootload this device. Code 0xFF is used for no boot loader support. All defined codes for algorithms are specified <a href=\"https://grodansparadis.github.io/vscp-doc-spec/#/./class1.protocol?id=id\">here</a>"},
+    {0x98,0,"Buffer size","Buffer size. The value here gives an indication for clients that want to talk to this node if it can support the larger mid level Level I control events which has the full GUID. If set to 0 the default size should used. That is 8 bytes for Level I and 512-25 for Level II."},
+    {0x99,0,"Deprecated: Number of register pages used","Number of register pages used. If not implemented one page is assumed. Set to zero if your device have more then 255 pages. <b>Deprecated</b>: Use the MDF instead as the central place for information about actual number of pages."},
+    {0x9A,0,"Standard device family code MSB","Standard device family code (MSB) Devices can belong to a common register structure standard. For such devices this describes the family coded as a 32-bit integer. Set all bytes to zero if not used. Also 0xff is reserved and should be interpreted as zero was read. <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9B,0,"Standard device family code","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9C,0,"Standard device family code","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9D,0,"Standard device family code LSB","Standard device family code <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9E,0,"Standard device type MSB","Standard device type (MSB) This is part of the code that specifies a device that adopts to a common register standard. This is the type code represented by a 32-bit integer and defines the type belonging to a specific standard. <i>Added in version 1.9.0 of the specification</i>."},
+    {0x9F,0,"Standard device type","Standard device family code. <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA0,0,"Standard device type","Standard device family code. <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA1,0,"Standard device type LSB","Standard device family code (LSB). <i>Added in version 1.9.0 of the specification.</i>."},
+    {0xA2,2,"Restore factory defaults (Added in version 1.10)}","Standard configuration should be restored for a unit if first 0x55 and then 0xAA is written to this location and is done so withing one second. <i>Added in version 1.10.0 of the specification</i>."},
+    {0xA3,0,"Firmware device code MSB (Added in version 1.13)","Firmware device code MSB. <i>Added in version 1.13.0 of the specification</i>."},
+    {0xA4,0,"Firmware device code LSB (Added in version 1.13)","Firmware device code LSB. <i>Added in version 1.13.0 of the specification</i>."},
+    {0xD0,0,"GUID byte 0 MSB",__MDF_STDREG_DESCRIPTION__},
+    {0xD1,0,"GUID byte 1",__MDF_STDREG_DESCRIPTION__},
+    {0xD2,0,"GUID byte 2",__MDF_STDREG_DESCRIPTION__},
+    {0xD3,0,"GUID byte 3",__MDF_STDREG_DESCRIPTION__},
+    {0xD4,0,"GUID byte 4",__MDF_STDREG_DESCRIPTION__},
+    {0xD5,0,"GUID byte 5",__MDF_STDREG_DESCRIPTION__},
+    {0xD6,0,"GUID byte 6",__MDF_STDREG_DESCRIPTION__},
+    {0xD7,0,"GUID byte 7",__MDF_STDREG_DESCRIPTION__},
+    {0xD8,0,"GUID byte 8",__MDF_STDREG_DESCRIPTION__},
+    {0xD9,0,"GUID byte 9",__MDF_STDREG_DESCRIPTION__},
+    {0xDA,0,"GUID byte 10",__MDF_STDREG_DESCRIPTION__},
+    {0xDB,0,"GUID byte 11",__MDF_STDREG_DESCRIPTION__},
+    {0xDC,0,"GUID byte 12",__MDF_STDREG_DESCRIPTION__},
+    {0xDD,0,"GUID byte 13",__MDF_STDREG_DESCRIPTION__},
+    {0xDE,0,"GUID byte 14",__MDF_STDREG_DESCRIPTION__},
+    {0xDF,0,"GUID byte 15 LSB",__MDF_STDREG_DESCRIPTION__},  
+    {0xE0,0,"MDF byte 0 MSB",__MDF_STDREG_DESCRIPTION__},
+    {0xE1,0,"MDF byte 1",__MDF_STDREG_DESCRIPTION__},
+    {0xE2,0,"MDF byte 2",__MDF_STDREG_DESCRIPTION__},
+    {0xE3,0,"MDF byte 3",__MDF_STDREG_DESCRIPTION__},
+    {0xE4,0,"MDF byte 4",__MDF_STDREG_DESCRIPTION__},
+    {0xE5,0,"MDF byte 5",__MDF_STDREG_DESCRIPTION__},
+    {0xE6,0,"MDF byte 6",__MDF_STDREG_DESCRIPTION__},
+    {0xE7,0,"MDF byte 7",__MDF_STDREG_DESCRIPTION__},
+    {0xE8,0,"MDF byte 8",__MDF_STDREG_DESCRIPTION__},
+    {0xE9,0,"MDF byte 9",__MDF_STDREG_DESCRIPTION__},
+    {0xEA,0,"MDF byte 10",__MDF_STDREG_DESCRIPTION__},
+    {0xEB,0,"MDF byte 11",__MDF_STDREG_DESCRIPTION__},
+    {0xEC,0,"MDF byte 12",__MDF_STDREG_DESCRIPTION__},
+    {0xED,0,"MDF byte 13",__MDF_STDREG_DESCRIPTION__},
+    {0xEE,0,"MDF byte 14",__MDF_STDREG_DESCRIPTION__},
+    {0xEF,0,"MDF byte 15",__MDF_STDREG_DESCRIPTION__}, 
+    {0xF0,0,"MDF byte 16",__MDF_STDREG_DESCRIPTION__},
+    {0xF1,0,"MDF byte 17",__MDF_STDREG_DESCRIPTION__},
+    {0xF2,0,"MDF byte 18",__MDF_STDREG_DESCRIPTION__},
+    {0xF3,0,"MDF byte 19",__MDF_STDREG_DESCRIPTION__},
+    {0xF4,0,"MDF byte 20",__MDF_STDREG_DESCRIPTION__},
+    {0xF5,0,"MDF byte 21",__MDF_STDREG_DESCRIPTION__},
+    {0xF6,0,"MDF byte 22",__MDF_STDREG_DESCRIPTION__},
+    {0xF7,0,"MDF byte 23",__MDF_STDREG_DESCRIPTION__},
+    {0xF8,0,"MDF byte 24",__MDF_STDREG_DESCRIPTION__},
+    {0xF9,0,"MDF byte 25",__MDF_STDREG_DESCRIPTION__},
+    {0xFA,0,"MDF byte 26",__MDF_STDREG_DESCRIPTION__},
+    {0xFB,0,"MDF byte 27",__MDF_STDREG_DESCRIPTION__},
+    {0xFC,0,"MDF byte 28",__MDF_STDREG_DESCRIPTION__},
+    {0xFD,0,"MDF byte 29",__MDF_STDREG_DESCRIPTION__},
+    {0xFE,0,"MDF byte 30",__MDF_STDREG_DESCRIPTION__},
+    {0xFF,0,"MDF byte 31 LSB",__MDF_STDREG_DESCRIPTION__}
+  };
 
   /*! 
     Read all standard register content
@@ -433,13 +529,13 @@ public:
     Get VSCP protocol conformance major version
     @return VSCP protocol conformance major version
   */
-  uint8_t getConfirmanceVersionMajor(void) { return m_regs[0x81]; };
+  uint8_t getConformanceVersionMajor(void) { return m_regs[0x81]; };
 
   /*!
     Get VSCP protocol conformance minor version
     @return VSCP protocol conformance minor version
   */
-  uint8_t getConfirmanceVersionMinor(void) { return m_regs[0x82]; };
+  uint8_t getConformanceVersionMinor(void) { return m_regs[0x82]; };
 
   /*!
     Get node error counter

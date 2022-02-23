@@ -1308,7 +1308,7 @@ bool
 CMDF::load(std::string &remoteFile, bool bLocalFile)
 {
   std::string localFile = remoteFile;
-
+  
   if (remoteFile.npos == remoteFile.find("http://")) {
     std::string str;
     str = "http://";
@@ -1320,6 +1320,7 @@ CMDF::load(std::string &remoteFile, bool bLocalFile)
   if (!bLocalFile && !remoteFile.length()) {
     return false;
   }
+  
   // Get filename from user if not given
   else if (bLocalFile && !remoteFile.length()) {
     return false;
@@ -2341,59 +2342,59 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
             if (attribute == "string") {
               gpRvarStruct->m_type = remote_variable_type_string;
-              spdlog::debug("Parse-XML: Remote variable type set to 'string' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'string' {0}.", gpRvarStruct->m_type);
             }
             else if (attribute == "bool") {
               gpRvarStruct->m_type = remote_variable_type_boolean;
-              spdlog::debug("Parse-XML: Remote variable type set to 'boolena' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'boolena' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int8") || (attribute == "int8_t") || (attribute == "char")) {
               gpRvarStruct->m_type = remote_variable_type_int8_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int8_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int8_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint8") || (attribute == "uint8_t") || (attribute == "byte")) {
               gpRvarStruct->m_type = remote_variable_type_uint8_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint8_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint8_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
               gpRvarStruct->m_type = remote_variable_type_int16_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int16_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int16_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint16") || (attribute == "uint16_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint16_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint16_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint16_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
               gpRvarStruct->m_type = remote_variable_type_int32_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int32_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int32_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
               gpRvarStruct->m_type = remote_variable_type_uint32_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint32_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint32_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
               gpRvarStruct->m_type = remote_variable_type_int64_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int64_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int64_t' {0}.", gpRvarStruct->m_type);
             }
             else if ((attribute == "uint64") || (attribute == "uint64_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint64_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint64_t' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint64_t' {0}.", gpRvarStruct->m_type);
             }
             else if (attribute == "float") {
               gpRvarStruct->m_type = remote_variable_type_float;
-              spdlog::debug("Parse-XML: Remote variable type set to 'float' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'float' {0}.", gpRvarStruct->m_type);
             }
             else if (attribute == "double") {
               gpRvarStruct->m_type = remote_variable_type_double;
-              spdlog::debug("Parse-XML: Remote variable type set to 'double' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'double' {0}.", gpRvarStruct->m_type);
             }
             else if (attribute == "date") {
               gpRvarStruct->m_type = remote_variable_type_date;
-              spdlog::debug("Parse-XML: Remote variable type set to 'date' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'date' {0}.", gpRvarStruct->m_type);
             }
             else if (attribute == "time") {
               gpRvarStruct->m_type = remote_variable_type_time;
-              spdlog::debug("Parse-XML: Remote variable type set to 'time' {}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'time' {0}.", gpRvarStruct->m_type);
             }
             else {
               gpRvarStruct->m_type = remote_variable_type_unknown;
@@ -3102,7 +3103,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
     return;
   }
 
-  spdlog::trace("Parse-XML: XML Data: {}", strContent);
+  spdlog::trace("Parse-XML: XML Data: {0}", strContent);
 
   switch (gdepth_xml_parser) {
 
@@ -3524,8 +3525,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       else if ((gTokenList.at(1) == "setup") && (gpSetupStruct != nullptr)) {
         if (gTokenList.at(0) == "name") {
           // Description for picture
-          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
-                        strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);              
           gpSetupStruct->m_strName = strContent;
@@ -4781,9 +4781,9 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 
   gpItemStruct        = nullptr;
   gpPictureStruct     = nullptr;
-  gpVideoStruct    = nullptr;
+  gpVideoStruct       = nullptr;
   gpFirmwareStruct    = nullptr;
-  gpDriverStruct    = nullptr;
+  gpDriverStruct      = nullptr;
   gpManualStruct      = nullptr;
   gpRegisterStruct    = nullptr;
   gpBitStruct         = nullptr;
@@ -7124,10 +7124,8 @@ CMDF::getRegisterCount(uint32_t page)
 //
 
 uint32_t
-CMDF::getPages(std::set<long> &pages)
+CMDF::getPages(std::set<uint16_t> &pages)
 {
-  // bool bFound;
-
   std::deque<CMDF_Register *>::iterator iterValue;
   for (iterValue = m_list_register.begin(); iterValue != m_list_register.end(); ++iterValue) {
 
@@ -7183,4 +7181,28 @@ CMDF::getRemoteVariable(std::string name)
   }
 
   return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRegisterList
+//
+
+void
+CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs)
+{
+  //std::map<uint32_t, CMDF_Register> mapRegs;
+  std::set<uint32_t> regset;
+
+  // Make a sorted set of registers
+  for (auto reg : m_list_register) {
+    if (page == reg->m_page) {
+      regset.insert(reg->m_offset);
+    }
+  }
+
+  for (auto reg : regset) {
+    mapRegs[reg] = getRegister(page, reg);
+  }
+
+  return;
 }

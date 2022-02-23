@@ -831,7 +831,7 @@ CUserRegisters::getRegisterPage(uint16_t page)
 }
 
 int
-CUserRegisters::getRegister(uint16_t page, uint32_t offset)
+CUserRegisters::getReg(uint16_t page, uint32_t offset)
 {
   CRegisterPage *ppage = m_registerPageMap[page];
   if (nullptr == ppage) {

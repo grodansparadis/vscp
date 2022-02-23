@@ -2838,6 +2838,20 @@ public:
   size_t getRegisterCount(void) { return m_list_register.size(); };
 
   /*!
+    Get the complete register list
+    @return Pointer to register list.
+  */
+  std::deque<CMDF_Register *> *getRegisterList(void) { return &m_list_register; };
+
+  /*!
+    Get all registers for a specific page
+    @param page Page to get registers for.
+    @return Pointer to register definition for page ot a nullpointer if page
+              does not exist.
+  */
+  void getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs);
+
+  /*!
       Get number of defined registers
       @param page Register page to check
       @return Number of registers used.
@@ -2857,7 +2871,7 @@ public:
       @param array Reference to array with pages
       @return Number of register pages used.
   */
-  uint32_t getPages(std::set<long> &pages);
+  uint32_t getPages(std::set<uint16_t> &pages);
 
 
   //-----------------------------------------------------------------------------
