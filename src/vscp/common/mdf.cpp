@@ -2454,12 +2454,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "page")) {
-            // dmatix action code            
+            // dmatrix action code            
             spdlog::trace("Parse-XML: handleMDFParserData: dmatrix start page code: {0}", attribute);
             pmdf->getDM()->setStartPage(vscp_readStringValue(attribute));
           }
           else if (0 == strcasecmp(attr[i], "offset")) {
-            // dmatix action code            
+            // dmatrix action code            
             spdlog::trace("Parse-XML: handleMDFParserData: dmatrix start offset code: {0}", attribute);
             pmdf->getDM()->setStartOffset(vscp_readStringValue(attribute));
           }
@@ -2493,13 +2493,13 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "code")) {
-            // dmatix action code            
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action code: {0}", attribute);
+            // dmatrix action code            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action code: {0}", attribute);
             gpActionStruct->m_code = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "name")) {
-            // dmatix action code
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action name: {0}", attribute);
+            // dmatrix action code
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action name: {0}", attribute);
             gpActionStruct->m_name = attribute;
           }
         }    
@@ -2689,22 +2689,22 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           if (0 == strcasecmp(attr[i], "offset")) {
             // dmatrix action parameter offset            
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter offset: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action parameter offset: {0}", attribute);
             gpActionParamStruct->m_offset = vscp_readStringValue(attribute);
           }
           if (0 == strcasecmp(attr[i], "min")) {
             // dmatrix action parameter min            
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter min: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action parameter min: {0}", attribute);
             gpActionParamStruct->m_min = vscp_readStringValue(attribute);
           }
           if (0 == strcasecmp(attr[i], "max")) {
             // dmatrix action parameter max            
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter max: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action parameter max: {0}", attribute);
             gpActionParamStruct->m_max = vscp_readStringValue(attribute);
           }
           else if (0 == strcasecmp(attr[i], "name")) {
-            // dmatix action parameter name
-            spdlog::trace("Parse-XML: handleMDFParserData: dmatix action paramerter name: {0}", attribute);
+            // dmatrix action parameter name
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix action paramerter name: {0}", attribute);
             gpActionParamStruct->m_name = attribute;
           }
         }
