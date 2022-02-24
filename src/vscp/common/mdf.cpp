@@ -661,7 +661,6 @@ CMDF_DecisionMatrix::CMDF_DecisionMatrix()
   m_startOffset = 0;
   m_rowCount    = 0;
   m_rowSize     = 8;
-  m_bIndexed    = false;
 }
 
 CMDF_DecisionMatrix::~CMDF_DecisionMatrix()
@@ -681,7 +680,6 @@ CMDF_DecisionMatrix::clearStorage()
   m_startOffset = 0;
   m_rowCount    = 0;
   m_rowSize     = 8;
-  m_bIndexed    = false;
 
   m_list_action.clear();
 }
@@ -2227,15 +2225,15 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             gpRegisterStruct->m_access = MDF_REG_ACCESS_NONE;
             if (strAccess == "w") {
               gpRegisterStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-              spdlog::debug("Parse-JSON: Register access: Read Only");
+              spdlog::debug("Parse-XML: Register access: Read Only");
             }
             else if (strAccess == "r") {
               gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
-              spdlog::debug("Parse-JSON: Register access: Write Only");
+              spdlog::debug("Parse-XML: Register access: Write Only");
             }
             else if (strAccess == "rw") {
               gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
-              spdlog::debug("Parse-JSON: Register access: Read/Write");
+              spdlog::debug("Parse-XML: Register access: Read/Write");
             }
           }
           else if (0 == strcasecmp(attr[i], "min")) {
@@ -2257,19 +2255,19 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
             if ((strRegType == "standard") || (strRegType == "std")) {
               gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
-              spdlog::debug("Parse-JSON: Register type: standard");
+              spdlog::debug("Parse-XML: Register type: standard");
             }
             else if ((strRegType == "dmatrix") || (strRegType == "dmatrix1") || (strRegType == "dm")) {
               gpRegisterStruct->m_type = MDF_REG_TYPE_DMATRIX1;
-              spdlog::debug("Parse-JSON: Register type: dmatrix");
+              spdlog::debug("Parse-XML: Register type: dmatrix");
             }
             else if ((strRegType == "block") || (strRegType == "blk")) {
               gpRegisterStruct->m_type = MDF_REG_TYPE_BLOCK;
-              spdlog::debug("Parse-JSON: Register type: dmatrix");
+              spdlog::debug("Parse-XML: Register type: dmatrix");
             }
             else {
               gpRegisterStruct->m_type = static_cast<mdf_register_type>(vscp_readStringValue(attribute));
-              spdlog::debug("Parse-JSON: Register type: {0}", gpRegisterStruct->m_type);
+              spdlog::debug("Parse-XML: Register type: {0}", gpRegisterStruct->m_type);
             }
           }
           else if (0 == strcasecmp(attr[i], "fgcolor")) {
@@ -2444,6 +2442,30 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Set global pointer to added value so other info can be added
         gpBitStruct = pmdf->m_list_alarm.back();
 
+      }
+      // Old form for start and page data
+      else if ((gTokenList.at(0) == "start") &&
+               (gTokenList.at(1) == "dmatrix")) {
+        // Get register attributes
+        for (int i = 0; attr[i]; i += 2) {
+
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          vscp_makeLower(attribute);
+
+          if (0 == strcasecmp(attr[i], "page")) {
+            // dmatix action code            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix start page code: {0}", attribute);
+            pmdf->getDM()->setStartPage(vscp_readStringValue(attribute));
+          }
+          else if (0 == strcasecmp(attr[i], "offset")) {
+            // dmatix action code            
+            spdlog::trace("Parse-XML: handleMDFParserData: dmatrix start offset code: {0}", attribute);
+            pmdf->getDM()->setStartOffset(vscp_readStringValue(attribute));
+          }
+        }         
+        //spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: start {0}", strContent);
+        //pmdf->getDM()->setRowSize(vscp_readStringValue(strContent));
       }
       /*
         <dmatrix>
@@ -2666,7 +2688,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "offset")) {
-            // dmatrix action parametr offset            
+            // dmatrix action parameter offset            
             spdlog::trace("Parse-XML: handleMDFParserData: dmatix action parameter offset: {0}", attribute);
             gpActionParamStruct->m_offset = vscp_readStringValue(attribute);
           }
@@ -3268,24 +3290,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row size {0}", strContent);
         pmdf->getDM()->setRowSize(vscp_readStringValue(strContent));
       }
-      else if ((gTokenList.at(0) == "indexed") &&
-               (gTokenList.at(1) == "dmatrix")) {
-        spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row size {0}", strContent);
-        {
-          std::string str = strContent;
-          vscp_makeLower(str);
-          vscp_trim(str);
-          if (str == "true") {
-            pmdf->getDM()->setIndexed(true);
-          }
-          else if (str == "false") {
-            pmdf->getDM()->setIndexed(false);
-          }
-          else {
-            pmdf->getDM()->setIndexed(vscp_readStringValue(strContent) ? true : false);
-          }
-        }
-      }
+      
 
       // Bootloader
 
@@ -6058,22 +6063,6 @@ CMDF::parseMDF_JSON(std::string &path)
         else {
           m_dmInfo.m_startOffset = 0;
           spdlog::warn("Parse-JSON: No DM start offset defined. Set to default (0).");
-        }
-
-        // bIndexed
-        if (jdmatrix.contains("indexed")) {
-          if (jdmatrix["indexed"].is_boolean()) {
-            m_dmInfo.m_bIndexed = jdmatrix["indexed"];
-            spdlog::debug("Parse-JSON: DM indexed set to {0}.", m_dmInfo.m_startOffset ? "true" : "false");
-          }
-          else {
-            m_dmInfo.m_bIndexed = 0;
-            spdlog::warn("Parse-JSON: DM indexed is of strange type (not boolean). Set to default (false).");
-          }
-        }
-        else {
-          m_dmInfo.m_bIndexed = 0;
-          spdlog::warn("Parse-JSON: No DM indexed defined. Set to default (false).");
         }
 
         // Row Count
