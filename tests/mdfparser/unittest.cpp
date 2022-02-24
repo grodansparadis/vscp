@@ -542,7 +542,7 @@ TEST(parseMDF, XML_REGISTERS)
   // Check Manufacturer name
   ASSERT_TRUE(mdf.getManufacturerName() == "The company");
 
-  std::set<long> pages;
+  std::set<uint16_t> pages;
   ASSERT_EQ(mdf.getPages(pages), 2);
   ASSERT_EQ(pages.size(), 2);
 
@@ -1680,9 +1680,12 @@ TEST(parseMDF, XML_DM)
   ASSERT_NE(pdm, nullptr);
 
   ASSERT_EQ(pdm->getLevel(), 1);
+  ASSERT_EQ(pdm->getStartPage(), 3);
+  ASSERT_EQ(pdm->getStartOffset(), 11);
   ASSERT_EQ(pdm->getRowCount(), 4);
   ASSERT_EQ(pdm->getRowSize(), 8);
-  ASSERT_EQ(pdm->isIndexed(), false);
+  //ASSERT_EQ(pdm->isIndexed(), false);  // removed
+
 
   // Get actions list
   pactions = pdm->getActionList();
@@ -3173,7 +3176,7 @@ TEST(parseMDF, JSON_SIMPLE_DMatrix)
   ASSERT_EQ(8, pdm->getRowSize());
 
   // Verify indexed
-  ASSERT_EQ(false, pdm->isIndexed());
+  //ASSERT_EQ(false, pdm->isIndexed());
 
   {
 

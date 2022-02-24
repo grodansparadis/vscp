@@ -315,8 +315,8 @@ TEST(Register, Test_Class_CStandardRegisters)
   ASSERT_EQ(0, stdregs.getAlarm());
 
   // Check confirmance version
-  ASSERT_EQ(1, stdregs.getConfirmanceVersionMajor());
-  ASSERT_EQ(6, stdregs.getConfirmanceVersionMinor());
+  ASSERT_EQ(1, stdregs.getConformanceVersionMajor());
+  ASSERT_EQ(6, stdregs.getConformanceVersionMinor());
 
   // User id bytes can vary in content so no check here
 

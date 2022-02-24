@@ -1193,18 +1193,6 @@ public:
   void setRowSize(uint16_t rowSize) { m_rowSize = rowSize; };
 
   /*!
-    Check if decision matrix is indexed
-    @return True if decision matrix is indexed.
-  */
-  bool isIndexed(void) { return m_bIndexed; };
-
-  /*!
-    Set decision matrix indexed
-    @param bIndexed True if decision matrix is indexed.
-  */
-  void setIndexed(bool bIndexed = true) { m_bIndexed = bIndexed; };
-
-  /*!
    Get decision matrix row count
    @return Decision matrix action list.
   */
@@ -1216,7 +1204,6 @@ private:
   uint16_t m_startOffset; // Offset on start page for DM
   uint16_t m_rowCount;    // Number of rows in DM
   uint16_t m_rowSize;     // Size of a DM row (Normally 8)
-  bool m_bIndexed;        // True of storage is indexed
 
   std::deque<CMDF_Action *> m_list_action; // Action description
 };
