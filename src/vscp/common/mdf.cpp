@@ -1464,25 +1464,8 @@ CMDF::getModuleHelpUrl(std::string language)
   return str;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getManufacturerName
-//
 
-std::string
-CMDF::getManufacturerName(uint8_t index)
-{
-  return m_manufacturer.m_strName;
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// getManufacturerStreetAddress
-//
-
-std::string
-CMDF::getManufacturerStreetAddress(uint8_t index)
-{
-  return m_manufacturer.m_address.m_strStreet;
-}
 
 // ----------------------------------------------------------------------------
 
@@ -2446,6 +2429,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       // Old form for start and page data
       else if ((gTokenList.at(0) == "start") &&
                (gTokenList.at(1) == "dmatrix")) {
+
         // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
 
@@ -3387,7 +3371,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         }
       }
       // [5] manufacturer/web
-      else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
+      else if ((gTokenList.at(1) == "web") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           vscp_trim(strContent);

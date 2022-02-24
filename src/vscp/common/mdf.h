@@ -1469,7 +1469,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -2666,53 +2666,58 @@ public:
   uint16_t getModuleBufferSize(void) { return m_module_bufferSize; };
 
   /*!
+    Get manufacturer object
+    @return Pointer to manufacturer object
+  */
+  CMDF_Manufacturer *getManufacturer(void) { return &m_manufacturer; };
+
+  /*!
     Get module manufacturer
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer.
   */
-  std::string getManufacturerName(uint8_t index = 0);
+  std::string getManufacturerName(void) {return m_manufacturer.m_strName; };
 
   /*!
     Get manufacturer street address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer street address.
   */
-  std::string getManufacturerStreetAddress(uint8_t index = 0);
+  std::string getManufacturerStreetAddress(void) {return m_manufacturer.m_address.m_strStreet; };
 
   /*!
     Get manufacturer city address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer city address.
   */
-  std::string getManufacturerCityAddress(uint8_t index = 0);
+  std::string getManufacturerCityAddress(void) {return m_manufacturer.m_address.m_strCity; };
 
   /*!
     Get manufacturer town address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer town address.
   */
-  std::string getManufacturerTownAddress(uint8_t index = 0);
+  std::string getManufacturerTownAddress(void) {return m_manufacturer.m_address.m_strTown; };
 
   /*!
     Get manufacturer post code address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer post code address.
   */
-  std::string getManufacturerPostCodeAddress(uint8_t index = 0);
+  std::string getManufacturerPostCodeAddress(void) {return m_manufacturer.m_address.m_strPostCode; };
 
   /*!
     Get manufacturer region address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer region address.
   */
-  std::string getManufacturerRegionAddress(uint8_t index = 0);
+  std::string getManufacturerRegionAddress(void) {return m_manufacturer.m_address.m_strRegion; };
 
   /*!
     Get manufacturer state address
-    @param index (with default 0) is the index of the manufacturer.
     @return Return string with module manufacturer state address.
   */
-  std::string getManufacturerStateAddress(uint8_t index = 0);
+  std::string getManufacturerStateAddress(void) {return m_manufacturer.m_address.m_strState;};
+
+  /*!
+    Get manufacturer city address
+    @return Return string with module manufacturer city address.
+  */
+  std::string getManufacturerCountryAddress(void) {return m_manufacturer.m_address.m_strCountry; };
 
   /*!
     Get number of module pictures
@@ -2987,13 +2992,13 @@ private:
   std::map<std::string, std::string> m_mapDescription; // Module description
   std::map<std::string, std::string> m_mapInfoURL;     // URL for full module information
 
-  std::string m_strModule_changeDate; // Last date changed
-  std::string m_strModule_Model;      // Module Model
-  std::string m_strModule_Version;    // Module version
+  std::string m_strModule_changeDate;          // Last date changed
+  std::string m_strModule_Model;               // Module Model
+  std::string m_strModule_Version;             // Module version
 
-  uint16_t m_module_bufferSize; // Buffersize for module
+  uint16_t m_module_bufferSize;                // Buffersize for module
 
-  CMDF_Manufacturer m_manufacturer; // Manufacturer information
+  CMDF_Manufacturer m_manufacturer;            // Manufacturer information
 
   // File lists
   std::deque<CMDF_Picture *> m_list_picture;   // Picture file(s)
