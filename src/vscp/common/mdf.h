@@ -387,7 +387,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -488,7 +488,7 @@ public:
     Set page for register
     @param page Page for register.
   */
-  void setPage(uint32_t page) { m_page = page; };
+  void setPage(uint16_t page) { m_page = page; };
 
   /*!
     Get span for register
@@ -2856,7 +2856,7 @@ public:
       @param register Register to search for.      
       @return Pointer to CMDF_Register class if found else NULL.
   */
-  CMDF_Register *getRegister(uint32_t page, uint32_t reg);
+  CMDF_Register *getRegister(uint16_t page, uint32_t reg);
 
   /*!
       Get number of register pages used
@@ -2971,6 +2971,14 @@ public:
       @return path
   */
   std::string getTempFilePath(void) { return m_tempFileName; };
+
+  /*
+    Format a description string.
+    The description can be html or markdown coded and will
+    always be returned formatted as HTML.
+  */
+  std::string&
+  format(std::string& docs);
 
   // --------------------------------------------------------------------------
 

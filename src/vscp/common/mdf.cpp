@@ -7121,7 +7121,7 @@ CMDF::getPages(std::set<uint16_t> &pages)
 //
 
 CMDF_Register *
-CMDF::getRegister(uint32_t page, uint32_t reg)
+CMDF::getRegister(uint16_t page, uint32_t reg)
 {
   std::deque<CMDF_Register *>::iterator iter;
   for (iter = m_list_register.begin(); iter != m_list_register.end(); ++iter) {
@@ -7181,3 +7181,48 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
 
   return;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// getRegisterList
+//
+
+std::string&
+CMDF::format(std::string& docs)
+{
+  int idx;
+
+  // If first character is a # the string is coded as a
+  // markddown document. If not it is coded as a HTML document.
+
+  vscp_trim(docs);
+
+  if ('#' == docs.at(0)) {
+    // Markdown
+
+    // Replace escapes
+    // "\n" -> \n    
+    do {
+      idx = docs.find("\\n", idx);
+      if (idx == std::string::npos) break;
+      docs.replace(idx, 2, "\n");
+    } while (true);
+
+    std::stringstream markdownInput(docs);
+    std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
+    docs = parser->Parse(markdownInput);
+  }
+  else {
+    // HTML
+
+    // Replace escapes
+    // "/n" -> <br>    
+    do {
+      idx = docs.find("\\n", idx);
+      if (idx == std::string::npos) break;
+      docs.replace(idx, 2, "<br>");
+    } while (true);
+  }
+  return docs;
+}
+
+  
