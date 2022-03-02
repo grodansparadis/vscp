@@ -1464,25 +1464,8 @@ CMDF::getModuleHelpUrl(std::string language)
   return str;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getManufacturerName
-//
 
-std::string
-CMDF::getManufacturerName(uint8_t index)
-{
-  return m_manufacturer.m_strName;
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// getManufacturerStreetAddress
-//
-
-std::string
-CMDF::getManufacturerStreetAddress(uint8_t index)
-{
-  return m_manufacturer.m_address.m_strStreet;
-}
 
 // ----------------------------------------------------------------------------
 
@@ -2446,6 +2429,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       // Old form for start and page data
       else if ((gTokenList.at(0) == "start") &&
                (gTokenList.at(1) == "dmatrix")) {
+
         // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
 
@@ -3387,7 +3371,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         }
       }
       // [5] manufacturer/web
-      else if ((gTokenList.at(1) == "email") && (gpItemStruct != nullptr)) {
+      else if ((gTokenList.at(1) == "web") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           vscp_trim(strContent);
@@ -7137,7 +7121,7 @@ CMDF::getPages(std::set<uint16_t> &pages)
 //
 
 CMDF_Register *
-CMDF::getRegister(uint32_t page, uint32_t reg)
+CMDF::getRegister(uint16_t page, uint32_t reg)
 {
   std::deque<CMDF_Register *>::iterator iter;
   for (iter = m_list_register.begin(); iter != m_list_register.end(); ++iter) {
@@ -7197,3 +7181,48 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
 
   return;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// getRegisterList
+//
+
+std::string&
+CMDF::format(std::string& docs)
+{
+  int idx;
+
+  // If first character is a # the string is coded as a
+  // markddown document. If not it is coded as a HTML document.
+
+  vscp_trim(docs);
+
+  if ('#' == docs.at(0)) {
+    // Markdown
+
+    // Replace escapes
+    // "\n" -> \n    
+    do {
+      idx = docs.find("\\n", idx);
+      if (idx == std::string::npos) break;
+      docs.replace(idx, 2, "\n");
+    } while (true);
+
+    std::stringstream markdownInput(docs);
+    std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
+    docs = parser->Parse(markdownInput);
+  }
+  else {
+    // HTML
+
+    // Replace escapes
+    // "/n" -> <br>    
+    do {
+      idx = docs.find("\\n", idx);
+      if (idx == std::string::npos) break;
+      docs.replace(idx, 2, "<br>");
+    } while (true);
+  }
+  return docs;
+}
+
+  

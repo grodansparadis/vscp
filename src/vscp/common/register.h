@@ -426,7 +426,7 @@ public:
     {0x81,0,0xffff12,"VSCP specification major version number conformance","VSCP Major version number this device is constructed for."},
     {0x82,0,0xffff12,"VSCP specification minor version number conformance","VSCP Minor version number this device is constructed for."},
     {0x83,0,0xffffd2,"Error counter (was node control flag prior to version 1.6)","VSCP error counter is increased when an error occurs on the device. Reset error counter by reading it."},
-    {0x84,0,0xffff12,"User id 0","Client user node-ID byte 0. Use for location info or similar."},
+    {0x84,1,0xffff12,"User id 0","Client user node-ID byte 0. Use for location info or similar."},
     {0x85,1,0xffff12,"User id 1","Client user node-ID byte 1. Use for location info or similar."},
     {0x86,1,0xffff12,"User id 2","Client user node-ID byte 2. Use for location info or similar."},
     {0x87,1,0xffff12,"User id 3","Client user node-ID byte 3. Use for location info or similar."},
