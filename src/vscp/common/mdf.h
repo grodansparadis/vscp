@@ -152,7 +152,7 @@ public:
     Get the value description
     @return Value description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set value description
@@ -165,7 +165,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -228,7 +228,7 @@ public:
     Get the bit description
     @return bit description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set bit description
@@ -241,7 +241,7 @@ public:
     Get the bit info URL
     @return bit info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set bit info URL
@@ -400,7 +400,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -704,7 +704,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -717,7 +717,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -927,7 +927,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -940,7 +940,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -1054,7 +1054,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -1067,7 +1067,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -1246,7 +1246,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -1259,7 +1259,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -1394,7 +1394,7 @@ public:
     Get the event description
     @return event description
   */
-  std::string getDescription(std::string lang) { return m_mapDescription[lang]; };
+  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set event description
@@ -1407,7 +1407,7 @@ public:
     Get the event info URL
     @return Event info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set event info URL
@@ -1482,7 +1482,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -1767,19 +1767,20 @@ public:
   */
   std::string getDescription(std::string strLanguage = "en")
   {
-    if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
-      return m_mapDescription[strLanguage];
-    }
-    else {
-      return "";
-    }
+    return m_mapDescription[strLanguage];
+    // if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
+    //   return m_mapDescription[strLanguage];
+    // }
+    // else {
+    //   return "";
+    // }
   };
 
   /*!
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -1896,7 +1897,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -2056,7 +2057,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -2245,7 +2246,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -2389,7 +2390,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -2502,7 +2503,7 @@ public:
     Get the value info URL
     @return Value info URL
   */
-  std::string getInfoURL(std::string lang) { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set value info URL
@@ -3016,8 +3017,8 @@ private:
   std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
   std::deque<CMDF_Setup *> m_list_setup;       // Setup file(s)
 
-  CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
-  CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
+  CMDF_DecisionMatrix m_dmInfo;                // Info about decision matrix
+  CMDF_BootLoaderInfo m_bootInfo;              // Boot loader info
 
   std::deque<CMDF_Register *> m_list_register;        // List with defined registers
   std::deque<CMDF_RemoteVariable *> m_list_remotevar; // List with defined remote variables

@@ -3137,7 +3137,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       //std::cout << "3 - " << gTokenList.at(2) << " " <<  gTokenList.at(1) << " " << gTokenList.at(0) << std::endl;
 
       if (gTokenList.at(0) == "name") {
-        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         vscp_trim(strContent);
         vscp_makeLower(strContent);
         pmdf->m_name = strContent;

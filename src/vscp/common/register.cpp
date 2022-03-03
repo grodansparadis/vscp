@@ -684,6 +684,25 @@ int CStandardRegisters::init(CVscpClient& client,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  getFirmwareVersionString.
+//
+
+int CStandardRegisters::init(CRegisterPage& regPage)
+{
+  if (regPage.getPage() != 0) {
+    return VSCP_ERROR_INIT_MISSING;
+  }
+
+  for (int i=0x80; i<0x100; i++) {
+    if ((i < 0xa5) || (i > 0xcf)) {
+      m_regs[i] = regPage.getReg(i);
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  restoreStandardConfig.
 //
 
@@ -934,7 +953,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
     case remote_variable_type_int8_t:
       {
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format("%d", ppage->getReg(remoteVar.getOffset()));
         }
         else {
@@ -945,7 +964,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
     case remote_variable_type_uint8_t:
       {
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ud", ppage->getReg(remoteVar.getOffset()));
         }
         else {
@@ -961,13 +980,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         buf[1] = ppage->getReg(remoteVar.getOffset()+1);
         int16_t val = (buf[0] << 8 ) + buf[1];
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%d", val );
         }
         else {
-          strValue = vscp_str_format( "%04x", val );
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 4 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04x", val );          
         }
       }
       break;
@@ -979,7 +996,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         buf[1] = ppage->getReg(remoteVar.getOffset()+1);
         uint16_t val = (buf[0] << 8 ) + buf[1];
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ud", val );
         }
         else {
@@ -995,13 +1012,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
         int32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ld", val);
         }
         else {
-          strValue = vscp_str_format( "%04lx", val);
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04lx", val);
         }
       }
       break;
@@ -1013,13 +1028,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
         uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ld", val);
         }
         else {
-          strValue = vscp_str_format( "%04lx", val);
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04lx", val);
         }
       }
       break;
@@ -1040,13 +1053,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7]);
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
             strValue = vscp_str_format( "%lld", val );
         }
         else {
-            strValue = vscp_str_format( "%llx", val );
-            strValue = "0x";
-            strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+            strValue = vscp_str_format( "0x%llx", val );
         }
       }
       break;
@@ -1066,7 +1077,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[5] << 16) + 
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
             strValue = vscp_str_format("%ulld", val);
         }
         else {

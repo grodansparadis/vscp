@@ -38,8 +38,8 @@
 #include <guid.h>
 #include <vscp_client_base.h>
 
-#define FORMAT_ABSTRACTION_DECIMAL      0
-#define FORMAT_ABSTRACTION_HEX          1
+#define FORMAT_REMOTEVAR_DECIMAL      0
+#define FORMAT_REMOTEVAR_HEX          1
 
 class CRegisterPage;
 class CUserRegisters;
@@ -233,6 +233,18 @@ public:
   int putReg(uint32_t offset, uint8_t value);
 
   /*!
+    Return page for this set of registers.
+    @return Register page
+  */
+  uint16_t getPage(void) { return m_page; };
+
+  /*!
+    Set page for this set of registers.
+    @param page Register page to set
+  */
+  void setPage(uint16_t page) { m_page = page; };
+
+  /*!
     Clear the register changes marks
   */
   void clearChanges(void) { m_change.clear(); };
@@ -349,7 +361,7 @@ public:
   */
   int remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
                                   std::string& strValue,
-                                  uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+                                  uint8_t format = FORMAT_REMOTEVAR_DECIMAL  );
 
   /*
     * Store abstraction value in string format in corresponding registers.
@@ -416,9 +428,6 @@ public:
   /*!
     Standard register definitions
   */
-
-  
-
 
   const __struct_standard_register_defs m_vscp_standard_registers_defs[85] =
   {
@@ -521,6 +530,13 @@ public:
               cguid& guidNode,
               cguid& guidInterface,
               uint32_t timeout = 1000);
+
+  /*!
+    Initialization with already read standard registers
+    @param userRegs Reference to already read registers.
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int init(CRegisterPage& userRegs);
 
   /*!
     Get alarm byte
