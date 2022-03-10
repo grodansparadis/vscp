@@ -580,13 +580,13 @@ public:
     Get VSCP Works grid position.
     @return VSCP Works grid postion. Set to -1 if not set.
   */
-  long getRowPosition(void) { return m_rowInGrid; };
+  //long getRowPosition(void) { return m_rowInGrid; };
 
   /*!
     Set VSCP Works grid position.
     @param rowInGrid VSCP Works grid postion.
   */
-  void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
+  //void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
 
   /*!
     Set Foreground color for VSCP Works grid.
@@ -616,13 +616,13 @@ public:
     Undo command on register value in VSCP grid.
     @return Previous register value. -1 if there is no previous value.
   */
-  int undo(void);
+  //int undo(void);
 
   /*!
     Redo command on register value in VSCP grid.
     @return Previous register value. -1 if there is no previous value.
   */
-  int redo(void);
+  //int redo(void);
 
 private:
   /*!
@@ -659,8 +659,8 @@ private:
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
   uint32_t m_bgcolor; // Cell background colour. Default = white.
 
-  std::deque<uint8_t> m_list_undo_value; // List with undo values
-  std::deque<uint8_t> m_list_redo_value; // List with redo values
+  //std::deque<uint8_t> m_list_undo_value; // List with undo values
+  //std::deque<uint8_t> m_list_redo_value; // List with redo values
 };
 
 // ----------------------------------------------------------------------------
@@ -1119,6 +1119,16 @@ public:
   CMDF_DecisionMatrix();
   ~CMDF_DecisionMatrix();
 
+  // Ordinals for level I DM items on row
+  static const int IDX_ADDRESS_ORIGIN=0;
+  static const int IDX_ADDRESS_FLAGS=1;
+  static const int IDX_ADDRESS_CLASS_MASK=2;
+  static const int IDX_ADDRESS_CLASS_FILTER=3;
+  static const int IDX_ADDRESS_TYPE_MASK=4;
+  static const int IDX_ADDRESS_TYPE_FILTER=5;
+  static const int IDX_ADDRESS_ACTION=6;
+  static const int IDX_ADDRESS_ACTION_PARAMETER=7;
+
   // Friend declarations
   friend CMDF;
   friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
@@ -1197,6 +1207,8 @@ public:
    @return Decision matrix action list.
   */
   std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
+
+  //int getRegister(uint8_t row, CMDF_DecisionMatrix__dmindex idx); 
 
 private:
   uint8_t m_level;        // 1 or 2 (defaults to 1)

@@ -528,6 +528,15 @@ extern "C"
 #define VSCP_LEVEL1_DM_OFFSET_ACTION       6
 #define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM 7
 
+/* Flag bits for level 1 DM flags */
+#define VSCP_LEVEL1_DM_FLAG_ENABLED           0x80
+#define VSCP_LEVEL1_DM_FLAG_ORIGIN_MATCH      0x40
+#define VSCP_LEVEL1_DM_FLAG_ORIGIN_HARDCODED  0x20
+#define VSCP_LEVEL1_DM_FLAG_MATCH_ZONE        0x10
+#define VSCP_LEVEL1_DM_FLAG_MATCH_SUBZONE     0x08
+#define VSCP_LEVEL1_DM_FLAG_CLASS_MASK_BIT8   0x02
+#define VSCP_LEVEL1_DM_FLAG_CLASS_FILTER_BIT8 0x01
+
     /*
         Bits for VSCP server 64/16-bit capability code 
         (WCYD - What Can You Do) used by CLASS1.PROTOCOL, 

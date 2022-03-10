@@ -514,9 +514,9 @@ CMDF_Register::setValue(uint8_t value)
 {
   // A new value can be undone
   // No need for undo if the value is the same as before
-  if (m_value != value) {
-    m_list_undo_value.push_back(m_value);
-  }
+  // if (m_value != value) {
+  //   m_list_undo_value.push_back(m_value);
+  // }
   m_value = value;
 }
 
@@ -524,31 +524,31 @@ CMDF_Register::setValue(uint8_t value)
 //  undo
 //
 
-int
-CMDF_Register::undo(void)
-{
-  if (m_list_undo_value.size()) {
-    m_list_redo_value.push_back(m_value);
-    m_value = m_list_undo_value.back();
-    m_list_undo_value.pop_back();
-  }
-  return -1;
-}
+// int
+// CMDF_Register::undo(void)
+// {
+//   if (m_list_undo_value.size()) {
+//     m_list_redo_value.push_back(m_value);
+//     m_value = m_list_undo_value.back();
+//     m_list_undo_value.pop_back();
+//   }
+//   return -1;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  redo
 //
 
-int
-CMDF_Register::redo(void)
-{
-  if (m_list_redo_value.size()) {
-    m_list_undo_value.push_back(m_value);
-    m_value = m_list_redo_value.back();
-    m_list_redo_value.pop_back();
-  }
-  return -1;
-}
+// int
+// CMDF_Register::redo(void)
+// {
+//   if (m_list_redo_value.size()) {
+//     m_list_undo_value.push_back(m_value);
+//     m_value = m_list_redo_value.back();
+//     m_list_redo_value.pop_back();
+//   }
+//   return -1;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
@@ -7189,7 +7189,7 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
 std::string&
 CMDF::format(std::string& docs)
 {
-  int idx;
+  int idx = 0;
 
   // If first character is a # the string is coded as a
   // markddown document. If not it is coded as a HTML document.

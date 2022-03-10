@@ -177,7 +177,6 @@ int vscp_scanSlowForDevices(CVscpClient& client,
                                 uint32_t timeout = 2000);
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -250,6 +249,25 @@ public:
   void clearChanges(void) { m_change.clear(); };
 
   /*!
+    Manually set a single change position to true opr false
+    @param offset Register offset to set.
+    @param state State to set change to.
+  */
+  void setSingleChange(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
+    Get VSCP Works grid position.
+    @return VSCP Works grid postion. Set to -1 if not set.
+  */
+  long getRowPosition(uint32_t reg) { return m_rowInGrid[reg]; };
+
+  /*!
+    Set VSCP Works grid position.
+    @param rowInGrid VSCP Works grid postion.
+  */
+  void setRowPosition(uint32_t reg, long rowInGrid) { m_rowInGrid[reg] = rowInGrid; };
+
+  /*!
     Get the register changes
     @return Register changes
   */
@@ -284,10 +302,48 @@ private:
   std::map<uint32_t, uint8_t> m_registers;
 
   /*!
+    Row in grid this register set is located on.
+  */
+  std::map<uint32_t, int> m_rowInGrid;
+
+  /*!
+    VSCP Works rowtype for this register.
+    0 = register
+    1 = group
+  */
+  std::map<uint32_t, int>  m_rowType;
+
+  /*!
+    This map contains pointers to MDF remote variable objects
+    for registers that define remote variables.
+  */
+  std::map<uint32_t, CMDF_RemoteVariable*> m_remoteVariableMap;
+
+  /*!
+    This map contains pointers to MDF remote variable objects
+    for registers that define remote variables.
+  */
+  std::map<uint32_t, CMDF_DecisionMatrix*> m_DecsionMatrixMap;
+
+  /*!
     Here a register position is true for a register that
     has received a value it did not have before.
   */
   std::map<uint32_t, bool> m_change;
+
+  /*!
+    undo/redo queues
+    put:
+      write old value to m_list_undo_value
+    undo: 
+      current value to m_list_redo_value (if there is undo values)
+      m_list_undo_value to current value (if there is undo values)
+    redo:
+      current value to m_list_undo_value (if there is redo values)
+      m_list_redo_value to current value (if there is redo values) 
+  */
+  std::deque<uint8_t> m_list_undo_value;  // List with undo values
+  std::deque<uint8_t> m_list_redo_value;  // List with redo values
 };
 
 
@@ -371,6 +427,35 @@ public:
     */
   int remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
                                   std::string &strValue);
+
+  /*!
+    Get register content for pos in DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param pos Position in DM row
+    @return Register content for DM pos or -1 on failure.
+  */
+  int vscp_getGetDmRegisterContent(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t pos);
+
+  /*!
+    Read DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param buf Buffer holding DM row data to write. The size of the
+              data is fiven by the DM row size.
+    @return VSCP_ERROR_SUCCESS on success or error code on failure.
+  */
+  int vscp_readDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf);
+
+  /*! 
+    Write DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param buf Buffer that will get DM row data on a successfull read. The
+            size of the data is fiven by the DM row size.
+    @return VSCP_ERROR_SUCCESS on success or error code on failure.
+  */
+  int vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf);
 
 private:
 

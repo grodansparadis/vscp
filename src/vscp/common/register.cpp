@@ -635,11 +635,14 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
+  m_registers[reg] = value;
+
   // If this is a different value other than the current
   // mark register position as changed
   if (m_registers[reg] != value) {
     m_change[reg] = true;
   }
+
   return m_registers[reg] = value; // Assign value
 }
 
@@ -887,7 +890,7 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 
     // Page already exist
     CRegisterPage *pPage = it->second;
-    if (NULL == pPage) {
+    if (nullptr == pPage) {
       return false; // Invalid page
     }
 
@@ -899,7 +902,7 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 
     // Create page
     CRegisterPage *pPage = new CRegisterPage(m_level);
-    if (NULL == pPage) {
+    if (nullptr == pPage) {
       return false; // Unable to create page
     }
     m_registerPageMap[page] = pPage;
@@ -933,7 +936,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
       {
         uint8_t *pstr;
         pstr = new uint8_t[remoteVar.getTypeByteCount() + 1 ];
-        if ( NULL == pstr ) return false;
+        if ( nullptr == pstr ) return false;
         memset(pstr, 0, sizeof(pstr));
         for (int i = remoteVar.getOffset(); 
               i < remoteVar.getOffset() + remoteVar.getTypeByteCount(); 
@@ -1154,6 +1157,7 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
 {
   bool rv = VSCP_ERROR_SUCCESS;
   CRegisterPage *ppage = getRegisterPage( remoteVar.getPage() );
+  if (nullptr == ppage) return VSCP_ERROR_ERROR;
 
   switch (remoteVar.getType()) {
 
@@ -1333,6 +1337,82 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
     }
   return rv;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getGetDmRegisterContent
+//
+
+int 
+CUserRegisters::vscp_getGetDmRegisterContent(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t pos)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate position
+  if (pos >= dm.getRowSize()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Get register
+  return(ppage->getReg(dm.getRowSize() * row)); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_readDmRow
+//
+
+int 
+CUserRegisters::vscp_readDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  for (uint8_t i = 0; i < dm.getRowSize(); i++) {
+    buf[i] = ppage->getReg(dm.getRowSize() * row + i);
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_writeDmRow
+//
+
+int 
+CUserRegisters::vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  for (uint8_t i = 0; i < dm.getRowSize(); i++) {
+    ppage->putReg(dm.getRowSize() * row + i, buf[i]);
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
