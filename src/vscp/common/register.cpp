@@ -635,7 +635,13 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
-  m_registers[reg] = value;
+  // Mark as changed only if different
+  if (m_registers[reg] != value) {
+    m_change[reg] = true;       // Mark as changed
+  }
+
+  m_registers[reg] = value;   // Store value
+  
 
   // If this is a different value other than the current
   // mark register position as changed
@@ -852,8 +858,12 @@ CUserRegisters::getRegisterPage(uint16_t page)
   return m_registerPageMap[page];
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getReg
+//
+
 int
-CUserRegisters::getReg(uint16_t page, uint32_t offset)
+CUserRegisters::getReg(uint32_t offset, uint16_t page)
 {
   CRegisterPage *ppage = m_registerPageMap[page];
   if (nullptr == ppage) {
@@ -914,6 +924,37 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  isChanged
+//
+
+bool 
+CUserRegisters::isChanged(uint32_t offset, uint16_t page)
+{
+  CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    return false;
+  }
+
+  return pPage->isChanged(offset);  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  hasWrittenChange
+//
+
+bool 
+CUserRegisters::hasWrittenChange(uint32_t offset, uint16_t page)
+{
+  CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    return false;
+  }
+
+  // If there are undo values there has been changes
+  return pPage->hasWrittenChange(offset);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  remoteVarFromRegToString
 //
 
@@ -928,6 +969,9 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
   // Get register page (will always return a page even if it does not exists)
   ppage = getRegisterPage(remoteVar.getPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
 
   // vscp_remote_variable_type
   switch (remoteVar.getType()) {

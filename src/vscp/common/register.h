@@ -274,6 +274,20 @@ public:
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
   /*!
+    Check if a register has an unwritten change
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset) { return m_change[offset]; };
+
+  /*!
+    Check if register has previously been changed
+    @param offset Register offset on page to read from.
+    @return true if register has previously been changed.
+  */
+  bool hasWrittenChange(uint32_t offset) { return /*(m_list_undo_value[offset].size() > 0)*/0; };
+
+  /*!
     Get the register map for this page
   */
   std::map<uint32_t, uint8_t> *getRegisterMap(void) { return &m_registers; }; 
@@ -342,8 +356,13 @@ private:
       current value to m_list_undo_value (if there is redo values)
       m_list_redo_value to current value (if there is redo values) 
   */
-  std::deque<uint8_t> m_list_undo_value;  // List with undo values
-  std::deque<uint8_t> m_list_redo_value;  // List with redo values
+
+  // offset, queue with value
+  std::map<uint32_t, std::deque<uint8_t>> m_list_undo_value;
+  std::map<uint32_t, std::deque<uint8_t>> m_list_redo_value;
+
+  //std::deque<uint8_t> m_list_undo_value;  // List with undo values
+  //std::deque<uint8_t> m_list_redo_value;  // List with redo values
 };
 
 
@@ -403,11 +422,27 @@ public:
 
   /*!
     Get the register content from a register at a specific page
-    @param page Page to read from.
     @param offset Register offset on page to read from.
+    @param page Page to read from.    
     @return Register content or -1 on failure.
   */
-  int getReg(uint16_t page, uint32_t offset);
+  int getReg(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Check if a register has an unwritten change
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Check if a register has a written change (blue)
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return true if register has an written change (blue).
+  */
+  bool hasWrittenChange(uint32_t offset, uint16_t page = 0);
 
   /*!
       Get abstraction value from registers into string value.

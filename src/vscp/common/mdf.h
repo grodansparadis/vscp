@@ -562,32 +562,6 @@ public:
   */
   std::deque<CMDF_Value *> *getListValues(void) { return &m_list_value; };
 
-  // * * * VSCP Works Special methods * * *
-
-  /*!
-    Get value for register
-    @return value for register.
-  */
-  uint8_t getValue(void) { return m_value; };
-
-  /*!
-    Set value for register
-    @param value Value for register.
-  */
-  void setValue(uint8_t value);
-
-  /*!
-    Get VSCP Works grid position.
-    @return VSCP Works grid postion. Set to -1 if not set.
-  */
-  //long getRowPosition(void) { return m_rowInGrid; };
-
-  /*!
-    Set VSCP Works grid position.
-    @param rowInGrid VSCP Works grid postion.
-  */
-  //void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
-
   /*!
     Set Foreground color for VSCP Works grid.
     @param color Foreground color to set.
@@ -611,18 +585,6 @@ public:
     @return Background color.
   */
   uint32_t getBackgroundColor(void) { return m_bgcolor; };
-
-  /*!
-    Undo command on register value in VSCP grid.
-    @return Previous register value. -1 if there is no previous value.
-  */
-  //int undo(void);
-
-  /*!
-    Redo command on register value in VSCP grid.
-    @return Previous register value. -1 if there is no previous value.
-  */
-  //int redo(void);
 
 private:
   /*!
@@ -652,15 +614,9 @@ private:
   std::deque<CMDF_Bit *> m_list_bit;        // List with bit defines
   std::deque<CMDF_Value *> m_list_value;    // List with selectable values
 
-  // Below are for VSCP Works use only
-  long m_rowInGrid;   // Helper for display (row reg is displayed on)
-  uint8_t m_value;    // Initial value read. This is the value
-                      // that will be restored.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
   uint32_t m_bgcolor; // Cell background colour. Default = white.
 
-  //std::deque<uint8_t> m_list_undo_value; // List with undo values
-  //std::deque<uint8_t> m_list_redo_value; // List with redo values
 };
 
 // ----------------------------------------------------------------------------
@@ -1120,14 +1076,14 @@ public:
   ~CMDF_DecisionMatrix();
 
   // Ordinals for level I DM items on row
-  static const int IDX_ADDRESS_ORIGIN=0;
-  static const int IDX_ADDRESS_FLAGS=1;
-  static const int IDX_ADDRESS_CLASS_MASK=2;
-  static const int IDX_ADDRESS_CLASS_FILTER=3;
-  static const int IDX_ADDRESS_TYPE_MASK=4;
-  static const int IDX_ADDRESS_TYPE_FILTER=5;
-  static const int IDX_ADDRESS_ACTION=6;
-  static const int IDX_ADDRESS_ACTION_PARAMETER=7;
+  static const int IDX_ADDRESS_ORIGIN             = VSCP_LEVEL1_DM_OFFSET_OADDR;
+  static const int IDX_ADDRESS_FLAGS              = VSCP_LEVEL1_DM_OFFSET_FLAGS;
+  static const int IDX_ADDRESS_CLASS_MASK         = VSCP_LEVEL1_DM_OFFSET_CLASS_MASK;
+  static const int IDX_ADDRESS_CLASS_FILTER       = VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER;
+  static const int IDX_ADDRESS_TYPE_MASK          = VSCP_LEVEL1_DM_OFFSET_TYPE_MASK;
+  static const int IDX_ADDRESS_TYPE_FILTER        = VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER;
+  static const int IDX_ADDRESS_ACTION             = VSCP_LEVEL1_DM_OFFSET_ACTION;
+  static const int IDX_ADDRESS_ACTION_PARAMETER   = VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM;
 
   // Friend declarations
   friend CMDF;
@@ -2864,12 +2820,12 @@ public:
   size_t getRegisterCount(uint32_t page);
 
   /*!
-      Return register definition from register + page
-      @param page Page top search for.
+      Return register definition from register + page      
       @param register Register to search for.      
+      @param page Page top search for.
       @return Pointer to CMDF_Register class if found else NULL.
   */
-  CMDF_Register *getRegister(uint16_t page, uint32_t reg);
+  CMDF_Register *getRegister( uint32_t reg, uint16_t page = 0);
 
   /*!
       Get number of register pages used

@@ -350,8 +350,6 @@ CMDF_Register::CMDF_Register()
   m_type       = MDF_REG_TYPE_STANDARD;
   m_size       = 1;
 
-  m_rowInGrid = -1;
-  m_value     = 0;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
 }
@@ -405,27 +403,8 @@ CMDF_Register::clearStorage(void)
   m_type       = MDF_REG_TYPE_STANDARD;
   m_size       = 1;
 
-  m_rowInGrid = -1;
-  m_value     = 0;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//  setValueToDefault
-//
-
-uint8_t
-CMDF_Register::setValueToDefault(void)
-{
-  if (m_strDefault.npos == m_strDefault.find("UNDEF")) {
-    m_value = vscp_readStringValue(m_strDefault);
-  }
-  else {
-    m_value = 0;
-  }
-
-  return m_value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -468,9 +447,6 @@ CMDF_Register::operator=(const CMDF_Register &other)
 
   m_access = other.m_access;
 
-  m_rowInGrid = other.m_rowInGrid;
-  m_value     = other.m_value;
-
   m_fgcolor = other.m_fgcolor;
   m_bgcolor = other.m_bgcolor;
 
@@ -504,51 +480,6 @@ CMDF_Register::operator=(const CMDF_Register &other)
 
   return *this;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//  setValue
-//
-
-void
-CMDF_Register::setValue(uint8_t value)
-{
-  // A new value can be undone
-  // No need for undo if the value is the same as before
-  // if (m_value != value) {
-  //   m_list_undo_value.push_back(m_value);
-  // }
-  m_value = value;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//  undo
-//
-
-// int
-// CMDF_Register::undo(void)
-// {
-//   if (m_list_undo_value.size()) {
-//     m_list_redo_value.push_back(m_value);
-//     m_value = m_list_undo_value.back();
-//     m_list_undo_value.pop_back();
-//   }
-//   return -1;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-//  redo
-//
-
-// int
-// CMDF_Register::redo(void)
-// {
-//   if (m_list_redo_value.size()) {
-//     m_list_undo_value.push_back(m_value);
-//     m_value = m_list_redo_value.back();
-//     m_list_redo_value.pop_back();
-//   }
-//   return -1;
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
@@ -5581,19 +5512,14 @@ CMDF::parseMDF_JSON(std::string &path)
               vscp_makeUpper(default_value);
               preg->m_strDefault = default_value;
               spdlog::debug("Parse-JSON: Module register default: {0}", preg->m_strDefault);
-              if (default_value != "UNDEF") {
-                preg->m_value = vscp_readStringValue(default_value);
-                spdlog::debug("Parse-JSON: Module register value set to defined default: {0}", preg->m_value);
-              }
             }
             else if (jreg.contains("default") && jreg["default"].is_number()) {
               preg->m_strDefault = std::to_string((int) jreg["default"]);
-              preg->m_value      = jreg["default"];
-              spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_value);
+              spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_strDefault);
             }
             else if (jreg.contains("default") && jreg["default"].is_boolean()) {
               preg->m_strDefault = jreg["default"] ? "true" : "false";
-              spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_value);
+              spdlog::debug("Parse-JSON: Module register value and default set to defined default: {0}", preg->m_strDefault);
             }
 
             if (jreg.contains("access") && jreg["access"].is_string()) {
@@ -5628,20 +5554,6 @@ CMDF::parseMDF_JSON(std::string &path)
             }
             else {
               spdlog::info("Parse-JSON: No register name defined (defaults to empty string).");
-            }
-
-            // Grid position (VSCP Works)
-            if (jreg.contains("rowpos") && jreg["rowpos"].is_string()) {
-              preg->m_rowInGrid = vscp_readStringValue(jreg["rowpos"]);
-              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", preg->m_rowInGrid);
-            }
-            else if (jreg.contains("rowpos") && jreg["rowpos"].is_number()) {
-              preg->m_rowInGrid = jreg["rowpos"];
-              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", preg->m_rowInGrid);
-            }
-            else {
-              preg->m_rowInGrid = -1;
-              spdlog::trace("Parse-JSON: No rowpos defined (set to -1).");
             }
 
             // Foreground color (VSCP Works)
@@ -7121,7 +7033,7 @@ CMDF::getPages(std::set<uint16_t> &pages)
 //
 
 CMDF_Register *
-CMDF::getRegister(uint16_t page, uint32_t reg)
+CMDF::getRegister(uint32_t reg, uint16_t page)
 {
   std::deque<CMDF_Register *>::iterator iter;
   for (iter = m_list_register.begin(); iter != m_list_register.end(); ++iter) {
