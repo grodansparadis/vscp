@@ -38,8 +38,8 @@
 #include <guid.h>
 #include <vscp_client_base.h>
 
-#define FORMAT_ABSTRACTION_DECIMAL      0
-#define FORMAT_ABSTRACTION_HEX          1
+#define FORMAT_REMOTEVAR_DECIMAL      0
+#define FORMAT_REMOTEVAR_HEX          1
 
 class CRegisterPage;
 class CUserRegisters;
@@ -177,7 +177,6 @@ int vscp_scanSlowForDevices(CVscpClient& client,
                                 uint32_t timeout = 2000);
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -233,15 +232,60 @@ public:
   int putReg(uint32_t offset, uint8_t value);
 
   /*!
+    Return page for this set of registers.
+    @return Register page
+  */
+  uint16_t getPage(void) { return m_page; };
+
+  /*!
+    Set page for this set of registers.
+    @param page Register page to set
+  */
+  void setPage(uint16_t page) { m_page = page; };
+
+  /*!
     Clear the register changes marks
   */
   void clearChanges(void) { m_change.clear(); };
+
+  /*!
+    Manually set a single change position to true opr false
+    @param offset Register offset to set.
+    @param state State to set change to.
+  */
+  void setSingleChange(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
+    Get VSCP Works grid position.
+    @return VSCP Works grid postion. Set to -1 if not set.
+  */
+  long getRowPosition(uint32_t reg) { return m_rowInGrid[reg]; };
+
+  /*!
+    Set VSCP Works grid position.
+    @param rowInGrid VSCP Works grid postion.
+  */
+  void setRowPosition(uint32_t reg, long rowInGrid) { m_rowInGrid[reg] = rowInGrid; };
 
   /*!
     Get the register changes
     @return Register changes
   */
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
+
+  /*!
+    Check if a register has an unwritten change
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset) { return m_change[offset]; };
+
+  /*!
+    Check if register has previously been changed
+    @param offset Register offset on page to read from.
+    @return true if register has previously been changed.
+  */
+  bool hasWrittenChange(uint32_t offset) { return /*(m_list_undo_value[offset].size() > 0)*/0; };
 
   /*!
     Get the register map for this page
@@ -272,10 +316,53 @@ private:
   std::map<uint32_t, uint8_t> m_registers;
 
   /*!
+    Row in grid this register set is located on.
+  */
+  std::map<uint32_t, int> m_rowInGrid;
+
+  /*!
+    VSCP Works rowtype for this register.
+    0 = register
+    1 = group
+  */
+  std::map<uint32_t, int>  m_rowType;
+
+  /*!
+    This map contains pointers to MDF remote variable objects
+    for registers that define remote variables.
+  */
+  std::map<uint32_t, CMDF_RemoteVariable*> m_remoteVariableMap;
+
+  /*!
+    This map contains pointers to MDF remote variable objects
+    for registers that define remote variables.
+  */
+  std::map<uint32_t, CMDF_DecisionMatrix*> m_DecsionMatrixMap;
+
+  /*!
     Here a register position is true for a register that
     has received a value it did not have before.
   */
   std::map<uint32_t, bool> m_change;
+
+  /*!
+    undo/redo queues
+    put:
+      write old value to m_list_undo_value
+    undo: 
+      current value to m_list_redo_value (if there is undo values)
+      m_list_undo_value to current value (if there is undo values)
+    redo:
+      current value to m_list_undo_value (if there is redo values)
+      m_list_redo_value to current value (if there is redo values) 
+  */
+
+  // offset, queue with value
+  std::map<uint32_t, std::deque<uint8_t>> m_list_undo_value;
+  std::map<uint32_t, std::deque<uint8_t>> m_list_redo_value;
+
+  //std::deque<uint8_t> m_list_undo_value;  // List with undo values
+  //std::deque<uint8_t> m_list_redo_value;  // List with redo values
 };
 
 
@@ -335,11 +422,27 @@ public:
 
   /*!
     Get the register content from a register at a specific page
-    @param page Page to read from.
     @param offset Register offset on page to read from.
+    @param page Page to read from.    
     @return Register content or -1 on failure.
   */
-  int getReg(uint16_t page, uint32_t offset);
+  int getReg(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Check if a register has an unwritten change
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Check if a register has a written change (blue)
+    @param page Page to read from.
+    @param offset Register offset on page to read from.
+    @return true if register has an written change (blue).
+  */
+  bool hasWrittenChange(uint32_t offset, uint16_t page = 0);
 
   /*!
       Get abstraction value from registers into string value.
@@ -349,7 +452,7 @@ public:
   */
   int remoteVarFromRegToString( CMDF_RemoteVariable& remoteVar,
                                   std::string& strValue,
-                                  uint8_t format = FORMAT_ABSTRACTION_DECIMAL  );
+                                  uint8_t format = FORMAT_REMOTEVAR_DECIMAL  );
 
   /*
     * Store abstraction value in string format in corresponding registers.
@@ -359,6 +462,35 @@ public:
     */
   int remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar,
                                   std::string &strValue);
+
+  /*!
+    Get register content for pos in DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param pos Position in DM row
+    @return Register content for DM pos or -1 on failure.
+  */
+  int vscp_getGetDmRegisterContent(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t pos);
+
+  /*!
+    Read DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param buf Buffer holding DM row data to write. The size of the
+              data is fiven by the DM row size.
+    @return VSCP_ERROR_SUCCESS on success or error code on failure.
+  */
+  int vscp_readDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf);
+
+  /*! 
+    Write DM row
+    @param dm Decsion matrix
+    @param row DM row to read.
+    @param buf Buffer that will get DM row data on a successfull read. The
+            size of the data is fiven by the DM row size.
+    @return VSCP_ERROR_SUCCESS on success or error code on failure.
+  */
+  int vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf);
 
 private:
 
@@ -416,9 +548,6 @@ public:
   /*!
     Standard register definitions
   */
-
-  
-
 
   const __struct_standard_register_defs m_vscp_standard_registers_defs[85] =
   {
@@ -521,6 +650,13 @@ public:
               cguid& guidNode,
               cguid& guidInterface,
               uint32_t timeout = 1000);
+
+  /*!
+    Initialization with already read standard registers
+    @param userRegs Reference to already read registers.
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int init(CRegisterPage& userRegs);
 
   /*!
     Get alarm byte

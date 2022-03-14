@@ -635,11 +635,20 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
+  // Mark as changed only if different
+  if (m_registers[reg] != value) {
+    m_change[reg] = true;       // Mark as changed
+  }
+
+  m_registers[reg] = value;   // Store value
+  
+
   // If this is a different value other than the current
   // mark register position as changed
   if (m_registers[reg] != value) {
     m_change[reg] = true;
   }
+
   return m_registers[reg] = value; // Assign value
 }
 
@@ -681,6 +690,25 @@ int CStandardRegisters::init(CVscpClient& client,
   m_change.clear();
   rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, timeout);
   return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getFirmwareVersionString.
+//
+
+int CStandardRegisters::init(CRegisterPage& regPage)
+{
+  if (regPage.getPage() != 0) {
+    return VSCP_ERROR_INIT_MISSING;
+  }
+
+  for (int i=0x80; i<0x100; i++) {
+    if ((i < 0xa5) || (i > 0xcf)) {
+      m_regs[i] = regPage.getReg(i);
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -830,8 +858,12 @@ CUserRegisters::getRegisterPage(uint16_t page)
   return m_registerPageMap[page];
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getReg
+//
+
 int
-CUserRegisters::getReg(uint16_t page, uint32_t offset)
+CUserRegisters::getReg(uint32_t offset, uint16_t page)
 {
   CRegisterPage *ppage = m_registerPageMap[page];
   if (nullptr == ppage) {
@@ -868,7 +900,7 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 
     // Page already exist
     CRegisterPage *pPage = it->second;
-    if (NULL == pPage) {
+    if (nullptr == pPage) {
       return false; // Invalid page
     }
 
@@ -880,7 +912,7 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
 
     // Create page
     CRegisterPage *pPage = new CRegisterPage(m_level);
-    if (NULL == pPage) {
+    if (nullptr == pPage) {
       return false; // Unable to create page
     }
     m_registerPageMap[page] = pPage;
@@ -889,6 +921,37 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
   }
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  isChanged
+//
+
+bool 
+CUserRegisters::isChanged(uint32_t offset, uint16_t page)
+{
+  CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    return false;
+  }
+
+  return pPage->isChanged(offset);  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  hasWrittenChange
+//
+
+bool 
+CUserRegisters::hasWrittenChange(uint32_t offset, uint16_t page)
+{
+  CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    return false;
+  }
+
+  // If there are undo values there has been changes
+  return pPage->hasWrittenChange(offset);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -906,6 +969,9 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
   // Get register page (will always return a page even if it does not exists)
   ppage = getRegisterPage(remoteVar.getPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
 
   // vscp_remote_variable_type
   switch (remoteVar.getType()) {
@@ -914,7 +980,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
       {
         uint8_t *pstr;
         pstr = new uint8_t[remoteVar.getTypeByteCount() + 1 ];
-        if ( NULL == pstr ) return false;
+        if ( nullptr == pstr ) return false;
         memset(pstr, 0, sizeof(pstr));
         for (int i = remoteVar.getOffset(); 
               i < remoteVar.getOffset() + remoteVar.getTypeByteCount(); 
@@ -934,7 +1000,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
     case remote_variable_type_int8_t:
       {
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format("%d", ppage->getReg(remoteVar.getOffset()));
         }
         else {
@@ -945,7 +1011,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
     case remote_variable_type_uint8_t:
       {
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ud", ppage->getReg(remoteVar.getOffset()));
         }
         else {
@@ -961,13 +1027,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         buf[1] = ppage->getReg(remoteVar.getOffset()+1);
         int16_t val = (buf[0] << 8 ) + buf[1];
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%d", val );
         }
         else {
-          strValue = vscp_str_format( "%04x", val );
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 4 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04x", val );          
         }
       }
       break;
@@ -979,7 +1043,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         buf[1] = ppage->getReg(remoteVar.getOffset()+1);
         uint16_t val = (buf[0] << 8 ) + buf[1];
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ud", val );
         }
         else {
@@ -995,13 +1059,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
         int32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ld", val);
         }
         else {
-          strValue = vscp_str_format( "%04lx", val);
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04lx", val);
         }
       }
       break;
@@ -1013,13 +1075,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
         uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
           strValue = vscp_str_format( "%ld", val);
         }
         else {
-          strValue = vscp_str_format( "%04lx", val);
-          strValue = "0x";
-          strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+          strValue = vscp_str_format( "0x%04lx", val);
         }
       }
       break;
@@ -1040,13 +1100,11 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7]);
 
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
             strValue = vscp_str_format( "%lld", val );
         }
         else {
-            strValue = vscp_str_format( "%llx", val );
-            strValue = "0x";
-            strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
+            strValue = vscp_str_format( "0x%llx", val );
         }
       }
       break;
@@ -1066,7 +1124,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[5] << 16) + 
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7];
-        if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
+        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
             strValue = vscp_str_format("%ulld", val);
         }
         else {
@@ -1143,6 +1201,7 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
 {
   bool rv = VSCP_ERROR_SUCCESS;
   CRegisterPage *ppage = getRegisterPage( remoteVar.getPage() );
+  if (nullptr == ppage) return VSCP_ERROR_ERROR;
 
   switch (remoteVar.getType()) {
 
@@ -1322,6 +1381,82 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
     }
   return rv;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getGetDmRegisterContent
+//
+
+int 
+CUserRegisters::vscp_getGetDmRegisterContent(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t pos)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate position
+  if (pos >= dm.getRowSize()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Get register
+  return(ppage->getReg(dm.getRowSize() * row)); 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_readDmRow
+//
+
+int 
+CUserRegisters::vscp_readDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  for (uint8_t i = 0; i < dm.getRowSize(); i++) {
+    buf[i] = ppage->getReg(dm.getRowSize() * row + i);
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_writeDmRow
+//
+
+int 
+CUserRegisters::vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *buf)
+{
+  CRegisterPage *ppage = getRegisterPage(dm.getStartPage());
+  if (nullptr == ppage) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Validate row
+  if (row >= dm.getRowCount()) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  for (uint8_t i = 0; i < dm.getRowSize(); i++) {
+    ppage->putReg(dm.getRowSize() * row + i, buf[i]);
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
