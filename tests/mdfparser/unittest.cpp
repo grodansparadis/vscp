@@ -570,7 +570,7 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(preg->getBackgroundColor(), 0x0003d4);
 
   // Register 0:1
-  preg = mdf.getRegister(0, 1);
+  preg = mdf.getRegister(1, 0);
   ASSERT_NE(preg, nullptr);
 
   ASSERT_EQ(preg->getName(), "sub zone");
@@ -615,7 +615,7 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 2");
 
   // Register 0:12
-  preg = mdf.getRegister(0, 12);
+  preg = mdf.getRegister(12, 0);
   ASSERT_NE(preg, nullptr);
 
   ASSERT_EQ(preg->getName(), "register 12");
@@ -669,7 +669,7 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(pvalue->getInfoURL("en"), "InfoURL item 3");
 
   // Register 0:14
-  preg = mdf.getRegister(0, 14);
+  preg = mdf.getRegister(14, 0);
   ASSERT_NE(preg, nullptr);
 
   ASSERT_EQ(preg->getName(), "module control");
@@ -801,7 +801,7 @@ TEST(parseMDF, XML_REGISTERS)
   ASSERT_EQ(pbit->getDescription("en"), "Reserved7.");
 
   // Register 2:0
-  preg = mdf.getRegister(2, 0);
+  preg = mdf.getRegister(0, 2);
   ASSERT_NE(preg, nullptr);
 
   ASSERT_EQ(preg->getName(), "decision matrix");
@@ -2524,7 +2524,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_EQ(1, mdf.getRegisterCount(99));
 
   // Invalid register offset
-  preg = mdf.getRegister(33, 0);
+  preg = mdf.getRegister(0, 33);
   ASSERT_EQ(nullptr, preg);
 
   // *************************************************************************
@@ -2532,7 +2532,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x22, page=2
-  preg = mdf.getRegister(2, 0x22);
+  preg = mdf.getRegister(0x22, 2);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
@@ -2601,7 +2601,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x22, page=2
-  preg = mdf.getRegister(2, 0x31);
+  preg = mdf.getRegister(0x31, 2);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
@@ -2685,7 +2685,7 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   // *************************************************************************
 
   // Check register att offset 0x02, page=99
-  preg = mdf.getRegister(99, 2);
+  preg = mdf.getRegister(2, 99);
 
   // Should return a valid pointer
   ASSERT_TRUE(nullptr != preg);
