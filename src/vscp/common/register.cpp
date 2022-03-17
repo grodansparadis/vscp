@@ -638,15 +638,7 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
   // Mark as changed only if different
   if (m_registers[reg] != value) {
     m_change[reg] = true;       // Mark as changed
-  }
-
-  m_registers[reg] = value;   // Store value
-  
-
-  // If this is a different value other than the current
-  // mark register position as changed
-  if (m_registers[reg] != value) {
-    m_change[reg] = true;
+    m_list_undo_value[reg].push_back(m_registers[reg]); // Save old value
   }
 
   return m_registers[reg] = value; // Assign value
@@ -810,6 +802,7 @@ int CUserRegisters::init(CVscpClient& client,
   int rv = VSCP_ERROR_SUCCESS;
 
   for (auto const& page : pages) {
+    
     std::map<uint8_t, uint8_t> registers;
     m_registerPageMap[page] = new CRegisterPage(m_level, page);
     rv = vscp_readLevel1RegisterBlock(client, 
@@ -895,31 +888,54 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
     return false;  // Level is wrong
   }
 
-  std::map<uint16_t, CRegisterPage *>::iterator it;
-  if (m_registerPageMap.end() != (it = m_registerPageMap.find(page))) {
+  // A new page will automatically be created
+  // if thew page does not exist
+  CRegisterPage *pPage = m_registerPageMap[page];
+  pPage->putReg(reg, value); // Assign value
 
-    // Page already exist
-    CRegisterPage *pPage = it->second;
-    if (nullptr == pPage) {
-      return false; // Invalid page
-    }
+  // // Look up page or create a new one if not found
+  // std::map<uint16_t, CRegisterPage *>::iterator it;
+  // if (m_registerPageMap.end() != (it = m_registerPageMap.find(page))) {
 
-    pPage->putReg(reg, value); // Assign value
+  //   // Page already exist
+  //   CRegisterPage *pPage = it->second;
+  //   if (nullptr == pPage) {
+  //     return false; // Invalid page
+  //   }
+
+  //   pPage->putReg(reg, value); // Assign value
+  // }
+  // else {
+
+  //   // Page does not exist
+
+  //   // Create page
+  //   CRegisterPage *pPage = new CRegisterPage(m_level);
+  //   if (nullptr == pPage) {
+  //     return false; // Unable to create page
+  //   }
+
+  //   m_registerPageMap[page] = pPage;
+
+  //   pPage->putReg(reg, value); // Assign value
+  // }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setChangedState
+//
+
+bool 
+CUserRegisters::setChangedState(uint32_t offset, uint16_t page, bool state)
+{
+  CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    return false;
   }
-  else {
 
-    // Page does not exist
-
-    // Create page
-    CRegisterPage *pPage = new CRegisterPage(m_level);
-    if (nullptr == pPage) {
-      return false; // Unable to create page
-    }
-    m_registerPageMap[page] = pPage;
-
-    pPage->putReg(reg, value); // Assign value
-  }
-
+  pPage->setChangedState(offset, state);  
   return true;
 }
 

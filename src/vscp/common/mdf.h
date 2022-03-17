@@ -2952,12 +2952,12 @@ public:
   // --------------------------------------------------------------------------
 
 private:
-  std::string m_strLocale; // ISO code for requested language
-                           // defaults to "en"
+  std::string m_strLocale;    // ISO code for requested language
+                              // defaults to "en"
 
   std::string m_tempFileName; // Local downloaded file path
 
-  std::string m_strURL; // Location for MDF file
+  std::string m_strURL;       // Location for MDF file
 
   // Redirect URL if MDF with real content is located elsewhere.
   std::string m_redirectUrl;
@@ -2965,33 +2965,34 @@ private:
   // Language specific information. "en" is default, but any variant
   // if ISO two letter language code can be used. Key is always lower
   // case.
-  std::string m_name;                                  // Module name
-  std::map<std::string, std::string> m_mapDescription; // Module description
-  std::map<std::string, std::string> m_mapInfoURL;     // URL for full module information
+  
+  std::string m_name;                                   // Module name
+  std::map<std::string, std::string> m_mapDescription;  // Module description
+  std::map<std::string, std::string> m_mapInfoURL;      // URL for full module information
 
-  std::string m_strModule_changeDate;          // Last date changed
-  std::string m_strModule_Model;               // Module Model
-  std::string m_strModule_Version;             // Module version
+  std::string m_strModule_changeDate;                   // Last date changed
+  std::string m_strModule_Model;                        // Module Model
+  std::string m_strModule_Version;                      // Module version
 
-  uint16_t m_module_bufferSize;                // Buffersize for module
+  uint16_t m_module_bufferSize;                         // Buffersize for module
 
-  CMDF_Manufacturer m_manufacturer;            // Manufacturer information
+  CMDF_Manufacturer m_manufacturer;                     // Manufacturer information
 
   // File lists
-  std::deque<CMDF_Picture *> m_list_picture;   // Picture file(s)
-  std::deque<CMDF_Video *> m_list_video;       // Picture file(s)
-  std::deque<CMDF_Firmware *> m_list_firmware; // Firmware file(s)
-  std::deque<CMDF_Driver *> m_list_driver;     // Picture file(s)
-  std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
-  std::deque<CMDF_Setup *> m_list_setup;       // Setup file(s)
+  std::deque<CMDF_Picture *> m_list_picture;            // Picture file(s)
+  std::deque<CMDF_Video *> m_list_video;                // Picture file(s)
+  std::deque<CMDF_Firmware *> m_list_firmware;          // Firmware file(s)
+  std::deque<CMDF_Driver *> m_list_driver;              // Picture file(s)
+  std::deque<CMDF_Manual *> m_list_manual;              // Manual file(s)
+  std::deque<CMDF_Setup *> m_list_setup;                // Setup file(s)
 
-  CMDF_DecisionMatrix m_dmInfo;                // Info about decision matrix
-  CMDF_BootLoaderInfo m_bootInfo;              // Boot loader info
+  CMDF_DecisionMatrix m_dmInfo;                         // Info about decision matrix
+  CMDF_BootLoaderInfo m_bootInfo;                       // Boot loader info
 
-  std::deque<CMDF_Register *> m_list_register;        // List with defined registers
-  std::deque<CMDF_RemoteVariable *> m_list_remotevar; // List with defined remote variables
-  std::deque<CMDF_Event *> m_list_event;              // Events this node can generate
-  std::deque<CMDF_Bit *> m_list_alarm;                // List with alarm bit defines
+  std::deque<CMDF_Register *> m_list_register;          // List with defined registers
+  std::deque<CMDF_RemoteVariable *> m_list_remotevar;   // List with defined remote variables
+  std::deque<CMDF_Event *> m_list_event;                // Events this node can generate
+  std::deque<CMDF_Bit *> m_list_alarm;                  // List with alarm bit defines
 };
 
 #endif

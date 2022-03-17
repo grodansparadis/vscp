@@ -274,6 +274,13 @@ public:
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
   /*!
+    Set changed state
+    @param offset Register offset.
+    @param state Changed state
+  */
+  void setChangedState(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
     Check if a register has an unwritten change
     @param offset Register offset on page to read from.
     @return true if register has an unwritten change.
@@ -285,7 +292,7 @@ public:
     @param offset Register offset on page to read from.
     @return true if register has previously been changed.
   */
-  bool hasWrittenChange(uint32_t offset) { return /*(m_list_undo_value[offset].size() > 0)*/0; };
+  bool hasWrittenChange(uint32_t offset) { return (m_list_undo_value[offset].size() > 0); };
 
   /*!
     Get the register map for this page
@@ -429,6 +436,15 @@ public:
   int getReg(uint32_t offset, uint16_t page = 0);
 
   /*!
+    Set changed state
+    @param offset Register offset
+    @param  page Register page
+    @param state State to set
+    @return true on success.
+  */
+  bool setChangedState(uint32_t offset, uint16_t page = 0,  bool state = true);
+
+  /*!
     Check if a register has an unwritten change
     @param page Page to read from.
     @param offset Register offset on page to read from.
@@ -503,9 +519,7 @@ private:
     std::set<long> m_pages;
 
     // pages {page number, defined registers}
-    std::map<uint16_t, CRegisterPage *> m_registerPageMap;
-
-    
+    std::map<uint16_t, CRegisterPage *> m_registerPageMap;    
 };
 
 
