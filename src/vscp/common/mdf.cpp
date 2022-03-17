@@ -117,7 +117,6 @@ CMDF_RemoteVariable::CMDF_RemoteVariable()
   m_size   = 0;
   m_access = MDF_REG_ACCESS_READ_WRITE;
 
-  m_rowInGrid = -1;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
 }
@@ -142,7 +141,6 @@ CMDF_RemoteVariable::clearStorage(void)
   m_size   = 0;
   m_access = MDF_REG_ACCESS_READ_WRITE;
 
-  m_rowInGrid = -1;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
 
@@ -5824,20 +5822,6 @@ CMDF::parseMDF_JSON(std::string &path)
             else {
               prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
               spdlog::debug("Parse-JSON: No remote variable access defined (defaults to 'rw').");
-            }
-
-            // Grid position (VSCP Works)
-            if (jrvar.contains("rowpos") && jrvar["rowpos"].is_string()) {
-              prvar->m_rowInGrid = vscp_readStringValue(jrvar["rowpos"]);
-              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", prvar->m_rowInGrid);
-            }
-            else if (jrvar.contains("rowpos") && jrvar["rowpos"].is_number()) {
-              prvar->m_rowInGrid = jrvar["rowpos"];
-              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", prvar->m_rowInGrid);
-            }
-            else {
-              prvar->m_rowInGrid = -1;
-              spdlog::trace("Parse-JSON: No rowpos defined (set to -1).");
             }
 
             // Foreground color (VSCP Works)

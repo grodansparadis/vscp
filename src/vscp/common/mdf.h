@@ -780,18 +780,6 @@ public:
   std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
 
   /*!
-    Get VSCP Works grid position.
-    @return VSCP Works grid postion. Set to -1 if not set.
-  */
-  long getRowPosition(void) { return m_rowInGrid; };
-
-  /*!
-    Set VSCP Works grid position.
-    @param rowInGrid VSCP Works grid postion.
-  */
-  void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
-
-  /*!
     Set Foreground color for VSCP Works grid.
     @param color Foreground color to set.
   */
@@ -832,7 +820,6 @@ private:
 
   // For VSCP Works usage
 
-  long m_rowInGrid;   // Helper for display (row reg is displayed on)
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 

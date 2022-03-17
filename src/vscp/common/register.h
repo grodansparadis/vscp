@@ -244,16 +244,21 @@ public:
   void setPage(uint16_t page) { m_page = page; };
 
   /*!
-    Clear the register changes marks
-  */
-  void clearChanges(void) { m_change.clear(); };
-
-  /*!
     Manually set a single change position to true opr false
     @param offset Register offset to set.
     @param state State to set change to.
   */
   void setSingleChange(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
+    Clear changes
+  */
+  void clearChanges() { m_change.clear(); };
+
+  /*!
+    Clear history
+  */
+  void clearHistory() { m_list_undo_value.clear(); m_list_redo_value.clear(); };
 
   /*!
     Get VSCP Works grid position.
@@ -459,6 +464,16 @@ public:
     @return true if register has an written change (blue).
   */
   bool hasWrittenChange(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Clear changes
+  */
+  void clearChanges();
+
+  /*!
+    Clear history
+  */
+  void clearHistory();
 
   /*!
       Get abstraction value from registers into string value.

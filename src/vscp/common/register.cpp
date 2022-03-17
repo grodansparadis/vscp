@@ -635,6 +635,8 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
+  std::cout << "Put reg " << (int)reg << " new value = " << (int)value << " old value =  " << (int)m_registers[reg] << std::endl;
+
   // Mark as changed only if different
   if (m_registers[reg] != value) {
     m_change[reg] = true;       // Mark as changed
@@ -968,6 +970,30 @@ CUserRegisters::hasWrittenChange(uint32_t offset, uint16_t page)
 
   // If there are undo values there has been changes
   return pPage->hasWrittenChange(offset);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearChanges
+//
+
+void
+CUserRegisters::clearChanges(void)
+{
+  for (auto const& page : m_registerPageMap) {
+    page.second->clearChanges();
+  }  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearHistory
+//
+
+void
+CUserRegisters::clearHistory(void)
+{
+  for (auto const& page : m_registerPageMap) {
+    page.second->clearHistory();
+  }  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
