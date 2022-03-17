@@ -2575,14 +2575,6 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_TRUE(preg->getInfoURL("en") == "https://one.com");
   ASSERT_TRUE(preg->getInfoURL("se") == "https://two.com");
 
-  // * * * VSCP Works * * *
-
-  // Get current value - Should be default value
-  ASSERT_EQ(99, preg->getValue());
-
-  // Get row position
-  ASSERT_EQ(11, preg->getRowPosition());
-
   // Get foreground color
   ASSERT_EQ(0x001200, preg->getForegroundColor());
 
@@ -2667,12 +2659,6 @@ TEST(parseMDF, JSON_SIMPLE_Registers)
   ASSERT_TRUE(pValue->getInfoURL("xx") == "");
 
   // * * * VSCP Works * * *
-
-  // Get current value - Should be default value
-  ASSERT_EQ(253, preg->getValue());
-
-  // Get row position
-  ASSERT_EQ(0xaa, preg->getRowPosition());
 
   // Get foreground color
   ASSERT_EQ(0x100000, preg->getForegroundColor());
