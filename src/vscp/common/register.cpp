@@ -77,6 +77,11 @@ vscp_readLevel1Register(CVscpClient& client,
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = 1;
 
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -159,6 +164,12 @@ vscp_writeLevel1Register(CVscpClient& client,
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = value;
 
+  
+  // Clear the input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -179,6 +190,7 @@ vscp_writeLevel1Register(CVscpClient& client,
         return rv;
       }
 
+      std::cout << ex.vscp_class << " - " << ex.vscp_type << " " << std::flush;
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
           if ((ex.GUID[15] = nickname) && 
@@ -194,6 +206,7 @@ vscp_writeLevel1Register(CVscpClient& client,
       }
     }
 
+    std::cout << "." << std::flush;
     if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
       rv = VSCP_ERROR_TIMEOUT;
       break;
@@ -251,6 +264,11 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
   ex.data[2 + ifoffset]    = page & 0x0ff;
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = count;
+
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
 
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
@@ -377,6 +395,11 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
         ex.data[4 + ifoffset + j] = regvalues[start.first + i*4 + j];
       }
 
+      // Clear input queue
+      if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+        return rv;
+      }
+
       // Send event
       if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
         return rv;
@@ -463,6 +486,11 @@ int vscp_scanForDevices(CVscpClient& client,
   ex.sizeData   = 17;  
   ex.data[16] = 0xff;  // all devices
 
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
   }
@@ -518,6 +546,11 @@ int vscp_scanSlowForDevices(CVscpClient& client,
     
     ex.data[16] = idx;  // nodeid
     ex.data[17] = 0xd0; // register: First byte of GUID
+
+    // Clear input queue
+    if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+      return rv;
+    }
 
     rv = client.send(ex);
     if (VSCP_ERROR_SUCCESS != rv) {
@@ -1043,10 +1076,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
     case remote_variable_type_int8_t:
       {
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format("%d", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format("%had", ppage->getReg(remoteVar.getOffset()));
         }
         else {
-          strValue = vscp_str_format( "0x%02x", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "0x%02hx", ppage->getReg(remoteVar.getOffset()));
         }
       }
       break;
@@ -1054,10 +1087,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
     case remote_variable_type_uint8_t:
       {
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ud", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "%hu", ppage->getReg(remoteVar.getOffset()));
         }
         else {
-          strValue = vscp_str_format( "0x%02x", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "0x%02hx", ppage->getReg(remoteVar.getOffset()));
         }
       }
       break;
@@ -1070,10 +1103,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         int16_t val = (buf[0] << 8 ) + buf[1];
 
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%d", val );
+          strValue = vscp_str_format( "%hd", val );
         }
         else {
-          strValue = vscp_str_format( "0x%04x", val );          
+          strValue = vscp_str_format( "0x%04hx", val );          
         }
       }
       break;
@@ -1086,10 +1119,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         uint16_t val = (buf[0] << 8 ) + buf[1];
 
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ud", val );
+          strValue = vscp_str_format( "hd", val );
         }
         else {
-          strValue = vscp_str_format( "0x%04x", val );
+          strValue = vscp_str_format( "0x%04hx", val );
         }
       }
       break;
@@ -1118,7 +1151,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         }
         uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ld", val);
+          strValue = vscp_str_format( "%lu", val);
         }
         else {
           strValue = vscp_str_format( "0x%04lx", val);
@@ -1167,7 +1200,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7];
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-            strValue = vscp_str_format("%ulld", val);
+            strValue = vscp_str_format("%ullu", val);
         }
         else {
             strValue = vscp_str_format("0x%ullx", val);
