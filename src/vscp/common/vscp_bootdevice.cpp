@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
-// Copyright:   © 2007-2021
+// Copyright:   © 2007-2022
 // Ake Hedman, the VSCP project, <info@vscp.org>
 // Licence:
 // This program is free software; you can redistribute it and/or
