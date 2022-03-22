@@ -65,7 +65,7 @@ int vscp_readLevel1Register( CVscpClient& client,
                               uint16_t page, 
                               uint8_t offset,
                               uint8_t& value,  
-                              uint32_t timeout = 1000);
+                              uint32_t timeout = 2000);
 
 /*!
   Write VSCP register
@@ -87,7 +87,7 @@ int vscp_writeLevel1Register( CVscpClient& client,
                                 uint16_t page,
                                 uint8_t offset,
                                 uint8_t value,
-                                uint32_t timeout = 1000 );
+                                uint32_t timeout = 2000 );
 
 /*!
   Read VSCP register block.
@@ -111,7 +111,7 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
                                     uint8_t offset,
                                     uint8_t count,
                                     std::map<uint8_t,uint8_t>& values,
-                                    uint32_t timeout = 1000);
+                                    uint32_t timeout = 2000);
 
 /*!
   Write VSCP register block.
@@ -132,7 +132,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
                                     cguid& guidInterface,
                                     uint16_t page, 
                                     std::map<uint8_t,uint8_t>& values,
-                                    uint32_t timeout = 1000);
+                                    uint32_t timeout = 2000);
 
 /*!
   Read all standard registers
@@ -141,7 +141,7 @@ int vscp_readStandardRegisters(CVscpClient& client,
                                 cguid& guid,
                                 cguid& guidInterface,
                                 CStandardRegisters& stdregs,
-                                uint32_t timeout = 0 );
+                                uint32_t timeout = 2000 );
 
 /*!
   Do a fast register scan using who is there protocol functionality
@@ -155,7 +155,7 @@ int vscp_readStandardRegisters(CVscpClient& client,
 int vscp_scanForDevices(CVscpClient& client,
                                 cguid& guid,
                                 std::set<uint8_t> &found,
-                                uint32_t timeout = 1000);
+                                uint32_t timeout = 2000);
 
 /*!
   Do a fast register scan using who is there protocol functionality

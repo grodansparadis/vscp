@@ -1330,9 +1330,7 @@ CMDF::mdfDescriptionFormat(std::string &str)
   }
 
   str = strWork;
-
   int cnt = 0;
-
   strWork.clear();
 
   // Break apart line that are longer then 80 chars

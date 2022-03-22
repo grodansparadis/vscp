@@ -190,7 +190,6 @@ vscp_writeLevel1Register(CVscpClient& client,
         return rv;
       }
 
-      std::cout << ex.vscp_class << " - " << ex.vscp_type << " " << std::flush;
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
           if ((ex.GUID[15] = nickname) && 
@@ -206,7 +205,7 @@ vscp_writeLevel1Register(CVscpClient& client,
       }
     }
 
-    std::cout << "." << std::flush;
+    //std::cout << "." << std::flush;
     if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
       rv = VSCP_ERROR_TIMEOUT;
       break;
@@ -289,22 +288,25 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
         return rv;
       }
 
+      //std::cout << "class=" << (int)ex.vscp_class << " type = " << (int)ex.vscp_type << std::endl << std::flush;
+
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
           if ((ex.GUID[15] = nickname) && 
               (ex.sizeData >= 5) && 
               /* ex.data[0] is frame index */
               (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff) && 
-              (ex.data[3] == offset + rcvcnt) ) {
+              (ex.data[2] == page & 0x0ff) /*&& 
+              (ex.data[3] == offset + rcvcnt)*/ ) {
 
             // Another frame received    
             frameset.erase(ex.data[0]); 
-            //printf("%d %d\n",(int)ex.data[0],frameset.size());
+            //std::cout << "idx=" << (int)ex.data[0] << " left = " << (int)frameset.size() << std::endl << std::flush;
             
             // Get read data 
             for (int i = 0; i < ex.sizeData-4; i++) {
-              values[offset + rcvcnt] = ex.data[4 + i];
+              //values[offset + rcvcnt] = ex.data[4 + i];
+              values[ex.data[3]+i] = ex.data[4 + i];
               rcvcnt++;
             }
 
@@ -668,7 +670,7 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
-  std::cout << "Put reg " << (int)reg << " new value = " << (int)value << " old value =  " << (int)m_registers[reg] << std::endl;
+  //std::cout << "Put reg " << (int)reg << " new value = " << (int)value << " old value =  " << (int)m_registers[reg] << std::endl;
 
   // Mark as changed only if different
   if (m_registers[reg] != value) {
