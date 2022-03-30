@@ -272,7 +272,7 @@ public:
     Set bit array length (1-8)
     @param width Bit array length
   */
-  void setWidth(uint8_t width) { m_width = width; };
+  void setWidth(uint8_t width); //{ m_width = width; };
 
   /*!
     Get bit array value
@@ -296,7 +296,7 @@ public:
     Set bit array value
     @param min Bit array value
   */
-  void setMin(uint8_t min) { m_min = min; };
+  void setMin(uint8_t min); //{ m_min = min; };
 
   /*!
     Get bit array value
@@ -308,7 +308,7 @@ public:
     Set bit array value
     @param max Bit array value
   */
-  void setMax(uint8_t max) { m_max = max; };
+  void setMax(uint8_t max); // { m_max = max; };
 
   /*!
     Get access for bitfield
@@ -321,6 +321,12 @@ public:
     @param access Access for bitfield.
   */
   void setAccess(mdf_access_mode access) { m_access = access; };
+
+  /*!
+    Get the calculated mask for the bitfiled
+    @return Mask
+  */
+  uint8_t getMask(void) { return m_mask; };
 
   /*!
     Fetch the value definition list
@@ -340,6 +346,8 @@ private:
   uint8_t m_min;            // 'min'      Minimum value for field (if applicable)
   uint8_t m_max;            // 'max'      Maximum value for field (if applicable)
   mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
+  
+  uint8_t m_mask;           // Calculated mask for bit field
 
   std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };

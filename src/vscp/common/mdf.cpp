@@ -292,7 +292,7 @@ CMDF_Bit::CMDF_Bit()
   m_width   = 1;
   m_default = 0;
   m_min     = 0;
-  m_max     = 255;
+  m_max     = 1;
   m_access  = MDF_REG_ACCESS_READ_WRITE;
 }
 
@@ -313,7 +313,7 @@ CMDF_Bit::clearStorage(void)
   m_width   = 1;
   m_default = 0;
   m_min     = 0;
-  m_max     = 255;
+  m_max     = 1;
   m_access  = MDF_REG_ACCESS_READ_WRITE;
 
   // Clearup value list
@@ -329,6 +329,54 @@ CMDF_Bit::clearStorage(void)
   m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setWidth
+//
+
+void
+CMDF_Bit::setWidth(uint8_t width)
+{
+  // Zero width is not allowed
+  // Set to default
+  if (!width) {
+    width = 1;
+  }
+  
+  // Max width is a byte width == 8
+  if (width > 8) {
+    width = 8;
+  }
+
+  m_width = width;
+
+  m_mask = 0;
+  for (int k=m_pos; k<(m_pos + m_width); k++) {
+    m_mask |= (1 << k);
+  }
+
+  setMax(0xff);  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setMin
+//
+
+void
+CMDF_Bit::setMin(uint8_t min)
+{
+  m_min = min & m_min;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setMax
+//
+
+void
+CMDF_Bit::setMax(uint8_t max)
+{
+  m_max = max & m_mask;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
