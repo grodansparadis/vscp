@@ -296,8 +296,8 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
               (ex.sizeData >= 5) && 
               /* ex.data[0] is frame index */
               (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff) /*&& 
-              (ex.data[3] == offset + rcvcnt)*/ ) {
+              (ex.data[2] == page & 0x0ff)  
+              /*(ex.data[3] == offset + rcvcnt)*/ ) {
 
             // Another frame received    
             frameset.erase(ex.data[0]); 
@@ -681,7 +681,20 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
   return m_registers[reg] = value; // Assign value
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
 
+bool 
+CRegisterPage::hasChanges(void)
+{
+  for (auto const& reg : m_change) {
+    if (reg.second) {
+      return true;
+    }
+  }
+  return false;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -800,6 +813,21 @@ CStandardRegisters::getMDF(void)
 
   remoteFile = std::string(url);
   return(remoteFile);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
+
+bool 
+CStandardRegisters::hasChanges(void)
+{
+  for (auto const& reg : m_change) {
+    if (reg.second) {
+      return true;
+    }
+  }
+  return false;
 }
 
 
@@ -1534,7 +1562,20 @@ CUserRegisters::vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *
   return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
 
+bool 
+CUserRegisters::hasChanges(void)
+{
+  for (auto it = m_registerPageMap.begin(); it != m_registerPageMap.end(); ++it) {
+    if (it->second->hasChanges()) {
+      return true;
+    }
+  }
+  return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

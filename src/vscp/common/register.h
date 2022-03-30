@@ -293,6 +293,12 @@ public:
   bool isChanged(uint32_t offset) { return m_change[offset]; };
 
   /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
+
+  /*!
     Check if register has previously been changed
     @param offset Register offset on page to read from.
     @return true if register has previously been changed.
@@ -471,6 +477,12 @@ public:
   void clearChanges();
 
   /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
+
+  /*!
     Clear history
   */
   void clearHistory();
@@ -534,7 +546,8 @@ private:
     std::set<long> m_pages;
 
     // pages {page number, defined registers}
-    std::map<uint16_t, CRegisterPage *> m_registerPageMap;    
+    std::map<uint16_t, CRegisterPage *> m_registerPageMap;   
+ 
 };
 
 
@@ -881,6 +894,25 @@ public:
   */
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
+  /*!
+    Set changed state
+    @param offset Register offset.
+    @param state Changed state
+  */
+  void setChangedState(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
+    Check if a register has an unwritten change
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset) { return m_change[offset]; };
+
+  /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
 
 private:
 
