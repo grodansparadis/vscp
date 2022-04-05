@@ -86,6 +86,17 @@ typedef enum vscp_remote_variable_type {
   remote_variable_type_time
 } vscp_remote_variable_type;
 
+// MDF file types
+typedef enum mdf_file_type {
+  mdf_file_type_none = 0,   // None defined
+  mdf_file_type_picture,    // Picture files
+  mdf_file_type_video,      // Video files
+  mdf_file_type_firmware,   // Firmware files
+  mdf_file_type_driver,     // Driver files
+  mdf_file_type_manual,     // Manual files
+  mdf_file_type_setup       // Setup files
+} mdf_file_type;
+
 // * * * Settings * * *
 
 // Forward declarations
@@ -956,7 +967,6 @@ private:
   uint16_t m_offset; // Offset for parameter (Always zero for level I)
   uint8_t m_min;     // Min value for parameter
   uint8_t m_max;     // Max value for parameter
-  // uint8_t m_width;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_Value *> m_list_value;          // List with selectable values
@@ -2975,7 +2985,7 @@ private:
 
   // File lists
   std::deque<CMDF_Picture *> m_list_picture;            // Picture file(s)
-  std::deque<CMDF_Video *> m_list_video;                // Picture file(s)
+  std::deque<CMDF_Video *> m_list_video;                // Video file(s)
   std::deque<CMDF_Firmware *> m_list_firmware;          // Firmware file(s)
   std::deque<CMDF_Driver *> m_list_driver;              // Picture file(s)
   std::deque<CMDF_Manual *> m_list_manual;              // Manual file(s)
