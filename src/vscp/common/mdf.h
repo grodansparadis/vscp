@@ -86,6 +86,8 @@ typedef enum vscp_remote_variable_type {
   remote_variable_type_time
 } vscp_remote_variable_type;
 
+#define MAX_MDF_FILE_TYPES 6  // Maximum number of file types
+
 // MDF file types
 typedef enum mdf_file_type {
   mdf_file_type_none = 0,   // None defined
