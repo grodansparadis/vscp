@@ -1852,7 +1852,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1885,7 +1885,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1918,7 +1918,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1991,7 +1991,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -2064,7 +2064,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -2102,7 +2102,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
