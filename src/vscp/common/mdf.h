@@ -2153,6 +2153,12 @@ public:
   std::string getType(void) { return m_strType; };
 
   /*!
+    Get driver type for CMDF_Driver
+    @return Target string for CMDF_Driver
+  */
+  std::string getFormat(void) { return m_strType; };
+
+  /*!
     Get OS (Operation System) for driver
     @return OS for driver
   */
