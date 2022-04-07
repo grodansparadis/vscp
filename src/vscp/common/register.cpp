@@ -865,6 +865,7 @@ int CUserRegisters::init(CVscpClient& client,
                           uint32_t timeout)
 {
   int rv = VSCP_ERROR_SUCCESS;
+  m_pages.clear();
 
   for (auto const& page : pages) {
     
@@ -875,7 +876,7 @@ int CUserRegisters::init(CVscpClient& client,
                                         guidInterface,
                                         page,
                                         0,
-                                        128,
+                                        127,
                                         registers,
                                         timeout);
     if ( VSCP_ERROR_SUCCESS != rv ) {
@@ -885,6 +886,7 @@ int CUserRegisters::init(CVscpClient& client,
     // Transfer data to register page
     m_registerPageMap[page]->putLevel1Registers(registers);
     m_registerPageMap[page]->clearChanges();
+    m_pages.insert(page);
     //std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
   }
   return rv;
@@ -957,6 +959,8 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
   // if thew page does not exist
   CRegisterPage *pPage = m_registerPageMap[page];
   pPage->putReg(reg, value); // Assign value
+
+  m_pages.insert(page); // Add page to list of pages
 
   // // Look up page or create a new one if not found
   // std::map<uint16_t, CRegisterPage *>::iterator it;

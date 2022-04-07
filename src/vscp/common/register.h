@@ -435,7 +435,6 @@ public:
     @param page Page of user register to get
     @return Pointer to user register object
   */
-  //std::map<uint32_t, uint8_t> *
   CRegisterPage *getRegisterPage(uint16_t page);
 
   /*!
@@ -445,6 +444,12 @@ public:
     @return Register content or -1 on failure.
   */
   int getReg(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Get register pages
+    @return Sorted set with pages
+  */
+  std::set<long> *getPages(void) { return &m_pages; };
 
   /*!
     Set changed state

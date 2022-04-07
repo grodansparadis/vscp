@@ -1958,6 +1958,12 @@ public:
   std::string getTarget(void) { return m_strTarget; };
 
   /*!
+    Get target code for firmware
+    @return Target code for firmware
+  */
+  uint16_t getTargetCode(void) { return m_targetCode; };
+
+  /*!
     Get hex file string format for firmware
     @return Hex string format
   */
@@ -1968,12 +1974,6 @@ public:
     @return ISO date string for firmware
   */
   std::string getDate(void) { return m_strDate; };
-
-  /*!
-    Get target code for firmware
-    @return Target code for firmware
-  */
-  uint16_t getTargetCode(void) { return m_targetCode; };
 
   /*!
     Get version major for firmware
