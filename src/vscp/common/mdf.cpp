@@ -34,12 +34,6 @@
 #include <pch.h>
 #endif
 
-#include <deque>
-#include <fstream>
-#include <iostream>
-#include <set>
-#include <string>
-
 #include <canal.h>
 #include <mdf.h>
 #include <stdlib.h>
@@ -5070,7 +5064,7 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
 //
 
 int
-CMDF::parseMDF_JSON(std::string &path)
+CMDF::parseMDF_JSON(const std::string &path)
 {
   int rv = VSCP_ERROR_SUCCESS;
 
@@ -6956,7 +6950,7 @@ CMDF::parseMDF_JSON(std::string &path)
 //
 
 int
-CMDF::parseMDF(std::string &path)
+CMDF::parseMDF(const std::string &path)
 {
   int rv = VSCP_ERROR_ERROR;
   std::ifstream ifs;
@@ -7009,6 +7003,7 @@ CMDF::parseMDF(std::string &path)
     else {
       rv = VSCP_ERROR_INVALID_SYNTAX;
       spdlog::error("Parse-XML: MDF file format not supported");
+      break;
     }
   }
 

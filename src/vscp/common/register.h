@@ -886,7 +886,7 @@ public:
       @param reg Register to set value for
       @param val Value to set register to
   */
-  void setReg(uint8_t reg, uint8_t val) { m_regs[reg] = val; };
+  void putReg(uint8_t reg, uint8_t val) { m_regs[reg] = val; };
 
   /*!
     Clear the register changes marks

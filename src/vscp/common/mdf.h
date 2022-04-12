@@ -2906,7 +2906,7 @@ public:
     @param path Path to the JSON file to parse.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
-  int parseMDF_JSON(std::string &path);
+  int parseMDF_JSON(const std::string &path);
 
   /*!
       Parse a MDF. The format can be XML or JSON. If the format is
@@ -2914,7 +2914,7 @@ public:
       @param path Path to downloaded MDF
       @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
-  int parseMDF(std::string &path);
+  int parseMDF(const std::string &path);
 
   /*!
     Get items from bit list
