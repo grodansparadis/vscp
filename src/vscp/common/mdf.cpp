@@ -1157,7 +1157,6 @@ CMDF::clearStorage(void)
   m_strModule_changeDate.clear();
   m_module_bufferSize = 0;
   m_strURL.clear();
-  // m_list_manufacturer.clear();
   m_dmInfo.clearStorage();
   m_bootInfo.clearStorage();
   m_list_event.clear();
