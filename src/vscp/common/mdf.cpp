@@ -7105,6 +7105,25 @@ bool CMDF::isRegisterWriteable(uint32_t reg, uint16_t page)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  getDefaultRegisterValue
+//
+
+int CMDF::getDefaultRegisterValue(uint32_t reg, uint16_t page)
+{
+  CMDF_Register *preg = getRegister(reg, page);
+  if (nullptr == preg) {
+    return -1;    
+  }
+
+  uint8_t val;
+  if (preg->getDefault(val)) {
+    return -1;
+  }
+
+  return val;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getRemoteVariable
 //
 

@@ -435,7 +435,7 @@ public:
     @return Register default string. This string is set to "UNDEF"
             if no default is set.
   */
-  std::string &getDefault(void) { return m_strDefault; };
+  std::string getDefault(void) { return m_strDefault; };
 
   /*!
     Get register default
@@ -2853,6 +2853,14 @@ public:
     @return True if register is writable else false.
   */
   bool isRegisterWriteable(uint32_t reg, uint16_t page = 0);
+
+  /*!
+    Get default value for register
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return Default value for register or -1 if error.
+  */
+  int getDefaultRegisterValue(uint32_t reg, uint16_t page = 0);
 
   /*!
       Get number of register pages used
