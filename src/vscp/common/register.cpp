@@ -930,6 +930,11 @@ CUserRegisters::getReg(uint32_t offset, uint16_t page)
     return -1;
   }
 
+  auto it = ppage->getRegisterMap()->find(offset);
+  if (it == ppage->getRegisterMap()->end()) {
+    return -1;
+  }
+  
   return ppage->getRegisterMap()->at(offset);
 }
 

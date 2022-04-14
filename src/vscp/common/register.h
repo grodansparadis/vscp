@@ -261,18 +261,6 @@ public:
   void clearHistory() { m_list_undo_value.clear(); m_list_redo_value.clear(); };
 
   /*!
-    Get VSCP Works grid position.
-    @return VSCP Works grid postion. Set to -1 if not set.
-  */
-  long getRowPosition(uint32_t reg) { return m_rowInGrid[reg]; };
-
-  /*!
-    Set VSCP Works grid position.
-    @param rowInGrid VSCP Works grid postion.
-  */
-  void setRowPosition(uint32_t reg, long rowInGrid) { m_rowInGrid[reg] = rowInGrid; };
-
-  /*!
     Get the register changes
     @return Register changes
   */
@@ -332,11 +320,6 @@ private:
     range 0x00000000 - 0xffff0000.
   */
   std::map<uint32_t, uint8_t> m_registers;
-
-  /*!
-    Row in grid this register set is located on.
-  */
-  std::map<uint32_t, int> m_rowInGrid;
 
   /*!
     VSCP Works rowtype for this register.
