@@ -3099,7 +3099,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
         vscp_trim(strContent);
         vscp_makeLower(strContent);
-        pmdf->m_vscpLevel = vscp_readStringValue(strContent);
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
+        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
+          pmdf->m_vscpLevel = VSCP_LEVEL1;
+        }
       }
       break;
 
@@ -3119,7 +3122,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       else if (gTokenList.at(0) == "level") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
-        pmdf->m_vscpLevel = vscp_readStringValue(strContent);
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
+        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
+          pmdf->m_vscpLevel = VSCP_LEVEL1;
+        }
       }
       else if (gTokenList.at(0) == "model") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
