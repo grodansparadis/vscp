@@ -2587,13 +2587,19 @@ public:
     about the device if it is supplied.
   */
 
-  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
+  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);  
 
   /*!
     Get Module name in selected language.
     @return Return string with module name
   */
   std::string getModuleName(void) { return m_name; };
+
+  /*!
+    Return VSCP level for device
+    @return Return VSCP level for module
+  */
+  int getLevel(void) { return m_vscpLevel; };
 
   /*!
     Get Module description in selected language.
@@ -2833,12 +2839,20 @@ public:
   size_t getRegisterCount(uint32_t page);
 
   /*!
-      Return register definition from register + page      
-      @param register Register to search for.      
-      @param page Page top search for.
-      @return Pointer to CMDF_Register class if found else NULL.
+    Return register definition from register + page      
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return Pointer to CMDF_Register class if found else NULL.
   */
   CMDF_Register *getRegister( uint32_t reg, uint16_t page = 0);
+
+  /*!
+    Check if a register position is writable
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return True if register is writable else false.
+  */
+  bool isRegisterWriteable(uint32_t reg, uint16_t page = 0);
 
   /*!
       Get number of register pages used
@@ -2965,6 +2979,7 @@ public:
   // --------------------------------------------------------------------------
 
 private:
+  
   std::string m_strLocale;    // ISO code for requested language
                               // defaults to "en"
 
@@ -2979,6 +2994,7 @@ private:
   // if ISO two letter language code can be used. Key is always lower
   // case.
   
+  uint8_t m_vscpLevel;                                  // Module level. Default to level I
   std::string m_name;                                   // Module name
   std::map<std::string, std::string> m_mapDescription;  // Module description
   std::map<std::string, std::string> m_mapInfoURL;      // URL for full module information

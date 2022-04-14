@@ -1088,6 +1088,7 @@ CMDF_Setup::clearStorage(void)
 CMDF::CMDF()
 {
   m_strLocale = "en";
+  m_vscpLevel = VSCP_LEVEL1;
 }
 
 CMDF::~CMDF()
@@ -1147,6 +1148,7 @@ CMDF::clearStorage(void)
   }
   m_list_alarm.clear();
 
+  m_vscpLevel = VSCP_LEVEL1;
   m_name = "";
   m_strModule_Model.clear();
   m_strModule_Version.clear();
@@ -3090,10 +3092,14 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         pmdf->m_redirectUrl = strContent;
       }
       else if (gTokenList.at(0) == "name") {
-        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
+        pmdf->m_name = strContent;
+      }
+      else if (gTokenList.at(0) == "level") {
+        spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
         vscp_trim(strContent);
         vscp_makeLower(strContent);
-        pmdf->m_name = strContent;
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent);
       }
       break;
 
@@ -3110,6 +3116,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         vscp_trim(strContent);
         vscp_makeLower(strContent);
         pmdf->m_name = strContent;
+      }
+      else if (gTokenList.at(0) == "level") {
+        spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent);
       }
       else if (gTokenList.at(0) == "model") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
@@ -7069,6 +7079,24 @@ CMDF::getRegister(uint32_t reg, uint16_t page)
   }
 
   return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getRegister
+//
+
+bool CMDF::isRegisterWriteable(uint32_t reg, uint16_t page)
+{
+  CMDF_Register *preg = getRegister(reg, page);
+  if (nullptr == preg) {
+    return false;
+  }
+
+  if (!preg->m_access || (preg->m_access & MDF_REG_ACCESS_READ_ONLY)) {
+    return false;
+  }
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
