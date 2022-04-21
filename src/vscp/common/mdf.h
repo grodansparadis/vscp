@@ -86,6 +86,19 @@ typedef enum vscp_remote_variable_type {
   remote_variable_type_time
 } vscp_remote_variable_type;
 
+#define MAX_MDF_FILE_TYPES 6  // Maximum number of file types
+
+// MDF file types
+typedef enum mdf_file_type {
+  mdf_file_type_none = 0,   // None defined
+  mdf_file_type_picture,    // Picture files
+  mdf_file_type_video,      // Video files
+  mdf_file_type_firmware,   // Firmware files
+  mdf_file_type_driver,     // Driver files
+  mdf_file_type_manual,     // Manual files
+  mdf_file_type_setup       // Setup files
+} mdf_file_type;
+
 // * * * Settings * * *
 
 // Forward declarations
@@ -272,7 +285,7 @@ public:
     Set bit array length (1-8)
     @param width Bit array length
   */
-  void setWidth(uint8_t width) { m_width = width; };
+  void setWidth(uint8_t width); //{ m_width = width; };
 
   /*!
     Get bit array value
@@ -296,7 +309,7 @@ public:
     Set bit array value
     @param min Bit array value
   */
-  void setMin(uint8_t min) { m_min = min; };
+  void setMin(uint8_t min); //{ m_min = min; };
 
   /*!
     Get bit array value
@@ -308,7 +321,7 @@ public:
     Set bit array value
     @param max Bit array value
   */
-  void setMax(uint8_t max) { m_max = max; };
+  void setMax(uint8_t max); // { m_max = max; };
 
   /*!
     Get access for bitfield
@@ -321,6 +334,12 @@ public:
     @param access Access for bitfield.
   */
   void setAccess(mdf_access_mode access) { m_access = access; };
+
+  /*!
+    Get the calculated mask for the bitfiled
+    @return Mask
+  */
+  uint8_t getMask(void) { return m_mask; };
 
   /*!
     Fetch the value definition list
@@ -340,6 +359,8 @@ private:
   uint8_t m_min;            // 'min'      Minimum value for field (if applicable)
   uint8_t m_max;            // 'max'      Maximum value for field (if applicable)
   mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
+  
+  uint8_t m_mask;           // Calculated mask for bit field
 
   std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
@@ -414,7 +435,7 @@ public:
     @return Register default string. This string is set to "UNDEF"
             if no default is set.
   */
-  std::string &getDefault(void) { return m_strDefault; };
+  std::string getDefault(void) { return m_strDefault; };
 
   /*!
     Get register default
@@ -780,18 +801,6 @@ public:
   std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
 
   /*!
-    Get VSCP Works grid position.
-    @return VSCP Works grid postion. Set to -1 if not set.
-  */
-  long getRowPosition(void) { return m_rowInGrid; };
-
-  /*!
-    Set VSCP Works grid position.
-    @param rowInGrid VSCP Works grid postion.
-  */
-  void setRowPosition(long rowInGrid) { m_rowInGrid = rowInGrid; };
-
-  /*!
     Set Foreground color for VSCP Works grid.
     @param color Foreground color to set.
   */
@@ -832,7 +841,6 @@ private:
 
   // For VSCP Works usage
 
-  long m_rowInGrid;   // Helper for display (row reg is displayed on)
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
@@ -961,7 +969,6 @@ private:
   uint16_t m_offset; // Offset for parameter (Always zero for level I)
   uint8_t m_min;     // Min value for parameter
   uint8_t m_max;     // Max value for parameter
-  // uint8_t m_width;
 
   std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
   std::deque<CMDF_Value *> m_list_value;          // List with selectable values
@@ -1951,6 +1958,12 @@ public:
   std::string getTarget(void) { return m_strTarget; };
 
   /*!
+    Get target code for firmware
+    @return Target code for firmware
+  */
+  uint16_t getTargetCode(void) { return m_targetCode; };
+
+  /*!
     Get hex file string format for firmware
     @return Hex string format
   */
@@ -1961,12 +1974,6 @@ public:
     @return ISO date string for firmware
   */
   std::string getDate(void) { return m_strDate; };
-
-  /*!
-    Get target code for firmware
-    @return Target code for firmware
-  */
-  uint16_t getTargetCode(void) { return m_targetCode; };
 
   /*!
     Get version major for firmware
@@ -2144,6 +2151,12 @@ public:
     @return Target string for CMDF_Driver
   */
   std::string getType(void) { return m_strType; };
+
+  /*!
+    Get driver type for CMDF_Driver
+    @return Target string for CMDF_Driver
+  */
+  std::string getFormat(void) { return m_strType; };
 
   /*!
     Get OS (Operation System) for driver
@@ -2574,13 +2587,19 @@ public:
     about the device if it is supplied.
   */
 
-  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
+  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);  
 
   /*!
     Get Module name in selected language.
     @return Return string with module name
   */
   std::string getModuleName(void) { return m_name; };
+
+  /*!
+    Return VSCP level for device
+    @return Return VSCP level for module
+  */
+  int getLevel(void) { return m_vscpLevel; };
 
   /*!
     Get Module description in selected language.
@@ -2820,12 +2839,28 @@ public:
   size_t getRegisterCount(uint32_t page);
 
   /*!
-      Return register definition from register + page      
-      @param register Register to search for.      
-      @param page Page top search for.
-      @return Pointer to CMDF_Register class if found else NULL.
+    Return register definition from register + page      
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return Pointer to CMDF_Register class if found else NULL.
   */
   CMDF_Register *getRegister( uint32_t reg, uint16_t page = 0);
+
+  /*!
+    Check if a register position is writable
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return True if register is writable else false.
+  */
+  bool isRegisterWriteable(uint32_t reg, uint16_t page = 0);
+
+  /*!
+    Get default value for register
+    @param reg Register to search for.      
+    @param page Page top search for.
+    @return Default value for register or -1 if error.
+  */
+  int getDefaultRegisterValue(uint32_t reg, uint16_t page = 0);
 
   /*!
       Get number of register pages used
@@ -2833,6 +2868,7 @@ public:
       @return Number of register pages used.
   */
   uint32_t getPages(std::set<uint16_t> &pages);
+
 
 
   //-----------------------------------------------------------------------------
@@ -2893,7 +2929,7 @@ public:
     @param path Path to the JSON file to parse.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
-  int parseMDF_JSON(std::string &path);
+  int parseMDF_JSON(const std::string &path);
 
   /*!
       Parse a MDF. The format can be XML or JSON. If the format is
@@ -2901,7 +2937,7 @@ public:
       @param path Path to downloaded MDF
       @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
-  int parseMDF(std::string &path);
+  int parseMDF(const std::string &path);
 
   /*!
     Get items from bit list
@@ -2952,6 +2988,7 @@ public:
   // --------------------------------------------------------------------------
 
 private:
+  
   std::string m_strLocale;    // ISO code for requested language
                               // defaults to "en"
 
@@ -2966,6 +3003,7 @@ private:
   // if ISO two letter language code can be used. Key is always lower
   // case.
   
+  uint8_t m_vscpLevel;                                  // Module level. Default to level I
   std::string m_name;                                   // Module name
   std::map<std::string, std::string> m_mapDescription;  // Module description
   std::map<std::string, std::string> m_mapInfoURL;      // URL for full module information
@@ -2980,7 +3018,7 @@ private:
 
   // File lists
   std::deque<CMDF_Picture *> m_list_picture;            // Picture file(s)
-  std::deque<CMDF_Video *> m_list_video;                // Picture file(s)
+  std::deque<CMDF_Video *> m_list_video;                // Video file(s)
   std::deque<CMDF_Firmware *> m_list_firmware;          // Firmware file(s)
   std::deque<CMDF_Driver *> m_list_driver;              // Picture file(s)
   std::deque<CMDF_Manual *> m_list_manual;              // Manual file(s)

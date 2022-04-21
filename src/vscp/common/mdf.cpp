@@ -34,12 +34,6 @@
 #include <pch.h>
 #endif
 
-#include <deque>
-#include <fstream>
-#include <iostream>
-#include <set>
-#include <string>
-
 #include <canal.h>
 #include <mdf.h>
 #include <stdlib.h>
@@ -117,7 +111,6 @@ CMDF_RemoteVariable::CMDF_RemoteVariable()
   m_size   = 0;
   m_access = MDF_REG_ACCESS_READ_WRITE;
 
-  m_rowInGrid = -1;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
 }
@@ -142,7 +135,6 @@ CMDF_RemoteVariable::clearStorage(void)
   m_size   = 0;
   m_access = MDF_REG_ACCESS_READ_WRITE;
 
-  m_rowInGrid = -1;
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
 
@@ -294,7 +286,7 @@ CMDF_Bit::CMDF_Bit()
   m_width   = 1;
   m_default = 0;
   m_min     = 0;
-  m_max     = 255;
+  m_max     = 1;
   m_access  = MDF_REG_ACCESS_READ_WRITE;
 }
 
@@ -315,7 +307,7 @@ CMDF_Bit::clearStorage(void)
   m_width   = 1;
   m_default = 0;
   m_min     = 0;
-  m_max     = 255;
+  m_max     = 1;
   m_access  = MDF_REG_ACCESS_READ_WRITE;
 
   // Clearup value list
@@ -331,6 +323,54 @@ CMDF_Bit::clearStorage(void)
   m_list_value.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setWidth
+//
+
+void
+CMDF_Bit::setWidth(uint8_t width)
+{
+  // Zero width is not allowed
+  // Set to default
+  if (!width) {
+    width = 1;
+  }
+  
+  // Max width is a byte width == 8
+  if (width > 8) {
+    width = 8;
+  }
+
+  m_width = width;
+
+  m_mask = 0;
+  for (int k=m_pos; k<(m_pos + m_width); k++) {
+    m_mask |= (1 << k);
+  }
+
+  setMax(0xff);  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setMin
+//
+
+void
+CMDF_Bit::setMin(uint8_t min)
+{
+  m_min = min & m_min;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  setMax
+//
+
+void
+CMDF_Bit::setMax(uint8_t max)
+{
+  m_max = max & m_mask;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1048,6 +1088,7 @@ CMDF_Setup::clearStorage(void)
 CMDF::CMDF()
 {
   m_strLocale = "en";
+  m_vscpLevel = VSCP_LEVEL1;
 }
 
 CMDF::~CMDF()
@@ -1107,6 +1148,7 @@ CMDF::clearStorage(void)
   }
   m_list_alarm.clear();
 
+  m_vscpLevel = VSCP_LEVEL1;
   m_name = "";
   m_strModule_Model.clear();
   m_strModule_Version.clear();
@@ -1115,7 +1157,6 @@ CMDF::clearStorage(void)
   m_strModule_changeDate.clear();
   m_module_bufferSize = 0;
   m_strURL.clear();
-  // m_list_manufacturer.clear();
   m_dmInfo.clearStorage();
   m_bootInfo.clearStorage();
   m_list_event.clear();
@@ -1332,9 +1373,7 @@ CMDF::mdfDescriptionFormat(std::string &str)
   }
 
   str = strWork;
-
   int cnt = 0;
-
   strWork.clear();
 
   // Break apart line that are longer then 80 chars
@@ -1619,7 +1658,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
               gpPictureStruct->m_strName = attribute;
@@ -1653,7 +1692,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1728,7 +1767,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1808,7 +1847,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1841,7 +1880,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1874,7 +1913,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -1947,7 +1986,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -2020,7 +2059,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -2058,7 +2097,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
+          //vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             if (!attribute.empty()) {
@@ -3052,10 +3091,17 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         pmdf->m_redirectUrl = strContent;
       }
       else if (gTokenList.at(0) == "name") {
-        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0} language: {1}", strContent);
+        spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
+        pmdf->m_name = strContent;
+      }
+      else if (gTokenList.at(0) == "level") {
+        spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
         vscp_trim(strContent);
         vscp_makeLower(strContent);
-        pmdf->m_name = strContent;
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
+        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
+          pmdf->m_vscpLevel = VSCP_LEVEL1;
+        }
       }
       break;
 
@@ -3072,6 +3118,13 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         vscp_trim(strContent);
         vscp_makeLower(strContent);
         pmdf->m_name = strContent;
+      }
+      else if (gTokenList.at(0) == "level") {
+        spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
+        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
+        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
+          pmdf->m_vscpLevel = VSCP_LEVEL1;
+        }
       }
       else if (gTokenList.at(0) == "model") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
@@ -5026,7 +5079,7 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
 //
 
 int
-CMDF::parseMDF_JSON(std::string &path)
+CMDF::parseMDF_JSON(const std::string &path)
 {
   int rv = VSCP_ERROR_SUCCESS;
 
@@ -5824,20 +5877,6 @@ CMDF::parseMDF_JSON(std::string &path)
             else {
               prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
               spdlog::debug("Parse-JSON: No remote variable access defined (defaults to 'rw').");
-            }
-
-            // Grid position (VSCP Works)
-            if (jrvar.contains("rowpos") && jrvar["rowpos"].is_string()) {
-              prvar->m_rowInGrid = vscp_readStringValue(jrvar["rowpos"]);
-              spdlog::debug("Parse-JSON: Remote variable rowpos set to {}.", prvar->m_rowInGrid);
-            }
-            else if (jrvar.contains("rowpos") && jrvar["rowpos"].is_number()) {
-              prvar->m_rowInGrid = jrvar["rowpos"];
-              spdlog::debug("Parse-JSON: Remote variable rowpos to {}.", prvar->m_rowInGrid);
-            }
-            else {
-              prvar->m_rowInGrid = -1;
-              spdlog::trace("Parse-JSON: No rowpos defined (set to -1).");
             }
 
             // Foreground color (VSCP Works)
@@ -6926,7 +6965,7 @@ CMDF::parseMDF_JSON(std::string &path)
 //
 
 int
-CMDF::parseMDF(std::string &path)
+CMDF::parseMDF(const std::string &path)
 {
   int rv = VSCP_ERROR_ERROR;
   std::ifstream ifs;
@@ -6979,6 +7018,7 @@ CMDF::parseMDF(std::string &path)
     else {
       rv = VSCP_ERROR_INVALID_SYNTAX;
       spdlog::error("Parse-XML: MDF file format not supported");
+      break;
     }
   }
 
@@ -7044,6 +7084,43 @@ CMDF::getRegister(uint32_t reg, uint16_t page)
   }
 
   return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getRegister
+//
+
+bool CMDF::isRegisterWriteable(uint32_t reg, uint16_t page)
+{
+  CMDF_Register *preg = getRegister(reg, page);
+  if (nullptr == preg) {
+    return false;
+  }
+
+  if (!preg->m_access || (preg->m_access & MDF_REG_ACCESS_READ_ONLY)) {
+    return false;
+  }
+
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getDefaultRegisterValue
+//
+
+int CMDF::getDefaultRegisterValue(uint32_t reg, uint16_t page)
+{
+  CMDF_Register *preg = getRegister(reg, page);
+  if (nullptr == preg) {
+    return -1;    
+  }
+
+  uint8_t val;
+  if (preg->getDefault(val)) {
+    return -1;
+  }
+
+  return val;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

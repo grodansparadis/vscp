@@ -65,7 +65,7 @@ int vscp_readLevel1Register( CVscpClient& client,
                               uint16_t page, 
                               uint8_t offset,
                               uint8_t& value,  
-                              uint32_t timeout = 1000);
+                              uint32_t timeout = 2000);
 
 /*!
   Write VSCP register
@@ -87,7 +87,7 @@ int vscp_writeLevel1Register( CVscpClient& client,
                                 uint16_t page,
                                 uint8_t offset,
                                 uint8_t value,
-                                uint32_t timeout = 1000 );
+                                uint32_t timeout = 2000 );
 
 /*!
   Read VSCP register block.
@@ -111,7 +111,7 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
                                     uint8_t offset,
                                     uint8_t count,
                                     std::map<uint8_t,uint8_t>& values,
-                                    uint32_t timeout = 1000);
+                                    uint32_t timeout = 2000);
 
 /*!
   Write VSCP register block.
@@ -132,7 +132,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
                                     cguid& guidInterface,
                                     uint16_t page, 
                                     std::map<uint8_t,uint8_t>& values,
-                                    uint32_t timeout = 1000);
+                                    uint32_t timeout = 2000);
 
 /*!
   Read all standard registers
@@ -141,7 +141,7 @@ int vscp_readStandardRegisters(CVscpClient& client,
                                 cguid& guid,
                                 cguid& guidInterface,
                                 CStandardRegisters& stdregs,
-                                uint32_t timeout = 0 );
+                                uint32_t timeout = 2000 );
 
 /*!
   Do a fast register scan using who is there protocol functionality
@@ -154,8 +154,8 @@ int vscp_readStandardRegisters(CVscpClient& client,
 */
 int vscp_scanForDevices(CVscpClient& client,
                                 cguid& guid,
-                                std::set<uint8_t> &found,
-                                uint32_t timeout = 1000);
+                                std::set<uint16_t> &found,
+                                uint32_t timeout = 2000);
 
 /*!
   Do a fast register scan using who is there protocol functionality
@@ -163,19 +163,46 @@ int vscp_scanForDevices(CVscpClient& client,
                 which the communication is carried out.
   @param guid GUID of the interface to search on. If zero no interface
                 is used.
-  @param found_nodes A set with nodeid's for found nodes.
-  @param start_nodeid Start nodeid to search from.
-  @param end_nodeid End nodeid to search to.
+  @param search_nodes A set that contains all nodes to search            
+  @param found_nodes A set with nodeid's for found nodes.  
+  @param delay Delay in micro seconds between nodeid's to search.
   @param timeout Timeout in milliseconds. Zero means no timeout
 */
 int vscp_scanSlowForDevices(CVscpClient& client,
                                 cguid& guid,
-                                std::set<uint8_t> &found_nodes,
-                                uint8_t start_node = 0,
-                                uint8_t end_node = 255,
+                                std::set<uint16_t> &search_nodes,
+                                std::set<uint16_t> &found_nodes,
+                                uint32_t delay = 10000,
+                                uint32_t timeout = 2000);                                
+
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param start_nodeid Start nodeid to search from.
+  @param end_nodeid End nodeid to search to.              
+  @param found_nodes A set with nodeid's for found nodes.  
+  @param delay Delay in micro seconds between nodeid's to search.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanSlowForDevices(CVscpClient& client,
+                                cguid& guid,
+                                uint8_t start_node,
+                                uint8_t end_node,
+                                std::set<uint16_t> &found_nodes,                                
                                 uint32_t delay = 10000,
                                 uint32_t timeout = 2000);
 
+
+/*!
+  Get device information on HTML format
+  @param mdf Initialized MDF object
+  @param stdregs INitialized standard registers
+  @return HTML formatted device information in a standard string
+*/
+std::string vscp_getDeviceInfoHtml(CMDF& mdf, CStandardRegisters& stdregs);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -244,11 +271,6 @@ public:
   void setPage(uint16_t page) { m_page = page; };
 
   /*!
-    Clear the register changes marks
-  */
-  void clearChanges(void) { m_change.clear(); };
-
-  /*!
     Manually set a single change position to true opr false
     @param offset Register offset to set.
     @param state State to set change to.
@@ -256,16 +278,14 @@ public:
   void setSingleChange(uint32_t offset, bool state = true) { m_change[offset] = state; };
 
   /*!
-    Get VSCP Works grid position.
-    @return VSCP Works grid postion. Set to -1 if not set.
+    Clear changes
   */
-  long getRowPosition(uint32_t reg) { return m_rowInGrid[reg]; };
+  void clearChanges() { m_change.clear(); };
 
   /*!
-    Set VSCP Works grid position.
-    @param rowInGrid VSCP Works grid postion.
+    Clear history
   */
-  void setRowPosition(uint32_t reg, long rowInGrid) { m_rowInGrid[reg] = rowInGrid; };
+  void clearHistory() { m_list_undo_value.clear(); m_list_redo_value.clear(); };
 
   /*!
     Get the register changes
@@ -286,6 +306,12 @@ public:
     @return true if register has an unwritten change.
   */
   bool isChanged(uint32_t offset) { return m_change[offset]; };
+
+  /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
 
   /*!
     Check if register has previously been changed
@@ -321,11 +347,6 @@ private:
     range 0x00000000 - 0xffff0000.
   */
   std::map<uint32_t, uint8_t> m_registers;
-
-  /*!
-    Row in grid this register set is located on.
-  */
-  std::map<uint32_t, int> m_rowInGrid;
 
   /*!
     VSCP Works rowtype for this register.
@@ -424,7 +445,6 @@ public:
     @param page Page of user register to get
     @return Pointer to user register object
   */
-  //std::map<uint32_t, uint8_t> *
   CRegisterPage *getRegisterPage(uint16_t page);
 
   /*!
@@ -434,6 +454,12 @@ public:
     @return Register content or -1 on failure.
   */
   int getReg(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Get register pages
+    @return Sorted set with pages
+  */
+  std::set<long> *getPages(void) { return &m_pages; };
 
   /*!
     Set changed state
@@ -459,6 +485,22 @@ public:
     @return true if register has an written change (blue).
   */
   bool hasWrittenChange(uint32_t offset, uint16_t page = 0);
+
+  /*!
+    Clear changes
+  */
+  void clearChanges();
+
+  /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
+
+  /*!
+    Clear history
+  */
+  void clearHistory();
 
   /*!
       Get abstraction value from registers into string value.
@@ -519,7 +561,8 @@ private:
     std::set<long> m_pages;
 
     // pages {page number, defined registers}
-    std::map<uint16_t, CRegisterPage *> m_registerPageMap;    
+    std::map<uint16_t, CRegisterPage *> m_registerPageMap;   
+ 
 };
 
 
@@ -853,7 +896,7 @@ public:
       @param reg Register to set value for
       @param val Value to set register to
   */
-  void setReg(uint8_t reg, uint8_t val) { m_regs[reg] = val; };
+  void putReg(uint8_t reg, uint8_t val) { m_regs[reg] = val; };
 
   /*!
     Clear the register changes marks
@@ -866,6 +909,25 @@ public:
   */
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
+  /*!
+    Set changed state
+    @param offset Register offset.
+    @param state Changed state
+  */
+  void setChangedState(uint32_t offset, bool state = true) { m_change[offset] = state; };
+
+  /*!
+    Check if a register has an unwritten change
+    @param offset Register offset on page to read from.
+    @return true if register has an unwritten change.
+  */
+  bool isChanged(uint32_t offset) { return m_change[offset]; };
+
+  /*!
+    Return true if one or more changes are pending
+    @return true if one or more changes are pending
+  */
+  bool hasChanges(void);
 
 private:
 

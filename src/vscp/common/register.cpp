@@ -77,6 +77,11 @@ vscp_readLevel1Register(CVscpClient& client,
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = 1;
 
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -159,6 +164,12 @@ vscp_writeLevel1Register(CVscpClient& client,
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = value;
 
+  
+  // Clear the input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -194,6 +205,7 @@ vscp_writeLevel1Register(CVscpClient& client,
       }
     }
 
+    //std::cout << "." << std::flush;
     if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
       rv = VSCP_ERROR_TIMEOUT;
       break;
@@ -252,6 +264,11 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
   ex.data[3 + ifoffset]    = offset;
   ex.data[4 + ifoffset]    = count;
 
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
   // Send event
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -271,22 +288,25 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
         return rv;
       }
 
+      //std::cout << "class=" << (int)ex.vscp_class << " type = " << (int)ex.vscp_type << std::endl << std::flush;
+
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
           if ((ex.GUID[15] = nickname) && 
               (ex.sizeData >= 5) && 
               /* ex.data[0] is frame index */
               (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff) && 
-              (ex.data[3] == offset + rcvcnt) ) {
+              (ex.data[2] == page & 0x0ff)  
+              /*(ex.data[3] == offset + rcvcnt)*/ ) {
 
             // Another frame received    
             frameset.erase(ex.data[0]); 
-            //printf("%d %d\n",(int)ex.data[0],frameset.size());
+            //std::cout << "idx=" << (int)ex.data[0] << " left = " << (int)frameset.size() << std::endl << std::flush;
             
             // Get read data 
             for (int i = 0; i < ex.sizeData-4; i++) {
-              values[offset + rcvcnt] = ex.data[4 + i];
+              //values[offset + rcvcnt] = ex.data[4 + i];
+              values[ex.data[3]+i] = ex.data[4 + i];
               rcvcnt++;
             }
 
@@ -377,6 +397,11 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
         ex.data[4 + ifoffset + j] = regvalues[start.first + i*4 + j];
       }
 
+      // Clear input queue
+      if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+        return rv;
+      }
+
       // Send event
       if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
         return rv;
@@ -448,7 +473,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
 
 int vscp_scanForDevices(CVscpClient& client,
                           cguid& guid,
-                          std::set<uint8_t> &found,
+                          std::set<uint16_t> &found,
                           uint32_t timeout)
 {
   int rv = VSCP_ERROR_SUCCESS;
@@ -462,6 +487,11 @@ int vscp_scanForDevices(CVscpClient& client,
   memset(ex.GUID, 0, 16); // Use GUID of interface
   ex.sizeData   = 17;  
   ex.data[16] = 0xff;  // all devices
+
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
 
   if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
     return rv;
@@ -478,7 +508,7 @@ int vscp_scanForDevices(CVscpClient& client,
     if (VSCP_ERROR_SUCCESS == rv) {
       if ( ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
           ex.vscp_type == VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE ) {
-        found.insert(ex.GUID[15]);
+        found.insert(ex.GUID[15] + (ex.GUID[14] << 8));
       }
     }
 
@@ -497,9 +527,8 @@ int vscp_scanForDevices(CVscpClient& client,
 
 int vscp_scanSlowForDevices(CVscpClient& client,
                               cguid& guid,
-                              std::set<uint8_t> &found_nodes,
-                              uint8_t start_node,
-                              uint8_t end_node,
+                              std::set<uint16_t> &search_nodes,
+                              std::set<uint16_t> &found_nodes,                              
                               uint32_t delay,
                               uint32_t timeout)
 {
@@ -510,13 +539,19 @@ int vscp_scanSlowForDevices(CVscpClient& client,
   memset(&ex, 0, sizeof(vscpEventEx));
   ex.vscp_class = VSCP_CLASS1_PROTOCOL + 512;
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-  memcpy(ex.data, guid.getGUID(), 16); // Use GUID of interface
+  memcpy(ex.data, guid.getGUID(), 16);
   memset(ex.GUID, 0, 16); // Use GUID of interface
   ex.sizeData   = 18;
 
-  for (int idx = start_node; idx<end_node; idx++) {    
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
+
+  for ( auto const& idx : search_nodes ) {    
     
-    ex.data[16] = idx;  // nodeid
+    ex.data[15] = idx << 8;   // nodeid MSB
+    ex.data[16] = idx & 0xff; // nodeid LSB
     ex.data[17] = 0xd0; // register: First byte of GUID
 
     rv = client.send(ex);
@@ -538,18 +573,32 @@ int vscp_scanSlowForDevices(CVscpClient& client,
 
     rv = client.getcount(&cnt);
     if (cnt) {      
+      
       rv = client.receive(ex);
       if (VSCP_ERROR_SUCCESS != rv) {
         return rv;
       }
-      if ( VSCP_ERROR_SUCCESS == rv && 
-          ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
-          ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE ) {
-        found_nodes.insert(ex.GUID[15]);
-      }     
+
+      //std::cout << "Class: " << ex.vscp_class << " Type: " << ex.vscp_type << std::endl;
+
+      if ((ex.vscp_class == VSCP_CLASS1_PROTOCOL) &&
+          (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) {
+        found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));
+      }    
+      else if ((ex.vscp_class == VSCP_CLASS2_LEVEL1_PROTOCOL) &&
+               (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) { 
+        found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));          
+      }
+
+    }
+
+    // If all nodes found we are done
+    if (search_nodes.size() == found_nodes.size()) {
+      break;
     }
 
     if ((vscp_getMsTimeStamp() - startTime) > timeout) {
+      // No time out here - just done with slow scan
       break;
     }
   }
@@ -557,7 +606,489 @@ int vscp_scanSlowForDevices(CVscpClient& client,
   return rv;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_scanSlowForDevices
+//
 
+int vscp_scanSlowForDevices(CVscpClient& client,
+                              cguid& guid,
+                              uint8_t start_node,
+                              uint8_t end_node,
+                              std::set<uint16_t> &found_nodes,                              
+                              uint32_t delay,
+                              uint32_t timeout)
+{
+  std::set<uint16_t> search_nodes; 
+
+  for(int i=start_node; i<=end_node; i++) {
+    search_nodes.insert(i);
+  }
+
+  return vscp_scanSlowForDevices(client,
+                                  guid,
+                                  search_nodes,
+                                  found_nodes,                              
+                                  delay,
+                                  timeout);
+}
+
+// ----------------------------------------------------------------------------
+
+template< typename T >
+static std::string 
+int_to_hex( T i )
+{
+  std::stringstream stream;
+  stream << "0x" 
+         << std::setfill ('0') << std::setw(sizeof(T)*2) 
+         << std::hex << i;
+  return stream.str();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// fillDeviceHtmlInfo
+//
+
+std::string vscp_getDeviceInfoHtml(CMDF& mdf, CStandardRegisters& stdregs) 
+{
+  int idx;
+  std::string html;
+  std::string str;
+
+  html = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+         "\"http://www.w3.org/TR/REC-html40/strict.dtd\">";
+  html += "<html><head>";
+  html += "<meta name=\"qrichtext\" content=\"1\" />";
+  html += "<style type=\"text/css\">p, li { white-space: pre-wrap; }</style>";
+  html += "</head>";
+  html += "<body style=\"font-family:'Ubuntu'; font-size:11pt; "
+          "font-weight:400; font-style:normal;\">";
+  html += "<h1>";
+  html += mdf.getModuleName();
+  html += "</h1>";
+  // html += "<font color=\"#009900\">";
+
+  html += "<b>Node id</b>:<font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getNickname());
+  html += "<br>";
+
+  // html += "</font><b>Interface</b>:<font color=\"#009900\"> ";
+  // html += comboInterface->currentText().toStdString();
+  // html += "<br>";
+
+  // html += "</font><b>Nickname</b>:<font color=\"#009900\"> ";
+  // html += nodeidConfig->text().toStdString();
+  // html += "<br>";
+
+  // Device GUID
+  html += "</font><b>Device GUID</b>:<font color=\"#009900\"> ";
+  cguid guid;
+  stdregs.getGUID(guid);
+  html += guid.toString();
+  html += " (real GUID)<br>";
+
+  // Proxy GUID
+  // str = m_comboInterface->currentText().toStdString();
+  // cguid guidNode;
+  // guidNode.getFromString(str);
+  // // node id
+  // guidNode.setLSB(m_nodeidConfig->value());
+  // html += "</font><b>Proxy GUID</b>:<font color=\"#009900\"> ";
+  // html += guidNode.toString();
+  // html += "<br>";
+
+  std::string prefix = "http://";
+  if (std::string::npos != stdregs.getMDF().find("http://")) {
+    prefix = "";
+  }
+
+  html += "</font><b>MDF URL</b>:<font color=\"#009900\"> ";
+  html += "<a href=\"";
+  html += prefix;
+  html += stdregs.getMDF();
+  html += "\" target=\"ext\">";
+  html += prefix;
+  html += stdregs.getMDF();
+  html += "</a>";
+  html += "<br>";
+
+  // Alarm
+  html += "</font><b>Alarm:</b><font color=\"#009900\"> ";
+  if (stdregs.getAlarm()) {
+    html += "Yes";
+  }
+  else {
+    html += "No";
+  }
+  html += "<br>";
+
+  html += "</font><b>Device error counter:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getErrorCounter());
+  html += "<br>";
+
+  html += "</font><b>Firmware VSCP conformance:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getConformanceVersionMajor());
+  html += ".";
+  html += std::to_string(stdregs.getConformanceVersionMinor());
+  html += "<br>";
+
+  html += "</font><b>User Device ID:</b><font color=\"#009900\"> ";
+  html +=
+    std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Manufacturer Device ID:</b><font color=\"#009900\"> ";
+  html += int_to_hex(stdregs.getManufacturerDeviceID());  // TODO: print as hex
+  html += " - ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID))
+            ;
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Manufacturer sub device ID:</b><font color=\"#009900\"> ";
+  html += int_to_hex(stdregs.getManufacturerSubDeviceID()); // TODO: print as hex
+  html += " - ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Page select:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getRegisterPage());
+  html += " MSB=";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_PAGE_SELECT_MSB));
+  html += " LSB= ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_PAGE_SELECT_LSB));
+  html += "<br>";
+
+  html += "</font><b>Firmware version:</b><font color=\"#009900\"> ";
+  html += stdregs.getFirmwareVersionString();
+  html += "<br>";
+
+  html += "</font><b>Boot loader algorithm:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getBootloaderAlgorithm());
+  html += " - ";
+  switch (stdregs.getBootloaderAlgorithm()) {
+
+    case 0x00:
+      html += "VSCP universal algorithm";
+      break;
+
+    case 0x01:
+      html += "Microchip PIC algorithm 0";
+      break;
+
+    case 0x10:
+      html += "Atmel AVR algorithm 0";
+      break;
+
+    case 0x20:
+      html += "NXP ARM algorithm 0";
+      break;
+
+    case 0x30:
+      html += "ST ARM algorithm 0";
+      break;
+
+    case 0xFF:
+      html += "No bootloader implemented.";
+      break;
+
+    default:
+      html += "Unknown algorithm.";
+      break;
+  }
+
+  html += "<br>";
+
+  html += "</font><b>Buffer size:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getBufferSize());
+  html += " bytes.";
+  if (!stdregs.getBufferSize()) {
+    html += " ( == default size (8 or 487 bytes) )";
+  }
+  html += "<br>";
+
+  CMDF_DecisionMatrix* pdm = mdf.getDM();
+  if ((nullptr == pdm) || !pdm->getRowCount()) {
+    html += "No Decision Matrix is available on this device.";
+    html += "<br>";
+  }
+  else {
+    html += "</font><b>Decision Matrix:</b><font color=\"#009900\"> Rows=";
+    html += std::to_string(pdm->getRowCount());
+    html += " Startoffset=";
+    html += std::to_string(pdm->getStartOffset());
+    html += " (";
+    html += int_to_hex(pdm->getStartOffset()); // TODO: print as hex
+    html += ") Startpage=";
+    html += std::to_string(pdm->getStartPage());
+    html += " (";
+    html += int_to_hex(pdm->getStartPage()); // TODO: print as hex
+    html += ") Row size=";
+    html += std::to_string(pdm->getRowSize());
+    html += ")<br>";
+  }
+
+  html += "</font><br>";
+
+  // MDF Info
+  html += "<b>MDF Information</b>";
+
+  // Manufacturer data
+  html += "<b>Module name :</b><font color=\"#009900\"> ";
+  html += mdf.getModuleName();
+  html += "<br>";
+
+  html += "</font><b>Module model:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleModel();
+  html += "<br>";
+
+  html += "</font><b>Module version:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleVersion();
+  html += "<br>";
+
+  html += "</font><b>Module last change:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleChangeDate();
+  html += "<br>";
+
+  html += "</font><b>Module description:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleDescription();
+  html += "<br>";
+
+  html += "</font><b>Module URL</b><font color=\"#009900\"> : ";
+  html += "<a href=\"";
+  html += mdf.getModuleHelpUrl();
+  html += "\">";
+  html += mdf.getModuleHelpUrl();
+  html += "</a>";
+  html += "<br><br>";
+
+  html += "</font><b>Manufacturer:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerName();
+  // html += "<br>";
+  html += "<br>";
+  html += "</font><b>Street:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerStreetAddress();
+  html += "<br>";
+  html += "</font><b>Town:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerTownAddress();
+  html += "<br>";
+  html += "</font><b>City:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerCityAddress();
+  html += "<br>";
+  html += "</font><b>Post Code:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerPostCodeAddress();
+  html += "<br>";
+  html += "</font><b>State:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerStateAddress();
+  html += "<br>";
+  html += "</font><b>Region:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerRegionAddress();
+  html += "<br>";
+  html += "</font><b>Country:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerCountryAddress();
+  html += "<br><br>";
+
+  idx = 0;
+  CMDF_Item* phone;
+  while (nullptr != (phone = mdf.getManufacturer()->getPhoneObj(idx))) {
+    html += "</font><b>Phone:</b><font color=\"#009900\"> ";
+    html += phone->getName();
+    html += "</font> - ";
+    html += phone->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* fax;
+  while (nullptr != (fax = mdf.getManufacturer()->getFaxObj(idx))) {
+    html += "</font><b>Fax:</b><font color=\"#009900\"> ";
+    html += fax->getName();
+    html += "</font> - ";
+    html += fax->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* email;
+  while (nullptr != (email = mdf.getManufacturer()->getEmailObj(idx))) {
+    html += "</font><b>Email:</b><font color=\"#009900\"> ";
+    html += email->getName();
+    html += "</font> - ";
+    html += email->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* web;
+  while (nullptr != (web = mdf.getManufacturer()->getWebObj(idx))) {
+    html += "</font><b>Web:</b><font color=\"#009900\"> ";
+    html += web->getName();
+    html += "</font> - ";
+    html += web->getDescription();
+    html += "<br>";
+    idx++;
+  }
+
+  // ------------------------------------------------------------------------
+
+  // Pictures
+  if (mdf.getPictureCount()) {
+
+    html += "<br><b>Pictures</b><ul>";
+
+    for (int i = 0; i < mdf.getPictureCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getPictureObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getPictureObj(i)->getName().length()) {
+        html += mdf.getPictureObj(i)->getName();
+      }
+      else {
+        html += mdf.getPictureObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Video
+  if (mdf.getVideoCount()) {
+
+    html += "<br><b>Videos</b><ul>";
+
+    for (int i = 0; i < mdf.getVideoCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getVideoObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getVideoObj(i)->getName().length()) {
+        html += mdf.getVideoObj(i)->getName();
+      }
+      else {
+        html += mdf.getVideoObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Firmware
+  if (mdf.getFirmwareCount()) {
+
+    html += "<br><b>Firmware</b><ul>";
+
+    for (int i = 0; i < mdf.getFirmwareCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getFirmwareObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getFirmwareObj(i)->getName().length()) {
+        html += mdf.getFirmwareObj(i)->getName();
+      }
+      else {
+        html += mdf.getFirmwareObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Driver
+  if (mdf.getDriverCount()) {
+
+    html += "<br><b>Drivers</b><ul>";
+
+    for (int i = 0; i < mdf.getDriverCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getDriverObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getDriverObj(i)->getName().length()) {
+        html += mdf.getDriverObj(i)->getName();
+      }
+      else {
+        html += mdf.getDriverObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Manual
+  if (mdf.getManualCount()) {
+
+    html += "<br><b>Manuals</b><ul>";
+
+    for (int i = 0; i < mdf.getManualCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getManualObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getManualObj(i)->getName().length()) {
+        html += mdf.getManualObj(i)->getName();
+      }
+      else {
+        html += mdf.getManualObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Setup
+  if (mdf.getSetupCount()) {
+
+    html += "<br><b>Setup wizards</b><ul>";
+
+    for (int i = 0; i < mdf.getSetupCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getSetupObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getSetupObj(i)->getName().length()) {
+        html += mdf.getSetupObj(i)->getName();
+      }
+      else {
+        html += mdf.getSetupObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // ------------------------------------------------------------------------
+
+
+  html += "</font>";
+  html += "</body></html>";
+
+  // Set the HTML
+  //ui->infoArea->setHtml(html.c_str());
+  return html;
+}
 
 
 // --------------------------------------------------------------------------
@@ -635,6 +1166,8 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
       return -1; // Invalid reg offset for Level I device
   }
 
+  //std::cout << "Put reg " << (int)reg << " new value = " << (int)value << " old value =  " << (int)m_registers[reg] << std::endl;
+
   // Mark as changed only if different
   if (m_registers[reg] != value) {
     m_change[reg] = true;       // Mark as changed
@@ -644,7 +1177,20 @@ CRegisterPage::putReg(uint32_t reg, uint8_t value)
   return m_registers[reg] = value; // Assign value
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
 
+bool 
+CRegisterPage::hasChanges(void)
+{
+  for (auto const& reg : m_change) {
+    if (reg.second) {
+      return true;
+    }
+  }
+  return false;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -765,6 +1311,21 @@ CStandardRegisters::getMDF(void)
   return(remoteFile);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
+
+bool 
+CStandardRegisters::hasChanges(void)
+{
+  for (auto const& reg : m_change) {
+    if (reg.second) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -800,6 +1361,7 @@ int CUserRegisters::init(CVscpClient& client,
                           uint32_t timeout)
 {
   int rv = VSCP_ERROR_SUCCESS;
+  m_pages.clear();
 
   for (auto const& page : pages) {
     
@@ -810,7 +1372,7 @@ int CUserRegisters::init(CVscpClient& client,
                                         guidInterface,
                                         page,
                                         0,
-                                        128,
+                                        127,
                                         registers,
                                         timeout);
     if ( VSCP_ERROR_SUCCESS != rv ) {
@@ -820,6 +1382,7 @@ int CUserRegisters::init(CVscpClient& client,
     // Transfer data to register page
     m_registerPageMap[page]->putLevel1Registers(registers);
     m_registerPageMap[page]->clearChanges();
+    m_pages.insert(page);
     //std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
   }
   return rv;
@@ -863,6 +1426,11 @@ CUserRegisters::getReg(uint32_t offset, uint16_t page)
     return -1;
   }
 
+  auto it = ppage->getRegisterMap()->find(offset);
+  if (it == ppage->getRegisterMap()->end()) {
+    return -1;
+  }
+  
   return ppage->getRegisterMap()->at(offset);
 }
 
@@ -892,6 +1460,8 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
   // if thew page does not exist
   CRegisterPage *pPage = m_registerPageMap[page];
   pPage->putReg(reg, value); // Assign value
+
+  m_pages.insert(page); // Add page to list of pages
 
   // // Look up page or create a new one if not found
   // std::map<uint16_t, CRegisterPage *>::iterator it;
@@ -971,6 +1541,30 @@ CUserRegisters::hasWrittenChange(uint32_t offset, uint16_t page)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  clearChanges
+//
+
+void
+CUserRegisters::clearChanges(void)
+{
+  for (auto const& page : m_registerPageMap) {
+    page.second->clearChanges();
+  }  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  clearHistory
+//
+
+void
+CUserRegisters::clearHistory(void)
+{
+  for (auto const& page : m_registerPageMap) {
+    page.second->clearHistory();
+  }  
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  remoteVarFromRegToString
 //
 
@@ -1017,10 +1611,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
     case remote_variable_type_int8_t:
       {
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format("%d", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format("%had", ppage->getReg(remoteVar.getOffset()));
         }
         else {
-          strValue = vscp_str_format( "0x%02x", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "0x%02hx", ppage->getReg(remoteVar.getOffset()));
         }
       }
       break;
@@ -1028,10 +1622,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
     case remote_variable_type_uint8_t:
       {
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ud", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "%hu", ppage->getReg(remoteVar.getOffset()));
         }
         else {
-          strValue = vscp_str_format( "0x%02x", ppage->getReg(remoteVar.getOffset()));
+          strValue = vscp_str_format( "0x%02hx", ppage->getReg(remoteVar.getOffset()));
         }
       }
       break;
@@ -1044,10 +1638,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         int16_t val = (buf[0] << 8 ) + buf[1];
 
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%d", val );
+          strValue = vscp_str_format( "%hd", val );
         }
         else {
-          strValue = vscp_str_format( "0x%04x", val );          
+          strValue = vscp_str_format( "0x%04hx", val );          
         }
       }
       break;
@@ -1060,10 +1654,10 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         uint16_t val = (buf[0] << 8 ) + buf[1];
 
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ud", val );
+          strValue = vscp_str_format( "hd", val );
         }
         else {
-          strValue = vscp_str_format( "0x%04x", val );
+          strValue = vscp_str_format( "0x%04hx", val );
         }
       }
       break;
@@ -1092,7 +1686,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         }
         uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ld", val);
+          strValue = vscp_str_format( "%lu", val);
         }
         else {
           strValue = vscp_str_format( "0x%04lx", val);
@@ -1141,7 +1735,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
                         ((uint64_t)buf[6] << 8) + 
                          (uint64_t)buf[7];
         if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-            strValue = vscp_str_format("%ulld", val);
+            strValue = vscp_str_format("%ullu", val);
         }
         else {
             strValue = vscp_str_format("0x%ullx", val);
@@ -1473,7 +2067,20 @@ CUserRegisters::vscp_writeDmRow(CMDF_DecisionMatrix& dm, uint16_t row, uint8_t *
   return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// hasChanges
+//
 
+bool 
+CUserRegisters::hasChanges(void)
+{
+  for (auto it = m_registerPageMap.begin(); it != m_registerPageMap.end(); ++it) {
+    if (it->second->hasChanges()) {
+      return true;
+    }
+  }
+  return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

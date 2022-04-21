@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2021
+// Copyright:   © 2007-2022
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -157,6 +157,7 @@ public:
 
     /*!
         Clear the input queue
+        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
     */
     virtual int clear(void) = 0;
 
