@@ -508,7 +508,7 @@ int vscp_scanForDevices(CVscpClient& client,
     if (VSCP_ERROR_SUCCESS == rv) {
       if ( ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
           ex.vscp_type == VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE ) {
-        found.insert(ex.GUID[15]);
+        found.insert(ex.GUID[15] + (ex.GUID[14] << 8));
       }
     }
 
