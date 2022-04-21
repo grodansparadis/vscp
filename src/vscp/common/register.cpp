@@ -592,7 +592,461 @@ int vscp_scanSlowForDevices(CVscpClient& client,
   return rv;
 }
 
+template< typename T >
+static std::string 
+int_to_hex( T i )
+{
+  std::stringstream stream;
+  stream << "0x" 
+         << std::setfill ('0') << std::setw(sizeof(T)*2) 
+         << std::hex << i;
+  return stream.str();
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// fillDeviceHtmlInfo
+//
+
+std::string vscp_getDeviceInfoHtml(CMDF& mdf, CStandardRegisters& stdregs) 
+{
+  int idx;
+  std::string html;
+  std::string str;
+
+  html = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+         "\"http://www.w3.org/TR/REC-html40/strict.dtd\">";
+  html += "<html><head>";
+  html += "<meta name=\"qrichtext\" content=\"1\" />";
+  html += "<style type=\"text/css\">p, li { white-space: pre-wrap; }</style>";
+  html += "</head>";
+  html += "<body style=\"font-family:'Ubuntu'; font-size:11pt; "
+          "font-weight:400; font-style:normal;\">";
+  html += "<h1>";
+  html += mdf.getModuleName();
+  html += "</h1>";
+  // html += "<font color=\"#009900\">";
+
+  html += "<b>Node id</b>:<font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getNickname());
+  html += "<br>";
+
+  // html += "</font><b>Interface</b>:<font color=\"#009900\"> ";
+  // html += comboInterface->currentText().toStdString();
+  // html += "<br>";
+
+  // html += "</font><b>Nickname</b>:<font color=\"#009900\"> ";
+  // html += nodeidConfig->text().toStdString();
+  // html += "<br>";
+
+  // Device GUID
+  html += "</font><b>Device GUID</b>:<font color=\"#009900\"> ";
+  cguid guid;
+  stdregs.getGUID(guid);
+  html += guid.toString();
+  html += " (real GUID)<br>";
+
+  // Proxy GUID
+  // str = m_comboInterface->currentText().toStdString();
+  // cguid guidNode;
+  // guidNode.getFromString(str);
+  // // node id
+  // guidNode.setLSB(m_nodeidConfig->value());
+  // html += "</font><b>Proxy GUID</b>:<font color=\"#009900\"> ";
+  // html += guidNode.toString();
+  // html += "<br>";
+
+  std::string prefix = "http://";
+  if (std::string::npos != stdregs.getMDF().find("http://")) {
+    prefix = "";
+  }
+
+  html += "</font><b>MDF URL</b>:<font color=\"#009900\"> ";
+  html += "<a href=\"";
+  html += prefix;
+  html += stdregs.getMDF();
+  html += "\" target=\"ext\">";
+  html += prefix;
+  html += stdregs.getMDF();
+  html += "</a>";
+  html += "<br>";
+
+  // Alarm
+  html += "</font><b>Alarm:</b><font color=\"#009900\"> ";
+  if (stdregs.getAlarm()) {
+    html += "Yes";
+  }
+  else {
+    html += "No";
+  }
+  html += "<br>";
+
+  html += "</font><b>Device error counter:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getErrorCounter());
+  html += "<br>";
+
+  html += "</font><b>Firmware VSCP conformance:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getConformanceVersionMajor());
+  html += ".";
+  html += std::to_string(stdregs.getConformanceVersionMinor());
+  html += "<br>";
+
+  html += "</font><b>User Device ID:</b><font color=\"#009900\"> ";
+  html +=
+    std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Manufacturer Device ID:</b><font color=\"#009900\"> ";
+  html += int_to_hex(stdregs.getManufacturerDeviceID());  // TODO: print as hex
+  html += " - ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID))
+            ;
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Manufacturer sub device ID:</b><font color=\"#009900\"> ";
+  html += int_to_hex(stdregs.getManufacturerSubDeviceID()); // TODO: print as hex
+  html += " - ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 1));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 2));
+  html += ".";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 3));
+  html += "<br>";
+
+  html += "</font><b>Page select:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getRegisterPage());
+  html += " MSB=";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_PAGE_SELECT_MSB));
+  html += " LSB= ";
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_PAGE_SELECT_LSB));
+  html += "<br>";
+
+  html += "</font><b>Firmware version:</b><font color=\"#009900\"> ";
+  html += stdregs.getFirmwareVersionString();
+  html += "<br>";
+
+  html += "</font><b>Boot loader algorithm:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getBootloaderAlgorithm());
+  html += " - ";
+  switch (stdregs.getBootloaderAlgorithm()) {
+
+    case 0x00:
+      html += "VSCP universal algorithm";
+      break;
+
+    case 0x01:
+      html += "Microchip PIC algorithm 0";
+      break;
+
+    case 0x10:
+      html += "Atmel AVR algorithm 0";
+      break;
+
+    case 0x20:
+      html += "NXP ARM algorithm 0";
+      break;
+
+    case 0x30:
+      html += "ST ARM algorithm 0";
+      break;
+
+    case 0xFF:
+      html += "No bootloader implemented.";
+      break;
+
+    default:
+      html += "Unknown algorithm.";
+      break;
+  }
+
+  html += "<br>";
+
+  html += "</font><b>Buffer size:</b><font color=\"#009900\"> ";
+  html += std::to_string(stdregs.getBufferSize());
+  html += " bytes.";
+  if (!stdregs.getBufferSize()) {
+    html += " ( == default size (8 or 487 bytes) )";
+  }
+  html += "<br>";
+
+  CMDF_DecisionMatrix* pdm = mdf.getDM();
+  if ((nullptr == pdm) || !pdm->getRowCount()) {
+    html += "No Decision Matrix is available on this device.";
+    html += "<br>";
+  }
+  else {
+    html += "</font><b>Decision Matrix:</b><font color=\"#009900\"> Rows=";
+    html += std::to_string(pdm->getRowCount());
+    html += " Startoffset=";
+    html += std::to_string(pdm->getStartOffset());
+    html += " (";
+    html += int_to_hex(pdm->getStartOffset()); // TODO: print as hex
+    html += ") Startpage=";
+    html += std::to_string(pdm->getStartPage());
+    html += " (";
+    html += int_to_hex(pdm->getStartPage()); // TODO: print as hex
+    html += ") Row size=";
+    html += std::to_string(pdm->getRowSize());
+    html += ")<br>";
+  }
+
+  html += "</font><br>";
+
+  // MDF Info
+  html += "<b>MDF Information</b>";
+
+  // Manufacturer data
+  html += "<b>Module name :</b><font color=\"#009900\"> ";
+  html += mdf.getModuleName();
+  html += "<br>";
+
+  html += "</font><b>Module model:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleModel();
+  html += "<br>";
+
+  html += "</font><b>Module version:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleVersion();
+  html += "<br>";
+
+  html += "</font><b>Module last change:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleChangeDate();
+  html += "<br>";
+
+  html += "</font><b>Module description:</b><font color=\"#009900\"> ";
+  html += mdf.getModuleDescription();
+  html += "<br>";
+
+  html += "</font><b>Module URL</b><font color=\"#009900\"> : ";
+  html += "<a href=\"";
+  html += mdf.getModuleHelpUrl();
+  html += "\">";
+  html += mdf.getModuleHelpUrl();
+  html += "</a>";
+  html += "<br><br>";
+
+  html += "</font><b>Manufacturer:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerName();
+  // html += "<br>";
+  html += "<br>";
+  html += "</font><b>Street:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerStreetAddress();
+  html += "<br>";
+  html += "</font><b>Town:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerTownAddress();
+  html += "<br>";
+  html += "</font><b>City:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerCityAddress();
+  html += "<br>";
+  html += "</font><b>Post Code:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerPostCodeAddress();
+  html += "<br>";
+  html += "</font><b>State:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerStateAddress();
+  html += "<br>";
+  html += "</font><b>Region:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerRegionAddress();
+  html += "<br>";
+  html += "</font><b>Country:</b><font color=\"#009900\"> ";
+  html += mdf.getManufacturerCountryAddress();
+  html += "<br><br>";
+
+  idx = 0;
+  CMDF_Item* phone;
+  while (nullptr != (phone = mdf.getManufacturer()->getPhoneObj(idx))) {
+    html += "</font><b>Phone:</b><font color=\"#009900\"> ";
+    html += phone->getName();
+    html += "</font> - ";
+    html += phone->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* fax;
+  while (nullptr != (fax = mdf.getManufacturer()->getFaxObj(idx))) {
+    html += "</font><b>Fax:</b><font color=\"#009900\"> ";
+    html += fax->getName();
+    html += "</font> - ";
+    html += fax->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* email;
+  while (nullptr != (email = mdf.getManufacturer()->getEmailObj(idx))) {
+    html += "</font><b>Email:</b><font color=\"#009900\"> ";
+    html += email->getName();
+    html += "</font> - ";
+    html += email->getDescription();
+    html += "<br><font color=\"#009900\">";
+    idx++;
+  }
+
+  idx = 0;
+  CMDF_Item* web;
+  while (nullptr != (web = mdf.getManufacturer()->getWebObj(idx))) {
+    html += "</font><b>Web:</b><font color=\"#009900\"> ";
+    html += web->getName();
+    html += "</font> - ";
+    html += web->getDescription();
+    html += "<br>";
+    idx++;
+  }
+
+  // ------------------------------------------------------------------------
+
+  // Pictures
+  if (mdf.getPictureCount()) {
+
+    html += "<br><b>Pictures</b><ul>";
+
+    for (int i = 0; i < mdf.getPictureCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getPictureObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getPictureObj(i)->getName().length()) {
+        html += mdf.getPictureObj(i)->getName();
+      }
+      else {
+        html += mdf.getPictureObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Video
+  if (mdf.getVideoCount()) {
+
+    html += "<br><b>Videos</b><ul>";
+
+    for (int i = 0; i < mdf.getVideoCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getVideoObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getVideoObj(i)->getName().length()) {
+        html += mdf.getVideoObj(i)->getName();
+      }
+      else {
+        html += mdf.getVideoObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Firmware
+  if (mdf.getFirmwareCount()) {
+
+    html += "<br><b>Firmware</b><ul>";
+
+    for (int i = 0; i < mdf.getFirmwareCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getFirmwareObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getFirmwareObj(i)->getName().length()) {
+        html += mdf.getFirmwareObj(i)->getName();
+      }
+      else {
+        html += mdf.getFirmwareObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Driver
+  if (mdf.getDriverCount()) {
+
+    html += "<br><b>Drivers</b><ul>";
+
+    for (int i = 0; i < mdf.getDriverCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getDriverObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getDriverObj(i)->getName().length()) {
+        html += mdf.getDriverObj(i)->getName();
+      }
+      else {
+        html += mdf.getDriverObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Manual
+  if (mdf.getManualCount()) {
+
+    html += "<br><b>Manuals</b><ul>";
+
+    for (int i = 0; i < mdf.getManualCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getManualObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getManualObj(i)->getName().length()) {
+        html += mdf.getManualObj(i)->getName();
+      }
+      else {
+        html += mdf.getManualObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // Setup
+  if (mdf.getSetupCount()) {
+
+    html += "<br><b>Setup wizards</b><ul>";
+
+    for (int i = 0; i < mdf.getSetupCount(); i++) {
+      html += "<li><a href=\"";
+      html += mdf.getSetupObj(i)->getUrl();
+      html += "\">";
+      
+      if (mdf.getSetupObj(i)->getName().length()) {
+        html += mdf.getSetupObj(i)->getName();
+      }
+      else {
+        html += mdf.getSetupObj(i)->getDescription();
+      }
+      html += "</a></li>";
+    }
+    html += "</ul>";
+  }
+
+  // ------------------------------------------------------------------------
+
+
+  html += "</font>";
+  html += "</body></html>";
+
+  // Set the HTML
+  //ui->infoArea->setHtml(html.c_str());
+  return html;
+}
 
 
 // --------------------------------------------------------------------------

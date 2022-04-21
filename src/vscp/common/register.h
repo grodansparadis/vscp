@@ -177,6 +177,14 @@ int vscp_scanSlowForDevices(CVscpClient& client,
                                 uint32_t timeout = 2000);
 
 
+/*!
+  Get device information on HTML format
+  @param mdf Initialized MDF object
+  @param stdregs INitialized standard registers
+  @return HTML formatted device information in a standard string
+*/
+std::string vscp_getDeviceInfoHtml(CMDF& mdf, CStandardRegisters& stdregs);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 
