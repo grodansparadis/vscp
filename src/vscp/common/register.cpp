@@ -473,7 +473,7 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
 
 int vscp_scanForDevices(CVscpClient& client,
                           cguid& guid,
-                          std::set<uint8_t> &found,
+                          std::set<uint16_t> &found,
                           uint32_t timeout)
 {
   int rv = VSCP_ERROR_SUCCESS;
@@ -527,9 +527,8 @@ int vscp_scanForDevices(CVscpClient& client,
 
 int vscp_scanSlowForDevices(CVscpClient& client,
                               cguid& guid,
-                              std::set<uint8_t> &found_nodes,
-                              uint8_t start_node,
-                              uint8_t end_node,
+                              std::set<uint16_t> &search_nodes,
+                              std::set<uint16_t> &found_nodes,                              
                               uint32_t delay,
                               uint32_t timeout)
 {
@@ -540,19 +539,20 @@ int vscp_scanSlowForDevices(CVscpClient& client,
   memset(&ex, 0, sizeof(vscpEventEx));
   ex.vscp_class = VSCP_CLASS1_PROTOCOL + 512;
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-  memcpy(ex.data, guid.getGUID(), 16); // Use GUID of interface
+  memcpy(ex.data, guid.getGUID(), 16);
   memset(ex.GUID, 0, 16); // Use GUID of interface
   ex.sizeData   = 18;
 
-  for (int idx = start_node; idx<end_node; idx++) {    
-    
-    ex.data[16] = idx;  // nodeid
-    ex.data[17] = 0xd0; // register: First byte of GUID
+  // Clear input queue
+  if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+    return rv;
+  }
 
-    // Clear input queue
-    if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
-      return rv;
-    }
+  for ( auto const& idx : search_nodes ) {    
+    
+    ex.data[15] = idx << 8;   // nodeid MSB
+    ex.data[16] = idx & 0xff; // nodeid LSB
+    ex.data[17] = 0xd0; // register: First byte of GUID
 
     rv = client.send(ex);
     if (VSCP_ERROR_SUCCESS != rv) {
@@ -573,24 +573,66 @@ int vscp_scanSlowForDevices(CVscpClient& client,
 
     rv = client.getcount(&cnt);
     if (cnt) {      
+      
       rv = client.receive(ex);
       if (VSCP_ERROR_SUCCESS != rv) {
         return rv;
       }
-      if ( VSCP_ERROR_SUCCESS == rv && 
-          ex.vscp_class == VSCP_CLASS1_PROTOCOL &&
-          ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE ) {
-        found_nodes.insert(ex.GUID[15]);
-      }     
+
+      //std::cout << "Class: " << ex.vscp_class << " Type: " << ex.vscp_type << std::endl;
+
+      if ((ex.vscp_class == VSCP_CLASS1_PROTOCOL) &&
+          (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) {
+        found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));
+      }    
+      else if ((ex.vscp_class == VSCP_CLASS2_LEVEL1_PROTOCOL) &&
+               (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) { 
+        found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));          
+      }
+
+    }
+
+    // If all nodes found we are done
+    if (search_nodes.size() == found_nodes.size()) {
+      break;
     }
 
     if ((vscp_getMsTimeStamp() - startTime) > timeout) {
+      // No time out here - just done with slow scan
       break;
     }
   }
 
   return rv;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_scanSlowForDevices
+//
+
+int vscp_scanSlowForDevices(CVscpClient& client,
+                              cguid& guid,
+                              uint8_t start_node,
+                              uint8_t end_node,
+                              std::set<uint16_t> &found_nodes,                              
+                              uint32_t delay,
+                              uint32_t timeout)
+{
+  std::set<uint16_t> search_nodes; 
+
+  for(int i=start_node; i<=end_node; i++) {
+    search_nodes.insert(i);
+  }
+
+  return vscp_scanSlowForDevices(client,
+                                  guid,
+                                  search_nodes,
+                                  found_nodes,                              
+                                  delay,
+                                  timeout);
+}
+
+// ----------------------------------------------------------------------------
 
 template< typename T >
 static std::string 

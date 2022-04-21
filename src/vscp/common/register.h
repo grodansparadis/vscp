@@ -154,7 +154,7 @@ int vscp_readStandardRegisters(CVscpClient& client,
 */
 int vscp_scanForDevices(CVscpClient& client,
                                 cguid& guid,
-                                std::set<uint8_t> &found,
+                                std::set<uint16_t> &found,
                                 uint32_t timeout = 2000);
 
 /*!
@@ -163,16 +163,35 @@ int vscp_scanForDevices(CVscpClient& client,
                 which the communication is carried out.
   @param guid GUID of the interface to search on. If zero no interface
                 is used.
-  @param found_nodes A set with nodeid's for found nodes.
-  @param start_nodeid Start nodeid to search from.
-  @param end_nodeid End nodeid to search to.
+  @param search_nodes A set that contains all nodes to search            
+  @param found_nodes A set with nodeid's for found nodes.  
+  @param delay Delay in micro seconds between nodeid's to search.
   @param timeout Timeout in milliseconds. Zero means no timeout
 */
 int vscp_scanSlowForDevices(CVscpClient& client,
                                 cguid& guid,
-                                std::set<uint8_t> &found_nodes,
-                                uint8_t start_node = 0,
-                                uint8_t end_node = 255,
+                                std::set<uint16_t> &search_nodes,
+                                std::set<uint16_t> &found_nodes,
+                                uint32_t delay = 10000,
+                                uint32_t timeout = 2000);                                
+
+/*!
+  Do a fast register scan using who is there protocol functionality
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the interface to search on. If zero no interface
+                is used.
+  @param start_nodeid Start nodeid to search from.
+  @param end_nodeid End nodeid to search to.              
+  @param found_nodes A set with nodeid's for found nodes.  
+  @param delay Delay in micro seconds between nodeid's to search.
+  @param timeout Timeout in milliseconds. Zero means no timeout
+*/
+int vscp_scanSlowForDevices(CVscpClient& client,
+                                cguid& guid,
+                                uint8_t start_node,
+                                uint8_t end_node,
+                                std::set<uint16_t> &found_nodes,                                
                                 uint32_t delay = 10000,
                                 uint32_t timeout = 2000);
 
