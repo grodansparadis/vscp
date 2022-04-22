@@ -388,10 +388,16 @@ CMDF_Register::CMDF_Register()
   m_strDefault = "UNDEF";
   m_access     = MDF_REG_ACCESS_READ_WRITE;
   m_type       = MDF_REG_TYPE_STANDARD;
-  m_size       = 1;
+  //m_size       = 1;  // removed used span
 
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
+
+  // All null means not used
+  m_fgeven    = 0x000000;
+  m_fgodd     = 0x000000;
+  m_bgeven    = 0x000000;
+  m_bgodd     = 0x000000;
 }
 
 CMDF_Register::~CMDF_Register()
@@ -441,10 +447,15 @@ CMDF_Register::clearStorage(void)
   m_strDefault = "UNDEF";
   m_access     = MDF_REG_ACCESS_READ_WRITE;
   m_type       = MDF_REG_TYPE_STANDARD;
-  m_size       = 1;
+  //m_size       = 1; // Removed used span instead
 
   m_bgcolor   = 0xffffff;
   m_fgcolor   = 0x000000;
+
+  m_fgeven    = 0x000000;
+  m_fgodd     = 0x000000;
+  m_bgeven    = 0x000000;
+  m_bgodd     = 0x000000;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -468,6 +479,11 @@ CMDF_Register::getDefault(uint8_t &default_value)
 CMDF_Register &
 CMDF_Register::operator=(const CMDF_Register &other)
 {
+  // Check for self-assignment!
+  if (this == &other) {  // Same object?
+    return *this;         // Yes, so skip assignment, and just return *this.
+  }
+
   m_name           = other.m_name;
   m_mapDescription = other.m_mapDescription;
   m_mapInfoURL     = other.m_mapInfoURL;
@@ -478,7 +494,7 @@ CMDF_Register::operator=(const CMDF_Register &other)
   m_width  = other.m_width;
 
   m_type = other.m_type;
-  m_size = other.m_size;
+  // m_size = other.m_size;  // Removed used span instead
 
   m_min = other.m_min;
   m_max = other.m_max;
@@ -489,6 +505,11 @@ CMDF_Register::operator=(const CMDF_Register &other)
 
   m_fgcolor = other.m_fgcolor;
   m_bgcolor = other.m_bgcolor;
+
+  m_fgeven    = other.m_fgeven;
+  m_fgodd     = other.m_fgodd;
+  m_bgeven    = other.m_bgeven;
+  m_bgodd     = other.m_bgodd;
 
   // Clear up bit list
   std::deque<CMDF_Bit *>::iterator iterBit;
@@ -2128,7 +2149,8 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           return;
         }
 
-        pmdf->m_list_register.push_back(gpRegisterStruct);
+        // pmdf->m_list_register.push_back(gpRegisterStruct);
+        // Moved to end
 
         // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
@@ -2152,7 +2174,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Register offset: {0}", attribute);
             gpRegisterStruct->m_offset = vscp_readStringValue(attribute);
           }
-          else if (0 == strcasecmp(attr[i], "span")) {
+          else if ((0 == strcasecmp(attr[i], "span")) || (0 == strcasecmp(attr[i], "size"))) {
             // Register span
             spdlog::trace("Parse-XML: handleMDFParserData: Register span: {0}", attribute);
             gpRegisterStruct->m_span = vscp_readStringValue(attribute);
@@ -2233,9 +2255,104 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Register bgcolor: {0}", attribute);
             gpRegisterStruct->m_bgcolor = vscp_readStringValue(attribute);
           }
+          else if (0 == strcasecmp(attr[i], "evenfg")) {
+            // Register even foreground color
+            spdlog::trace("Parse-XML: handleMDFParserData: Register evenfg: {0}", attribute);
+            gpRegisterStruct->m_fgeven = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "evenbg")) {
+            // Register even background color
+            spdlog::trace("Parse-XML: handleMDFParserData: Register evenbg: {0}", attribute);
+            gpRegisterStruct->m_bgeven = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "oddfg")) {
+            // Register odd foreground color
+            spdlog::trace("Parse-XML: handleMDFParserData: Register oddfg: {0}", attribute);
+            gpRegisterStruct->m_fgodd = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "oddbg")) {
+            // Register odd background color
+            spdlog::trace("Parse-XML: handleMDFParserData: Register oddbg: {0}", attribute);
+            gpRegisterStruct->m_bgodd = vscp_readStringValue(attribute);
+          }
+        } // Register attributes
+
+        //pmdf->m_list_register.push_back(gpRegisterStruct);
+        /*!
+          Apply pyjamas coloring if at least one of the pyjamas colors are set.
+        */
+        bool bPyjamas = gpRegisterStruct->m_fgeven || gpRegisterStruct->m_fgodd || gpRegisterStruct->m_bgeven || gpRegisterStruct->m_bgodd;
+        std::string originalName = gpRegisterStruct->m_name;
+
+        // Save
+        if (MDF_REG_TYPE_DMATRIX1 == gpRegisterStruct->m_type) {
+          gpRegisterStruct->m_name = originalName + " - DM 0";
+          if (bPyjamas) {
+            gpRegisterStruct->m_fgcolor = gpRegisterStruct->m_fgeven;
+            gpRegisterStruct->m_bgcolor = gpRegisterStruct->m_bgeven;
+          }
+          // Save first (original) record
+          pmdf->m_list_register.push_back(gpRegisterStruct);
+
+          for (int pos=1; pos < gpRegisterStruct->m_span; pos++) {
+            CMDF_Register *pregNew = new CMDF_Register;
+            if (nullptr == pregNew) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for DM register copy.");
+              break;
+            }
+            *pregNew = *gpRegisterStruct;
+            pregNew->m_name = originalName + "Decision Matrix " + std::to_string(pos);
+            pregNew->m_offset = gpRegisterStruct->m_offset + pos;
+            if (bPyjamas) {
+              if (pos % 2) {
+                pregNew->m_fgcolor = gpRegisterStruct->m_fgodd;
+                pregNew->m_bgcolor = gpRegisterStruct->m_bgodd;
+              }
+              else {
+                pregNew->m_fgcolor = gpRegisterStruct->m_fgeven;
+                pregNew->m_bgcolor = gpRegisterStruct->m_bgeven;
+              }
+            }
+            pmdf->m_list_register.push_back(pregNew);
+          }
+        }
+        else if (MDF_REG_TYPE_BLOCK == gpRegisterStruct->m_type) {
+          gpRegisterStruct->m_name = originalName + " - BLOCK 0";
+          if (bPyjamas) {
+            gpRegisterStruct->m_fgcolor = gpRegisterStruct->m_fgeven;
+            gpRegisterStruct->m_bgcolor = gpRegisterStruct->m_bgeven;
+          }
+          // Save first (original) record
+          pmdf->m_list_register.push_back(gpRegisterStruct);
+
+          for (int pos=1; pos < gpRegisterStruct->m_span; pos++) {
+            CMDF_Register *pregNew = new CMDF_Register;
+            if (nullptr == pregNew) {
+              spdlog::error("Parse-JSON: Failed to allocate memory for DM register copy.");
+              break;
+            }
+            *pregNew = *gpRegisterStruct;
+            pregNew->m_name = originalName + " - BLOCK " + std::to_string(pos);
+            pregNew->m_offset = gpRegisterStruct->m_offset + pos;
+            if (bPyjamas) {
+              if (pos % 2) {
+                pregNew->m_fgcolor = gpRegisterStruct->m_fgodd;
+                pregNew->m_bgcolor = gpRegisterStruct->m_bgodd;
+              }
+              else {
+                pregNew->m_fgcolor = gpRegisterStruct->m_fgeven;
+                pregNew->m_bgcolor = gpRegisterStruct->m_bgeven;
+              }
+            }
+            pmdf->m_list_register.push_back(pregNew);
+          }
+        }
+        else {
+          // Standard register record
+          pmdf->m_list_register.push_back(gpRegisterStruct);
         }
       }
-      // [3] reg  (register definitions)
+      // [3] remotevar  (rvar definitions)
       else if ((currentToken == "remotevar") || (currentToken == "abstraction")) {
         gpRvarStruct = new CMDF_RemoteVariable;
         if (nullptr == gpRvarStruct) {
@@ -5434,7 +5551,7 @@ CMDF::parseMDF_JSON(const std::string &path)
               return VSCP_ERROR_PARSING;
             }
 
-            m_list_register.push_back(preg);
+            // push back at end -->
 
             json jreg(reg.value());
             // std::cout << "REG: " << jreg.dump() << '\n';
@@ -5488,6 +5605,38 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_span = 1;
               spdlog::info("Parse-JSON: No register span defined (defaults to one byte).");
             }
+
+            // Register size (synonym to span)
+            if (jreg.contains("size") && jreg["size"].is_number()) {
+              preg->m_span = jreg["size"];
+              spdlog::debug("Parse-JSON: Module register span: {0}", preg->m_span);
+              if ((preg->m_span == 0)) {
+                spdlog::warn("Parse-JSON: Register span is zero. This is not supported. "
+                             "Default set (1)");
+              }
+            }
+            else if (jreg.contains("size") && jreg["size"].is_string()) {
+              preg->m_span = vscp_readStringValue(jreg["size"]);
+              spdlog::debug("Parse-JSON: Module register span: {0}", preg->m_span);
+              if ((preg->m_span == 0)) {
+                spdlog::warn("Parse-JSON: Register span is zero. This is not supported. "
+                             "Default set (1)");
+              }
+            }
+
+            // Register width
+            if (jreg.contains("width") && jreg["width"].is_number()) {
+              preg->m_width = jreg["width"];
+              spdlog::debug("Parse-JSON: Module register width: {0}", preg->m_width);
+            }
+            else if (jreg.contains("width") && jreg["width"].is_string()) {
+              preg->m_width = vscp_readStringValue(jreg["width"]);
+              spdlog::debug("Parse-JSON: Module register width: {0}", preg->m_width);
+            }
+            else {
+              preg->m_width = 8;
+              spdlog::info("Parse-JSON: No register width defined (defaults to eight bits).");
+            }            
 
             // Register width
             if (jreg.contains("width") && jreg["width"].is_number()) {
@@ -5637,6 +5786,63 @@ CMDF::parseMDF_JSON(const std::string &path)
               spdlog::trace("Parse-JSON: No background color not defined (set to 0).");
             }
 
+            // Even foreground color (VSCP Works)
+            if (jreg.contains("evenfg") && jreg["evenfg"].is_string()) {
+              preg->m_fgeven = vscp_readStringValue(jreg["evenfg"]);
+              spdlog::debug("Parse-JSON: Even foreground color set to {}.", preg->m_fgeven);
+            }
+            else if (jreg.contains("evenfg") && jreg["evenfg"].is_number()) {
+              preg->m_fgeven = jreg["evenfg"];
+              spdlog::debug("Parse-JSON: Even foreground color to {}.", preg->m_fgeven);
+            }
+            else {
+              preg->m_fgeven = 0;
+              spdlog::trace("Parse-JSON: No even foreground color defined (set to 0).");
+            }
+
+            // Odd foreground color (VSCP Works)
+            if (jreg.contains("oddfg") && jreg["oddfg"].is_string()) {
+              preg->m_fgodd = vscp_readStringValue(jreg["oddfg"]);
+              spdlog::debug("Parse-JSON: Odd foreground color set to {}.", preg->m_fgodd);
+            }
+            else if (jreg.contains("oddfg") && jreg["oddfg"].is_number()) {
+              preg->m_fgodd = jreg["oddfg"];
+              spdlog::debug("Parse-JSON: Odd foreground color to {}.", preg->m_fgodd);
+            }
+            else {
+              preg->m_fgodd = 0;
+              spdlog::trace("Parse-JSON: No odd foreground color defined (set to 0).");
+            }
+
+            // Even background color (VSCP Works)
+            if (jreg.contains("evenbg") && jreg["evenbg"].is_string()) {
+              preg->m_bgeven = vscp_readStringValue(jreg["evenbg"]);
+              spdlog::debug("Parse-JSON: Even background color set to {}.", preg->m_bgeven);
+            }
+            else if (jreg.contains("evenbg") && jreg["evenbg"].is_number()) {
+              preg->m_bgeven = jreg["evenbg"];
+              spdlog::debug("Parse-JSON: Even background color to {}.", preg->m_bgeven);
+            }
+            else {
+              preg->m_bgeven = 0;
+              spdlog::trace("Parse-JSON: No even background color defined (set to 0).");
+            }
+
+            // Odd background color (VSCP Works)
+            if (jreg.contains("oddbg") && jreg["oddbg"].is_string()) {
+              preg->m_bgodd = vscp_readStringValue(jreg["oddbg"]);
+              spdlog::debug("Parse-JSON: Odd background color set to {}.", preg->m_bgodd);
+            }
+            else if (jreg.contains("oddbg") && jreg["oddbg"].is_number()) {
+              preg->m_bgodd = jreg["oddbg"];
+              spdlog::debug("Parse-JSON: Odd background color to {}.", preg->m_bgodd);
+            }
+            else {
+              preg->m_bgodd = 0;
+              spdlog::trace("Parse-JSON: No odd background color defined (set to 0).");
+            }
+
+
             if (getDescriptionList(jreg, preg->m_mapDescription) != VSCP_ERROR_SUCCESS) {
               spdlog::warn("Parse-JSON: Failed to get register bit description.");
             }
@@ -5653,6 +5859,77 @@ CMDF::parseMDF_JSON(const std::string &path)
             // Register bitlist
             if (getBitList(jreg, preg->m_list_bit) != VSCP_ERROR_SUCCESS) {
               spdlog::warn("Parse-JSON: Failed to get register bitlist.");
+            }
+
+            /*!
+              Apply pyjamas coloring if at least one of the pyjamas colors are set.
+            */
+            bool bPyjamas = preg->m_fgeven || preg->m_fgodd || preg->m_bgeven || preg->m_bgodd;
+
+            // Save
+            if (MDF_REG_TYPE_DMATRIX1 == preg->m_type) {
+              preg->m_name = preg->m_name + " - DM 0";
+              if (bPyjamas) {
+                preg->m_fgcolor = preg->m_fgeven;
+                preg->m_bgcolor = preg->m_bgeven;
+              }
+              m_list_register.push_back(preg);
+
+              for (int pos=1; pos<preg->m_span; pos++) {
+                CMDF_Register *pregNew = new CMDF_Register;
+                if (nullptr == pregNew) {
+                  spdlog::error("Parse-JSON: Failed to allocate memory for DM register copy.");
+                  break;
+                }
+                *pregNew = *preg;
+                pregNew->m_name = preg->m_name + " - DM " + std::to_string(pos);
+                pregNew->m_offset = preg->m_offset + pos;
+                if (bPyjamas) {
+                  if (pos % 2) {
+                    pregNew->m_fgcolor = preg->m_fgodd;
+                    pregNew->m_bgcolor = preg->m_bgodd;
+                  }
+                  else {
+                    pregNew->m_fgcolor = preg->m_fgeven;
+                    pregNew->m_bgcolor = preg->m_bgeven;
+                  }
+                }
+                m_list_register.push_back(pregNew);
+              }
+            }
+            else if (MDF_REG_TYPE_BLOCK == preg->m_type) {
+              preg->m_name = preg->m_name + " - BLOCK 0";
+              if (bPyjamas) {
+                preg->m_fgcolor = preg->m_fgeven;
+                preg->m_bgcolor = preg->m_bgeven;
+              }
+              m_list_register.push_back(preg);
+
+              for (int pos=1; pos<preg->m_span; pos++) {
+                CMDF_Register *pregNew = new CMDF_Register;
+                if (nullptr == pregNew) {
+                  spdlog::error("Parse-JSON: Failed to allocate memory for DM register copy.");
+                  break;
+                }
+                *pregNew = *preg;
+                pregNew->m_name = preg->m_name + " - BLOCK " + std::to_string(pos);
+                pregNew->m_offset = preg->m_offset + pos;
+                if (bPyjamas) {
+                  if (pos % 2) {
+                    pregNew->m_fgcolor = preg->m_fgodd;
+                    pregNew->m_bgcolor = preg->m_bgodd;
+                  }
+                  else {
+                    pregNew->m_fgcolor = preg->m_fgeven;
+                    pregNew->m_bgcolor = preg->m_bgeven;
+                  }
+                }
+                m_list_register.push_back(pregNew);
+              }
+            }
+            else {
+              // Normal register record
+              m_list_register.push_back(preg);
             }
           }
         }
@@ -7179,6 +7456,11 @@ std::string&
 CMDF::format(std::string& docs)
 {
   int idx = 0;
+
+  // Return if empty
+  if (!docs.length()) {
+    return docs;
+  }
 
   // If first character is a # the string is coded as a
   // markddown document. If not it is coded as a HTML document.
