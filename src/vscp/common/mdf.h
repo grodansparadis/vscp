@@ -388,6 +388,11 @@ public:
   friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
+      Assignment
+  */
+  CMDF_Register &operator=(const CMDF_Register &other);
+
+  /*!
       Clear storage
   */
   void clearStorage(void);
@@ -539,13 +544,13 @@ public:
     Get size for register
     @return Size for register.
   */
-  uint32_t getSize(void) { return m_size; };
+  uint32_t getSize(void) { return m_span; };
 
   /*!
     Set size for register
     @param size Size for register.
   */
-  void setSize(uint32_t size) { m_size = size; };
+  void setSize(uint32_t size) { m_span = size; };
 
   /*!
     Get access for register
@@ -608,10 +613,6 @@ public:
   uint32_t getBackgroundColor(void) { return m_bgcolor; };
 
 private:
-  /*!
-      Assignment
-  */
-  CMDF_Register &operator=(const CMDF_Register &other);
 
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -623,7 +624,8 @@ private:
   uint16_t m_width;  // Defaults to 8. Width in bits for register (1-8 bits)
 
   mdf_register_type m_type; // std=0/dmatix1=1/block=2
-  uint8_t m_size;           // Size for special types (default = 1)
+  // !!! Removed: Use 'span' instead
+  //uint8_t m_size;           // Size for special types (default = 1)
 
   uint32_t m_min; // Defaults to 0
   uint32_t m_max; // Defaults to 255
@@ -638,6 +640,18 @@ private:
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
   uint32_t m_bgcolor; // Cell background colour. Default = white.
 
+  /*!
+    Colors for odd and even rows. This is used to create register
+    records when size is larger than one which is typical for
+    registers defined as block or dmatix1.
+
+    The parser set fgcolor and bgcolor when records are created for each item 
+    so they are not used directly
+  */
+  uint32_t m_fgeven;  // Foreground for even row
+  uint32_t m_fgodd;   // Foreground for odd row
+  uint32_t m_bgeven;   // Background for even row
+  uint32_t m_bgodd;   // Background for odd row
 };
 
 // ----------------------------------------------------------------------------
