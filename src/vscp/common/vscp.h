@@ -544,25 +544,25 @@ extern "C"
         CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
     */
 
-#define VSCP_SERVER_CAPABILITY_REMOTE_VARIABLE    (1 << 63) //
-#define VSCP_SERVER_CAPABILITY_DECISION_MATRIX    (1 << 62) //
-#define VSCP_SERVER_CAPABILITY_INTERFACE          (1 << 61) //
-#define VSCP_SERVER_CAPABILITY_TCPIP              (1 << 15) // 32768
-#define VSCP_SERVER_CAPABILITY_UDP                (1 << 14) // 16384
-#define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE (1 << 13) // 8192
-#define VSCP_SERVER_CAPABILITY_RAWETH             (1 << 12) // 4196
-#define VSCP_SERVER_CAPABILITY_WEB                (1 << 11) // 2048
-#define VSCP_SERVER_CAPABILITY_WEBSOCKET          (1 << 10) // 1024
-#define VSCP_SERVER_CAPABILITY_REST               (1 << 9)  // 512
-#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL  (1 << 8)  // 256
-#define VSCP_SERVER_CAPABILITY_RESERVED           (1 << 7)  // 128
-#define VSCP_SERVER_CAPABILITY_IP6                (1 << 6)  // 64
-#define VSCP_SERVER_CAPABILITY_IP4                (1 << 5)  // 32
-#define VSCP_SERVER_CAPABILITY_SSL                (1 << 4)  // 16
-#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS    (1 << 3)  // 8
-#define VSCP_SERVER_CAPABILITY_AES256             (1 << 2)  // 4
-#define VSCP_SERVER_CAPABILITY_AES192             (1 << 1)  // 2
-#define VSCP_SERVER_CAPABILITY_AES128             1         // 1
+#define VSCP_SERVER_CAPABILITY_REMOTE_VARIABLE    (1ll << 63) //
+#define VSCP_SERVER_CAPABILITY_DECISION_MATRIX    (1ll << 62) //
+#define VSCP_SERVER_CAPABILITY_INTERFACE          (1ll << 61) //
+#define VSCP_SERVER_CAPABILITY_TCPIP              (1ll << 15) // 32768
+#define VSCP_SERVER_CAPABILITY_UDP                (1ll << 14) // 16384
+#define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE (1ll << 13) // 8192
+#define VSCP_SERVER_CAPABILITY_RAWETH             (1ll << 12) // 4196
+#define VSCP_SERVER_CAPABILITY_WEB                (1ll << 11) // 2048
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET          (1ll << 10) // 1024
+#define VSCP_SERVER_CAPABILITY_REST               (1ll << 9)  // 512
+#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL  (1ll << 8)  // 256
+#define VSCP_SERVER_CAPABILITY_RESERVED           (1ll << 7)  // 128
+#define VSCP_SERVER_CAPABILITY_IP6                (1ll << 6)  // 64
+#define VSCP_SERVER_CAPABILITY_IP4                (1ll << 5)  // 32
+#define VSCP_SERVER_CAPABILITY_SSL                (1ll << 4)  // 16
+#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS    (1ll << 3)  // 8
+#define VSCP_SERVER_CAPABILITY_AES256             (1ll << 2)  // 4
+#define VSCP_SERVER_CAPABILITY_AES192             (1ll << 1)  // 2
+#define VSCP_SERVER_CAPABILITY_AES128             1ll         // 1
 #define VSCP_SERVER_CAPABILITY_NONE               0         // No capabilities
 
 /*
