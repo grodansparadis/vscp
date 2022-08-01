@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2022-05-23 16:39:54.114273
+                        Generated: 2022-06-02 12:23:45.348250
 */
  
 #ifndef VSCP_TYPE_H
@@ -918,6 +918,7 @@
 #define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE   32  /* Level II who is there response */
 #define VSCP2_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE 34 /* Level II get DM info response */
 #define VSCP2_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE 36 /* Level II get embedded MDF response */
+#define VSCP2_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE 41 /* Level II events of interest response */
     
 /*  CLASS2.CONTROL = 1025  -  Level II Control */
 #define VSCP2_TYPE_CONTROL_GENERAL                  0   /* General event */
