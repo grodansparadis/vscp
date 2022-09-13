@@ -109,7 +109,7 @@ extern "C"
         uint8_t GUID[16];    /* Node globally unique id MSB(0) -> LSB(15) */
         uint16_t sizeData;   /* Number of valid data bytes */
 
-        uint8_t* pdata; /* Pointer to data. Max 512 bytes */
+        uint8_t* pdata;      /* Pointer to data. Max 512 bytes */
 
     } vscpEvent;
 

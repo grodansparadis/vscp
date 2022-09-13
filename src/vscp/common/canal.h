@@ -42,8 +42,10 @@
 #define EXPORT
 #endif
 
-#ifndef _WIN32
+#ifdef __linux__ 
 #include <linux/can.h>
+#elif _WIN32
+#elif __APPLE__
 #endif
 
 #ifndef CAN_MTU
