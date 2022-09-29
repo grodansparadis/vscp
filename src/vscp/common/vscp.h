@@ -65,7 +65,7 @@ extern "C"
 
     /* This structure is for VSCP Level II   */
 
-    typedef struct
+    typedef struct _vscpEvent
     {
         uint16_t crc; /* crc checksum (calculated from here to end) */
                       /* Used for UDP/Ethernet etc */
@@ -120,7 +120,7 @@ extern "C"
         This structure is for VSCP Level II with data embedded == big!!!
      */
 
-    typedef struct
+    typedef struct _vscpEventEx
     {
 
         uint16_t crc; /* CRC checksum (calculated from here to end) */
@@ -227,7 +227,7 @@ extern "C"
      * Filter structure for VSCP Level 2
      */
 
-    typedef struct
+    typedef struct _vscpEventFilter
     {
         uint8_t filter_priority; /* Priority  */
         uint8_t mask_priority;
