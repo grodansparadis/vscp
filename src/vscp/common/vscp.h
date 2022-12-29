@@ -632,7 +632,7 @@ extern "C"
 #define VSCP_ERROR_INVALID_PATH         50 /* Invalid path (permissions) */
 #define VSCP_ERROR_ERRNO                51 /* General error, errno variable holds error */
 #define VSCP_ERROR_INTERRUPTED          52 /* Interrupted by signal or other cause */
-#define VSCP_ERROR_MISSING              53 /* Value, paramter or something else is missing */ 
+#define VSCP_ERROR_MISSING              53 /* Value, parameter or something else is missing */ 
 #define VSCP_ERROR_NOT_CONNECTED        54 /* There is no connection */
 #define VSCP_ERROR_READ_ONLY            55 /* Item (variable) is read only */  
 #define VSCP_ERROR_INVALID_TYPE         56 /* Item (variable) is of wrong type */
