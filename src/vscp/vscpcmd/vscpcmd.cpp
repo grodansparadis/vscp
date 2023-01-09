@@ -6,7 +6,7 @@
 // 2 of the License, or (at your option) any later version.
 //
 // This file is part of the VSCP (https://www.vscp.org)
-// Copyright © 2000-2022 Ake Hedman,
+// Copyright © 2000-2023 Ake Hedman,
 // Ake Hedman, the VSCP project,<info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
