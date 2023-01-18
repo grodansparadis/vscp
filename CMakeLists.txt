@@ -2,7 +2,7 @@
 #
 # Build instructions for the VSCP daemon.
 #
-# Copyright (c) 2000-2022 Åke Hedman, the VSCP project
+# Copyright (C) 2000-2023 Ake Hedman the VSCP project
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
