@@ -621,6 +621,7 @@ struct vscpMyNode {
 #define VSCP_ERROR_MTU                60 /* Frame does not fit */
 #define VSCP_ERROR_SOCKET             61 /* Unable to create socket or other socket error*/
 #define VSCP_ERROR_PARSING            62 /* Failed to parse input */
+#define VSCP_ERROR_INVALID_FRAME      63 /* A protocol has wrong format */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)
@@ -640,6 +641,7 @@ struct vscpMyNode {
 #define VSCP_HLO_ENCRYPTION_AES128 1
 #define VSCP_HLO_ENCRYPTION_AES192 2
 #define VSCP_HLO_ENCRYPTION_AES256 3
+#define VSCP_HLO_ENCRYPTION_USER 255  /* User defined encryption */    
 
 /*
     Template for VSCP XML event data

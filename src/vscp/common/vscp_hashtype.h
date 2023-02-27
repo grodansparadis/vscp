@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2022-12-29 14:18:01.850932
+                        Generated: 2023-02-26 22:28:52.356907
 */
  
 
@@ -2145,6 +2145,10 @@
 
 	//  CLASS2.DISPLAY = 1030  -  Level II Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030,0) ] = _("VSCP2_TYPE_DISPLAY_GENERAL");
+
+	//  CLASS2.SECURITY = 1034  -  Level II Security
+	m_hashType[ MAKE_CLASSTYPE_LONG(1034,0) ] = _("VSCP2_TYPE_SECURITY_GENERAL");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1034,1) ] = _("VSCP2_TYPE_SECURITY_SETKEY");
 
 	//  CLASS2.MEASUREMENT_STR = 1040  -  Level II Measurement string
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
