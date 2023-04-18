@@ -30,6 +30,7 @@
 #define VSCP_DATETIME_H__INCLUDED_
 
 #include <string>
+#include <ctime>
 #include <vscp.h>
 
 class vscpdatetime

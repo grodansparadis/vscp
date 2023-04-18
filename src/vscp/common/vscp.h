@@ -372,7 +372,8 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME 64  /* Name of node */
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME   128 /* Name of interface */
 
-/* Default key for VSCP Server - !!!! should only be used on test systems !!!!
+/* 
+  Default key for VSCP Server - !!!! should only be used on test systems !!!!
  */
 #define VSCP_DEFAULT_KEY16 "A4A86F7D7E119BA3F0CD06881E371B98"
 #define VSCP_DEFAULT_KEY24 "A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B6"
