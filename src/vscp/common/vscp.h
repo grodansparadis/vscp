@@ -479,6 +479,7 @@ struct vscpMyNode {
 
 /* Nickname id                              */
 #define VSCP_STD_REGISTER_NICKNAME_ID 0x91
+#define VSCP_STD_REGISTER_NICKNAME_ID_LSB 0x91
 
 /* Selected page                            */
 #define VSCP_STD_REGISTER_PAGE_SELECT_MSB 0x92
@@ -494,14 +495,17 @@ struct vscpMyNode {
 #define VSCP_STD_REGISTER_PAGES_COUNT 0x99
 
 /* Unsigned 32-bit integer for family code */
-#define VSCP_STD_REGISTER_PAGES_FAMILY_CODE 0x9A
+#define VSCP_STD_REGISTER_FAMILY_CODE 0x9A
 
 /* Unsigned 32-bit integer for device type */
-#define VSCP_STD_REGISTER_PAGES_DEVICE_TYPE 0x9E
+#define VSCP_STD_REGISTER_DEVICE_TYPE 0x9E
 
 /* Firmware code for device. */
-#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_MSB 0xA3
-#define VSCP_STD_REGISTER_PAGES_FIRMWARE_CODE_LSB 0xA4
+#define VSCP_STD_REGISTER_FIRMWARE_CODE_MSB 0xA3
+#define VSCP_STD_REGISTER_FIRMWARE_CODE_LSB 0xA4
+
+/* MSB of 16-bit nickname */
+#define VSCP_STD_REGISTER_NICKNAME_ID_MSB  0xA5
 
 /* 0xd0 - 0xdf  - GUID                      */
 #define VSCP_STD_REGISTER_GUID 0xD0
