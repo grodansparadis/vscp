@@ -788,7 +788,7 @@ enum enumMqttMsgFormat { jsonfmt, xmlfmt, strfmt, binfmt, autofmt };
 // Droplet protocol defines
 #define VSCP_DROPLET_ALPHA 0
 #define VSCP_DROPLET_BETA  1
-#define VSCP_DROPLET_GAMMA 0
+#define VSCP_DROPLET_GAMMA 2
 
 #ifdef __cplusplus
 }
