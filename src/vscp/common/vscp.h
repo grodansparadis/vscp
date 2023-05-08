@@ -501,6 +501,9 @@ struct vscpMyNode {
 /* Unsigned 32-bit integer for device type */
 #define VSCP_STD_REGISTER_DEVICE_TYPE 0x9E
 
+/* Reset node if 0x55 and 0xaa written here withing one second. */
+#define VSCP_STD_REGISTER_NODE_RESET 0xA2
+
 /* Firmware code for device. */
 #define VSCP_STD_REGISTER_FIRMWARE_CODE_MSB 0xA3
 #define VSCP_STD_REGISTER_FIRMWARE_CODE_LSB 0xA4
