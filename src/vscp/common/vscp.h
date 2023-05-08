@@ -372,7 +372,7 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME 64  /* Name of node */
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME   128 /* Name of interface */
 
-/* 
+/*
   Default key for VSCP Server - !!!! should only be used on test systems !!!!
  */
 #define VSCP_DEFAULT_KEY16 "A4A86F7D7E119BA3F0CD06881E371B98"
@@ -387,7 +387,8 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 #define VSPP_BOOTLOADER_NXP1      0x20 /* NXP/Philips/Freescale algorithm 0 */
 #define VSCP_BOOTLOADER_ST        0x30 /* ST STR algorithm 0 */
 #define VSCP_BOOTLOADER_FREESCALE 0x40 /* Freescale Kinetics algorithm 0 */
-#define VSCP_BOOTLOADER_USER0     0xf0 /* Used defined bootloader 0 */
+#define VSCP_BOOTLOADER_ESP       0x50 /* Espressif algorithm 0 */
+#define VSCP_BOOTLOADER_NONE0     0xf0 /* Used defined bootloader 0 */
 #define VSCP_BOOTLOADER_NONE1     0xf1 /* Used defined bootloader 1 */
 #define VSCP_BOOTLOADER_NONE2     0xf2 /* Used defined bootloader 2 */
 #define VSCP_BOOTLOADER_NONE3     0xf3 /* Used defined bootloader 3 */
@@ -478,7 +479,7 @@ struct vscpMyNode {
 #define VSCP_STD_REGISTER_USER_MANSUBDEV_ID 0x8D
 
 /* Nickname id                              */
-#define VSCP_STD_REGISTER_NICKNAME_ID 0x91
+#define VSCP_STD_REGISTER_NICKNAME_ID     0x91
 #define VSCP_STD_REGISTER_NICKNAME_ID_LSB 0x91
 
 /* Selected page                            */
@@ -505,7 +506,7 @@ struct vscpMyNode {
 #define VSCP_STD_REGISTER_FIRMWARE_CODE_LSB 0xA4
 
 /* MSB of 16-bit nickname */
-#define VSCP_STD_REGISTER_NICKNAME_ID_MSB  0xA5
+#define VSCP_STD_REGISTER_NICKNAME_ID_MSB 0xA5
 
 /* 0xd0 - 0xdf  - GUID                      */
 #define VSCP_STD_REGISTER_GUID 0xD0
@@ -646,7 +647,7 @@ struct vscpMyNode {
 #define VSCP_HLO_ENCRYPTION_AES128 1
 #define VSCP_HLO_ENCRYPTION_AES192 2
 #define VSCP_HLO_ENCRYPTION_AES256 3
-#define VSCP_HLO_ENCRYPTION_USER 255  /* User defined encryption */    
+#define VSCP_HLO_ENCRYPTION_USER   255 /* User defined encryption */
 
 /*
     Template for VSCP XML event data
