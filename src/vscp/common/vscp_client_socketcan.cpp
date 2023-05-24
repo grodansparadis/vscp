@@ -24,6 +24,7 @@
 //
 
 // !!! Only Linux  !!!
+#ifndef WIN32
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -1255,5 +1256,5 @@ workerThread(void *pData)
   return NULL;
 }
 
-
+#endif  // not windows
 

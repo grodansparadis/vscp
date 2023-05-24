@@ -49,7 +49,7 @@ vscpClientCanal::vscpClientCanal()
 {
     m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
-    m_tid = 0;
+    //m_tid = 0;
     m_bRun = true;
     pthread_mutex_init(&m_mutexif, NULL);
 }
@@ -177,7 +177,11 @@ int vscpClientCanal::connect(void)
 int vscpClientCanal::disconnect(void)
 {
     m_bRun = false;
+#ifdef WIN32
+    Sleep(1000);
+#else    
     sleep(1);   // Give thread some time to die
+#endif    
 
     pthread_mutex_unlock(&m_mutexif);
     if ( (NULL != m_evcallback) || (NULL != m_excallback) ) {

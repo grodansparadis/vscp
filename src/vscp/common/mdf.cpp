@@ -4896,7 +4896,7 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   XML_SetElementHandler(xmlParser, __startSetupMDFParser, __endSetupMDFParser);
   XML_SetCharacterDataHandler(xmlParser, __handleMDFParserData);
 
-  int bytes_read;
+  size_t bytes_read;
   void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
 
   while (ifs.good()) {
@@ -7455,7 +7455,7 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
 std::string&
 CMDF::format(std::string& docs)
 {
-  int idx = 0;
+  size_t idx = 0;
 
   // Return if empty
   if (!docs.length()) {

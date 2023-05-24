@@ -23,6 +23,9 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// !!! Only Linux  !!!
+#ifndef WIN32
+
 #if !defined(VSCPCLIENTSOCKETCAN_H__INCLUDED_)
 #define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
@@ -315,3 +318,5 @@ private:
 };
 
 #endif
+
+#endif  // not win32

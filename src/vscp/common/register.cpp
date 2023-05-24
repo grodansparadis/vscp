@@ -35,12 +35,29 @@
 #include <set>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include <mdf.h>
 #include <vscp.h>
 #include <vscp_client_base.h>
 #include <register.h>
 #include <vscphelper.h>
+
+#ifdef WIN32
+static void 
+win_usleep(__int64 usec) 
+{ 
+    HANDLE timer; 
+    LARGE_INTEGER ft; 
+
+    ft.QuadPart = -(10*usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
+    WaitForSingleObject(timer, INFINITE); 
+    CloseHandle(timer); 
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //  vscp_readRegister
@@ -108,8 +125,8 @@ vscp_readLevel1Register(CVscpClient& client,
         if ((ex.GUID[15] = nickname) && 
               (ex.sizeData >= 5) && 
               (ex.data[0] == 0) &&
-              (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff) && 
+              (ex.data[1] == ((page >> 8) & 0xff)) && 
+              (ex.data[2] == (page & 0x0ff)) && 
               (ex.data[3] == offset)) {
           value = ex.data[4];
           return VSCP_ERROR_SUCCESS;
@@ -195,8 +212,8 @@ vscp_writeLevel1Register(CVscpClient& client,
           if ((ex.GUID[15] = nickname) && 
               (ex.sizeData >= 5) && 
               (ex.data[0] == 0) &&
-              (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff) && 
+              (ex.data[1] == ((page >> 8) & 0x0ff)) && 
+              (ex.data[2] == (page & 0x0ff)) && 
               (ex.data[3] == offset) && 
               (ex.data[4] == value)) {
             return VSCP_ERROR_SUCCESS;
@@ -295,8 +312,8 @@ int vscp_readLevel1RegisterBlock( CVscpClient& client,
           if ((ex.GUID[15] = nickname) && 
               (ex.sizeData >= 5) && 
               /* ex.data[0] is frame index */
-              (ex.data[1] == (page >> 8) & 0x0ff) && 
-              (ex.data[2] == page & 0x0ff)  
+              (ex.data[1] == ((page >> 8) & 0x0ff)) && 
+              (ex.data[2] == (page & 0x0ff))  
               /*(ex.data[3] == offset + rcvcnt)*/ ) {
 
             // Another frame received    
@@ -426,8 +443,8 @@ int vscp_writeLevel1RegisterBlock( CVscpClient& client,
               if ((ex.GUID[15] = nickname) && 
                   (ex.sizeData >= 5) && 
                   (ex.data[0] == 0) &&
-                  (ex.data[1] == (page >> 8) & 0x0ff) && 
-                  (ex.data[2] == page & 0x0ff)) {
+                  (ex.data[1] == ((page >> 8) & 0x0ff)) && 
+                  (ex.data[2] == (page & 0x0ff))) {
        
                 for (int k=4; k<ex.sizeData; k++) {
                   if (ex.data[k] == regvalues[ex.data[3]+k-4]) {
@@ -1592,8 +1609,8 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
         pstr = new uint8_t[remoteVar.getTypeByteCount() + 1 ];
         if ( nullptr == pstr ) return false;
         memset(pstr, 0, sizeof(pstr));
-        for (int i = remoteVar.getOffset(); 
-              i < remoteVar.getOffset() + remoteVar.getTypeByteCount(); 
+        for (unsigned int i = remoteVar.getOffset(); 
+              i < (remoteVar.getOffset() + remoteVar.getTypeByteCount()); 
               i++) {
           pstr[i] = ppage->getReg(i);
         }
@@ -1664,132 +1681,165 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable& remoteVar,
 
     case remote_variable_type_int32_t:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
-        int32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%ld", val);
-        }
-        else {
-          strValue = vscp_str_format( "0x%04lx", val);
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          int32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+          if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
+            strValue = vscp_str_format( "%ld", val);
+          }
+          else {
+            strValue = vscp_str_format( "0x%04lx", val);
+          }
+          delete [] buf;
         }
       }
       break;
 
     case remote_variable_type_uint32_t:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
-        uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
-        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-          strValue = vscp_str_format( "%lu", val);
-        }
-        else {
-          strValue = vscp_str_format( "0x%04lx", val);
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          uint32_t val = (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
+          if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
+            strValue = vscp_str_format( "%lu", val);
+          }
+          else {
+            strValue = vscp_str_format( "0x%04lx", val);
+          }
+          delete [] buf;
         }
       }
       break;
 
     case remote_variable_type_int64_t:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
 
-        int64_t val =  (int64_t)(((uint64_t)buf[0] << 56) +
-                        ((uint64_t)buf[1] << 48) +
-                        ((uint64_t)buf[2] << 40) +
-                        ((uint64_t)buf[3] << 32) +
-                        ((uint64_t)buf[4] << 24) + 
-                        ((uint64_t)buf[5] << 16) + 
-                        ((uint64_t)buf[6] << 8) + 
-                         (uint64_t)buf[7]);
+          int64_t val =  (int64_t)(((uint64_t)buf[0] << 56) +
+                          ((uint64_t)buf[1] << 48) +
+                          ((uint64_t)buf[2] << 40) +
+                          ((uint64_t)buf[3] << 32) +
+                          ((uint64_t)buf[4] << 24) + 
+                          ((uint64_t)buf[5] << 16) + 
+                          ((uint64_t)buf[6] << 8) + 
+                          (uint64_t)buf[7]);
 
-        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-            strValue = vscp_str_format( "%lld", val );
-        }
-        else {
-            strValue = vscp_str_format( "0x%llx", val );
+          if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
+              strValue = vscp_str_format( "%lld", val );
+          }
+          else {
+              strValue = vscp_str_format( "0x%llx", val );
+          }
+          delete [] buf;
         }
       }
       break;
 
     case remote_variable_type_uint64_t:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
 
-        uint64_t val =  ((uint64_t)buf[0] << 56) +
-                        ((uint64_t)buf[1] << 48) +
-                        ((uint64_t)buf[2] << 40) +
-                        ((uint64_t)buf[3] << 32) +
-                        ((uint64_t)buf[4] << 24) + 
-                        ((uint64_t)buf[5] << 16) + 
-                        ((uint64_t)buf[6] << 8) + 
-                         (uint64_t)buf[7];
-        if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
-            strValue = vscp_str_format("%ullu", val);
-        }
-        else {
-            strValue = vscp_str_format("0x%ullx", val);
+          uint64_t val =  ((uint64_t)buf[0] << 56) +
+                          ((uint64_t)buf[1] << 48) +
+                          ((uint64_t)buf[2] << 40) +
+                          ((uint64_t)buf[3] << 32) +
+                          ((uint64_t)buf[4] << 24) + 
+                          ((uint64_t)buf[5] << 16) + 
+                          ((uint64_t)buf[6] << 8) + 
+                          (uint64_t)buf[7];
+          if ( FORMAT_REMOTEVAR_DECIMAL == format ) {
+              strValue = vscp_str_format("%ullu", val);
+          }
+          else {
+              strValue = vscp_str_format("0x%ullx", val);
+          }
+          delete [] buf;
         }
       }
       break;
 
     case remote_variable_type_float:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          uint32_t n = VSCP_UINT32_SWAP_ON_LE( *((uint32_t *)buf));
+          float f = *( (float *)((uint8_t *)&n ) );
+          strValue = vscp_str_format( "%f", *((float *)buf));
+          delete [] buf;
         }
-        uint32_t n = VSCP_UINT32_SWAP_ON_LE( *((uint32_t *)buf));
-        float f = *( (float *)((uint8_t *)&n ) );
-        strValue = vscp_str_format( "%f", *((float *)buf));
       }
       break;
 
     case remote_variable_type_double:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          uint64_t n = VSCP_UINT32_SWAP_ON_LE( *( (uint32_t *)buf));
+          double f = *( (double *)((uint8_t *)&n ) );
+          strValue = vscp_str_format( "%g", *((double *)buf));
+
+          delete [] buf;
         }
-        uint64_t n = VSCP_UINT32_SWAP_ON_LE( *( (uint32_t *)buf));
-        double f = *( (double *)((uint8_t *)&n ) );
-        strValue = vscp_str_format( "%g", *((double *)buf));
       }
       break;
 
     case remote_variable_type_date:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          strValue = vscp_str_format("%02d-%02d-%02d", 
+                                      *((uint8_t *)buf),
+                                      *((uint8_t *)(buf+2)),
+                                      *((uint8_t *)(buf+4)));
+          delete [] buf;                                      
         }
-        strValue = vscp_str_format("%02d-%02d-%02d", 
-                                    *((uint8_t *)buf),
-                                    *((uint8_t *)(buf+2)),
-                                    *((uint8_t *)(buf+4)));
       }
       break;
 
     case remote_variable_type_time:
       {
-        uint8_t buf[remoteVar.getTypeByteCount()];
-        for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
-        strValue = vscp_str_format("%02d:%02d:%02d", 
-                                    *((uint8_t *)buf),
-                                    *((uint8_t *)(buf+2)),
-                                    *((uint8_t *)(buf+4)));
+        uint8_t *buf;
+        buf = (uint8_t *)malloc(remoteVar.getTypeByteCount());
+        if (NULL != buf) {
+          for ( int i = 0; i < remoteVar.getTypeByteCount(); i++ ) {
+            buf[i] = ppage->getReg(remoteVar.getOffset() + i);
+          }
+          strValue = vscp_str_format("%02d:%02d:%02d", 
+                                      *((uint8_t *)buf),
+                                      *((uint8_t *)(buf+2)),
+                                      *((uint8_t *)(buf+4)));
+          delete [] buf;                                      
+        }                                      
       }
       break;
 
@@ -1925,13 +1975,13 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
 
     case remote_variable_type_float:
       {
-        float val = vscp_readStringValue(strValue);
+        float val = (float)vscp_readStringValue(strValue);
         uint8_t *p = (uint8_t *)&val;
-        val = VSCP_INT32_SWAP_ON_LE(*((int64_t *)p));
-        ppage->putReg(remoteVar.getOffset(), (*p >> 24) & 0xff);
-        ppage->putReg(remoteVar.getOffset() + 1, (*p >> 16) & 0xff);
-        ppage->putReg(remoteVar.getOffset() + 2, (*p >> 8)  & 0xff);
-        ppage->putReg(remoteVar.getOffset() + 3, *p & 0xff);
+        val = (float)VSCP_INT32_SWAP_ON_LE(*((int64_t *)p));
+        ppage->putReg(remoteVar.getOffset(), *p);
+        ppage->putReg(remoteVar.getOffset() + 1, *(p+1));
+        ppage->putReg(remoteVar.getOffset() + 2, *(p+2));
+        ppage->putReg(remoteVar.getOffset() + 3, *(p+3));
       }
       break;
 
@@ -1940,7 +1990,7 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable& remoteVar, std::st
         double val = vscp_readStringValue(strValue);
         uint8_t *p = (uint8_t *)&val;
 #ifndef __BIG_ENDIAN__
-        val = Swap8Bytes(*((int64_t *)p));
+        val = (double)Swap8Bytes(*((int64_t *)p));
 #endif        
         ppage->putReg(remoteVar.getOffset(), *p);
         ppage->putReg(remoteVar.getOffset() + 1, *(p+1));
