@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2023 Ake Hedman, the VSCP project
+// Copyright (C)2000-2023 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -140,6 +140,12 @@
    (((val) >> 24) & 0x0000000000FF0000) | (((val) >> 8) & 0x00000000FF000000) | (((val) << 8) & 0x000000FF00000000) |  \
    (((val) << 24) & 0x0000FF0000000000) | (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000))
 
+// For platform independet non-case dependent string compare
+#ifdef _MSC_VER 
+//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 // Forward declaration
 class CMDF;

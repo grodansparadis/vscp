@@ -120,7 +120,7 @@ Lua File System License
 
 https://github.com/keplerproject/luafilesystem/blob/master/LICENSE
 
-> Copyright © 2003-2020 Kepler Project.
+> Copyright (C)2003-2020 Kepler Project.
 >
 > Permission is hereby granted, free of charge, to any person
 > obtaining a copy of this software and associated documentation

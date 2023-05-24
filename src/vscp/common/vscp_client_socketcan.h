@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2022
+// Copyright:  (C) 2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -34,7 +34,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef WIN32
 #include <syslog.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 

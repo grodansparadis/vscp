@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2023 Ake Hedman, the VSCP project
+// Copyright (C)2000-2023 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -624,6 +624,7 @@ private:
   uint16_t m_width;  // Defaults to 8. Width in bits for register (1-8 bits)
 
   mdf_register_type m_type; // std=0/dmatix1=1/block=2
+  
   // !!! Removed: Use 'span' instead
   //uint8_t m_size;           // Size for special types (default = 1)
 
