@@ -259,8 +259,8 @@ if (WIN32)
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.15/include/civetweb.h
-        src/common/third_party/civetweb-1.15/src/civetweb.c
+        src/common/third_party/civetweb-1.16/include/civetweb.h
+        src/common/third_party/civetweb-1.16/src/civetweb.c
         src/common/third_party/sqlite3-3.35.4/sqlite3.h
         src/common/third_party/sqlite3-3.35.4/sqlite3.c
         src/common/windows/getopt.c
@@ -313,8 +313,8 @@ else()
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.15/include/civetweb.h
-        src/common/third_party/civetweb-1.15/src/civetweb.c
+        src/common/third_party/civetweb-1.16/include/civetweb.h
+        src/common/third_party/civetweb-1.16/src/civetweb.c
         src/common/third_party/sqlite3-3.35.4/sqlite3.h
         src/common/third_party/sqlite3-3.35.4/sqlite3.c
         src/common/configfile.h
@@ -348,8 +348,8 @@ if (WIN32)
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.15/
-                            ./src/common/third_party/civetweb-1.15/include/
+                            ./src/common/third_party/civetweb-1.16/
+                            ./src/common/third_party/civetweb-1.16/include/
                             ./src/common/third_party/sqlite3-3.35.4/
                             ./src/common/third_party/spdlog-1.9.2/include/
                             ./src/common/windows
@@ -366,8 +366,8 @@ else()
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.15/
-                            ./src/common/third_party/civetweb-1.15/include/
+                            ./src/common/third_party/civetweb-1.16/
+                            ./src/common/third_party/civetweb-1.16/include/
                             ./src/common/third_party/sqlite3-3.35.4/
                             ./src/common/third_party/spdlog-1.9.2/include/
                             ${PThreads4W_INCLUDE_DIR}

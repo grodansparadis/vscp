@@ -37,9 +37,7 @@
 #endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
-//extern "C" {
 #include "civetweb.h"
-//}
 
 #include "vscp_client_ws1.h"
 
@@ -57,7 +55,7 @@ ws1_client_data_handler(struct mg_connection *conn,
 
     printf("--------------------------------------------------->\n");    
 
-    // We may get some different message types (websocket opcodes).
+  // We may get some different message types (websocket opcodes).
 	// We will handle these messages differently. 
 	bool isText = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_TEXT);
 	bool isBin = ((flags & 0xf) == MG_WEBSOCKET_OPCODE_BINARY);
