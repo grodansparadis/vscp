@@ -4903,7 +4903,7 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
     ifs.read((char *) buf, XML_BUFF_SIZE);
     bytes_read = ifs.gcount();
     if (bytes_read > 0) {
-      if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+      if (!XML_ParseBuffer(xmlParser, (int)bytes_read, bytes_read == 0)) {
         spdlog::error("ParseXML: Failed parse XML file at line {0} [{1}].",
                       XML_GetCurrentLineNumber(xmlParser),
                       XML_ErrorString(XML_GetErrorCode(xmlParser)));
