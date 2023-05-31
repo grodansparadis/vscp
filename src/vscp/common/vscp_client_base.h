@@ -28,7 +28,7 @@
 
 #include "vscp.h"    
 
-#include <json.hpp> // nlohmann
+#include <nlohmann/json.hpp> // nlohmann
 
 #include <deque>
 #include <list>

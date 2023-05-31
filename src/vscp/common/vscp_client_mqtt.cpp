@@ -996,13 +996,21 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (jj.contains("guid-filter") && j["guid-filter"].is_string()) {
         std::string str = jj["guid-filter"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
-        spdlog::debug("json mqtt init: 'guid-filter' set to {}.", m_filter.filter_GUID);
+        spdlog::debug("json mqtt init: 'guid-filter' set to {0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.", 
+            m_filter.filter_GUID[0], m_filter.filter_GUID[1], m_filter.filter_GUID[2], m_filter.filter_GUID[3],
+            m_filter.filter_GUID[4], m_filter.filter_GUID[5], m_filter.filter_GUID[6], m_filter.filter_GUID[7],
+            m_filter.filter_GUID[8], m_filter.filter_GUID[9], m_filter.filter_GUID[10], m_filter.filter_GUID[11],
+            m_filter.filter_GUID[12], m_filter.filter_GUID[13], m_filter.filter_GUID[14], m_filter.filter_GUID[15]);
       }
 
       if (jj.contains("guid-mask") && j["guid-mask"].is_string()) {
         std::string str = jj["guid-mask"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
-        spdlog::debug("json mqtt init: 'guid-mask' set to {}.", m_filter.mask_GUID);
+        spdlog::debug("json mqtt init: 'guid-mask' set to {0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.", 
+            m_filter.mask_GUID[0], m_filter.mask_GUID[1], m_filter.mask_GUID[2], m_filter.mask_GUID[3],
+            m_filter.mask_GUID[4], m_filter.mask_GUID[5], m_filter.mask_GUID[6], m_filter.mask_GUID[7],
+            m_filter.mask_GUID[8], m_filter.mask_GUID[9], m_filter.mask_GUID[10], m_filter.mask_GUID[11],
+            m_filter.mask_GUID[12], m_filter.mask_GUID[13], m_filter.mask_GUID[14], m_filter.mask_GUID[15]);
       }
     }
 
@@ -2335,9 +2343,9 @@ vscpClientMqtt::send(vscpEvent &ev)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("Publish send ev: Topic: {0} Payload: {1} qos={2} retain={3}",
+    spdlog::trace("Publish send ev: Topic: {0} qos={1} retain={2}",
             strTopic,
-            payload,
+            /*(unsigned char *)payload,*/
             ppublish->getQos(),
             ppublish->getRetain());
 
@@ -2622,9 +2630,9 @@ vscpClientMqtt::send(vscpEventEx &ex)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("Publish send ex: Topic: {0} Payload: {1} qos={2} retain={3}",
+    spdlog::trace("Publish send ex: Topic: {0} qos={1} retain={2}",
             strTopic,
-            payload,
+            /*(unsigned char *)payload,*/
             ppublish->getQos(),
             ppublish->getRetain());
 

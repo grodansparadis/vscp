@@ -57,4 +57,4 @@ The [manual](https://grodansparadis.gitbooks.io/the-vscp-daemon) for vscpd conta
 The vscpd source code may be downloaded from <https://github.com/grodansparadis/vscp>. Source code for other system components of VSCP & Friends are here <https://github.com/grodansparadis>
 
 # COPYRIGHT
-Copyright (C)2000-2023 Ake Hedman, the VSCP project - MIT license.
+Copyright (C) 2000-2023 Ake Hedman, the VSCP project - MIT license.

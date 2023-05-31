@@ -347,11 +347,11 @@ if (WIN32)
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/nlohmann
+                            ./third_party/nlohmann
                             ./src/common/third_party/civetweb-1.16/
                             ./src/common/third_party/civetweb-1.16/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.9.2/include/
+                            ./third_party/spdlog/include/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -365,11 +365,11 @@ else()
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/nlohmann
+                            ./third_party/nlohmann
                             ./src/common/third_party/civetweb-1.16/
                             ./src/common/third_party/civetweb-1.16/include/
                             ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.9.2/include/
+                            ./third_party/spdlog/include/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
