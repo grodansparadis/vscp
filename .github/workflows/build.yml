@@ -11,11 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:  
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest]
+        os: [ubuntu-latest]
 
     steps:
     # https://github.com/actions/checkout  
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
      
     - name: Update before installing packages
       run: sudo apt-get update
