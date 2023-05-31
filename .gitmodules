@@ -4,3 +4,6 @@
 [submodule "third_party/nlohmann"]
 	path = third_party/nlohmann
 	url = https://github.com/nlohmann/json.git
+[submodule "third_party/civetweb"]
+	path = third_party/civetweb
+	url = https://github.com/civetweb/civetweb.git
