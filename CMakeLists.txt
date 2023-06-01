@@ -261,8 +261,8 @@ if (WIN32)
         src/common/third_party/mustache.hpp
         third_party/civetweb/include/civetweb.h
         third_party/civetweb/src/civetweb.c
-        src/common/third_party/sqlite3-3.35.4/sqlite3.h
-        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        ./third_party/sqlite3/sqlite3.h
+        ./third_party/sqlite3/sqlite3.c
         src/common/windows/getopt.c
         src/common/configfile.h
         src/common/configfile.cpp
@@ -315,8 +315,8 @@ else()
         src/common/third_party/mustache.hpp
         third_party/civetweb/include/civetweb.h
         third_party/civetweb/src/civetweb.c
-        src/common/third_party/sqlite3-3.35.4/sqlite3.h
-        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        ./third_party/sqlite3/sqlite3.h
+        ./third_party/sqlite3/sqlite3.c
         src/common/configfile.h
         src/common/configfile.cpp
         src/common/sockettcp.h
@@ -350,7 +350,7 @@ if (WIN32)
                             ./third_party/nlohmann/include
                             ./third_party/civetweb/
                             ./third_party/civetweb/include/
-                            ./src/common/third_party/sqlite3-3.35.4/
+                            ./third_party/sqlite3/
                             ./third_party/spdlog/include/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
@@ -368,7 +368,7 @@ else()
                             ./third_party/nlohmann/include
                             ./third_party/civetweb/
                             ./third_party/civetweb/include/
-                            ./src/common/third_party/sqlite3-3.35.4/
+                            ./third_party/sqlite3/
                             ./third_party/spdlog/include/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
