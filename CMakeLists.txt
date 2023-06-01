@@ -200,8 +200,6 @@ if (WIN32)
     # dlfcn
     find_package(dlfcn-win32 CONFIG REQUIRED)
 
-    # Logging
-    #find_package(spdlog CONFIG REQUIRED)
 else()
     # expat
     include(FindEXPAT)
@@ -210,9 +208,6 @@ else()
 
     # Mosquitto lib
     include(FindMosquitto)
-
-    # Logger
-    #find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 

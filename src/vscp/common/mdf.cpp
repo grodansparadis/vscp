@@ -2242,7 +2242,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             }
             else {
               gpRegisterStruct->m_type = static_cast<mdf_register_type>(vscp_readStringValue(attribute));
-              spdlog::debug("Parse-XML: Register type: {0}", gpRegisterStruct->m_type);
+              spdlog::debug("Parse-XML: Register type: {0}", (int)gpRegisterStruct->m_type);
             }
           }
           else if (0 == strcasecmp(attr[i], "fgcolor")) {
@@ -2412,59 +2412,59 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
             if (attribute == "string") {
               gpRvarStruct->m_type = remote_variable_type_string;
-              spdlog::debug("Parse-XML: Remote variable type set to 'string' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'string' {0}.", (int)gpRvarStruct->m_type);
             }
             else if (attribute == "bool") {
               gpRvarStruct->m_type = remote_variable_type_boolean;
-              spdlog::debug("Parse-XML: Remote variable type set to 'boolena' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'boolena' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "int8") || (attribute == "int8_t") || (attribute == "char")) {
               gpRvarStruct->m_type = remote_variable_type_int8_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int8_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int8_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "uint8") || (attribute == "uint8_t") || (attribute == "byte")) {
               gpRvarStruct->m_type = remote_variable_type_uint8_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint8_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint8_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
               gpRvarStruct->m_type = remote_variable_type_int16_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int16_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int16_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "uint16") || (attribute == "uint16_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint16_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint16_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint16_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
               gpRvarStruct->m_type = remote_variable_type_int32_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int32_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int32_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
               gpRvarStruct->m_type = remote_variable_type_uint32_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint32_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint32_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
               gpRvarStruct->m_type = remote_variable_type_int64_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'int64_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'int64_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if ((attribute == "uint64") || (attribute == "uint64_t")) {
               gpRvarStruct->m_type = remote_variable_type_uint64_t;
-              spdlog::debug("Parse-XML: Remote variable type set to 'uint64_t' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'uint64_t' {0}.", (int)gpRvarStruct->m_type);
             }
             else if (attribute == "float") {
               gpRvarStruct->m_type = remote_variable_type_float;
-              spdlog::debug("Parse-XML: Remote variable type set to 'float' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'float' {0}.", (int)gpRvarStruct->m_type);
             }
             else if (attribute == "double") {
               gpRvarStruct->m_type = remote_variable_type_double;
-              spdlog::debug("Parse-XML: Remote variable type set to 'double' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'double' {0}.", (int)gpRvarStruct->m_type);
             }
             else if (attribute == "date") {
               gpRvarStruct->m_type = remote_variable_type_date;
-              spdlog::debug("Parse-XML: Remote variable type set to 'date' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'date' {0}.", (int)gpRvarStruct->m_type);
             }
             else if (attribute == "time") {
               gpRvarStruct->m_type = remote_variable_type_time;
-              spdlog::debug("Parse-XML: Remote variable type set to 'time' {0}.", gpRvarStruct->m_type);
+              spdlog::debug("Parse-XML: Remote variable type set to 'time' {0}.", (int)gpRvarStruct->m_type);
             }
             else {
               gpRvarStruct->m_type = remote_variable_type_unknown;
@@ -5659,20 +5659,20 @@ CMDF::parseMDF_JSON(const std::string &path)
               vscp_lower(strType);
               if (strType == "std") {
                 preg->m_type = MDF_REG_TYPE_STANDARD;
-                spdlog::debug("Parse-JSON: Module register type: standard {0}", preg->m_type);
+                spdlog::debug("Parse-JSON: Module register type: standard {0}", (int)preg->m_type);
               }
               else if ((strType == "dmatrix1") || (strType == "dm") || (strType == "dmatrix")) {
                 preg->m_type = MDF_REG_TYPE_DMATRIX1;
-                spdlog::debug("Parse-JSON: Module register type: dmatrix1 {0}", preg->m_type);
+                spdlog::debug("Parse-JSON: Module register type: dmatrix1 {0}", (int)preg->m_type);
               }
               else if (strType == "block") {
                 preg->m_type = MDF_REG_TYPE_BLOCK;
-                spdlog::debug("Parse-JSON: Module register type: block {0}", preg->m_type);
+                spdlog::debug("Parse-JSON: Module register type: block {0}", (int)preg->m_type);
               }
               else {
                 spdlog::warn("Invalid block type: {0} - will be set to standard", strType);
                 preg->m_type = MDF_REG_TYPE_STANDARD;
-                spdlog::debug("Parse-JSON: Module register type: standard {0}", preg->m_type);
+                spdlog::debug("Parse-JSON: Module register type: standard {0}", (int)preg->m_type);
               }
             }
             else {
@@ -5977,59 +5977,59 @@ CMDF::parseMDF_JSON(const std::string &path)
               vscp_makeLower(str);
               if (str == "string") {
                 prvar->m_type = remote_variable_type_string;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'string' {}.", (int)prvar->m_type);
               }
               else if (str == "bool") {
                 prvar->m_type = remote_variable_type_boolean;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'boolena' {}.", (int)prvar->m_type);
               }
               else if ((str == "int8") || (str == "int8_t") || (str == "char")) {
                 prvar->m_type = remote_variable_type_int8_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int8_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "uint8") || (str == "uint8_t") || (str == "byte")) {
                 prvar->m_type = remote_variable_type_uint8_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint8_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "int16") || (str == "int16_t") || (str == "short")) {
                 prvar->m_type = remote_variable_type_int16_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int16_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "uint16") || (str == "uint16_t")) {
                 prvar->m_type = remote_variable_type_uint16_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint16_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "int32") || (str == "int32_t") || (str == "long")) {
                 prvar->m_type = remote_variable_type_int32_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int32_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "uint32") || (str == "uint32_t") || (str == "unsigned")) {
                 prvar->m_type = remote_variable_type_uint32_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint32_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "int64") || (str == "int64_t") || (str == "longlong")) {
                 prvar->m_type = remote_variable_type_int64_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'int64_t' {}.", (int)prvar->m_type);
               }
               else if ((str == "uint64") || (str == "uint64_t")) {
                 prvar->m_type = remote_variable_type_uint64_t;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'uint64_t' {}.", (int)prvar->m_type);
               }
               else if (str == "float") {
                 prvar->m_type = remote_variable_type_float;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'float' {}.", (int)prvar->m_type);
               }
               else if (str == "double") {
                 prvar->m_type = remote_variable_type_double;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'double' {}.", (int)prvar->m_type);
               }
               else if (str == "date") {
                 prvar->m_type = remote_variable_type_date;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'date' {}.", (int)prvar->m_type);
               }
               else if (str == "time") {
                 prvar->m_type = remote_variable_type_time;
-                spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", prvar->m_type);
+                spdlog::debug("Parse-JSON: Remote variable type set to 'time' {}.", (int)prvar->m_type);
               }
               else {
                 prvar->m_type = remote_variable_type_unknown;
