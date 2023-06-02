@@ -10,3 +10,6 @@
 [submodule "third_party/sqlite3"]
 	path = third_party/sqlite3
 	url = https://github.com/sqlite/sqlite.git
+[submodule "third_party/mustache"]
+	path = third_party/mustache
+	url = https://github.com/kainjow/Mustache.git

@@ -172,7 +172,6 @@ elseif(UNIX)
     set(LIBS_SYSTEM c stdc++)
 endif()
 
-
 # set the module path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
