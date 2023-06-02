@@ -16,3 +16,6 @@
 [submodule "third_party/maddy"]
 	path = third_party/maddy
 	url = https://github.com/progsource/maddy.git
+[submodule "third_party/tiny-aes"]
+	path = third_party/tiny-aes
+	url = https://github.com/kokke/tiny-AES-c.git
