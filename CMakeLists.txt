@@ -274,8 +274,8 @@ if (WIN32)
         src/common/crc8.c
         src/common/vscpmd5.h
         src/common/vscpmd5.c
-        src/common/fastpbkdf2.h
-        src/common/fastpbkdf2.c  
+        ./third_party/fastpbkdf2/fastpbkdf2.h
+        ./third_party/fastpbkdf2/fastpbkdf2.c  
         src/common/randpassword.h
         src/common/randpassword.cpp     
     )
@@ -327,8 +327,8 @@ else()
         src/common/crc8.c
         src/common/vscpmd5.h
         src/common/vscpmd5.c
-        src/common/fastpbkdf2.h
-        src/common/fastpbkdf2.c  
+        ./third_party/fastpbkdf2/fastpbkdf2.h
+        ./third_party/fastpbkdf2/fastpbkdf2.c   
         src/common/randpassword.h
         src/common/randpassword.cpp     
     )
@@ -349,6 +349,7 @@ if (WIN32)
                             ./third_party/sqlite3/
                             ./third_party/spdlog/include/
                             ./third_party/mustache/
+                            ./third_party/fastpbkdf2/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -368,6 +369,7 @@ else()
                             ./third_party/sqlite3/
                             ./third_party/mustache/
                             ./third_party/spdlog/include/
+                            ./third_party/fastpbkdf2/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
