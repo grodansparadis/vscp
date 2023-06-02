@@ -13,3 +13,6 @@
 [submodule "third_party/mustache"]
 	path = third_party/mustache
 	url = https://github.com/kainjow/Mustache.git
+[submodule "third_party/maddy"]
+	path = third_party/maddy
+	url = https://github.com/progsource/maddy.git

@@ -37,6 +37,8 @@ if(NOT DEFINED PATCH_VERSION)
     SET(PATCH_VERSION "2")
 endif()
 
+add_subdirectory(./third_party/spdlog/)
+
 # Disable abi warnings (nlohmann)
 if(WIN32)
 else()
@@ -252,7 +254,7 @@ if (WIN32)
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
-        src/common/third_party/mustache.hpp
+        ./third_party/mustache/mustache.hpp
         third_party/civetweb/include/civetweb.h
         third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
@@ -306,7 +308,7 @@ else()
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
-        src/common/third_party/mustache.hpp
+        ./third_party/mustache/mustache.hpp
         third_party/civetweb/include/civetweb.h
         third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
@@ -346,6 +348,7 @@ if (WIN32)
                             ./third_party/civetweb/include/
                             ./third_party/sqlite3/
                             ./third_party/spdlog/include/
+                            ./third_party/mustache/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
@@ -363,6 +366,7 @@ else()
                             ./third_party/civetweb/
                             ./third_party/civetweb/include/
                             ./third_party/sqlite3/
+                            ./third_party/mustache/
                             ./third_party/spdlog/include/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
