@@ -107,7 +107,7 @@ mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::info("MQTT log: {}", logmsg);
+  spdlog::trace("MQTT log: {}", logmsg);
 
   if (nullptr != pClient->m_parentCallbackLog) {
     pClient->m_parentCallbackLog(mosq, pClient->m_pParent, level, logmsg);
