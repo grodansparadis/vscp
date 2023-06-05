@@ -1929,7 +1929,7 @@ vscpClientMqtt::connect(void)
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("Failed to connect to remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("Failed to connect to MQTT remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
     return VSCP_ERROR_NOT_CONNECTED;
   }
 
