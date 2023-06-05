@@ -137,7 +137,7 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv);
+  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -165,7 +165,7 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv, flags);
+  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -193,7 +193,7 @@ mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT v5 connect: rv={0:X} flags={1:X}", rv, flags);
+  spdlog::info("MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -221,7 +221,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::info("MQTT v3.11 disconnect: rv={0:X}", rv);
+  spdlog::info("MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -249,7 +249,7 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::trace("MQTT v5 disconnect: rv={0:X}", rv);
+  spdlog::trace("MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
