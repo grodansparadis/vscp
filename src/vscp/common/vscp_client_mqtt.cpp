@@ -82,7 +82,10 @@ workerThread(void *pObj);
 int
 password_callback(char *buf, int size, int rwflag, void *userdata)
 {
-  strncpy(buf, size, "secret");
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(userdata);
+
+  memset(buf, 0, size);
+  strncpy(buf, pClient->getPassword().c_str(), size);
   return (int)strlen(buf);
 }
 
