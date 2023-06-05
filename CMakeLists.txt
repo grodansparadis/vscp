@@ -25,6 +25,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 project(vscpd LANGUAGES CXX C)
+set(PACKAGE_AUTHOR "Ake Hedman, the VSCP Project")
 
 # Version settings
 if(NOT DEFINED MAJOR_VERSION)
