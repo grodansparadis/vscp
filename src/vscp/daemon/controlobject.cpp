@@ -740,7 +740,7 @@ CControlObject::init_mqtt()
                                                     strPayload.c_str(),
                                                     2,
                                                     true))) {
-      spdlog::error("Failed to publish VSCP daemon named. error={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("Failed to publish VSCP daemon name. error={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 

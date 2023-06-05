@@ -1991,7 +1991,7 @@ vscpClientMqtt::connect(void)
                                                     NULL,
                                                     1,
                                                     true))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (will) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2356,7 +2356,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2643,7 +2643,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (ex) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
