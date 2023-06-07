@@ -291,10 +291,10 @@ This is the username to use to login on the MQTT broker. Leave blank to use no c
 This is the password to use to login on the MQTT broker. Leave blank to use no credentials. 
 
 ### clientid :id=config-mqtt-clientid
-Set the client id of this client. Note that all client id's should be unique to a broker. If not the client with the duplicate client id will be disconnected. If you leave this blank a random client id will be generated. The standard max length for client id's is 23 characters but most brokers accept longer client id's.
+Set the client id of this client. Note that **all client id's should be unique to a broker**. If not the client with the duplicate client id will be disconnected. If you leave this blank a random client id will be generated. The standard max length for client id's is 23 characters but most brokers accept longer client id's.
 
 ### publish-format :id=config-mqtt-general-publish-format
-This is the format the VSCP daemon will use to publish it's information if niot set specially for the publish topic. There are four formats available
+This is the format the VSCP daemon will use to publish it's information if not set specially for the publish topic. There are four formats available
 
 | Format | Description |
 | ------ | ----------- |

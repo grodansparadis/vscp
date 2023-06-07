@@ -590,7 +590,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_bConnected          = false;        // Not connected
   m_bJsonMeasurementAdd = true;         // Add measurement block to JSON publish event
   m_bindInterface       = "";           // No bind interface
-  m_mosq                = nullptr;      // No mosquitto conection
+  m_mosq                = nullptr;      // No mosquitto connection
   m_publish_format      = jsonfmt;      // Publish inm JSON if not configured to do something else
   m_subscribe_format    = autofmt;      // Automatically detect payload format
   m_bRun                = true;         // Run to the Hills...
@@ -842,6 +842,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Client ID
     if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
+      // TODO
+      // {rnd} mustasch is replaces with hex random value
       spdlog::debug("json mqtt init: 'client id' set to {}.", m_clientid);
       if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
         spdlog::warn("json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 characters but longer is OK with most brokers).", 
