@@ -43,7 +43,7 @@ jobs:
     - name: Install libssl-dev manually
       run: sudo apt-get install libssl-dev
 
-      - name: Install libwebsockets-dev manually
+    - name: Install libwebsockets-dev manually
       run: sudo apt-get install libwebsockets-dev  
 
     - name: Create Build Environment
