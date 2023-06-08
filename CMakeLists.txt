@@ -186,7 +186,8 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # libwebsockets
-find_package(libwebsockets CONFIG REQUIRED)
+#find_package(libwebsockets CONFIG REQUIRED)
+include(FindLibWebSockets)
 
 # Windows Libs
 if (WIN32)
@@ -383,6 +384,7 @@ if (WIN32)
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
@@ -402,9 +404,11 @@ else()
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
-                            ${LOCAL_WIN_INCLUDE} )
+                            ${LOCAL_WIN_INCLUDE}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR} )
  endif()   
 
 if(MSVC)
@@ -416,6 +420,7 @@ if(MSVC)
         OpenSSL::SSL OpenSSL::Crypto
         websockets_shared
         ${MOSQUITTO_LIBRARIES}
+        ${LIBWEBSOCKETS_LIBRARIES}
         expat::expat
         dlfcn-win32::dl
 #        spdlog::spdlog spdlog::spdlog_header_only
@@ -429,7 +434,7 @@ else()
         OpenSSL::SSL 
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
-        websockets_shared
+        ${LIBWEBSOCKETS_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${EXPAT_LIBRARIES}
     )
