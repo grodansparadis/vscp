@@ -37,11 +37,11 @@
 #endif
 #include <vscp_aes.h>
 #include <vscphelper.h>
-#include "civetweb.h"
+//#include "civetweb.h"
 
 #include "vscp_client_ws1.h"
 
-
+/*
 static int
 ws1_client_data_handler(struct mg_connection *conn,
                               int flags,
@@ -153,6 +153,7 @@ ws1_client_close_handler(const struct mg_connection *conn,
     pObj->m_bConnected = false;
 	printf("----------------> Client: Close handler\n");
 }
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTOR
@@ -171,7 +172,7 @@ vscpClientWs1::vscpClientWs1()
     setResponseTimeout();
 
     sem_init(&m_sem_msg, 0, 0);
-    mg_init_library(MG_FEATURES_SSL);
+    //mg_init_library(MG_FEATURES_SSL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -257,16 +258,16 @@ int vscpClientWs1::connect(void)
     char ebuf[100] = {0};
 	const char *path = "/ws1";
 
-	m_conn = mg_connect_websocket_client( m_host.c_str(),
-	                                       m_port,
-	                                       m_bSSL ? 1 : 0,
-	                                       ebuf,
-	                                       sizeof(ebuf),
-	                                       path,
-	                                       NULL,
-	                                       ws1_client_data_handler,
-	                                       ws1_client_close_handler,
-	                                       this);
+	// m_conn = mg_connect_websocket_client( m_host.c_str(),
+	//                                        m_port,
+	//                                        m_bSSL ? 1 : 0,
+	//                                        ebuf,
+	//                                        sizeof(ebuf),
+	//                                        path,
+	//                                        NULL,
+	//                                        ws1_client_data_handler,
+	//                                        ws1_client_close_handler,
+	//                                        this);
 
 	if (NULL == m_conn) {
 		printf("Error: %s\n", ebuf);
@@ -302,10 +303,10 @@ int vscpClientWs1::connect(void)
     authcmd += ";";
     authcmd += m_credentials;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          authcmd.c_str(),
-		                          authcmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           authcmd.c_str(),
+		//                           authcmd.length());
 		
 	if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("User not validated\n");
@@ -331,10 +332,10 @@ int vscpClientWs1::connect(void)
 
     std::string opencmd ="C;OPEN";
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          opencmd.c_str(),
-		                          opencmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           opencmd.c_str(),
+		//                           opencmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("Unable to open connection\n");
@@ -369,17 +370,17 @@ int vscpClientWs1::disconnect(void)
     std::deque<std::string> args;
     std::string cmd = "C;CLOSE";
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
-    mg_websocket_client_write(m_conn,
-                                  MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE,
-                                  NULL,
-                                  0);
+    // mg_websocket_client_write(m_conn,
+    //                               MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE,
+    //                               NULL,
+    //                               0);
 
-    mg_close_connection(m_conn);
+    // mg_close_connection(m_conn);
     m_conn = NULL;
 
     return VSCP_ERROR_SUCCESS;
@@ -409,10 +410,10 @@ int vscpClientWs1::send(vscpEvent &ev)
     if ( !vscp_convertEventToString(strEvent, &ev) ) return VSCP_ERROR_ERROR;
     cmd += strEvent;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
@@ -450,10 +451,10 @@ int vscpClientWs1::send(vscpEventEx &ex)
     if ( !vscp_convertEventExToString(strEvent, &ex) ) return VSCP_ERROR_ERROR;
     cmd += strEvent;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
@@ -559,10 +560,10 @@ int vscpClientWs1::setfilter(vscpEventFilter &filter)
     cmd += ";";
     cmd += strMask;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
@@ -618,10 +619,10 @@ int vscpClientWs1::getversion(uint8_t *pmajor,
         return VSCP_ERROR_PARAMETER;
     }
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
@@ -683,10 +684,10 @@ int vscpClientWs1::getinterfaces(std::deque<std::string> &iflist)
 
     if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");
@@ -728,10 +729,10 @@ int vscpClientWs1::getwcyd(uint64_t &wcyd)
 
     if (!isConnected()) return VSCP_ERROR_NOT_CONNECTED;
 
-    mg_websocket_client_write(m_conn,
-		                          MG_WEBSOCKET_OPCODE_TEXT,
-		                          cmd.c_str(),
-		                          cmd.length());
+    // mg_websocket_client_write(m_conn,
+		//                           MG_WEBSOCKET_OPCODE_TEXT,
+		//                           cmd.c_str(),
+		//                           cmd.length());
 
     if ( VSCP_ERROR_SUCCESS != waitForResponse( m_timeout_response ) ) {
 		printf("ERROR or TIMEOUT\n");

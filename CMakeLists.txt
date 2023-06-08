@@ -185,6 +185,9 @@ find_package(Threads REQUIRED)
 # openssl
 find_package(OpenSSL REQUIRED)
 
+# libwebsockets
+find_package(libwebsockets CONFIG REQUIRED)
+
 # Windows Libs
 if (WIN32)
     # pthread
@@ -219,32 +222,35 @@ add_definitions(-DUSE_IPV6)
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_IPV6 -DUSE_WEBSOCKET ")
 
 set(OPENSSL_VER "OPENSSL_API_${OPENSSL_VERSION_MAJOR}_${OPENSSL_VERSION_MINOR}")
-message(STATUS "OPENSSL Version: ${OPENSSL_VER}")
-add_definitions(-D${OPENSSL_VER}) 
+message(STATUS "OPENSSL Version: ${OPENSSL_VER} - ${OPENSSL_VERSION}")
+#add_definitions(-D${OPENSSL_VER}) 
 
 # 1.1.0 / 1.1.1 / 3.0.0 / 3.1.0
 string(FIND "${OPENSSL_VERSION}" "1.0" SSL_VER_POS)
-if(${SSL_VER_POS})
-  #set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_0")
-  #add_definitions(-DOPENSSL_API_1_0)
+if(NOT ${SSL_VER_POS} EQUAL -1)
+  add_definitions(-DOPENSSL_API_1_0)
+  message(STATUS "Open ssl version is 1.0")
 endif()    
 
 string(FIND "${OPENSSL_VERSION}" "1.1" SSL_VER_POS)
-if(${SSL_VER_POS})
-  #set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
-  #add_definitions(-DOPENSSL_API_1_1)
+if(NOT ${SSL_VER_POS} EQUAL -1)
+  add_definitions(-DOPENSSL_API_1_1)
+  message(STATUS "Open ssl version is 1.1")
 endif()
 
 string(FIND "${OPENSSL_VERSION}" "3.0" SSL_VER_POS)
 if(NOT SSL_VER_POS EQUAL -1)
-  #add_definitions(-DOPENSSL_API_3_0)
-  message(STATUS "openssl test ${SSL_VER_POS}")
+  add_definitions(-DOPENSSL_API_3_0)
+  message(STATUS "Open ssl version is 3.0")
 endif()  
 
 string(FIND "${OPENSSL_VERSION}" "3.1" SSL_VER_POS)
 if(NOT SSL_VER_POS EQUAL -1)
-  add_definitions(-DOPENSSL_API_3_0)
-  message(STATUS "Open ssl version is 3.1 but set to 3.0 ${SSL_VER_POS} fir Civetweb. That is OK")
+  remove_definitions(-DOPENSSL_API_1_0)
+  remove_definitions(-DOPENSSL_API_1_1)
+  remove_definitions(-DOPENSSL_API_3_1)
+  remove_definitions(-DOPENSSL_API_3_0)
+  message(STATUS "Open ssl version is 3.1 but set to 3.0 ${SSL_VER_POS} for Civetweb. That is OK")
 endif()
 
 if (WIN32)
@@ -277,8 +283,8 @@ if (WIN32)
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         ./third_party/mustache/mustache.hpp
-        third_party/civetweb/include/civetweb.h
-        third_party/civetweb/src/civetweb.c
+        #third_party/civetweb/include/civetweb.h
+        #third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
         ./third_party/sqlite3/sqlite3.c
         src/common/windows/getopt.c
@@ -331,8 +337,8 @@ else()
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         ./third_party/mustache/mustache.hpp
-        third_party/civetweb/include/civetweb.h
-        third_party/civetweb/src/civetweb.c
+        #third_party/civetweb/include/civetweb.h
+        #third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
         ./third_party/sqlite3/sqlite3.c
         src/common/configfile.h
@@ -366,8 +372,8 @@ if (WIN32)
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./third_party/nlohmann/include
-                            ./third_party/civetweb/
-                            ./third_party/civetweb/include/
+                            #./third_party/civetweb/
+                            #./third_party/civetweb/include/
                             ./third_party/sqlite3/
                             ./third_party/spdlog/include/
                             ./third_party/mustache/
@@ -386,8 +392,8 @@ else()
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./third_party/nlohmann/include
-                            ./third_party/civetweb/
-                            ./third_party/civetweb/include/
+                            #./third_party/civetweb/
+                            #./third_party/civetweb/include/
                             ./third_party/sqlite3/
                             ./third_party/mustache/
                             ./third_party/spdlog/include/
@@ -401,13 +407,14 @@ else()
                             ${LOCAL_WIN_INCLUDE} )
  endif()   
 
-if(WIN32)
+if(MSVC)
     target_link_libraries(vscpd PRIVATE 
         netapi32.lib                   
         PThreads4W::PThreads4W_CXXEXC
         OpenSSL::SSL 
         OpenSSL::Crypto
         OpenSSL::SSL OpenSSL::Crypto
+        websockets_shared
         ${MOSQUITTO_LIBRARIES}
         expat::expat
         dlfcn-win32::dl
@@ -422,6 +429,7 @@ else()
         OpenSSL::SSL 
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
+        websockets_shared
         ${MOSQUITTO_LIBRARIES}
         ${EXPAT_LIBRARIES}
     )
