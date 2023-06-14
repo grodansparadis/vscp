@@ -80,7 +80,7 @@ public:
     /*!
         Close the communication device
     */
-    void close( void ) { ::close( m_fd ); m_fd = 0; }
+    void close( void );
   
     /*! 
         Get file descriptor

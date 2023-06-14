@@ -247,11 +247,8 @@ endif()
 
 string(FIND "${OPENSSL_VERSION}" "3.1" SSL_VER_POS)
 if(NOT SSL_VER_POS EQUAL -1)
-  remove_definitions(-DOPENSSL_API_1_0)
-  remove_definitions(-DOPENSSL_API_1_1)
-  remove_definitions(-DOPENSSL_API_3_1)
-  remove_definitions(-DOPENSSL_API_3_0)
-  message(STATUS "Open ssl version is 3.1 but set to 3.0 ${SSL_VER_POS} for Civetweb. That is OK")
+  add_definitions(-DOPENSSL_API_3_1)
+  message(STATUS "Open ssl version is 3.1")
 endif()
 
 if (WIN32)
