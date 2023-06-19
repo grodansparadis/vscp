@@ -3007,7 +3007,7 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
 
   pEvent->pdata    = nullptr;
   pEvent->sizeData = 0;
-
+  
   if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
     return false;
   }

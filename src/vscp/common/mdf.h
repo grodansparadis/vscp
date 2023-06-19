@@ -2611,10 +2611,10 @@ public:
   std::string getModuleName(void) { return m_name; };
 
   /*!
-    Return VSCP level for device
+    Return VSCP level for device (1/2)
     @return Return VSCP level for module
   */
-  int getLevel(void) { return m_vscpLevel; };
+  int getLevel(void) { return (m_vscpLevel ? 2 : 1); };
 
   /*!
     Get Module description in selected language.
