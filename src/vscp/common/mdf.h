@@ -1481,6 +1481,18 @@ public:
   */
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
+  /*!
+    Get description map
+    @return map
+  */
+  std::map<std::string, std::string> *getDescriptionMap(void) { return &m_mapDescription; };
+
+  /*!
+    Get Info/URL map
+    @return map
+  */
+  std::map<std::string, std::string> *getInfoUrlMap(void) { return &m_mapInfoURL; };
+
 private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
@@ -1675,6 +1687,13 @@ public:
   */
   CMDF_Item *getWebObj(size_t index = 0) { return ((m_list_Web.size() <= index) ? nullptr : m_list_Web[index]); };
 
+  /*!
+    Get a social object from it's index
+    @param index Index of web object to get.
+    @return Pointer to web object or NULL if index is out of range.
+  */
+  CMDF_Item *getSocialObj(size_t index = 0) { return ((m_list_Social.size() <= index) ? nullptr : m_list_Social[index]); };
+
 private:
   std::string m_strName;  // Manufacturer name
   CMDF_Address m_address; // Address of manufacturer
@@ -1683,6 +1702,7 @@ private:
   std::deque<CMDF_Item *> m_list_Fax;
   std::deque<CMDF_Item *> m_list_Email;
   std::deque<CMDF_Item *> m_list_Web;
+  std::deque<CMDF_Item *> m_list_Social;
 };
 
 // ----------------------------------------------------------------------------
@@ -2611,10 +2631,12 @@ public:
   std::string getModuleName(void) { return m_name; };
 
   /*!
-    Return VSCP level for device (1/2)
+    Return VSCP level for device. NOTE! that
+    0 == Level I, 1 == Level II
     @return Return VSCP level for module
   */
-  int getLevel(void) { return (m_vscpLevel ? 2 : 1); };
+  int getModuleLevel(void) { return m_vscpLevel; };
+  int getLevel(void) { return m_vscpLevel; };
 
   /*!
     Get Module description in selected language.
@@ -2625,10 +2647,15 @@ public:
   std::string getModuleDescription(std::string language = "en");
 
   /*!
-    Get the number of module descriptions availabel in different languages
+    Get the number of module descriptions available in different languages
     @return Number of descriptions available.
   */
   size_t getModuleDescriptionSize(void) { return m_mapDescription.size(); };
+
+  /*!
+    Get the module description map
+  */
+  std::map<std::string, std::string> *getModuleDescriptionMap(void) { return &m_mapDescription; };
 
   /*!
     Get Module info url in selected language.
@@ -2639,10 +2666,16 @@ public:
   std::string getModuleHelpUrl(std::string language = "en");
 
   /*!
-    Get the number of module help URL's availabel in different mime types
+    Get the number of module help URL's available in different mime types
     @return Number of info url's available.
   */
   size_t getModuleHelpUrlCount(void) { return m_mapInfoURL.size(); };
+
+  /*!
+    Get the module description map
+  */
+  std::map<std::string, std::string> *getModuleHelpUrlMap(void) { return &m_mapInfoURL; };
+
 
   /*!
     Get module change date
@@ -2964,7 +2997,7 @@ public:
 
   /*!
     Get items from valulist
-    @param j JSON object with valulist
+    @param j JSON object with valuelist
     @param list List to store valuelist items to
     @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
   */
@@ -2972,7 +3005,7 @@ public:
 
   /*!
     Get items from description list/item
-    @param j JSON object with valulist
+    @param j JSON object with valuelist
     @param list List to store description items to
     @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
   */
@@ -2980,7 +3013,7 @@ public:
 
   /*!
     Get items from infoURL list/item
-    @param j JSON object with valulist
+    @param j JSON object with valuelist
     @param list List to store infoURL items to
     @return true on VSCP_ERROR_SUCCESS on success, error code on failure.
   */

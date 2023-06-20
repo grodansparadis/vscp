@@ -910,6 +910,17 @@ CMDF_Manufacturer::clearStorage(void)
     }
   }
   m_list_Web.clear();
+
+  // Cleanup social list
+  std::deque<CMDF_Item *>::iterator itersocial;
+  for (itersocial = m_list_Social.begin(); itersocial != m_list_Social.end(); ++itersocial) {
+    CMDF_Item *pRecordSocial = *itersocial;
+    if (nullptr != pRecordSocial) {
+      delete pRecordSocial;
+      pRecordSocial = nullptr;
+    }
+  }
+  m_list_Social.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1852,6 +1863,9 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         gpItemStruct = new CMDF_Item;
       }
       else if ((currentToken == "web")) {
+        gpItemStruct = new CMDF_Item;
+      }
+      else if ((currentToken == "social")) {
         gpItemStruct = new CMDF_Item;
       }
       // [3] Picture (standard format)
@@ -3474,14 +3488,30 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       // [5] manufacturer/web
       else if ((gTokenList.at(1) == "web") && (gpItemStruct != nullptr)) {
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
-          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer web address: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
           gpItemStruct->m_name = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
-            "Parse-XML: handleMDFParserData: Module manufacturer email address description: {0} Language: {1}",
+            "Parse-XML: handleMDFParserData: Module manufacturer email web description: {0} Language: {1}",
+            strContent,
+            gLastLanguage);
+          gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+      }
+      // [5] manufacturer/social
+      else if ((gTokenList.at(1) == "social") && (gpItemStruct != nullptr)) {
+        if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer social address: {0}", strContent);
+          vscp_trim(strContent);
+          vscp_makeLower(strContent);
+          gpItemStruct->m_name = strContent;
+        }
+        else if (gTokenList.at(0) == "description") {
+          spdlog::trace(
+            "Parse-XML: handleMDFParserData: Module manufacturer email social description: {0} Language: {1}",
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
@@ -4408,6 +4438,12 @@ __endSetupMDFParser(void *data, const char *name)
                (gpItemStruct != nullptr)) {
         // Save address data in list
         pmdf->m_manufacturer.m_list_Web.push_back(gpItemStruct);
+        gpItemStruct = nullptr;
+      }
+      else if ((currentToken == "social") && 
+               (gpItemStruct != nullptr)) {
+        // Save address data in list
+        pmdf->m_manufacturer.m_list_Social.push_back(gpItemStruct);
         gpItemStruct = nullptr;
       }
       else if ((currentToken == "reg") && 
@@ -5470,7 +5506,7 @@ CMDF::parseMDF_JSON(const std::string &path)
                 spdlog::error("Parse-JSON: Failed to allocate memory for web item.");
                 return VSCP_ERROR_PARSING;
               }
-              m_manufacturer.m_list_Email.push_back(pweb);
+              m_manufacturer.m_list_Web.push_back(pweb);
 
               json jsub2 = web.value();
 
@@ -5493,6 +5529,46 @@ CMDF::parseMDF_JSON(const std::string &path)
 
               if (getInfoUrlList(jsub2, pweb->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
                 spdlog::warn("Parse-JSON: Failed to get web infourl.");
+              }
+            }
+          }
+        }
+
+        // Social - Is always array
+        if (jsub.contains("social") && jsub["social"].is_array()) {
+
+          for (auto &social : jsub["social"].items()) {
+            // std::cout << "key: " << social.key() << ", value:" << social.value() << '\n';
+            if (social.value().is_object()) {
+
+              CMDF_Item *psocial = new CMDF_Item();
+              if (psocial == nullptr) {
+                spdlog::error("Parse-JSON: Failed to allocate memory for social item.");
+                return VSCP_ERROR_PARSING;
+              }
+              m_manufacturer.m_list_Social.push_back(psocial);
+
+              json jsub2 = social.value();
+
+              if (jsub2.contains("url") && jsub2["url"].is_string()) {
+                psocial->m_name = jsub2["url"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_name);
+              }
+              else if (jsub2.contains("address") && jsub2["address"].is_string()) {
+                psocial->m_name = jsub2["id"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_name);
+              }
+              else {
+                spdlog::warn("Parse-JSON: No social url/address.");
+              }
+
+              // Description is language specific. Can be string or object
+              if (getDescriptionList(jsub2, psocial->m_mapDescription) != VSCP_ERROR_SUCCESS) {
+                spdlog::warn("Parse-JSON: Failed to get social description.");
+              }
+
+              if (getInfoUrlList(jsub2, psocial->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
+                spdlog::warn("Parse-JSON: Failed to get social infourl.");
               }
             }
           }
