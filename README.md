@@ -8,6 +8,9 @@
 
 <img src="https://vscp.org/images/logo.png" width="100">
 
+*You can look at device for device and create control software for each and one of them, we did it another way, we though of a black box device and created control software that works with everything that exists. __One to unite them all__.*
+
+
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT/m2m tasks. The framework defines methods to
 have a common device discovery, a common configuration, a common way to interface with remote devices and a
 common way to update firmware of devices built on different architectures. A server is available that runs on
