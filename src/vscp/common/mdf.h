@@ -86,17 +86,17 @@ typedef enum vscp_remote_variable_type {
   remote_variable_type_time
 } vscp_remote_variable_type;
 
-#define MAX_MDF_FILE_TYPES 6  // Maximum number of file types
+#define MAX_MDF_FILE_TYPES 6 // Maximum number of file types
 
 // MDF file types
 typedef enum mdf_file_type {
-  mdf_file_type_none = 0,   // None defined
-  mdf_file_type_picture,    // Picture files
-  mdf_file_type_video,      // Video files
-  mdf_file_type_firmware,   // Firmware files
-  mdf_file_type_driver,     // Driver files
-  mdf_file_type_manual,     // Manual files
-  mdf_file_type_setup       // Setup files
+  mdf_file_type_none = 0, // None defined
+  mdf_file_type_picture,  // Picture files
+  mdf_file_type_video,    // Video files
+  mdf_file_type_firmware, // Firmware files
+  mdf_file_type_driver,   // Driver files
+  mdf_file_type_manual,   // Manual files
+  mdf_file_type_setup     // Setup files
 } mdf_file_type;
 
 // * * * Settings * * *
@@ -187,6 +187,18 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
 private:
   std::string m_name;
   std::string m_strValue; // String because used for remote variabels also
@@ -235,7 +247,7 @@ public:
     Set bit array name
     @return Set array name
   */
-  void setName(std::string& name) { m_name = name; };
+  void setName(std::string &name) { m_name = name; };
 
   /*!
     Get the bit description
@@ -264,6 +276,18 @@ public:
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+  /*!
     Get bit array start position (0-7)
     @return Bit array start position
   */
@@ -273,7 +297,7 @@ public:
     Set bit array start position (0-7)
     @param pos Bit array start position
   */
-  void setPos(uint8_t pos) { m_pos = (pos & 7); };
+  void setPos(uint8_t pos); 
 
   /*!
     Get bit array length (1-8)
@@ -285,7 +309,7 @@ public:
     Set bit array length (1-8)
     @param width Bit array length
   */
-  void setWidth(uint8_t width); //{ m_width = width; };
+  void setWidth(uint8_t width);
 
   /*!
     Get bit array value
@@ -359,8 +383,8 @@ private:
   uint8_t m_min;            // 'min'      Minimum value for field (if applicable)
   uint8_t m_max;            // 'max'      Maximum value for field (if applicable)
   mdf_access_mode m_access; // 'access'   Access rights for the bit(-field)
-  
-  uint8_t m_mask;           // Calculated mask for bit field
+
+  uint8_t m_mask; // Calculated mask for bit field
 
   std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
@@ -596,7 +620,7 @@ public:
 
   /*!
     Get Foreground color for VSCP Works grid.
-    @return Fourground color.
+    @return Foreground color.
   */
   uint32_t getForegroundColor(void) { return m_fgcolor; };
 
@@ -612,8 +636,19 @@ public:
   */
   uint32_t getBackgroundColor(void) { return m_bgcolor; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   std::string m_name;
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra help information
@@ -624,9 +659,9 @@ private:
   uint16_t m_width;  // Defaults to 8. Width in bits for register (1-8 bits)
 
   mdf_register_type m_type; // std=0/dmatix1=1/block=2
-  
+
   // !!! Removed: Use 'span' instead
-  //uint8_t m_size;           // Size for special types (default = 1)
+  // uint8_t m_size;           // Size for special types (default = 1)
 
   uint32_t m_min; // Defaults to 0
   uint32_t m_max; // Defaults to 255
@@ -635,8 +670,8 @@ private:
 
   mdf_access_mode m_access;
 
-  std::deque<CMDF_Bit *> m_list_bit;        // List with bit defines
-  std::deque<CMDF_Value *> m_list_value;    // List with selectable values
+  std::deque<CMDF_Bit *> m_list_bit;     // List with bit defines
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
   uint32_t m_bgcolor; // Cell background colour. Default = white.
@@ -646,13 +681,13 @@ private:
     records when size is larger than one which is typical for
     registers defined as block or dmatix1.
 
-    The parser set fgcolor and bgcolor when records are created for each item 
+    The parser set fgcolor and bgcolor when records are created for each item
     so they are not used directly
   */
-  uint32_t m_fgeven;  // Foreground for even row
-  uint32_t m_fgodd;   // Foreground for odd row
-  uint32_t m_bgeven;   // Background for even row
-  uint32_t m_bgodd;   // Background for odd row
+  uint32_t m_fgeven; // Foreground for even row
+  uint32_t m_fgodd;  // Foreground for odd row
+  uint32_t m_bgeven; // Background for even row
+  uint32_t m_bgodd;  // Background for odd row
 };
 
 // ----------------------------------------------------------------------------
@@ -717,6 +752,18 @@ public:
     @param url Register info URL to set
   */
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
   /*!
     Get the type for the remote variable
@@ -859,8 +906,8 @@ private:
   uint32_t m_bgcolor; // Cell background colour. Default = white.
   uint32_t m_fgcolor; // Cell foreground colour. Default = black.
 
-  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_Value *> m_list_value;          // List with selectable values
+  std::deque<CMDF_Bit *> m_list_bit;     // List with bit defines
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -929,6 +976,18 @@ public:
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+  /*!
     Get register offset for action parameter
     @return Register offset
   */
@@ -985,8 +1044,8 @@ private:
   uint8_t m_min;     // Min value for parameter
   uint8_t m_max;     // Max value for parameter
 
-  std::deque<CMDF_Bit *> m_list_bit;              // List with bit defines
-  std::deque<CMDF_Value *> m_list_value;          // List with selectable values
+  std::deque<CMDF_Bit *> m_list_bit;     // List with bit defines
+  std::deque<CMDF_Value *> m_list_value; // List with selectable values
 };
 
 // ----------------------------------------------------------------------------
@@ -1055,6 +1114,18 @@ public:
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+  /*!
     Get action parameter code
     @return Action parameter code
   */
@@ -1098,14 +1169,14 @@ public:
   ~CMDF_DecisionMatrix();
 
   // Ordinals for level I DM items on row
-  static const int IDX_ADDRESS_ORIGIN             = VSCP_LEVEL1_DM_OFFSET_OADDR;
-  static const int IDX_ADDRESS_FLAGS              = VSCP_LEVEL1_DM_OFFSET_FLAGS;
-  static const int IDX_ADDRESS_CLASS_MASK         = VSCP_LEVEL1_DM_OFFSET_CLASS_MASK;
-  static const int IDX_ADDRESS_CLASS_FILTER       = VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER;
-  static const int IDX_ADDRESS_TYPE_MASK          = VSCP_LEVEL1_DM_OFFSET_TYPE_MASK;
-  static const int IDX_ADDRESS_TYPE_FILTER        = VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER;
-  static const int IDX_ADDRESS_ACTION             = VSCP_LEVEL1_DM_OFFSET_ACTION;
-  static const int IDX_ADDRESS_ACTION_PARAMETER   = VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM;
+  static const int IDX_ADDRESS_ORIGIN           = VSCP_LEVEL1_DM_OFFSET_OADDR;
+  static const int IDX_ADDRESS_FLAGS            = VSCP_LEVEL1_DM_OFFSET_FLAGS;
+  static const int IDX_ADDRESS_CLASS_MASK       = VSCP_LEVEL1_DM_OFFSET_CLASS_MASK;
+  static const int IDX_ADDRESS_CLASS_FILTER     = VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER;
+  static const int IDX_ADDRESS_TYPE_MASK        = VSCP_LEVEL1_DM_OFFSET_TYPE_MASK;
+  static const int IDX_ADDRESS_TYPE_FILTER      = VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER;
+  static const int IDX_ADDRESS_ACTION           = VSCP_LEVEL1_DM_OFFSET_ACTION;
+  static const int IDX_ADDRESS_ACTION_PARAMETER = VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM;
 
   // Friend declarations
   friend CMDF;
@@ -1186,7 +1257,7 @@ public:
   */
   std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
 
-  //int getRegister(uint8_t row, CMDF_DecisionMatrix__dmindex idx); 
+  // int getRegister(uint8_t row, CMDF_DecisionMatrix__dmindex idx);
 
 private:
   uint8_t m_level;        // 1 or 2 (defaults to 1)
@@ -1257,6 +1328,18 @@ public:
     @param url Register info URL to set
   */
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
   /*!
     Get event data offset
@@ -1407,6 +1490,18 @@ public:
   void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+  /*!
     Get the event data list
     @return Pointer to event data list
   */
@@ -1417,8 +1512,8 @@ private:
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 
-  int m_class;   // Event class (-1 is all)
-  int m_type;    // Event type (-1 is all)
+  int m_class; // Event class (-1 is all)
+  int m_type;  // Event type (-1 is all)
   uint8_t m_priority;
   mdf_event_direction m_direction;
 
@@ -1692,7 +1787,10 @@ public:
     @param index Index of web object to get.
     @return Pointer to web object or NULL if index is out of range.
   */
-  CMDF_Item *getSocialObj(size_t index = 0) { return ((m_list_Social.size() <= index) ? nullptr : m_list_Social[index]); };
+  CMDF_Item *getSocialObj(size_t index = 0)
+  {
+    return ((m_list_Social.size() <= index) ? nullptr : m_list_Social[index]);
+  };
 
 private:
   std::string m_strName;  // Manufacturer name
@@ -1799,12 +1897,23 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   /*!
     Name of picture
   */
-  std::string m_strName;  
+  std::string m_strName;
 
   /*!
     Path to picture file
@@ -1916,8 +2025,19 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   /*!
     Name of video
   */
@@ -2076,8 +2196,19 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   // Nam of firmware
   std::string m_strName;
 
@@ -2191,7 +2322,8 @@ public:
     Get driver type for CMDF_Driver
     @return Target string for CMDF_Driver
   */
-  std::string getFormat(void) { return m_strType; };
+  std::string getArchitecture(void) { return m_strArchitecture; };
+  std::string getFormat(void) { return m_strArchitecture; }; // Deprecated
 
   /*!
     Get OS (Operation System) for driver
@@ -2221,7 +2353,7 @@ public:
     Get version patch for driver
     @return Version patch for driver
   */
-  uint16_t getVersionPatch(void) { return m_version_patch; };  
+  uint16_t getVersionPatch(void) { return m_version_patch; };
 
   /*!
     Get MD5 for driver file on hex string format
@@ -2271,8 +2403,19 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   /*!
       Unique name for driver
   */
@@ -2288,7 +2431,7 @@ private:
   */
   std::string m_strType;
 
-  /*! 
+  /*!
     Operation system for driver
   */
   std::string m_strOS;
@@ -2296,7 +2439,12 @@ private:
   /*!
     Operation system version for driver
   */
-  std::string m_strOSVer;  
+  std::string m_strOSVer;
+
+  /*!
+    Processor architecture
+  */
+  std::string m_strArchitecture;
 
   /// Major version number
   uint16_t m_version_major;
@@ -2415,8 +2563,19 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   /*!
     Name of setup file
   */
@@ -2440,8 +2599,6 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-
-
 
 class CMDF_Manual {
 
@@ -2528,8 +2685,19 @@ public:
   */
   void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
 
-private:
+  /*!
+    Get description map
+    @return Pointer to description map
+  */
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
+  /*!
+    Get info URL map
+    @return Pointer to info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
+
+private:
   /*!
     name manual file
   */
@@ -2557,13 +2725,7 @@ private:
   std::map<std::string, std::string> m_mapInfoURL; // URL for full module information
 };
 
-
-
-
 // ----------------------------------------------------------------------------
-
-
-
 
 /*!
   CMDF
@@ -2622,7 +2784,7 @@ public:
     about the device if it is supplied.
   */
 
-  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);  
+  std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
 
   /*!
     Get Module name in selected language.
@@ -2676,7 +2838,6 @@ public:
   */
   std::map<std::string, std::string> *getModuleHelpUrlMap(void) { return &m_mapInfoURL; };
 
-
   /*!
     Get module change date
     @return Return string with module change date.
@@ -2711,49 +2872,49 @@ public:
     Get module manufacturer
     @return Return string with module manufacturer.
   */
-  std::string getManufacturerName(void) {return m_manufacturer.m_strName; };
+  std::string getManufacturerName(void) { return m_manufacturer.m_strName; };
 
   /*!
     Get manufacturer street address
     @return Return string with module manufacturer street address.
   */
-  std::string getManufacturerStreetAddress(void) {return m_manufacturer.m_address.m_strStreet; };
+  std::string getManufacturerStreetAddress(void) { return m_manufacturer.m_address.m_strStreet; };
 
   /*!
     Get manufacturer city address
     @return Return string with module manufacturer city address.
   */
-  std::string getManufacturerCityAddress(void) {return m_manufacturer.m_address.m_strCity; };
+  std::string getManufacturerCityAddress(void) { return m_manufacturer.m_address.m_strCity; };
 
   /*!
     Get manufacturer town address
     @return Return string with module manufacturer town address.
   */
-  std::string getManufacturerTownAddress(void) {return m_manufacturer.m_address.m_strTown; };
+  std::string getManufacturerTownAddress(void) { return m_manufacturer.m_address.m_strTown; };
 
   /*!
     Get manufacturer post code address
     @return Return string with module manufacturer post code address.
   */
-  std::string getManufacturerPostCodeAddress(void) {return m_manufacturer.m_address.m_strPostCode; };
+  std::string getManufacturerPostCodeAddress(void) { return m_manufacturer.m_address.m_strPostCode; };
 
   /*!
     Get manufacturer region address
     @return Return string with module manufacturer region address.
   */
-  std::string getManufacturerRegionAddress(void) {return m_manufacturer.m_address.m_strRegion; };
+  std::string getManufacturerRegionAddress(void) { return m_manufacturer.m_address.m_strRegion; };
 
   /*!
     Get manufacturer state address
     @return Return string with module manufacturer state address.
   */
-  std::string getManufacturerStateAddress(void) {return m_manufacturer.m_address.m_strState;};
+  std::string getManufacturerStateAddress(void) { return m_manufacturer.m_address.m_strState; };
 
   /*!
     Get manufacturer city address
     @return Return string with module manufacturer city address.
   */
-  std::string getManufacturerCountryAddress(void) {return m_manufacturer.m_address.m_strCountry; };
+  std::string getManufacturerCountryAddress(void) { return m_manufacturer.m_address.m_strCountry; };
 
   /*!
     Get number of module pictures
@@ -2874,7 +3035,7 @@ public:
   /*!
     Get all registers for a specific page
     @param page Page to get registers for.
-    @return Pointer to register definition for page ot a nullpointer if page
+    @return Pointer to register definition for page ot a null pointer if page
               does not exist.
   */
   void getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs);
@@ -2887,16 +3048,16 @@ public:
   size_t getRegisterCount(uint32_t page);
 
   /*!
-    Return register definition from register + page      
-    @param reg Register to search for.      
+    Return register definition from register + page
+    @param reg Register to search for.
     @param page Page top search for.
     @return Pointer to CMDF_Register class if found else NULL.
   */
-  CMDF_Register *getRegister( uint32_t reg, uint16_t page = 0);
+  CMDF_Register *getRegister(uint32_t reg, uint16_t page = 0);
 
   /*!
     Check if a register position is writable
-    @param reg Register to search for.      
+    @param reg Register to search for.
     @param page Page top search for.
     @return True if register is writable else false.
   */
@@ -2904,7 +3065,7 @@ public:
 
   /*!
     Get default value for register
-    @param reg Register to search for.      
+    @param reg Register to search for.
     @param page Page top search for.
     @return Default value for register or -1 if error.
   */
@@ -2917,10 +3078,7 @@ public:
   */
   uint32_t getPages(std::set<uint16_t> &pages);
 
-
-
   //-----------------------------------------------------------------------------
-
 
   /*!
     Get number of defined remote variables
@@ -2936,14 +3094,12 @@ public:
   CMDF_RemoteVariable *getRemoteVariable(std::string name);
 
   /*!
-    Return remote variable list from its name      
+    Return remote variable list from its name
     @return Pointer to CMDF_RemoteVariable class list
   */
   std::deque<CMDF_RemoteVariable *> *getRemoteVariableList(void) { return &m_list_remotevar; };
 
-
   //-----------------------------------------------------------------------------
-
 
   /*!
     Get the decision matrix
@@ -3030,19 +3186,17 @@ public:
     The description can be html or markdown coded and will
     always be returned formatted as HTML.
   */
-  std::string&
-  format(std::string& docs);
+  std::string &format(std::string &docs);
 
   // --------------------------------------------------------------------------
 
 private:
-  
-  std::string m_strLocale;    // ISO code for requested language
-                              // defaults to "en"
+  std::string m_strLocale; // ISO code for requested language
+                           // defaults to "en"
 
   std::string m_tempFileName; // Local downloaded file path
 
-  std::string m_strURL;       // Location for MDF file
+  std::string m_strURL; // Location for MDF file
 
   // Redirect URL if MDF with real content is located elsewhere.
   std::string m_redirectUrl;
@@ -3050,35 +3204,35 @@ private:
   // Language specific information. "en" is default, but any variant
   // if ISO two letter language code can be used. Key is always lower
   // case.
-  
-  uint8_t m_vscpLevel;                                  // Module level. Default to level I
-  std::string m_name;                                   // Module name
-  std::map<std::string, std::string> m_mapDescription;  // Module description
-  std::map<std::string, std::string> m_mapInfoURL;      // URL for full module information
 
-  std::string m_strModule_changeDate;                   // Last date changed
-  std::string m_strModule_Model;                        // Module Model
-  std::string m_strModule_Version;                      // Module version
+  uint8_t m_vscpLevel;                                 // Module level. Default to level I
+  std::string m_name;                                  // Module name
+  std::map<std::string, std::string> m_mapDescription; // Module description
+  std::map<std::string, std::string> m_mapInfoURL;     // URL for full module information
 
-  uint16_t m_module_bufferSize;                         // Buffersize for module
+  std::string m_strModule_changeDate; // Last date changed
+  std::string m_strModule_Model;      // Module Model
+  std::string m_strModule_Version;    // Module version
 
-  CMDF_Manufacturer m_manufacturer;                     // Manufacturer information
+  uint16_t m_module_bufferSize; // Buffersize for module
+
+  CMDF_Manufacturer m_manufacturer; // Manufacturer information
 
   // File lists
-  std::deque<CMDF_Picture *> m_list_picture;            // Picture file(s)
-  std::deque<CMDF_Video *> m_list_video;                // Video file(s)
-  std::deque<CMDF_Firmware *> m_list_firmware;          // Firmware file(s)
-  std::deque<CMDF_Driver *> m_list_driver;              // Picture file(s)
-  std::deque<CMDF_Manual *> m_list_manual;              // Manual file(s)
-  std::deque<CMDF_Setup *> m_list_setup;                // Setup file(s)
+  std::deque<CMDF_Picture *> m_list_picture;   // Picture file(s)
+  std::deque<CMDF_Video *> m_list_video;       // Video file(s)
+  std::deque<CMDF_Firmware *> m_list_firmware; // Firmware file(s)
+  std::deque<CMDF_Driver *> m_list_driver;     // Picture file(s)
+  std::deque<CMDF_Manual *> m_list_manual;     // Manual file(s)
+  std::deque<CMDF_Setup *> m_list_setup;       // Setup file(s)
 
-  CMDF_DecisionMatrix m_dmInfo;                         // Info about decision matrix
-  CMDF_BootLoaderInfo m_bootInfo;                       // Boot loader info
+  CMDF_DecisionMatrix m_dmInfo;   // Info about decision matrix
+  CMDF_BootLoaderInfo m_bootInfo; // Boot loader info
 
-  std::deque<CMDF_Register *> m_list_register;          // List with defined registers
-  std::deque<CMDF_RemoteVariable *> m_list_remotevar;   // List with defined remote variables
-  std::deque<CMDF_Event *> m_list_event;                // Events this node can generate
-  std::deque<CMDF_Bit *> m_list_alarm;                  // List with alarm bit defines
+  std::deque<CMDF_Register *> m_list_register;        // List with defined registers
+  std::deque<CMDF_RemoteVariable *> m_list_remotevar; // List with defined remote variables
+  std::deque<CMDF_Event *> m_list_event;              // Events this node can generate
+  std::deque<CMDF_Bit *> m_list_alarm;                // List with alarm bit defines
 };
 
 #endif
