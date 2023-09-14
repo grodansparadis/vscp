@@ -99,11 +99,92 @@ typedef enum mdf_file_type {
   mdf_file_type_setup     // Setup files
 } mdf_file_type;
 
+// MDF record types
+typedef enum mdf_record_type {
+  mdf_type_unknown,
+  mdf_type_mdf,
+  mdf_type_value,
+  mdf_type_value_item,
+  mdf_type_bit,
+  mdf_type_bit_item,
+  mdf_type_register,
+  mdf_type_register_item,
+  mdf_type_register_page,
+  mdf_type_remotevar,
+  mdf_type_remotevar_item,
+  mdf_type_decision_matrix,
+  mdf_type_action,
+  mdf_type_action_item,
+  mdf_type_action_param,  
+  mdf_type_event,
+  mdf_type_event_item,
+  mdf_type_event_data,
+  mdf_type_event_data_item,  
+  mdf_type_bootloader,
+  mdf_type_address,
+  mdf_type_manufacturer,
+  mdf_type_file,
+  mdf_type_picture,
+  mdf_type_picture_item,
+  mdf_type_video,
+  mdf_type_video_item,
+  mdf_type_firmware,
+  mdf_type_firmware_item,
+  mdf_type_driver,
+  mdf_type_driver_item,
+  mdf_type_setup,
+  mdf_type_setup_item,
+  mdf_type_manual,
+  mdf_type_manual_item,
+  mdf_type_redirection,
+  mdf_type_email,
+  mdf_type_phone,
+  mdf_type_fax,
+  mdf_type_web,
+  mdf_type_social,
+  mdf_type_alarm,
+  mdf_type_generic_string,           // Used for direct item editing
+  mdf_type_generic_number,           // Used for direct item editing
+  mdf_type_generic_url,              // Used for direct item editing
+  mdf_type_generic_date,             // Used for direct item editing
+  mdf_type_generic_access,           // Used for direct item editing
+  mdf_type_generic_description,      // Used for direct item editing
+  mdf_type_generic_description_item, // Used for direct item editing
+  mdf_type_generic_help_url,         // Used for direct item editing
+  mdf_type_generic_help_url_item     // Used for direct item editing
+} mdf_record_type;
+
 // * * * Settings * * *
 
 // Forward declarations
 class CMDF;
 class CMDF_Bit;
+
+/*!
+  CMDF_Value
+ */
+
+class CMDF_Object {
+
+public:
+  CMDF_Object(mdf_record_type type = mdf_type_unknown);
+  ~CMDF_Object();
+
+  /*!
+    Get the object type
+    @return Object type for record
+  */
+  mdf_record_type getMdfObjectType(void);
+
+  /*!
+    Get string representation for object type
+    @return Standard string with description of object type
+  */
+  std::string getObjectTypeString(void);
+
+private:
+  mdf_record_type m_type;
+};
 
 // ----------------------------------------------------------------------------
 
@@ -111,7 +192,7 @@ class CMDF_Bit;
   CMDF_Value
  */
 
-class CMDF_Value {
+class CMDF_Value : public CMDF_Object {
 
 public:
   CMDF_Value();
@@ -218,7 +299,7 @@ private:
 
  */
 
-class CMDF_Bit {
+class CMDF_Bit : public CMDF_Object {
 
 public:
   CMDF_Bit();
@@ -297,7 +378,7 @@ public:
     Set bit array start position (0-7)
     @param pos Bit array start position
   */
-  void setPos(uint8_t pos); 
+  void setPos(uint8_t pos);
 
   /*!
     Get bit array length (1-8)
@@ -397,7 +478,7 @@ private:
   Holds information for one register
  */
 
-class CMDF_Register {
+class CMDF_Register : public CMDF_Object {
 
 public:
   CMDF_Register();
@@ -696,7 +777,7 @@ private:
   CMDF_RemoteVariable
  */
 
-class CMDF_RemoteVariable {
+class CMDF_RemoteVariable : public CMDF_Object {
 
 public:
   CMDF_RemoteVariable();
@@ -919,7 +1000,7 @@ private:
 
  */
 
-class CMDF_ActionParameter {
+class CMDF_ActionParameter : public CMDF_Object {
 
 public:
   CMDF_ActionParameter();
@@ -1057,7 +1138,7 @@ private:
 
  */
 
-class CMDF_Action {
+class CMDF_Action : public CMDF_Object {
 
 public:
   CMDF_Action();
@@ -1162,7 +1243,7 @@ private:
   decision matrix.
  */
 
-class CMDF_DecisionMatrix {
+class CMDF_DecisionMatrix : public CMDF_Object {
 
 public:
   CMDF_DecisionMatrix();
@@ -1278,7 +1359,7 @@ private:
 
  */
 
-class CMDF_EventData {
+class CMDF_EventData : public CMDF_Object {
 
 public:
   CMDF_EventData();
@@ -1385,7 +1466,7 @@ private:
 
  */
 
-class CMDF_Event {
+class CMDF_Event : public CMDF_Object {
 
 public:
   CMDF_Event();
@@ -1530,7 +1611,7 @@ private:
 
  */
 
-class CMDF_Item {
+class CMDF_Item : public CMDF_Object {
 
 public:
   CMDF_Item();
@@ -1600,10 +1681,10 @@ private:
   CMDF_BootLoaderInfo
 
   Holds information about the capabilities of a system
-  decission matrix.
+  decision matrix.
  */
 
-class CMDF_BootLoaderInfo {
+class CMDF_BootLoaderInfo : public CMDF_Object {
 
 public:
   CMDF_BootLoaderInfo();
@@ -1655,7 +1736,7 @@ private:
 
  */
 
-class CMDF_Address {
+class CMDF_Address : public CMDF_Object {
 
 public:
   CMDF_Address();
@@ -1735,7 +1816,7 @@ private:
 
  */
 
-class CMDF_Manufacturer {
+class CMDF_Manufacturer : public CMDF_Object {
 
 public:
   CMDF_Manufacturer();
@@ -1805,7 +1886,7 @@ private:
 
 // ----------------------------------------------------------------------------
 
-class CMDF_Picture {
+class CMDF_Picture : public CMDF_Object {
 
 public:
   CMDF_Picture();
@@ -1934,7 +2015,7 @@ private:
 
 // ----------------------------------------------------------------------------
 
-class CMDF_Video {
+class CMDF_Video : public CMDF_Object {
 
 public:
   CMDF_Video();
@@ -2069,7 +2150,7 @@ private:
 
  */
 
-class CMDF_Firmware {
+class CMDF_Firmware : public CMDF_Object {
 
 public:
   CMDF_Firmware();
@@ -2275,7 +2356,7 @@ private:
 
  */
 
-class CMDF_Driver {
+class CMDF_Driver : public CMDF_Object {
 
 public:
   CMDF_Driver();
@@ -2472,7 +2553,7 @@ private:
 
 // ----------------------------------------------------------------------------
 
-class CMDF_Setup {
+class CMDF_Setup : public CMDF_Object {
 
 public:
   CMDF_Setup();
@@ -2600,7 +2681,7 @@ private:
 
 // ---------------------------------------------------------------------------
 
-class CMDF_Manual {
+class CMDF_Manual : public CMDF_Object {
 
 public:
   CMDF_Manual();
@@ -2734,11 +2815,13 @@ private:
 
  */
 
-class CMDF {
+class CMDF : public CMDF_Object {
 
 public:
   CMDF();
   ~CMDF();
+
+  const uint32_t type = 0;
 
   // Friend declarations
   friend bool __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr);
@@ -2787,10 +2870,77 @@ public:
   std::string vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf);
 
   /*!
-    Get Module name in selected language.
+    Get Module name.
     @return Return string with module name
   */
   std::string getModuleName(void) { return m_name; };
+
+  /*!
+    Set Module name.
+    @parm Module name to set
+  */
+  void setModuleName(std::string &str) { m_name = str; };
+
+  /*!
+    Get module version
+    @return Return string with module version.
+  */
+  std::string getModuleModel(void) { return m_strModule_Model; };
+
+  /*!
+    Set module model
+    @Param Module model as string
+  */
+  void setModuleModel(std::string &str) { m_name = str; };
+
+  /*!
+    Get module change date
+    @return Return string with module change date.
+  */
+  std::string getModuleChangeDate(void) { return m_strModule_changeDate; };
+
+  /*!
+    Set module change date
+    @param str Module change date as ISO date formatted string
+  */
+  void setModuleModel(std::string &str) { m_strModule_changeDate = str; };
+
+
+  /*!
+    Get module version
+    @return Return string with module version.
+  */
+  std::string getModuleVersion(void) { return m_strModule_Version; };
+
+  /*!
+    Set module version
+    @param str Module version on stringt form
+  */
+  std::string setModuleVersion(std::string &str) { m_strModule_Model = str; };
+
+  /*!
+    Get module buffer size
+    @return Buffer size in bytes.
+  */
+  uint16_t getModuleBufferSize(void) { return m_module_bufferSize; };
+
+  /*!
+    Set module buffer size
+    @param size Module buffer size to set
+  */
+  void setModuleBufferSize(uint16_t size ) { m_module_bufferSize = size; };
+
+  /*!
+    Get Module copyright.
+    @return Return string with module copyright
+  */
+  std::string getModuleCopyright(void) { return m_copyright; };
+
+  /*!
+    Set Module copyright.
+    @parm Module copyright to set
+  */
+  void setModuleCopyright(std::string &str) { m_copyright = str; };
 
   /*!
     Return VSCP level for device. NOTE! that
@@ -2798,7 +2948,25 @@ public:
     @return Return VSCP level for module
   */
   int getModuleLevel(void) { return m_vscpLevel; };
+
+  /*!
+    Set VSCP level for device
+    @param level VSCP level to set (0=Level I, 1=Level II).
+  */
+  void setModuleLevel(int level = 0) { m_vscpLevel = level & 1; };
+
+  /*!
+    Return VSCP level for device. NOTE! that
+    0 == Level I, 1 == Level II (Deprecated)
+    @return Return VSCP level for module
+  */
   int getLevel(void) { return m_vscpLevel; };
+
+  /*!
+    Set VSCP level for device (Deprecated)
+    @param level VSCP level to set (0=Level I, 1=Level II).
+  */
+  void setLevel(int level = 0) { m_vscpLevel = level & 1; };
 
   /*!
     Get Module description in selected language.
@@ -2838,29 +3006,7 @@ public:
   */
   std::map<std::string, std::string> *getModuleHelpUrlMap(void) { return &m_mapInfoURL; };
 
-  /*!
-    Get module change date
-    @return Return string with module change date.
-  */
-  std::string getModuleChangeDate(void) { return m_strModule_changeDate; };
-
-  /*!
-    Get module version
-    @return Return string with module version.
-  */
-  std::string getModuleModel(void) { return m_strModule_Model; };
-
-  /*!
-    Get module version
-    @return Return string with module version.
-  */
-  std::string getModuleVersion(void) { return m_strModule_Version; };
-
-  /*!
-    Get module buffer size
-    @return Buffer size in bytes.
-  */
-  uint16_t getModuleBufferSize(void) { return m_module_bufferSize; };
+  
 
   /*!
     Get manufacturer object
@@ -3207,6 +3353,7 @@ private:
 
   uint8_t m_vscpLevel;                                 // Module level. Default to level I
   std::string m_name;                                  // Module name
+  std::string m_copyright;                             // Copyright
   std::map<std::string, std::string> m_mapDescription; // Module description
   std::map<std::string, std::string> m_mapInfoURL;     // URL for full module information
 

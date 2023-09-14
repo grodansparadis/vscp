@@ -83,7 +83,49 @@ using namespace kainjow::mustache;
 //  Constructor/Destructor
 //
 
-CMDF_Value::CMDF_Value()
+CMDF_Object::CMDF_Object(mdf_record_type type)
+{
+  m_type = type;
+}
+
+CMDF_Object::~CMDF_Object()
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getObjectTypeString
+//
+
+std::string 
+CMDF_Object::getObjectTypeString()
+{
+  switch (m_type) {
+    case mdf_type_mdf:
+      return std::string("MDF top level");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getMdfObjectType
+//
+
+mdf_record_type 
+CMDF_Object::getMdfObjectType() 
+{ 
+  return m_type; 
+};
+
+// ----------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor/Destructor
+//
+
+CMDF_Value::CMDF_Value() :
+  CMDF_Object(mdf_type_value)
 {
   m_name.clear();
   m_strValue.clear();
@@ -101,7 +143,8 @@ CMDF_Value::~CMDF_Value()
 //  Constructor/Destructor
 //
 
-CMDF_RemoteVariable::CMDF_RemoteVariable()
+CMDF_RemoteVariable::CMDF_RemoteVariable() :
+  CMDF_Object(mdf_type_remotevar)
 {
   m_strDefault.clear();
   m_type   = remote_variable_type_unknown;
@@ -279,7 +322,8 @@ CMDF_RemoteVariable::getTypeByteCount(void)
 //  Constructor/Destructor
 //
 
-CMDF_Bit::CMDF_Bit()
+CMDF_Bit::CMDF_Bit() :
+  CMDF_Object(mdf_type_bit)
 {
   m_name.clear();
   m_pos     = 0;
@@ -394,7 +438,8 @@ CMDF_Bit::setMax(uint8_t max)
 //  Constructor/Destructor
 //
 
-CMDF_Register::CMDF_Register()
+CMDF_Register::CMDF_Register() :
+  CMDF_Object(mdf_type_register)
 {
   m_page       = 0;
   m_offset     = 0;
@@ -563,7 +608,8 @@ CMDF_Register::operator=(const CMDF_Register &other)
 //  Constructor/Destructor
 //
 
-CMDF_ActionParameter::CMDF_ActionParameter()
+CMDF_ActionParameter::CMDF_ActionParameter() :
+  CMDF_Object(mdf_type_action_param)
 {
   m_name.clear();
   m_offset = 0;
@@ -600,7 +646,7 @@ CMDF_ActionParameter::clearStorage(void)
 
   m_list_bit.clear();
 
-  // Clearup value list
+  // Clear up value list
   std::deque<CMDF_Value *>::iterator iterValue;
   for (iterValue = m_list_value.begin(); iterValue != m_list_value.end(); ++iterValue) {
     CMDF_Value *pRecordValue = *iterValue;
@@ -620,7 +666,8 @@ CMDF_ActionParameter::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Action::CMDF_Action()
+CMDF_Action::CMDF_Action() :
+  CMDF_Object(mdf_type_action)
 {
   m_name.clear();
   m_code = 0;
@@ -663,7 +710,8 @@ CMDF_Action::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_DecisionMatrix::CMDF_DecisionMatrix()
+CMDF_DecisionMatrix::CMDF_DecisionMatrix() :
+  CMDF_Object(mdf_type_decision_matrix)
 {
   m_level       = 1;
   m_startPage   = 0;
@@ -697,7 +745,8 @@ CMDF_DecisionMatrix::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_EventData::CMDF_EventData()
+CMDF_EventData::CMDF_EventData() :
+  CMDF_Object(mdf_type_event_data)
 {
   m_name.clear();
   m_offset = 0;
@@ -748,7 +797,8 @@ CMDF_EventData::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_Event::CMDF_Event()
+CMDF_Event::CMDF_Event() :
+  CMDF_Object(mdf_type_event)
 {
   m_name.clear();
   m_class     = 0;
@@ -794,7 +844,8 @@ CMDF_Event::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_Item::CMDF_Item()
+CMDF_Item::CMDF_Item() :
+  CMDF_Object(mdf_type_value_item)
 {
   m_name.clear();
 }
@@ -808,7 +859,8 @@ CMDF_Item::~CMDF_Item()
 //  Constructor/Destructor
 //
 
-CMDF_BootLoaderInfo::CMDF_BootLoaderInfo()
+CMDF_BootLoaderInfo::CMDF_BootLoaderInfo() :
+  CMDF_Object(mdf_type_bootloader)
 {
   m_nAlgorithm  = 0;
   m_nBlockSize  = 0;
@@ -836,7 +888,8 @@ CMDF_BootLoaderInfo::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Address::CMDF_Address()
+CMDF_Address::CMDF_Address() :
+  CMDF_Object(mdf_type_address)
 {
   clearStorage();
 }
@@ -866,7 +919,8 @@ CMDF_Address::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Manufacturer::CMDF_Manufacturer()
+CMDF_Manufacturer::CMDF_Manufacturer() :
+  CMDF_Object(mdf_type_manufacturer)
 {
   clearStorage();
 }
@@ -944,7 +998,8 @@ CMDF_Manufacturer::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Picture::CMDF_Picture()
+CMDF_Picture::CMDF_Picture() :
+  CMDF_Object(mdf_type_picture)
 {
   clearStorage();
   m_strName = ""; // default name
@@ -973,7 +1028,8 @@ CMDF_Picture::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Video::CMDF_Video()
+CMDF_Video::CMDF_Video() :
+  CMDF_Object(mdf_type_video)
 {
   clearStorage();
 }
@@ -1001,7 +1057,8 @@ CMDF_Video::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Firmware::CMDF_Firmware()
+CMDF_Firmware::CMDF_Firmware() :
+  CMDF_Object(mdf_type_firmware)
 {
   clearStorage();
 }
@@ -1039,7 +1096,8 @@ CMDF_Firmware::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Driver::CMDF_Driver()
+CMDF_Driver::CMDF_Driver() :
+  CMDF_Object(mdf_type_driver)
 {
   clearStorage();
 }
@@ -1078,7 +1136,8 @@ CMDF_Driver::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Manual::CMDF_Manual()
+CMDF_Manual::CMDF_Manual() :
+  CMDF_Object(mdf_type_manual)
 {
   clearStorage();
 }
@@ -1106,7 +1165,8 @@ CMDF_Manual::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Setup::CMDF_Setup()
+CMDF_Setup::CMDF_Setup() :
+  CMDF_Object(mdf_type_setup)
 {
   clearStorage();
 }
@@ -1136,7 +1196,8 @@ CMDF_Setup::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF::CMDF()
+CMDF::CMDF() :
+  CMDF_Object(mdf_type_mdf)
 {
   m_strLocale = "en";
   m_vscpLevel = VSCP_LEVEL1;
@@ -3284,6 +3345,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         pmdf->m_strModule_Model = strContent;
       }
+      else if (gTokenList.at(0) == "copyright") {
+        spdlog::trace("Parse-XML: handleMDFParserData: Module copyright: {0}", strContent);
+        pmdf->m_copyright = strContent;
+      }
       else if (gTokenList.at(0) == "version") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         pmdf->m_strModule_Version = strContent;
@@ -5323,6 +5388,15 @@ CMDF::parseMDF_JSON(const std::string &path)
     }
     else {
       spdlog::debug("Parse-JSON: There is no module model.");
+    }
+
+    // Module version - not mandatory
+    if (j["module"].contains("copyright") && j["module"]["copyright"].is_string()) {
+      m_copyright = j["module"]["copyright"];
+      spdlog::debug("Parse-JSON: Module copyright: {0}", m_copyright);
+    }
+    else {
+      spdlog::debug("Parse-JSON: There is no module copyright.");
     }
 
     // Module version - not mandatory
