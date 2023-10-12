@@ -847,7 +847,7 @@ CMDF_Event::clearStorage()
 CMDF_Item::CMDF_Item() :
   CMDF_Object(mdf_type_value_item)
 {
-  m_name.clear();
+  m_value.clear();
 }
 
 CMDF_Item::~CMDF_Item()
@@ -3532,7 +3532,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
-          gpItemStruct->m_name = strContent;
+          gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
@@ -3548,7 +3548,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
-          gpItemStruct->m_name = strContent;
+          gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax description: {0} Language: {1}",
@@ -3563,7 +3563,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
-          gpItemStruct->m_name = strContent;
+          gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
@@ -3579,7 +3579,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer web address: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
-          gpItemStruct->m_name = strContent;
+          gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
@@ -3595,7 +3595,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer social address: {0}", strContent);
           vscp_trim(strContent);
           vscp_makeLower(strContent);
-          gpItemStruct->m_name = strContent;
+          gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
           spdlog::trace(
@@ -5512,8 +5512,8 @@ CMDF::parseMDF_JSON(const std::string &path)
               json jsub2 = phone.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
-                ptel->m_name = jsub2["number"];
-                spdlog::debug("Parse-JSON: Module manufacturer telephone: {0}", ptel->m_name);
+                ptel->m_value = jsub2["number"];
+                spdlog::debug("Parse-JSON: Module manufacturer telephone: {0}", ptel->m_value);
               }
 
               // Description is language specific. Can be string or object
@@ -5545,8 +5545,8 @@ CMDF::parseMDF_JSON(const std::string &path)
               json jsub2 = fax.value();
 
               if (jsub2.contains("number") && jsub2["number"].is_string()) {
-                pfax->m_name = jsub2["number"];
-                spdlog::debug("Parse-JSON: Module manufacturer fax: {0}", pfax->m_name);
+                pfax->m_value = jsub2["number"];
+                spdlog::debug("Parse-JSON: Module manufacturer fax: {0}", pfax->m_value);
               }
 
               // Description is language specific. Can be string or object
@@ -5578,8 +5578,8 @@ CMDF::parseMDF_JSON(const std::string &path)
               json jsub2 = email.value();
 
               if (jsub2.contains("address") && jsub2["address"].is_string()) {
-                pemail->m_name = jsub2["address"];
-                spdlog::debug("Parse-JSON: Module manufacturer email: {0}", pemail->m_name);
+                pemail->m_value = jsub2["address"];
+                spdlog::debug("Parse-JSON: Module manufacturer email: {0}", pemail->m_value);
               }
 
               // Description is language specific. Can be string or object
@@ -5611,12 +5611,12 @@ CMDF::parseMDF_JSON(const std::string &path)
               json jsub2 = web.value();
 
               if (jsub2.contains("url") && jsub2["url"].is_string()) {
-                pweb->m_name = jsub2["url"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_name);
+                pweb->m_value = jsub2["url"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_value);
               }
               else if (jsub2.contains("address") && jsub2["address"].is_string()) {
-                pweb->m_name = jsub2["address"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_name);
+                pweb->m_value = jsub2["address"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", pweb->m_value);
               }
               else {
                 spdlog::warn("Parse-JSON: No web url/address.");
@@ -5651,12 +5651,12 @@ CMDF::parseMDF_JSON(const std::string &path)
               json jsub2 = social.value();
 
               if (jsub2.contains("url") && jsub2["url"].is_string()) {
-                psocial->m_name = jsub2["url"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_name);
+                psocial->m_value = jsub2["url"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_value);
               }
               else if (jsub2.contains("address") && jsub2["address"].is_string()) {
-                psocial->m_name = jsub2["id"];
-                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_name);
+                psocial->m_value = jsub2["id"];
+                spdlog::debug("Parse-JSON: Module manufacturer web: {0}", psocial->m_value);
               }
               else {
                 spdlog::warn("Parse-JSON: No social url/address.");

@@ -103,6 +103,7 @@ typedef enum mdf_file_type {
 typedef enum mdf_record_type {
   mdf_type_unknown,
   mdf_type_mdf,
+  mdf_type_mdf_item,
   mdf_type_value,
   mdf_type_value_item,
   mdf_type_bit,
@@ -121,9 +122,27 @@ typedef enum mdf_record_type {
   mdf_type_event_data,
   mdf_type_event_data_item,  
   mdf_type_bootloader,
+  mdf_type_bootloader_item,
   mdf_type_address,
   mdf_type_manufacturer,
+  mdf_type_manufacturer_item,
+  mdf_type_manufacturer_contact_phone,
+  mdf_type_manufacturer_contact_fax,
+  mdf_type_manufacturer_contact_email,
+  mdf_type_manufacturer_contact_web,
+  mdf_type_manufacturer_contact_social,
+  mdf_type_email,
+  mdf_type_email_item,
+  mdf_type_phone,
+  mdf_type_phone_item,
+  mdf_type_fax,
+  mdf_type_fax_item,
+  mdf_type_web,
+  mdf_type_web_item,
+  mdf_type_social,
+  mdf_type_social_item,
   mdf_type_file,
+  mdf_type_file_item,
   mdf_type_picture,
   mdf_type_picture_item,
   mdf_type_video,
@@ -136,12 +155,7 @@ typedef enum mdf_record_type {
   mdf_type_setup_item,
   mdf_type_manual,
   mdf_type_manual_item,
-  mdf_type_redirection,
-  mdf_type_email,
-  mdf_type_phone,
-  mdf_type_fax,
-  mdf_type_web,
-  mdf_type_social,
+  mdf_type_redirection,  
   mdf_type_alarm,
   mdf_type_generic_string,           // Used for direct item editing
   mdf_type_generic_number,           // Used for direct item editing
@@ -181,6 +195,9 @@ public:
     @return Standard string with description of object type
   */
   std::string getObjectTypeString(void);
+
+  virtual std::map<std::string, std::string> *getMapDescription(void) { return nullptr; };
+  virtual std::map<std::string, std::string> *getMapInfoUrl(void) {return nullptr; };
 
 private:
   mdf_record_type m_type;
@@ -951,7 +968,7 @@ public:
 
   /*!
     Get Foreground color for VSCP Works grid.
-    @return Fourground color.
+    @return Forgrund color.
   */
   uint32_t getForegroundColor(void) { return m_fgcolor; };
 
@@ -1626,10 +1643,16 @@ public:
   friend void __endSetupMDFParser(void *data, const char *name);
 
   /*!
-    Get bit array name
-    @return Bit array name
+    Get item value (***Deprecated use getValue()***)
+    @return Value
   */
-  std::string getName(void) { return m_name; };
+  std::string getName(void) { return m_value; };
+
+  /*!
+    Get item value
+    @return Value
+  */
+  std::string getValue(void) { return m_value; };
 
   /*!
     Get the register description
@@ -1670,7 +1693,7 @@ public:
   std::map<std::string, std::string> *getInfoUrlMap(void) { return &m_mapInfoURL; };
 
 private:
-  std::string m_name;
+  std::string m_value;  // Item value
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 };
@@ -1762,10 +1785,22 @@ public:
   std::string getStreet(void) { return m_strStreet; };
 
   /*!
+    Set street address
+    @param Street address to set    
+  */
+  void setStreet(const std::string& str) { m_strStreet = str; };
+
+  /*!
     Get town address
     @return Town address
   */
   std::string getTown(void) { return m_strTown; };
+
+  /*!
+    Set town address
+    @param str Town address to set    
+  */
+  void setTown(const std::string& str) { m_strTown = str; };
 
   /*!
     Get city address
@@ -1774,10 +1809,22 @@ public:
   std::string getCity(void) { return m_strCity; };
 
   /*!
+    Set city address
+    @param str City address to set    
+  */
+  void setCity(const std::string& str) { m_strCity = str; };
+
+  /*!
     Get post code address
     @return Post code address
   */
-  std::string getPostCode(void) { return m_strState; };
+  std::string getPostCode(void) { return m_strPostCode; };
+
+  /*!
+    Set post code address
+    @param str Post code address to set    
+  */
+  void setPostCode(const std::string& str) { m_strPostCode = str; };
 
   /*!
     Get state address
@@ -1786,16 +1833,34 @@ public:
   std::string getState(void) { return m_strState; };
 
   /*!
+    Set state address
+    @param str State address to set    
+  */
+  void setState(const std::string& str) { m_strState = str; };
+
+  /*!
     Get region address
     @return Region address
   */
   std::string getRegion(void) { return m_strRegion; };
 
   /*!
+    Set region address
+    @param str Region address to set    
+  */
+  void setRegion(const std::string& str) { m_strRegion = str; };
+
+  /*!
     Get country address
     @return Country address
   */
   std::string getCountry(void) { return m_strCountry; };
+
+  /*!
+    Set country address
+    @param str Country address to set    
+  */
+  void setCountry(const std::string& str) { m_strCountry = str; };
 
 private:
   std::string m_strStreet;
@@ -1834,6 +1899,15 @@ public:
       Clear storage
   */
   void clearStorage(void);
+
+  /// Get company name
+  std::string& getName(void) { return m_strName; };
+
+  /// Set company name
+  void setName(const std::string name) { m_strName = name; };
+
+  /// Get address object
+  CMDF_Address *getAddressObj(void) { return &m_address; };
 
   /*!
     Get a phone object from it's index
@@ -2882,7 +2956,7 @@ public:
   void setModuleName(std::string &str) { m_name = str; };
 
   /*!
-    Get module version
+    Get module model
     @return Return string with module version.
   */
   std::string getModuleModel(void) { return m_strModule_Model; };
@@ -2891,7 +2965,7 @@ public:
     Set module model
     @Param Module model as string
   */
-  void setModuleModel(std::string &str) { m_name = str; };
+  void setModuleModel(std::string &str) { m_strModule_Model = str; };
 
   /*!
     Get module change date
@@ -2901,10 +2975,9 @@ public:
 
   /*!
     Set module change date
-    @param str Module change date as ISO date formatted string
+    @pparam str Module change date as ISO date formatted string
   */
-  void setModuleModel(std::string &str) { m_strModule_changeDate = str; };
-
+  void setModuleChangeDate(std::string &str) { m_strModule_changeDate = str; };
 
   /*!
     Get module version
@@ -2916,7 +2989,7 @@ public:
     Set module version
     @param str Module version on stringt form
   */
-  std::string setModuleVersion(std::string &str) { m_strModule_Model = str; };
+  void setModuleVersion(std::string &str) { m_strModule_Version = str; };
 
   /*!
     Get module buffer size
@@ -2985,7 +3058,7 @@ public:
   /*!
     Get the module description map
   */
-  std::map<std::string, std::string> *getModuleDescriptionMap(void) { return &m_mapDescription; };
+  std::map<std::string, std::string> *getDescriptionMap(void) { return &m_mapDescription; };
 
   /*!
     Get Module info url in selected language.
@@ -3004,7 +3077,7 @@ public:
   /*!
     Get the module description map
   */
-  std::map<std::string, std::string> *getModuleHelpUrlMap(void) { return &m_mapInfoURL; };
+  std::map<std::string, std::string> *getHelpUrlMap(void) { return &m_mapInfoURL; };
 
   
 
