@@ -1655,6 +1655,12 @@ public:
   std::string getValue(void) { return m_value; };
 
   /*!
+    Set item value
+    @param Value to set
+  */
+  void setValue(std::string& str) { m_value = str; };
+
+  /*!
     Get the register description
     @return Register description
   */
@@ -1884,8 +1890,17 @@ private:
 class CMDF_Manufacturer : public CMDF_Object {
 
 public:
+
   CMDF_Manufacturer();
   ~CMDF_Manufacturer();
+
+  enum contact_type {
+    contact_type_phone,
+    contact_type_fax,
+    contact_type_email,
+    contact_type_web,
+    contact_type_social
+  }; 
 
   // Friend declarations
   friend CMDF;
@@ -1946,6 +1961,36 @@ public:
   {
     return ((m_list_Social.size() <= index) ? nullptr : m_list_Social[index]);
   };
+
+  /*!
+    Get pointer to list for phone contact item
+    @ſeturn Pointer to phone contact list
+  */
+  std::deque<CMDF_Item *> *getPhoneContactList(void) { return &m_list_Phone; };
+
+  /*!
+    Get pointer to list for fax contact item
+    @ſeturn Pointer to fax contact list
+  */
+  std::deque<CMDF_Item *> *getFaxContactList(void) { return &m_list_Fax; };
+
+  /*!
+    Get pointer to list for email contact item
+    @ſeturn Pointer to email contact list
+  */
+  std::deque<CMDF_Item *> *getEmailContactList(void) { return &m_list_Email; };
+
+  /*!
+    Get pointer to list for web contact item
+    @ſeturn Pointer to web contact list
+  */
+  std::deque<CMDF_Item *> *getWebContactList(void) { return &m_list_Web; };
+
+  /*!
+    Get pointer to list for social contact item
+    @ſeturn Pointer to social contact list
+  */
+  std::deque<CMDF_Item *> *getSocialContactList(void) { return &m_list_Social; };
 
 private:
   std::string m_strName;  // Manufacturer name
