@@ -101,7 +101,7 @@ typedef enum mdf_file_type {
 
 // MDF record types
 typedef enum mdf_record_type {
-  mdf_type_unknown,
+  mdf_type_unknown = 0,
   mdf_type_mdf,
   mdf_type_mdf_item,
   mdf_type_value,
@@ -1690,13 +1690,13 @@ public:
     Get description map
     @return map
   */
-  std::map<std::string, std::string> *getDescriptionMap(void) { return &m_mapDescription; };
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
 
   /*!
     Get Info/URL map
     @return map
   */
-  std::map<std::string, std::string> *getInfoUrlMap(void) { return &m_mapInfoURL; };
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
 private:
   std::string m_value;  // Item value
@@ -3102,8 +3102,15 @@ public:
 
   /*!
     Get the module description map
+    @return Pointer to module description map.
   */
-  std::map<std::string, std::string> *getDescriptionMap(void) { return &m_mapDescription; };
+  std::map<std::string, std::string> *getMapDescription(void) { return &m_mapDescription; };
+
+  /*!
+    Get the module info URL map
+    @return Pointer to module info URL map
+  */
+  std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
   /*!
     Get Module info url in selected language.
