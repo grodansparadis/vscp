@@ -3223,7 +3223,11 @@ public:
     return ((m_list_picture.size() <= index) ? nullptr : m_list_picture[index]);
   };
 
-  std::deque<CMDF_Picture *> getPictureObj(void) { return m_list_picture; };
+  /*!
+    Get pointer to picture object
+    @return Picture object
+  */
+  std::deque<CMDF_Picture *> *getPictureObj(void) { return &m_list_picture; };
 
   /*!
     Get number of module videos
@@ -3242,6 +3246,12 @@ public:
   };
 
   /*!
+    Get pointer to video object
+    @return Video object
+  */
+  std::deque<CMDF_Video *> *getVideoObj(void) { return &m_list_video; };
+
+  /*!
     Get number of module firmware files
     @return Number of firmware files available.
   */
@@ -3256,6 +3266,12 @@ public:
   {
     return ((m_list_firmware.size() <= index) ? nullptr : m_list_firmware[index]);
   };
+
+  /*!
+    Get pointer to firmware object
+    @return Firmware object
+  */
+  std::deque<CMDF_Firmware *> *getFirmwareObj(void) { return &m_list_firmware; };
 
   /*!
     Get number of driver files
@@ -3274,6 +3290,12 @@ public:
   };
 
   /*!
+    Get pointer to driver object
+    @return Driver object
+  */
+  std::deque<CMDF_Driver *> *getDriverObj(void) { return &m_list_driver; };
+
+  /*!
     Get number of setup files
     @return Number of setup available.
   */
@@ -3290,6 +3312,12 @@ public:
   };
 
   /*!
+    Get pointer to setup object
+    @return Setup object
+  */
+  std::deque<CMDF_Setup *> *getSetupObj(void) { return &m_list_setup; };
+
+  /*!
     Get number of module manual files
     @return Number of manual files available.
   */
@@ -3304,6 +3332,14 @@ public:
   {
     return ((m_list_manual.size() <= index) ? nullptr : m_list_manual[index]);
   };
+
+  /*!
+    Get pointer to manual object
+    @return Manual object
+  */
+  std::deque<CMDF_Manual *> *getManualObj(void) { return &m_list_manual; };
+
+   // ---------------------------------------------------------------------------------------------
 
   /*!
     Get bootloader object
