@@ -1739,16 +1739,34 @@ public:
   uint8_t getAlgorithm(void) { return m_nAlgorithm; };
 
   /*!
+    Set bootloader algorithm
+    @param nAlgorithm Code for Bootloader algorithm
+  */
+  void setAlgorithm(uint8_t nAlgorithm) { m_nAlgorithm = nAlgorithm; }
+
+  /*!
     get bootloader block size
     @return Bootloader block size
   */
   uint32_t getBlockSize(void) { return m_nBlockSize; };
 
   /*!
+    Set bootloader blocksize
+    @param size Blocksize to set
+  */
+  void setBlocksize(uint32_t size) { m_nBlockSize = size; };
+
+  /*!
     Get bootloader block count
     @return Bootloader block count
   */
   uint32_t getBlockCount(void) { return m_nBlockCount; };
+
+  /*!
+    Set block count
+    @param cnt Number of bootloader blocks
+  */
+  void setBlockCount(uint32_t cnt) { m_nBlockCount = cnt; };
 
 private:
   uint8_t m_nAlgorithm;   // Bootloader algorithm used by device
@@ -3187,6 +3205,8 @@ public:
   */
   std::string getManufacturerCountryAddress(void) { return m_manufacturer.m_address.m_strCountry; };
 
+  // ---------------------------------------------------------------------------------------------
+
   /*!
     Get number of module pictures
     @return Number of pictures available.
@@ -3202,6 +3222,8 @@ public:
   {
     return ((m_list_picture.size() <= index) ? nullptr : m_list_picture[index]);
   };
+
+  std::deque<CMDF_Picture *> getPictureObj(void) { return m_list_picture; };
 
   /*!
     Get number of module videos
