@@ -1020,6 +1020,7 @@ CMDF_Picture::clearStorage(void)
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
+  m_strDate.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -1049,6 +1050,7 @@ CMDF_Video::clearStorage(void)
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
+  m_strDate.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -1157,6 +1159,7 @@ CMDF_Manual::clearStorage(void)
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
+  m_strDate.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -1186,6 +1189,7 @@ CMDF_Setup::clearStorage(void)
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
+  m_strDate.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
 }
@@ -1785,6 +1789,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               gpPictureStruct->m_strFormat = attribute;
             }
           }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for picture
+            spdlog::trace("Parse-XML: handleMDFParserData: Module picture date: {0}", attribute);
+            gpPictureStruct->m_strDate = attribute;
+          }
         }
       }
       // * * * NOTE! * * *
@@ -1900,6 +1909,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
           }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for manula
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manialö date: {0}", attribute);
+            gpManualStruct->m_strDate = attribute;
+          }
         }
       }
       else if (currentToken == "boot") {
@@ -1978,6 +1992,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               gpPictureStruct->m_strFormat = attribute;
             }
           }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for picture
+            spdlog::trace("Parse-XML: handleMDFParserData: Module picture date: {0}", attribute);
+            gpPictureStruct->m_strDate = attribute;
+          }
         }
       }
       // [3] Video (standard format)
@@ -2010,6 +2029,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             if (!attribute.empty()) {
               gpVideoStruct->m_strFormat = attribute;
             }
+          }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for video
+            spdlog::trace("Parse-XML: handleMDFParserData: Module video date: {0}", attribute);
+            gpVideoStruct->m_strDate = attribute;
           }
         }
       }      
@@ -2200,6 +2224,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual format: {0}", attribute);
             gpManualStruct->m_strFormat = attribute;
           }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for manual
+            spdlog::trace("Parse-XML: handleMDFParserData: Module manual date: {0}", attribute);
+            gpManualStruct->m_strDate = attribute;
+          }
         }
       }
       // [3] Picture (standard format)
@@ -2232,6 +2261,11 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             if (!attribute.empty()) {
               gpSetupStruct->m_strFormat = attribute;
             }
+          }
+          else if (0 == strcasecmp(attr[i], "date")) {
+            // Date for setup
+            spdlog::trace("Parse-XML: handleMDFParserData: Module setup date: {0}", attribute);
+            gpSetupStruct->m_strDate = attribute;
           }
         }
       }
@@ -6938,6 +6972,14 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No picture format.");
           }
 
+          if (jpic.contains("date") && jpic["date"].is_string()) {
+            ppicture->m_strDate = jpic["date"];
+            spdlog::debug("Parse-JSON: Picture date: {0} ", jpic["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No picture date");
+          }
+
           if (getDescriptionList(jpic, ppicture->m_mapDescription) != VSCP_ERROR_SUCCESS) {
             spdlog::warn("Parse-JSON: Failed to get picture description.");
           }
@@ -6984,6 +7026,14 @@ CMDF::parseMDF_JSON(const std::string &path)
           }
           else {
             spdlog::warn("Parse-JSON: No video format.");
+          }
+
+          if (jvideo.contains("date") && jvideo["date"].is_string()) {
+            pvideo->m_strDate = jvideo["date"];
+            spdlog::debug("Parse-JSON: Video date: {0} ", jvideo["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No video date");
           }
 
           if (getDescriptionList(jvideo, pvideo->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -7351,6 +7401,14 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No manual language.");
           }
 
+          if (jmanual.contains("date") && jmanual["date"].is_string()) {
+            pmanual->m_strDate = jmanual["date"];
+            spdlog::debug("Parse-JSON: Manual date: {0} ", jmanual["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No manual date");
+          }
+
           if (getDescriptionList(jmanual, pmanual->m_mapDescription) != VSCP_ERROR_SUCCESS) {
             spdlog::warn("Parse-JSON: Failed to get event data description.");
           }
@@ -7397,6 +7455,14 @@ CMDF::parseMDF_JSON(const std::string &path)
           }
           else {
             spdlog::warn("Parse-JSON: No setup format.");
+          }
+
+          if (jsetup.contains("date") && jsetup["date"].is_string()) {
+            psetup->m_strDate = jsetup["date"];
+            spdlog::debug("Parse-JSON: Setup date: {0} ", jsetup["date"]);
+          }
+          else {
+            spdlog::warn("Parse-JSON: No setup date");
           }
 
           if (getDescriptionList(jsetup, psetup->m_mapDescription) != VSCP_ERROR_SUCCESS) {

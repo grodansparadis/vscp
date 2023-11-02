@@ -1468,7 +1468,7 @@ typedef int socklen_t;
 // strlcpy
 //
 
-static void strlcpy( register char *dst, register const char *src, size_t n )
+static void _strlcpy( register char *dst, register const char *src, size_t n )
 {
     for (; *src != '\0' && n > 1; n--) {
         *dst++ = *src++;
@@ -1490,7 +1490,7 @@ static char *stcp_strndup( const char *ptr, size_t len )
     char *p;
 
     if ( ( p = (char *)malloc( len + 1 ) ) != NULL ) {
-        strlcpy( p, ptr, len + 1 );
+        _strlcpy( p, ptr, len + 1 );
     }
 
     return p;

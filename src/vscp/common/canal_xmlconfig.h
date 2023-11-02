@@ -36,6 +36,8 @@
 #if !defined(CANALCONFIG_H__INCLUDED_)
 #define CANALCONFIG_H__INCLUDED_
 
+#include <inttypes.h>
+
 #include <string>
 #include <list>
 #include <vector>

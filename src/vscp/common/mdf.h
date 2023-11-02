@@ -116,11 +116,11 @@ typedef enum mdf_record_type {
   mdf_type_decision_matrix,
   mdf_type_action,
   mdf_type_action_item,
-  mdf_type_action_param,  
+  mdf_type_action_param,
   mdf_type_event,
   mdf_type_event_item,
   mdf_type_event_data,
-  mdf_type_event_data_item,  
+  mdf_type_event_data_item,
   mdf_type_bootloader,
   mdf_type_bootloader_item,
   mdf_type_address,
@@ -155,7 +155,7 @@ typedef enum mdf_record_type {
   mdf_type_setup_item,
   mdf_type_manual,
   mdf_type_manual_item,
-  mdf_type_redirection,  
+  mdf_type_redirection,
   mdf_type_alarm,
   mdf_type_generic_string,           // Used for direct item editing
   mdf_type_generic_number,           // Used for direct item editing
@@ -197,7 +197,7 @@ public:
   std::string getObjectTypeString(void);
 
   virtual std::map<std::string, std::string> *getMapDescription(void) { return nullptr; };
-  virtual std::map<std::string, std::string> *getMapInfoUrl(void) {return nullptr; };
+  virtual std::map<std::string, std::string> *getMapInfoUrl(void) { return nullptr; };
 
 private:
   mdf_record_type m_type;
@@ -1658,7 +1658,7 @@ public:
     Set item value
     @param Value to set
   */
-  void setValue(std::string& str) { m_value = str; };
+  void setValue(std::string &str) { m_value = str; };
 
   /*!
     Get the register description
@@ -1699,7 +1699,7 @@ public:
   std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
 private:
-  std::string m_value;  // Item value
+  std::string m_value; // Item value
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Url that contain extra hel information
 };
@@ -1810,9 +1810,9 @@ public:
 
   /*!
     Set street address
-    @param Street address to set    
+    @param Street address to set
   */
-  void setStreet(const std::string& str) { m_strStreet = str; };
+  void setStreet(const std::string &str) { m_strStreet = str; };
 
   /*!
     Get town address
@@ -1822,9 +1822,9 @@ public:
 
   /*!
     Set town address
-    @param str Town address to set    
+    @param str Town address to set
   */
-  void setTown(const std::string& str) { m_strTown = str; };
+  void setTown(const std::string &str) { m_strTown = str; };
 
   /*!
     Get city address
@@ -1834,9 +1834,9 @@ public:
 
   /*!
     Set city address
-    @param str City address to set    
+    @param str City address to set
   */
-  void setCity(const std::string& str) { m_strCity = str; };
+  void setCity(const std::string &str) { m_strCity = str; };
 
   /*!
     Get post code address
@@ -1846,9 +1846,9 @@ public:
 
   /*!
     Set post code address
-    @param str Post code address to set    
+    @param str Post code address to set
   */
-  void setPostCode(const std::string& str) { m_strPostCode = str; };
+  void setPostCode(const std::string &str) { m_strPostCode = str; };
 
   /*!
     Get state address
@@ -1858,9 +1858,9 @@ public:
 
   /*!
     Set state address
-    @param str State address to set    
+    @param str State address to set
   */
-  void setState(const std::string& str) { m_strState = str; };
+  void setState(const std::string &str) { m_strState = str; };
 
   /*!
     Get region address
@@ -1870,9 +1870,9 @@ public:
 
   /*!
     Set region address
-    @param str Region address to set    
+    @param str Region address to set
   */
-  void setRegion(const std::string& str) { m_strRegion = str; };
+  void setRegion(const std::string &str) { m_strRegion = str; };
 
   /*!
     Get country address
@@ -1882,9 +1882,9 @@ public:
 
   /*!
     Set country address
-    @param str Country address to set    
+    @param str Country address to set
   */
-  void setCountry(const std::string& str) { m_strCountry = str; };
+  void setCountry(const std::string &str) { m_strCountry = str; };
 
 private:
   std::string m_strStreet;
@@ -1908,17 +1908,10 @@ private:
 class CMDF_Manufacturer : public CMDF_Object {
 
 public:
-
   CMDF_Manufacturer();
   ~CMDF_Manufacturer();
 
-  enum contact_type {
-    contact_type_phone,
-    contact_type_fax,
-    contact_type_email,
-    contact_type_web,
-    contact_type_social
-  }; 
+  enum contact_type { contact_type_phone, contact_type_fax, contact_type_email, contact_type_web, contact_type_social };
 
   // Friend declarations
   friend CMDF;
@@ -1934,7 +1927,7 @@ public:
   void clearStorage(void);
 
   /// Get company name
-  std::string& getName(void) { return m_strName; };
+  std::string &getName(void) { return m_strName; };
 
   /// Set company name
   void setName(const std::string name) { m_strName = name; };
@@ -2078,6 +2071,18 @@ public:
   */
   void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
 
+  /*
+    Get date for object
+    @return date on ISO string format
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
+
   /*!
     Set description for picture
   */
@@ -2091,16 +2096,7 @@ public:
     @param strLanguage Language for description (default="en")
     @return Description for picture as string
   */
-  std::string getDescription(std::string strLanguage = "en")
-  {
-    return m_mapDescription[strLanguage];
-    // if (m_mapDescription.find(strLanguage) != m_mapDescription.end()) {
-    //   return m_mapDescription[strLanguage];
-    // }
-    // else {
-    //   return "";
-    // }
-  };
+  std::string getDescription(std::string strLanguage = "en") { return m_mapDescription[strLanguage]; };
 
   /*!
     Get the value info URL
@@ -2142,6 +2138,12 @@ private:
     Picture type
   */
   std::string m_strFormat;
+
+  /*
+    Date
+  */
+  std::string m_strDate;
+
 
   /*!
       Description of file
@@ -2207,6 +2209,18 @@ public:
   */
   void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
 
+  /*
+    Get date for object
+    @return date on ISO string format
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
+
   /*!
     Set description for video
   */
@@ -2270,6 +2284,12 @@ private:
     video type
   */
   std::string m_strFormat;
+
+  /*
+    Date
+  */
+  std::string m_strDate;
+
 
   /*!
       Description of file
@@ -2342,11 +2362,17 @@ public:
   */
   std::string getFormat(void) { return m_strFormat; };
 
-  /*!
-    Get ISO date string for firmware
-    @return ISO date string for firmware
+  /*
+    Get date for object
+    @return date on ISO string format
   */
   std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
 
   /*!
     Get version major for firmware
@@ -2579,11 +2605,17 @@ public:
   */
   std::string getMd5(void) { return m_strMd5; };
 
-  /*!
-    Get ISO date for driver
-    @return ISO date on string form
+  /*
+    Get date for object
+    @return date on ISO string format
   */
   std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
 
   /*!
     Set description for picture
@@ -2660,6 +2692,11 @@ private:
   std::string m_strOSVer;
 
   /*!
+    Date for object
+  */
+  std::string m_strDate;
+
+  /*!
     Processor architecture
   */
   std::string m_strArchitecture;
@@ -2672,9 +2709,6 @@ private:
 
   /// Subminor version number
   uint16_t m_version_patch;
-
-  /// Date for driver
-  std::string m_strDate;
 
   /*!
     MD5 hash on hex string form for firmware file
@@ -2768,6 +2802,18 @@ public:
     }
   };
 
+  /*
+    Get date for object
+    @return date on ISO string format
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
+
   /*!
     Get the value info URL
     @return Value info URL
@@ -2808,6 +2854,16 @@ private:
     setup type
   */
   std::string m_strFormat;
+
+  /*
+    Date
+  */
+  std::string m_strDate;
+
+  /*
+     Version
+   */
+  std::string m_strVersion;
 
   /*!
       Description of file
@@ -2866,6 +2922,18 @@ public:
     @return Manual language string
   */
   std::string getLanguage(void) { return m_strLanguage; };
+
+  /*
+    Get date for object
+    @return date on ISO string format
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string& isodate) { m_strDate = isodate; };
 
   /*!
     Set description for manual item
@@ -2935,6 +3003,11 @@ private:
     Language [format for manual
   */
   std::string m_strLanguage;
+
+  /*!
+    Object date
+  */
+  std::string m_strDate;
 
   /*!
       Description of file
@@ -3064,7 +3137,7 @@ public:
     Set module buffer size
     @param size Module buffer size to set
   */
-  void setModuleBufferSize(uint16_t size ) { m_module_bufferSize = size; };
+  void setModuleBufferSize(uint16_t size) { m_module_bufferSize = size; };
 
   /*!
     Get Module copyright.
@@ -3149,8 +3222,6 @@ public:
   */
   std::map<std::string, std::string> *getHelpUrlMap(void) { return &m_mapInfoURL; };
 
-  
-
   /*!
     Get manufacturer object
     @return Pointer to manufacturer object
@@ -3224,10 +3295,10 @@ public:
   };
 
   /*!
-    Get pointer to picture object
+    Get pointer to picture object list
     @return Picture object
   */
-  std::deque<CMDF_Picture *> *getPictureObj(void) { return &m_list_picture; };
+  std::deque<CMDF_Picture *> *getPictureObjList(void) { return &m_list_picture; };
 
   /*!
     Get number of module videos
@@ -3246,10 +3317,10 @@ public:
   };
 
   /*!
-    Get pointer to video object
+    Get pointer to video object list
     @return Video object
   */
-  std::deque<CMDF_Video *> *getVideoObj(void) { return &m_list_video; };
+  std::deque<CMDF_Video *> *getVideoObjList(void) { return &m_list_video; };
 
   /*!
     Get number of module firmware files
@@ -3271,7 +3342,7 @@ public:
     Get pointer to firmware object
     @return Firmware object
   */
-  std::deque<CMDF_Firmware *> *getFirmwareObj(void) { return &m_list_firmware; };
+  std::deque<CMDF_Firmware *> *getFirmwareObjList(void) { return &m_list_firmware; };
 
   /*!
     Get number of driver files
@@ -3293,7 +3364,7 @@ public:
     Get pointer to driver object
     @return Driver object
   */
-  std::deque<CMDF_Driver *> *getDriverObj(void) { return &m_list_driver; };
+  std::deque<CMDF_Driver *> *getDriverObjList(void) { return &m_list_driver; };
 
   /*!
     Get number of setup files
@@ -3315,7 +3386,7 @@ public:
     Get pointer to setup object
     @return Setup object
   */
-  std::deque<CMDF_Setup *> *getSetupObj(void) { return &m_list_setup; };
+  std::deque<CMDF_Setup *> *getSetupObjList(void) { return &m_list_setup; };
 
   /*!
     Get number of module manual files
@@ -3334,12 +3405,12 @@ public:
   };
 
   /*!
-    Get pointer to manual object
+    Get pointer to manual object list
     @return Manual object
   */
-  std::deque<CMDF_Manual *> *getManualObj(void) { return &m_list_manual; };
+  std::deque<CMDF_Manual *> *getManualObjList(void) { return &m_list_manual; };
 
-   // ---------------------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------------
 
   /*!
     Get bootloader object
@@ -3359,7 +3430,7 @@ public:
     Get the complete register list
     @return Pointer to register list.
   */
-  std::deque<CMDF_Register *> *getRegisterList(void) { return &m_list_register; };
+  std::deque<CMDF_Register *> *getRegisterObjList(void) { return &m_list_register; };
 
   /*!
     Get all registers for a specific page

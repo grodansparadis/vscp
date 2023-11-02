@@ -29,6 +29,8 @@
 #if !defined(VSCP_UNIT_H__INCLUDED_)
 #define VSCP_UNIT_H__INCLUDED_
 
+#include <inttypes.h>
+
 #include <string>
 
 class CVscpUnit {
