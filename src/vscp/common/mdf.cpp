@@ -88,16 +88,13 @@ CMDF_Object::CMDF_Object(mdf_record_type type)
   m_type = type;
 }
 
-CMDF_Object::~CMDF_Object()
-{
-
-}
+CMDF_Object::~CMDF_Object() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getObjectTypeString
 //
 
-std::string 
+std::string
 CMDF_Object::getObjectTypeString()
 {
   switch (m_type) {
@@ -112,10 +109,10 @@ CMDF_Object::getObjectTypeString()
 // getMdfObjectType
 //
 
-mdf_record_type 
-CMDF_Object::getMdfObjectType() 
-{ 
-  return m_type; 
+mdf_record_type
+CMDF_Object::getMdfObjectType()
+{
+  return m_type;
 };
 
 // ----------------------------------------------------------------------------
@@ -124,8 +121,8 @@ CMDF_Object::getMdfObjectType()
 //  Constructor/Destructor
 //
 
-CMDF_Value::CMDF_Value() :
-  CMDF_Object(mdf_type_value)
+CMDF_Value::CMDF_Value()
+  : CMDF_Object(mdf_type_value)
 {
   m_name.clear();
   m_strValue.clear();
@@ -143,8 +140,8 @@ CMDF_Value::~CMDF_Value()
 //  Constructor/Destructor
 //
 
-CMDF_RemoteVariable::CMDF_RemoteVariable() :
-  CMDF_Object(mdf_type_remotevar)
+CMDF_RemoteVariable::CMDF_RemoteVariable()
+  : CMDF_Object(mdf_type_remotevar)
 {
   m_strDefault.clear();
   m_type   = remote_variable_type_unknown;
@@ -322,8 +319,8 @@ CMDF_RemoteVariable::getTypeByteCount(void)
 //  Constructor/Destructor
 //
 
-CMDF_Bit::CMDF_Bit() :
-  CMDF_Object(mdf_type_bit)
+CMDF_Bit::CMDF_Bit()
+  : CMDF_Object(mdf_type_bit)
 {
   m_name.clear();
   m_pos     = 0;
@@ -394,7 +391,7 @@ CMDF_Bit::setWidth(uint8_t width)
   for (int k = m_pos; k < (m_pos + m_width); k++) {
     m_mask |= (1 << k);
   }
-  
+
   m_min = m_min & m_mask;
   m_max = m_max & m_mask;
 }
@@ -403,13 +400,13 @@ CMDF_Bit::setWidth(uint8_t width)
 //  setPos
 //
 
-void 
+void
 CMDF_Bit::setPos(uint8_t pos)
-{ 
-  m_pos = (pos & 7); 
+{
+  m_pos = (pos & 7);
 
   // Make sure width get masked
-  setWidth(m_width); 
+  setWidth(m_width);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -438,8 +435,8 @@ CMDF_Bit::setMax(uint8_t max)
 //  Constructor/Destructor
 //
 
-CMDF_Register::CMDF_Register() :
-  CMDF_Object(mdf_type_register)
+CMDF_Register::CMDF_Register()
+  : CMDF_Object(mdf_type_register)
 {
   m_page       = 0;
   m_offset     = 0;
@@ -608,8 +605,8 @@ CMDF_Register::operator=(const CMDF_Register &other)
 //  Constructor/Destructor
 //
 
-CMDF_ActionParameter::CMDF_ActionParameter() :
-  CMDF_Object(mdf_type_action_param)
+CMDF_ActionParameter::CMDF_ActionParameter()
+  : CMDF_Object(mdf_type_action_param)
 {
   m_name.clear();
   m_offset = 0;
@@ -666,8 +663,8 @@ CMDF_ActionParameter::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Action::CMDF_Action() :
-  CMDF_Object(mdf_type_action)
+CMDF_Action::CMDF_Action()
+  : CMDF_Object(mdf_type_action)
 {
   m_name.clear();
   m_code = 0;
@@ -710,8 +707,8 @@ CMDF_Action::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_DecisionMatrix::CMDF_DecisionMatrix() :
-  CMDF_Object(mdf_type_decision_matrix)
+CMDF_DecisionMatrix::CMDF_DecisionMatrix()
+  : CMDF_Object(mdf_type_decision_matrix)
 {
   m_level       = 1;
   m_startPage   = 0;
@@ -745,8 +742,8 @@ CMDF_DecisionMatrix::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_EventData::CMDF_EventData() :
-  CMDF_Object(mdf_type_event_data)
+CMDF_EventData::CMDF_EventData()
+  : CMDF_Object(mdf_type_event_data)
 {
   m_name.clear();
   m_offset = 0;
@@ -797,8 +794,8 @@ CMDF_EventData::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_Event::CMDF_Event() :
-  CMDF_Object(mdf_type_event)
+CMDF_Event::CMDF_Event()
+  : CMDF_Object(mdf_type_event)
 {
   m_name.clear();
   m_class     = 0;
@@ -844,8 +841,8 @@ CMDF_Event::clearStorage()
 //  Constructor/Destructor
 //
 
-CMDF_Item::CMDF_Item() :
-  CMDF_Object(mdf_type_value_item)
+CMDF_Item::CMDF_Item()
+  : CMDF_Object(mdf_type_value_item)
 {
   m_value.clear();
 }
@@ -859,8 +856,8 @@ CMDF_Item::~CMDF_Item()
 //  Constructor/Destructor
 //
 
-CMDF_BootLoaderInfo::CMDF_BootLoaderInfo() :
-  CMDF_Object(mdf_type_bootloader)
+CMDF_BootLoaderInfo::CMDF_BootLoaderInfo()
+  : CMDF_Object(mdf_type_bootloader)
 {
   m_nAlgorithm  = 0;
   m_nBlockSize  = 0;
@@ -888,8 +885,8 @@ CMDF_BootLoaderInfo::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Address::CMDF_Address() :
-  CMDF_Object(mdf_type_address)
+CMDF_Address::CMDF_Address()
+  : CMDF_Object(mdf_type_address)
 {
   clearStorage();
 }
@@ -919,8 +916,8 @@ CMDF_Address::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Manufacturer::CMDF_Manufacturer() :
-  CMDF_Object(mdf_type_manufacturer)
+CMDF_Manufacturer::CMDF_Manufacturer()
+  : CMDF_Object(mdf_type_manufacturer)
 {
   clearStorage();
 }
@@ -998,17 +995,14 @@ CMDF_Manufacturer::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Picture::CMDF_Picture() :
-  CMDF_Object(mdf_type_picture)
+CMDF_Picture::CMDF_Picture()
+  : CMDF_Object(mdf_type_picture)
 {
   clearStorage();
   m_strName = ""; // default name
 }
 
-CMDF_Picture::~CMDF_Picture()
-{
-  ;
-}
+CMDF_Picture::~CMDF_Picture() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  clearStorage
@@ -1029,8 +1023,8 @@ CMDF_Picture::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Video::CMDF_Video() :
-  CMDF_Object(mdf_type_video)
+CMDF_Video::CMDF_Video()
+  : CMDF_Object(mdf_type_video)
 {
   clearStorage();
 }
@@ -1059,8 +1053,8 @@ CMDF_Video::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Firmware::CMDF_Firmware() :
-  CMDF_Object(mdf_type_firmware)
+CMDF_Firmware::CMDF_Firmware()
+  : CMDF_Object(mdf_type_firmware)
 {
   clearStorage();
 }
@@ -1095,11 +1089,34 @@ CMDF_Firmware::clearStorage(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  setVersion
+//
+
+void
+CMDF_Firmware::setVersion(const std::string &ver)
+{
+  std::deque<std::string> vector;
+  vscp_split(vector, ver, ".");
+
+  if (vector.size() >= 1) {
+    m_version_major = vscp_readStringValue(vector[0]);
+  }
+
+  if (vector.size() >= 2) {
+    m_version_minor = vscp_readStringValue(vector[1]);
+  }
+
+  if (vector.size() >= 3) {
+    m_version_patch = vscp_readStringValue(vector[2]);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 
-CMDF_Driver::CMDF_Driver() :
-  CMDF_Object(mdf_type_driver)
+CMDF_Driver::CMDF_Driver()
+  : CMDF_Object(mdf_type_driver)
 {
   clearStorage();
 }
@@ -1135,11 +1152,34 @@ CMDF_Driver::clearStorage(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  setVersion
+//
+
+void
+CMDF_Driver::setVersion(const std::string &ver)
+{
+  std::deque<std::string> vector;
+  vscp_split(vector, ver, ".");
+
+  if (vector.size() >= 1) {
+    m_version_major = vscp_readStringValue(vector[0]);
+  }
+
+  if (vector.size() >= 2) {
+    m_version_minor = vscp_readStringValue(vector[1]);
+  }
+
+  if (vector.size() >= 3) {
+    m_version_patch = vscp_readStringValue(vector[2]);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 
-CMDF_Manual::CMDF_Manual() :
-  CMDF_Object(mdf_type_manual)
+CMDF_Manual::CMDF_Manual()
+  : CMDF_Object(mdf_type_manual)
 {
   clearStorage();
 }
@@ -1168,8 +1208,8 @@ CMDF_Manual::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF_Setup::CMDF_Setup() :
-  CMDF_Object(mdf_type_setup)
+CMDF_Setup::CMDF_Setup()
+  : CMDF_Object(mdf_type_setup)
 {
   clearStorage();
 }
@@ -1200,8 +1240,8 @@ CMDF_Setup::clearStorage(void)
 //  Constructor/Destructor
 //
 
-CMDF::CMDF() :
-  CMDF_Object(mdf_type_mdf)
+CMDF::CMDF()
+  : CMDF_Object(mdf_type_mdf)
 {
   m_strLocale = "en";
   m_vscpLevel = VSCP_LEVEL1;
@@ -1619,11 +1659,11 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
       pBits->m_name = attribute;
     }
     else if (0 == strcasecmp(attr[i], "pos")) {
-      //pBits->m_pos = vscp_readStringValue(attribute);
+      // pBits->m_pos = vscp_readStringValue(attribute);
       pBits->setPos(vscp_readStringValue(attribute));
     }
     else if (0 == strcasecmp(attr[i], "width")) {
-      //pBits->m_width = vscp_readStringValue(attribute);
+      // pBits->m_width = vscp_readStringValue(attribute);
       pBits->setWidth(vscp_readStringValue(attribute));
     }
     else if (0 == strcasecmp(attr[i], "default")) {
@@ -5234,12 +5274,12 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
         }
 
         if (j.contains("pos") && j["pos"].is_number()) {
-          //pbit->m_pos = j["pos"];
+          // pbit->m_pos = j["pos"];
           pbit->setPos(j["pos"]);
           spdlog::debug("Parse-JSON: Bitlist pos: {0}", pbit->m_pos);
         }
         else if (j.contains("pos") && j["pos"].is_string()) {
-          //pbit->m_pos = vscp_readStringValue(j["pos"]);
+          // pbit->m_pos = vscp_readStringValue(j["pos"]);
           pbit->setPos(vscp_readStringValue(j["pos"]));
           spdlog::debug("Parse-JSON: Bitlist pos: {0}", pbit->m_pos);
         }
@@ -5249,12 +5289,12 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
         }
 
         if (j.contains("width") && j["width"].is_number()) {
-          //pbit->m_width = j["width"];
+          // pbit->m_width = j["width"];
           pbit->setWidth(j["width"]);
           spdlog::debug("Parse-JSON: Bitlist width: {0}", pbit->m_width);
         }
         else if (j.contains("width") && j["width"].is_string()) {
-          //pbit->m_width = vscp_readStringValue(j["width"]);
+          // pbit->m_width = vscp_readStringValue(j["width"]);
           pbit->setWidth(vscp_readStringValue(j["width"]));
           spdlog::debug("Parse-JSON: Bitlist width: {0}", pbit->m_width);
         }
@@ -7704,7 +7744,44 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getRegisterList
+// deleteRegister
+//
+
+bool
+CMDF::deleteRegister(CMDF_Register *preg)
+{
+  // Check pointer
+  if (nullptr == preg) {
+    return false;
+  }
+
+  for (auto it = m_list_register.cbegin(); it != m_list_register.cend(); ++it) {
+    if (preg == *it) {
+      m_list_register.erase(it);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// createRegisterStortedSet
+//
+
+void
+CMDF::createRegisterStortedSet(std::set<uint32_t> &set, uint16_t page)
+{
+  std::deque<CMDF_Register *> *regset = getRegisterObjList();
+  for (auto it = regset->cbegin(); it != regset->cend(); ++it) {
+    if (page == (*it)->getPage()) {
+      set.insert((*it)->getOffset());
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// format
 //
 
 std::string &

@@ -110,6 +110,7 @@ typedef enum mdf_record_type {
   mdf_type_bit_item,
   mdf_type_register,
   mdf_type_register_item,
+  mdf_type_register_sub_item,
   mdf_type_register_page,
   mdf_type_remotevar,
   mdf_type_remotevar_item,
@@ -141,20 +142,25 @@ typedef enum mdf_record_type {
   mdf_type_web_item,
   mdf_type_social,
   mdf_type_social_item,
-  mdf_type_file,
-  mdf_type_file_item,
-  mdf_type_picture,
-  mdf_type_picture_item,
-  mdf_type_video,
-  mdf_type_video_item,
-  mdf_type_firmware,
-  mdf_type_firmware_item,
-  mdf_type_driver,
-  mdf_type_driver_item,
-  mdf_type_setup,
-  mdf_type_setup_item,
-  mdf_type_manual,
-  mdf_type_manual_item,
+  mdf_type_file,              // File header - "File"
+  mdf_type_picture,           // Picture head - "Pictures"
+  mdf_type_picture_item,      // Picture object "Picture: some name"
+  mdf_type_picture_sub_item,  // Picture content
+  mdf_type_video,             // Video head - "Video"
+  mdf_type_video_item,        // Video object - "Video : some name"
+  mdf_type_video_sub_item,    // Video content
+  mdf_type_firmware,          // Firmware head - "Firmware"
+  mdf_type_firmware_item,     // Firmware object "Firmware: some name"
+  mdf_type_firmware_sub_item, // Firmware content
+  mdf_type_driver,            // Driver head - "Driver"
+  mdf_type_driver_item,       // Driver object - "Driver: some name"
+  mdf_type_driver_sub_item,   // Diver content
+  mdf_type_setup,             // Setup head - "Setup Script"
+  mdf_type_setup_item,        // Setup object - "Setup: some name"
+  mdf_type_setup_sub_item,    // Setup content
+  mdf_type_manual,            // Manual head - "Manual"
+  mdf_type_manual_item,       // Manula object - "Manual: some name"
+  mdf_type_manual_sub_item,   // Manual content"
   mdf_type_redirection,
   mdf_type_alarm,
   mdf_type_generic_string,           // Used for direct item editing
@@ -523,13 +529,13 @@ public:
     Get the register name
     @return Register name
   */
-  std::string &getName(void) { return m_name; };
+  std::string getName(void) { return m_name; };
 
   /*!
     Set register name
     @param name Register name to set
   */
-  void setName(std::string &name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the register description
@@ -542,7 +548,7 @@ public:
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -555,7 +561,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get register default string
@@ -576,7 +582,7 @@ public:
     Set register default
     @param str Default string to set
   */
-  void setDefault(std::string &str) { m_strDefault = str; };
+  void setDefault(const std::string &str) { m_strDefault = str; };
 
   /*!
     Set register default
@@ -663,12 +669,14 @@ public:
   void setWidth(uint32_t width) { m_width = width; };
 
   /*!
+    *** Deprectated ***
     Get size for register
     @return Size for register.
   */
   uint32_t getSize(void) { return m_span; };
 
   /*!
+    *** Deprcated ***
     Set size for register
     @param size Size for register.
   */
@@ -1943,11 +1951,23 @@ public:
   CMDF_Item *getPhoneObj(size_t index = 0) { return ((m_list_Phone.size() <= index) ? nullptr : m_list_Phone[index]); };
 
   /*!
+    Get number of phone elements
+    @return Number of phone elements
+  */
+  size_t getPhoneObjCount(void) { return m_list_Phone.size(); };
+
+  /*!
     Get a fax object from it's index
     @param index Index of fax objext to get.
     @return Pointer to fax object or NULL if index is out of range.
   */
   CMDF_Item *getFaxObj(size_t index = 0) { return ((m_list_Fax.size() <= index) ? nullptr : m_list_Fax[index]); };
+
+  /*!
+    Get number of fax elements
+    @return Number of fax elements
+  */
+  size_t getFaxObjCount(void) { return m_list_Fax.size(); };
 
   /*!
     Get a email object from it's index
@@ -1957,11 +1977,23 @@ public:
   CMDF_Item *getEmailObj(size_t index = 0) { return ((m_list_Email.size() <= index) ? nullptr : m_list_Email[index]); };
 
   /*!
+    Get number of email elements
+    @return Number of email elements
+  */
+  size_t getEmailObjCount(void) { return m_list_Email.size(); };
+
+  /*!
     Get a web object from it's index
     @param index Index of web object to get.
     @return Pointer to web object or NULL if index is out of range.
   */
   CMDF_Item *getWebObj(size_t index = 0) { return ((m_list_Web.size() <= index) ? nullptr : m_list_Web[index]); };
+
+  /*!
+    Get number of web elements
+    @return Number of web elements
+  */
+  size_t getWebObjCount(void) { return m_list_Web.size(); };
 
   /*!
     Get a social object from it's index
@@ -1972,6 +2004,12 @@ public:
   {
     return ((m_list_Social.size() <= index) ? nullptr : m_list_Social[index]);
   };
+
+  /*!
+    Get number of social elements
+    @return Number of social elements
+  */
+  size_t getSocialObjCount(void) { return m_list_Social.size(); };
 
   /*!
     Get pointer to list for phone contact item
@@ -2081,7 +2119,23 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
+
+  /*!
+    Assignment
+  */
+  CMDF_Picture &operator=(const CMDF_Picture &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName   = other.m_strName;
+    m_strURL    = other.m_strURL;
+    m_strFormat = other.m_strFormat;
+    m_strDate   = other.m_strDate;
+    return *this;
+  };
 
   /*!
     Set description for picture
@@ -2143,7 +2197,6 @@ private:
     Date
   */
   std::string m_strDate;
-
 
   /*!
       Description of file
@@ -2219,7 +2272,23 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
+
+  /*!
+    Assignment
+  */
+  CMDF_Video &operator=(const CMDF_Video &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName   = other.m_strName;
+    m_strURL    = other.m_strURL;
+    m_strFormat = other.m_strFormat;
+    m_strDate   = other.m_strDate;
+    return *this;
+  };
 
   /*!
     Set description for video
@@ -2290,7 +2359,6 @@ private:
   */
   std::string m_strDate;
 
-
   /*!
       Description of file
   */
@@ -2345,6 +2413,12 @@ public:
   std::string getUrl(void) { return m_strURL; };
 
   /*!
+    Set URL
+    @param url URL to set
+  */
+  void setUrl(std::string &url) { m_strURL = url; };
+
+  /*!
     Get target string for firmware
     @return Target string for firmware
   */
@@ -2357,10 +2431,22 @@ public:
   uint16_t getTargetCode(void) { return m_targetCode; };
 
   /*!
+    Set target code
+    @param code
+  */
+  void setTargetCode(uint16_t code) { m_targetCode = code; };
+
+  /*!
     Get hex file string format for firmware
     @return Hex string format
   */
   std::string getFormat(void) { return m_strFormat; };
+
+  /*!
+    Set format
+    @param format Format to set
+  */
+  void setFormat(const std::string &format) { m_strFormat = format; };
 
   /*
     Get date for object
@@ -2372,7 +2458,7 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
 
   /*!
     Get version major for firmware
@@ -2381,10 +2467,22 @@ public:
   uint16_t getVersionMajor(void) { return m_version_major; };
 
   /*!
+    Set major version
+    @param ver Major version to set
+  */
+  void setVersionMajor(uint16_t ver) { m_version_major = ver; };
+
+  /*!
     Get version minor for firmware
     @return Version minor for firmware
   */
   uint16_t getVersionMinor(void) { return m_version_minor; };
+
+  /*!
+    Set minor version
+    @param ver Minor version to set
+  */
+  void setVersionMinor(uint16_t ver) { m_version_minor = ver; };
 
   /*!
     Get version patch for firmware
@@ -2393,16 +2491,74 @@ public:
   uint16_t getVersionPatch(void) { return m_version_patch; };
 
   /*!
+    Set patch version
+    @param ver Patch version to set
+  */
+  void setVersionPatch(uint16_t ver) { m_version_patch = ver; };
+
+  /*!
+    Get version on string form (x.y.z)
+    @return Version on string form
+  */
+  std::string getVersion(void)
+  {
+    return (std::to_string(getVersionMajor()) + "." + std::to_string(getVersionMinor()) + "." +
+            std::to_string(getVersionPatch()));
+  };
+
+  /*!
+    Set version from string on form x.y.z
+    @param ver Version string
+  */
+  void setVersion(const std::string &ver);
+
+  /*!
     Get size for firmware
     @return Version patch for firmware
   */
   size_t getSize(void) { return m_size; };
 
   /*!
+    Set flash size
+    @param size Flash size to set
+  */
+  void setSize(size_t size) { m_size = size; };
+
+  /*!
     Get MD5 for firmware file on hex string format
     @return md5 hash for firmware file on string format.
   */
   std::string getMd5(void) { return m_strMd5; };
+
+  /*!
+    Set MD5 checksum
+    @param md5 MD5 checksum string to set
+  */
+
+  void setMd5(std::string &md5) { m_strMd5 = md5; };
+
+  /*!
+    Assignment
+  */
+  CMDF_Firmware &operator=(const CMDF_Firmware &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName       = other.m_strName;
+    m_strURL        = other.m_strURL;
+    m_strTarget     = other.m_strTarget;
+    m_targetCode    = other.m_targetCode;
+    m_strFormat     = other.m_strFormat;
+    m_strDate       = other.m_strDate;
+    m_size          = other.m_size;
+    m_version_major = other.m_version_major;
+    m_version_minor = other.m_version_minor;
+    m_version_patch = other.m_version_patch;
+    m_strMd5        = other.m_strMd5;
+    return *this;
+  };
 
   /*!
     Set description for firmware
@@ -2545,8 +2701,8 @@ public:
   std::string getName(void) { return m_strName; };
 
   /*!
-    Set name of setup
-    @param strURL name
+    Set name of driver
+    @param name name
   */
   void setName(std::string &name) { m_strName = name; };
 
@@ -2557,17 +2713,37 @@ public:
   std::string getUrl(void) { return m_strURL; };
 
   /*!
+    Set URL of driver
+    @param url name
+  */
+  void setUrl(std::string &url) { m_strURL = url; };
+
+  /*!
     Get driver type for CMDF_Driver
     @return Target string for CMDF_Driver
   */
   std::string getType(void) { return m_strType; };
 
   /*!
+    Set type of driver
+    @param type Type of driver
+  */
+  void setType(std::string &type) { m_strType = type; };
+
+  /*!
     Get driver type for CMDF_Driver
     @return Target string for CMDF_Driver
   */
   std::string getArchitecture(void) { return m_strArchitecture; };
-  std::string getFormat(void) { return m_strArchitecture; }; // Deprecated
+
+  /*!
+    Set architecture of driver
+    @param arch Architecture of driver
+  */
+  void setArchitecture(std::string &arch) { m_strArchitecture = arch; };
+
+  // Deprecated
+  std::string getFormat(void) { return m_strArchitecture; };
 
   /*!
     Get OS (Operation System) for driver
@@ -2576,10 +2752,22 @@ public:
   std::string getOS(void) { return m_strOS; };
 
   /*!
+    Set OS of driver
+    @param os Type of driver
+  */
+  void setOS(std::string &os) { m_strOS = os; };
+
+  /*!
     Get OS version for the driver
     @return OS version for driver
   */
   std::string getOSVer(void) { return m_strOSVer; };
+
+  /*!
+    Set OS version of driver
+    @param osver Type of driver
+  */
+  void setOSVer(std::string &osver) { m_strOSVer = osver; };
 
   /*!
     Get version major for driver
@@ -2588,10 +2776,22 @@ public:
   uint16_t getVersionMajor(void) { return m_version_major; };
 
   /*!
+    Set major version of driver
+    @param ver Major version to set
+  */
+  void setVersionMajor(uint16_t ver) { m_version_major = ver; };
+
+  /*!
     Get version minor for driver
     @return Version minor for driver
   */
   uint16_t getVersionMinor(void) { return m_version_minor; };
+
+  /*!
+    Set minor version of driver
+    @param ver Major version to set
+  */
+  void setVersionMinor(uint16_t ver) { m_version_minor = ver; };
 
   /*!
     Get version patch for driver
@@ -2600,10 +2800,38 @@ public:
   uint16_t getVersionPatch(void) { return m_version_patch; };
 
   /*!
+    Set patch version of Driver
+    @param ver Major version to set
+  */
+  void setVersionPatch(uint16_t ver) { m_version_patch = ver; };
+
+  /*!
+    Get version on string format x.y.x
+    @return Version on string format
+  */
+  std::string getVersion(void)
+  {
+    return (std::to_string(getVersionMajor()) + "." + std::to_string(getVersionMinor()) + "." +
+            std::to_string(getVersionPatch()));
+  };
+
+  /*!
+    Set version from string on form x.y.z
+    @param ver Version string
+  */
+  void setVersion(const std::string &ver);
+
+  /*!
     Get MD5 for driver file on hex string format
-    @return md5 hash for driver file on string format.
+    @return md5 hash for driver file on string hex format.
   */
   std::string getMd5(void) { return m_strMd5; };
+
+  /*!
+    Set MD5 checksum
+    @param md5 MD5 checksum to set as hex string.
+  */
+  void setMd5(const std::string& md5) {m_strMd5 = md5; };
 
   /*
     Get date for object
@@ -2615,7 +2843,30 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
+
+  /*!
+    Assignment
+  */
+  CMDF_Driver &operator=(const CMDF_Driver &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName         = other.m_strName;
+    m_strURL          = other.m_strURL;
+    m_strType         = other.m_strType;
+    m_strOS           = other.m_strOS;
+    m_strOSVer        = other.m_strOSVer;
+    m_strDate         = other.m_strDate;
+    m_strArchitecture = other.m_strArchitecture;
+    m_version_major   = other.m_version_major;
+    m_version_minor   = other.m_version_minor;
+    m_version_patch   = other.m_version_patch;
+    m_strMd5          = other.m_strMd5;
+    return *this;
+  };
 
   /*!
     Set description for picture
@@ -2780,6 +3031,23 @@ public:
   void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
 
   /*!
+    Assignment
+  */
+  CMDF_Setup &operator=(const CMDF_Setup &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName    = other.m_strName;
+    m_strURL     = other.m_strURL;
+    m_strFormat  = other.m_strFormat;
+    m_strDate    = other.m_strDate;
+    m_strVersion = other.m_strVersion;
+    return *this;
+  };
+
+  /*!
     Set description for setup
   */
   void setDescription(std::string &strDescription, std::string &strLanguage)
@@ -2812,7 +3080,7 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
 
   /*!
     Get the value info URL
@@ -2912,16 +3180,34 @@ public:
   std::string getUrl(void) { return m_strURL; };
 
   /*!
+    Set url
+    @param url URL to set.
+  */
+  void setUrl(const std::string &url) { m_strURL = url; };
+
+  /*!
     Get URL for firmware
     @return Manual format string.
   */
   std::string getFormat(void) { return m_strFormat; };
 
   /*!
+    Set format
+    @param fmt Format to set.
+  */
+  void setFormat(const std::string &fmt) { m_strFormat = fmt; };
+
+  /*!
     Get language
     @return Manual language string
   */
   std::string getLanguage(void) { return m_strLanguage; };
+
+  /*!
+    Set language
+    @param lang Language on ISO string form to set.
+  */
+  void setLanguage(const std::string &lang) { m_strLanguage = lang; };
 
   /*
     Get date for object
@@ -2933,7 +3219,24 @@ public:
     Set date for object
     @param isodate Date for object oin ISO string form.
   */
-  void setDate(const std::string& isodate) { m_strDate = isodate; };
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
+
+  /*!
+    Assignment
+  */
+  CMDF_Manual &operator=(const CMDF_Manual &other)
+  {
+    // Guard self assignment
+    if (this == &other) {
+      return *this;
+    }
+    m_strName     = other.m_strName;
+    m_strURL      = other.m_strURL;
+    m_strFormat   = other.m_strFormat;
+    m_strDate     = other.m_strDate;
+    m_strLanguage = other.m_strLanguage;
+    return *this;
+  };
 
   /*!
     Set description for manual item
@@ -3431,6 +3734,19 @@ public:
     @return Pointer to register list.
   */
   std::deque<CMDF_Register *> *getRegisterObjList(void) { return &m_list_register; };
+
+  /*!
+    Delete a defined register
+    @param preg Pointer to registere
+    @return True on success, false otherwise
+  */
+  bool deleteRegister(CMDF_Register *preg);
+
+  /*!
+    Create a set with sorted register offsets for a page
+    @param set a std_set with offset uint32_t items
+  */
+  void createRegisterStortedSet(std::set<uint32_t>& set, uint16_t page);
 
   /*!
     Get all registers for a specific page
