@@ -106,8 +106,10 @@ typedef enum mdf_record_type {
   mdf_type_mdf_item,
   mdf_type_value,
   mdf_type_value_item,
+  mdf_type_value_sub_item,
   mdf_type_bit,
   mdf_type_bit_item,
+  mdf_type_bit_sub_item,
   mdf_type_register,
   mdf_type_register_item,
   mdf_type_register_sub_item,
@@ -239,7 +241,7 @@ public:
     Set value name
     @param name Value name to set
   */
-  void setName(std::string &name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get value
@@ -251,7 +253,7 @@ public:
     Set value
     @param value Value on string form.
   */
-  void setValue(std::string value) { m_strValue = value; };
+  void setValue(const std::string& value) { m_strValue = value; };
 
   /*!
     Set value
@@ -269,14 +271,14 @@ public:
     Get the value description
     @return Value description
   */
-  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
+  std::string getDescription(const std::string lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set value description
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string& lang, std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the value info URL
@@ -351,7 +353,7 @@ public:
     Set bit array name
     @return Set array name
   */
-  void setName(std::string &name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the bit description
@@ -377,7 +379,7 @@ public:
     @param lang Language
     @param url bit info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -554,7 +556,7 @@ public:
     Get the register info URL
     @return Register info URL
   */
-  std::string getInfoURL(std::string lang = "en") { return m_mapInfoURL[lang]; };
+  std::string getInfoURL(const std::string lang = "en") { return m_mapInfoURL[lang]; };
 
   /*!
     Set register info URL
@@ -831,20 +833,20 @@ public:
     Set name of the remote variable
     @param name Name of the remote variable
   */
-  void setName(std::string name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
+  std::string getDescription(const std::string& lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -857,7 +859,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -906,7 +908,7 @@ public:
     Set default value for remote variable
     @param strDefault Default value.
   */
-  void setDefault(std::string strDefault) { m_strDefault = strDefault; };
+  void setDefault(const std::string& strDefault) { m_strDefault = strDefault; };
 
   /*!
     Get Page for remote variable
@@ -1053,7 +1055,7 @@ public:
   /*!
     set Name for action
   */
-  void setName(std::string name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the register description
@@ -1066,7 +1068,7 @@ public:
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -1079,7 +1081,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -1191,20 +1193,20 @@ public:
   /*!
     set Name for action
   */
-  void setName(std::string name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the register description
     @return Register description
   */
-  std::string getDescription(std::string lang = "en") { return m_mapDescription[lang]; };
+  std::string getDescription(const std::string& lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -1217,7 +1219,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -1420,7 +1422,7 @@ public:
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -1433,7 +1435,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -1519,7 +1521,7 @@ public:
   /*!
     Set event name
   */
-  void setName(std::string &name) { m_name = name; };
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get event class
@@ -1580,7 +1582,7 @@ public:
     @param lang Language
     @param desc Event description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the event info URL
@@ -1593,7 +1595,7 @@ public:
     @param lang Language
     @param url Event info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -1666,7 +1668,7 @@ public:
     Set item value
     @param Value to set
   */
-  void setValue(std::string &str) { m_value = str; };
+  void setValue(const std::string &str) { m_value = str; };
 
   /*!
     Get the register description
@@ -1679,7 +1681,7 @@ public:
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, const std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the register info URL
@@ -1692,7 +1694,7 @@ public:
     @param lang Language
     @param url Register info URL to set
   */
-  void setInfoURL(std::string &lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -1935,10 +1937,10 @@ public:
   void clearStorage(void);
 
   /// Get company name
-  std::string &getName(void) { return m_strName; };
+  std::string getName(void) { return m_strName; };
 
   /// Set company name
-  void setName(const std::string name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /// Get address object
   CMDF_Address *getAddressObj(void) { return &m_address; };
@@ -2083,7 +2085,7 @@ public:
     Set name of picture
     @param strURL name
   */
-  void setName(std::string &name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /*!
     Get URL for picture
@@ -2095,7 +2097,7 @@ public:
     Set URL for picture
     @param strURL URL for picture
   */
-  void setUrl(std::string &strURL) { m_strURL = strURL; };
+  void setUrl(const std::string &strURL) { m_strURL = strURL; };
 
   /*!
     Get format for picture
@@ -2107,7 +2109,7 @@ public:
     Set format for picture
     @param strFormat Format for picture
   */
-  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+  void setFormat(const std::string &strFormat) { m_strFormat = strFormat; };
 
   /*
     Get date for object
@@ -2140,7 +2142,7 @@ public:
   /*!
     Set description for picture
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -2163,7 +2165,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -2236,7 +2238,7 @@ public:
     Set name of video
     @param strURL name
   */
-  void setName(std::string &name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /*!
     Get URL for video
@@ -2248,7 +2250,7 @@ public:
     Set URL for video
     @param strURL URL for video
   */
-  void setUrl(std::string &strURL) { m_strURL = strURL; };
+  void setUrl(const std::string &strURL) { m_strURL = strURL; };
 
   /*!
     Get format for video
@@ -2260,7 +2262,7 @@ public:
     Set format for video
     @param strFormat Format for video
   */
-  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+  void setFormat(const std::string &strFormat) { m_strFormat = strFormat; };
 
   /*
     Get date for object
@@ -2293,7 +2295,7 @@ public:
   /*!
     Set description for video
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -2324,7 +2326,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -2404,7 +2406,7 @@ public:
     Set name of firmware
     @param strURL name
   */
-  void setName(std::string &name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /*!
     Get URL for firmware
@@ -2416,7 +2418,7 @@ public:
     Set URL
     @param url URL to set
   */
-  void setUrl(std::string &url) { m_strURL = url; };
+  void setUrl(const std::string &url) { m_strURL = url; };
 
   /*!
     Get target string for firmware
@@ -2535,7 +2537,7 @@ public:
     @param md5 MD5 checksum string to set
   */
 
-  void setMd5(std::string &md5) { m_strMd5 = md5; };
+  void setMd5(const std::string &md5) { m_strMd5 = md5; };
 
   /*!
     Assignment
@@ -2563,7 +2565,7 @@ public:
   /*!
     Set description for firmware
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -2594,7 +2596,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -2704,7 +2706,7 @@ public:
     Set name of driver
     @param name name
   */
-  void setName(std::string &name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /*!
     Get URL for CMDF_Driver
@@ -2716,7 +2718,7 @@ public:
     Set URL of driver
     @param url name
   */
-  void setUrl(std::string &url) { m_strURL = url; };
+  void setUrl(const std::string &url) { m_strURL = url; };
 
   /*!
     Get driver type for CMDF_Driver
@@ -2728,7 +2730,7 @@ public:
     Set type of driver
     @param type Type of driver
   */
-  void setType(std::string &type) { m_strType = type; };
+  void setType(const std::string &type) { m_strType = type; };
 
   /*!
     Get driver type for CMDF_Driver
@@ -2740,7 +2742,7 @@ public:
     Set architecture of driver
     @param arch Architecture of driver
   */
-  void setArchitecture(std::string &arch) { m_strArchitecture = arch; };
+  void setArchitecture(const std::string &arch) { m_strArchitecture = arch; };
 
   // Deprecated
   std::string getFormat(void) { return m_strArchitecture; };
@@ -2755,7 +2757,7 @@ public:
     Set OS of driver
     @param os Type of driver
   */
-  void setOS(std::string &os) { m_strOS = os; };
+  void setOS(const std::string &os) { m_strOS = os; };
 
   /*!
     Get OS version for the driver
@@ -2767,7 +2769,7 @@ public:
     Set OS version of driver
     @param osver Type of driver
   */
-  void setOSVer(std::string &osver) { m_strOSVer = osver; };
+  void setOSVer(const std::string &osver) { m_strOSVer = osver; };
 
   /*!
     Get version major for driver
@@ -2831,7 +2833,7 @@ public:
     Set MD5 checksum
     @param md5 MD5 checksum to set as hex string.
   */
-  void setMd5(const std::string& md5) {m_strMd5 = md5; };
+  void setMd5(const std::string &md5) { m_strMd5 = md5; };
 
   /*
     Get date for object
@@ -2871,7 +2873,7 @@ public:
   /*!
     Set description for picture
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -2902,7 +2904,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -3004,7 +3006,7 @@ public:
     Set name of setup
     @param strURL name
   */
-  void setName(std::string &name) { m_strName = name; };
+  void setName(const std::string &name) { m_strName = name; };
 
   /*!
     Get URL for setup
@@ -3016,7 +3018,7 @@ public:
     Set URL for setup
     @param strURL URL for setup
   */
-  void setUrl(std::string &strURL) { m_strURL = strURL; };
+  void setUrl(const std::string &strURL) { m_strURL = strURL; };
 
   /*!
     Get format for setup
@@ -3028,7 +3030,7 @@ public:
     Set format for setup
     @param strFormat Format for setup
   */
-  void setFormat(std::string &strFormat) { m_strFormat = strFormat; };
+  void setFormat(const std::string &strFormat) { m_strFormat = strFormat; };
 
   /*!
     Assignment
@@ -3050,7 +3052,7 @@ public:
   /*!
     Set description for setup
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -3093,7 +3095,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -3171,7 +3173,7 @@ public:
     Set name of manual
     @param strURL manual
   */
-  void setName(std::string &name) { m_strName = name; }
+  void setName(const std::string &name) { m_strName = name; }
 
   /*!
     Get URL for manual
@@ -3241,7 +3243,7 @@ public:
   /*!
     Set description for manual item
   */
-  void setDescription(std::string &strDescription, std::string &strLanguage)
+  void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
     m_mapDescription[strLanguage] = strDescription;
   };
@@ -3272,7 +3274,7 @@ public:
     @param lang Language
     @param url Value info URL to set
   */
-  void setInfoURL(std::string lang, std::string &url) { m_mapInfoURL[lang] = url; };
+  void setInfoURL(const std::string lang, const std::string &url) { m_mapInfoURL[lang] = url; };
 
   /*!
     Get description map
@@ -3356,16 +3358,16 @@ public:
       @return Return CURLE_OK if a valid file is downloaded, else a
               curl error code.
   */
-  CURLcode downLoadMDF(std::string &remoteFile, std::string &tempFile);
+  CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
 
   /*!
       Load MDF from local or remote storage and parse it into
       a MDF structure.
-      @param Filename or URL to MDF file.
+      @param file or URL to MDF file.
       @param blocalFile Asks for a local file if set to true.
       @return returns true on success, false on failure.
   */
-  bool load(std::string &remoteFile, bool bLocalFile = false);
+  bool load(const std::string &file, bool bLocalFile = false);
 
   /*!
       Format an MDF description so it can be shown
@@ -3392,7 +3394,7 @@ public:
     Set Module name.
     @parm Module name to set
   */
-  void setModuleName(std::string &str) { m_name = str; };
+  void setModuleName(const std::string &str) { m_name = str; };
 
   /*!
     Get module model
@@ -3404,7 +3406,7 @@ public:
     Set module model
     @Param Module model as string
   */
-  void setModuleModel(std::string &str) { m_strModule_Model = str; };
+  void setModuleModel(const std::string &str) { m_strModule_Model = str; };
 
   /*!
     Get module change date
@@ -3416,7 +3418,7 @@ public:
     Set module change date
     @pparam str Module change date as ISO date formatted string
   */
-  void setModuleChangeDate(std::string &str) { m_strModule_changeDate = str; };
+  void setModuleChangeDate(const std::string &str) { m_strModule_changeDate = str; };
 
   /*!
     Get module version
@@ -3428,7 +3430,7 @@ public:
     Set module version
     @param str Module version on stringt form
   */
-  void setModuleVersion(std::string &str) { m_strModule_Version = str; };
+  void setModuleVersion(const std::string &str) { m_strModule_Version = str; };
 
   /*!
     Get module buffer size
@@ -3452,7 +3454,7 @@ public:
     Set Module copyright.
     @parm Module copyright to set
   */
-  void setModuleCopyright(std::string &str) { m_copyright = str; };
+  void setModuleCopyright(const std::string &str) { m_copyright = str; };
 
   /*!
     Return VSCP level for device. NOTE! that
@@ -3486,7 +3488,7 @@ public:
     @return Return string with module description in selected language or
       in english if the language is not available.
   */
-  std::string getModuleDescription(std::string language = "en");
+  std::string getModuleDescription(const std::string language = "en");
 
   /*!
     Get the number of module descriptions available in different languages
@@ -3512,7 +3514,7 @@ public:
     @return Return string with module info url in selected language or
       in english if the language is not available.
   */
-  std::string getModuleHelpUrl(std::string language = "en");
+  std::string getModuleHelpUrl(const std::string language = "en");
 
   /*!
     Get the number of module help URL's available in different mime types
@@ -3746,7 +3748,7 @@ public:
     Create a set with sorted register offsets for a page
     @param set a std_set with offset uint32_t items
   */
-  void createRegisterStortedSet(std::set<uint32_t>& set, uint16_t page);
+  void createRegisterStortedSet(std::set<uint32_t> &set, uint16_t page);
 
   /*!
     Get all registers for a specific page
@@ -3807,7 +3809,7 @@ public:
       @param name Name iof remote variable to search for.
       @return Pointer to CMDF_RemoteVariable class if found else NULL.
   */
-  CMDF_RemoteVariable *getRemoteVariable(std::string name);
+  CMDF_RemoteVariable *getRemoteVariable(const std::string& name);
 
   /*!
     Return remote variable list from its name

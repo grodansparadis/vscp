@@ -1407,7 +1407,7 @@ write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
 }
 
 CURLcode
-CMDF::downLoadMDF(std::string &url, std::string &tempFileName)
+CMDF::downLoadMDF(const std::string &url, const std::string &tempFileName)
 {
   CURL *curl;
   FILE *fp;
@@ -1433,9 +1433,10 @@ CMDF::downLoadMDF(std::string &url, std::string &tempFileName)
 //
 
 bool
-CMDF::load(std::string &remoteFile, bool bLocalFile)
+CMDF::load(const std::string &file, bool bLocalFile)
 {
-  std::string localFile = remoteFile;
+  std::string remoteFile = file;
+  std::string localFile = file;
 
   if (remoteFile.npos == remoteFile.find("http://")) {
     std::string str;
@@ -7699,10 +7700,11 @@ CMDF::getDefaultRegisterValue(uint32_t reg, uint16_t page)
 //
 
 CMDF_RemoteVariable *
-CMDF::getRemoteVariable(std::string name)
+CMDF::getRemoteVariable(const std::string& name)
 {
-  vscp_trim(name);
-  vscp_makeLower(name);
+  std::string remotevar = name;
+  vscp_trim(remotevar);
+  vscp_makeLower(remotevar);
 
   std::deque<CMDF_RemoteVariable *>::iterator iter;
   for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
