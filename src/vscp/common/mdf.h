@@ -116,6 +116,7 @@ typedef enum mdf_record_type {
   mdf_type_register_page,
   mdf_type_remotevar,
   mdf_type_remotevar_item,
+  mdf_type_remotevar_sub_item,
   mdf_type_decision_matrix,
   mdf_type_action,
   mdf_type_action_item,
@@ -253,7 +254,7 @@ public:
     Set value
     @param value Value on string form.
   */
-  void setValue(const std::string& value) { m_strValue = value; };
+  void setValue(const std::string &value) { m_strValue = value; };
 
   /*!
     Set value
@@ -278,7 +279,7 @@ public:
     @param lang Language
     @param desc Register description to set
   */
-  void setDescription(const std::string& lang, std::string &desc) { m_mapDescription[lang] = desc; };
+  void setDescription(const std::string &lang, std::string &desc) { m_mapDescription[lang] = desc; };
 
   /*!
     Get the value info URL
@@ -715,6 +716,20 @@ public:
   std::deque<CMDF_Bit *> *getListBits(void) { return &m_list_bit; };
 
   /*!
+    Get the bit mask for all defined bits
+    @return A combined bitmask for all bits
+  */
+  uint8_t getAllBitMask(void)
+  {
+    uint8_t mask                  = 0;
+    std::deque<CMDF_Bit *> *pbits = getListBits();
+    for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+      mask |= (*it)->getMask();
+    }
+    return mask;
+  };
+
+  /*!
     Fetch the value definition list
     @return Value definition list
   */
@@ -839,7 +854,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(const std::string& lang = "en") { return m_mapDescription[lang]; };
+  std::string getDescription(const std::string &lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -908,7 +923,7 @@ public:
     Set default value for remote variable
     @param strDefault Default value.
   */
-  void setDefault(const std::string& strDefault) { m_strDefault = strDefault; };
+  void setDefault(const std::string &strDefault) { m_strDefault = strDefault; };
 
   /*!
     Get Page for remote variable
@@ -1199,7 +1214,7 @@ public:
     Get the register description
     @return Register description
   */
-  std::string getDescription(const std::string& lang = "en") { return m_mapDescription[lang]; };
+  std::string getDescription(const std::string &lang = "en") { return m_mapDescription[lang]; };
 
   /*!
     Set register description
@@ -3806,10 +3821,18 @@ public:
 
   /*!
       Return remote variable from its name
-      @param name Name iof remote variable to search for.
-      @return Pointer to CMDF_RemoteVariable class if found else NULL.
+      @param name Name of remote variable to search for.
+      @return Pointer to CMDF_RemoteVariable class if found, else NULL.
   */
-  CMDF_RemoteVariable *getRemoteVariable(const std::string& name);
+  CMDF_RemoteVariable *getRemoteVariable(const std::string &name);
+
+  /*!
+    Return remote variable from its offset/page
+      @param offset Offset for start register for remote variable
+      @param page Page where remote variable is located
+      @return Pointer to CMDF_RemoteVariable class if found, else NULL.
+  */
+  CMDF_RemoteVariable *getRemoteVariable(uint32_t offset, uint16_t page = 0);
 
   /*!
     Return remote variable list from its name

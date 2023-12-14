@@ -1436,7 +1436,7 @@ bool
 CMDF::load(const std::string &file, bool bLocalFile)
 {
   std::string remoteFile = file;
-  std::string localFile = file;
+  std::string localFile  = file;
 
   if (remoteFile.npos == remoteFile.find("http://")) {
     std::string str;
@@ -7700,7 +7700,7 @@ CMDF::getDefaultRegisterValue(uint32_t reg, uint16_t page)
 //
 
 CMDF_RemoteVariable *
-CMDF::getRemoteVariable(const std::string& name)
+CMDF::getRemoteVariable(const std::string &name)
 {
   std::string remotevar = name;
   vscp_trim(remotevar);
@@ -7714,6 +7714,24 @@ CMDF::getRemoteVariable(const std::string& name)
     vscp_makeLower(rname);
     if (rname == name) {
       return prvar;
+    }
+  }
+
+  return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getRemoteVariable
+//
+
+CMDF_RemoteVariable *
+CMDF::getRemoteVariable(uint32_t offset, uint16_t page)
+{
+  std::deque<CMDF_RemoteVariable *>::iterator iter;
+  for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
+    CMDF_RemoteVariable *pvar = *iter;
+    if ((nullptr == pvar) && (page == pvar->getPage()) && (offset == pvar->getOffset()) ) {
+      return pvar;
     }
   }
 
