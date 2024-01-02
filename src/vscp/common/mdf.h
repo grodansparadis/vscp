@@ -3840,6 +3840,13 @@ public:
   */
   std::deque<CMDF_RemoteVariable *> *getRemoteVariableList(void) { return &m_list_remotevar; };
 
+  /*!
+    Delete a defined remote variable
+    @param pvar Pointer to remote variable
+    @return True on success, false otherwise
+  */
+  bool deleteRemoteVariable(CMDF_RemoteVariable *pvar);
+
   //-----------------------------------------------------------------------------
 
   /*!

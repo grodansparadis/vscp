@@ -7730,7 +7730,7 @@ CMDF::getRemoteVariable(uint32_t offset, uint16_t page)
   std::deque<CMDF_RemoteVariable *>::iterator iter;
   for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
     CMDF_RemoteVariable *pvar = *iter;
-    if ((nullptr == pvar) && (page == pvar->getPage()) && (offset == pvar->getOffset()) ) {
+    if ((nullptr != pvar) && (page == pvar->getPage()) && (offset == pvar->getOffset()) ) {
       return pvar;
     }
   }
@@ -7778,6 +7778,28 @@ CMDF::deleteRegister(CMDF_Register *preg)
   for (auto it = m_list_register.cbegin(); it != m_list_register.cend(); ++it) {
     if (preg == *it) {
       m_list_register.erase(it);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteRemoteVariable
+//
+
+bool
+CMDF::deleteRemoteVariable(CMDF_RemoteVariable *pvar)
+{
+  // Check pointer
+  if (nullptr == pvar) {
+    return false;
+  }
+
+  for (auto it = m_list_remotevar.cbegin(); it != m_list_remotevar.cend(); ++it) {
+    if (pvar == *it) {
+      m_list_remotevar.erase(it);
       return true;
     }
   }
