@@ -143,13 +143,13 @@ CMDF_Value::~CMDF_Value()
 CMDF_RemoteVariable::CMDF_RemoteVariable()
   : CMDF_Object(mdf_type_remotevar)
 {
-  m_strDefault.clear();
-  m_type   = remote_variable_type_unknown;
-  m_page   = 0;
-  m_offset = 0;
-  m_bitpos = 0;
-  m_size   = 0;
-  m_access = MDF_REG_ACCESS_READ_WRITE;
+  m_strDefault = "UNDEF";
+  m_type       = remote_variable_type_unknown;
+  m_page       = 0;
+  m_offset     = 0;
+  m_bitpos     = 0;
+  m_size       = 0;
+  m_access     = MDF_REG_ACCESS_READ_WRITE;
 
   m_bgcolor = 0xffffff;
   m_fgcolor = 0x000000;
@@ -167,13 +167,13 @@ CMDF_RemoteVariable::~CMDF_RemoteVariable()
 void
 CMDF_RemoteVariable::clearStorage(void)
 {
-  m_strDefault.clear();
-  m_type   = remote_variable_type_unknown;
-  m_page   = 0;
-  m_offset = 0;
-  m_bitpos = 0;
-  m_size   = 0;
-  m_access = MDF_REG_ACCESS_READ_WRITE;
+  m_strDefault = "UNDEF";
+  m_type       = remote_variable_type_unknown;
+  m_page       = 0;
+  m_offset     = 0;
+  m_bitpos     = 0;
+  m_size       = 0;
+  m_access     = MDF_REG_ACCESS_READ_WRITE;
 
   m_bgcolor = 0xffffff;
   m_fgcolor = 0x000000;
@@ -6320,7 +6320,7 @@ CMDF::parseMDF_JSON(const std::string &path)
               spdlog::debug("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else {
-              prvar->m_strDefault = "";
+              prvar->m_strDefault = "UNDEF";
               spdlog::debug("Parse-JSON: No remote variable default defined (set to empty).");
             }
 
@@ -7730,7 +7730,7 @@ CMDF::getRemoteVariable(uint32_t offset, uint16_t page)
   std::deque<CMDF_RemoteVariable *>::iterator iter;
   for (iter = m_list_remotevar.begin(); iter != m_list_remotevar.end(); ++iter) {
     CMDF_RemoteVariable *pvar = *iter;
-    if ((nullptr != pvar) && (page == pvar->getPage()) && (offset == pvar->getOffset()) ) {
+    if ((nullptr != pvar) && (page == pvar->getPage()) && (offset == pvar->getOffset())) {
       return pvar;
     }
   }
