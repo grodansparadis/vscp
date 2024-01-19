@@ -120,6 +120,7 @@ typedef enum mdf_record_type {
   mdf_type_decision_matrix,
   mdf_type_action,
   mdf_type_action_item,
+  mdf_type_action_sub_item,
   mdf_type_action_param,
   mdf_type_event,
   mdf_type_event_item,
@@ -166,6 +167,7 @@ typedef enum mdf_record_type {
   mdf_type_manual_sub_item,   // Manual content"
   mdf_type_redirection,
   mdf_type_alarm,
+  mdf_type_alarm_item,
   mdf_type_generic_string,           // Used for direct item editing
   mdf_type_generic_number,           // Used for direct item editing
   mdf_type_generic_url,              // Used for direct item editing
@@ -3866,6 +3868,13 @@ public:
     @return Pointer to the alarm list.
   */
   std::deque<CMDF_Bit *> *getAlarmList() { return &m_list_alarm; };
+
+  /*!
+    Get the alarm list
+    (Alternative consistent with other bit list getters)
+    @return Pointer to the alarm list.
+  */
+  std::deque<CMDF_Bit *> *getAlarmListBits() { return &m_list_alarm; };
 
   // ----------------------------------------------------------------------------
 

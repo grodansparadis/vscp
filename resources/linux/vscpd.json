@@ -187,7 +187,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level I logger driver down"
           },
           "subscribe": [
             {
@@ -307,7 +307,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level I can4vscp driver down"
           },
           "subscribe": [
             {
@@ -427,7 +427,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level I socketcan driver down"
           },
           "subscribe": [
             {
@@ -547,7 +547,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level I can232 driver down"
           },
           "subscribe": [
             {
@@ -667,7 +667,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II Logger driver down"
           },
           "subscribe": [
             {
@@ -785,7 +785,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II lmsensors driver down"
           },
           "subscribe": [
             {
@@ -903,7 +903,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II socketcan driver down"
           },
           "subscribe": [
             {
@@ -1021,7 +1021,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II mqtt driver down"
           },
           "subscribe": [
             {
@@ -1139,7 +1139,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II tcpiplink driver down"
           },
           "subscribe": [
             {
@@ -1257,7 +1257,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II rawethernet driver down"
           },
           "subscribe": [
             {
@@ -1375,7 +1375,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II sim driver down"
           },
           "subscribe": [
             {
@@ -1493,7 +1493,7 @@
             "topic": "vscp-daemon/{{srvguid}}/drivers/{{ifguid}}/will",
             "qos": 1,
             "retain": true,
-            "payload": "vscpl2drv-energy-p1 driver down"
+            "payload": "Level II 1-wire driver down"
           },
           "subscribe": [
             {
