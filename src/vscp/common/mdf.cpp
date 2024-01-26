@@ -611,7 +611,7 @@ CMDF_ActionParameter::CMDF_ActionParameter()
   m_name.clear();
   m_offset = 0;
   m_min    = 0;
-  m_max    = 0;
+  m_max    = 255;
 }
 
 CMDF_ActionParameter::~CMDF_ActionParameter()
@@ -704,6 +704,24 @@ CMDF_Action::clearStorage(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  getAction
+//
+
+CMDF_ActionParameter *
+CMDF_Action::getActionParam(uint16_t offset)
+{
+  std::deque<CMDF_ActionParameter *>::iterator it;
+  for (it = m_list_ActionParameter.begin(); it != m_list_ActionParameter.end(); ++it) {
+    CMDF_ActionParameter *pActionParam = *it;
+    printf("offset=%d\n", pActionParam->getOffset());
+    if ((nullptr != pActionParam) && (offset == pActionParam->getOffset())) {
+      return pActionParam;
+    }
+  }
+  return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 
@@ -736,6 +754,24 @@ CMDF_DecisionMatrix::clearStorage()
   m_rowSize     = 8;
 
   m_list_action.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAction
+//
+
+CMDF_Action *
+CMDF_DecisionMatrix::getAction(uint16_t code)
+{
+  std::deque<CMDF_Action *>::iterator it;
+  for (it = m_list_action.begin(); it != m_list_action.end(); ++it) {
+    CMDF_Action *pAction = *it;
+    printf("code=%d\n", pAction->getCode());
+    if ((nullptr != pAction) && (code == pAction->getCode())) {
+      return pAction;
+    }
+  }
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

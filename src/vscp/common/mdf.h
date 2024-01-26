@@ -118,10 +118,12 @@ typedef enum mdf_record_type {
   mdf_type_remotevar_item,
   mdf_type_remotevar_sub_item,
   mdf_type_decision_matrix,
+  mdf_type_decision_matrix_item,
   mdf_type_action,
   mdf_type_action_item,
   mdf_type_action_sub_item,
   mdf_type_action_param,
+  mdf_type_action_param_item,
   mdf_type_event,
   mdf_type_event_item,
   mdf_type_event_data,
@@ -1263,6 +1265,13 @@ public:
   void setCode(uint16_t code) { m_code = code; };
 
   /*!
+    Get pointer to action parameter object from its offset
+    @param code Offset for action parameter to fetch
+    @return Pointer to action parameter object or nullptr if no action parameter with that offset is found.
+  */
+  CMDF_ActionParameter *getActionParam(uint16_t offset);
+
+  /*!
     Get action parameter list
     @return Action parameter list
   */
@@ -1381,6 +1390,13 @@ public:
    @return Decision matrix action list.
   */
   std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
+
+  /*!
+    Get pointer to action object from its code
+    @param code Code for action to fetch
+    @return Pointer to action or nullptr if no action with that code is found.
+  */
+  CMDF_Action *getAction(uint16_t code);
 
   // int getRegister(uint8_t row, CMDF_DecisionMatrix__dmindex idx);
 
