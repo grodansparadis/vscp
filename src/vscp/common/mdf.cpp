@@ -743,6 +743,47 @@ CMDF_Action::addActionParam(CMDF_ActionParameter *pactionparam)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  deleteActionParam
+//
+
+bool 
+CMDF_Action::deleteActionParam(CMDF_ActionParameter *pactionparam)
+{
+  if (nullptr == pactionparam) {
+    return false;
+  }
+
+  std::deque<CMDF_ActionParameter *>::iterator it;
+  for (auto it = m_list_ActionParameter.begin(); 
+        it != m_list_ActionParameter.end(); 
+        ++it) {
+    if (pactionparam->getOffset() == (*it)->getOffset()) {
+      m_list_ActionParameter.erase(it);
+      delete pactionparam;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool 
+CMDF_Action::deleteActionParam(uint8_t offset)
+{
+  for (auto it = m_list_ActionParameter.begin(); 
+        it != m_list_ActionParameter.end(); 
+        ++it) {
+    if (offset == (*it)->getOffset()) {
+      m_list_ActionParameter.erase(it);
+      delete *it;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 

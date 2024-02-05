@@ -1281,6 +1281,20 @@ public:
   bool addActionParam(CMDF_ActionParameter *pactionparam);
 
   /*!
+    Delete action parameter
+    @param pactionparam Pointer to action parameter to delete
+    @return true on success, false on failure.
+  */
+  bool deleteActionParam(CMDF_ActionParameter *pactionparam);
+
+  /*!
+    Delete action parameter
+    @param offset Offset of action parametewr to delete.
+    @return true on success, false on failure.
+  */
+  bool deleteActionParam(uint8_t offset);
+
+  /*!
     Get action parameter list
     @return Action parameter list
   */
