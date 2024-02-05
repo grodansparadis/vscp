@@ -704,7 +704,7 @@ CMDF_Action::clearStorage(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  getAction
+//  getActionParam
 //
 
 CMDF_ActionParameter *
@@ -719,6 +719,27 @@ CMDF_Action::getActionParam(uint16_t offset)
     }
   }
   return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  addActionParam
+//
+
+bool
+CMDF_Action::addActionParam(CMDF_ActionParameter *pactionparam)
+{
+  // Check pointer
+  if (nullptr == pactionparam) {
+    return false;
+  }
+
+  // Offset must be unique
+  if (nullptr != getActionParam(pactionparam->getOffset())) {
+    return false;
+  }
+
+  m_list_ActionParameter.push_back(pactionparam);
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

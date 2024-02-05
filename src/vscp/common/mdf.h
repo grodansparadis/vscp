@@ -124,6 +124,7 @@ typedef enum mdf_record_type {
   mdf_type_action_sub_item,
   mdf_type_action_param,
   mdf_type_action_param_item,
+  mdf_type_action_param_sub_item,
   mdf_type_event,
   mdf_type_event_item,
   mdf_type_event_data,
@@ -1272,6 +1273,14 @@ public:
   CMDF_ActionParameter *getActionParam(uint16_t offset);
 
   /*!
+    Add action parameter
+    @param pactionparam Pointer to action parameter to add. The offset
+    of the action parameter must be unique.
+    @return true on success, false otherwise.
+  */
+  bool addActionParam(CMDF_ActionParameter *pactionparam);
+
+  /*!
     Get action parameter list
     @return Action parameter list
   */
@@ -1392,7 +1401,7 @@ public:
   std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
 
   /*!
-    Get pointer to action object from its code
+    Get pointer to action object from 6its code
     @param code Code for action to fetch
     @return Pointer to action or nullptr if no action with that code is found.
   */
