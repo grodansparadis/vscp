@@ -127,8 +127,10 @@ typedef enum mdf_record_type {
   mdf_type_action_param_sub_item,
   mdf_type_event,
   mdf_type_event_item,
+  mdf_type_event_sub_item,
   mdf_type_event_data,
   mdf_type_event_data_item,
+  mdf_type_event_data_sub_item,
   mdf_type_bootloader,
   mdf_type_bootloader_item,
   mdf_type_address,
@@ -1289,7 +1291,7 @@ public:
 
   /*!
     Delete action parameter
-    @param offset Offset of action parametewr to delete.
+    @param offset Offset of action parameter to delete.
     @return true on success, false on failure.
   */
   bool deleteActionParam(uint8_t offset);
@@ -1409,17 +1411,39 @@ public:
   void setRowSize(uint16_t rowSize) { m_rowSize = rowSize; };
 
   /*!
-   Get decision matrix row count
-   @return Decision matrix action list.
-  */
-  std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
-
-  /*!
     Get pointer to action object from 6its code
     @param code Code for action to fetch
     @return Pointer to action or nullptr if no action with that code is found.
   */
   CMDF_Action *getAction(uint16_t code);
+
+  /*!
+   Add action
+   @param paction Pointer to action to add. The code
+   of the action must be unique.
+   @return true on success, false otherwise.
+ */
+  bool addAction(CMDF_Action *paction);
+
+  /*!
+    Delete action
+    @param paction Pointer to action to delete
+    @return true on success, false on failure.
+  */
+  bool deleteAction(CMDF_Action *paction);
+
+  /*!
+    Delete action
+    @param offset Offset of action to delete.
+    @return true on success, false on failure.
+  */
+  bool deleteAction(uint8_t code);
+
+  /*!
+   Get decision matrix row count
+   @return Decision matrix action list.
+  */
+  std::deque<CMDF_Action *> *getActionList(void) { return &m_list_action; };
 
   // int getRegister(uint8_t row, CMDF_DecisionMatrix__dmindex idx);
 
@@ -1462,10 +1486,16 @@ public:
   void clearStorage(void);
 
   /*!
-    Get bit array name
-    @return Bit array name
+    Get event data
+    @return Event data name
   */
   std::string getName(void) { return m_name; };
+
+  /*!
+    Set event data name
+    @param name Event data name to set
+  */
+  void setName(const std::string &name) { m_name = name; };
 
   /*!
     Get the register description
@@ -1670,6 +1700,42 @@ public:
     @return Pointer to event data list
   */
   std::deque<CMDF_EventData *> *getListEventData(void) { return &m_list_eventdata; };
+
+  /*!
+    Get pointer to event data object from offset
+    @param offset Offset of eventdata
+    @return Pointer to eventdata object or nullpointer if no object is found.
+  */
+  CMDF_EventData *getEventData(uint8_t offset);
+
+  /*!
+    Add event data object
+    @param pEventData Pointer top event data object to add.
+    @return true on success, false on failure.
+  */
+  bool addEventData(CMDF_EventData *pEventData);
+
+  /*!
+    Delete event data object
+    @param pEventData Pointer top event data object to add.
+    @return true on success, false on failure.
+  */
+  bool deleteEventData(CMDF_EventData *pEventData);
+
+  /*!
+    Check if offset is unique for an item
+    @param offset Offset to check
+    @return True of unique
+  */
+  bool isEventDataOffsetUnique(uint8_t offset);
+
+  /*!
+    Check if offset is unique for a event data item. 
+    The item itself is not checked.
+    @param pEventData Event data item to check
+    @return True of unique
+  */
+  bool isEventDataOffsetUnique(CMDF_EventData *pEventData);
 
 private:
   std::string m_name;
@@ -3901,6 +3967,20 @@ public:
     @return Pointer to the event list.
   */
   std::deque<CMDF_Event *> *getEventList(void) { return &m_list_event; };
+
+  /*!
+    Add event to MDF event list
+    @param pEvent Pointer to event to add.
+    @return True on success, flase on failure
+  */
+  bool addEvent(CMDF_Event *pEvent);
+
+  /*!
+    Delete event
+    @param pEvent Pointer to event to add.
+    @return True on success, flase on failure
+  */
+  bool deleteEvent(CMDF_Event *pEvent);
 
   /*!
     Get the alarm list

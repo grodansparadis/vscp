@@ -746,7 +746,7 @@ CMDF_Action::addActionParam(CMDF_ActionParameter *pactionparam)
 //  deleteActionParam
 //
 
-bool 
+bool
 CMDF_Action::deleteActionParam(CMDF_ActionParameter *pactionparam)
 {
   if (nullptr == pactionparam) {
@@ -754,9 +754,7 @@ CMDF_Action::deleteActionParam(CMDF_ActionParameter *pactionparam)
   }
 
   std::deque<CMDF_ActionParameter *>::iterator it;
-  for (auto it = m_list_ActionParameter.begin(); 
-        it != m_list_ActionParameter.end(); 
-        ++it) {
+  for (auto it = m_list_ActionParameter.begin(); it != m_list_ActionParameter.end(); ++it) {
     if (pactionparam->getOffset() == (*it)->getOffset()) {
       m_list_ActionParameter.erase(it);
       delete pactionparam;
@@ -767,12 +765,10 @@ CMDF_Action::deleteActionParam(CMDF_ActionParameter *pactionparam)
   return false;
 }
 
-bool 
+bool
 CMDF_Action::deleteActionParam(uint8_t offset)
 {
-  for (auto it = m_list_ActionParameter.begin(); 
-        it != m_list_ActionParameter.end(); 
-        ++it) {
+  for (auto it = m_list_ActionParameter.begin(); it != m_list_ActionParameter.end(); ++it) {
     if (offset == (*it)->getOffset()) {
       m_list_ActionParameter.erase(it);
       delete *it;
@@ -815,6 +811,16 @@ CMDF_DecisionMatrix::clearStorage()
   m_rowCount    = 0;
   m_rowSize     = 8;
 
+  // Cleanup action list
+  std::deque<CMDF_Action *>::iterator iterAction;
+  for (iterAction = m_list_action.begin(); iterAction != m_list_action.end(); ++iterAction) {
+    CMDF_Action *pRecordAction = *iterAction;
+    if (nullptr != pRecordAction) {
+      delete pRecordAction;
+      pRecordAction = nullptr;
+    }
+  }
+
   m_list_action.clear();
 }
 
@@ -835,6 +841,66 @@ CMDF_DecisionMatrix::getAction(uint16_t code)
   }
   return nullptr;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//  addAction
+//
+
+bool
+CMDF_DecisionMatrix::addAction(CMDF_Action *paction)
+{
+  // Check pointer
+  if (nullptr == paction) {
+    return false;
+  }
+
+  // Offset must be unique
+  if (nullptr != getAction(paction->getCode())) {
+    return false;
+  }
+
+  m_list_action.push_back(paction);
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  deleteAction
+//
+
+bool
+CMDF_DecisionMatrix::deleteAction(CMDF_Action *paction)
+{
+  if (nullptr == paction) {
+    return false;
+  }
+
+  std::deque<CMDF_ActionParameter *>::iterator it;
+  for (auto it = m_list_action.begin(); it != m_list_action.end(); ++it) {
+    if (paction->getCode() == (*it)->getCode()) {
+      m_list_action.erase(it);
+      delete paction;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool
+CMDF_DecisionMatrix::deleteAction(uint8_t code)
+{
+  for (auto it = m_list_action.begin(); it != m_list_action.end(); ++it) {
+    if (code == (*it)->getCode()) {
+      m_list_action.erase(it);
+      delete *it;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//-----------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
@@ -933,6 +999,97 @@ CMDF_Event::clearStorage()
   m_list_eventdata.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getEventData
+//
+
+CMDF_EventData *
+CMDF_Event::getEventData(uint8_t offset)
+{
+  for (auto it = m_list_eventdata.cbegin(); it != m_list_eventdata.cend(); ++it) {
+    if (offset == (*it)->getOffset()) {
+      return *it;
+    }
+  }
+
+  return nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  addEventData
+//
+
+bool 
+CMDF_Event::addEventData(CMDF_EventData *pEventData)
+{
+  if (nullptr != pEventData) {
+    m_list_eventdata.push_back(pEventData);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  deleteEventData
+//
+
+bool 
+CMDF_Event::deleteEventData(CMDF_EventData *pEventData)
+{
+  // Check pointer
+  if (nullptr == pEventData) {
+    return false;
+  }
+
+  for (auto it = m_list_eventdata.cbegin(); it != m_list_eventdata.cend(); ++it) {
+    if (pEventData == *it) {
+      m_list_eventdata.erase(it);
+      delete pEventData;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  isEventDataOffsetUnique
+//
+
+bool 
+CMDF_Event::isEventDataOffsetUnique(uint8_t offset)
+{
+  if (nullptr == getEventData(offset)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool 
+CMDF_Event::isEventDataOffsetUnique(CMDF_EventData *pEventData)
+{
+  // Check pointer
+  if (nullptr == pEventData) {
+    return false;
+  }
+
+  for (auto it = m_list_eventdata.cbegin(); it != m_list_eventdata.cend(); ++it) {    
+    // We don't check ourself
+    if (pEventData == *it) {
+      continue;
+    }  
+    
+    if ( pEventData->getOffset() == (*it)->getOffset()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7876,6 +8033,7 @@ CMDF::deleteRegister(CMDF_Register *preg)
   for (auto it = m_list_register.cbegin(); it != m_list_register.cend(); ++it) {
     if (preg == *it) {
       m_list_register.erase(it);
+      delete preg;
       return true;
     }
   }
@@ -7888,16 +8046,56 @@ CMDF::deleteRegister(CMDF_Register *preg)
 //
 
 bool
-CMDF::deleteRemoteVariable(CMDF_RemoteVariable *pvar)
+CMDF::deleteRemoteVariable(CMDF_RemoteVariable *prvar)
 {
   // Check pointer
-  if (nullptr == pvar) {
+  if (nullptr == prvar) {
     return false;
   }
 
   for (auto it = m_list_remotevar.cbegin(); it != m_list_remotevar.cend(); ++it) {
-    if (pvar == *it) {
+    if (prvar == *it) {
       m_list_remotevar.erase(it);
+      delete prvar;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addEvent
+//
+
+bool
+CMDF::addEvent(CMDF_Event *pEvent)
+{
+  if (nullptr != pEvent) {
+    m_list_event.push_back(pEvent);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteEvent
+//
+
+bool
+CMDF::deleteEvent(CMDF_Event *pEvent)
+{
+  // Check pointer
+  if (nullptr == pEvent) {
+    return false;
+  }
+
+  for (auto it = m_list_event.cbegin(); it != m_list_event.cend(); ++it) {
+    if (pEvent == *it) {
+      m_list_event.erase(it);
+      delete pEvent;
       return true;
     }
   }
