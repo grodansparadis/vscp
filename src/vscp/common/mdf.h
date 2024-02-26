@@ -315,7 +315,7 @@ public:
 
 private:
   std::string m_name;
-  std::string m_strValue; // String because used for remote variabels also
+  std::string m_strValue;   // String because used for remote variabels also
   std::map<std::string, std::string> m_mapDescription;
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 };
@@ -3989,7 +3989,7 @@ public:
   std::deque<CMDF_Bit *> *getAlarmList() { return &m_list_alarm; };
 
   /*!
-    Get the alarm list
+    Get the alarm list bits
     (Alternative consistent with other bit list getters)
     @return Pointer to the alarm list.
   */
