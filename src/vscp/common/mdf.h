@@ -50,6 +50,12 @@
 using json = nlohmann::json;
 
 // This is the access rights
+typedef enum mdf_format {
+  MDF_FORMAT_XML = 0,
+  MDF_FORMAT_JSON
+} mdf_format;
+
+// This is the access rights
 typedef enum mdf_access_mode {
   MDF_REG_ACCESS_NONE       = 0,
   MDF_REG_ACCESS_READ_ONLY  = 1,
@@ -388,6 +394,8 @@ public:
     @param url bit info URL to set
   */
   void setInfoURL(const std::string &lang, const std::string &url) { m_mapInfoURL[lang] = url; };
+
+  
 
   /*!
     Get description map
@@ -2993,7 +3001,7 @@ public:
   };
 
   /*!
-    Set description for picture
+    Set description for firmware
   */
   void setDescription(const std::string &strDescription, const std::string &strLanguage)
   {
@@ -3154,6 +3162,30 @@ public:
   */
   void setFormat(const std::string &strFormat) { m_strFormat = strFormat; };
 
+  /*
+    Get date for object
+    @return date on ISO string format
+  */
+  std::string getDate(void) { return m_strDate; };
+
+  /*!
+    Set date for object
+    @param isodate Date for object oin ISO string form.
+  */
+  void setDate(const std::string &isodate) { m_strDate = isodate; };
+
+  /*!
+    Get version for setup
+    @return version for setup
+  */
+  std::string getVersion(void) { return m_strVersion; };
+
+  /*!
+    Set version for setup
+    @param strVersion Version for setup
+  */
+  void setVersion(const std::string &strVersion) { m_strVersion = strVersion; };
+
   /*!
     Assignment
   */
@@ -3194,17 +3226,7 @@ public:
     }
   };
 
-  /*
-    Get date for object
-    @return date on ISO string format
-  */
-  std::string getDate(void) { return m_strDate; };
-
-  /*!
-    Set date for object
-    @param isodate Date for object oin ISO string form.
-  */
-  void setDate(const std::string &isodate) { m_strDate = isodate; };
+  
 
   /*!
     Get the value info URL
@@ -3467,29 +3489,7 @@ public:
   friend void __handleMDFParserData(void *data, const XML_Char *content, int length);
   friend void __endSetupMDFParser(void *data, const char *name);
 
-  /*!
-      Clear storage
-  */
-  void clearStorage(void);
-
-  /*!
-      Download MDF file from a server
-      @param remoteFile remote file URL
-      @param variable that will receive temporary filename for downloaded
-     file.
-      @return Return CURLE_OK if a valid file is downloaded, else a
-              curl error code.
-  */
-  CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
-
-  /*!
-      Load MDF from local or remote storage and parse it into
-      a MDF structure.
-      @param file or URL to MDF file.
-      @param blocalFile Asks for a local file if set to true.
-      @return returns true on success, false on failure.
-  */
-  bool load(const std::string &file, bool bLocalFile = false);
+  
 
   /*!
       Format an MDF description so it can be shown
@@ -3631,21 +3631,36 @@ public:
   std::map<std::string, std::string> *getMapInfoUrl(void) { return &m_mapInfoURL; };
 
   /*!
+    Get Module info url in selected language (Deprecated).
+    @param language Language for the help resource.
+    @return Return string with module info url in selected language or
+      in english if the language is not available.
+  */
+  std::string getModuleHelpUrl(const std::string language = "en") { return getModuleInfoUrl(language); };
+
+  /*!
     Get Module info url in selected language.
     @param language Language for the help resource.
     @return Return string with module info url in selected language or
       in english if the language is not available.
   */
-  std::string getModuleHelpUrl(const std::string language = "en");
+  std::string getModuleInfoUrl(const std::string language = "en");
 
   /*!
-    Get the number of module help URL's available in different mime types
+    Get the number of module help URL's available in different mime types (deprecated)
     @return Number of info url's available.
   */
   size_t getModuleHelpUrlCount(void) { return m_mapInfoURL.size(); };
 
   /*!
+    Get the number of module help URL's available in different mime types 
+    @return Number of info url's available.
+  */
+  size_t getModuleInfoUrlCount(void) { return m_mapInfoURL.size(); };
+
+  /*!
     Get the module description map
+    Deprecated
   */
   std::map<std::string, std::string> *getHelpUrlMap(void) { return &m_mapInfoURL; };
 
@@ -3995,30 +4010,6 @@ public:
   */
   std::deque<CMDF_Bit *> *getAlarmListBits() { return &m_list_alarm; };
 
-  // ----------------------------------------------------------------------------
-
-  /*!
-    Parse XML formated MDF file
-    @param ifs Open input file stream for the file to parse.
-    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF_XML(std::ifstream &ifs);
-
-  /*!
-    Parse JSON formated MDF file
-    @param path Path to the JSON file to parse.
-    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF_JSON(const std::string &path);
-
-  /*!
-      Parse a MDF. The format can be XML or JSON. If the format is
-      unknown, the function will try to determine it.
-      @param path Path to downloaded MDF
-      @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
-  */
-  int parseMDF(const std::string &path);
-
   /*!
     Get items from bit list
     @param j JSON object with bit list
@@ -4063,6 +4054,99 @@ public:
     always be returned formatted as HTML.
   */
   std::string &format(std::string &docs);
+
+  // ----------------------------------------------------------------------------
+
+  /*!
+    Parse XML formated MDF file
+    @param ifs Open input file stream for the file to parse.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF_XML(std::ifstream &ifs);
+
+  /*!
+    Parse JSON formated MDF file
+    @param path Path to the JSON file to parse.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF_JSON(const std::string &path);
+
+  /*!
+      Parse a MDF. The format can be XML or JSON. If the format is
+      unknown, the function will try to determine it.
+      @param path Path to downloaded MDF
+      @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+  int parseMDF(const std::string &path);
+
+  /*!
+      Clear storage
+  */
+  void clearStorage(void);
+
+  /*!
+      Download MDF file from a server
+      @param remoteFile remote file URL
+      @param variable that will receive temporary filename for downloaded
+     file.
+      @return Return CURLE_OK if a valid file is downloaded, else a
+              curl error code.
+  */
+  CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
+
+  /*!
+      Load MDF from local or remote storage and parse it into
+      a MDF structure.
+      @param file or URL to MDF file.
+      @param blocalFile Asks for a local file if set to true.
+      @return returns true on success, false on failure.
+  */
+  bool load(const std::string &file, bool bLocalFile = false);
+
+  /*!
+    Write document/infourl map file in XML format
+    @param fout Output stream
+    @param pmap Pointer to map to output
+    @param tag Tag to use for XML
+  */
+  void
+  writeMap_xml(std::ofstream& fout, std::map<std::string, std::string> *pmap, const std::string& tag);
+
+  /*!
+    Write document/infourl map file in JSON format
+    @param fout Output stream
+    @param pmap Pointer to map to output
+    @param tag Tag to use for JSON
+    @param bCommaAtEnd Sett to true to poutput comma at the end
+  */
+  void
+  writeMap_json(std::ofstream& fout, std::map<std::string, std::string> *pmap, const std::string& tag, bool bCommaAtEnd = true);
+
+  /*!
+    Write MDF to a file in XML format.
+    @param path  Path to external file to write to. The file will be 
+      created if it does not exist.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.  
+  */
+  int save_xml(const std::string &path);
+
+  /*!
+    Write MDF to a file in JSON format.
+    @param path  Path to external file to write to. The file will be 
+      created if it does not exist.
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.  
+  */
+  int save_json(const std::string &path);
+
+  /*!
+    Write MDF to a file
+    @param path  Path to external file to write to. The file will be 
+      created if it does not exist.
+    @param format Can be either MDF_FORMAT_XML or MDF_FORMAT_JSON
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+  */
+ int save(const std::string &path, mdf_format format);
+
 
   // --------------------------------------------------------------------------
 
