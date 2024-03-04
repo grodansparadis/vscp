@@ -316,6 +316,23 @@ CMDF_RemoteVariable::getTypeByteCount(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAccessStr
+//
+
+std::string
+CMDF_RemoteVariable::getAccessStr(void)
+{
+  std::string str = "";
+  if (getAccess() & 0x02) {
+    str += "r";
+  }
+  if (getAccess() & 0x01) {
+    str += "w";
+  }
+  return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //
 
@@ -427,6 +444,23 @@ void
 CMDF_Bit::setMax(uint8_t max)
 {
   m_max = max & m_mask;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAccessStr
+//
+
+std::string
+CMDF_Bit::getAccessStr(void)
+{
+  std::string str = "";
+  if (2 & getAccess()) {
+    str += "r";
+  }
+  if (1 & getAccess()) {
+    str += "w";
+  }
+  return str;
 }
 
 // ----------------------------------------------------------------------------
@@ -599,6 +633,51 @@ CMDF_Register::operator=(const CMDF_Register &other)
   m_list_value = other.m_list_value;
 
   return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAccessStr
+//
+
+std::string
+CMDF_Register::getAccessStr(void)
+{
+  std::string str = "";
+  if (2 & getAccess()) {
+    str += "r";
+  }
+  if (1 & getAccess()) {
+    str += "w";
+  }
+  return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getTypeStr
+//
+
+std::string
+CMDF_Register::getTypeStr(void)
+{
+  std::string str;
+
+  switch (m_type) {
+    case MDF_REG_TYPE_STANDARD:
+      str = "std";
+      break;
+    case MDF_REG_TYPE_DMATRIX1:
+      str = "dmatrix1";
+      break;
+    case MDF_REG_TYPE_BLOCK:
+      str = "block";
+      break;
+
+    default:
+      str = "invalid";
+      break;
+  }
+
+  return str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1750,22 +1829,25 @@ CMDF::writeMap_json(std::ofstream &fout,
                     bool bCommaAtEnd)
 {
   if ((nullptr != pmap) && pmap->size()) {
-    fout << "\"" << tag << "\": {" << std::endl;
+    fout << "," << std::endl;
+    fout << "\"" << tag << "\": [" << std::endl;
     size_t pos = 0;
     for (auto it = pmap->begin(); it != pmap->end(); it++) {
+      fout << "{";
       fout << "\"" << it->first << "\": \"" << it->second << "\"";
+      fout << "}";
       if ((++pos) < pmap->size()) {
         fout << ",";
       }
-      fout << std::endl;
+      fout << std::endl << std::endl;
     }
-    fout << "}";
-    if (bCommaAtEnd) {
-      fout << "," << std::endl;
-    }
-    else {
-      fout << std::endl;
-    }
+    fout << "]";
+    // if (bCommaAtEnd) {
+    //   fout << "," << std::endl;
+    // }
+    // else {
+    //   fout << std::endl;
+    // }
   }
 }
 
@@ -2057,27 +2139,19 @@ CMDF::save_xml(const std::string &path)
     for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
       CMDF_Register *preg = regmap[*it];
 
-      str += ")";
       fout << "<reg ";
       fout << "name=\"" << preg->getName() << "\" ";
       fout << "page=\"" << preg->getPage() << "\" ";
       fout << "offset=\"" << preg->getOffset() << "\" ";
       fout << "span=\"" << preg->getSpan() << "\" ";
       fout << "width=\"" << preg->getWidth() << "\" ";
-      str.empty();
-      if (2 & preg->getAccess()) {
-        str += "r";
-      }
-      if (1 & preg->getAccess()) {
-        str += "w";
-      }
-      fout << "access=\"" << str << "\" ";
+      fout << "access=\"" << preg->getAccessStr() << "\" ";
       fout << "type=\"" << preg->getType() << "\" ";
       fout << "default=\"" << preg->getDefault() << "\" ";
       fout << "min=\"" << (int) preg->getMin() << "\" ";
       fout << "max=\"" << (int) preg->getMax() << "\" ";
-      fout << std::hex << "fgcolor=\"" << preg->getForegroundColor() << "\" ";
-      fout << std::hex << "bgcolor=\"" << preg->getBackgroundColor() << "\" ";
+      fout << std::hex << "fgcolor=\"" << preg->getForegroundColor() << "\" " << std::dec;
+      fout << std::hex << "bgcolor=\"" << preg->getBackgroundColor() << "\" " << std::dec;
       fout << ">" << std::endl;
 
       // bits
@@ -2087,19 +2161,12 @@ CMDF::save_xml(const std::string &path)
           CMDF_Bit *pbit = *it;
           fout << "<bit ";
           fout << "name=\"" << pbit->getName() << "\" ";
-          fout << "pos=\"" << pbit->getPos() << "\" ";
-          fout << "width=\"" << pbit->getWidth() << "\" ";
-          fout << "default=\"" << pbit->getDefault() << "\" ";
-          fout << "min=\"" << pbit->getMin() << "\" ";
-          fout << "max=\"" << pbit->getMax() << "\" ";
-          str.empty();
-          if (2 & pbit->getAccess()) {
-            str += "r";
-          }
-          if (1 & pbit->getAccess()) {
-            str += "w";
-          }
-          fout << "access=\"" << str << "\" >" << std::endl;
+          fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+          fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+          fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+          fout << "min=\"" << (int) pbit->getMin() << "\" ";
+          fout << "max=\"" << (int) pbit->getMax() << "\" ";
+          fout << "access=\"" << preg->getAccessStr() << "\" >" << std::endl;
 
           writeMap_xml(fout, pbit->getMapDescription(), "description");
           writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
@@ -2119,9 +2186,9 @@ CMDF::save_xml(const std::string &path)
             fout << "</valuelist> " << std::endl;
           }
 
-          fout << ">" << std::endl; // Bits
-        }                           // for bits
-      }                             // pbits size
+          fout << "</bit>" << std::endl; // Bits
+        }                                // for bits
+      }                                  // pbits size
 
       std::deque<CMDF_Value *> *pvalues = preg->getListValues();
       if (pvalues->size()) {
@@ -2144,9 +2211,6 @@ CMDF::save_xml(const std::string &path)
       fout << "</reg>" << std::endl;
     }
   }
-
-  // createRegisterStortedSet(std::set<uint32_t> &set, uint16_t page);
-  // void getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs);
 
   fout << "</registers>" << std::endl;
 
@@ -2189,14 +2253,14 @@ CMDF::save_json(const std::string &path)
   fout << "\"model\": \"" << getModuleModel() << "\"," << std::endl;
   fout << "\"version\": \"" << getModuleVersion() << "\"," << std::endl;
   fout << "\"changed\": \"" << getModuleChangeDate() << "\"," << std::endl;
-  fout << "\"buffersize\": " << getModuleBufferSize() << "," << std::endl;
+  fout << "\"buffersize\": " << getModuleBufferSize() << std::endl;
 
   writeMap_json(fout, getMapDescription(), "description");
   writeMap_json(fout, getMapInfoUrl(), "infourl");
 
   CMDF_Manufacturer *pManufacturer = getManufacturer();
   if (nullptr != pManufacturer) {
-
+    fout << "," << std::endl;
     fout << "\"manufacturer\": {" << std::endl;
     fout << "\"name\": \"" << pManufacturer->getName() << "\"," << std::endl;
 
@@ -2211,17 +2275,18 @@ CMDF::save_json(const std::string &path)
       fout << "\"state\": \"" << paddr->getState() << "\"," << std::endl;
       fout << "\"country\": \"" << paddr->getCountry() << "\"" << std::endl;
       // Address end
-      fout << "}," << std::endl;
+      fout << "}" << std::endl;
     }
 
     if (cnt = pManufacturer->getPhoneObjCount()) {
+      fout << "," << std::endl;
       fout << "\"telephone\": [" << std::endl;
       int i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
         if (nullptr != pitem) {
           fout << "{" << std::endl;
-          fout << "\"number\": \"" << pitem->getValue() << "\"," << std::endl;
+          fout << "\"number\": \"" << pitem->getValue() << "\"" << std::endl;
           writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
           writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
           fout << "}" << std::endl;
@@ -2233,17 +2298,18 @@ CMDF::save_json(const std::string &path)
         }
         fout << std::endl;
       }
-      fout << "],";
+      fout << "]";
     }
 
     if (cnt = pManufacturer->getFaxObjCount()) {
+      fout << "," << std::endl;
       fout << "\"fax\": [" << std::endl;
       int i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getFaxObj(i);
         if (nullptr != pitem) {
           fout << "{" << std::endl;
-          fout << "\"number\": \"" << pitem->getValue() << "\"," << std::endl;
+          fout << "\"number\": \"" << pitem->getValue() << "\"" << std::endl;
           writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
           writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
           fout << "}" << std::endl;
@@ -2255,17 +2321,18 @@ CMDF::save_json(const std::string &path)
         }
         fout << std::endl;
       }
-      fout << "],";
+      fout << "]";
     }
 
     if (cnt = pManufacturer->getEmailObjCount()) {
+      fout << "," << std::endl;
       fout << "\"email\": [" << std::endl;
       int i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getEmailObj(i);
         if (nullptr != pitem) {
           fout << "{" << std::endl;
-          fout << "\"address\": \"" << pitem->getValue() << "\"," << std::endl;
+          fout << "\"address\": \"" << pitem->getValue() << "\"" << std::endl;
           writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
           writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
           fout << "}" << std::endl;
@@ -2277,17 +2344,18 @@ CMDF::save_json(const std::string &path)
         }
         fout << std::endl;
       }
-      fout << "],";
+      fout << "]";
     }
 
     if (cnt = pManufacturer->getWebObjCount()) {
+      fout << "," << std::endl;
       fout << "\"web\": [" << std::endl;
       int i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getWebObj(i);
         if (nullptr != pitem) {
           fout << "{" << std::endl;
-          fout << "\"address\": \"" << pitem->getValue() << "\"," << std::endl;
+          fout << "\"address\": \"" << pitem->getValue() << "\"" << std::endl;
           writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
           writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
           fout << "}" << std::endl;
@@ -2299,17 +2367,18 @@ CMDF::save_json(const std::string &path)
         }
         fout << std::endl;
       }
-      fout << "],";
+      fout << "]";
     }
 
     if (cnt = pManufacturer->getSocialObjCount()) {
+      fout << "," << std::endl;
       fout << "\"social\": [" << std::endl;
       int i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getSocialObj(i);
         if (nullptr != pitem) {
           fout << "{" << std::endl;
-          fout << "\"address\": \"" << pitem->getValue() << "\"," << std::endl;
+          fout << "\"address\": \"" << pitem->getValue() << "\"" << std::endl;
           writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
           writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
           fout << "}" << std::endl;
@@ -2325,11 +2394,12 @@ CMDF::save_json(const std::string &path)
     }
 
     // Manufacturer end
-    fout << "}," << std::endl;
+    fout << "}" << std::endl;
   }
 
   CMDF_BootLoaderInfo *pboot = getBootLoaderObj();
   if (nullptr != pboot) {
+    fout << "," << std::endl;
     fout << "\"boot\": {" << std::endl;
     fout << "\"algorithm\": " << (int) pboot->getAlgorithm() << "," << std::endl;
     fout << "\"blocksize\": " << pboot->getBlockSize() << "," << std::endl;
@@ -2337,8 +2407,9 @@ CMDF::save_json(const std::string &path)
     fout << "}," << std::endl;
   }
 
-  fout << "\"files\": {" << std::endl;
+  fout << "\"files\": [" << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"picture\": [" << std::endl;
   std::deque<CMDF_Picture *> *pPictureQueue = getPictureObjList();
   if ((nullptr != pPictureQueue) && (pPictureQueue->size())) {
@@ -2349,7 +2420,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"name\": \"" << pPicture->getName() << "\", " << std::endl;
       fout << "\"url\": \"" << pPicture->getUrl() << "\", " << std::endl;
       fout << "\"format\": \"" << pPicture->getFormat() << "\", " << std::endl;
-      fout << "\"date\": \"" << pPicture->getDate() << "\", " << std::endl;
+      fout << "\"date\": \"" << pPicture->getDate() << "\"" << std::endl;
       writeMap_json(fout, pPicture->getMapDescription(), "description", pPicture->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pPicture->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2362,8 +2433,10 @@ CMDF::save_json(const std::string &path)
     }
   }
   // End of pictures
-  fout << "]," << std::endl;
+  fout << "]" << std::endl;
+  fout << "}," << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"video\": [" << std::endl;
   std::deque<CMDF_Video *> *pVideoQueue = getVideoObjList();
   if ((nullptr != pVideoQueue) && (pVideoQueue->size())) {
@@ -2374,7 +2447,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"name\": \"" << pVideo->getName() << "\", " << std::endl;
       fout << "\"path\": \"" << pVideo->getUrl() << "\", " << std::endl;
       fout << "\"format\": \"" << pVideo->getFormat() << "\", " << std::endl;
-      fout << "\"date\": \"" << pVideo->getDate() << "\", " << std::endl;
+      fout << "\"date\": \"" << pVideo->getDate() << "\"" << std::endl;
       writeMap_json(fout, pVideo->getMapDescription(), "description", pVideo->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pVideo->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2387,8 +2460,10 @@ CMDF::save_json(const std::string &path)
     }
   }
   // End of video
-  fout << "]," << std::endl;
+  fout << "]" << std::endl;
+  fout << "}," << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"manual\": [" << std::endl;
   std::deque<CMDF_Manual *> *pManualQueue = getManualObjList();
   if ((nullptr != pManualQueue) && (pManualQueue->size())) {
@@ -2400,7 +2475,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"path\": \"" << pManual->getUrl() << "\", " << std::endl;
       fout << "\"format\": \"" << pManual->getFormat() << "\", " << std::endl;
       fout << "\"language\": \"" << pManual->getLanguage() << "\", " << std::endl;
-      fout << "\"date\": \"" << pManual->getDate() << "\", " << std::endl;
+      fout << "\"date\": \"" << pManual->getDate() << "\"" << std::endl;
       writeMap_json(fout, pManual->getMapDescription(), "description", pManual->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pManual->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2413,8 +2488,10 @@ CMDF::save_json(const std::string &path)
     }
   }
   // End of manual
-  fout << "]," << std::endl;
+  fout << "]" << std::endl;
+  fout << "}," << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"firmware\": [" << std::endl;
   std::deque<CMDF_Firmware *> *pFirmwareQueue = getFirmwareObjList();
   if ((nullptr != pFirmwareQueue) && (pFirmwareQueue->size())) {
@@ -2432,7 +2509,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"version_minor\": \"" << pFirmware->getVersionMinor() << "\", " << std::endl;
       fout << "\"version_subminor\": \"" << pFirmware->getVersionPatch() << "\", " << std::endl;
       fout << "\"size\": \"" << pFirmware->getSize() << "\", " << std::endl;
-      fout << "\"md5\": \"" << pFirmware->getMd5() << "\", " << std::endl;
+      fout << "\"md5\": \"" << pFirmware->getMd5() << "\"" << std::endl;
       writeMap_json(fout, pFirmware->getMapDescription(), "description", pFirmware->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pFirmware->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2445,8 +2522,10 @@ CMDF::save_json(const std::string &path)
     }
   }
   // End of firmware
-  fout << "]," << std::endl;
+  fout << "]" << std::endl;
+  fout << "}," << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"driver\": [" << std::endl;
   std::deque<CMDF_Driver *> *pDriverQueue = getDriverObjList();
   if ((nullptr != pDriverQueue) && (pDriverQueue->size())) {
@@ -2465,7 +2544,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"version_major\": \"" << pDriver->getVersionMajor() << "\", " << std::endl;
       fout << "\"version_minor\": \"" << pDriver->getVersionMinor() << "\", " << std::endl;
       fout << "\"version_subminor\": \"" << pDriver->getVersionPatch() << "\", " << std::endl;
-      fout << "\"md5\": \"" << pDriver->getMd5() << "\", " << std::endl;
+      fout << "\"md5\": \"" << pDriver->getMd5() << "\"" << std::endl;
       writeMap_json(fout, pDriver->getMapDescription(), "description", pDriver->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pDriver->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2478,8 +2557,10 @@ CMDF::save_json(const std::string &path)
     }
   }
   // End of firmware
-  fout << "]," << std::endl;
+  fout << "]" << std::endl;
+  fout << "}," << std::endl;
 
+  fout << "{" << std::endl;
   fout << "\"setup\": [" << std::endl;
   std::deque<CMDF_Setup *> *pSetupQueue = getSetupObjList();
   if ((nullptr != pSetupQueue) && (pSetupQueue->size())) {
@@ -2491,7 +2572,7 @@ CMDF::save_json(const std::string &path)
       fout << "\"path\": \"" << pSetup->getUrl() << "\", " << std::endl;
       fout << "\"format\": \"" << pSetup->getFormat() << "\", " << std::endl;
       fout << "\"date\": \"" << pSetup->getDate() << "\", " << std::endl;
-      fout << "\"version\": \"" << pSetup->getVersion() << "\", " << std::endl;
+      fout << "\"version\": \"" << pSetup->getVersion() << "\"" << std::endl;
       writeMap_json(fout, pSetup->getMapDescription(), "description", pSetup->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pSetup->getMapInfoUrl(), "infourl", false);
       fout << "}" << std::endl;
@@ -2503,19 +2584,177 @@ CMDF::save_json(const std::string &path)
       fout << std::endl;
     }
   }
-  // End of serup
-  fout << "]," << std::endl;
+  // End of setup
+  fout << "]" << std::endl;
+  fout << "}" << std::endl;
 
   // End for files
-  fout << "}," << std::endl;
+  fout << "]" << std::endl;
 
-  // Module end
+  // --------------------------------------------------------------------------
+
+  if (getRegisterObjList()) {
+    fout << "," << std::endl;
+    fout << "\"registers\" : [" << std::endl;
+
+    // get pages
+    std::set<uint16_t> pages;
+    std::deque<CMDF_Register *> *pregs = getRegisterObjList();
+    uint32_t nPageCnt                  = getPages(pages);
+
+    // Go throu pages create set/map with sorted registers
+    int pos = 0;
+
+    // Add registers for page
+    std::set<uint32_t> regset;
+    std::map<uint32_t, CMDF_Register *> regmap;
+
+    for (auto itr : pages) {
+
+      // Create set with sorted register offsets and a map
+      // to help find corresponding register pointer
+      for (auto it = pregs->cbegin(); it != pregs->cend(); ++it) {
+        if (itr == (*it)->getPage()) {
+          regset.insert((*it)->getOffset());
+          regmap[(*it)->getOffset()] = *it;
+        }
+      }
+    }
+
+    for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
+      CMDF_Register *preg = regmap[*it];
+
+      fout << "{" << std::endl;
+      fout << "\"name\": \"" << preg->getName() << "\"," << std::endl;
+      fout << "\"page\": " << preg->getPage() << "," << std::endl;
+      fout << "\"offset\": " << preg->getOffset() << "," << std::endl;
+      fout << "\"span\": " << preg->getSpan() << "," << std::endl;
+      fout << "\"width\": " << preg->getWidth() << "," << std::endl;
+      fout << "\"access\": \"" << preg->getAccessStr() << "\"," << std::endl;
+      fout << "\"type\": \"" << preg->getTypeStr() << "\"," << std::endl;
+      fout << "\"default\": \"" << preg->getDefault() << "\"," << std::endl;
+      fout << "\"min\": " << (int) preg->getMin() << "," << std::endl;
+      fout << "\"max\": " << (int) preg->getMax() << "," << std::endl;
+      fout << std::hex << "\"fgcolor\": \"0x" << preg->getForegroundColor() << "\"," << std::dec << std::endl;
+      fout << std::hex << "\"bgcolor\": \"0x" << preg->getBackgroundColor() << "\"" << std::dec << std::endl;
+
+      // bits
+      std::deque<CMDF_Bit *> *pbits = preg->getListBits();
+      if (pbits->size()) {
+        int pos = 0;
+        fout << "," << std::endl;
+        fout << "\"bit\": [" << std::endl;
+        for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+          CMDF_Bit *pbit = *it;
+          fout << "{" << std::endl;
+          fout << "\"name\": \"" << pbit->getName() << "\"," << std::endl;
+          fout << "\"pos\": " << (int) pbit->getPos() << "," << std::endl;
+          fout << "\"width\": " << (int) pbit->getWidth() << "," << std::endl;
+          fout << "\"default\": " << (int) pbit->getDefault() << "," << std::endl;
+          fout << "\"min\" :" << (int) pbit->getMin() << "," << std::endl;
+          fout << "\"max\" :" << (int) pbit->getMax() << "," << std::endl;
+          fout << "\"access\": \"" << preg->getAccessStr() << "\"" << std::endl;
+
+          // Bit info/docs
+          writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
+          writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
+
+          std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
+          if (pvalues->size()) {
+            int pos = 0;
+            fout << "," << std::endl;
+            fout << "\"valuelist\": [" << std::endl;
+            for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+              CMDF_Value *pvalue = *it;
+              fout << "{" << std::endl;
+              fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+              fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+              writeMap_json(fout, pvalue->getMapDescription(), "description");
+              writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
+
+              fout << "}" << std::endl;
+
+              // If items left add comma
+              pos++;
+              if (pos < pvalues->size()) {
+                fout << ",";
+              }
+
+              fout << std::endl;
+            }
+            fout << "]" << std::endl; // End of values
+          }
+
+          // If items left add comma
+          fout << "}" << std::endl;
+          pos++;
+          if (pos < pbits->size()) {
+            fout << ",";
+          }
+
+        } // for bits
+
+        fout << "]" << std::endl; // Ed of bits array
+
+      } // pbits size
+
+      std::deque<CMDF_Value *> *pvalues = preg->getListValues();
+      if (pvalues->size()) {
+        int pos = 0;
+        fout << "," << std::endl;
+        fout << "\"valuelist\": [" << std::endl;
+        for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+          CMDF_Value *pvalue = *it;
+          fout << "{" << std::endl;
+          fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+          fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+          writeMap_json(fout, pvalue->getMapDescription(), "description", true);
+          writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl", true);
+          fout << "}" << std::endl;
+          // End of valuelist - If items left add comma
+          pos++;
+          if (pos < pvalues->size()) {
+            fout << ",";
+          }
+          fout << std::endl;
+        }
+
+        fout << "]" << std::endl; // End of values
+
+      } // Values size
+
+      // Register docs/info
+      writeMap_json(fout, preg->getMapDescription(), "description", preg->getMapInfoUrl()->size() > 0);
+      writeMap_json(fout, preg->getMapInfoUrl(), "infourl", true);
+
+      // End of registers - If items left add comma
+      fout << "}";
+      pos++;
+      if (pos < regset.size()) {
+        fout << ",";
+      }
+      fout << std::endl;
+
+    } // registers for-loop
+
+  fout << "]" << std::endl;
+
+  // End of registers - If items left add comma
+  /*pos++;
+  if (pos < pregs->size()) {
+    fout << ",";
+  }
+  fout << std::endl;*/
+
+  // End of registers
   fout << "}" << std::endl;
 
-  // JSON file end
-  fout << "}" << std::endl;
+} // Registers
 
-  return VSCP_ERROR_SUCCESS;
+// JSON file end
+fout << "}" << std::endl;
+
+return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -476,6 +476,12 @@ public:
   mdf_access_mode getAccess(void) { return m_access; };
 
   /*!
+    Get acces for register on string form
+    @return String with access form
+  */
+  std::string getAccessStr(void);
+
+  /*!
     Set access for bitfield
     @param access Access for bitfield.
   */
@@ -707,6 +713,12 @@ public:
   mdf_access_mode getAccess(void) { return m_access; };
 
   /*!
+    Get acces for register on string form
+    @return String with access form
+  */
+  std::string getAccessStr(void);
+
+  /*!
     Set access for register
     @param access Access for register.
   */
@@ -723,6 +735,12 @@ public:
     @return Type for register.
   */
   mdf_register_type getType(void) { return m_type; };
+
+  /*!
+    Get the type for a register on string form
+    @return Type for register on string form
+  */
+  std::string getTypeStr(void);
 
   /*!
     Fetch the bit definition list
@@ -969,6 +987,12 @@ public:
       @return Access mode for remote variable.
   */
   mdf_access_mode getAccess(void) { return m_access; };
+
+  /*!
+    Get acces for register on string form
+    @return String with access form
+  */
+  std::string getAccessStr(void);
 
   /*!
     Set access mode for remote variable
