@@ -526,6 +526,19 @@ vscp_str_after(const std::string &str, char c)
 }
 
 /*!
+  Saifly encode a standard string to be encoded in
+  HTML, XML or JSON
+  " (double quote)
+  \ (backslash)
+  all control characters like \n, \t
+
+  @param str Standard C++ string to encode
+  @return Encoded string.
+*/
+std::string 
+vscp_safe_encode_str(const std::string &str);
+
+/*!
     Check if a string is a number
     @param strNumber String to check
     @return True if string is a number, false otherwise

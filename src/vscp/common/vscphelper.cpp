@@ -826,6 +826,34 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscp_safe_encode_str
+//
+//
+
+std::string 
+vscp_safe_encode_str(const std::string &str)
+{
+  std::string retstr = "";
+
+  for (auto it=str.cbegin(); it!=str.cend(); ++it) {
+    if ('\\' == *it) {
+      retstr += "\\";
+    }
+    else if ('\"' == *it) {
+      retstr += "\"";
+    }
+    else if (*it < 32) {
+      retstr += vscp_str_format("\\x%x", *it);
+    }
+    else {
+      retstr += *it;
+    }
+  }
+
+  return retstr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_toXMLEscape
 //
 // Escape "invalid" XML characters for insert in XML file.
