@@ -1842,12 +1842,6 @@ CMDF::writeMap_json(std::ofstream &fout,
       fout << std::endl << std::endl;
     }
     fout << "]";
-    // if (bCommaAtEnd) {
-    //   fout << "," << std::endl;
-    // }
-    // else {
-    //   fout << std::endl;
-    // }
   }
 }
 
@@ -2166,7 +2160,7 @@ CMDF::save_xml(const std::string &path)
           fout << "default=\"" << (int) pbit->getDefault() << "\" ";
           fout << "min=\"" << (int) pbit->getMin() << "\" ";
           fout << "max=\"" << (int) pbit->getMax() << "\" ";
-          fout << "access=\"" << preg->getAccessStr() << "\" >" << std::endl;
+          fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
 
           writeMap_xml(fout, pbit->getMapDescription(), "description");
           writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
@@ -2214,6 +2208,278 @@ CMDF::save_xml(const std::string &path)
 
   fout << "</registers>" << std::endl;
 
+  // --------------------------------------------------------------------------
+
+  // --------------------------------------------------------------------------
+
+  fout << "<remotevars>" << std::endl;
+  std::deque<CMDF_RemoteVariable *> *premotevars = getRemoteVariableList();
+
+  for (auto it = premotevars->cbegin(); it != premotevars->cend(); ++it) {
+    CMDF_RemoteVariable *prvar = *it;
+
+    fout << "<remotevar ";
+    fout << "name=\"" << prvar->getName() << "\" ";
+    fout << "type=\"" << prvar->getType() << "\" ";
+    fout << "default=\"" << prvar->getDefault() << "\" ";
+    fout << "page=\"" << prvar->getPage() << "\" ";
+    fout << "offset=\"" << prvar->getOffset() << "\" ";
+    fout << "access=\"" << prvar->getAccessStr() << "\" ";
+    fout << "bitpos=\"" << prvar->getBitPos() << "\" ";
+    fout << std::hex << "fgcolor=\"" << prvar->getForegroundColor() << "\" " << std::dec;
+    fout << std::hex << "bgcolor=\"" << prvar->getBackgroundColor() << "\" " << std::dec;
+    fout << ">" << std::endl;
+
+    // bits
+    std::deque<CMDF_Bit *> *pbits = prvar->getListBits();
+    if (pbits->size()) {
+      for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+        CMDF_Bit *pbit = *it;
+        fout << "<bit ";
+        fout << "name=\"" << pbit->getName() << "\" ";
+        fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+        fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+        fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+        fout << "min=\"" << (int) pbit->getMin() << "\" ";
+        fout << "max=\"" << (int) pbit->getMax() << "\" ";
+        fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
+
+        writeMap_xml(fout, pbit->getMapDescription(), "description");
+        writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
+
+        std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
+        if (pvalues->size()) {
+          fout << "<valuelist> ";
+          for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+            CMDF_Value *pvalue = *it;
+            fout << "<item ";
+            fout << "name=\"" << pvalue->getName() << "\" ";
+            fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
+            writeMap_xml(fout, pvalue->getMapDescription(), "description");
+            writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
+            fout << "</item> ";
+          }
+          fout << "</valuelist> " << std::endl;
+        }
+
+        fout << "</bit>" << std::endl; // Bits
+      }                                // for bits
+    }                                  // pbits size
+
+    std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
+    if (pvalues->size()) {
+      fout << "<valuelist> ";
+      for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+        CMDF_Value *pvalue = *it;
+        fout << "<item ";
+        fout << "name=\"" << pvalue->getName() << "\" ";
+        fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
+        writeMap_xml(fout, pvalue->getMapDescription(), "description");
+        writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
+        fout << "</item> ";
+      }
+      fout << "</valuelist> " << std::endl;
+    }
+
+    writeMap_xml(fout, prvar->getMapDescription(), "description");
+    writeMap_xml(fout, prvar->getMapInfoUrl(), "infourl");
+
+    fout << "</remotevar>" << std::endl;
+  }
+
+  fout << "</remotevars>" << std::endl;
+
+  // --------------------------------------------------------------------------
+
+  fout << "<alarm>" << std::endl;
+
+  // bits
+  std::deque<CMDF_Bit *> *pbits = getAlarmList();
+  if (pbits->size()) {
+    for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+      CMDF_Bit *pbit = *it;
+      fout << "<bit ";
+      fout << "name=\"" << pbit->getName() << "\" ";
+      fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+      fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+      fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+      fout << "min=\"" << (int) pbit->getMin() << "\" ";
+      fout << "max=\"" << (int) pbit->getMax() << "\" ";
+      fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
+
+      writeMap_xml(fout, pbit->getMapDescription(), "description");
+      writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
+      fout << "</bit>" << std::endl; // Bits
+    }                                // for bits
+  }                                  // pbits size
+
+  fout << "</alarm>" << std::endl;
+
+  // --------------------------------------------------------------------------
+
+  CMDF_DecisionMatrix *pdm = getDM(); // Get pointer to decision matrix
+  if (nullptr != pdm) {
+
+    fout << "<dmatrix ";
+    fout << "level=\"" << (int) pdm->getLevel() << "\" ";
+    fout << "start-page=\"" << pdm->getStartPage() << "\" ";
+    fout << "start-offset=\"" << pdm->getStartOffset() << "\" ";
+    fout << "rowcnt=\"" << pdm->getRowCount() << "\" ";
+    fout << "rowsize=\"" << pdm->getRowSize() << "\" >" << std::endl;
+
+    std::deque<CMDF_Action *> *pactionlst = pdm->getActionList();
+    if (nullptr != pactionlst) {
+      for (auto it = pactionlst->cbegin(); it != pactionlst->cend(); ++it) {
+        CMDF_Action *paction = *it;
+        fout << "<action ";
+        fout << "name=\"" << paction->getName() << "\" ";
+        fout << "code=\"" << paction->getCode() << "\" >" << std::endl;
+        std::deque<CMDF_ActionParameter *> *pactionparamlst = paction->getListActionParameter();
+        if (nullptr != pactionparamlst) {
+          for (auto it = pactionparamlst->cbegin(); it != pactionparamlst->cend(); ++it) {
+            CMDF_ActionParameter *pactionparam = *it;
+            fout << "<param ";
+            fout << "name=\"" << pactionparam->getName() << "\" ";
+            fout << "offset=\"" << pactionparam->getOffset() << "\" ";
+            fout << "min=\"" << (int) pactionparam->getMin() << "\" ";
+            fout << "max=\"" << (int) pactionparam->getMax() << "\" >" << std::endl;
+
+            // bits
+            std::deque<CMDF_Bit *> *pbits = pactionparam->getListBits();
+            if (pbits->size()) {
+              for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+                CMDF_Bit *pbit = *it;
+                fout << "<bit ";
+                fout << "name=\"" << pbit->getName() << "\" ";
+                fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+                fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+                fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+                fout << "min=\"" << (int) pbit->getMin() << "\" ";
+                fout << "max=\"" << (int) pbit->getMax() << "\" ";
+                fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
+
+                writeMap_xml(fout, pbit->getMapDescription(), "description");
+                writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
+
+                std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
+                if (pvalues->size()) {
+                  fout << "<valuelist> ";
+                  for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+                    CMDF_Value *pvalue = *it;
+                    fout << "<item ";
+                    fout << "name=\"" << pvalue->getName() << "\" ";
+                    fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
+                    writeMap_xml(fout, pvalue->getMapDescription(), "description");
+                    writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
+                    fout << "</item> ";
+                  }
+                  fout << "</valuelist> " << std::endl;
+                }
+
+                fout << "</bit>" << std::endl; // Bits
+              }                                // for bits
+            }                                  // pbits size
+
+            std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
+            if (pvalues->size()) {
+              fout << "<valuelist> ";
+              for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+                CMDF_Value *pvalue = *it;
+                fout << "<item ";
+                fout << "name=\"" << pvalue->getName() << "\" ";
+                fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
+                writeMap_xml(fout, pvalue->getMapDescription(), "description");
+                writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
+                fout << "</item> ";
+              }
+              fout << "</valuelist> " << std::endl;
+            }
+
+            writeMap_xml(fout, pactionparam->getMapDescription(), "description");
+            writeMap_xml(fout, pactionparam->getMapInfoUrl(), "infourl");
+
+            fout << "</param>" << std::endl;
+          }
+        }
+        fout << "</action>" << std::endl;
+      } // for pactionlst
+
+    } // pactionlst
+
+    fout << "</dmatrix>" << std::endl;
+  }
+
+  // --------------------------------------------------------------------------
+
+  std::deque<CMDF_Event *> *peventlst = getEventList(); // Get pointer to event list
+  if (nullptr != peventlst) {
+
+    fout << "<events>" << std::endl;
+    for (auto it = peventlst->cbegin(); it != peventlst->cend(); ++it) {
+      CMDF_Event *pevent = *it;
+      fout << "<event ";
+      fout << "name=\"" << pevent->getName() << "\" ";
+      fout << "class=\"" << pevent->getClass() << "\" ";
+      fout << "type=\"" << pevent->getType() << "\" ";
+      fout << "priority=\"" << (int) pevent->getPriority() << "\" ";
+      fout << "dir=\"" << ((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out") << "\" >" << std::endl;
+
+      std::deque<CMDF_EventData *> *peventdatalst = pevent->getListEventData();
+      if (peventdatalst->size()) {
+        for (auto it = peventdatalst->cbegin(); it != peventdatalst->cend(); ++it) {
+          CMDF_EventData *pdata = *it;
+          fout << "<data ";
+          fout << "name=\"" << pdata->getName() << "\" ";
+          fout << "offset=\"" << pdata->getOffset() << "\" >" << std::endl;
+
+          // bits
+          std::deque<CMDF_Bit *> *pbits = pdata->getListBits();
+          if (pbits->size()) {
+            for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+              CMDF_Bit *pbit = *it;
+              fout << "<bit ";
+              fout << "name=\"" << pbit->getName() << "\" ";
+              fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+              fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+              fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+              fout << "min=\"" << (int) pbit->getMin() << "\" ";
+              fout << "max=\"" << (int) pbit->getMax() << "\" ";
+              fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
+
+              writeMap_xml(fout, pbit->getMapDescription(), "description");
+              writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
+
+              std::deque<CMDF_Value *> *pvalues = pdata->getListValues();
+              if (pvalues->size()) {
+                fout << "<valuelist> ";
+                for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+                  CMDF_Value *pvalue = *it;
+                  fout << "<item ";
+                  fout << "name=\"" << pvalue->getName() << "\" ";
+                  fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
+                  writeMap_xml(fout, pvalue->getMapDescription(), "description");
+                  writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
+                  fout << "</item> ";
+                }
+                fout << "</valuelist> " << std::endl;
+              }
+
+              fout << "</bit>" << std::endl; // Bits
+            }                                // for bits
+          }                                  // pbits size
+
+          writeMap_xml(fout, pdata->getMapDescription(), "description");
+          writeMap_xml(fout, pdata->getMapInfoUrl(), "infourl");
+          fout << "</data>" << std::endl;
+        }
+      }
+
+      fout << "</event>" << std::endl;
+    }
+    // fout << "level=\"" << (int) pdm->getLevel() << "\" ";
+    fout << "</events>";
+  }
+
   // Write out end data
   fout << "</module>" << std::endl;
   fout << "</vscp>" << std::endl;
@@ -2249,7 +2515,7 @@ CMDF::save_json(const std::string &path)
   fout << "\"module\": {" << std::endl;
   fout << "\"name\": \"" << getModuleName() << "\"," << std::endl;
   fout << "\"copyright\": \"" << getModuleCopyright() << "\"," << std::endl;
-  fout << "\"level\": \"" << getModuleLevel() << "\"," << std::endl;
+  fout << "\"level\": " << (int)getModuleLevel() << "," << std::endl;
   fout << "\"model\": \"" << getModuleModel() << "\"," << std::endl;
   fout << "\"version\": \"" << getModuleVersion() << "\"," << std::endl;
   fout << "\"changed\": \"" << getModuleChangeDate() << "\"," << std::endl;
@@ -2501,14 +2767,14 @@ CMDF::save_json(const std::string &path)
       fout << "{" << std::endl;
       fout << "\"name\": \"" << pFirmware->getName() << "\", " << std::endl;
       fout << "\"path\": \"" << pFirmware->getUrl() << "\", " << std::endl;
-      fout << "\"format\": \"" << pFirmware->getFormat() << "\", " << std::endl;
+      fout << "\"format\": \"" << pFirmware->getFormat() << "\", " << std::endl;  
       fout << "\"date\": \"" << pFirmware->getDate() << "\", " << std::endl;
       fout << "\"target\": \"" << pFirmware->getTarget() << "\", " << std::endl;
-      fout << "\"targetcode\": \"" << pFirmware->getTargetCode() << "\", " << std::endl;
-      fout << "\"version_major\": \"" << pFirmware->getVersionMajor() << "\", " << std::endl;
-      fout << "\"version_minor\": \"" << pFirmware->getVersionMinor() << "\", " << std::endl;
-      fout << "\"version_subminor\": \"" << pFirmware->getVersionPatch() << "\", " << std::endl;
-      fout << "\"size\": \"" << pFirmware->getSize() << "\", " << std::endl;
+      fout << "\"targetcode\": " << pFirmware->getTargetCode() << ", " << std::endl;
+      fout << "\"version_major\": " << pFirmware->getVersionMajor() << ", " << std::endl;
+      fout << "\"version_minor\": " << pFirmware->getVersionMinor() << ", " << std::endl;
+      fout << "\"version_subminor\": " << pFirmware->getVersionPatch() << ", " << std::endl;
+      fout << "\"size\": " << pFirmware->getSize() << ", " << std::endl;
       fout << "\"md5\": \"" << pFirmware->getMd5() << "\"" << std::endl;
       writeMap_json(fout, pFirmware->getMapDescription(), "description", pFirmware->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pFirmware->getMapInfoUrl(), "infourl", false);
@@ -2541,9 +2807,9 @@ CMDF::save_json(const std::string &path)
       fout << "\"date\": \"" << pDriver->getDate() << "\", " << std::endl;
       fout << "\"os\": \"" << pDriver->getOS() << "\", " << std::endl;
       fout << "\"osver\": \"" << pDriver->getOSVer() << "\", " << std::endl;
-      fout << "\"version_major\": \"" << pDriver->getVersionMajor() << "\", " << std::endl;
-      fout << "\"version_minor\": \"" << pDriver->getVersionMinor() << "\", " << std::endl;
-      fout << "\"version_subminor\": \"" << pDriver->getVersionPatch() << "\", " << std::endl;
+      fout << "\"version_major\": " << pDriver->getVersionMajor() << ", " << std::endl;
+      fout << "\"version_minor\": " << pDriver->getVersionMinor() << ", " << std::endl;
+      fout << "\"version_subminor\": " << pDriver->getVersionPatch() << ", " << std::endl;
       fout << "\"md5\": \"" << pDriver->getMd5() << "\"" << std::endl;
       writeMap_json(fout, pDriver->getMapDescription(), "description", pDriver->getMapInfoUrl()->size() > 0);
       writeMap_json(fout, pDriver->getMapInfoUrl(), "infourl", false);
@@ -2594,22 +2860,25 @@ CMDF::save_json(const std::string &path)
   // --------------------------------------------------------------------------
 
   if (getRegisterObjList()) {
+    std::set<uint16_t> pages;
+
     fout << "," << std::endl;
     fout << "\"registers\" : [" << std::endl;
 
-    // get pages
-    std::set<uint16_t> pages;
-    std::deque<CMDF_Register *> *pregs = getRegisterObjList();
-    uint32_t nPageCnt                  = getPages(pages);
-
-    // Go throu pages create set/map with sorted registers
-    int pos = 0;
-
-    // Add registers for page
-    std::set<uint32_t> regset;
-    std::map<uint32_t, CMDF_Register *> regmap;
-
+    size_t nPages = getPages(pages);
     for (auto itr : pages) {
+
+      // get pages
+      std::set<uint16_t> pages;
+      std::deque<CMDF_Register *> *pregs = getRegisterObjList();
+      uint32_t nPageCnt                  = getPages(pages);
+
+      // Go throu pages create set/map with sorted registers
+      int pos = 0;
+
+      // Add registers for page
+      std::set<uint32_t> regset;
+      std::map<uint32_t, CMDF_Register *> regmap;
 
       // Create set with sorted register offsets and a map
       // to help find corresponding register pointer
@@ -2619,27 +2888,164 @@ CMDF::save_json(const std::string &path)
           regmap[(*it)->getOffset()] = *it;
         }
       }
-    }
 
-    for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
-      CMDF_Register *preg = regmap[*it];
+      for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
+        CMDF_Register *preg = regmap[*it];
+
+        fout << "{" << std::endl;
+        fout << "\"name\": \"" << preg->getName() << "\"," << std::endl;
+        fout << "\"page\": " << preg->getPage() << "," << std::endl;
+        fout << "\"offset\": " << preg->getOffset() << "," << std::endl;
+        fout << "\"span\": " << preg->getSpan() << "," << std::endl;
+        fout << "\"width\": " << preg->getWidth() << "," << std::endl;
+        fout << "\"access\": \"" << preg->getAccessStr() << "\"," << std::endl;
+        fout << "\"type\": \"" << preg->getTypeStr() << "\"," << std::endl;
+        fout << "\"default\": \"" << preg->getDefault() << "\"," << std::endl;
+        fout << "\"min\": " << (int) preg->getMin() << "," << std::endl;
+        fout << "\"max\": " << (int) preg->getMax() << "," << std::endl;
+        fout << std::hex << "\"fgcolor\": \"0x" << preg->getForegroundColor() << "\"," << std::dec << std::endl;
+        fout << std::hex << "\"bgcolor\": \"0x" << preg->getBackgroundColor() << "\"" << std::dec << std::endl;
+
+        // bits
+        std::deque<CMDF_Bit *> *pbits = preg->getListBits();
+        if (pbits->size()) {
+          int pos = 0;
+          fout << "," << std::endl;
+          fout << "\"bit\": [" << std::endl;
+          for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+            CMDF_Bit *pbit = *it;
+            fout << "{" << std::endl;
+            fout << "\"name\": \"" << pbit->getName() << "\"," << std::endl;
+            fout << "\"pos\": " << (int) pbit->getPos() << "," << std::endl;
+            fout << "\"width\": " << (int) pbit->getWidth() << "," << std::endl;
+            fout << "\"default\": " << (int) pbit->getDefault() << "," << std::endl;
+            fout << "\"min\" :" << (int) pbit->getMin() << "," << std::endl;
+            fout << "\"max\" :" << (int) pbit->getMax() << "," << std::endl;
+            fout << "\"access\": \"" << pbit->getAccessStr() << "\"" << std::endl;
+
+            // Bit info/docs
+            writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
+            writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
+
+            std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
+            if (pvalues->size()) {
+              int pos = 0;
+              fout << "," << std::endl;
+              fout << "\"valuelist\": [" << std::endl;
+              for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+                CMDF_Value *pvalue = *it;
+                fout << "{" << std::endl;
+                fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+                fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+                writeMap_json(fout, pvalue->getMapDescription(), "description");
+                writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
+
+                fout << "}" << std::endl;
+
+                // If items left add comma
+                pos++;
+                if (pos < pvalues->size()) {
+                  fout << ",";
+                }
+
+                fout << std::endl;
+              }
+              fout << "]" << std::endl; // End of values
+            }
+
+            // If items left add comma
+            fout << "}" << std::endl;
+            pos++;
+            if (pos < pbits->size()) {
+              fout << ",";
+            }
+
+          } // for bits
+
+          fout << "]" << std::endl; // Ed of bits array
+
+        } // pbits size
+
+        std::deque<CMDF_Value *> *pvalues = preg->getListValues();
+        if (pvalues->size()) {
+          int pos = 0;
+          fout << "," << std::endl;
+          fout << "\"valuelist\": [" << std::endl;
+          for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+            CMDF_Value *pvalue = *it;
+            fout << "{" << std::endl;
+            fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+            fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+            writeMap_json(fout, pvalue->getMapDescription(), "description", true);
+            writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl", true);
+            fout << "}" << std::endl;
+            // End of valuelist - If items left add comma
+            pos++;
+            if (pos < pvalues->size()) {
+              fout << ",";
+            }
+            fout << std::endl;
+          }
+
+          fout << "]" << std::endl; // End of values
+
+        } // Values size
+
+        // Register docs/info
+        writeMap_json(fout, preg->getMapDescription(), "description", preg->getMapInfoUrl()->size() > 0);
+        writeMap_json(fout, preg->getMapInfoUrl(), "infourl", true);
+
+        // End of registers - If items left add comma
+        fout << "}";
+        pos++;
+        if (pos < regset.size()) {
+          fout << ",";
+        }
+        fout << std::endl;
+
+      } // registers for-loop
+
+      nPages--;
+      if (nPages > 0) {
+        fout << ",";
+      }
+
+    } // Pages
+
+    // End of registers
+      fout << "]" << std::endl;
+
+  } // Registers
+
+  // ----------------------------------------------------------------------------
+
+  if (getRemoteVariableObjList()) {
+
+    // Start of remote variables
+    fout << "," << std::endl;
+    fout << "\"remotevars\": [" << std::endl;
+
+    std::deque<CMDF_RemoteVariable *> *prvarList = getRemoteVariableObjList();
+
+    // Go throu pages create set/map with sorted registers
+    int pos = 0;
+
+    for (auto it = prvarList->cbegin(); it != prvarList->cend(); ++it) {
+      CMDF_RemoteVariable *prvar = *it;
 
       fout << "{" << std::endl;
-      fout << "\"name\": \"" << preg->getName() << "\"," << std::endl;
-      fout << "\"page\": " << preg->getPage() << "," << std::endl;
-      fout << "\"offset\": " << preg->getOffset() << "," << std::endl;
-      fout << "\"span\": " << preg->getSpan() << "," << std::endl;
-      fout << "\"width\": " << preg->getWidth() << "," << std::endl;
-      fout << "\"access\": \"" << preg->getAccessStr() << "\"," << std::endl;
-      fout << "\"type\": \"" << preg->getTypeStr() << "\"," << std::endl;
-      fout << "\"default\": \"" << preg->getDefault() << "\"," << std::endl;
-      fout << "\"min\": " << (int) preg->getMin() << "," << std::endl;
-      fout << "\"max\": " << (int) preg->getMax() << "," << std::endl;
-      fout << std::hex << "\"fgcolor\": \"0x" << preg->getForegroundColor() << "\"," << std::dec << std::endl;
-      fout << std::hex << "\"bgcolor\": \"0x" << preg->getBackgroundColor() << "\"" << std::dec << std::endl;
+      fout << "\"name\": \"" << prvar->getName() << "\"," << std::endl;
+      fout << "\"type\": " << prvar->getType() << "," << std::endl;
+      fout << "\"default\": \"" << prvar->getDefault() << "\"," << std::endl;
+      fout << "\"page\": " << prvar->getPage() << "," << std::endl;
+      fout << "\"offset\": " << prvar->getOffset() << "," << std::endl;
+      fout << "\"access\": \"" << prvar->getAccessStr() << "\"," << std::endl;
+      fout << "\"bitpos\": " << prvar->getBitPos() << "," << std::endl;
+      fout << std::hex << "\"fgcolor\": \"0x" << prvar->getForegroundColor() << "\"," << std::dec << std::endl;
+      fout << std::hex << "\"bgcolor\": \"0x" << prvar->getBackgroundColor() << "\"" << std::dec << std::endl;
 
       // bits
-      std::deque<CMDF_Bit *> *pbits = preg->getListBits();
+      std::deque<CMDF_Bit *> *pbits = prvar->getListBits();
       if (pbits->size()) {
         int pos = 0;
         fout << "," << std::endl;
@@ -2653,7 +3059,7 @@ CMDF::save_json(const std::string &path)
           fout << "\"default\": " << (int) pbit->getDefault() << "," << std::endl;
           fout << "\"min\" :" << (int) pbit->getMin() << "," << std::endl;
           fout << "\"max\" :" << (int) pbit->getMax() << "," << std::endl;
-          fout << "\"access\": \"" << preg->getAccessStr() << "\"" << std::endl;
+          fout << "\"access\": \"" << pbit->getAccessStr() << "\"" << std::endl;
 
           // Bit info/docs
           writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
@@ -2698,7 +3104,7 @@ CMDF::save_json(const std::string &path)
 
       } // pbits size
 
-      std::deque<CMDF_Value *> *pvalues = preg->getListValues();
+      std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
       if (pvalues->size()) {
         int pos = 0;
         fout << "," << std::endl;
@@ -2708,53 +3114,240 @@ CMDF::save_json(const std::string &path)
           fout << "{" << std::endl;
           fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
           fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
-          writeMap_json(fout, pvalue->getMapDescription(), "description", true);
-          writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl", true);
+          writeMap_json(fout, pvalue->getMapDescription(), "description");
+          writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
           fout << "}" << std::endl;
           // End of valuelist - If items left add comma
           pos++;
-          if (pos < pvalues->size()) {
+          if (pos < prvarList->size()) {
             fout << ",";
           }
           fout << std::endl;
-        }
+        } // value
 
         fout << "]" << std::endl; // End of values
 
       } // Values size
 
-      // Register docs/info
-      writeMap_json(fout, preg->getMapDescription(), "description", preg->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, preg->getMapInfoUrl(), "infourl", true);
+      // Remote variable docs/info
+      writeMap_json(fout, prvar->getMapDescription(), "description");
+      writeMap_json(fout, prvar->getMapInfoUrl(), "infourl");
 
-      // End of registers - If items left add comma
+      // End of remote variables - If items left add comma
       fout << "}";
       pos++;
-      if (pos < regset.size()) {
+      if (pos < prvarList->size()) {
         fout << ",";
       }
       fout << std::endl;
 
-    } // registers for-loop
+    } // remote variable for-loop
 
+    // End of remote variables
+    fout << "]" << std::endl;
+  }
+
+  // ----------------------------------------------------------------------------
+
+  // Start of alarm bits
+  fout << "," << std::endl;
+  fout << "\"alarm\": [" << std::endl;
+
+  // bits
+  std::deque<CMDF_Bit *> *pbits = getAlarmList();
+  if (pbits->size()) {
+    int pos = 0;
+    for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+      CMDF_Bit *pbit = *it;
+      fout << "{" << std::endl;
+      fout << "\"name\": \"" << pbit->getName() << "\"," << std::endl;
+      fout << "\"pos\": " << (int) pbit->getPos() << "," << std::endl;
+      fout << "\"width\": " << (int) pbit->getWidth() << "," << std::endl;
+      fout << "\"default\": " << (int) pbit->getDefault() << "," << std::endl;
+      fout << "\"min\" :" << (int) pbit->getMin() << "," << std::endl;
+      fout << "\"max\" :" << (int) pbit->getMax() << "," << std::endl;
+      fout << "\"access\": \"" << pbit->getAccessStr() << "\"" << std::endl;
+
+      // Bit info/docs
+      writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
+      writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
+
+      // If items left add comma
+      fout << "}" << std::endl;
+      pos++;
+      if (pos < pbits->size()) {
+        fout << ",";
+      }
+
+    } // for bits
+
+    // fout << "]" << std::endl; // Ed of bits array
+
+  } // pbits size
+
+  // End of alarm
   fout << "]" << std::endl;
 
-  // End of registers - If items left add comma
-  /*pos++;
-  if (pos < pregs->size()) {
-    fout << ",";
-  }
-  fout << std::endl;*/
+  // ----------------------------------------------------------------------------
 
-  // End of registers
+  std::deque<CMDF_Event *> *peventlst = getEventList(); // Get pointer to event list
+  if (nullptr != peventlst) {
+
+    // Start of events
+    fout << "," << std::endl;
+    fout << "\"events\": [" << std::endl;
+
+    int pos = 0;
+
+    for (auto it = peventlst->cbegin(); it != peventlst->cend(); ++it) {
+      CMDF_Event *pevent = *it;
+
+      fout << "{" << std::endl;
+      fout << "\"name\": \"" << pevent->getName() << "\"," << std::endl;
+      fout << "\"class\": " << pevent->getClass() << "," << std::endl;
+      fout << "\"type\": " << pevent->getType() << "," << std::endl;
+      fout << "\"priority\": " << (int) pevent->getPriority() << "," << std::endl;
+      fout << "\"dir\": \"" << ((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out") << "\"," << std::endl;
+
+      std::deque<CMDF_EventData *> *peventdtalst = pevent->getListEventData(); // Get pointer to event list
+      if (nullptr != peventdtalst) {
+
+        int pos = 0;
+        fout << "\"data\": [" << std::endl;
+
+        for (auto it = peventdtalst->cbegin(); it != peventdtalst->cend(); ++it) {
+          CMDF_EventData *peventdata = *it;
+
+          fout << "{" << std::endl;
+          fout << "\"name\": \"" << peventdata->getName() << "\"," << std::endl;
+          fout << "\"offset\": " << peventdata->getOffset() << " " << std::endl;
+
+          // bits
+          std::deque<CMDF_Bit *> *pbits = peventdata->getListBits();
+          if (pbits->size()) {
+            int pos = 0;
+            fout << "," << std::endl;
+            fout << "\"bit\": [" << std::endl;
+            for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
+              CMDF_Bit *pbit = *it;
+              fout << "{" << std::endl;
+              fout << "\"name\": \"" << pbit->getName() << "\"," << std::endl;
+              fout << "\"pos\": " << (int) pbit->getPos() << "," << std::endl;
+              fout << "\"width\": " << (int) pbit->getWidth() << "," << std::endl;
+              fout << "\"default\": " << (int) pbit->getDefault() << "," << std::endl;
+              fout << "\"min\" :" << (int) pbit->getMin() << "," << std::endl;
+              fout << "\"max\" :" << (int) pbit->getMax() << "," << std::endl;
+              fout << "\"access\": \"" << pbit->getAccessStr() << "\"" << std::endl;
+
+              // Bit info/docs
+              writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
+              writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
+
+              std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
+              if (pvalues->size()) {
+                int pos = 0;
+                fout << "," << std::endl;
+                fout << "\"valuelist\": [" << std::endl;
+                for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+                  CMDF_Value *pvalue = *it;
+                  fout << "{" << std::endl;
+                  fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+                  fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+                  writeMap_json(fout, pvalue->getMapDescription(), "description");
+                  writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
+
+                  fout << "}" << std::endl;
+
+                  // If items left add comma
+                  pos++;
+                  if (pos < pvalues->size()) {
+                    fout << ",";
+                  }
+
+                  fout << std::endl;
+                }
+                fout << "]" << std::endl; // End of values
+              }
+
+              // If items left add comma
+              fout << "}" << std::endl;
+              pos++;
+              if (pos < pbits->size()) {
+                fout << ",";
+              }
+
+            } // for bits
+
+            fout << "]" << std::endl; // Ed of bits array
+
+          } // pbits size
+
+          std::deque<CMDF_Value *> *pvalues = peventdata->getListValues();
+          if (pvalues->size()) {
+            int pos = 0;
+            fout << "," << std::endl;
+            fout << "\"valuelist\": [" << std::endl;
+            for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
+              CMDF_Value *pvalue = *it;
+              fout << "{" << std::endl;
+              fout << "\"name\": \"" << pvalue->getName() << "\"," << std::endl;
+              fout << "\"value\": \"" << pvalue->getValue() << "\"" << std::endl;
+              writeMap_json(fout, pvalue->getMapDescription(), "description");
+              writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
+              fout << "}" << std::endl;
+              // End of valuelist - If items left add comma
+              pos++;
+              if (pos < pvalues->size()) {
+                fout << ",";
+              }
+              fout << std::endl;
+            } // value
+
+            fout << "]" << std::endl; // End of values
+
+          } // Values size
+
+          // Remote variable docs/info
+          writeMap_json(fout, peventdata->getMapDescription(), "description");
+          writeMap_json(fout, peventdata->getMapInfoUrl(), "infourl");
+
+          // End of event data - If items left add comma
+          fout << "}";
+          pos++;
+          if (pos < peventdtalst->size()) {
+            fout << ",";
+          }
+          fout << std::endl;
+        } // for event data
+
+        fout << "]" << std::endl; // End of event data
+
+      } // Event data is available
+
+      // End of remote variables - If items left add comma
+      fout << "}";
+      pos++;
+      if (pos < peventlst->size()) {
+        fout << ",";
+      }
+      fout << std::endl;
+
+    } // event for-loop
+
+    // End of events
+    fout << "]" << std::endl;
+  }
+
+  // ----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+
+  // End of module
   fout << "}" << std::endl;
 
-} // Registers
+  // JSON file end
+  fout << "}" << std::endl;
 
-// JSON file end
-fout << "}" << std::endl;
-
-return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
