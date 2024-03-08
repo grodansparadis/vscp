@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright © 2007-2021
+// Copyright (C)2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -82,7 +82,10 @@ workerThread(void *pObj);
 int
 password_callback(char *buf, int size, int rwflag, void *userdata)
 {
-  strcpy(buf, "secret");
+  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(userdata);
+
+  memset(buf, 0, size);
+  strncpy(buf, pClient->getPassword().c_str(), size);
   return (int)strlen(buf);
 }
 
@@ -134,7 +137,7 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::trace("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv);
+  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -162,7 +165,7 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::trace("MQTT v3.11 connect: rv={0:X} flags={1:X}", rv, flags);
+  spdlog::info("MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -190,7 +193,7 @@ mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::trace("MQTT v5 connect: rv={0:X} flags={1:X}", rv, flags);
+  spdlog::info("MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -218,7 +221,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::trace("MQTT v3.11 disconnect: rv={0:X}", rv);
+  spdlog::info("MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -246,7 +249,7 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::trace("MQTT v5 disconnect: rv={0:X}", rv);
+  spdlog::trace("MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -587,7 +590,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_bConnected          = false;        // Not connected
   m_bJsonMeasurementAdd = true;         // Add measurement block to JSON publish event
   m_bindInterface       = "";           // No bind interface
-  m_mosq                = nullptr;      // No mosquitto conection
+  m_mosq                = nullptr;      // No mosquitto connection
   m_publish_format      = jsonfmt;      // Publish inm JSON if not configured to do something else
   m_subscribe_format    = autofmt;      // Automatically detect payload format
   m_bRun                = true;         // Run to the Hills...
@@ -839,6 +842,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Client ID
     if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
+      // TODO
+      // {rnd} mustasch is replaces with hex random value
       spdlog::debug("json mqtt init: 'client id' set to {}.", m_clientid);
       if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
         spdlog::warn("json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 characters but longer is OK with most brokers).", 
@@ -996,13 +1001,21 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (jj.contains("guid-filter") && j["guid-filter"].is_string()) {
         std::string str = jj["guid-filter"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
-        spdlog::debug("json mqtt init: 'guid-filter' set to {}.", m_filter.filter_GUID);
+        spdlog::debug("json mqtt init: 'guid-filter' set to {0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.", 
+            m_filter.filter_GUID[0], m_filter.filter_GUID[1], m_filter.filter_GUID[2], m_filter.filter_GUID[3],
+            m_filter.filter_GUID[4], m_filter.filter_GUID[5], m_filter.filter_GUID[6], m_filter.filter_GUID[7],
+            m_filter.filter_GUID[8], m_filter.filter_GUID[9], m_filter.filter_GUID[10], m_filter.filter_GUID[11],
+            m_filter.filter_GUID[12], m_filter.filter_GUID[13], m_filter.filter_GUID[14], m_filter.filter_GUID[15]);
       }
 
       if (jj.contains("guid-mask") && j["guid-mask"].is_string()) {
         std::string str = jj["guid-mask"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
-        spdlog::debug("json mqtt init: 'guid-mask' set to {}.", m_filter.mask_GUID);
+        spdlog::debug("json mqtt init: 'guid-mask' set to {0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.", 
+            m_filter.mask_GUID[0], m_filter.mask_GUID[1], m_filter.mask_GUID[2], m_filter.mask_GUID[3],
+            m_filter.mask_GUID[4], m_filter.mask_GUID[5], m_filter.mask_GUID[6], m_filter.mask_GUID[7],
+            m_filter.mask_GUID[8], m_filter.mask_GUID[9], m_filter.mask_GUID[10], m_filter.mask_GUID[11],
+            m_filter.mask_GUID[12], m_filter.mask_GUID[13], m_filter.mask_GUID[14], m_filter.mask_GUID[15]);
       }
     }
 
@@ -1918,7 +1931,7 @@ vscpClientMqtt::connect(void)
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("Failed to connect to remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("Failed to connect to MQTT remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
     return VSCP_ERROR_NOT_CONNECTED;
   }
 
@@ -1983,7 +1996,7 @@ vscpClientMqtt::connect(void)
                                                     NULL,
                                                     1,
                                                     true))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (will) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2335,9 +2348,9 @@ vscpClientMqtt::send(vscpEvent &ev)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("Publish send ev: Topic: {0} Payload: {1} qos={2} retain={3}",
+    spdlog::trace("Publish send ev: Topic: {0} qos={1} retain={2}",
             strTopic,
-            payload,
+            /*(unsigned char *)payload,*/
             ppublish->getQos(),
             ppublish->getRetain());
 
@@ -2348,7 +2361,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2622,9 +2635,9 @@ vscpClientMqtt::send(vscpEventEx &ex)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("Publish send ex: Topic: {0} Payload: {1} qos={2} retain={3}",
+    spdlog::trace("Publish send ex: Topic: {0} qos={1} retain={2}",
             strTopic,
-            payload,
+            /*(unsigned char *)payload,*/
             ppublish->getQos(),
             ppublish->getRetain());
 
@@ -2635,7 +2648,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("mosquitto_publish failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("mosquitto_publish (ex) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic

@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2022 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,6 +35,8 @@
 
 #if !defined(CANALCONFIG_H__INCLUDED_)
 #define CANALCONFIG_H__INCLUDED_
+
+#include <inttypes.h>
 
 #include <string>
 #include <list>

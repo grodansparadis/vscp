@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     Thu 25 Oct 2007 22:32:58 CEST
 // RCS-ID:
-// Copyright:   © 2007-2022
+// Copyright:  (C) 2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //              (C) 2012 Dinesh Guleria
 // Licence:

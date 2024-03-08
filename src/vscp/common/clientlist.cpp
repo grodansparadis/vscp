@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright © 2000-2022 Ake Hedman,
+// Copyright (C) 2000-2024 Ake Hedman,
 // the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -42,7 +42,7 @@
 
 #include "clientlist.h"
 
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
 
 // https://github.com/nlohmann/json

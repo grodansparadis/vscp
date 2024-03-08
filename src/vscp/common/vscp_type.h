@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-10-06 18:25:21.608236
+                        Generated: 2023-04-19 20:30:53.290665
 */
  
 #ifndef VSCP_TYPE_H
@@ -916,6 +916,9 @@
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE     3   /* Read Write Response */
 #define VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS    20  /* High end server/service capabilities */
 #define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE   32  /* Level II who is there response */
+#define VSCP2_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE 34 /* Level II get DM info response */
+#define VSCP2_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE 36 /* Level II get embedded MDF response */
+#define VSCP2_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE 41 /* Level II events of interest response */
     
 /*  CLASS2.CONTROL = 1025  -  Level II Control */
 #define VSCP2_TYPE_CONTROL_GENERAL                  0   /* General event */
@@ -941,6 +944,10 @@
     
 /*  CLASS2.DISPLAY = 1030  -  Level II Display */
 #define VSCP2_TYPE_DISPLAY_GENERAL                  0   /* General event */
+    
+/*  CLASS2.SECURITY = 1034  -  Level II Security */
+#define VSCP2_TYPE_SECURITY_GENERAL                 0   /* General event */
+#define VSCP2_TYPE_SECURITY_SETKEY                  1   /* Set key */
     
 /*  CLASS2.MEASUREMENT_STR = 1040  -  Level II Measurement string */
 /* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */

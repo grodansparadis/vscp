@@ -79,7 +79,7 @@ Prepare the build environment with
 
 ```bash
 sudo apt update
-sudo apt install build-essential
+sudo apt install build-essential cmake
 sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev
 ```    
 to install the build tools and required libraries. 
@@ -111,6 +111,10 @@ git clone https://github.com/grodansparadis/vscp.git
 
 You can also download a zip of the latest bleeding edge source by clicking on the 'clone and download' button at
 [GitHub](https://github.com/grodansparadis/vscp).
+
+```
+git clone https://github.com/grodansparadis/vscp
+```
 
 Enter the 'vscp' folder created by the unpacking/clone process
 

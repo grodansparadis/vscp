@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:  © 2007-2021
+// Copyright:  (C)2007-2021
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -36,7 +36,7 @@
 
 #include "vscp.h"
 #include "vscp_client_base.h"
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 const uint32_t WS2_CONNECTION_TIMEOUT = 30000;
 const uint32_t WS2_RESPONSE_TIMEOUT	= 2000;

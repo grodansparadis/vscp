@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2021-10-06 18:25:22.788495
+                        Generated: 2023-04-19 20:30:54.255034
 */
  
 
@@ -2117,6 +2117,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,3) ] = _("VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,20) ] = _("VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,32) ] = _("VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1024,34) ] = _("VSCP2_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1024,36) ] = _("VSCP2_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1024,41) ] = _("VSCP2_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE");
 
 	//  CLASS2.CONTROL = 1025  -  Level II Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(1025,0) ] = _("VSCP2_TYPE_CONTROL_GENERAL");
@@ -2142,6 +2145,10 @@
 
 	//  CLASS2.DISPLAY = 1030  -  Level II Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030,0) ] = _("VSCP2_TYPE_DISPLAY_GENERAL");
+
+	//  CLASS2.SECURITY = 1034  -  Level II Security
+	m_hashType[ MAKE_CLASSTYPE_LONG(1034,0) ] = _("VSCP2_TYPE_SECURITY_GENERAL");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1034,1) ] = _("VSCP2_TYPE_SECURITY_SETKEY");
 
 	//  CLASS2.MEASUREMENT_STR = 1040  -  Level II Measurement string
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement

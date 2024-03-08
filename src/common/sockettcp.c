@@ -9,7 +9,7 @@
 // Copyright (c) 2013-2017 the Civetweb developers ()
 //
 // Adopted for VSCP, Small changes  additions
-// Copyright (C) 2018-2022 Ake Hedman, the VSCP project
+// Copyright (C) 2018-2023 Ake Hedman, the VSCP project
 // <info@vscp.org>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1468,7 +1468,7 @@ typedef int socklen_t;
 // strlcpy
 //
 
-static void strlcpy( register char *dst, register const char *src, size_t n )
+static void _strlcpy( register char *dst, register const char *src, size_t n )
 {
     for (; *src != '\0' && n > 1; n--) {
         *dst++ = *src++;
@@ -1490,7 +1490,7 @@ static char *stcp_strndup( const char *ptr, size_t len )
     char *p;
 
     if ( ( p = (char *)malloc( len + 1 ) ) != NULL ) {
-        strlcpy( p, ptr, len + 1 );
+        _strlcpy( p, ptr, len + 1 );
     }
 
     return p;
@@ -1768,8 +1768,8 @@ make_ssl( struct stcp_connection *conn,
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
-#ifndef OPENSSL_API_1_1
-        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
+#ifdef OPENSSL_API_1_0
+        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1823,8 +1823,8 @@ make_ssl( struct stcp_connection *conn,
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
-#ifndef OPENSSL_API_1_1
-        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
+#ifdef OPENSSL_API_1_0
+        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -2339,7 +2339,9 @@ stcp_uninit_ssl( void )
         ERR_free_strings();
         EVP_cleanup();
         CRYPTO_cleanup_all_ex_data();
+#ifdef OPENSSL_API_1_0        
         ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
+#endif        
 
         for (i = 0; i < CRYPTO_num_locks(); i++) {
             pthread_mutex_destroy( &ssl_mutexes[i] );
@@ -2889,7 +2891,7 @@ close_connection( struct stcp_connection *conn )
         SSL_free( conn->ssl );
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
-#ifndef OPENSSL_API_1_1
+#ifdef OPENSSL_API_1_0
         ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         conn->ssl = NULL;

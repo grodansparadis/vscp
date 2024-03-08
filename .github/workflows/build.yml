@@ -11,11 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:  
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest]
+        os: [ubuntu-latest]
 
     steps:
     # https://github.com/actions/checkout  
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
      
     - name: Update before installing packages
       run: sudo apt-get update
@@ -40,6 +42,9 @@ jobs:
 
     - name: Install libssl-dev manually
       run: sudo apt-get install libssl-dev
+
+    - name: Install libwebsockets-dev manually
+      run: sudo apt-get install libwebsockets-dev  
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory

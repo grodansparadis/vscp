@@ -2,7 +2,7 @@
 #
 # Build instructions for the VSCP daemon.
 #
-# Copyright (c) 2000-2022 Åke Hedman, the VSCP project
+# Copyright (C) 2000-2024 Ake Hedman the VSCP project
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 project(vscpd LANGUAGES CXX C)
+set(PACKAGE_AUTHOR "Ake Hedman, the VSCP Project")
 
 # Version settings
 if(NOT DEFINED MAJOR_VERSION)
@@ -36,6 +37,8 @@ endif()
 if(NOT DEFINED PATCH_VERSION)
     SET(PATCH_VERSION "2")
 endif()
+
+add_subdirectory(./third_party/spdlog/)
 
 # Disable abi warnings (nlohmann)
 if(WIN32)
@@ -172,7 +175,6 @@ elseif(UNIX)
     set(LIBS_SYSTEM c stdc++)
 endif()
 
-
 # set the module path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
@@ -182,6 +184,10 @@ find_package(Threads REQUIRED)
 
 # openssl
 find_package(OpenSSL REQUIRED)
+
+# libwebsockets
+#find_package(libwebsockets CONFIG REQUIRED)
+include(FindLibWebSockets)
 
 # Windows Libs
 if (WIN32)
@@ -200,8 +206,6 @@ if (WIN32)
     # dlfcn
     find_package(dlfcn-win32 CONFIG REQUIRED)
 
-    # Logging
-    #find_package(spdlog CONFIG REQUIRED)
 else()
     # expat
     include(FindEXPAT)
@@ -210,9 +214,6 @@ else()
 
     # Mosquitto lib
     include(FindMosquitto)
-
-    # Logger
-    #find_package(spdlog CONFIG REQUIRED)
     
 endif(WIN32)
 
@@ -220,13 +221,34 @@ endif(WIN32)
 add_definitions(-DUSE_WEBSOCKET)
 add_definitions(-DUSE_IPV6)
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_IPV6 -DUSE_WEBSOCKET ")
-string(FIND "${OPENSSL_VERSION}" "1.1." SSL_VER_POS)
-if (${SSL_VER_POS})
-    #set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_0")
-    add_definitions(-DOPENSSL_API_1_0)
-else()
-    #set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DOPENSSL_API_1_1")
-    add_definitions(-DOPENSSL_API_1_1)
+
+set(OPENSSL_VER "OPENSSL_API_${OPENSSL_VERSION_MAJOR}_${OPENSSL_VERSION_MINOR}")
+message(STATUS "OPENSSL Version: ${OPENSSL_VER} - ${OPENSSL_VERSION}")
+#add_definitions(-D${OPENSSL_VER}) 
+
+# 1.1.0 / 1.1.1 / 3.0.0 / 3.1.0
+string(FIND "${OPENSSL_VERSION}" "1.0" SSL_VER_POS)
+if(NOT ${SSL_VER_POS} EQUAL -1)
+  add_definitions(-DOPENSSL_API_1_0)
+  message(STATUS "Open ssl version is 1.0")
+endif()    
+
+string(FIND "${OPENSSL_VERSION}" "1.1" SSL_VER_POS)
+if(NOT ${SSL_VER_POS} EQUAL -1)
+  add_definitions(-DOPENSSL_API_1_1)
+  message(STATUS "Open ssl version is 1.1")
+endif()
+
+string(FIND "${OPENSSL_VERSION}" "3.0" SSL_VER_POS)
+if(NOT SSL_VER_POS EQUAL -1)
+  add_definitions(-DOPENSSL_API_3_0)
+  message(STATUS "Open ssl version is 3.0")
+endif()  
+
+string(FIND "${OPENSSL_VERSION}" "3.1" SSL_VER_POS)
+if(NOT SSL_VER_POS EQUAL -1)
+  add_definitions(-DOPENSSL_API_3_1)
+  message(STATUS "Open ssl version is 3.1")
 endif()
 
 if (WIN32)
@@ -258,11 +280,11 @@ if (WIN32)
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
-        src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.15/include/civetweb.h
-        src/common/third_party/civetweb-1.15/src/civetweb.c
-        src/common/third_party/sqlite3-3.35.4/sqlite3.h
-        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        ./third_party/mustache/mustache.hpp
+        #third_party/civetweb/include/civetweb.h
+        #third_party/civetweb/src/civetweb.c
+        ./third_party/sqlite3/sqlite3.h
+        ./third_party/sqlite3/sqlite3.c
         src/common/windows/getopt.c
         src/common/configfile.h
         src/common/configfile.cpp
@@ -278,8 +300,8 @@ if (WIN32)
         src/common/crc8.c
         src/common/vscpmd5.h
         src/common/vscpmd5.c
-        src/common/fastpbkdf2.h
-        src/common/fastpbkdf2.c  
+        ./third_party/fastpbkdf2/fastpbkdf2.h
+        ./third_party/fastpbkdf2/fastpbkdf2.c  
         src/common/randpassword.h
         src/common/randpassword.cpp     
     )
@@ -312,11 +334,11 @@ else()
         src/vscp/common/vscp_client_base.cpp
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
-        src/common/third_party/mustache.hpp
-        src/common/third_party/civetweb-1.15/include/civetweb.h
-        src/common/third_party/civetweb-1.15/src/civetweb.c
-        src/common/third_party/sqlite3-3.35.4/sqlite3.h
-        src/common/third_party/sqlite3-3.35.4/sqlite3.c
+        ./third_party/mustache/mustache.hpp
+        #third_party/civetweb/include/civetweb.h
+        #third_party/civetweb/src/civetweb.c
+        ./third_party/sqlite3/sqlite3.h
+        ./third_party/sqlite3/sqlite3.c
         src/common/configfile.h
         src/common/configfile.cpp
         src/common/sockettcp.h
@@ -331,8 +353,8 @@ else()
         src/common/crc8.c
         src/common/vscpmd5.h
         src/common/vscpmd5.c
-        src/common/fastpbkdf2.h
-        src/common/fastpbkdf2.c  
+        ./third_party/fastpbkdf2/fastpbkdf2.h
+        ./third_party/fastpbkdf2/fastpbkdf2.c   
         src/common/randpassword.h
         src/common/randpassword.cpp     
     )
@@ -347,16 +369,19 @@ if (WIN32)
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.15/
-                            ./src/common/third_party/civetweb-1.15/include/
-                            ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.9.2/include/
+                            ./third_party/nlohmann/include
+                            #./third_party/civetweb/
+                            #./third_party/civetweb/include/
+                            ./third_party/sqlite3/
+                            ./third_party/spdlog/include/
+                            ./third_party/mustache/
+                            ./third_party/fastpbkdf2/
                             ./src/common/windows
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )
@@ -365,28 +390,34 @@ else()
                             ./src/common 
                             ./src/vscp/common/  
                             ./src/common/third_party
-                            ./src/common/third_party/nlohmann
-                            ./src/common/third_party/civetweb-1.15/
-                            ./src/common/third_party/civetweb-1.15/include/
-                            ./src/common/third_party/sqlite3-3.35.4/
-                            ./src/common/third_party/spdlog-1.9.2/include/
+                            ./third_party/nlohmann/include
+                            #./third_party/civetweb/
+                            #./third_party/civetweb/include/
+                            ./third_party/sqlite3/
+                            ./third_party/mustache/
+                            ./third_party/spdlog/include/
+                            ./third_party/fastpbkdf2/
                             ${PThreads4W_INCLUDE_DIR}
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
-                            ${LOCAL_WIN_INCLUDE} )
+                            ${LOCAL_WIN_INCLUDE}
+                            ${LIBWEBSOCKETS_INCLUDE_DIR} )
  endif()   
 
-if(WIN32)
+if(MSVC)
     target_link_libraries(vscpd PRIVATE 
         netapi32.lib                   
         PThreads4W::PThreads4W_CXXEXC
         OpenSSL::SSL 
         OpenSSL::Crypto
         OpenSSL::SSL OpenSSL::Crypto
+        websockets_shared
         ${MOSQUITTO_LIBRARIES}
+        ${LIBWEBSOCKETS_LIBRARIES}
         expat::expat
         dlfcn-win32::dl
 #        spdlog::spdlog spdlog::spdlog_header_only
@@ -400,6 +431,7 @@ else()
         OpenSSL::SSL 
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
+        ${LIBWEBSOCKETS_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${EXPAT_LIBRARIES}
     )

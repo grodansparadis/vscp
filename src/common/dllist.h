@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright © 2000-2022 Ake Hedman, the VSCP project <info@vscp.org>
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project <info@vscp.org>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ extern "C" {
         unsigned long *pKey;
 
         /*!
-          Sort key (can be used if no other key is abailabe ). pKey should
+          Sort key (can be used if no other key is available ). pKey should
           be pointing to this key if used.
          */
         unsigned long Key;
@@ -113,8 +113,8 @@ extern "C" {
           1 - sort on string key.
           2 - sort on numeric key.
      
-          Note that items can be retrived in accending/decending order by 
-          retriving them from the head or from the tail of the list.
+          Note that items can be retrieved in ascending/descending order by 
+          retrieving them from the head or from the tail of the list.
          */
         unsigned char nSortOrder;
 
@@ -138,31 +138,54 @@ extern "C" {
 
     /*!
       Initialize the double linked list
+
+      @param pdll Pointer to dll structure 
+      @param nsort Sort order (0=none, 1=string, 2=numeric
      */
-    void dll_init(struct DoubleLinkedList *, unsigned char);
+    void dll_init(struct DoubleLinkedList *pdll, unsigned char nsort);
 
     /*!
       Add a node to the front of the linked list.
+
+      @param pdll Pointer to dll structure 
+      @param pInsertNode Pointer to node that should be added.
+      @return TRUE on success.
      */
-    BOOL dll_addNodeHead(struct DoubleLinkedList *, struct dllnode *);
+    BOOL dll_addNodeHead(struct DoubleLinkedList *pdll, struct dllnode *pInsertNode);
 
 
     /*!
       Add a node to the end of the linked list.
+
+      @param pdll Pointer to dll structure 
+      @param pInsertNode Pointer to node that should be added.
+      @return TRUE on success.
      */
     BOOL dll_addNodeTail(struct DoubleLinkedList *, struct dllnode *);
 
 
     /*!
       Add a node before another node
+
+      @param pdll Pointer to dll structure 
+      @param pNode Pointer to reference node (insert before)
+      @param pInsertNode Pointer to node that should be inserted
+      @return TRUE on success.
      */
+
     BOOL dll_addNodeBefore(struct DoubleLinkedList *pdll,
         struct dllnode *pNode,
         struct dllnode *pInsertNode);
 
     /*!
       Add a node after another node.
+
+      @param pdll Pointer to dll structure 
+      @param pNode Pointer to reference node (insert after)
+      @param pInsertNode Pointer to node that should be inserted
+      @return TRUE on success.
      */
+
     BOOL dll_addNodeAfter(struct DoubleLinkedList *pdll,
         struct dllnode *pNode,
         struct dllnode *pInsertNode);
@@ -170,34 +193,47 @@ extern "C" {
 
     /*!
       Add a node sorted by the current sort order 
+
+      @param pdll Pointer to dll structure 
+      @param pInsertNode Pointer to node that should be inserted
+      @return TRUE on success.
      */
-    BOOL dll_addNode(struct DoubleLinkedList *, struct dllnode *);
+
+    BOOL dll_addNode(struct DoubleLinkedList *pdll, struct dllnode *pInsertNode);
 
     /*!
       Remove all nodes form the linked list.
+
+      @param pdll Pointer to dll structure 
+      @return TRUE on success.
      */
-    BOOL dll_removeAllNodes(struct DoubleLinkedList *);
+    BOOL dll_removeAllNodes(struct DoubleLinkedList *pdll);
 
     /*!
       Get node from its numerical key
    
+      @param pdll Pointer to dll structure 
       @param Numerical key for node.
-      @return Found Object
-      @return NULL if no match found.
+      @return Found Object. NULL if no match found.
      */
-    struct dllnode * dll_findNodeFromID(struct DoubleLinkedList *, unsigned long);
+    struct dllnode * dll_findNodeFromID(struct DoubleLinkedList *pdll, unsigned long);
 
     /*!
       Get node from its string key
    
+      @param pdll Pointer to dll structure 
       @param String key for node.
-      @return Found Object
-      @return NULL if no match found.
+      @return Found Object. NULL if no match found.
      */
-    struct dllnode * dll_findNodeFromString(struct DoubleLinkedList *, char *);
+    struct dllnode * dll_findNodeFromString(struct DoubleLinkedList *pdll, char *);
 
     /*!
       Insert a node and an object between two other nodes 
+
+      @param pdll Pointer to dll structure 
+      @param pNode1 Pointer to lower node to insert between. 
+      @param pNode2 Pointer to lower node to insert between.
+      @return TRUE on success.
      */
     BOOL dll_insertNode(struct DoubleLinkedList *pdll,
         struct dllnode *pNode1,
@@ -205,12 +241,19 @@ extern "C" {
 
     /*!
       Remove a node from the double linked list
+
+      @param pdll Pointer to dll structure 
+      @param pNode Pointer to node to remove. 
+      @return TRUE on success.
      */
     BOOL dll_removeNode(struct DoubleLinkedList *pdll,
         struct dllnode *pNode);
 
     /*!
       Get the node count for the list
+
+      @param pdll Pointer to dll structure 
+      @return Number of nodes in list.
      */
     unsigned long dll_getNodeCount(struct DoubleLinkedList *pdll);
 

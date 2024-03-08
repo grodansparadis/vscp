@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2022
+// Copyright:  (C) 2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -23,6 +23,9 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// !!! Only Linux  !!!
+#ifndef WIN32
+
 #if !defined(VSCPCLIENTSOCKETCAN_H__INCLUDED_)
 #define VSCPCLIENTSOCKETCAN_H__INCLUDED_
 
@@ -34,7 +37,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef WIN32
 #include <syslog.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 
@@ -50,7 +55,7 @@
 #include <vscphelper.h>
 #include <vscp_client_base.h>
 
-#include <json.hpp>  // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp>  // Needs C++11  -std=c++11
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
@@ -313,3 +318,5 @@ private:
 };
 
 #endif
+
+#endif  // not win32

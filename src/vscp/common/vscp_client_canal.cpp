@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2022
+// Copyright:  (C) 2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -49,7 +49,7 @@ vscpClientCanal::vscpClientCanal()
 {
     m_type = CVscpClient::connType::CANAL;
     m_bConnected = false;  // Not connected
-    m_tid = 0;
+    //m_tid = 0;
     m_bRun = true;
     pthread_mutex_init(&m_mutexif, NULL);
 }
@@ -177,7 +177,11 @@ int vscpClientCanal::connect(void)
 int vscpClientCanal::disconnect(void)
 {
     m_bRun = false;
+#ifdef WIN32
+    Sleep(1000);
+#else    
     sleep(1);   // Give thread some time to die
+#endif    
 
     pthread_mutex_unlock(&m_mutexif);
     if ( (NULL != m_evcallback) || (NULL != m_excallback) ) {

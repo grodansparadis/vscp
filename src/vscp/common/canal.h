@@ -5,7 +5,7 @@
 
  The MIT License (MIT)
 
- Copyright © 2000-2022 Ake Hedman, the VSCP project <info@vscp.org>
+ Copyright (C) 2000-2024 Ake Hedman, the VSCP project <info@vscp.org>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,10 @@
 #define EXPORT
 #endif
 
-#ifndef _WIN32
+#ifdef __linux__ 
 #include <linux/can.h>
+#elif _WIN32
+#elif __APPLE__
 #endif
 
 #ifndef CAN_MTU

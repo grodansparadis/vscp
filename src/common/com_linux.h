@@ -2,7 +2,7 @@
  *	\file com.h
  *  \brief interface for the Linux comm class.
  *
-// Copyright © 2000-2022 Ake Hedman, the VSCP project, <info@vscp.org>
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -80,7 +80,7 @@ public:
     /*!
         Close the communication device
     */
-    void close( void ) { ::close( m_fd ); m_fd = 0; }
+    void close( void );
   
     /*! 
         Get file descriptor

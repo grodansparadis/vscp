@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2022 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -58,7 +58,7 @@
 #endif
 
 #include <expat.h>
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
 #include <canal_macro.h>
 #include <crc.h>
@@ -823,6 +823,34 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
   }
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_safe_encode_str
+//
+//
+
+std::string 
+vscp_safe_encode_str(const std::string &str)
+{
+  std::string retstr = "";
+
+  for (auto it=str.cbegin(); it!=str.cend(); ++it) {
+    if ('\\' == *it) {
+      retstr += "\\";
+    }
+    else if ('\"' == *it) {
+      retstr += "\"";
+    }
+    else if (*it < 32) {
+      retstr += vscp_str_format("\\x%x", *it);
+    }
+    else {
+      retstr += *it;
+    }
+  }
+
+  return retstr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3007,7 +3035,7 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
 
   pEvent->pdata    = nullptr;
   pEvent->sizeData = 0;
-
+  
   if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
     return false;
   }

@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2022 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -93,7 +93,7 @@
 #include <set>
 #include <string>
 
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
 
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -740,7 +740,7 @@ CControlObject::init_mqtt()
                                                     strPayload.c_str(),
                                                     2,
                                                     true))) {
-      spdlog::error("Failed to publish VSCP daemon named. error={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("Failed to publish VSCP daemon name. error={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 

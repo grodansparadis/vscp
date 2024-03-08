@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2022 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -419,7 +419,7 @@ copyleft(void)
   fprintf(stderr,
           "The MIT License (MIT)"
           "\n"
-          "Copyright © 2000-2022 Ake Hedman, the VSCP project\n"
+          "Copyright (C) 2000-2024 Ake Hedman, the VSCP project\n"
           "<info@vscp.org>\n"
           "\n"
           "Permission is hereby granted, free of charge, to any person obtaining a "

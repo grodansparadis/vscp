@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:   © 2007-2022
+// Copyright:  (C) 2007-2023
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -24,6 +24,7 @@
 //
 
 // !!! Only Linux  !!!
+#ifndef WIN32
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -68,7 +69,7 @@
 #include <map>
 #include <string>
 
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
 
 #include <spdlog/async.h>
@@ -1255,5 +1256,5 @@ workerThread(void *pData)
   return NULL;
 }
 
-
+#endif  // not windows
 

@@ -7,7 +7,7 @@
 #include <vscp_aes.h>
 #include <vscphelper.h>
 #include "civetweb.h"
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
 #include "vscp_client_ws1.h"
 
