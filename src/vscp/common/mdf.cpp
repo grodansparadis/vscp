@@ -3019,13 +3019,13 @@ CMDF::save_json(const std::string &path)
 
   // ----------------------------------------------------------------------------
 
-  if (getRemoteVariableObjList()) {
+  if (getRemoteVariableList()) {
 
     // Start of remote variables
     fout << "," << std::endl;
     fout << "\"remotevars\": [" << std::endl;
 
-    std::deque<CMDF_RemoteVariable *> *prvarList = getRemoteVariableObjList();
+    std::deque<CMDF_RemoteVariable *> *prvarList = getRemoteVariableList();
 
     // Go throu pages create set/map with sorted registers
     int pos = 0;

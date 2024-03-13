@@ -3985,8 +3985,8 @@ public:
     Return remote variable list from its name
     @return Pointer to CMDF_RemoteVariable class list
   */
-  std::deque<CMDF_RemoteVariable *> *getRemoteVariableList(void) { return &m_list_remotevar; }; // Deprecated
-  std::deque<CMDF_RemoteVariable *> *getRemoteVariableObjList(void) { return &m_list_remotevar; };
+  std::deque<CMDF_RemoteVariable *> *getRemoteVariableList(void) { return &m_list_remotevar; }; 
+  //std::deque<CMDF_RemoteVariable *> *getRemoteVariableObjList(void) { return &m_list_remotevar; };
 
   /*!
     Delete a defined remote variable
