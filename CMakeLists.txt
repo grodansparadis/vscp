@@ -22,6 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+# Windows
+# -------
+# cmake .. -G "Visual Studio 17 2022" -DVCPKG_TARGET_TRIPLET=x64-windows  -DCMAKE_TOOLCHAIN_FILE=G:\vcpkg\scripts\buildsystems\vcpkg.cmake
+# cmake --build . --config Release
+#
 
 cmake_minimum_required(VERSION 3.5)
 project(vscpd LANGUAGES CXX C)
@@ -37,8 +42,6 @@ endif()
 if(NOT DEFINED PATCH_VERSION)
     SET(PATCH_VERSION "2")
 endif()
-
-add_subdirectory(./third_party/spdlog/)
 
 # Disable abi warnings (nlohmann)
 if(WIN32)
@@ -217,10 +220,6 @@ else()
     
 endif(WIN32)
 
-# Set civetweb build flags
-add_definitions(-DUSE_WEBSOCKET)
-add_definitions(-DUSE_IPV6)
-set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUSE_IPV6 -DUSE_WEBSOCKET ")
 
 set(OPENSSL_VER "OPENSSL_API_${OPENSSL_VERSION_MAJOR}_${OPENSSL_VERSION_MINOR}")
 message(STATUS "OPENSSL Version: ${OPENSSL_VER} - ${OPENSSL_VERSION}")
@@ -281,8 +280,6 @@ if (WIN32)
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         ./third_party/mustache/mustache.hpp
-        #third_party/civetweb/include/civetweb.h
-        #third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
         ./third_party/sqlite3/sqlite3.c
         src/common/windows/getopt.c
@@ -335,8 +332,6 @@ else()
         src/vscp/common/vscp_client_mqtt.h
         src/vscp/common/vscp_client_mqtt.cpp
         ./third_party/mustache/mustache.hpp
-        #third_party/civetweb/include/civetweb.h
-        #third_party/civetweb/src/civetweb.c
         ./third_party/sqlite3/sqlite3.h
         ./third_party/sqlite3/sqlite3.c
         src/common/configfile.h
@@ -370,8 +365,6 @@ if (WIN32)
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./third_party/nlohmann/include
-                            #./third_party/civetweb/
-                            #./third_party/civetweb/include/
                             ./third_party/sqlite3/
                             ./third_party/spdlog/include/
                             ./third_party/mustache/
@@ -391,8 +384,6 @@ else()
                             ./src/vscp/common/  
                             ./src/common/third_party
                             ./third_party/nlohmann/include
-                            #./third_party/civetweb/
-                            #./third_party/civetweb/include/
                             ./third_party/sqlite3/
                             ./third_party/mustache/
                             ./third_party/spdlog/include/
@@ -415,7 +406,7 @@ if(MSVC)
         OpenSSL::SSL 
         OpenSSL::Crypto
         OpenSSL::SSL OpenSSL::Crypto
-        websockets_shared
+#        websockets_shared
         ${MOSQUITTO_LIBRARIES}
         ${LIBWEBSOCKETS_LIBRARIES}
         expat::expat
