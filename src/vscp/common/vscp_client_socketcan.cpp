@@ -9,8 +9,8 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:  (C) 2007-2023
-// Ake Hedman, the VSCP project, <info@vscp.org>
+// Copyright © 2000-2024 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,42 +26,40 @@
 // !!! Only Linux  !!!
 #ifndef WIN32
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
 #include <ctype.h>
 #include <errno.h>
 #include <libgen.h>
-#include <sys/time.h>
-#include <sys/uio.h>
+#include <limits.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
 #include <net/if.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 #include <signal.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <time.h>
-#include <sys/socket.h>
 
 #include <linux/can/raw.h>
 
 #include <expat.h>
 
+#include "vscp_client_socketcan.h"
+#include <guid.h>
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>
-#include <guid.h>
-#include "vscp_client_socketcan.h"
 
 #include <fstream>
 #include <iostream>
@@ -69,8 +67,8 @@
 #include <map>
 #include <string>
 
-#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -82,152 +80,151 @@ using json = nlohmann::json;
 using namespace kainjow::mustache;
 
 // Forward declaration
-static void *workerThread(void *pObj);
+static void *
+workerThread(void *pObj);
 
-// CAN DLC to real data length conversion helpers 
-static const unsigned char canal_tbldlc2len[] = {
-    0, 1, 2, 3, 4, 5, 6, 7,
-	8, 12, 16, 20, 24, 32, 48, 64 };
+// CAN DLC to real data length conversion helpers
+static const unsigned char canal_tbldlc2len[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64 };
 
-// get data length from can_dlc with sanitized can_dlc 
-unsigned char canal_dlc2len(unsigned char can_dlc)
+// get data length from can_dlc with sanitized can_dlc
+unsigned char
+canal_dlc2len(unsigned char can_dlc)
 {
-	return canal_tbldlc2len[can_dlc & 0x0F];
+  return canal_tbldlc2len[can_dlc & 0x0F];
 }
 
-static const unsigned char canal_tbllen2dlc[] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 8,		    /* 0 - 8 */
-	9, 9, 9, 9,				            /* 9 - 12 */
-	10, 10, 10, 10,				        /* 13 - 16 */
-	11, 11, 11, 11,				        /* 17 - 20 */
-	12, 12, 12, 12,				        /* 21 - 24 */
-	13, 13, 13, 13, 13, 13, 13, 13,		/* 25 - 32 */
-	14, 14, 14, 14, 14, 14, 14, 14,		/* 33 - 40 */
-	14, 14, 14, 14, 14, 14, 14, 14,		/* 41 - 48 */
-	15, 15, 15, 15, 15, 15, 15, 15,		/* 49 - 56 */
-	15, 15, 15, 15, 15, 15, 15, 15 };	/* 57 - 64 */
+static const unsigned char canal_tbllen2dlc[] = { 0,  1,  2,  3,  4,  5,  6,  7,  8, /* 0 - 8 */
+                                                  9,  9,  9,  9,                     /* 9 - 12 */
+                                                  10, 10, 10, 10,                    /* 13 - 16 */
+                                                  11, 11, 11, 11,                    /* 17 - 20 */
+                                                  12, 12, 12, 12,                    /* 21 - 24 */
+                                                  13, 13, 13, 13, 13, 13, 13, 13,    /* 25 - 32 */
+                                                  14, 14, 14, 14, 14, 14, 14, 14,    /* 33 - 40 */
+                                                  14, 14, 14, 14, 14, 14, 14, 14,    /* 41 - 48 */
+                                                  15, 15, 15, 15, 15, 15, 15, 15,    /* 49 - 56 */
+                                                  15, 15, 15, 15, 15, 15, 15, 15 };  /* 57 - 64 */
 
-// map the sanitized data length to an appropriate data length code 
-unsigned char canal_len2dlc(unsigned char len)
+// map the sanitized data length to an appropriate data length code
+unsigned char
+canal_len2dlc(unsigned char len)
 {
-	if (len > 64) {
-		return 0xF;
+  if (len > 64) {
+    return 0xF;
   }
 
-	return canal_tbllen2dlc[len];
+  return canal_tbllen2dlc[len];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
 //
 
-vscpClientSocketCan::vscpClientSocketCan() 
+vscpClientSocketCan::vscpClientSocketCan()
 {
-    m_type = CVscpClient::connType::SOCKETCAN;
-    m_bDebug     = false;
-    m_bConnected = false;  // Not connected
-    m_threadWork = 0;
-    m_bRun = true;
-    m_interface    = "vcan0";
-    m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
-    m_flags = 0;
-    m_socket = -1;
-    m_mode = CAN_MTU;
+  m_type       = CVscpClient::connType::SOCKETCAN;
+  m_bDebug     = false;
+  m_bConnected = false; // Not connected
+  m_threadWork = 0;
+  m_bRun       = true;
+  m_interface  = "vcan0";
+  m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+  m_flags  = 0;
+  m_socket = -1;
+  m_mode   = CAN_MTU;
 
-    setResponseTimeout(3);  // Response timeout 3 ms
-    pthread_mutex_init(&m_mutexSocket, NULL);
+  setResponseTimeout(3); // Response timeout 3 ms
+  pthread_mutex_init(&m_mutexSocket, NULL);
 
-    vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
-    vscp_clearVSCPFilter(&m_filterOut); // Send all events
+  vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
+  vscp_clearVSCPFilter(&m_filterOut); // Send all events
 
-    sem_init(&m_semSendQueue, 0, 0);
-    sem_init(&m_semReceiveQueue, 0, 0);
+  sem_init(&m_semSendQueue, 0, 0);
+  sem_init(&m_semReceiveQueue, 0, 0);
 
-    pthread_mutex_init(&m_mutexSendQueue, NULL);
-    pthread_mutex_init(&m_mutexReceiveQueue, NULL);
+  pthread_mutex_init(&m_mutexSendQueue, NULL);
+  pthread_mutex_init(&m_mutexReceiveQueue, NULL);
 
- /*
-    // Init pool
-    spdlog::init_thread_pool(8192, 1);
+  /*
+     // Init pool
+     spdlog::init_thread_pool(8192, 1);
 
-    // Flush log every five seconds
-    spdlog::flush_every(std::chrono::seconds(5));
+     // Flush log every five seconds
+     spdlog::flush_every(std::chrono::seconds(5));
 
-    auto console = spdlog::stdout_color_mt("console");
-    // Start out with level=info. Config may change this
-    console->set_level(spdlog::level::debug);
-    console->set_pattern("[vscp-client-socketcan] [%^%l%$] %v");
-    spdlog::set_default_logger(console);
+     auto console = spdlog::stdout_color_mt("console");
+     // Start out with level=info. Config may change this
+     console->set_level(spdlog::level::debug);
+     console->set_pattern("[vscp-client-socketcan] [%^%l%$] %v");
+     spdlog::set_default_logger(console);
 
-    console->debug("Starting the vscp-client-socketcan...");
+     console->debug("Starting the vscp-client-socketcan...");
 
-    m_bConsoleLogEnable = true;
-    m_consoleLogLevel   = spdlog::level::info;
-    m_consoleLogPattern = "[vscp-client-socketcan %c] [%^%l%$] %v";
+     m_bConsoleLogEnable = true;
+     m_consoleLogLevel   = spdlog::level::info;
+     m_consoleLogPattern = "[vscp-client-socketcan %c] [%^%l%$] %v";
 
-    m_bEnableFileLog   = true;
-    m_fileLogLevel     = spdlog::level::info;
-    m_fileLogPattern   = "[vscp-client-socketcan %c] [%^%l%$] %v";
-    m_path_to_log_file = "/var/log/vscp/vscp-client-socketcan.log";
-    m_max_log_size     = 5242880;
-    m_max_log_files    = 7;
-*/
+     m_bEnableFileLog   = true;
+     m_fileLogLevel     = spdlog::level::info;
+     m_fileLogPattern   = "[vscp-client-socketcan %c] [%^%l%$] %v";
+     m_path_to_log_file = "/var/log/vscp/vscp-client-socketcan.log";
+     m_max_log_size     = 5242880;
+     m_max_log_files    = 7;
+ */
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // D-tor
 //
 
-vscpClientSocketCan::~vscpClientSocketCan() 
+vscpClientSocketCan::~vscpClientSocketCan()
 {
-    disconnect();
-    pthread_mutex_destroy(&m_mutexSocket);
+  disconnect();
+  pthread_mutex_destroy(&m_mutexSocket);
 
-    sem_destroy(&m_semSendQueue);
-    sem_destroy(&m_semReceiveQueue);
+  sem_destroy(&m_semSendQueue);
+  sem_destroy(&m_semReceiveQueue);
 
-    pthread_mutex_destroy(&m_mutexSendQueue);
-    pthread_mutex_destroy(&m_mutexReceiveQueue);
+  pthread_mutex_destroy(&m_mutexSendQueue);
+  pthread_mutex_destroy(&m_mutexReceiveQueue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // init
 //
 
-int vscpClientSocketCan::init(const std::string &interface, 
-                                const std::string &guid,
-                                unsigned long flags,
-                                uint32_t timeout)
+int
+vscpClientSocketCan::init(const std::string &interface, const std::string &guid, unsigned long flags, uint32_t timeout)
 {
-    m_interface = interface;
-    m_guid.getFromString(guid);
-    m_flags = flags;
-    setResponseTimeout(DEAULT_RESPONSE_TIMEOUT);  // Response timeout 3 ms
-    return VSCP_ERROR_SUCCESS;
+  m_interface = interface;
+  m_guid.getFromString(guid);
+  m_flags = flags;
+  setResponseTimeout(DEAULT_RESPONSE_TIMEOUT); // Response timeout 3 ms
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getConfigAsJson
 //
 
-std::string vscpClientSocketCan::getConfigAsJson(void) 
+std::string
+vscpClientSocketCan::getConfigAsJson(void)
 {
-    json j;
-    std::string rv;
-    
-    j["interface"] = m_interface;
-    j["flags"] = m_flags;
-    j["response-timeout"] = getResponseTimeout();
+  json j;
+  std::string rv;
 
-    return rv;
+  j["interface"]        = m_interface;
+  j["flags"]            = m_flags;
+  j["response-timeout"] = getResponseTimeout();
+
+  return rv;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // initFromJson
 //
 
-bool vscpClientSocketCan::initFromJson(const std::string& config)
+bool
+vscpClientSocketCan::initFromJson(const std::string &config)
 {
   json j;
 
@@ -252,264 +249,264 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
       uint32_t val = m_j_config["response-timeout"].get<uint32_t>();
       setResponseTimeout(val);
       spdlog::debug("json socket init: Response Timeout set to {}.", val);
-
     }
 
-/*
-    // Logging
-    if (m_j_config.contains("logging") && m_j_config["logging"].is_object()) {
+    /*
+        // Logging
+        if (m_j_config.contains("logging") && m_j_config["logging"].is_object()) {
 
-      json j = m_j_config["logging"];
+          json j = m_j_config["logging"];
 
-      // * * *  CONSOLE  * * *
+          // * * *  CONSOLE  * * *
 
-      // Logging: console-log-enable
-      if (j.contains("console-enable")) {
-        try {
-          m_bConsoleLogEnable = j["console-enable"].get<bool>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'console-enable' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'console-enable' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::debug("Failed to read LOGGING 'console-enable' Defaults will be used.");
-      }
+          // Logging: console-log-enable
+          if (j.contains("console-enable")) {
+            try {
+              m_bConsoleLogEnable = j["console-enable"].get<bool>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'console-enable' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'console-enable' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::debug("Failed to read LOGGING 'console-enable' Defaults will be used.");
+          }
 
-      // Logging: console-log-level
-      if (j.contains("console-level")) {
-        std::string str;
-        try {
-          str = j["console-level"].get<std::string>();
+          // Logging: console-log-level
+          if (j.contains("console-level")) {
+            std::string str;
+            try {
+              str = j["console-level"].get<std::string>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'console-level' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'console-level' due to unknown error.");
+            }
+            vscp_makeLower(str);
+            if (std::string::npos != str.find("off")) {
+              m_consoleLogLevel = spdlog::level::off;
+            }
+            else if (std::string::npos != str.find("critical")) {
+              m_consoleLogLevel = spdlog::level::critical;
+            }
+            else if (std::string::npos != str.find("err")) {
+              m_consoleLogLevel = spdlog::level::err;
+            }
+            else if (std::string::npos != str.find("warn")) {
+              m_consoleLogLevel = spdlog::level::warn;
+            }
+            else if (std::string::npos != str.find("info")) {
+              m_consoleLogLevel = spdlog::level::info;
+            }
+            else if (std::string::npos != str.find("debug")) {
+              m_consoleLogLevel = spdlog::level::debug;
+            }
+            else if (std::string::npos != str.find("trace")) {
+              m_consoleLogLevel = spdlog::level::trace;
+            }
+            else {
+              spdlog::error("Failed to read LOGGING 'console-level' has invalid "
+                            "value [{}]. Default value used.",
+                            str);
+            }
+          }
+          else {
+            spdlog::error("Failed to read LOGGING 'console-level' Defaults will be used.");
+          }
+
+          // Logging: console-log-pattern
+          if (j.contains("console-pattern")) {
+            try {
+              m_consoleLogPattern = j["console-pattern"].get<std::string>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'console-pattern' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'console-pattern' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::debug("Failed to read LOGGING 'console-pattern' Defaults will be used.");
+          }
+
+          // * * *  FILE  * * *
+
+          // Logging: file-log-enable
+          if (j.contains("file-enable")) {
+            try {
+              m_bEnableFileLog = j["file-enable"].get<bool>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-enable' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-enable' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::debug("Failed to read LOGGING 'file-enable' Defaults will be used.");
+          }
+
+          // Logging: file-log-level
+          if (j.contains("file-log-level")) {
+            std::string str;
+            try {
+              str = j["file-log-level"].get<std::string>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-log-level' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-log-level' due to unknown error.");
+            }
+            vscp_makeLower(str);
+            if (std::string::npos != str.find("off")) {
+              m_fileLogLevel = spdlog::level::off;
+            }
+            else if (std::string::npos != str.find("critical")) {
+              m_fileLogLevel = spdlog::level::critical;
+            }
+            else if (std::string::npos != str.find("err")) {
+              m_fileLogLevel = spdlog::level::err;
+            }
+            else if (std::string::npos != str.find("warn")) {
+              m_fileLogLevel = spdlog::level::warn;
+            }
+            else if (std::string::npos != str.find("info")) {
+              m_fileLogLevel = spdlog::level::info;
+            }
+            else if (std::string::npos != str.find("debug")) {
+              m_fileLogLevel = spdlog::level::debug;
+            }
+            else if (std::string::npos != str.find("trace")) {
+              m_fileLogLevel = spdlog::level::trace;
+            }
+            else {
+              spdlog::error("Failed to read LOGGING 'file-log-level' has invalid value "
+                            "[{}]. Default value used.",
+                            str);
+            }
+          }
+          else {
+            spdlog::error("Failed to read LOGGING 'file-log-level' Defaults will be used.");
+          }
+
+          // Logging: file-log-pattern
+          if (j.contains("file-log-pattern")) {
+            try {
+              m_fileLogPattern = j["file-log-pattern"].get<std::string>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-log-pattern' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-log-pattern' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::debug("Failed to read LOGGING 'file-log-pattern' Defaults will be used.");
+          }
+
+          // Logging: file-log-path
+          if (j.contains("file-log-path")) {
+            try {
+              m_path_to_log_file = j["file-log-path"].get<std::string>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-log-path' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-log-path' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::error(" Failed to read LOGGING 'file-log-path' Defaults will be used.");
+          }
+
+          // Logging: file-log-max-size
+          if (j.contains("file-log-max-size")) {
+            try {
+              m_max_log_size = j["file-log-max-size"].get<uint32_t>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-log-max-size' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-log-max-size' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::error("Failed to read LOGGING 'file-log-max-size' Defaults will be used.");
+          }
+
+          // Logging: file-log-max-files
+          if (j.contains("file-log-max-files")) {
+            try {
+              m_max_log_files = j["file-log-max-files"].get<uint16_t>();
+            }
+            catch (const std::exception &ex) {
+              spdlog::error("Failed to read 'file-log-max-files' Error='{}'", ex.what());
+            }
+            catch (...) {
+              spdlog::error("Failed to read 'file-log-max-files' due to unknown error.");
+            }
+          }
+          else {
+            spdlog::error("Failed to read LOGGING 'file-log-max-files' Defaults will be used.");
+          }
+
+        } // Logging
+        else {
+          spdlog::error("No logging has been setup.");
         }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'console-level' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'console-level' due to unknown error.");
-        }
-        vscp_makeLower(str);
-        if (std::string::npos != str.find("off")) {
-          m_consoleLogLevel = spdlog::level::off;
-        }
-        else if (std::string::npos != str.find("critical")) {
-          m_consoleLogLevel = spdlog::level::critical;
-        }
-        else if (std::string::npos != str.find("err")) {
-          m_consoleLogLevel = spdlog::level::err;
-        }
-        else if (std::string::npos != str.find("warn")) {
-          m_consoleLogLevel = spdlog::level::warn;
-        }
-        else if (std::string::npos != str.find("info")) {
-          m_consoleLogLevel = spdlog::level::info;
-        }
-        else if (std::string::npos != str.find("debug")) {
-          m_consoleLogLevel = spdlog::level::debug;
-        }
-        else if (std::string::npos != str.find("trace")) {
-          m_consoleLogLevel = spdlog::level::trace;
+
+        ///////////////////////////////////////////////////////////////////////////
+        //                          Setup logger
+        ///////////////////////////////////////////////////////////////////////////
+
+        // Console log
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        if (m_bConsoleLogEnable) {
+          console_sink->set_level(m_consoleLogLevel);
+          console_sink->set_pattern(m_consoleLogPattern);
         }
         else {
-          spdlog::error("Failed to read LOGGING 'console-level' has invalid "
-                        "value [{}]. Default value used.",
-                        str);
+          // If disabled set to off
+          console_sink->set_level(spdlog::level::off);
         }
-      }
-      else {
-        spdlog::error("Failed to read LOGGING 'console-level' Defaults will be used.");
-      }
 
-      // Logging: console-log-pattern
-      if (j.contains("console-pattern")) {
-        try {
-          m_consoleLogPattern = j["console-pattern"].get<std::string>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'console-pattern' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'console-pattern' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::debug("Failed to read LOGGING 'console-pattern' Defaults will be used.");
-      }
+        // auto rotating =
+        // std::make_shared<spdlog::sinks::rotating_file_sink_mt>("log_filename",
+        // 1024*1024, 5, false);
+        auto rotating_file_sink =
+          std::make_shared<spdlog::sinks::rotating_file_sink_mt>(m_path_to_log_file.c_str(), m_max_log_size,
+       m_max_log_files);
 
-      // * * *  FILE  * * *
-
-      // Logging: file-log-enable
-      if (j.contains("file-enable")) {
-        try {
-          m_bEnableFileLog = j["file-enable"].get<bool>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-enable' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-enable' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::debug("Failed to read LOGGING 'file-enable' Defaults will be used.");
-      }
-
-      // Logging: file-log-level
-      if (j.contains("file-log-level")) {
-        std::string str;
-        try {
-          str = j["file-log-level"].get<std::string>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-log-level' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-log-level' due to unknown error.");
-        }
-        vscp_makeLower(str);
-        if (std::string::npos != str.find("off")) {
-          m_fileLogLevel = spdlog::level::off;
-        }
-        else if (std::string::npos != str.find("critical")) {
-          m_fileLogLevel = spdlog::level::critical;
-        }
-        else if (std::string::npos != str.find("err")) {
-          m_fileLogLevel = spdlog::level::err;
-        }
-        else if (std::string::npos != str.find("warn")) {
-          m_fileLogLevel = spdlog::level::warn;
-        }
-        else if (std::string::npos != str.find("info")) {
-          m_fileLogLevel = spdlog::level::info;
-        }
-        else if (std::string::npos != str.find("debug")) {
-          m_fileLogLevel = spdlog::level::debug;
-        }
-        else if (std::string::npos != str.find("trace")) {
-          m_fileLogLevel = spdlog::level::trace;
+        if (m_bEnableFileLog) {
+          rotating_file_sink->set_level(m_fileLogLevel);
+          rotating_file_sink->set_pattern(m_fileLogPattern);
         }
         else {
-          spdlog::error("Failed to read LOGGING 'file-log-level' has invalid value "
-                        "[{}]. Default value used.",
-                        str);
+          // If disabled set to off
+          rotating_file_sink->set_level(spdlog::level::off);
         }
-      }
-      else {
-        spdlog::error("Failed to read LOGGING 'file-log-level' Defaults will be used.");
-      }
 
-      // Logging: file-log-pattern
-      if (j.contains("file-log-pattern")) {
-        try {
-          m_fileLogPattern = j["file-log-pattern"].get<std::string>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-log-pattern' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-log-pattern' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::debug("Failed to read LOGGING 'file-log-pattern' Defaults will be used.");
-      }
-
-      // Logging: file-log-path
-      if (j.contains("file-log-path")) {
-        try {
-          m_path_to_log_file = j["file-log-path"].get<std::string>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-log-path' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-log-path' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::error(" Failed to read LOGGING 'file-log-path' Defaults will be used.");
-      }
-
-      // Logging: file-log-max-size
-      if (j.contains("file-log-max-size")) {
-        try {
-          m_max_log_size = j["file-log-max-size"].get<uint32_t>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-log-max-size' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-log-max-size' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::error("Failed to read LOGGING 'file-log-max-size' Defaults will be used.");
-      }
-
-      // Logging: file-log-max-files
-      if (j.contains("file-log-max-files")) {
-        try {
-          m_max_log_files = j["file-log-max-files"].get<uint16_t>();
-        }
-        catch (const std::exception &ex) {
-          spdlog::error("Failed to read 'file-log-max-files' Error='{}'", ex.what());
-        }
-        catch (...) {
-          spdlog::error("Failed to read 'file-log-max-files' due to unknown error.");
-        }
-      }
-      else {
-        spdlog::error("Failed to read LOGGING 'file-log-max-files' Defaults will be used.");
-      }
-
-    } // Logging
-    else {
-      spdlog::error("No logging has been setup.");
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    //                          Setup logger
-    ///////////////////////////////////////////////////////////////////////////
-
-    // Console log
-    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    if (m_bConsoleLogEnable) {
-      console_sink->set_level(m_consoleLogLevel);
-      console_sink->set_pattern(m_consoleLogPattern);
-    }
-    else {
-      // If disabled set to off
-      console_sink->set_level(spdlog::level::off);
-    }
-
-    // auto rotating =
-    // std::make_shared<spdlog::sinks::rotating_file_sink_mt>("log_filename",
-    // 1024*1024, 5, false);
-    auto rotating_file_sink =
-      std::make_shared<spdlog::sinks::rotating_file_sink_mt>(m_path_to_log_file.c_str(), m_max_log_size, m_max_log_files);
-
-    if (m_bEnableFileLog) {
-      rotating_file_sink->set_level(m_fileLogLevel);
-      rotating_file_sink->set_pattern(m_fileLogPattern);
-    }
-    else {
-      // If disabled set to off
-      rotating_file_sink->set_level(spdlog::level::off);
-    }
-
-    std::vector<spdlog::sink_ptr> sinks{ console_sink, rotating_file_sink };
-    auto logger = std::make_shared<spdlog::async_logger>("logger",
-                                                        sinks.begin(),
-                                                        sinks.end(),
-                                                        spdlog::thread_pool(),
-                                                        spdlog::async_overflow_policy::block);
-    // The separate sub loggers will handle trace levels
-    logger->set_level(spdlog::level::trace);
-    spdlog::register_logger(logger);
-*/
+        std::vector<spdlog::sink_ptr> sinks{ console_sink, rotating_file_sink };
+        auto logger = std::make_shared<spdlog::async_logger>("logger",
+                                                            sinks.begin(),
+                                                            sinks.end(),
+                                                            spdlog::thread_pool(),
+                                                            spdlog::async_overflow_policy::block);
+        // The separate sub loggers will handle trace levels
+        logger->set_level(spdlog::level::trace);
+        spdlog::register_logger(logger);
+    */
 
     // Filter
     if (m_j_config.contains("filter") && m_j_config["filter"].is_object()) {
@@ -584,9 +581,8 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
         spdlog::debug(" Failed to read 'out-mask' Defaults will be used.");
       }
     }
-
   }
-  catch (const std::exception& ex) {
+  catch (const std::exception &ex) {
     spdlog::error("json socketcan init: Failed to parse json: {}", ex.what());
     return false;
   }
@@ -594,394 +590,419 @@ bool vscpClientSocketCan::initFromJson(const std::string& config)
   return true;
 }
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // connect
-  //
+///////////////////////////////////////////////////////////////////////////////
+// connect
+//
 
-  int vscpClientSocketCan::connect(void)
-  {
-    int rv = VSCP_ERROR_SUCCESS;
+int
+vscpClientSocketCan::connect(void)
+{
+  int rv = VSCP_ERROR_SUCCESS;
 
-/*
-    // open the socket 
-    if ( (m_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0 )  {
-        return CANAL_ERROR_SOCKET_CREATE;
-    }
+  /*
+      // open the socket
+      if ( (m_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0 )  {
+          return CANAL_ERROR_SOCKET_CREATE;
+      }
 
-    int mtu, enable_canfd = 1;
-    struct sockaddr_can addr;
-    struct ifreq ifr;
+      int mtu, enable_canfd = 1;
+      struct sockaddr_can addr;
+      struct ifreq ifr;
 
-    strncpy(ifr.ifr_name, m_interface.c_str(), IFNAMSIZ - 1);
-    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
-    if (!ifr.ifr_ifindex) {
-        spdlog::error("Cant get socketcan index from {0}", m_interface);
-        return VSCP_ERROR_ERROR;
-    }
+      strncpy(ifr.ifr_name, m_interface.c_str(), IFNAMSIZ - 1);
+      ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+      ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
+      if (!ifr.ifr_ifindex) {
+          spdlog::error("Cant get socketcan index from {0}", m_interface);
+          return VSCP_ERROR_ERROR;
+      }
 
-    addr.can_family = AF_CAN;
-    addr.can_ifindex = ifr.ifr_ifindex;
+      addr.can_family = AF_CAN;
+      addr.can_ifindex = ifr.ifr_ifindex;
 
-    if (CANFD_MTU == m_mode) {
-        // check if the frame fits into the CAN netdevice 
-        if (ioctl(m_socket, SIOCGIFMTU, &ifr) < 0) {
-            spdlog::error("FD MTU does not fit for {0}", m_interface);
-            return VSCP_TYPE_ERROR_FIFO_SIZE;
-        }
+      if (CANFD_MTU == m_mode) {
+          // check if the frame fits into the CAN netdevice
+          if (ioctl(m_socket, SIOCGIFMTU, &ifr) < 0) {
+              spdlog::error("FD MTU does not fit for {0}", m_interface);
+              return VSCP_TYPE_ERROR_FIFO_SIZE;
+          }
 
-        mtu = ifr.ifr_mtu;
+          mtu = ifr.ifr_mtu;
 
-        if (mtu != CANFD_MTU) {
-            spdlog::error("CAN FD mode is not supported for {0}", m_interface);
-            return VSCP_ERROR_NOT_SUPPORTED;
-        }
+          if (mtu != CANFD_MTU) {
+              spdlog::error("CAN FD mode is not supported for {0}", m_interface);
+              return VSCP_ERROR_NOT_SUPPORTED;
+          }
 
-        // interface is ok - try to switch the socket into CAN FD mode
-        if (setsockopt(m_socket, 
-                            SOL_CAN_RAW, 
-                            CAN_RAW_FD_FRAMES,
-                            &enable_canfd, 
-                            sizeof(enable_canfd))) 
-        {
-            spdlog::error("Failed to switch socket to FD mode {0}", m_interface);
-            return VSCP_ERROR_NOT_SUPPORTED;
-        }
+          // interface is ok - try to switch the socket into CAN FD mode
+          if (setsockopt(m_socket,
+                              SOL_CAN_RAW,
+                              CAN_RAW_FD_FRAMES,
+                              &enable_canfd,
+                              sizeof(enable_canfd)))
+          {
+              spdlog::error("Failed to switch socket to FD mode {0}", m_interface);
+              return VSCP_ERROR_NOT_SUPPORTED;
+          }
 
-    }
-*/
-    //const int timestamping_flags = (SOF_TIMESTAMPING_SOFTWARE | \
+      }
+  */
+  //const int timestamping_flags = (SOF_TIMESTAMPING_SOFTWARE | \
     //    SOF_TIMESTAMPING_RX_SOFTWARE | \
     //    SOF_TIMESTAMPING_RAW_HARDWARE);
 
-    //if (setsockopt(m_socket, SOL_SOCKET, SO_TIMESTAMPING,
-    //    &timestamping_flags, sizeof(timestamping_flags)) < 0) {
-    //    perror("setsockopt SO_TIMESTAMPING is not supported by your Linux kernel");
-    //}
+  // if (setsockopt(m_socket, SOL_SOCKET, SO_TIMESTAMPING,
+  //     &timestamping_flags, sizeof(timestamping_flags)) < 0) {
+  //     perror("setsockopt SO_TIMESTAMPING is not supported by your Linux kernel");
+  // }
 
-    // disable default receive filter on this RAW socket 
-    // This is obsolete as we do not read from the socket at all, but for 
-    // this reason we can remove the receive list in the Kernel to save a 
-    // little (really a very little!) CPU usage.                          
-    //setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, NULL, 0);
+  // disable default receive filter on this RAW socket
+  // This is obsolete as we do not read from the socket at all, but for
+  // this reason we can remove the receive list in the Kernel to save a
+  // little (really a very little!) CPU usage.
+  // setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, NULL, 0);
 
-/*
-    struct timeval tv;
-    tv.tv_sec = 0;  
-    tv.tv_usec = getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
+  /*
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
+      setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 
-    if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        return CANAL_ERROR_SOCKET_BIND;
-    }
-*/
-    // start the workerthread
-    m_bRun = true;    // Workerthread should run, run, run...
-    if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
-        spdlog::critical("Failed to start workerthread");
-        return false;
-    }
+      if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+          return CANAL_ERROR_SOCKET_BIND;
+      }
+  */
+  // start the workerthread
+  m_bRun = true; // Workerthread should run, run, run...
+  if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
+    spdlog::critical("Failed to start workerthread");
+    return false;
+  }
 
-    return rv;
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // disconnect
 //
 
-int vscpClientSocketCan::disconnect(void)
+int
+vscpClientSocketCan::disconnect(void)
 {
-    // Do nothing if already terminated
-    if (!m_bRun) {
-      return VSCP_ERROR_SUCCESS;
-    }
+  // Do nothing if already terminated
+  if (!m_bRun) {
+    return VSCP_ERROR_SUCCESS;
+  }
 
-    m_bRun = false; // terminate the thread
-    // Wait for workerthread to to terminate
-    pthread_join(m_threadWork, NULL);
-    
-    //::close(m_socket);
-    m_bConnected = false;
-    return CANAL_ERROR_SUCCESS;
+  m_bRun = false; // terminate the thread
+  // Wait for workerthread to to terminate
+  pthread_join(m_threadWork, NULL);
+
+  //::close(m_socket);
+  m_bConnected = false;
+  return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // isConnected
 //
 
-bool vscpClientSocketCan::isConnected(void)
+bool
+vscpClientSocketCan::isConnected(void)
 {
-    return m_bConnected;
+  return m_bConnected;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // send
 //
 
-int vscpClientSocketCan::send(vscpEvent &ev)
+int
+vscpClientSocketCan::send(vscpEvent &ev)
 {
-    if (m_socket <= 0) {
-        return VSCP_ERROR_WRITE_ERROR;
-    }
+  if (m_socket <= 0) {
+    return VSCP_ERROR_WRITE_ERROR;
+  }
 
-    canalMsg canalMsg;
-    if ( !vscp_convertEventToCanal(&canalMsg, &ev ) ) {
-        return VSCP_ERROR_PARAMETER;    
-    }
+  canalMsg canalMsg;
+  if (!vscp_convertEventToCanal(&canalMsg, &ev)) {
+    return VSCP_ERROR_PARAMETER;
+  }
 
-    struct canfd_frame frame;
-    memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0 
-    
-    // convert CanFrame to canfd_frame
-    frame.can_id = canalMsg.id;
-    frame.can_id |= CAN_EFF_FLAG;
-    frame.len = canalMsg.sizeData;
-    frame.flags = canalMsg.flags;
-    memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
+  struct canfd_frame frame;
+  memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0
 
-    if (m_flags & FLAG_FD_MODE) {
-        // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
-        frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
-    }
+  // convert CanFrame to canfd_frame
+  frame.can_id = canalMsg.id;
+  frame.can_id |= CAN_EFF_FLAG;
+  frame.len   = canalMsg.sizeData;
+  frame.flags = canalMsg.flags;
+  memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
-    // send the frame
-    pthread_mutex_lock(&m_mutexSocket);
-    if ( -1 == write(m_socket, &frame, sizeof(struct can_frame)) ) {
-        pthread_mutex_unlock(&m_mutexSocket);
-        return VSCP_ERROR_WRITE_ERROR;
-    }
+  if (m_flags & FLAG_FD_MODE) {
+    // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
+    frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
+  }
+
+  // send the frame
+  pthread_mutex_lock(&m_mutexSocket);
+  if (-1 == write(m_socket, &frame, sizeof(struct can_frame))) {
     pthread_mutex_unlock(&m_mutexSocket);
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+  pthread_mutex_unlock(&m_mutexSocket);
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // send
 //
 
-int vscpClientSocketCan::send(vscpEventEx &ex)
+int
+vscpClientSocketCan::send(vscpEventEx &ex)
 {
-    if (m_socket <= 0) {
-        return VSCP_ERROR_WRITE_ERROR;
-    }
+  if (m_socket <= 0) {
+    return VSCP_ERROR_WRITE_ERROR;
+  }
 
-    canalMsg canalMsg;
-    if ( !vscp_convertEventExToCanal(&canalMsg, &ex ) ) {
-        return VSCP_ERROR_PARAMETER;    
-    }
+  canalMsg canalMsg;
+  if (!vscp_convertEventExToCanal(&canalMsg, &ex)) {
+    return VSCP_ERROR_PARAMETER;
+  }
 
-    struct canfd_frame frame;
-    memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0
+  struct canfd_frame frame;
+  memset(&frame, 0, sizeof(frame)); // init CAN FD frame, e.g. LEN = 0
 
-    // convert CanFrame to canfd_frame
-    frame.can_id = canalMsg.id;
-    frame.can_id |= CAN_EFF_FLAG;
-    frame.len = canalMsg.sizeData;
-    frame.flags = canalMsg.flags;
-    memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
+  // convert CanFrame to canfd_frame
+  frame.can_id = canalMsg.id;
+  frame.can_id |= CAN_EFF_FLAG;
+  frame.len   = canalMsg.sizeData;
+  frame.flags = canalMsg.flags;
+  memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
-    if (m_flags & FLAG_FD_MODE) {
-        // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
-        frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
-    }
+  if (m_flags & FLAG_FD_MODE) {
+    // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
+    frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
+  }
 
-    // send the frame
-    pthread_mutex_lock(&m_mutexSocket);
-    if ( -1 == write(m_socket, &frame, sizeof(struct can_frame)) ) {
-        pthread_mutex_unlock(&m_mutexSocket);
-        return VSCP_ERROR_WRITE_ERROR;
-    }
+  // send the frame
+  pthread_mutex_lock(&m_mutexSocket);
+  if (-1 == write(m_socket, &frame, sizeof(struct can_frame))) {
     pthread_mutex_unlock(&m_mutexSocket);
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+  pthread_mutex_unlock(&m_mutexSocket);
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
-int vscpClientSocketCan::receive(vscpEvent &ev)
+int
+vscpClientSocketCan::receive(vscpEvent &ev)
 {
-    int rv;
-    canalMsg canalMsg;
-    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    
-    //if ( CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg) ) ) {
-    //    return rv;
-    //}
+  int rv;
 
-    return 0; //vscp_convertCanalToEvent(&ev, &canalMsg, guid);
+  // Check if there are any events waiting
+  if (!m_receiveList.size()) {
+    return VSCP_ERROR_FIFO_EMPTY;
+  }
+  printf("receive\n");
+  const vscpEvent *pev = m_receiveList.front();  
+  if (nullptr == pev) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+  vscp_copyEvent(&ev, pev);  
+  m_receiveList.pop_front();
+  delete pev;
+  printf("RRRRR receive\n");
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
-int vscpClientSocketCan::receive(vscpEventEx &ex)
+int
+vscpClientSocketCan::receive(vscpEventEx &ex)
 {
-    int rv;
-    canalMsg canalMsg;
-    uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    
-    //if ( CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg) ) ) {
-    //    return rv;
-    //}
+  int rv;
+  vscpEvent ev;
 
-    return vscp_convertCanalToEventEx(&ex,
-                                        &canalMsg,
-                                        guid);
+  if (VSCP_ERROR_SUCCESS != (rv = receive(ev))) {
+    return rv;
+  }
+
+  return (vscp_convertEventToEventEx(&ex, &ev) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // setfilter
 //
 
-int vscpClientSocketCan::setfilter(vscpEventFilter &filter)
+int
+vscpClientSocketCan::setfilter(vscpEventFilter &filter)
 {
-    int rv;
+  int rv;
 
-    uint32_t _filter = ((unsigned long)filter.filter_priority << 26) |
-                    ((unsigned long)filter.filter_class << 16) |
-                    ((unsigned long)filter.filter_type << 8) | filter.filter_GUID[0];
-    //if ( CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
-    //    return rv;
-    //}
+  uint32_t _filter = ((unsigned long) filter.filter_priority << 26) | ((unsigned long) filter.filter_class << 16) |
+                     ((unsigned long) filter.filter_type << 8) | filter.filter_GUID[0];
+  // if ( CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
+  //     return rv;
+  // }
 
-    uint32_t _mask = ((unsigned long)filter.mask_priority << 26) |
-                    ((unsigned long)filter.mask_class << 16) |
-                    ((unsigned long)filter.mask_type << 8) | filter.mask_GUID[0];
-    return 0; //m_canalif.CanalSetMask(_mask);
+  uint32_t _mask = ((unsigned long) filter.mask_priority << 26) | ((unsigned long) filter.mask_class << 16) |
+                   ((unsigned long) filter.mask_type << 8) | filter.mask_GUID[0];
+  return 0; // m_canalif.CanalSetMask(_mask);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getcount
 //
 
-int vscpClientSocketCan::getcount(uint16_t *pcount)
+int
+vscpClientSocketCan::getcount(uint16_t *pcount)
 {
-    return 0;
+  *pcount = m_receiveList.size();
+  return VSCP_ERROR_SUCCESS;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // clear
 //
 
-int vscpClientSocketCan::clear()
+int
+vscpClientSocketCan::clear()
 {
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getversion
 //
 
-int vscpClientSocketCan::getversion(uint8_t *pmajor,
-                                    uint8_t *pminor,
-                                    uint8_t *prelease,
-                                    uint8_t *pbuild)
+int
+vscpClientSocketCan::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
 {
-    //uint32_t ver = m_canalif.CanalGetDllVersion();
+  // uint32_t ver = m_canalif.CanalGetDllVersion();
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getinterfaces
 //
 
-int vscpClientSocketCan::getinterfaces(std::deque<std::string> &iflist)
+int
+vscpClientSocketCan::getinterfaces(std::deque<std::string> &iflist)
 {
-    // No interfaces available
-    return VSCP_ERROR_SUCCESS;
+  // No interfaces available
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getwcyd
 //
 
-int vscpClientSocketCan::getwcyd(uint64_t &wcyd)
+int
+vscpClientSocketCan::getwcyd(uint64_t &wcyd)
 {
-    wcyd = VSCP_SERVER_CAPABILITY_NONE;   // No capabilities
-    return VSCP_ERROR_SUCCESS;
+  wcyd = VSCP_SERVER_CAPABILITY_NONE; // No capabilities
+  return VSCP_ERROR_SUCCESS;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // setConnectionTimeout
 //
 
-void vscpClientSocketCan::setConnectionTimeout(uint32_t timeout)
+void
+vscpClientSocketCan::setConnectionTimeout(uint32_t timeout)
 {
-    ;
+  ;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // getConnectionTimeout
 //
 
-uint32_t vscpClientSocketCan::getConnectionTimeout(void)
+uint32_t
+vscpClientSocketCan::getConnectionTimeout(void)
 {
-    return 0;
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // setResponseTimeout
 //
 
-void vscpClientSocketCan::setResponseTimeout(uint32_t timeout)
+void
+vscpClientSocketCan::setResponseTimeout(uint32_t timeout)
 {
-    ;
+  ;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // getResponseTimeout
 //
 
-uint32_t vscpClientSocketCan::getResponseTimeout(void)
+uint32_t
+vscpClientSocketCan::getResponseTimeout(void)
 {
-    return 0;
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendToCallbacks
 //
 
-void vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
+void
+vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
 {
-    if (nullptr != m_evcallback) {
-        m_evcallback(pev, m_callbackObject);
-    }
+  printf("sendToCallbacks\n");
+  if (nullptr != m_evcallback) {
+    printf("----->\n");
+    m_evcallback(pev, m_callbackObject);
+  }
 
-    if (nullptr != m_excallback) {
-        vscpEventEx ex;
-        vscp_convertEventToEventEx(&ex, pev);
-        m_excallback(&ex, m_callbackObject);
-    }
+  if (nullptr != m_excallback) {
+    vscpEventEx ex;
+    vscp_convertEventToEventEx(&ex, pev);
+    m_excallback(&ex, m_callbackObject);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
 //
 
-int vscpClientSocketCan::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
+int
+vscpClientSocketCan::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
 {
-    // Can not be called when connected
-    if ( m_bConnected ) return VSCP_ERROR_ERROR;
-    m_evcallback = m_evcallback;
-    return VSCP_ERROR_SUCCESS;
+  // Can not be called when connected
+  if (m_bConnected) {
+    return VSCP_ERROR_ERROR;
+  }
+  m_evcallback = m_evcallback;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
 //
 
-int vscpClientSocketCan::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+int
+vscpClientSocketCan::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 {
-    // Can not be called when connected
-    if ( m_bConnected ) return VSCP_ERROR_ERROR;
-    m_excallback = m_excallback;
-    return VSCP_ERROR_SUCCESS;
+  // Can not be called when connected
+  if (m_bConnected) {
+    return VSCP_ERROR_ERROR;
+  }
+  m_excallback = m_excallback;
+  return VSCP_ERROR_SUCCESS;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 //                     Workerthread - Read
@@ -1000,7 +1021,7 @@ workerThread(void *pData)
   char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
   const int canfd_on = 1;
 
-  vscpClientSocketCan *pObj = (vscpClientSocketCan *)pData;
+  vscpClientSocketCan *pObj = (vscpClientSocketCan *) pData;
   if (NULL == pObj) {
     spdlog::error("No object data object supplied for worker thread");
     return NULL;
@@ -1015,7 +1036,7 @@ workerThread(void *pData)
       if (ENETDOWN == errno) {
         pthread_mutex_unlock(&pObj->m_mutexSocket);
         sleep(1);
-        continue;   // Try again
+        continue; // Try again
       }
 
       spdlog::error("wrkthread socketcan client: Error while opening socket. Terminating!");
@@ -1024,13 +1045,13 @@ workerThread(void *pData)
 
     strncpy(ifr.ifr_name, pObj->m_interface.c_str(), IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
+    ifr.ifr_ifindex            = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
-        pthread_mutex_unlock(&pObj->m_mutexSocket);
-        spdlog::error("Cant get socketcan index from {0}", pObj->m_interface);
-        return NULL;
+      pthread_mutex_unlock(&pObj->m_mutexSocket);
+      spdlog::error("Cant get socketcan index from {0}", pObj->m_interface);
+      return NULL;
     }
-    //ioctl(pObj->m_socket, SIOCGIFINDEX, &ifr);
+    // ioctl(pObj->m_socket, SIOCGIFINDEX, &ifr);
 
     addr.can_family  = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
@@ -1040,53 +1061,48 @@ workerThread(void *pData)
     }
 
     // try to switch the socket into CAN FD mode
-    //setsockopt(pObj->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
+    // setsockopt(pObj->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
 
     if (CANFD_MTU == pObj->m_mode) {
 
       // check if the frame fits into the CAN netdevice
       if (ioctl(pObj->m_socket, SIOCGIFMTU, &ifr) < 0) {
-          pthread_mutex_unlock(&pObj->m_mutexSocket);
-          spdlog::error("FD MTU does not fit for {0}", pObj->m_interface);
-          //return VSCP_TYPE_ERROR_FIFO_SIZE;
-          return NULL;
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
+        spdlog::error("FD MTU does not fit for {0}", pObj->m_interface);
+        // return VSCP_TYPE_ERROR_FIFO_SIZE;
+        return NULL;
       }
 
       mtu = ifr.ifr_mtu;
 
       if (mtu != CANFD_MTU) {
-          pthread_mutex_unlock(&pObj->m_mutexSocket);
-          spdlog::error("CAN FD mode is not supported for {0}", pObj->m_interface);
-          //return VSCP_ERROR_NOT_SUPPORTED;
-          return NULL;
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
+        spdlog::error("CAN FD mode is not supported for {0}", pObj->m_interface);
+        // return VSCP_ERROR_NOT_SUPPORTED;
+        return NULL;
       }
 
       // interface is ok - try to switch the socket into CAN FD mode
-      if (setsockopt(pObj->m_socket,
-                          SOL_CAN_RAW,
-                          CAN_RAW_FD_FRAMES,
-                          &enable_canfd,
-                          sizeof(enable_canfd))) {
-          pthread_mutex_unlock(&pObj->m_mutexSocket);
-          spdlog::error("Failed to switch socket to FD mode {0}", pObj->m_interface);
-          //return VSCP_ERROR_NOT_SUPPORTED;
-          return NULL;
+      if (setsockopt(pObj->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable_canfd, sizeof(enable_canfd))) {
+        pthread_mutex_unlock(&pObj->m_mutexSocket);
+        spdlog::error("Failed to switch socket to FD mode {0}", pObj->m_interface);
+        // return VSCP_ERROR_NOT_SUPPORTED;
+        return NULL;
       }
-
     }
 
     pthread_mutex_unlock(&pObj->m_mutexSocket);
 
     struct timeval tv;
-    tv.tv_sec = 0;  
-    tv.tv_usec = pObj->getResponseTimeout() * 1000;  // Not init'ing this can cause strange errors
-    setsockopt(pObj->m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
+    tv.tv_sec  = 0;
+    tv.tv_usec = pObj->getResponseTimeout() * 1000; // Not init'ing this can cause strange errors
+    setsockopt(pObj->m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(struct timeval));
 
     if (bind(pObj->m_socket, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
       spdlog::error("wrkthread socketcan client: Error in socket bind. Terminating!");
       close(pObj->m_socket);
       sleep(2);
-      //continue;
+      // continue;
       return NULL;
     }
 
@@ -1146,7 +1162,7 @@ workerThread(void *pData)
 
         vscpEvent *pEvent = new vscpEvent();
         if (nullptr != pEvent) {
-
+          
           // This can lead to level I frames having to
           // much data. Later code will handel this case.
           pEvent->pdata = new uint8_t[frame.len];
@@ -1157,7 +1173,7 @@ workerThread(void *pData)
 
           // GUID will be set to GUID of interface
           // by driver interface with LSB set to nickname
-          //memcpy(pEvent->GUID, pObj->m_guid.getGUID(), 16);
+          // memcpy(pEvent->GUID, pObj->m_guid.getGUID(), 16);
           pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
           // Set VSCP class
@@ -1168,29 +1184,34 @@ workerThread(void *pData)
 
           // Copy data if any
           pEvent->sizeData = frame.len;
-          if (frame.len) {              
+          if (frame.len) {
             memcpy(pEvent->pdata, frame.data, frame.len);
           }
 
           if (vscp_doLevel2Filter(pEvent, &pObj->m_filterIn)) {
 
             if (nullptr != pObj->m_evcallback) {
-                pObj->m_evcallback(pEvent, pObj->m_callbackObject);
+              pObj->m_evcallback(pEvent, pObj->m_callbackObject);
             }
 
             if (nullptr != pObj->m_excallback) {
-                vscpEventEx ex;
-                if (vscp_convertEventToEventEx(&ex, pEvent) ) {
-                    pObj->m_excallback(&ex, pObj->m_callbackObject);
-                }
+              vscpEventEx ex;
+              if (vscp_convertEventToEventEx(&ex, pEvent)) {
+                pObj->m_excallback(&ex, pObj->m_callbackObject);
+              }
             }
 
-            if ((nullptr != pObj->m_evcallback) && (nullptr != pObj->m_excallback)) {
-                pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
-                pObj->m_receiveList.push_back(pEvent);
-                sem_post(&pObj->m_semReceiveQueue);
-                pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
+            printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
+
+            // Add to input queue only if no callback set
+            if ((nullptr == pObj->m_evcallback) && (nullptr == pObj->m_excallback)) {
+              std::cout << "add to receive queue" << std::endl;
+              pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
+              pObj->m_receiveList.push_back(pEvent);
+              sem_post(&pObj->m_semReceiveQueue);
+              pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
             }
+
           }
           else {
             vscp_deleteEvent(pEvent);
@@ -1256,5 +1277,4 @@ workerThread(void *pData)
   return NULL;
 }
 
-#endif  // not windows
-
+#endif // not windows
