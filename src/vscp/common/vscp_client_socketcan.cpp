@@ -740,7 +740,7 @@ vscpClientSocketCan::send(vscpEvent &ev)
   memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
   if (m_flags & FLAG_FD_MODE) {
-    // ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
+    // Ensure discrete CAN FD length values 0..8, 12, 16, 20, 24, 32, 64
     frame.len = canal_dlc2len(canal_tbllen2dlc[frame.len]);
   }
 
@@ -810,15 +810,15 @@ vscpClientSocketCan::receive(vscpEvent &ev)
   if (!m_receiveList.size()) {
     return VSCP_ERROR_FIFO_EMPTY;
   }
-  printf("receive\n");
-  const vscpEvent *pev = m_receiveList.front();  
+
+  const vscpEvent *pev = m_receiveList.front();
   if (nullptr == pev) {
     return VSCP_ERROR_INVALID_POINTER;
   }
-  vscp_copyEvent(&ev, pev);  
+  vscp_copyEvent(&ev, pev);
   m_receiveList.pop_front();
   delete pev;
-  printf("RRRRR receive\n");
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -1162,7 +1162,7 @@ workerThread(void *pData)
 
         vscpEvent *pEvent = new vscpEvent();
         if (nullptr != pEvent) {
-          
+
           // This can lead to level I frames having to
           // much data. Later code will handel this case.
           pEvent->pdata = new uint8_t[frame.len];
@@ -1211,7 +1211,6 @@ workerThread(void *pData)
               sem_post(&pObj->m_semReceiveQueue);
               pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
             }
-
           }
           else {
             vscp_deleteEvent(pEvent);

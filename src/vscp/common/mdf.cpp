@@ -9653,7 +9653,7 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
   }
 
   for (auto reg : regset) {
-    std::map<uint32_t, CMDF_Register *> mapRegs;
+    //std::map<uint32_t, CMDF_Register *> mapRegs;
     mapRegs[reg] = getRegister(reg, page);
   }
 

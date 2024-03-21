@@ -265,8 +265,9 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidInterface.isNULL() ? 0 : 512);
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
   ex.sizeData   = ifoffset + 5;
-  if (ifoffset)
+  if (ifoffset) {
     memcpy(ex.data, guidInterface.getGUID(), 16);
+  }
   ex.data[0 + ifoffset] = nickname;
   ex.data[1 + ifoffset] = (page >> 8) & 0x0ff;
   ex.data[2 + ifoffset] = page & 0x0ff;
@@ -290,14 +291,16 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   do {
     // Get response
     uint16_t cntRead;
+    printf("1\n");
     rv = client.getcount(&cntRead);
-    if (cntRead && VSCP_ERROR_SUCCESS == rv) {
+    printf("2\n");
+    if (cntRead && (VSCP_ERROR_SUCCESS == rv)) {
 
       if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
         return rv;
       }
 
-      // std::cout << "class=" << (int)ex.vscp_class << " type = " << (int)ex.vscp_type << std::endl << std::flush;
+      std::cout << "class=" << (int)ex.vscp_class << " type=" << (int)ex.vscp_type << std::endl << std::flush;
 
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
@@ -308,22 +311,27 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
 
             // Another frame received
             frameset.erase(ex.data[0]);
-            // std::cout << "idx=" << (int)ex.data[0] << " left = " << (int)frameset.size() << std::endl << std::flush;
+            std::cout << "idx=" << (int)ex.data[0] << " left = " << (int)frameset.size() << std::endl << std::flush;
 
             // Get read data
+            printf("size=%d\n",ex.sizeData );
             for (int i = 0; i < ex.sizeData - 4; i++) {
               // values[offset + rcvcnt] = ex.data[4 + i];
+              printf("A\n");
               values[ex.data[3] + i] = ex.data[4 + i];
+              printf("B\n");
               rcvcnt++;
+              printf("C\n");
             }
-
+            printf("D\n");
             // Check if we are ready
-            if (rcvcnt == count && frameset.empty()) {
+            if ((rcvcnt == count) && frameset.empty()) {
               return VSCP_ERROR_SUCCESS;
             }
-          }
-        }
-      }
+            printf("E\n");
+          } // if is equal
+        } // Extended response
+      } // Protocol
     }
 
     if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
@@ -336,7 +344,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
 #else
     usleep(2000);
 #endif
-
+    printf("l2\n");
   } while (true);
 
   return rv;
@@ -489,10 +497,12 @@ vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found,
   memset(&ex, 0, sizeof(vscpEventEx));
   ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guid.isNULL() ? 0 : 512);
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_WHO_IS_THERE;
-  memcpy(ex.data + offset, guid.getGUID(), 16); // Use GUID of interface
-  memset(ex.GUID, 0, 16);                       // Use GUID of interface
-  ex.sizeData = 17;
-  ex.data[16] = 0xff; // all devices
+  if (guid.isNULL()) {
+    memcpy(ex.data + offset, guid.getGUID(), 16); // Use GUID of interface
+  }
+  memset(ex.GUID, 0, 16); // Use GUID of interface
+  ex.sizeData = 1 + offset;
+  ex.data[0 + offset] = 0xff; // all devices
 
   // Clear input queue
   if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
@@ -518,7 +528,7 @@ vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found,
     }
 
     // Check timeout
-    if ((vscp_getMsTimeStamp() - startTime) > 500) {
+    if ((vscp_getMsTimeStamp() - startTime) > timeout) {
       rv = VSCP_ERROR_TIMEOUT;
       break;
     }
@@ -577,7 +587,6 @@ vscp_scanSlowForDevices(CVscpClient &client,
 #else
     usleep(delay);
 #endif
-
   }
 
   uint32_t startTime = vscp_getMsTimeStamp();
@@ -591,7 +600,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
     }
 
     if (cnt) {
-      printf("cnt %d\n", (int)cnt);
+      printf("cnt %d\n", (int) cnt);
       rv = client.receive(ex);
       if (VSCP_ERROR_SUCCESS == rv) {
         std::cout << "Class: " << ex.vscp_class << " Type: " << ex.vscp_type << std::endl;
@@ -1371,7 +1380,7 @@ CUserRegisters::init(CVscpClient &client,
     m_registerPageMap[page]->putLevel1Registers(registers);
     m_registerPageMap[page]->clearChanges();
     m_pages.insert(page);
-    // std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
+    std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
   }
   return rv;
 }
