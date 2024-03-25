@@ -418,7 +418,7 @@ class VscpCanalDeviceIf
 
     /*!
         Return true if the driver is a genaration 1 driver
-        @return True of generation 1 driver
+        @return True if generation 1 driver
     */
     bool isGenerationOne(void) { return m_bGenerationOne; };
 

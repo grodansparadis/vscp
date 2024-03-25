@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:  (C) 2007-2023
+// Copyright:  (C) 2007-2024
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -318,6 +318,7 @@ int vscpClientCanal::getcount(uint16_t *pcount)
     pthread_mutex_lock(&m_mutexif);
     rv = m_canalif.CanalDataAvailable();
     pthread_mutex_unlock(&m_mutexif);
+    *pcount = rv;
     return rv;
 }
 
