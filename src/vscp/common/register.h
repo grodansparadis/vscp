@@ -193,7 +193,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
 */
 int
 vscp_scanSlowForDevices(CVscpClient &client,
-                        cguid &guid,
+                        cguid &guidIf,
                         uint8_t start_node,
                         uint8_t end_node,
                         std::set<uint16_t> &found_nodes,

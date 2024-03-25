@@ -293,13 +293,13 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
     uint16_t cntRead;
     rv = client.getcount(&cntRead);
 
-    if (cntRead && (VSCP_ERROR_SUCCESS == rv)) {
+    if ((VSCP_ERROR_SUCCESS == rv) && cntRead) {
 
       if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
         return rv;
       }
 
-      std::cout << "class=" << (int)ex.vscp_class << " type=" << (int)ex.vscp_type << std::endl << std::flush;
+      //std::cout << "class=" << (int) ex.vscp_class << " type=" << (int) ex.vscp_type << std::endl << std::flush;
 
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
@@ -310,27 +310,24 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
 
             // Another frame received
             frameset.erase(ex.data[0]);
-            std::cout << "idx=" << (int)ex.data[0] << " left = " << (int)frameset.size() << std::endl << std::flush;
+            //std::cout << "idx=" << (int) ex.data[0] << " left = " << (int) frameset.size() << std::endl << std::flush;
 
             // Get read data
-            printf("size=%d\n",ex.sizeData );
+            //printf("size=%d\n", ex.sizeData);
             for (int i = 0; i < ex.sizeData - 4; i++) {
               // values[offset + rcvcnt] = ex.data[4 + i];
-              printf("A\n");
               values[ex.data[3] + i] = ex.data[4 + i];
-              printf("B\n");
               rcvcnt++;
-              printf("C\n");
             }
-            printf("D\n");
+            
             // Check if we are ready
             if ((rcvcnt == count) && frameset.empty()) {
               return VSCP_ERROR_SUCCESS;
             }
-            printf("E\n");
+            
           } // if is equal
-        } // Extended response
-      } // Protocol
+        }   // Extended response
+      }     // Protocol
     }
 
     if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
@@ -487,21 +484,23 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
 //
 
 int
-vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found, uint32_t timeout)
+vscp_scanForDevices(CVscpClient &client, cguid &guidIf, std::set<uint16_t> &found, uint32_t timeout)
 {
   int rv         = VSCP_ERROR_SUCCESS;
-  uint8_t offset = guid.isNULL() ? 0 : 16;
+  uint8_t offset = guidIf.isNULL() ? 0 : 16;
   vscpEventEx ex;
 
   memset(&ex, 0, sizeof(vscpEventEx));
-  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guid.isNULL() ? 0 : 512);
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidIf.isNULL() ? 0 : 512);
   ex.vscp_type  = VSCP_TYPE_PROTOCOL_WHO_IS_THERE;
-  if (guid.isNULL()) {
-    memcpy(ex.data + offset, guid.getGUID(), 16); // Use GUID of interface
-  }
+
   memset(ex.GUID, 0, 16); // Use GUID of interface
-  ex.sizeData = 1 + offset;
+  ex.sizeData         = 1 + offset;
   ex.data[0 + offset] = 0xff; // all devices
+
+  if (!guidIf.isNULL()) {
+    memcpy(ex.data + offset, guidIf.getGUID(), 16); // Use GUID of interface
+  }
 
   // Clear input queue
   if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
@@ -541,27 +540,25 @@ vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found,
 
 int
 vscp_scanSlowForDevices(CVscpClient &client,
-                        cguid &guid,
+                        cguid &guidIf,
                         std::set<uint16_t> &search_nodes,
                         std::set<uint16_t> &found_nodes,
                         uint32_t delay,
                         uint32_t timeout)
 {
-  uint16_t offset = 0;
-  int rv          = VSCP_ERROR_SUCCESS;
+  uint8_t offset = guidIf.isNULL() ? 0 : 16;
+  int rv         = VSCP_ERROR_SUCCESS;
   vscpEventEx ex;
   CVscpClient::connType conntype = client.getType();
 
-  if (guid.isNULL()) {
-    offset = 16;
+  memset(&ex, 0, sizeof(vscpEventEx));
+  ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidIf.isNULL() ? 0 : 512);
+  ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+
+  if (!guidIf.isNULL()) {
+    memcpy(ex.data, guidIf.getGUID(), 16);
   }
 
-  memset(&ex, 0, sizeof(vscpEventEx));
-  ex.vscp_class = VSCP_CLASS1_PROTOCOL + offset;
-  ex.vscp_type  = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-  if (!guid.isNULL()) {
-    memcpy(ex.data, guid.getGUID(), 16);
-  }
   memset(ex.GUID, 0, 16); // Use GUID of interface
   ex.sizeData = 2 + offset;
 
@@ -594,37 +591,35 @@ vscp_scanSlowForDevices(CVscpClient &client,
     uint16_t cnt;
 
     rv = client.getcount(&cnt);
-    if (VSCP_ERROR_SUCCESS != rv) {
-      return rv;
-    }
 
     if (cnt) {
-      printf("cnt %d\n", (int) cnt);
+      //printf("cnt %d\n", (int) cnt);
       rv = client.receive(ex);
       if (VSCP_ERROR_SUCCESS == rv) {
-        std::cout << "Class: " << ex.vscp_class << " Type: " << ex.vscp_type << std::endl;
-
         if ((ex.vscp_class == VSCP_CLASS1_PROTOCOL) && (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) {
+          //printf("found %d:%d\n", ex.GUID[14], ex.GUID[15]);
           found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));
         }
         else if ((ex.vscp_class == VSCP_CLASS2_LEVEL1_PROTOCOL) && (ex.vscp_type == VSCP_TYPE_PROTOCOL_RW_RESPONSE)) {
+          //printf("xfound %d:%d\n", ex.GUID[14], ex.GUID[15]);
           found_nodes.insert(ex.GUID[15] + (ex.GUID[14] << 8));
         }
       }
     }
 
     // If all nodes found we are done
-    if (search_nodes.size() == found_nodes.size()) {
+    if (found_nodes.size() >= search_nodes.size()) {
+      printf("done\n");
       break;
     }
 
     if ((vscp_getMsTimeStamp() - startTime) > timeout) {
-      // No time out here - just done with slow scan
+      // This is no timout we are just done with slow scan
       break;
     }
   }
 
-  return rv;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
