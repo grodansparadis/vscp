@@ -291,9 +291,8 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   do {
     // Get response
     uint16_t cntRead;
-    printf("1\n");
     rv = client.getcount(&cntRead);
-    printf("2\n");
+
     if (cntRead && (VSCP_ERROR_SUCCESS == rv)) {
 
       if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {

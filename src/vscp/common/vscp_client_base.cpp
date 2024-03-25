@@ -43,9 +43,9 @@
 
 CVscpClient::CVscpClient()
 {
-    m_evcallback = nullptr;
-    m_excallback = nullptr;
-    m_callbackObject = nullptr;
+  m_evcallback     = nullptr;
+  m_excallback     = nullptr;
+  m_callbackObject = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,29 +54,30 @@ CVscpClient::CVscpClient()
 
 CVscpClient::~CVscpClient()
 {
-    ;
+  ;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
 //
 
-int CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData) 
-{ 
-    m_evcallback = evcallback;
-    m_callbackObject = pData;
+int
+CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData)
+{
+  m_evcallback     = evcallback;
+  m_callbackObject = pData;
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
 //
 
-int CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData) 
-{ 
-    m_excallback = excallback;
-    m_callbackObject = pData;
-    return VSCP_ERROR_SUCCESS;
+int
+CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData)
+{
+  m_excallback     = excallback;
+  m_callbackObject = pData;
+  return VSCP_ERROR_SUCCESS;
 };

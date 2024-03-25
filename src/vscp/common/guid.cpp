@@ -149,7 +149,7 @@ cguid::getFromString(const std::string &strGUID)
 
     // Check for default string (all nills)
     vscp_trim(str);
-    if ("-" == str) {
+    if (!str.size() || ("-" == str)) {
         clear();
         return;
     }

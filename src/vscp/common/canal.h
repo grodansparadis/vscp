@@ -121,7 +121,7 @@ typedef struct structCanalMsg {
     unsigned long flags;                /* CAN message flags */
     unsigned long obid;                 /* Used by driver for channel info etc. */
     unsigned long id;                   /* CAN id (11-bit or 29-bit) */
-    unsigned char sizeData;             /* Data size 0-8 */
+    unsigned char sizeData;             /* Data size 0-8 (fd: 0-15) */
     unsigned char data[64];             /* CAN Data	 */
     unsigned long timestamp;            /* Relative time stamp for package in microseconds */
 } canalMsg;
