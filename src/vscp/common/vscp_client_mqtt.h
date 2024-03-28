@@ -223,11 +223,16 @@ public:
   bool isRetain(void) { return m_bRetain; };
   void setRetain(bool bRetain) { m_bRetain = bRetain; };
 
+  /// Getters/setters for bActive
+  bool isActive(void) { return m_bActive; };
+  void setActive(bool bActive) { m_bActive = bActive; };
+
   /// getters/setter for format
   void setFormat(enumMqttMsgFormat format) { m_format = format; };
   enumMqttMsgFormat getFormat(void) { return m_format; };
 
 private:
+
   /// Publish topic
   std::string m_topic;
 
@@ -239,6 +244,13 @@ private:
 
   /// publish topic message retain flag
   bool m_bRetain;
+
+  /*!
+    Used by routines that allow to deactivate publish topics
+    on the fly. This is used in the vscp-works-qt session window
+    True on default    !!! NOT SAVED !!!
+  */
+  bool m_bActive;
 
   /*!
     Publish format json (default), xml, string, binary
@@ -275,6 +287,10 @@ public:
   int getQos(void) { return m_qos; };
   void setQos(int qos) { m_qos = qos; };
 
+  /// Getters/setters for bActive
+  bool isActive(void) { return m_bActive; };
+  void setActive(bool bActive) { m_bActive = bActive; };
+
   /// getters/setter for format
   void setFormat(enumMqttMsgFormat format) { m_format = format; };
   enumMqttMsgFormat getFormat(void) { return m_format; };
@@ -291,6 +307,13 @@ private:
 
   /// version 5 options
   int m_v5_options;
+
+  /*!
+    Used by routines that allow to deactivate subscriptions
+    on the fly. This is used in the vscp-works-qt session window
+    True on default  !!! NOT SAVED !!!
+  */
+  bool m_bActive;
 
   /*!
     Subscribe format auto(default),json,xml,string,binary
@@ -622,6 +645,16 @@ public:
     Set parent message callback
   */
   void setFuncParentCallbackMessage(LPFN_PARENT_CALLBACK_MESSAGE func) { m_parentCallbackMessage = func; };
+
+  /*!
+    Get pointer to subscribe topic list
+  */
+  std::list<subscribeTopic *> *getSubscribeList(void) { return &m_mqtt_subscribeTopicList; };
+
+  /*!
+    Get pointer to publish topic list
+  */
+  std::list<publishTopic *> *getPublishList(void) { return &m_mqtt_publishTopicList; };
 
 public:
   // Timeout in milliseconds for host connection.
