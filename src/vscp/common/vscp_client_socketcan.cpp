@@ -235,20 +235,20 @@ vscpClientSocketCan::initFromJson(const std::string &config)
     // SocketCAN interface
     if (m_j_config.contains("device")) {
       m_interface = m_j_config["device"].get<std::string>();
-      spdlog::debug("json socketcan init: interface set to {}.", m_interface);
+      spdlog::debug("SOCKETCAN client: json socketcan init: interface set to {}.", m_interface);
     }
 
     // flags
     if (m_j_config.contains("flags")) {
       m_flags = m_j_config["flags"].get<uint32_t>();
-      spdlog::debug("json socket init: host set to {}.", m_flags);
+      spdlog::debug("SOCKETCAN client: json socket init: host set to {}.", m_flags);
     }
 
     // Response timeout
     if (m_j_config.contains("response-timeout")) {
       uint32_t val = m_j_config["response-timeout"].get<uint32_t>();
       setResponseTimeout(val);
-      spdlog::debug("json socket init: Response Timeout set to {}.", val);
+      spdlog::debug("SOCKETCAN client: json socket init: Response Timeout set to {}.", val);
     }
 
     /*
@@ -265,14 +265,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_bConsoleLogEnable = j["console-enable"].get<bool>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'console-enable' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'console-enable' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'console-enable' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'console-enable' due to unknown error.");
             }
           }
           else {
-            spdlog::debug("Failed to read LOGGING 'console-enable' Defaults will be used.");
+            spdlog::debug("SOCKETCAN client: Failed to read LOGGING 'console-enable' Defaults will be used.");
           }
 
           // Logging: console-log-level
@@ -282,10 +282,10 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               str = j["console-level"].get<std::string>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'console-level' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'console-level' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'console-level' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'console-level' due to unknown error.");
             }
             vscp_makeLower(str);
             if (std::string::npos != str.find("off")) {
@@ -310,13 +310,13 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_consoleLogLevel = spdlog::level::trace;
             }
             else {
-              spdlog::error("Failed to read LOGGING 'console-level' has invalid "
+              spdlog::error("SOCKETCAN client: Failed to read LOGGING 'console-level' has invalid "
                             "value [{}]. Default value used.",
                             str);
             }
           }
           else {
-            spdlog::error("Failed to read LOGGING 'console-level' Defaults will be used.");
+            spdlog::error("SOCKETCAN client: Failed to read LOGGING 'console-level' Defaults will be used.");
           }
 
           // Logging: console-log-pattern
@@ -325,14 +325,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_consoleLogPattern = j["console-pattern"].get<std::string>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'console-pattern' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'console-pattern' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'console-pattern' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'console-pattern' due to unknown error.");
             }
           }
           else {
-            spdlog::debug("Failed to read LOGGING 'console-pattern' Defaults will be used.");
+            spdlog::debug("SOCKETCAN client: Failed to read LOGGING 'console-pattern' Defaults will be used.");
           }
 
           // * * *  FILE  * * *
@@ -343,14 +343,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_bEnableFileLog = j["file-enable"].get<bool>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-enable' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-enable' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-enable' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-enable' due to unknown error.");
             }
           }
           else {
-            spdlog::debug("Failed to read LOGGING 'file-enable' Defaults will be used.");
+            spdlog::debug("SOCKETCAN client: Failed to read LOGGING 'file-enable' Defaults will be used.");
           }
 
           // Logging: file-log-level
@@ -360,10 +360,10 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               str = j["file-log-level"].get<std::string>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-log-level' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-level' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-log-level' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-level' due to unknown error.");
             }
             vscp_makeLower(str);
             if (std::string::npos != str.find("off")) {
@@ -388,13 +388,13 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_fileLogLevel = spdlog::level::trace;
             }
             else {
-              spdlog::error("Failed to read LOGGING 'file-log-level' has invalid value "
+              spdlog::error("SOCKETCAN client: Failed to read LOGGING 'file-log-level' has invalid value "
                             "[{}]. Default value used.",
                             str);
             }
           }
           else {
-            spdlog::error("Failed to read LOGGING 'file-log-level' Defaults will be used.");
+            spdlog::error("SOCKETCAN client: Failed to read LOGGING 'file-log-level' Defaults will be used.");
           }
 
           // Logging: file-log-pattern
@@ -403,14 +403,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_fileLogPattern = j["file-log-pattern"].get<std::string>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-log-pattern' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-pattern' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-log-pattern' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-pattern' due to unknown error.");
             }
           }
           else {
-            spdlog::debug("Failed to read LOGGING 'file-log-pattern' Defaults will be used.");
+            spdlog::debug("SOCKETCAN client: Failed to read LOGGING 'file-log-pattern' Defaults will be used.");
           }
 
           // Logging: file-log-path
@@ -419,14 +419,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_path_to_log_file = j["file-log-path"].get<std::string>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-log-path' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-path' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-log-path' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-path' due to unknown error.");
             }
           }
           else {
-            spdlog::error(" Failed to read LOGGING 'file-log-path' Defaults will be used.");
+            spdlog::error(" SOCKETCAN client: Failed to read LOGGING 'file-log-path' Defaults will be used.");
           }
 
           // Logging: file-log-max-size
@@ -435,14 +435,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_max_log_size = j["file-log-max-size"].get<uint32_t>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-log-max-size' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-max-size' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-log-max-size' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-max-size' due to unknown error.");
             }
           }
           else {
-            spdlog::error("Failed to read LOGGING 'file-log-max-size' Defaults will be used.");
+            spdlog::error("SOCKETCAN client: Failed to read LOGGING 'file-log-max-size' Defaults will be used.");
           }
 
           // Logging: file-log-max-files
@@ -451,19 +451,19 @@ vscpClientSocketCan::initFromJson(const std::string &config)
               m_max_log_files = j["file-log-max-files"].get<uint16_t>();
             }
             catch (const std::exception &ex) {
-              spdlog::error("Failed to read 'file-log-max-files' Error='{}'", ex.what());
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-max-files' Error='{}'", ex.what());
             }
             catch (...) {
-              spdlog::error("Failed to read 'file-log-max-files' due to unknown error.");
+              spdlog::error("SOCKETCAN client: Failed to read 'file-log-max-files' due to unknown error.");
             }
           }
           else {
-            spdlog::error("Failed to read LOGGING 'file-log-max-files' Defaults will be used.");
+            spdlog::error("SOCKETCAN client: Failed to read LOGGING 'file-log-max-files' Defaults will be used.");
           }
 
         } // Logging
         else {
-          spdlog::error("No logging has been setup.");
+          spdlog::error("SOCKETCAN client: No logging has been setup.");
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -520,14 +520,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
           vscp_readFilterFromString(&m_filterIn, str.c_str());
         }
         catch (const std::exception &ex) {
-          spdlog::error(" Failed to read 'in-filter' Error='{}'", ex.what());
+          spdlog::error("SOCKETCAN client: Failed to read 'in-filter' Error='{}'", ex.what());
         }
         catch (...) {
-          spdlog::error(" Failed to read 'in-filter' due to unknown error.");
+          spdlog::error("SOCKETCAN client: Failed to read 'in-filter' due to unknown error.");
         }
       }
       else {
-        spdlog::debug(" Failed to read LOGGING 'in-filter' Defaults will be used.");
+        spdlog::debug("SOCKETCAN client: Failed to read LOGGING 'in-filter' Defaults will be used.");
       }
 
       // IN mask
@@ -537,14 +537,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
           vscp_readMaskFromString(&m_filterIn, str.c_str());
         }
         catch (const std::exception &ex) {
-          spdlog::error(" Failed to read 'in-mask' Error='{}'", ex.what());
+          spdlog::error("SOCKETCAN client: Failed to read 'in-mask' Error='{}'", ex.what());
         }
         catch (...) {
-          spdlog::error(" Failed to read 'in-mask' due to unknown error.");
+          spdlog::error("SOCKETCAN client: Failed to read 'in-mask' due to unknown error.");
         }
       }
       else {
-        spdlog::debug(" Failed to read 'in-mask' Defaults will be used.");
+        spdlog::debug("SOCKETCAN client: Failed to read 'in-mask' Defaults will be used.");
       }
 
       // OUT filter
@@ -554,14 +554,14 @@ vscpClientSocketCan::initFromJson(const std::string &config)
           vscp_readFilterFromString(&m_filterOut, str.c_str());
         }
         catch (const std::exception &ex) {
-          spdlog::error(" Failed to read 'out-filter' Error='{}'", ex.what());
+          spdlog::error("SOCKETCAN client:  Failed to read 'out-filter' Error='{}'", ex.what());
         }
         catch (...) {
-          spdlog::error(" Failed to read 'out-filter' due to unknown error.");
+          spdlog::error("SOCKETCAN client:  Failed to read 'out-filter' due to unknown error.");
         }
       }
       else {
-        spdlog::debug(" Failed to read 'out-filter' Defaults will be used.");
+        spdlog::debug("SOCKETCAN client:  Failed to read 'out-filter' Defaults will be used.");
       }
 
       // OUT mask
@@ -571,19 +571,19 @@ vscpClientSocketCan::initFromJson(const std::string &config)
           vscp_readMaskFromString(&m_filterOut, str.c_str());
         }
         catch (const std::exception &ex) {
-          spdlog::error(" Failed to read 'out-mask' Error='{}'", ex.what());
+          spdlog::error("SOCKETCAN client:  Failed to read 'out-mask' Error='{}'", ex.what());
         }
         catch (...) {
-          spdlog::error(" Failed to read 'out-mask' due to unknown error.");
+          spdlog::error("SOCKETCAN client:  Failed to read 'out-mask' due to unknown error.");
         }
       }
       else {
-        spdlog::debug(" Failed to read 'out-mask' Defaults will be used.");
+        spdlog::debug("SOCKETCAN client:  Failed to read 'out-mask' Defaults will be used.");
       }
     }
   }
   catch (const std::exception &ex) {
-    spdlog::error("json socketcan init: Failed to parse json: {}", ex.what());
+    spdlog::error("SOCKETCAN client: json socketcan init: Failed to parse json: {}", ex.what());
     return false;
   }
 
@@ -613,7 +613,7 @@ vscpClientSocketCan::connect(void)
       ifr.ifr_name[IFNAMSIZ - 1] = '\0';
       ifr.ifr_ifindex = if_nametoindex(ifr.ifr_name);
       if (!ifr.ifr_ifindex) {
-          spdlog::error("Cant get socketcan index from {0}", m_interface);
+          spdlog::error("SOCKETCAN client: Cant get socketcan index from {0}", m_interface);
           return VSCP_ERROR_ERROR;
       }
 
@@ -623,14 +623,14 @@ vscpClientSocketCan::connect(void)
       if (CANFD_MTU == m_mode) {
           // check if the frame fits into the CAN netdevice
           if (ioctl(m_socket, SIOCGIFMTU, &ifr) < 0) {
-              spdlog::error("FD MTU does not fit for {0}", m_interface);
+              spdlog::error("SOCKETCAN client: FD MTU does not fit for {0}", m_interface);
               return VSCP_TYPE_ERROR_FIFO_SIZE;
           }
 
           mtu = ifr.ifr_mtu;
 
           if (mtu != CANFD_MTU) {
-              spdlog::error("CAN FD mode is not supported for {0}", m_interface);
+              spdlog::error("SOCKETCAN client: CAN FD mode is not supported for {0}", m_interface);
               return VSCP_ERROR_NOT_SUPPORTED;
           }
 
@@ -641,7 +641,7 @@ vscpClientSocketCan::connect(void)
                               &enable_canfd,
                               sizeof(enable_canfd)))
           {
-              spdlog::error("Failed to switch socket to FD mode {0}", m_interface);
+              spdlog::error("SOCKETCAN client: Failed to switch socket to FD mode {0}", m_interface);
               return VSCP_ERROR_NOT_SUPPORTED;
           }
 
@@ -675,7 +675,7 @@ vscpClientSocketCan::connect(void)
   // start the workerthread
   m_bRun = true; // Workerthread should run, run, run...
   if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
-    spdlog::critical("Failed to start workerthread");
+    spdlog::critical("SOCKETCAN client: Failed to start workerthread");
     return false;
   }
 
@@ -1025,7 +1025,7 @@ workerThread(void *pData)
 
   vscpClientSocketCan *pObj = (vscpClientSocketCan *) pData;
   if (NULL == pObj) {
-    spdlog::error("No object data object supplied for worker thread");
+    spdlog::error("SOCKETCAN client: No object data object supplied for worker thread");
     return NULL;
   }
 
@@ -1041,7 +1041,7 @@ workerThread(void *pData)
         continue; // Try again
       }
 
-      spdlog::error("wrkthread socketcan client: Error while opening socket. Terminating!");
+      spdlog::error("SOCKETCAN client: wrkthread socketcan client: Error while opening socket. Terminating!");
       break;
     }
 
@@ -1050,7 +1050,7 @@ workerThread(void *pData)
     ifr.ifr_ifindex            = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
       pthread_mutex_unlock(&pObj->m_mutexSocket);
-      spdlog::error("Cant get socketcan index from {0}", pObj->m_interface);
+      spdlog::error("SOCKETCAN client: Cant get socketcan index from {0}", pObj->m_interface);
       return NULL;
     }
     // ioctl(pObj->m_socket, SIOCGIFINDEX, &ifr);
@@ -1059,7 +1059,7 @@ workerThread(void *pData)
     addr.can_ifindex = ifr.ifr_ifindex;
 
     if (pObj->m_bDebug) {
-      spdlog::debug("using interface name '{}'.", ifr.ifr_name);
+      spdlog::debug("SOCKETCAN client: using interface name '{}'.", ifr.ifr_name);
     }
 
     // try to switch the socket into CAN FD mode
@@ -1070,7 +1070,7 @@ workerThread(void *pData)
       // check if the frame fits into the CAN netdevice
       if (ioctl(pObj->m_socket, SIOCGIFMTU, &ifr) < 0) {
         pthread_mutex_unlock(&pObj->m_mutexSocket);
-        spdlog::error("FD MTU does not fit for {0}", pObj->m_interface);
+        spdlog::error("SOCKETCAN client: FD MTU does not fit for {0}", pObj->m_interface);
         // return VSCP_TYPE_ERROR_FIFO_SIZE;
         return NULL;
       }
@@ -1079,7 +1079,7 @@ workerThread(void *pData)
 
       if (mtu != CANFD_MTU) {
         pthread_mutex_unlock(&pObj->m_mutexSocket);
-        spdlog::error("CAN FD mode is not supported for {0}", pObj->m_interface);
+        spdlog::error("SOCKETCAN client: CAN FD mode is not supported for {0}", pObj->m_interface);
         // return VSCP_ERROR_NOT_SUPPORTED;
         return NULL;
       }
@@ -1087,7 +1087,7 @@ workerThread(void *pData)
       // interface is ok - try to switch the socket into CAN FD mode
       if (setsockopt(pObj->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable_canfd, sizeof(enable_canfd))) {
         pthread_mutex_unlock(&pObj->m_mutexSocket);
-        spdlog::error("Failed to switch socket to FD mode {0}", pObj->m_interface);
+        spdlog::error("SOCKETCAN client: Failed to switch socket to FD mode {0}", pObj->m_interface);
         // return VSCP_ERROR_NOT_SUPPORTED;
         return NULL;
       }
@@ -1101,7 +1101,7 @@ workerThread(void *pData)
     setsockopt(pObj->m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(struct timeval));
 
     if (bind(pObj->m_socket, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-      spdlog::error("wrkthread socketcan client: Error in socket bind. Terminating!");
+      spdlog::error("SOCKETCAN client: wrkthread socketcan client: Error in socket bind. Terminating!");
       close(pObj->m_socket);
       sleep(2);
       // continue;
