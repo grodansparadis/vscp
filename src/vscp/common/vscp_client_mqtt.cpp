@@ -2408,6 +2408,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      printf("%s\n",mosquitto_strerror(rv));
     }
 
   } // for each topic

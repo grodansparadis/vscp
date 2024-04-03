@@ -679,6 +679,8 @@ vscpClientSocketCan::connect(void)
     return false;
   }
 
+  m_bConnected = true;
+
   return rv;
 }
 

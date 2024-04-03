@@ -31,8 +31,8 @@
 #define _POSIX
 
 #ifdef WIN32
-#include <pch.h>
 #include <nb30.h>
+#include <pch.h>
 #endif
 
 #include <controlobject.h>
@@ -93,8 +93,8 @@
 #include <set>
 #include <string>
 
-#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 #include <mustache.hpp>
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
@@ -702,6 +702,7 @@ CControlObject::init_mqtt()
   m_mqttClient.setUserEscape("server-name", m_strServerName);
   m_mqttClient.setUserEscape("root-folder", m_rootFolder);
   m_mqttClient.setUserEscape("server-user", m_runAsUser);
+  m_mqttClient.setUserEscape("server-version", VSCPD_DISPLAY_VERSION);
 
   time_t t = time(NULL);
   char buf[80];
@@ -730,9 +731,7 @@ CControlObject::init_mqtt()
     data.set("srvguid", m_guid.getAsString());
     data.set("ifguid", m_guid.getAsString());
     std::string strTopic = subtemplate.render(data);
-    spdlog::debug("drivers topic {}", strTopic);
     std::string strPayload = m_strServerName;
-    spdlog::debug("drivers {}", strPayload);
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
                                                     NULL,
                                                     strTopic.c_str(),
@@ -741,6 +740,25 @@ CControlObject::init_mqtt()
                                                     2,
                                                     true))) {
       spdlog::error("Failed to publish VSCP daemon name. error={0} {1}", rv, mosquitto_strerror(rv));
+    }
+  }
+
+  {
+    mustache subtemplate{ m_topicDaemonBase + "server-version" };
+    data data;
+    data.set("guid", m_guid.getAsString());
+    data.set("srvguid", m_guid.getAsString());
+    data.set("ifguid", m_guid.getAsString());
+    std::string strTopic   = subtemplate.render(data);
+    std::string strPayload = VSCPD_DISPLAY_VERSION;
+    if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
+                                                    NULL,
+                                                    strTopic.c_str(),
+                                                    (int) strPayload.length(),
+                                                    strPayload.c_str(),
+                                                    2,
+                                                    true))) {
+      spdlog::error("Failed to publish VSCP daemon server version. error={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -851,8 +869,8 @@ clock_gettime(int X, struct timeval *tv)
 
   t.QuadPart -= offset.QuadPart;
   microseconds = (double) t.QuadPart / frequencyToMicroseconds;
-  t.QuadPart   = (LONGLONG)microseconds;
-  tv->tv_sec   = (long)t.QuadPart / 1000000;
+  t.QuadPart   = (LONGLONG) microseconds;
+  tv->tv_sec   = (long) t.QuadPart / 1000000;
   tv->tv_usec  = t.QuadPart % 1000000;
   return (0);
 }
