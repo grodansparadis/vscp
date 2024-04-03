@@ -38,6 +38,9 @@
 #include "vscp_client_canal.h"
 #include "vscphelper.h"
 
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/spdlog.h>
+
 // Forward declaration
 static void *
 workerThread(void *pObj);
@@ -53,6 +56,8 @@ vscpClientCanal::vscpClientCanal()
   // m_tid = 0;
   m_bRun = true;
   pthread_mutex_init(&m_mutexif, NULL);
+
+   spdlog::trace("CANAL CLIENT: constructor vscp_client_canal object.");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,9 +65,10 @@ vscpClientCanal::vscpClientCanal()
 //
 
 vscpClientCanal::~vscpClientCanal()
-{
+{  
   disconnect();
   pthread_mutex_destroy(&m_mutexif);
+  spdlog::trace("CANAL CLIENT: destructor vscp_client_canal object.");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,13 +120,18 @@ vscpClientCanal::initFromJson(const std::string &config)
   try {
     j = json::parse(config);
 
-    if (!j["name"].is_string())
+    if (!j["name"].is_string()) {
+      spdlog::error("CANAL CLIENT: JSON init: Name must be set.");
       return false; // Must be set
-    if (!j["path"].is_string())
+    }
+    if (!j["path"].is_string()) {
+      spdlog::error("CANAL CLIENT: JSON init: Path must be set.");
       return false; // Must be set
+    }
 
     if (j.contains("config")) {
       if (!j["config"].is_string())
+      spdlog::error("CANAL CLIENT: JSON init: Config must be string.");
         return false;
     }
     else {
@@ -128,16 +139,18 @@ vscpClientCanal::initFromJson(const std::string &config)
     }
 
     if (j.contains("flags")) {
-      if (!j["flags"].is_number())
-        return false;
+      if (j["flags"].is_string()) {
+        j["flags"] = vscp_readStringValue(j["flags"]);
+      }
     }
     else {
       j["flags"] = 0; // Set default
     }
 
     if (j.contains("datarate")) {
-      if (!j["datarate"].is_number())
-        return false;
+      if (j["datarate"].is_string()) {
+        j["datarate"] = vscp_readStringValue(j["datarate"]);
+      }
     }
     else {
       j["datarate"] = 0; // Set default
