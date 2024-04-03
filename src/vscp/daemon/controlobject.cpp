@@ -35,7 +35,7 @@
 #include <pch.h>
 #endif
 
-#include <controlobject.h>
+#include "controlobject.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>

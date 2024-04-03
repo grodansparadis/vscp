@@ -40,7 +40,7 @@ if(NOT DEFINED MINOR_VERSION)
     SET(MINOR_VERSION "0")
 endif()
 if(NOT DEFINED PATCH_VERSION)
-    SET(PATCH_VERSION "2")
+    SET(PATCH_VERSION "3")
 endif()
 
 # Disable abi warnings (nlohmann)

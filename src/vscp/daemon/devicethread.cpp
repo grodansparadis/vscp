@@ -155,7 +155,7 @@ usleep(__int64 usec)
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread
 //
-// New bahaviour
+// New behaviour
 // =============
 // subscribe to MQTT channel topic_subscribe
 // publish to MQTT channel topic_publish
