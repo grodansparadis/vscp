@@ -57,7 +57,7 @@ vscpClientCanal::vscpClientCanal()
   m_bRun = true;
   pthread_mutex_init(&m_mutexif, NULL);
 
-   spdlog::trace("CANAL CLIENT: constructor vscp_client_canal object.");
+  spdlog::trace("CANAL CLIENT: constructor vscp_client_canal object.");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ vscpClientCanal::vscpClientCanal()
 //
 
 vscpClientCanal::~vscpClientCanal()
-{  
+{
   disconnect();
   pthread_mutex_destroy(&m_mutexif);
   spdlog::trace("CANAL CLIENT: destructor vscp_client_canal object.");
@@ -124,19 +124,24 @@ vscpClientCanal::initFromJson(const std::string &config)
       spdlog::error("CANAL CLIENT: JSON init: Name must be set.");
       return false; // Must be set
     }
+    spdlog::debug("CANAL CLIENT: JSON init: name={}.", j["name"]);
+
     if (!j["path"].is_string()) {
       spdlog::error("CANAL CLIENT: JSON init: Path must be set.");
       return false; // Must be set
     }
+    spdlog::debug("CANAL CLIENT: JSON init: path={}.", j["path"]);
 
     if (j.contains("config")) {
-      if (!j["config"].is_string())
-      spdlog::error("CANAL CLIENT: JSON init: Config must be string.");
+      if (!j["config"].is_string()) {
+        spdlog::error("CANAL CLIENT: JSON init: Config must be string.");
         return false;
+      }
     }
     else {
       j["config"] = ""; // Set default
     }
+    spdlog::debug("CANAL CLIENT: JSON init: config=\"{}\".", j["config"]);
 
     if (j.contains("flags")) {
       if (j["flags"].is_string()) {
@@ -146,6 +151,7 @@ vscpClientCanal::initFromJson(const std::string &config)
     else {
       j["flags"] = 0; // Set default
     }
+    spdlog::debug("CANAL CLIENT: JSON init: flags={}.", j["flags"]);
 
     if (j.contains("datarate")) {
       if (j["datarate"].is_string()) {
@@ -155,6 +161,7 @@ vscpClientCanal::initFromJson(const std::string &config)
     else {
       j["datarate"] = 0; // Set default
     }
+    spdlog::debug("CANAL CLIENT: JSON init: datarate={}.", j["datarate"]);
 
     setName(j["name"]);
     return (init(j["path"], j["config"], j["flags"], j["datarate"]));
@@ -189,6 +196,8 @@ vscpClientCanal::connect(void)
     rv = pthread_create(&m_tid, NULL, workerThread, this);
   }
 
+  spdlog::debug("CANAL CLIENT: Connect");
+
   return rv;
 }
 
@@ -217,6 +226,7 @@ vscpClientCanal::disconnect(void)
   // Disable callbacks
   // m_evcallback = nullptr;
   // m_excallback = nullptr;
+  spdlog::debug("CANAL CLIENT: Disconnect");
 
   return m_canalif.CanalClose();
 }
@@ -280,14 +290,21 @@ vscpClientCanal::receive(vscpEvent &ev)
   canalMsg canalMsg;
   uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+  spdlog::debug("CANAL CLIENT: Poll for event ex.");
+
   pthread_mutex_lock(&m_mutexif);
   if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg))) {
     pthread_mutex_unlock(&m_mutexif);
+    spdlog::error("CANAL CLIENT: failed to receive event {}.", rv);
     return rv;
   }
   pthread_mutex_unlock(&m_mutexif);
 
-  return vscp_convertCanalToEvent(&ev, &canalMsg, guid) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+  if (VSCP_ERROR_SUCCESS != (rv = vscp_convertCanalToEvent(&ev, &canalMsg, guid))) {
+    spdlog::error("CANAL CLIENT: failed to convert ex event {}.", rv);
+  }
+
+  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -301,14 +318,21 @@ vscpClientCanal::receive(vscpEventEx &ex)
   canalMsg canalMsg;
   uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+  spdlog::debug("CANAL CLIENT: Poll for event ex.");
+
   pthread_mutex_lock(&m_mutexif);
   if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg))) {
     pthread_mutex_unlock(&m_mutexif);
+    spdlog::error("CANAL CLIENT: failed to receive ex event {}.", rv);
     return rv;
   }
   pthread_mutex_unlock(&m_mutexif);
 
-  return vscp_convertCanalToEventEx(&ex, &canalMsg, guid) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+  if (VSCP_ERROR_SUCCESS != (rv = vscp_convertCanalToEventEx(&ex, &canalMsg, guid))) {
+    spdlog::error("CANAL CLIENT: failed to convert ex event {}.", rv);
+  }
+
+  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -340,7 +364,7 @@ vscpClientCanal::getcount(uint16_t *pcount)
 {
   int cnt;
 
-  if ((NULL == m_evcallback) && (NULL == m_excallback)) {    
+  if ((NULL == m_evcallback) && (NULL == m_excallback)) {
     pthread_mutex_lock(&m_mutexif);
     cnt = m_canalif.CanalDataAvailable();
     pthread_mutex_unlock(&m_mutexif);
@@ -350,6 +374,7 @@ vscpClientCanal::getcount(uint16_t *pcount)
     // use queue when it was received
     cnt = 0;
   }
+  spdlog::debug("CANAL CLIENT: Get Count {}", cnt);
   *pcount = cnt;
   return VSCP_ERROR_SUCCESS;
 }
@@ -446,9 +471,12 @@ int
 vscpClientCanal::setCallback(LPFNDLL_EV_CALLBACK evcallback)
 {
   // Can not be called when connected
-  if (m_bConnected)
+  if (m_bConnected) {
+    spdlog::error("CANAL CLIENT: Can't set ev callback when connected.");
     return VSCP_ERROR_ERROR;
+  }
 
+  spdlog::debug("CANAL CLIENT: ev callback set.");
   m_evcallback = evcallback;
   return VSCP_ERROR_SUCCESS;
 }
@@ -461,9 +489,12 @@ int
 vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK excallback)
 {
   // Can not be called when connected
-  if (m_bConnected)
+  if (m_bConnected) {
+    spdlog::error("CANAL CLIENT: Can't set ex callback when connected.");
     return VSCP_ERROR_ERROR;
+  }
 
+  spdlog::debug("CANAL CLIENT: ex callback set.");
   m_excallback = excallback;
   return VSCP_ERROR_SUCCESS;
 }
@@ -497,10 +528,14 @@ workerThread(void *pObj)
   vscpClientCanal *pClient = (vscpClientCanal *) pObj;
   VscpCanalDeviceIf *pif   = (VscpCanalDeviceIf *) &(pClient->m_canalif);
 
-  if (NULL == pif)
+  if (NULL == pif) {
+    spdlog::critical("CANAL CLIENT: No required CANAL interface object (NULL). Workthread terminated.");
     return NULL;
+  }
 
   while (pClient->m_bRun) {
+
+    spdlog::trace("CANAL CLIENT: worktread start.");
 
     pthread_mutex_lock(&pClient->m_mutexif);
 
@@ -511,18 +546,19 @@ workerThread(void *pObj)
       while (cnt) {
         canalMsg msg;
         if (CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalReceive(&msg)) {
+          spdlog::debug("CANAL CLIENT: workthread. Event recived");
           if (NULL != pClient->m_evcallback) {
             vscpEvent ev;
             if (vscp_convertCanalToEvent(&ev, &msg, guid)) {
+              spdlog::trace("CANAL CLIENT: workthread. Event sent to ev callback");
               pClient->m_evcallback(&ev, pClient->m_callbackObject);
-              printf("ev");
             }
           }
           if (NULL != pClient->m_excallback) {
             vscpEventEx ex;
             if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+              spdlog::trace("CANAL CLIENT: workthread. Event sent to ex callback");
               pClient->m_excallback(&ex, pClient->m_callbackObject);
-              printf("ex");
             }
           }
         }
@@ -537,6 +573,9 @@ workerThread(void *pObj)
 #else
     win_usleep(200);
 #endif
+
+    spdlog::trace("CANAL CLIENT: worktread end.");
+
   } // while
 
   return NULL;

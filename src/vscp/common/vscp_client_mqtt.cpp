@@ -276,6 +276,7 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   spdlog::trace("MQTT CLIENT: MQTT v3.11 publish: mid={0:X}", mid);
+  printf("published\n");
 
   if (nullptr != pClient->m_parentCallbackPublish) {
     pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
@@ -930,7 +931,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     // Retain
     if (j.contains("bretain") && j["bretain"].is_boolean()) {
-      m_bRetain = j["bretain"].get<bool>();
+      m_bRetain = (bool)j["bretain"].get<bool>();
       spdlog::debug("MQTT CLIENT: json mqtt init: 'bretain' Set to {}.", m_bRetain);
     }
 
@@ -1347,8 +1348,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
         if (pubobj.is_object()) {
 
           std::string topic        = "";
-          int qos                  = m_qos;            // Default
-          bool bretain             = m_bRetain;        // Default
+          int qos                  = 0;            // Default
+          bool bretain             = false;        // Default
           enumMqttMsgFormat format = m_publish_format; // Default
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
@@ -2206,7 +2207,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       }   // is measurement
 
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      strncpy((char *) payload, strPayload.c_str(), lenPayload);
 
     } // JSON
 
@@ -2216,7 +2217,7 @@ vscpClientMqtt::send(vscpEvent &ev)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      strncpy((char *) payload, strPayload.c_str(), lenPayload);
     }
     else if (ppublish->getFormat() == strfmt) {
       std::string strPayload;
@@ -2224,7 +2225,7 @@ vscpClientMqtt::send(vscpEvent &ev)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      strncpy((char *) payload, strPayload.c_str(), lenPayload);
     }
     else if (ppublish->getFormat() == binfmt) {
       lenPayload = vscp_getFrameSizeFromEvent(&ev) + 1;
@@ -2400,6 +2401,8 @@ vscpClientMqtt::send(vscpEvent &ev)
                   ppublish->getQos(),
                   ppublish->getRetain());
 
+    printf("len=%d QOS=%d retain=%s\n",(int)lenPayload, ppublish->getQos(), (ppublish->getRetain() ? "true": "false"));              
+
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
                                                     strTopic.c_str(),
@@ -2408,7 +2411,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
-      printf("%s\n",mosquitto_strerror(rv));
+      printf("mosquitto_publish: %s\n",mosquitto_strerror(rv));
     }
 
   } // for each topic
