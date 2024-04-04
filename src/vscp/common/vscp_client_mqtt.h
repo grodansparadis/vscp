@@ -495,7 +495,7 @@ public:
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   int addPublish(const std::string strTopicPub,
                  enumMqttMsgFormat format,
-                 int qos                        = 0,
+                 int qos                        = 1,
                  bool bRetain                   = false,
                  mosquitto_property *properties = NULL);
 #else

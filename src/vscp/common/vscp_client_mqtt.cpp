@@ -1366,8 +1366,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
             spdlog::debug("MQTT CLIENT: json mqtt init: publish 'qos' Set to {}.", qos);
           }
 
-          if (pubobj.contains("retain") && pubobj["retain"].is_boolean()) {
-            bretain = pubobj["retain"].get<bool>();
+          if (pubobj.contains("bretain") && pubobj["bretain"].is_boolean()) {
+            bretain = pubobj["bretain"].get<bool>();
             spdlog::debug("MQTT CLIENT: json mqtt init: publish 'bretain' Set to {}.", bretain);
           }
 
