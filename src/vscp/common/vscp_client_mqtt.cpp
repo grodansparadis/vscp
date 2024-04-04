@@ -552,7 +552,7 @@ subscribeTopic::subscribeTopic(const std::string &topic, enumMqttMsgFormat forma
   m_topic      = topic;
   m_qos        = qos;
   m_v5_options = v5_options;
-  m_bActive = true;
+  m_bActive    = true;
   m_format     = format;
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
   m_properties = properties;
@@ -769,12 +769,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("protocol-version") && j["protocol-version"].is_number()) {
         m_mapMqttIntOptions["protocol-version"] = jj["protocol-version"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: protocol-version set to {}.", m_mapMqttIntOptions["protocol-version"]);
+        spdlog::debug("MQTT CLIENT: json mqtt init: protocol-version set to {}.",
+                      m_mapMqttIntOptions["protocol-version"]);
       }
 
       if (jj.contains("receive-maximum") && j["receive-maximum"].is_number()) {
         m_mapMqttIntOptions["receive-maximum"] = jj["receive-maximum"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: receive-maximum set to {}.", m_mapMqttIntOptions["receive-maximum"]);
+        spdlog::debug("MQTT CLIENT: json mqtt init: receive-maximum set to {}.",
+                      m_mapMqttIntOptions["receive-maximum"]);
       }
 
       if (jj.contains("send-maximum") && j["send-maximum"].is_number()) {
@@ -784,17 +786,20 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("ssl-ctx-with-defaults") && j["ssl-ctx-with-defaults"].is_number()) {
         m_mapMqttIntOptions["ssl-ctx-with-defaults"] = jj["ssl-ctx-with-defaults"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: ssl-ctx-with-defaults set to {}.", m_mapMqttIntOptions["ssl-ctx-with-defaults"]);
+        spdlog::debug("MQTT CLIENT: json mqtt init: ssl-ctx-with-defaults set to {}.",
+                      m_mapMqttIntOptions["ssl-ctx-with-defaults"]);
       }
 
       if (jj.contains("tls-ocsp-required") && j["tls-ocsp-required"].is_number()) {
         m_mapMqttIntOptions["tls-ocsp-required"] = jj["tls-ocsp-required"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-ocsp-required set to {}.", m_mapMqttIntOptions["tls-ocsp-required"]);
+        spdlog::debug("MQTT CLIENT: json mqtt init: tls-ocsp-required set to {}.",
+                      m_mapMqttIntOptions["tls-ocsp-required"]);
       }
 
       if (jj.contains("tls-use-os-certs") && j["tls-use-os-certs"].is_number()) {
         m_mapMqttIntOptions["tls-use-os-certs"] = jj["tls-use-os-certs"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-use-os-certs set to {}.", m_mapMqttIntOptions["tls-use-os-certs"]);
+        spdlog::debug("MQTT CLIENT: json mqtt init: tls-use-os-certs set to {}.",
+                      m_mapMqttIntOptions["tls-use-os-certs"]);
       }
 
       if (jj.contains("tls-engine") && j["tls-engine"].is_string()) {
@@ -850,7 +855,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
       // {rnd} mustasch is replaces with hex random value
       spdlog::debug("MQTT CLIENT: json mqtt init: 'client id' set to {}.", m_clientid);
       if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
-        spdlog::warn("MQTT CLIENT: json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 characters but longer "
+        spdlog::warn("MQTT CLIENT: json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 "
+                     "characters but longer "
                      "is OK with most brokers).",
                      m_clientid,
                      m_clientid.length());
@@ -931,7 +937,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     // Retain
     if (j.contains("bretain") && j["bretain"].is_boolean()) {
-      m_bRetain = (bool)j["bretain"].get<bool>();
+      m_bRetain = (bool) j["bretain"].get<bool>();
       spdlog::debug("MQTT CLIENT: json mqtt init: 'bretain' Set to {}.", m_bRetain);
     }
 
@@ -964,7 +970,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("exponential-backoff") && j["exponential-backoff"].is_boolean()) {
         m_reconnect_exponential_backoff = jj["exponential-backoff"].get<bool>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'reconnect exponential-backoff' Set to {}.", m_reconnect_exponential_backoff);
+        spdlog::debug("MQTT CLIENT: json mqtt init: 'reconnect exponential-backoff' Set to {}.",
+                      m_reconnect_exponential_backoff);
       }
     }
 
@@ -1121,17 +1128,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       // If certfile == NULL, keyfile must also be NULL and no client certificate will be used.
       if (!m_tls_certfile.length()) {
-        spdlog::warn(
-          "MQTT CLIENT: json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client certificate will be "
-          "used. keyfile set to NULL.");
+        spdlog::warn("MQTT CLIENT: json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client "
+                     "certificate will be "
+                     "used. keyfile set to NULL.");
         m_tls_keyfile = "";
       }
 
       // If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate will be used.
       if (!m_tls_keyfile.length()) {
-        spdlog::warn(
-          "MQTT CLIENT: json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate "
-          "will be used. certfile set to NULL.");
+        spdlog::warn("MQTT CLIENT: json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no "
+                     "client certificate "
+                     "will be used. certfile set to NULL.");
         m_tls_certfile = "";
       }
     }
@@ -1348,8 +1355,8 @@ vscpClientMqtt::initFromJson(const std::string &config)
         if (pubobj.is_object()) {
 
           std::string topic        = "";
-          int qos                  = 0;            // Default
-          bool bretain             = false;        // Default
+          int qos                  = 0;                // Default
+          bool bretain             = false;            // Default
           enumMqttMsgFormat format = m_publish_format; // Default
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
@@ -1832,7 +1839,9 @@ vscpClientMqtt::init(void)
     };
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, ver))) {
-      spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}",
+                    rv,
+                    mosquitto_strerror(rv));
     }
   }
 
@@ -2040,7 +2049,7 @@ vscpClientMqtt::connect(void)
     subscribeTopic *psubtopic = (*it);
 
     /*!
-      if the subscription is not active we do not subscribe. 
+      if the subscription is not active we do not subscribe.
       Normally all are active but tools like vscp-works-qt (session)
       can inactivate sessions temporarily.  This is never saved
       persistently.
@@ -2058,7 +2067,10 @@ vscpClientMqtt::connect(void)
     // Subscribe to specified topic
     rv = mosquitto_subscribe(m_mosq, nullptr, subscribe_topic.c_str(), m_qos);
     if (MOSQ_ERR_SUCCESS != rv) {
-      spdlog::error("MQTT CLIENT: Failed to subscribed to topic '{0}' - rv={1} {2}.", subscribe_topic, rv, mosquitto_strerror(rv));
+      spdlog::error("MQTT CLIENT: Failed to subscribed to topic '{0}' - rv={1} {2}.",
+                    subscribe_topic,
+                    rv,
+                    mosquitto_strerror(rv));
     }
   }
 
@@ -2068,7 +2080,8 @@ vscpClientMqtt::connect(void)
     switch (rv) {
 
       case EAGAIN:
-        spdlog::error("MQTT CLIENT: Failed to start MQTT callback thread - Insufficient resources to create another thread.");
+        spdlog::error(
+          "MQTT CLIENT: Failed to start MQTT callback thread - Insufficient resources to create another thread.");
         break;
 
       case EINVAL:
@@ -2150,7 +2163,7 @@ vscpClientMqtt::send(vscpEvent &ev)
     publishTopic *ppublish = (*it);
 
     /*!
-      if the publish item is not active we do not publish. 
+      if the publish item is not active we do not publish.
       Normally all are active but tools like vscp-works-qt (session)
       can inactivate sessions temporarily.  This is never saved
       persistently.
@@ -2397,11 +2410,13 @@ vscpClientMqtt::send(vscpEvent &ev)
 
     spdlog::trace("MQTT CLIENT: sendEvent: Publish send ev: Topic: {0} qos={1} retain={2}",
                   strTopic,
-                  /*(unsigned char *)payload,*/
                   ppublish->getQos(),
                   ppublish->getRetain());
 
-    printf("len=%d QOS=%d retain=%s\n",(int)lenPayload, ppublish->getQos(), (ppublish->getRetain() ? "true": "false"));              
+    printf("len=%d QOS=%d retain=%s\n",
+           (int) lenPayload,
+           ppublish->getQos(),
+           (ppublish->getRetain() ? "true" : "false"));
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
@@ -2411,7 +2426,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
-      printf("mosquitto_publish: %s\n",mosquitto_strerror(rv));
+      printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2887,6 +2902,29 @@ vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData)
 
   return VSCP_ERROR_SUCCESS;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// clearRetain4Topic
+//
+
+int
+vscpClientMqtt::clearRetain4Topic(std::string &strTopic)
+{
+  int rv;
+  if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
+                                                  NULL, // msg id
+                                                  strTopic.c_str(),
+                                                  0,
+                                                  nullptr,
+                                                  0,
+                                                  true))) {
+    spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
+    return VSCP_ERROR_ERROR;
+  }
+  return VSCP_ERROR_SUCCESS;
+}
+
 
 #ifdef WIN32
 static void

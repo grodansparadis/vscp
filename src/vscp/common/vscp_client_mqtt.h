@@ -232,7 +232,6 @@ public:
   enumMqttMsgFormat getFormat(void) { return m_format; };
 
 private:
-
   /// Publish topic
   std::string m_topic;
 
@@ -471,7 +470,7 @@ public:
       @param config JSON representation as string
       @return True on success, false on failure.
   */
-  virtual bool initFromJson(const std::string &config);  
+  virtual bool initFromJson(const std::string &config);
 
   /*!
     Add subscription
@@ -520,8 +519,9 @@ public:
     Getters/Setter for remote host
     @param host Remote host as string (host:port)
   */
-  void setHost(std::string &host) { 
-    m_host = vscp_getHostFromInterface(host); 
+  void setHost(std::string &host)
+  {
+    m_host = vscp_getHostFromInterface(host);
     m_port = vscp_getPortFromInterface(host);
   }
 
@@ -538,23 +538,21 @@ public:
   std::string getUser(void) { return m_username; };
 
   /*!
-     Getter/setter for password 
+     Getter/setter for password
   */
-  void setPassword(std::string &password)   
-    { m_password = password; };
+  void setPassword(std::string &password) { m_password = password; };
   std::string getPassword(void) { return m_password; };
 
   /*!
     Getter/setter for client id
   */
-  void setClientId(std::string &clientId)   
-    { m_clientid = clientId; };
+  void setClientId(std::string &clientId) { m_clientid = clientId; };
   std::string getClientId(void) { return m_clientid; };
 
   /*!
     Getter/setter for keep alive
   */
-  void setKeepAlive(uint16_t keepAlive) { m_keepAlive = keepAlive; };  
+  void setKeepAlive(uint16_t keepAlive) { m_keepAlive = keepAlive; };
   uint32_t getKeepAlive(void) { return m_keepAlive; };
 
   /*!
@@ -656,9 +654,18 @@ public:
   */
   std::list<publishTopic *> *getPublishList(void) { return &m_mqtt_publishTopicList; };
 
-public:
-  // Timeout in milliseconds for host connection.
-  uint32_t m_timeoutConnection;
+  /*!
+    Clear retain message for a topic
+    https://cedalo.com/blog/mqtt-retained-messages-explained/
+    @param strTopic Topic to clear retain for
+    @return VSCP_ERROR_SUCCESS on success and VSCP_ERROR_ERROR on failure.
+  */
+  int clearRetain4Topic(std::string &strTopic);
+
+    public
+    :
+    // Timeout in milliseconds for host connection.
+    uint32_t m_timeoutConnection;
 
   // Timeout in milliseconds for response.
   uint32_t m_timeoutResponse;
