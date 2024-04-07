@@ -33,7 +33,7 @@
         },
         "user" : "vscp",
         "password": "secret",
-        "clientid" : "fluorine vscpd",  
+        "clientid" : "fluorine vscpd {{rnd}}",  
         "publish-format" : "json",
         "subscribe-format" : "auto",
         "qos" : 1,

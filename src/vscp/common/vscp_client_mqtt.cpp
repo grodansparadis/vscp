@@ -1625,6 +1625,23 @@ vscpClientMqtt::init(void)
   int rv = 0;
 
   if (m_clientid.length()) {
+
+    /*
+      if clientid if contains {{rd}} replace
+      with 16 random hex characters
+    */
+    {
+      std::string clientid_template = m_clientid;
+      mustache subtemplate{ clientid_template };
+      data data;
+
+      std::string strsalt;
+      vscp_getSaltHex(strsalt, 8);
+
+      data.set("rnd", strsalt);
+      m_clientid = subtemplate.render(data);
+    }
+
     m_mosq = mosquitto_new(m_clientid.c_str(), m_bCleanSession, this);
   }
   else {
@@ -2344,9 +2361,9 @@ vscpClientMqtt::send(vscpEvent &ev)
                   ppublish->getRetain());
 
     spdlog::trace("MQTT send; len=%d QOS=%d retain=%s\n",
-           (int) lenPayload,
-           ppublish->getQos(),
-           (ppublish->getRetain() ? "true" : "false"));
+                  (int) lenPayload,
+                  ppublish->getQos(),
+                  (ppublish->getRetain() ? "true" : "false"));
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
