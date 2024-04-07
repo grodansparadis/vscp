@@ -730,7 +730,7 @@ CControlObject::init_mqtt()
     data.set("guid", m_guid.getAsString());
     data.set("srvguid", m_guid.getAsString());
     data.set("ifguid", m_guid.getAsString());
-    std::string strTopic = subtemplate.render(data);
+    std::string strTopic   = subtemplate.render(data);
     std::string strPayload = m_strServerName;
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mqttClient.getMqttHandle(),
                                                     NULL,
@@ -950,6 +950,10 @@ CControlObject::run(void)
   clock_gettime(CLOCK_REALTIME, &old_now);
   old_now.tv_sec -= 60; // Do first send right away
 
+  if (gDebugLevel & VSCP_DEBUG_EXTRA) {
+    spdlog::debug("controlobject: Main loop starting...");
+  }
+
   while (!m_bQuit) {
 
     clock_gettime(CLOCK_REALTIME, &now);
@@ -972,6 +976,10 @@ CControlObject::run(void)
 #endif
 
   } // while
+
+  if (gDebugLevel & VSCP_DEBUG_EXTRA) {
+    spdlog::debug("controlobject: Main loop ending...");
+  }
 
   spdlog::debug("Controlobject: starting shutdown");
 
@@ -1276,7 +1284,12 @@ CControlObject::startDeviceWorkerThreads(void)
       pDeviceItem->startDriver(this);
 
     } // Valid device item
+    
   }
+
+  if (gDebugLevel & VSCP_DEBUG_EXTRA) {
+      spdlog::debug("controlobject: [Driver] - Drivers started (if any)");
+    }
 
   return true;
 }

@@ -104,9 +104,9 @@ receive_event_callback(vscpEvent *pev, void *pobj)
     vscp_convertEventToCanal(&msg, pev);
 
     // Use blocking method if available
-    if (nullptr == pDeviceItem->m_proc_CanalBlockingSend) {
+    if (nullptr != pDeviceItem->m_proc_CanalBlockingSend) {
       if (CANAL_ERROR_SUCCESS == (rv = pDeviceItem->m_proc_CanalBlockingSend(pDeviceItem->m_openHandle, &msg, 300))) {
-        spdlog::get("logger")->error(
+        spdlog::error(
           "driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalBlockingSend) rv={1}",
           pDeviceItem->m_strName.c_str(),
           rv);
@@ -114,7 +114,7 @@ receive_event_callback(vscpEvent *pev, void *pobj)
     }
     else {
       if (CANAL_ERROR_SUCCESS != (rv = pDeviceItem->m_proc_CanalSend(pDeviceItem->m_openHandle, &msg))) {
-        spdlog::get("logger")->error("driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv={1}",
+        spdlog::error("driver: {}: mqtt_on_message - Failed to send event (m_proc_CanalSend) rv={1}",
                                      pDeviceItem->m_strName.c_str(),
                                      rv);
       }
@@ -122,11 +122,11 @@ receive_event_callback(vscpEvent *pev, void *pobj)
   }
   else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
     if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, pev, 500)) {
-      spdlog::get("logger")->error("driver: mqtt_on_message - Failed to send level II event.");
+      spdlog::error("driver: mqtt_on_message - Failed to send level II event.");
     }
   }
   else {
-    spdlog::get("logger")->error("driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2).");
+    spdlog::error("driver: mqtt_on_message - Driver level is not valid (nor 1 nor 2).");
   }
 }
 
@@ -166,7 +166,7 @@ deviceThread(void *pData)
 {
   CDeviceItem *pDeviceItem = (CDeviceItem *) pData;
   if (nullptr == pDeviceItem) {
-    spdlog::get("logger")->error("No device item defined. Aborting device thread!");
+    spdlog::error("No device item defined. Aborting device thread!");
     return NULL;
   }
 
@@ -175,7 +175,7 @@ deviceThread(void *pData)
   // Load dynamic library
   hdll = dlopen(pDeviceItem->m_strPath.c_str(), RTLD_LAZY);
   if (!hdll) {
-    spdlog::get("logger")->error("Devicethread: Unable to load dynamic library. path = {}  {}",
+    spdlog::error("Devicethread: Unable to load dynamic library. path = {}  {}",
                                  pDeviceItem->m_strPath,
                                  dlerror());
     return NULL;
@@ -188,7 +188,7 @@ deviceThread(void *pData)
 
     // Now find methods in library
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::get("logger")->debug("Loading level I driver: {}", pDeviceItem->m_strName);
+      spdlog::debug("Loading level I driver: {}", pDeviceItem->m_strName);
     }
 
     // * * * * CANAL OPEN * * * *
@@ -197,7 +197,7 @@ deviceThread(void *pData)
 
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{} : Unable to get dl entry for CanalOpen.", pDeviceItem->m_strName);
+      spdlog::critical("{} : Unable to get dl entry for CanalOpen.", pDeviceItem->m_strName);
       return NULL;
     }
 
@@ -206,7 +206,7 @@ deviceThread(void *pData)
     dlsym_error                    = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalClose.", pDeviceItem->m_strName);
+      spdlog::critical("{}: Unable to get dl entry for CanalClose.", pDeviceItem->m_strName);
       dlclose(hdll);
       return NULL;
     }
@@ -216,7 +216,7 @@ deviceThread(void *pData)
     dlsym_error                       = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetLevel.", pDeviceItem->m_strName);
+      spdlog::critical("{}: Unable to get dl entry for CanalGetLevel.", pDeviceItem->m_strName);
       dlclose(hdll);
       return NULL;
     }
@@ -226,7 +226,7 @@ deviceThread(void *pData)
     dlsym_error                   = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalSend.", pDeviceItem->m_strName.c_str());
+      spdlog::critical("{}: Unable to get dl entry for CanalSend.", pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
     }
@@ -236,7 +236,7 @@ deviceThread(void *pData)
     dlsym_error                            = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalDataAvailable.",
+      spdlog::critical("{}: Unable to get dl entry for CanalDataAvailable.",
                                       pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
@@ -247,7 +247,7 @@ deviceThread(void *pData)
     dlsym_error                      = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalReceive.", pDeviceItem->m_strName.c_str());
+      spdlog::critical("{}: Unable to get dl entry for CanalReceive.", pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
     }
@@ -257,7 +257,7 @@ deviceThread(void *pData)
     dlsym_error                        = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetStatus.", pDeviceItem->m_strName.c_str());
+      spdlog::critical("{}: Unable to get dl entry for CanalGetStatus.", pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
     }
@@ -267,7 +267,7 @@ deviceThread(void *pData)
     dlsym_error                            = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetStatistics.",
+      spdlog::critical("{}: Unable to get dl entry for CanalGetStatistics.",
                                       pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
@@ -278,7 +278,7 @@ deviceThread(void *pData)
     dlsym_error                        = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalSetFilter.", pDeviceItem->m_strName.c_str());
+      spdlog::critical("{}: Unable to get dl entry for CanalSetFilter.", pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
     }
@@ -288,7 +288,7 @@ deviceThread(void *pData)
     dlsym_error                      = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalSetMask.", pDeviceItem->m_strName.c_str());
+      spdlog::critical("{}: Unable to get dl entry for CanalSetMask.", pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
     }
@@ -298,7 +298,7 @@ deviceThread(void *pData)
     dlsym_error                         = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetVersion.",
+      spdlog::critical("{}: Unable to get dl entry for CanalGetVersion.",
                                       pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
@@ -309,7 +309,7 @@ deviceThread(void *pData)
     dlsym_error                            = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetDllVersion.",
+      spdlog::critical("{}: Unable to get dl entry for CanalGetDllVersion.",
                                       pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
@@ -320,7 +320,7 @@ deviceThread(void *pData)
     dlsym_error                              = dlerror();
     if (dlsym_error) {
       // Free the library
-      spdlog::get("logger")->critical("{}: Unable to get dl entry for CanalGetVendorString.",
+      spdlog::critical("{}: Unable to get dl entry for CanalGetVendorString.",
                                       pDeviceItem->m_strName.c_str());
       dlclose(hdll);
       return NULL;
@@ -334,7 +334,7 @@ deviceThread(void *pData)
     pDeviceItem->m_proc_CanalBlockingSend = (LPFNDLL_CANALBLOCKINGSEND) dlsym(hdll, "CanalBlockingSend");
     dlsym_error                           = dlerror();
     if (dlsym_error) {
-      spdlog::get("logger")->error("{}: Unable to get dl entry for CanalBlockingSend. Probably "
+      spdlog::error("{}: Unable to get dl entry for CanalBlockingSend. Probably "
                                    "Generation 1 driver.",
                                    pDeviceItem->m_strName.c_str());
       pDeviceItem->m_proc_CanalBlockingSend = NULL;
@@ -344,7 +344,7 @@ deviceThread(void *pData)
     pDeviceItem->m_proc_CanalBlockingReceive = (LPFNDLL_CANALBLOCKINGRECEIVE) dlsym(hdll, "CanalBlockingReceive");
     dlsym_error                              = dlerror();
     if (dlsym_error) {
-      spdlog::get("logger")->error("{}: Unable to get dl entry for CanalBlockingReceive. "
+      spdlog::error("{}: Unable to get dl entry for CanalBlockingReceive. "
                                    "Probably Generation 1 driver.",
                                    pDeviceItem->m_strName.c_str());
       pDeviceItem->m_proc_CanalBlockingReceive = NULL;
@@ -354,7 +354,7 @@ deviceThread(void *pData)
     pDeviceItem->m_proc_CanalGetdriverInfo = (LPFNDLL_CANALGETDRIVERINFO) dlsym(hdll, "CanalGetDriverInfo");
     dlsym_error                            = dlerror();
     if (dlsym_error) {
-      spdlog::get("logger")->error("{}: Unable to get dl entry for CanalGetDriverInfo. "
+      spdlog::error("{}: Unable to get dl entry for CanalGetDriverInfo. "
                                    "Probably Generation 1 driver.",
                                    pDeviceItem->m_strName.c_str());
       pDeviceItem->m_proc_CanalGetdriverInfo = NULL;
@@ -366,7 +366,7 @@ deviceThread(void *pData)
 
     // Check if the driver opened properly
     if (pDeviceItem->m_openHandle <= 0) {
-      spdlog::get("logger")->error("Failed to open driver. Will not use it! {} [{}] ",
+      spdlog::error("Failed to open driver. Will not use it! {} [{}] ",
                                    pDeviceItem->m_openHandle,
                                    pDeviceItem->m_strName);
       dlclose(hdll);
@@ -374,7 +374,7 @@ deviceThread(void *pData)
     }
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::get("logger")->debug("%s: [Device tread] Level I Driver open.", pDeviceItem->m_strName.c_str());
+      spdlog::debug("%s: [Device tread] Level I Driver open.", pDeviceItem->m_strName.c_str());
     }
 
     //--------------------------------------------------------------
@@ -406,7 +406,7 @@ deviceThread(void *pData)
                                            &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
     // Set event callback
-    pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
+    pDeviceItem->m_mqttClient.setCallback(receive_event_callback, pDeviceItem);
 
     // Connect to server
     if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {
@@ -430,7 +430,7 @@ deviceThread(void *pData)
       // * * * * Blocking version * * * *
 
       if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-        spdlog::get("logger")->debug("{}: [Device tread] Level I blocking version.", pDeviceItem->m_strName.c_str());
+        spdlog::debug("{}: [Device tread] Level I blocking version.", pDeviceItem->m_strName.c_str());
       }
 
       /////////////////////////////////////////////////////////////////////////////
@@ -454,7 +454,7 @@ deviceThread(void *pData)
 
           // Convert CANAL message to VSCP event
           if (!vscp_convertCanalToEvent(&ev, &msg, (unsigned char *) pDeviceItem->m_guid.getGUID())) {
-            spdlog::get("logger")->error("Driver L1: {} Failed to convet CANAL to event.", pDeviceItem->m_strName);
+            spdlog::error("Driver L1: {} Failed to convet CANAL to event.", pDeviceItem->m_strName);
             break;
           }
           ev.obid     = 0;
@@ -488,7 +488,7 @@ deviceThread(void *pData)
           }
 
           if (!pDeviceItem->sendEvent(&ev)) {
-            spdlog::get("logger")->error("Driver L1: {} Failed to send event to broker.", pDeviceItem->m_strName);
+            spdlog::error("Driver L1: {} Failed to send event to broker.", pDeviceItem->m_strName);
             continue;
           }
         }
@@ -498,7 +498,7 @@ deviceThread(void *pData)
       pDeviceItem->m_bQuit = true;
 
       if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-        spdlog::get("logger")->error("{}: [Device tread] Level I work loop ended.", pDeviceItem->m_strName);
+        spdlog::error("{}: [Device tread] Level I work loop ended.", pDeviceItem->m_strName);
       }
     }
     else {
@@ -506,7 +506,7 @@ deviceThread(void *pData)
       // * * * * Non blocking version * * * *
 
       if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-        spdlog::get("logger")->error("{}: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName);
+        spdlog::error("{}: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName);
       }
 
       while (!pDeviceItem->m_bQuit) {
@@ -532,7 +532,7 @@ deviceThread(void *pData)
 
               // Convert CANAL message to VSCP event
               if (!vscp_convertCanalToEvent(pev, &msg, (unsigned char *) pDeviceItem->m_guid.getGUID())) {
-                spdlog::get("logger")->error("Driver L1: {} Failed to convet CANAL to event.", pDeviceItem->m_strName);
+                spdlog::error("Driver L1: {} Failed to convet CANAL to event.", pDeviceItem->m_strName);
                 break;
               }
               pev->obid = 0;
@@ -566,7 +566,7 @@ deviceThread(void *pData)
               }
 
               if (!pDeviceItem->sendEvent(pev)) {
-                spdlog::get("logger")->error("Driver L1: {} Failed to send event to broker.", pDeviceItem->m_strName);
+                spdlog::error("Driver L1: {} Failed to send event to broker.", pDeviceItem->m_strName);
                 if (nullptr == pev) {
                   vscp_deleteEvent_v2(&pev);
                 }
@@ -578,7 +578,7 @@ deviceThread(void *pData)
               }
             }
             else {
-              spdlog::get("logger")->error("Driver L1: {} Memory problem.\n", pDeviceItem->m_strName);
+              spdlog::error("Driver L1: {} Memory problem.\n", pDeviceItem->m_strName);
               break;
             }
           }
@@ -595,14 +595,14 @@ deviceThread(void *pData)
     } // if blocking/non blocking
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level I Work loop ended.", pDeviceItem->m_strName);
+      spdlog::debug("{}: [Device tread] Level I Work loop ended.", pDeviceItem->m_strName);
     }
 
     // Close CANAL channel
     pDeviceItem->m_proc_CanalClose(pDeviceItem->m_openHandle);
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level I Closed.", pDeviceItem->m_strName);
+      spdlog::debug("{}: [Device tread] Level I Closed.", pDeviceItem->m_strName);
     }
 
     pDeviceItem->m_bQuit = true;
@@ -617,45 +617,45 @@ deviceThread(void *pData)
   else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
 
     // Now find methods in library
-    spdlog::get("logger")->info("Loading level II driver: <{}>", pDeviceItem->m_strName);
+    spdlog::info("Loading level II driver: <{}>", pDeviceItem->m_strName);
 
     // * * * * VSCP OPEN * * * *
     if (nullptr == (pDeviceItem->m_proc_VSCPOpen = (LPFNDLL_VSCPOPEN) dlsym(hdll, "VSCPOpen"))) {
       // Free the library
-      spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPOpen.", pDeviceItem->m_strName);
+      spdlog::error("{}: Unable to get dl entry for VSCPOpen.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCP CLOSE * * * *
     if (nullptr == (pDeviceItem->m_proc_VSCPClose = (LPFNDLL_VSCPCLOSE) dlsym(hdll, "VSCPClose"))) {
       // Free the library
-      spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPClose.", pDeviceItem->m_strName);
+      spdlog::error("{}: Unable to get dl entry for VSCPClose.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCPWRITE * * * *
     if (nullptr == (pDeviceItem->m_proc_VSCPWrite = (LPFNDLL_VSCPWRITE) dlsym(hdll, "VSCPWrite"))) {
       // Free the library
-      spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPWrite.", pDeviceItem->m_strName);
+      spdlog::error("{}: Unable to get dl entry for VSCPWrite.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCPREAD * * * *
     if (nullptr == (pDeviceItem->m_proc_VSCPRead = (LPFNDLL_VSCPREAD) dlsym(hdll, "VSCPRead"))) {
       // Free the library
-      spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPBlockingReceive.", pDeviceItem->m_strName);
+      spdlog::error("{}: Unable to get dl entry for VSCPBlockingReceive.", pDeviceItem->m_strName);
       return NULL;
     }
 
     // * * * * VSCP GET VERSION * * * *
     if (nullptr == (pDeviceItem->m_proc_VSCPGetVersion = (LPFNDLL_VSCPGETVERSION) dlsym(hdll, "VSCPGetVersion"))) {
       // Free the library
-      spdlog::get("logger")->error("{}: Unable to get dl entry for VSCPGetVersion.", pDeviceItem->m_strName);
+      spdlog::error("{}: Unable to get dl entry for VSCPGetVersion.", pDeviceItem->m_strName);
       return NULL;
     }
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::get("logger")->debug("{}: Discovered all methods\n", pDeviceItem->m_strName);
+      spdlog::debug("{}: Discovered all methods\n", pDeviceItem->m_strName);
     }
 
     //--------------------------------------------------------------
@@ -704,7 +704,7 @@ deviceThread(void *pData)
 
     if (0 == pDeviceItem->m_openHandle) {
       // Free the library
-      spdlog::get("logger")->error("{}: [Device tread] Unable to open VSCP "
+      spdlog::error("{}: [Device tread] Unable to open VSCP "
                                    " level II driver (path, config file access rights)."
                                    " There may be additional info from driver "
                                    "in log. If not enable debug flag in drivers config file",
@@ -713,7 +713,7 @@ deviceThread(void *pData)
     }
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level II Open.", pDeviceItem->m_strName);
+      spdlog::debug("{}: [Device tread] Level II Open.", pDeviceItem->m_strName);
     }
 
     // --------------------------------------------------------------------
@@ -738,20 +738,20 @@ deviceThread(void *pData)
       // Publish to MQTT broker
 
       if (!pDeviceItem->sendEvent(&ev)) {
-        spdlog::get("logger")->error("Driver L2: {} Failed to send event to broker.", pDeviceItem->m_strName.c_str());
+        spdlog::error("Driver L2: {} Failed to send event to broker.", pDeviceItem->m_strName.c_str());
         continue;
       }
     }
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level II Closing.", pDeviceItem->m_strName);
+      spdlog::debug("{}: [Device tread] Level II Closing.", pDeviceItem->m_strName);
     }
 
     // Close channel
     pDeviceItem->m_proc_VSCPClose(pDeviceItem->m_openHandle);
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level II Closed.", pDeviceItem->m_strName);
+      spdlog::debug("{}: [Device tread] Level II Closed.", pDeviceItem->m_strName);
     }
 
     pDeviceItem->m_bQuit = true;
@@ -761,7 +761,7 @@ deviceThread(void *pData)
     dlclose(hdll);
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::get("logger")->debug("{}: [Device tread] Level II Done waiting for threads.",
+      spdlog::debug("{}: [Device tread] Level II Done waiting for threads.",
                                    pDeviceItem->m_strName.c_str());
     }
   }

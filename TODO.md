@@ -3,5 +3,8 @@
 ## Daemon
   . Let configuration numbers be strings also with numeric base conversions.
 
-## CANAl client
+## CANAL client
  - Logging/Debug code needs to be added
+
+ ## MQTT Client
+ - Handle v5 properties [Enhancement]

@@ -208,7 +208,7 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
 {
   // Just start if enabled
   if (!m_bEnable) {
-    spdlog::get("logger")->info("[Driver {}] Start - VSCP driver is disabled.", m_strName);
+    spdlog::info("[Driver {}] Start - VSCP driver is disabled.", m_strName);
     return true;
   }
 
@@ -217,11 +217,11 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
   // *****************************************
 
   if (pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
-    spdlog::get("logger")->error("[Driver {}] - Unable to start the device thread.", m_strName.c_str());
+    spdlog::error("[Driver {}] - Unable to start the device thread.", m_strName.c_str());
     return false;
   }
 
-  spdlog::get("logger")->info("[Driver {}] - Started VSCP device driver.", m_strName);
+  spdlog::info("[Driver {}] - Started VSCP device driver.", m_strName);
   return true;
 }
 
@@ -234,17 +234,17 @@ CDeviceItem::stopDriver()
 {
   if (m_bEnable) {
     m_bQuit = true;
-    spdlog::get("logger")->info("Driver {}: Driver asked to stop operation.", m_strName);
+    spdlog::info("Driver {}: Driver asked to stop operation.", m_strName);
 
     pthread_mutex_lock(&m_mutexdeviceThread);
     pthread_join(m_deviceThreadHandle, NULL);
     pthread_mutex_unlock(&m_mutexdeviceThread);
 
-    spdlog::get("logger")->error("CDeviceItem: Driver stopping. {}\n", m_strName);
+    spdlog::error("CDeviceItem: Driver stopping. {}\n", m_strName);
   }
   else {
     if (!m_bEnable) {
-      spdlog::get("logger")->info("[Driver {}] Stop - VSCP driver is disabled.", m_strName);
+      spdlog::info("[Driver {}] Stop - VSCP driver is disabled.", m_strName);
       return true;
     }
   }
@@ -288,7 +288,7 @@ CDeviceItem::sendEvent(vscpEvent *pev)
 
   // Check pointer
   if (NULL == pev) {
-    spdlog::get("logger")->error("ControlObject: sendEvent: Event is NULL pointer");
+    spdlog::error("ControlObject: sendEvent: Event is NULL pointer");
     return false;
   }
 
@@ -375,7 +375,7 @@ CDeviceList::addItem(CControlObject *pCtrlObj,
       fprintf(stderr, "Driver '%s' is not available at this path %s. Dropped!", strName.c_str(), strPath.c_str());
     }
     else {
-      spdlog::get("logger")->error("Driver '{}' is not available at this path {}. Dropped!", strName, strPath);
+      spdlog::error("Driver '{}' is not available at this path {}. Dropped!", strName, strPath);
     }
 
     // Driver does not exist at this path

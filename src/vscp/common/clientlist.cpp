@@ -357,7 +357,7 @@ CClientList::removeClient(CClientItem *pClientItem)
 {
   // Must be a valid pointer
   if (NULL == pClientItem) {
-    spdlog::get("logger")->error("removeClient in clientlist but clinet obj is NULL");
+    spdlog::error("removeClient in clientlist but clinet obj is NULL");
     return false;
   }
 
@@ -516,18 +516,18 @@ CClientList::sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent
 {
   // Must be valid pointers
   if (NULL == pClientItem) {
-    spdlog::get("logger")->error("sendEventToClient - Pointer to clientitem is null");
+    spdlog::error("sendEventToClient - Pointer to clientitem is null");
     return false;
   }
 
   if (NULL == pEvent) {
-    spdlog::get("logger")->error("sendEventToClient - Pointer to event is null");
+    spdlog::error("sendEventToClient - Pointer to event is null");
     return false;
   }
 
   // Check if filtered out - if so do nothing here
   if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) {
-    spdlog::get("logger")->debug("sendEventToClient - Filtered out");
+    spdlog::debug("sendEventToClient - Filtered out");
     return false;
   }
 
@@ -536,7 +536,7 @@ CClientList::sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent
   // (max set to zero means any number of events can be collected)
   if (pClientItem->m_maxItemsInClientInputQueue &&
       (pClientItem->m_clientInputQueue.size() > pClientItem->m_maxItemsInClientInputQueue)) {
-    spdlog::get("logger")->info("sendEventToClient - overrun");
+    spdlog::info("sendEventToClient - overrun");
     // Overrun
     pClientItem->m_statistics.cntOverruns++;
     return false;
@@ -549,7 +549,7 @@ CClientList::sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent
     // Copy in the new event
     if (!vscp_copyEvent(pnewvscpEvent, pEvent)) {
       vscp_deleteEvent_v2(&pnewvscpEvent);
-      spdlog::get("logger")->error("sendEventToClient - Failed to copy event");
+      spdlog::error("sendEventToClient - Failed to copy event");
       return false;
     }
 
@@ -574,7 +574,7 @@ CClientList::sendEventAllClients(const vscpEvent *pEvent, uint32_t excludeID)
   std::deque<CClientItem *>::iterator it;
 
   if (NULL == pEvent) {
-    spdlog::get("logger")->error("sendEventAllClients - null event");
+    spdlog::error("sendEventAllClients - null event");
     return false;
   }
 
@@ -583,7 +583,7 @@ CClientList::sendEventAllClients(const vscpEvent *pEvent, uint32_t excludeID)
     pClientItem = *it;
 
     if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
-      spdlog::get("logger")->debug("Send event to client [{}]", pClientItem->m_strDeviceName);
+      spdlog::debug("Send event to client [{}]", pClientItem->m_strDeviceName);
       if (!sendEventToClient(pClientItem, pEvent)) {}
     }
   }

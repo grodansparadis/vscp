@@ -823,13 +823,13 @@ private:
       Format for published events
       (autofmt is not valid)
   */
-  enumMqttMsgFormat m_publish_format;
+  //enumMqttMsgFormat m_publish_format;
 
   /*!
       Accepted subscribe events
       (autofmt) accepts all
   */
-  enumMqttMsgFormat m_subscribe_format;
+  //enumMqttMsgFormat m_subscribe_format;
 
   /*!
       Quality of service (0/1/2)
@@ -837,12 +837,12 @@ private:
       1 - At least once
       2 - Exactly once
   */
-  int m_qos;
+  //int m_qos;
 
   /*!
       // Enable retain if true
   */
-  bool m_bRetain;
+  //bool m_bRetain;
 
   /*!
       Keep alive interval in seconds

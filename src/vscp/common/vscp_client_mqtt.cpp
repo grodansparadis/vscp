@@ -275,8 +275,7 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::trace("MQTT CLIENT: MQTT v3.11 publish: mid={0:X}", mid);
-  printf("published\n");
+  spdlog::trace("MQTT publish: MQTT v3.11 publish: mid={0:X}", mid);
 
   if (nullptr != pClient->m_parentCallbackPublish) {
     pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
@@ -302,7 +301,7 @@ mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::trace("MQTT CLIENT: MQTT v5 publish: mid={0:X} reason-code={1:X}", mid, reason_code);
+  spdlog::trace("MQTT publish: MQTT v5 publish: mid={0:X} reason-code={1:X}", mid, reason_code);
 
   if (nullptr != pClient->m_parentCallbackPublish) {
     pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
@@ -594,8 +593,6 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_bJsonMeasurementAdd = true;        // Add measurement block to JSON publish event
   m_bindInterface       = "";          // No bind interface
   m_mosq                = nullptr;     // No mosquitto connection
-  m_publish_format      = jsonfmt;     // Publish inm JSON if not configured to do something else
-  m_subscribe_format    = autofmt;     // Automatically detect payload format
   m_bRun                = true;        // Run to the Hills...
   m_host                = "localhost"; // tcp://localhost:1883
   m_port                = 1883;        // Default port
@@ -603,8 +600,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_username            = "";          // No username set
   m_password            = "";          // No password set
   m_keepAlive           = 30;          // 30 seconds for keepalive
-  m_bCleanSession       = false;       // Do not start with a clean session
-  m_qos                 = 0;           // No quality of service
+  // m_bCleanSession = false;       // Do not start with a clean session
 
   m_bTLS                 = false;
   m_tls_cafile           = "";
@@ -863,88 +859,16 @@ vscpClientMqtt::initFromJson(const std::string &config)
       }
     }
 
-    // Publish format
-    if (j.contains("publish-format") && j["publish-format"].is_string()) {
-      std::string str = j["publish-format"].get<std::string>();
-      vscp_makeLower(str);
-      if (std::string::npos != str.find("binary")) {
-        spdlog::debug("jMQTT CLIENT: son mqtt init: 'subscribe_format' Set to BINARY.");
-        m_publish_format = binfmt;
-      }
-      else if (std::string::npos != str.find("string")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to STRING.");
-        m_publish_format = strfmt;
-      }
-      else if (std::string::npos != str.find("json")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to JSON.");
-        m_publish_format = jsonfmt;
-      }
-      else if (std::string::npos != str.find("xml")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to XML.");
-        m_publish_format = xmlfmt;
-      }
-      else {
-        spdlog::error("MQTT CLIENT: json mqtt init: 'publish_format' Ivalid value. Set to JSON.");
-        m_publish_format = jsonfmt;
-      }
-    }
-
-    // Subscribe format
-    if (j.contains("subscribe-format") && j["subscribe-format"].is_string()) {
-      std::string str = j["subscribe-format"].get<std::string>();
-      vscp_makeLower(str);
-      if (std::string::npos != str.find("binary")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to BINARY.");
-        m_subscribe_format = binfmt;
-      }
-      else if (std::string::npos != str.find("string")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to STRING.");
-        m_subscribe_format = strfmt;
-      }
-      else if (std::string::npos != str.find("json")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to JSON.");
-        m_subscribe_format = jsonfmt;
-      }
-      else if (std::string::npos != str.find("xml")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to XML.");
-        m_subscribe_format = xmlfmt;
-      }
-      else if (std::string::npos != str.find("auto")) {
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe_format' Set to AUTO.");
-        m_subscribe_format = autofmt;
-      }
-      else {
-        spdlog::error("MQTT CLIENT: json mqtt init: 'subscribe_format' Ivalid value. Set to AUTO.");
-        m_subscribe_format = autofmt;
-      }
-    }
-
-    // qos
-    if (j.contains("qos") && j["qos"].is_number_unsigned()) {
-      m_qos = j["qos"].get<uint8_t>();
-      if (m_qos > 2) {
-        spdlog::error("MQTT CLIENT: json mqtt init: 'qos' Ivalid value [{}]. Set to 0.", m_qos);
-        m_qos = 0;
-      }
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'qos' Set to {}.", m_qos);
+    // Keep Alive
+    if (j.contains("keepalive") && j["keepalive"].is_number()) {
+      m_keepAlive = j["keepalive"].get<int>();
+      spdlog::debug("MQTT CLIENT: json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
     }
 
     // Clean Session
     if (j.contains("bcleansession") && j["bcleansession"].is_boolean()) {
       m_bCleanSession = j["bcleansession"].get<bool>();
       spdlog::debug("MQTT CLIENT: json mqtt init: 'bcleansession' Set to {}.", m_bCleanSession);
-    }
-
-    // Retain
-    if (j.contains("bretain") && j["bretain"].is_boolean()) {
-      m_bRetain = (bool) j["bretain"].get<bool>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'bretain' Set to {}.", m_bRetain);
-    }
-
-    // Keep Alive
-    if (j.contains("keepalive") && j["keepalive"].is_number()) {
-      m_keepAlive = j["keepalive"].get<int>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
     }
 
     // Enable measurement block
@@ -1171,7 +1095,9 @@ vscpClientMqtt::initFromJson(const std::string &config)
       }
     }
 
-    // Subscribe
+    // *****************************************************************
+    //                            Subscribe
+    // *****************************************************************
     if (j.contains("subscribe") && j["subscribe"].is_array()) {
 
       json jj = j["subscribe"];
@@ -1181,12 +1107,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
         if (subobj.is_object()) {
 
           std::string topic        = "";
-          int qos                  = m_qos;
+          int qos                  = 0;
           int v5_options           = 0;
-          enumMqttMsgFormat format = m_subscribe_format;
+          enumMqttMsgFormat format = autofmt;
 
           if (subobj.contains("topic") && subobj["topic"].is_string()) {
             topic = subobj["topic"].get<std::string>();
+            vscp_trim(topic);
+            if (!topic.size()) {
+              spdlog::error("MQTT CLIENT: json mqtt init: Subscribe topic has unallowed length zero");
+              continue;
+            }
             spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe topic' Set to {}.", topic);
           }
           else {
@@ -1302,27 +1233,27 @@ vscpClientMqtt::initFromJson(const std::string &config)
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
               spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to BINARY.");
-              m_subscribe_format = binfmt;
+              format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
               spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to STRING.");
-              m_subscribe_format = strfmt;
+              format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
               spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to JSON.");
-              m_subscribe_format = jsonfmt;
+              format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
               spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to XML.");
-              m_subscribe_format = xmlfmt;
+              format = xmlfmt;
             }
             else if (std::string::npos != str.find("auto")) {
               spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to AUTO.");
-              m_subscribe_format = autofmt;
+              format = autofmt;
             }
             else {
               spdlog::error("MQTT CLIENT: json mqtt init: 'subscribe obj format' Ivalid value. Set to AUTO.");
-              m_subscribe_format = autofmt;
+              format = autofmt;
             }
           }
 
@@ -1345,7 +1276,10 @@ vscpClientMqtt::initFromJson(const std::string &config)
       }
     }
 
-    // Publish
+    // *****************************************************************
+    //                            Publish
+    // *****************************************************************
+
     if (j.contains("publish") && j["publish"].is_array()) {
 
       json jj = j["publish"];
@@ -1355,12 +1289,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
         if (pubobj.is_object()) {
 
           std::string topic        = "";
-          int qos                  = 0;                // Default
-          bool bretain             = false;            // Default
-          enumMqttMsgFormat format = m_publish_format; // Default
+          int qos                  = 0;       // Default
+          bool bretain             = false;   // Default
+          enumMqttMsgFormat format = jsonfmt; // Default
 
           if (pubobj.contains("topic") && pubobj["topic"].is_string()) {
             topic = pubobj["topic"].get<std::string>();
+            vscp_trim(topic);
+            if (!topic.size()) {
+              spdlog::error("MQTT CLIENT: json mqtt init: Publish topic has unallowed length zero");
+              continue;
+            }
             spdlog::debug("MQTT CLIENT: json mqtt init: publish 'topic' Set to {}.", topic);
           }
           else {
@@ -1378,29 +1317,32 @@ vscpClientMqtt::initFromJson(const std::string &config)
             spdlog::debug("MQTT CLIENT: json mqtt init: publish 'bretain' Set to {}.", bretain);
           }
 
-          if (pubobj.contains("format") && pubobj["format"].is_string()) {
-            std::string str = pubobj["format"].get<std::string>();
-            vscp_makeLower(str);
-            if (std::string::npos != str.find("binary")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
-              format = binfmt;
-            }
-            else if (std::string::npos != str.find("string")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
-              format = strfmt;
-            }
-            else if (std::string::npos != str.find("json")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
-              format = jsonfmt;
-            }
-            else if (std::string::npos != str.find("xml")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
-              format = xmlfmt;
-            }
-            else {
-              spdlog::error("MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
-              format = jsonfmt;
-            }
+          if (pubobj.contains("format") && pubobj["format"].is_number()) {
+
+            format = static_cast<enumMqttMsgFormat>(pubobj["format"].get<int>());
+
+            // vscp_makeLower(str);
+            //  std::string str;
+            //  if (std::string::npos != str.find("binary")) {
+            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
+            //    format = binfmt;
+            //  }
+            //  else if (std::string::npos != str.find("string")) {
+            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
+            //    format = strfmt;
+            //  }
+            //  else if (std::string::npos != str.find("json")) {
+            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
+            //    format = jsonfmt;
+            //  }
+            //  else if (std::string::npos != str.find("xml")) {
+            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
+            //    format = xmlfmt;
+            //  }
+            //  else {
+            //    spdlog::error("MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
+            //    format = jsonfmt;
+            //  }
           }
 
           addPublish(topic, format, qos, bretain);
@@ -1440,7 +1382,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 bool
 vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 {
-  enumMqttMsgFormat format;
+  enumMqttMsgFormat format = autofmt;
   vscpEvent ev;
   vscpEventEx ex;
 
@@ -1456,7 +1398,21 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     return false;
   }
 
-  if (autofmt == m_subscribe_format) {
+  // We need to find the subscribe channel
+  if (nullptr != pmsg->topic) {
+    for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin();
+         it != m_mqtt_publishTopicList.end();
+         ++it) {
+
+      publishTopic *ppublish = (*it);
+      // if topics match
+      if (!strstr(ppublish->getTopic().c_str(), pmsg->topic)) {
+        format = ppublish->getFormat();
+      }
+    }
+  }
+  else {
+    // Topic is nill we need to find format
 
     // If First char of payload...
     //     ...is zero - Binary payload
@@ -1487,9 +1443,6 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       }
       format = strfmt;
     }
-  }
-  else {
-    format = m_subscribe_format;
   }
 
   // Binary payload will result in zero length string as first character
@@ -2065,7 +2018,7 @@ vscpClientMqtt::connect(void)
     std::string subscribe_topic = subtemplate.render(data);
 
     // Subscribe to specified topic
-    rv = mosquitto_subscribe(m_mosq, nullptr, subscribe_topic.c_str(), m_qos);
+    rv = mosquitto_subscribe(m_mosq, nullptr, subscribe_topic.c_str(), psubtopic->getQos());
     if (MOSQ_ERR_SUCCESS != rv) {
       spdlog::error("MQTT CLIENT: Failed to subscribed to topic '{0}' - rv={1} {2}.",
                     subscribe_topic,
@@ -2198,7 +2151,7 @@ vscpClientMqtt::send(vscpEvent &ev)
 
         double value = 0;
         if (!vscp_getMeasurementAsDouble(&value, &ev)) {
-          spdlog::get("logger")->error("MQTT CLIENT: sendEvent: Failed to convert event to value.");
+          spdlog::error("MQTT CLIENT: sendEvent: Failed to convert measurement event to value.");
         }
         else {
           try {
@@ -2214,7 +2167,7 @@ vscpClientMqtt::send(vscpEvent &ev)
             strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
-            spdlog::get("logger")->error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
+            spdlog::error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
       }   // is measurement
@@ -2377,29 +2330,6 @@ vscpClientMqtt::send(vscpEvent &ev)
       }
       data.set("fmtpublish", str);
 
-      switch (m_subscribe_format) {
-        case jsonfmt:
-          str = "json";
-          break;
-
-        case xmlfmt:
-          str = "xml";
-          break;
-
-        case strfmt:
-          str = "string";
-          break;
-
-        case binfmt:
-          str = "binary";
-          break;
-
-        case autofmt:
-          str = "auto";
-          break;
-      }
-      data.set("fmtsubscribe", str);
-
       // Add user escapes like "driver-name"= "some-driver";
       for (auto const &item : m_mapUserEscapes) {
         data.set(item.first, item.second);
@@ -2413,7 +2343,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                   ppublish->getQos(),
                   ppublish->getRetain());
 
-    printf("len=%d QOS=%d retain=%s\n",
+    spdlog::trace("MQTT send; len=%d QOS=%d retain=%s\n",
            (int) lenPayload,
            ppublish->getQos(),
            (ppublish->getRetain() ? "true" : "false"));
@@ -2479,7 +2409,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
 
         double value = 0;
         if (!vscp_getMeasurementAsDoubleEx(&value, &ex)) {
-          spdlog::get("logger")->error("MQTT CLIENT: sendEvent: Failed to convert event to value.");
+          spdlog::error("MQTT CLIENT: sendEvent: Failed to convert event to value.");
         }
         else {
           try {
@@ -2495,7 +2425,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
             strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
-            spdlog::get("logger")->error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
+            spdlog::error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
       }   // is measurement
@@ -2668,29 +2598,6 @@ vscpClientMqtt::send(vscpEventEx &ex)
           break;
       }
       data.set("fmtpublish", str);
-
-      switch (m_subscribe_format) {
-        case jsonfmt:
-          str = "json";
-          break;
-
-        case xmlfmt:
-          str = "xml";
-          break;
-
-        case strfmt:
-          str = "string";
-          break;
-
-        case binfmt:
-          str = "binary";
-          break;
-
-        case autofmt:
-          str = "auto";
-          break;
-      }
-      data.set("fmtsubscribe", str);
 
       // Add user escapes like "driver-name"= "some-driver";
       for (auto const &item : m_mapUserEscapes) {
@@ -2910,7 +2817,7 @@ vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData)
 int
 vscpClientMqtt::clearRetain4Topic(std::string &strTopic)
 {
-  int rv;
+  int rv = VSCP_ERROR_SUCCESS;
   if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                   NULL, // msg id
                                                   strTopic.c_str(),
@@ -2919,12 +2826,10 @@ vscpClientMqtt::clearRetain4Topic(std::string &strTopic)
                                                   0,
                                                   true))) {
     spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
-    printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
-    return VSCP_ERROR_ERROR;
+    rv = VSCP_ERROR_ERROR;
   }
-  return VSCP_ERROR_SUCCESS;
+  return rv;
 }
-
 
 #ifdef WIN32
 static void
