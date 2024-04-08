@@ -2,7 +2,7 @@
   "runasuser": "vscp",
   "debug": 0,
   "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
-  "servername": "The VSCP daemon",
+  "servername": "The VSCP daemon TEST at HOST",
   "classtypedb": "/var/lib/vscp/vscpd/vscp_events.sqlite3",
   "maindb": "/var/lib/vscp/vscpd/vscp.sqlite3",
   "discoverydb": "/var/lib/vscp/vscpd/vscp.sqlite3",
@@ -41,7 +41,7 @@
     "bretain": false,
     "keepalive": 60,
     "bjsonmeasurementblock": true,
-    "topic-daemon-base": "vscp-daemon/{{guid}}/",
+    "topic-daemon-base": "vscp-daemon/status/{{guid}}/",
     "topic-drivers": "drivers",
     "topic-discovery": "discovery",
     "reconnect": {
@@ -63,10 +63,10 @@
       "psk-identity": ""
     },
     "will": {
-      "topic": "vscp-daemon/{{srvguid}}/will",
+      "topic": "vscp-daemon/status/{{guid}}/will",
       "qos": 1,
       "retain": true,
-      "payload": "VSCP Daemon is down"
+      "payload": "VSCP Daemon HOST is down"
     },
     "subscribe": [
       {

@@ -1,9 +1,9 @@
 * Introduction
- * [Start](start.md)
- * [Introduction](introduction.md)
+  * [Start](start.md)
+  * [Introduction](introduction.md)
 
 * Setup
-* [Setting up the system](setting_up_the_system.md)
+  * [Setting up the system](setting_up_the_system.md)
 
 * Configure
  * [The configuration file](configuring_the_vscp_daemon.md)

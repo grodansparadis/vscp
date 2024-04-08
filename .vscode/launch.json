@@ -72,7 +72,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/home/akhe/development/VSCP/build/vscpd",
-            "args": ["-s","-c/home/akhe/development/VSCP/vscpl2drv-tcpiplink/debug/linux/vscpd.json"],
+            "args": ["-s","-c /home/akhe/development/VSCP/vscpl2drv-tcpiplink/debug/linux/vscpd.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

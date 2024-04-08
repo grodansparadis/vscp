@@ -2,7 +2,7 @@
 
 The configuration file is used to tell which drivers should be used and how the VSCP daemon should operate. From version 15.0 this file has changed format from XML to JSON.
 
-As always with configuration files it easy to make changes that make the system nonfunctional. Sp be careful when you edit the file and keep to the JSON standard. Most important keep a backup so that yo can go back to a working copy if something goes wrong.
+As always with configuration files it easy to make changes that make the system nonfunctional. So be careful when you edit the file and keep to the JSON standard. Most important keep a backup so that yo can go back to a working copy if something goes wrong.
 
 It is very convenient to use one of the online JSON validators to validate the JSON file when doing a lot of changes. There are many available and a good one is [this one](https://jsonformatter.curiousconcept.com/). Just copy the content of the file in the box and validate.
 
@@ -20,7 +20,80 @@ ps aux | grep vscpd
 
 to see if the VSCP daemon is running or not.
 
+The sample configuration file that is installed holds a lot of information. You can use degaults for most of it. A minimum configuration file looks like this
 
+'''json
+{
+  "runasuser": "vscp",
+  "debug": 0,
+  "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
+  "servername": "The VSCP daemon on HOST",
+  "classtypedb": "/var/lib/vscp/vscpd/vscp_events.sqlite3",
+  "maindb": "/var/lib/vscp/vscpd/vscp.sqlite3",
+  "discoverydb": "/var/lib/vscp/vscpd/vscp.sqlite3",
+  "vscpkey": "/etc/vscp/vscp.key",
+  "logging": {
+    "file-enable-log": true,
+    "file-log-level": "debug",
+    "file-pattern": "[vscp: %c] [%^%l%$] %v",
+    "file-path": "/var/log/vscp/vscpd.log",
+    "file-max-size": 5242880,
+    "file-max-files": 7,
+    "console-enable-log": true,
+    "console-log-level": "debug",
+    "console-pattern": "[vscp: %c] [%^%l%$] %v"
+  },
+  "mqtt": {
+    "bind": "",
+    "host": "test.mosquitto.org",
+    "port": 1883,
+    "mqtt-options": {
+      "tcp-nodelay": true,
+      "protocol-version": 311,
+      "receive-maximum": 20,
+      "send-maximum": 20,
+      "ssl-ctx-with-defaults": 0,
+      "tls-ocsp-required": 0,
+      "tls-use-os-certs": 0
+    },
+    "user": "",
+    "password": "",
+    "clientid": "",
+    "publish-format": "json",
+    "subscribe-format": "auto",
+    "qos": 1,
+    "bcleansession": false,
+    "bretain": false,
+    "keepalive": 60,
+    "bjsonmeasurementblock": true,
+    "topic-daemon-base": "vscp-daemon/status/{{guid}}/",
+    "topic-drivers": "drivers",
+    "topic-discovery": "discovery",
+    "will": {
+      "topic": "vscp-daemon/status/will/",
+      "qos": 1,
+      "retain": true,
+      "payload": "VSCP Daemon is down"
+    },
+    "subscribe": [
+      {
+        "topic": "vscp/mydaemon",
+        "qos": 0,
+        "v5-options": 0,
+        "format": "auto"
+      }
+    ],
+    "publish": [
+      {
+        "topic": "vscp/{{guid}}",
+        "qos": 0,
+        "retain": false,
+        "format": "json"
+      }
+    ]
+  }
+}
+'''
 
 ## Location of the configuration file
 
@@ -71,7 +144,7 @@ In the general section you find settings that are common to all components of th
 "runasuser" : "vscp",	
 "debug" : 0,	
 "guid" : "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
-"servername" : "The VSCP daemon",
+"servername" : "The VSCP daemon on HOST",
 "classtypedb" : "/var/lib/vscp/vscpd/vscp_events.sqlite3",
 "maindb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
 "discoverydb" : "/var/lib/vscp/vscpd/vscp.sqlite3",
@@ -87,8 +160,59 @@ In the general section you find settings that are common to all components of th
     "console-enable-log": false,
     "console-log-level" : "info",
     "console-pattern" : "[vscp %c] [%^%l%$] %v"
+},
+  "mqtt": {
+    "host": "test.mosquitto.org",
+    "port": 1883,
+    "mqtt-options": {
+      "tcp-nodelay": true,
+      "protocol-version": 311,
+      "receive-maximum": 20,
+      "send-maximum": 20,
+      "ssl-ctx-with-defaults": 0,
+      "tls-ocsp-required": 0,
+      "tls-use-os-certs": 0
+    },
+    "user": "",
+    "password": "",
+    "clientid": "",
+    "publish-format": "json",
+    "subscribe-format": "auto",
+    "qos": 1,
+    "bcleansession": false,
+    "bretain": false,
+    "keepalive": 60,
+    "bjsonmeasurementblock": true,
+    "topic-daemon-base": "vscp-daemon/status/{{guid}}/",
+    "topic-drivers": "drivers",
+    "topic-discovery": "discovery",
+    "will": {
+      "topic": "vscp-daemon/status/{{srvguid}}/will",
+      "qos": 1,
+      "retain": true,
+      "payload": "VSCP Daemon is down"
+    },
+    "subscribe": [
+      {
+        "topic": "vscp/mydaemon",
+        "qos": 0,
+        "v5-options": 0,
+        "format": "auto"
+      }
+    ],
+    "publish": [
+      {
+        "topic": "vscp/{{guid}}",
+        "qos": 0,
+        "retain": false,
+        "format": "json"
+      }
+    ]
+  }
 }
 ```
+
+this will start up the daemon but do noting. You need to add a driver to get some work done.
 
 ### debug :id=config-gerneral-debug    
 
@@ -292,6 +416,8 @@ This is the password to use to login on the MQTT broker. Leave blank to use no c
 
 ### clientid :id=config-mqtt-clientid
 Set the client id of this client. Note that **all client id's should be unique to a broker**. If not the client with the duplicate client id will be disconnected. If you leave this blank a random client id will be generated. The standard max length for client id's is 23 characters but most brokers accept longer client id's.
+
+From version 15.0.3 you can use {{rnd}} in the client name to get a random 16 hex character string generated for the mustache tag. 
 
 ### publish-format :id=config-mqtt-general-publish-format
 This is the format the VSCP daemon will use to publish it's information if not set specially for the publish topic. There are four formats available

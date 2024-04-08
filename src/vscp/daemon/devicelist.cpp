@@ -240,7 +240,7 @@ CDeviceItem::stopDriver()
     pthread_join(m_deviceThreadHandle, NULL);
     pthread_mutex_unlock(&m_mutexdeviceThread);
 
-    spdlog::error("CDeviceItem: Driver stopping. {}\n", m_strName);
+    spdlog::info("CDeviceItem: Driver stopping. {}\n", m_strName);
   }
   else {
     if (!m_bEnable) {

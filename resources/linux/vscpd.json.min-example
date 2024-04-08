@@ -2,7 +2,7 @@
   "runasuser": "vscp",
   "debug": 0,
   "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:01",
-  "servername": "The VSCP daemon",
+  "servername": "The VSCP daemon on HOST",
   "classtypedb": "/var/lib/vscp/vscpd/vscp_events.sqlite3",
   "maindb": "/var/lib/vscp/vscpd/vscp.sqlite3",
   "discoverydb": "/var/lib/vscp/vscpd/vscp.sqlite3",
@@ -19,7 +19,6 @@
     "console-pattern": "[vscp: %c] [%^%l%$] %v"
   },
   "mqtt": {
-    "bind": "",
     "host": "test.mosquitto.org",
     "port": 1883,
     "mqtt-options": {
@@ -41,11 +40,11 @@
     "bretain": false,
     "keepalive": 60,
     "bjsonmeasurementblock": true,
-    "topic-daemon-base": "vscp-daemon/{{guid}}/",
+    "topic-daemon-base": "vscp-daemon/status/{{guid}}/",
     "topic-drivers": "drivers",
     "topic-discovery": "discovery",
     "will": {
-      "topic": "vscp-daemon/{{srvguid}}/will",
+      "topic": "vscp-daemon/status/{{srvguid}}/will",
       "qos": 1,
       "retain": true,
       "payload": "VSCP Daemon is down"

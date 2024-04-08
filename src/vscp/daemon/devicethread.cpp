@@ -498,7 +498,7 @@ deviceThread(void *pData)
       pDeviceItem->m_bQuit = true;
 
       if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-        spdlog::error("{}: [Device tread] Level I work loop ended.", pDeviceItem->m_strName);
+        spdlog::info("{}: [Device tread] Level I work loop ended.", pDeviceItem->m_strName);
       }
     }
     else {
@@ -506,7 +506,7 @@ deviceThread(void *pData)
       // * * * * Non blocking version * * * *
 
       if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-        spdlog::error("{}: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName);
+        spdlog::info("{}: [Device tread] Level I NON Blocking version.", pDeviceItem->m_strName);
       }
 
       while (!pDeviceItem->m_bQuit) {
@@ -595,14 +595,14 @@ deviceThread(void *pData)
     } // if blocking/non blocking
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::debug("{}: [Device tread] Level I Work loop ended.", pDeviceItem->m_strName);
+      spdlog::info("{}: [Device tread] Level I Work loop ended.", pDeviceItem->m_strName);
     }
 
     // Close CANAL channel
     pDeviceItem->m_proc_CanalClose(pDeviceItem->m_openHandle);
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL1) {
-      spdlog::debug("{}: [Device tread] Level I Closed.", pDeviceItem->m_strName);
+      spdlog::info("{}: [Device tread] Level I Closed.", pDeviceItem->m_strName);
     }
 
     pDeviceItem->m_bQuit = true;
@@ -751,7 +751,7 @@ deviceThread(void *pData)
     pDeviceItem->m_proc_VSCPClose(pDeviceItem->m_openHandle);
 
     if (gDebugLevel & VSCP_DEBUG_DRIVERL2) {
-      spdlog::debug("{}: [Device tread] Level II Closed.", pDeviceItem->m_strName);
+      spdlog::info("{}: [Device tread] Level II Closed.", pDeviceItem->m_strName);
     }
 
     pDeviceItem->m_bQuit = true;

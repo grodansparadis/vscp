@@ -1,6 +1,6 @@
 # Setting up the System
 
-The VSCP Daemon is easy to setup. Just install the server and then configure the drivers you want to use. It is recommended to set up a local MQTT broker also but one can use one of the [public MQTT brokers](https://mntolia.com/10-free-public-private-mqtt-brokers-for-testing-prototyping/) for testing.
+The VSCP Daemon is easy to setup. Just install the server and then configure the drivers you want to use. It is recommended to set up a local MQTT broker also but one can use one of the [public MQTT brokers](https://mntolia.com/10-free-public-private-mqtt-brokers-for-testing-prototyping/) for testing. Mosquitto is a very populöar choice that we recommend.
 
 ## Setting up the system on Linux
 
