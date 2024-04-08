@@ -10,13 +10,13 @@
   "logging": {
     "file-enable-log": true,
     "file-log-level": "debug",
-    "file-pattern": "[vscp: %c] [%^%l%$] %v",
+    "file-pattern": "[vscpd: %c] [%^%l%$] %v",
     "file-path": "/var/log/vscp/vscpd.log",
     "file-max-size": 5242880,
     "file-max-files": 7,
     "console-enable-log": true,
     "console-log-level": "debug",
-    "console-pattern": "[vscp: %c] [%^%l%$] %v"
+    "console-pattern": "[vscpd: %c] [%^%l%$] %v"
   },
   "mqtt": {
     "bind": "",

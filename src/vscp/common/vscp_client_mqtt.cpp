@@ -82,6 +82,11 @@ workerThread(void *pObj);
 int
 password_callback(char *buf, int size, int rwflag, void *userdata)
 {
+  // Check pointers
+  if ((nullptr == buf) || (nullptr == userdata)) {
+    return 0;
+  }
+
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(userdata);
 
   memset(buf, 0, size);
@@ -103,6 +108,11 @@ mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
 
   // Check for a valid object pointer
   if (nullptr == pData) {
+    return;
+  }
+
+  // Check for a valid logmsg pointer
+  if (nullptr == logmsg) {
     return;
   }
 
