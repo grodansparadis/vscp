@@ -82,7 +82,7 @@ std::string vscpClientTcp::getConfigAsJson(void)
     j["bpoll"] = m_bPolling;
     j["connection-timeout"] = 0;
     j["response-timeout"] = 0;
-    //j["bfull-l2"] = xxx;
+    j["bfull-l2"] = isFullLevel2();
     vscp_writeGuidArrayToString(str, m_interfaceGuid);
     j["selected-interface"] = str;
 
@@ -149,9 +149,9 @@ bool vscpClientTcp::initFromJson(const std::string& config)
             //m_bPolling = j["response-timeout"].get<int>();
         }
 
-        // if (j.contains("bfull-l2")) {
-        //     xxx = j["bfull-l2"].get<bool>();
-        // }
+        if (j.contains("bfull-l2")) {
+            setFullLevel2(j["bfull-l2"].get<bool>());
+        }
 
         if (j.contains("selected-interface")) {
             std::string str = j["selected-interface"].get<std::string>();

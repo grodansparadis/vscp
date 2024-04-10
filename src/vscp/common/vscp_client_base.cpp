@@ -46,6 +46,7 @@ CVscpClient::CVscpClient()
   m_evcallback     = nullptr;
   m_excallback     = nullptr;
   m_callbackObject = nullptr;
+  m_bFullLevel2    = false; // This is not a full level II communication client
 }
 
 ///////////////////////////////////////////////////////////////////////////////

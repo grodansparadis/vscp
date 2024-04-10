@@ -254,6 +254,18 @@ public:
   */
   virtual std::string getName(void) { return m_name; };
 
+  /*!
+    Mark as full level II or not
+    @param b Set to true to mark as full level II working client
+  */
+  void setFullLevel2(bool b=true) { m_bFullLevel2 = b; };
+
+  /*!
+    Check if client is afull level II client
+    @return true If the client is a full level II client
+  */
+  bool isFullLevel2(void) { return m_bFullLevel2; };
+
 public:
   /*!
       Callback for events
@@ -271,11 +283,17 @@ public:
   */
   void *m_callbackObject;
 
-  // Type of connection object
+  /// Type of connection object
   connType m_type = CVscpClient::connType::NONE;
 
-  // Name for connection object
+  /// Name for connection object
   std::string m_name;
+
+  /*!
+    True if communication client work with FULL GUID's
+    and not nickname and interfaces
+  */
+  bool m_bFullLevel2;
 };
 
 #endif

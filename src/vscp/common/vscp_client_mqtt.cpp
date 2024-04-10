@@ -599,6 +599,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_mapMqttIntOptions["receive-maximum"]  = 20;
   m_mapMqttIntOptions["send-maximum"]     = 20;
 
+  m_tid                 = 0;           // pthread
   m_bConnected          = false;       // Not connected
   m_bJsonMeasurementAdd = true;        // Add measurement block to JSON publish event
   m_bindInterface       = "";          // No bind interface
@@ -727,6 +728,10 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("bind")) {
       m_bindInterface = j["bind"].get<std::string>();
       spdlog::debug("MQTT CLIENT: json mqtt init: bind interface set to {}.", m_bindInterface);
+    }
+
+    if (j.contains("bfull-l2")) {
+      setFullLevel2(j["bfull-l2"].get<bool>());
     }
 
     // Host address on form (s)tcp://ip:port
