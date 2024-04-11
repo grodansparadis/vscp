@@ -1203,11 +1203,11 @@ workerThread(void *pData)
               }
             }
 
-            printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
+            //printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
 
             // Add to input queue only if no callback set
             if ((nullptr == pObj->m_evcallback) && (nullptr == pObj->m_excallback)) {
-              std::cout << "add to receive queue" << std::endl;
+              //std::cout << "add to receive queue" << std::endl;
               pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
               pObj->m_receiveList.push_back(pEvent);
               sem_post(&pObj->m_semReceiveQueue);
