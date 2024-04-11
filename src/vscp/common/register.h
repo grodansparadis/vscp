@@ -41,6 +41,9 @@
 #define FORMAT_REMOTEVAR_DECIMAL 0
 #define FORMAT_REMOTEVAR_HEX     1
 
+#define REGISTER_DEFAULT_TIMEOUT 2000
+#define REGISTER_DEFAULT_DELAY   10000
+
 class CRegisterPage;
 class CUserRegisters;
 class CStandardRegisters;
@@ -57,6 +60,7 @@ class CStandardRegisters;
   @param offset Register offset on page to read from.
   @param value Value read from register.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+            REGISTER_DEFAULT_TIMEOUT is used as default
   @return VSCP_ERROR_SUCCESS on success.
 */
 int
@@ -66,7 +70,7 @@ vscp_readLevel1Register(CVscpClient &client,
                         uint16_t page,
                         uint8_t offset,
                         uint8_t &value,
-                        uint32_t timeout = 2000);
+                        uint32_t timeout = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Write VSCP register
@@ -80,6 +84,7 @@ vscp_readLevel1Register(CVscpClient &client,
   @param offset Register offset on page to read from.
   @param value Value to write.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+            REGISTER_DEFAULT_TIMEOUT is used as default
   @return VSCP_ERROR_SUCCESS on success.
 */
 int
@@ -89,7 +94,7 @@ vscp_writeLevel1Register(CVscpClient &client,
                          uint16_t page,
                          uint8_t offset,
                          uint8_t value,
-                         uint32_t timeout = 2000);
+                         uint32_t timeout = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Read VSCP register block.
@@ -104,6 +109,7 @@ vscp_writeLevel1Register(CVscpClient &client,
   @param count Number of registers to read. Zero means read 256 registers (0-255).
   @param values Pointer to map with registers to read.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+          REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
               in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
@@ -116,7 +122,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
                              uint8_t offset,
                              uint8_t count,
                              std::map<uint8_t, uint8_t> &values,
-                             uint32_t timeout                        = 2000,
+                             uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                              std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -131,6 +137,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   @param page Register page to read from.
   @param values Pointer to map with register values to write.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+          REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
               in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
@@ -141,7 +148,7 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               cguid &guidInterface,
                               uint16_t page,
                               std::map<uint8_t, uint8_t> &values,
-                              uint32_t timeout                        = 2000,
+                              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                               std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -152,7 +159,8 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                 is used for level I communication.
   @param guidInterface GUID of the interface to read from. Set to all zero
                 if no interface.
-  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.              
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+          REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
               in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
@@ -162,7 +170,7 @@ vscp_readStandardRegisters(CVscpClient &client,
                            cguid &guid,
                            cguid &guidInterface,
                            CStandardRegisters &stdregs,
-                           uint32_t timeout                        = 2000,
+                           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                            std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -173,15 +181,16 @@ vscp_readStandardRegisters(CVscpClient &client,
                 is used.
   @param found A set with nodeid's for found nodes.
   @param timeout Timeout in milliseconds. Zero means no timeout
+            REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
-              with found devices (not percentage) void f(int)  
+              with found devices (not percentage) void f(int)
   @return VSCP_ERROR_SUCCESS on success.
 */
 int
 vscp_scanForDevices(CVscpClient &client,
                     cguid &guid,
                     std::set<uint16_t> &found,
-                    uint32_t timeout                        = 2000,
+                    uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                     std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -193,7 +202,9 @@ vscp_scanForDevices(CVscpClient &client,
   @param search_nodes A set that contains all nodes to search
   @param found_nodes A set with nodeid's for found nodes.
   @param delay Delay in micro seconds between nodeid's to search.
+            REGISTER_DEFAULT_DELAY is used as default
   @param timeout Timeout in milliseconds. Zero means no timeout
+            REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
               in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
@@ -203,8 +214,8 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         cguid &guid,
                         std::set<uint16_t> &search_nodes,
                         std::set<uint16_t> &found_nodes,
-                        uint32_t delay                          = 10000,
-                        uint32_t timeout                        = 2000,
+                        uint32_t delay                          = REGISTER_DEFAULT_DELAY,
+                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                         std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -217,7 +228,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
   @param end_nodeid End nodeid to search to.
   @param found_nodes A set with nodeid's for found nodes.
   @param delay Delay in micro seconds between nodeid's to search.
+          REGISTER_DEFAULT_DELAY is used as default
   @param timeout Timeout in milliseconds. Zero means no timeout
+          REGISTER_DEFAULT_TIMEOUT is used as default
   @param statusCallback Optional callback that return status information
               in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
@@ -228,8 +241,8 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         uint8_t start_node,
                         uint8_t end_node,
                         std::set<uint16_t> &found_nodes,
-                        uint32_t delay                          = 10000,
-                        uint32_t timeout                        = 2000,
+                        uint32_t delay                          = REGISTER_DEFAULT_DELAY,
+                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
                         std::function<void(int)> statusCallback = nullptr);
 
 /*!
@@ -327,7 +340,7 @@ public:
 
   /*!
     Get the register changes
-    @return Register changes
+    @return Register changes in pointer to map
   */
   std::map<uint32_t, bool> *getChanges(void) { return &m_change; };
 
@@ -360,6 +373,7 @@ public:
 
   /*!
     Get the register map for this page
+    @return register map for page
   */
   std::map<uint32_t, uint8_t> *getRegisterMap(void) { return &m_registers; };
 
@@ -450,6 +464,7 @@ public:
       @param guidInterface GUID for interface. If zero no interface is used.
       @param pages A set holding the valied pages
       @param timeout Timeout in milliseconds. Zero means no timeout
+              REGISTER_DEFAULT_TIMEOUT is used as default
       @param statusCallback Optional callback that return status information
               in percent void f(int)
       @return VSCP_ERROR_SUCCESS on success.
@@ -458,7 +473,7 @@ public:
            cguid &guidNode,
            cguid &guidInterface,
            std::set<uint16_t> &pages,
-           uint32_t timeout                        = 1000,
+           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
            std::function<void(int)> statusCallback = nullptr);
 
   /*!
@@ -537,20 +552,20 @@ public:
   void clearHistory();
 
   /*!
-      Get abstraction value from registers into string value.
-      @param abstraction Abstraction record from MDF.
-      @param strValue Abstraction value in string form on return if call successful.
-      @return VSCP_ERROR_SUCCES on success and error code else.
+    Get abstraction value from registers into string value.
+    @param abstraction Abstraction record from MDF.
+    @param strValue Abstraction value in string form on return if call successful.
+    @return VSCP_ERROR_SUCCES on success and error code else.
   */
   int remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar,
                                std::string &strValue,
                                uint8_t format = FORMAT_REMOTEVAR_DECIMAL);
 
-  /*
-   * Store abstraction value in string format in corresponding registers.
-   * @param abstraction Abstraction record from MDF.
-   * @param strValue Abstraction value in string form.
-   * @return VSCP_ERROR_SUCCES on success and error code else.
+  /*!
+    Store abstraction value in string format in corresponding registers.
+    @param abstraction Abstraction record from MDF.
+    @param strValue Abstraction value in string form.
+    @return VSCP_ERROR_SUCCES on success and error code else.
    */
   int remoteVarFromStringToReg(CMDF_RemoteVariable &remoteVar, std::string &strValue);
 
@@ -844,6 +859,7 @@ public:
     @param guidNode GUID for node. Only LSB is used for level I node.
     @param guidInterface GUID for interface. If zero no interface is used.
     @param timeout Timeout in milliseconds. Zero means no timeout
+              REGISTER_DEFAULT_TIMEOUT is used as default
     @param statusCallback Optional callback that return status information
               in percent void f(int)
     @return VSCP_ERROR_SUCCESS on success.
@@ -851,7 +867,7 @@ public:
   int init(CVscpClient &client,
            cguid &guidNode,
            cguid &guidInterface,
-           uint32_t timeout                        = 1000,
+           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
            std::function<void(int)> statusCallback = nullptr);
 
   /*!
@@ -994,10 +1010,10 @@ public:
   /*!
     Restore standard configuration for node
   */
-  int restoreStandardConfig(CVscpClient &client, 
-                                cguid &guidNode, 
-                                cguid &guidInterface, 
-                                uint32_t timeout = 1000);
+  int restoreStandardConfig(CVscpClient &client,
+                            cguid &guidNode,
+                            cguid &guidInterface,
+                            uint32_t timeout = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
     Get firmare device code (added in 1.13)
