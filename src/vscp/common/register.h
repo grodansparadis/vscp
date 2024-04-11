@@ -104,6 +104,8 @@ vscp_writeLevel1Register(CVscpClient &client,
   @param count Number of registers to read. Zero means read 256 registers (0-255).
   @param values Pointer to map with registers to read.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @param statusCallback Optional callback that return status information
+              in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
 */
 int
@@ -114,7 +116,8 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
                              uint8_t offset,
                              uint8_t count,
                              std::map<uint8_t, uint8_t> &values,
-                             uint32_t timeout = 2000);
+                             uint32_t timeout                        = 2000,
+                             std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Write VSCP register block.
@@ -128,6 +131,8 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   @param page Register page to read from.
   @param values Pointer to map with register values to write.
   @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @param statusCallback Optional callback that return status information
+              in percent void f(int)
   @return VSCP_ERROR_SUCCESS on success.
 */
 int
@@ -136,17 +141,29 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               cguid &guidInterface,
                               uint16_t page,
                               std::map<uint8_t, uint8_t> &values,
-                              uint32_t timeout = 2000);
+                              uint32_t timeout                        = 2000,
+                              std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Read all standard registers
+  @param client VSCP client derived from the client vase class over
+                which the communication is carried out.
+  @param guid GUID of the device to read from. Only the lsb (nickname)
+                is used for level I communication.
+  @param guidInterface GUID of the interface to read from. Set to all zero
+                if no interface.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.              
+  @param statusCallback Optional callback that return status information
+              in percent void f(int)
+  @return VSCP_ERROR_SUCCESS on success.
 */
 int
 vscp_readStandardRegisters(CVscpClient &client,
                            cguid &guid,
                            cguid &guidInterface,
                            CStandardRegisters &stdregs,
-                           uint32_t timeout = 2000);
+                           uint32_t timeout                        = 2000,
+                           std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Do a fast register scan using who is there protocol functionality
@@ -156,9 +173,16 @@ vscp_readStandardRegisters(CVscpClient &client,
                 is used.
   @param found A set with nodeid's for found nodes.
   @param timeout Timeout in milliseconds. Zero means no timeout
+  @param statusCallback Optional callback that return status information
+              with found devices (not percentage) void f(int)  
+  @return VSCP_ERROR_SUCCESS on success.
 */
 int
-vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found, uint32_t timeout = 2000);
+vscp_scanForDevices(CVscpClient &client,
+                    cguid &guid,
+                    std::set<uint16_t> &found,
+                    uint32_t timeout                        = 2000,
+                    std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Do a slow register scan using read register (firts byte of GUID)
@@ -170,14 +194,18 @@ vscp_scanForDevices(CVscpClient &client, cguid &guid, std::set<uint16_t> &found,
   @param found_nodes A set with nodeid's for found nodes.
   @param delay Delay in micro seconds between nodeid's to search.
   @param timeout Timeout in milliseconds. Zero means no timeout
+  @param statusCallback Optional callback that return status information
+              in percent void f(int)
+  @return VSCP_ERROR_SUCCESS on success.
 */
 int
 vscp_scanSlowForDevices(CVscpClient &client,
                         cguid &guid,
                         std::set<uint16_t> &search_nodes,
                         std::set<uint16_t> &found_nodes,
-                        uint32_t delay   = 10000,
-                        uint32_t timeout = 2000);
+                        uint32_t delay                          = 10000,
+                        uint32_t timeout                        = 2000,
+                        std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Do a slow register scan using register read functionality
@@ -190,6 +218,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
   @param found_nodes A set with nodeid's for found nodes.
   @param delay Delay in micro seconds between nodeid's to search.
   @param timeout Timeout in milliseconds. Zero means no timeout
+  @param statusCallback Optional callback that return status information
+              in percent void f(int)
+  @return VSCP_ERROR_SUCCESS on success.
 */
 int
 vscp_scanSlowForDevices(CVscpClient &client,
@@ -197,8 +228,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         uint8_t start_node,
                         uint8_t end_node,
                         std::set<uint16_t> &found_nodes,
-                        uint32_t delay   = 10000,
-                        uint32_t timeout = 2000);
+                        uint32_t delay                          = 10000,
+                        uint32_t timeout                        = 2000,
+                        std::function<void(int)> statusCallback = nullptr);
 
 /*!
   Get device information on HTML format
@@ -418,13 +450,16 @@ public:
       @param guidInterface GUID for interface. If zero no interface is used.
       @param pages A set holding the valied pages
       @param timeout Timeout in milliseconds. Zero means no timeout
+      @param statusCallback Optional callback that return status information
+              in percent void f(int)
       @return VSCP_ERROR_SUCCESS on success.
     */
   int init(CVscpClient &client,
            cguid &guidNode,
            cguid &guidInterface,
            std::set<uint16_t> &pages,
-           uint32_t timeout = 1000);
+           uint32_t timeout                        = 1000,
+           std::function<void(int)> statusCallback = nullptr);
 
   /*!
       Set value for register
@@ -809,9 +844,15 @@ public:
     @param guidNode GUID for node. Only LSB is used for level I node.
     @param guidInterface GUID for interface. If zero no interface is used.
     @param timeout Timeout in milliseconds. Zero means no timeout
+    @param statusCallback Optional callback that return status information
+              in percent void f(int)
     @return VSCP_ERROR_SUCCESS on success.
   */
-  int init(CVscpClient &client, cguid &guidNode, cguid &guidInterface, uint32_t timeout = 1000);
+  int init(CVscpClient &client,
+           cguid &guidNode,
+           cguid &guidInterface,
+           uint32_t timeout                        = 1000,
+           std::function<void(int)> statusCallback = nullptr);
 
   /*!
     Initialization with already read standard registers
@@ -953,7 +994,10 @@ public:
   /*!
     Restore standard configuration for node
   */
-  int restoreStandardConfig(CVscpClient &client, cguid &guidNode, cguid &guidInterface, uint32_t timeout = 1000);
+  int restoreStandardConfig(CVscpClient &client, 
+                                cguid &guidNode, 
+                                cguid &guidInterface, 
+                                uint32_t timeout = 1000);
 
   /*!
     Get firmare device code (added in 1.13)
