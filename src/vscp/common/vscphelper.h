@@ -36,7 +36,7 @@
 #if !defined(VSCPHELPER_H__INCLUDED_)
 #define VSCPHELPER_H__INCLUDED_
 
-//#include <config.h> // autoconf
+// #include <config.h> // autoconf
 
 #ifndef WIN32
 #include <byteswap.h>
@@ -45,8 +45,8 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #else
-//#include <winsock2.h>
-//#include <windows.h>
+// #include <winsock2.h>
+// #include <windows.h>
 #endif
 
 #include <algorithm>
@@ -141,10 +141,10 @@
    (((val) << 24) & 0x0000FF0000000000) | (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000))
 
 // For platform independet non-case dependent string compare
-#ifdef _MSC_VER 
-//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#ifdef _MSC_VER
+// not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
 #define strncasecmp _strnicmp
-#define strcasecmp _stricmp
+#define strcasecmp  _stricmp
 #endif
 
 // Forward declaration
@@ -535,7 +535,7 @@ vscp_str_after(const std::string &str, char c)
   @param str Standard C++ string to encode
   @return Encoded string.
 */
-std::string 
+std::string
 vscp_safe_encode_str(const std::string &str);
 
 /*!
@@ -1979,8 +1979,6 @@ vscp_convertStringToEventEx(vscpEventEx *pEventEx, const std::string &str);
 void
 vscp_makeHtml(std::string &str);
 
-
-
 ////////////////////////////////////////////////////////////////////////////
 //                           Encrypted frames
 ////////////////////////////////////////////////////////////////////////////
@@ -2077,6 +2075,15 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len);
  */
 bool
 vscp_getEventExFromFrame(vscpEventEx *pEventEx, const uint8_t *buf, size_t len);
+
+/*!  TODO DOC
+  Get a pointer to a bootloader description string from boot loader code
+  @param code Boot loader code to get description for
+  @return Pointer to string with description. "Unknown" will be returned for
+    a code that is not known.
+*/
+const char *
+vscp_getBootLoaderDescription(uint8_t code);
 
 /*!
  * Encrypt VSCP frame using the selected encryption algorithm. The iv

@@ -69,7 +69,7 @@
 #include <vscpmd5.h>
 
 #include <guid.h>
-//#include <mdf.h>
+// #include <mdf.h>
 #include <vscp.h>
 #include <vscphelper.h>
 
@@ -117,13 +117,12 @@
 #endif
 
 #define vsnprintf_impl vsnprintf
-#define XML_BUFF_SIZE 0xffff
+#define XML_BUFF_SIZE  0xffff
 
 using namespace std;
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
-
 
 // ***************************************************************************
 //                              General Helpers
@@ -757,7 +756,7 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
   if (nullptr == t) {
     return false;
   }
-  
+
 #ifdef WIN32
   strftime(buf, buf_len, "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
 #else
@@ -830,12 +829,12 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
 //
 //
 
-std::string 
+std::string
 vscp_safe_encode_str(const std::string &str)
 {
   std::string retstr = "";
 
-  for (auto it=str.cbegin(); it!=str.cend(); ++it) {
+  for (auto it = str.cbegin(); it != str.cend(); ++it) {
     if ('\\' == *it) {
       retstr += "\\";
     }
@@ -1046,7 +1045,7 @@ vscp_getPortFromInterface(const std::string &iface)
   vscp_trim(str);
 
   if (std::string::npos != (pos = str.rfind(":"))) {
-    str = str.substr(pos+1);
+    str = str.substr(pos + 1);
   }
 
   port = atoi(str.c_str());
@@ -2479,7 +2478,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
   data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    data[1]          = (uint8_t)value;
+    data[1]          = (uint8_t) value;
     pEvent->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -2627,7 +2626,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
   pEventEx->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    pEventEx->data[1]  = (uint8_t)value;
+    pEventEx->data[1]  = (uint8_t) value;
     pEventEx->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
@@ -2663,7 +2662,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
     pEventEx->data[1 + offset] = *((uint8_t *) &value);
     pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
     pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4+offset] = *((uint8_t *)&value + 3);
+    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffff) {
@@ -3035,7 +3034,7 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
 
   pEvent->pdata    = nullptr;
   pEvent->sizeData = 0;
-  
+
   if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
     return false;
   }
@@ -4347,7 +4346,7 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
 
   // Return empty string if all date/time values is zero
   dt.clear();
-  
+
   if (pEvent->year || pEvent->month || pEvent->day || pEvent->hour || pEvent->minute || pEvent->second) {
     dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
                          (int) pEvent->year,
@@ -5110,7 +5109,7 @@ vscp_setEventToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;  
+  time_t rawtime;
   struct tm *ptm;
 
   time(&rawtime);
@@ -6260,7 +6259,7 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
     return false;
   }
 
-  time_t rawtime;  
+  time_t rawtime;
   struct tm *ptm;
 
   time(&rawtime);
@@ -6293,7 +6292,7 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
     return false;
   }
 
-  time_t rawtime;  
+  time_t rawtime;
   struct tm *ptm;
 
   time(&rawtime);
@@ -7013,6 +7012,65 @@ vscp_getEventExFromFrame(vscpEventEx *pEventEx, const uint8_t *frame, size_t len
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getBootLoaderDescription
+// 
+
+const char *
+vscp_getBootLoaderDescription(uint8_t code)
+{
+  switch (code) {
+    case VSCP_BOOTLOADER_VSCP:
+      return "VSCP boot loader algorithm";
+    case VSCP_BOOTLOADER_PIC1:
+      return "PIC algorithm 0";
+    case VSCP_BOOTLOADER_AVR1:
+      return "AVR algorithm 0";
+    case VSCP_BOOTLOADER_NXP1:
+      return "NXP/Philips/Freescale algorithm 0";
+    case VSCP_BOOTLOADER_ST:
+      return "ST STR algorithm 0";
+    case VSCP_BOOTLOADER_FREESCALE:
+      return "Freescale Kinetics algorithm 0";
+    case VSCP_BOOTLOADER_ESP:
+      return "Espressif algorithm 0";
+    case VSCP_BOOTLOADER_USER0:
+      return "Used defined bootloader 0";
+    case VSCP_BOOTLOADER_USER1:
+      return "Used defined bootloader 1";
+    case VSCP_BOOTLOADER_USER2:
+      return "Used defined bootloader 2";
+    case VSCP_BOOTLOADER_USER3:
+      return "Used defined bootloader 3";
+    case VSCP_BOOTLOADER_USER4:
+      return "Used defined bootloader 4";
+    case VSCP_BOOTLOADER_USER5:
+      return "Used defined bootloader 5";
+    case VSCP_BOOTLOADER_USER6:
+      return "Used defined bootloader 6";
+    case VSCP_BOOTLOADER_USER7:
+      return "Used defined bootloader 7";
+    case VSCP_BOOTLOADER_USER8:
+      return "Used defined bootloader 8";
+    case VSCP_BOOTLOADER_USER9:
+      return "Used defined bootloader 9";
+    case VSCP_BOOTLOADER_USER10:
+      return "Used defined bootloader 10";
+    case VSCP_BOOTLOADER_USER11:
+      return "Used defined bootloader 11";
+    case VSCP_BOOTLOADER_USER12:
+      return "Used defined bootloader 12";
+    case VSCP_BOOTLOADER_USER13:
+      return "Used defined bootloader 13";
+    case VSCP_BOOTLOADER_USER14:
+      return "Used defined bootloader 14";
+    case VSCP_BOOTLOADER_USER15:
+      return "No bootloader available";
+    default:
+      return "Unknown.";
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_encryptFrame
 //
@@ -7245,15 +7303,16 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 
 // ----------------------------------------------------------------------------
 
-static uint8_t readHexChar(char input)
+static uint8_t
+readHexChar(char input)
 {
-  if(input >= '0' && input <= '9') {
+  if (input >= '0' && input <= '9') {
     return input - '0';
   }
-  if(input >= 'A' && input <= 'F') {
+  if (input >= 'A' && input <= 'F') {
     return input - 'A' + 10;
   }
-  if(input >= 'a' && input <= 'f') {
+  if (input >= 'a' && input <= 'f') {
     return input - 'a' + 10;
   }
   throw std::invalid_argument("Invalid hex char input");
@@ -7266,15 +7325,15 @@ static uint8_t readHexChar(char input)
 size_t
 vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 {
-  int cnt = 0;
+  int cnt          = 0;
   const char *phex = hexstr;
 
-  while(*(phex + 2*cnt) && *(phex + 2*cnt + 1) && (cnt < size)) {
-    // printf("%02X %02X %02X\n", 
+  while (*(phex + 2 * cnt) && *(phex + 2 * cnt + 1) && (cnt < size)) {
+    // printf("%02X %02X %02X\n",
     //         readHexChar(*(phex + 2*cnt))<<4,
     //         readHexChar(*(phex + 2*cnt + 1)),
     //         (uint8_t)(readHexChar(*(phex + 2*cnt)) << 4) + readHexChar(*(phex + 2*cnt + 1)));
-    *(array + cnt) = (uint8_t)(readHexChar(*(phex + 2*cnt)) << 4) + readHexChar(*(phex + 2*cnt + 1));
+    *(array + cnt) = (uint8_t) (readHexChar(*(phex + 2 * cnt)) << 4) + readHexChar(*(phex + 2 * cnt + 1));
     cnt++;
   }
 
