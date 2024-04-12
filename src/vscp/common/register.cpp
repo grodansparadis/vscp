@@ -488,10 +488,10 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
 
       } while (timeout);
 
-    /*!
-      if a callback is defined call it every half second
-      and report presentage of operation complete
-    */
+      /*!
+        if a callback is defined call it every half second
+        and report presentage of operation complete
+      */
       if (nullptr != statusCallback) {
         statusCallback((100 * i) / nwrites);
       }
@@ -539,7 +539,7 @@ vscp_scanForDevices(CVscpClient &client,
     return rv;
   }
 
-  uint32_t startTime = vscp_getMsTimeStamp();
+  uint32_t startTime    = vscp_getMsTimeStamp();
   uint32_t callbackTime = vscp_getMsTimeStamp();
 
   while (true) {
@@ -634,7 +634,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
 #endif
   }
 
-  uint32_t startTime = vscp_getMsTimeStamp();
+  uint32_t startTime    = vscp_getMsTimeStamp();
   uint32_t callbackTime = vscp_getMsTimeStamp();
 
   while (true) {
@@ -674,7 +674,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
     */
     if (nullptr != statusCallback) {
       if ((vscp_getMsTimeStamp() - callbackTime) > 500) {
-        statusCallback((100*found_nodes.size())/search_nodes.size());
+        statusCallback((100 * found_nodes.size()) / search_nodes.size());
         callbackTime = vscp_getMsTimeStamp();
       }
     }
@@ -1291,24 +1291,16 @@ CStandardRegisters::~CStandardRegisters()
 //
 
 int
-CStandardRegisters::init(CVscpClient &client, 
-                          cguid &guidNode, 
-                          cguid &guidInterface, 
-                          uint32_t timeout, 
-                          std::function<void(int)> statusCallback)
+CStandardRegisters::init(CVscpClient &client,
+                         cguid &guidNode,
+                         cguid &guidInterface,
+                         uint32_t timeout,
+                         std::function<void(int)> statusCallback)
 {
   int rv;
   m_regs.clear();
   m_change.clear();
-  rv = vscp_readLevel1RegisterBlock(client, 
-                                      guidNode, 
-                                      guidInterface, 
-                                      0, 
-                                      0x80, 
-                                      128, 
-                                      m_regs, 
-                                      timeout,
-                                      statusCallback);
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, timeout, statusCallback);
   return rv;
 }
 
@@ -1337,10 +1329,7 @@ CStandardRegisters::init(CRegisterPage &regPage)
 //
 
 int
-restoreStandardConfig(CVscpClient &client, 
-                        cguid &guidNode, 
-                        cguid &guidInterface, 
-                        uint32_t timeout)
+restoreStandardConfig(CVscpClient &client, cguid &guidNode, cguid &guidInterface, uint32_t timeout)
 {
   int rv;
   rv = vscp_writeLevel1Register(client, guidNode, guidInterface, 0, 0xA2, 0x55, timeout);
@@ -1375,6 +1364,19 @@ CStandardRegisters::getGUID(cguid &guid)
     // std::cout << std::hex << (int)m_regs[0xd0 + i] << std::endl;
     guid.setAt(i, m_regs[0xd0 + i]);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getGUIDStr
+//
+
+std::string
+CStandardRegisters::getGUIDStr(void)
+{
+  cguid guid;
+
+  getGUID(guid);
+  return guid.toString();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1449,15 +1451,8 @@ CUserRegisters::init(CVscpClient &client,
 
     std::map<uint8_t, uint8_t> registers;
     m_registerPageMap[page] = new CRegisterPage(m_level, page);
-    rv = vscp_readLevel1RegisterBlock(client, 
-                                        guidNode, 
-                                        guidInterface, 
-                                        page, 
-                                        0, 
-                                        127, 
-                                        registers, 
-                                        timeout, 
-                                        statusCallback);
+    rv =
+      vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, page, 0, 127, registers, timeout, statusCallback);
     if (VSCP_ERROR_SUCCESS != rv) {
       return rv;
     }

@@ -9471,13 +9471,13 @@ CMDF::parseMDF(const std::string &path)
     // }
     vscp_trim(str);
     if ((pos = str.find('{')) != std::string::npos) {
-      spdlog::debug("Parse-XML: MDF file format is JSON");
+      spdlog::info("Parse-XML: MDF file format is JSON");
       ifs.close();
       rv = parseMDF_JSON(path);
       break;
     }
     else if ((pos = str.find('<')) != std::string::npos) {
-      spdlog::debug("Parse-XML: MDF file format is XML");
+      spdlog::info("Parse-XML: MDF file format is XML");
       rv = parseMDF_XML(ifs);
       ifs.close();
       break;

@@ -1023,14 +1023,21 @@ public:
 
   /*!
     Get guid as GUID class
+    @param Regerence to GUID object
   */
   void getGUID(cguid &guid);
 
   /*!
-    Get MDF URL
-    @param url - Reference to string to store URL in.
+    Get GUID string
+    @return String with GUID on string form
   */
-  std::string getMDF(void);
+  std::string getGUIDStr(void);
+
+    /*!
+      Get MDF URL
+      @param url - Reference to string to store URL in.
+    */
+    std::string getMDF(void);
 
   /*!
     Get a standard register value from offset
