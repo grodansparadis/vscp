@@ -1792,25 +1792,43 @@ bool
 vscp_writeFilterMaskToJSON(std::string &strFilter, vscpEventFilter *pFilter);
 
 /*!
-    Convert an Event from a CANAL message
+    Convert a CANAL message to an event
+    @param pvscpEvent Pointer to VSCP event that get result
+    @param pcanalMsg Pointer to CANAL message that should be converted
+    @param pGUID GUID to use for event
+    @return true on success
 */
 bool
 vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsigned char *pGUID);
 
 /*!
-    Convert an Event from a CANAL message
+    Convert a CANAL message to an event ex
+    @param pvscpEventEx Pointer to VSCP event ex that get result
+    @param pcanalMsg Pointer to CANAL message that should be converted
+    @param pGUID GUID to use for event
+    @return true on success
 */
 bool
 vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx, const canalMsg *pcanalMsg, unsigned char *pGUID);
 
 /*!
-    Covert VSCP event to CANAL message
+    Convert VSCP event to a CANAL message
+    @param pvscpEventEx Pointer to VSCP event that get result
+    @param pcanalMsg Pointer to CANAL message that should be converted
+    @param mode Size of CAN frame structure. Used to detect fd-mode
+    @return true on success
 */
 bool
 vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8_t mode = CAN_MTU);
 
 /*!
     Covert VSCP event to CANAL message
+    /*!
+    Convert VSCP event to a CANAL message    
+    @param pcanalMsg Pointer to CANAL message that get result
+    @param pvscpEventEx Pointer to VSCP event ex that should be converted
+    @param mode Size of CAN frame structure. Used to detect fd-mode
+    @return true on success
 */
 bool
 vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEvent, uint8_t mode = CAN_MTU);
@@ -1820,7 +1838,7 @@ vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEvent, u
 
     @param pEventTo Pointer to event to copy to.
     @param pEventFrom Pointer to event to copy from.
-    @return True on success.
+    @return true on success.
 */
 bool
 vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom);

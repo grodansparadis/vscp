@@ -38,6 +38,8 @@
 //  Alternative licenses for VSCP & Friends may be arranged by contacting
 //  the VSCP project at info@vscp.org, https://www.vscp.org
 //
+// https://en.wikipedia.org/wiki/Intel_HEX
+// https://www.kanda.com/blog/microcontrollers/pic-microcontrollers/pic-hex-file-format/
 
 #pragma once
 
@@ -56,10 +58,9 @@
 class CBootMemBlock {
 
 public:
-
   /*!
     A memory blocks have a 32-bit start address and is
-    extending from this address with blksize bytes. The 
+    extending from this address with blksize bytes. The
     block size is usually the same size as intel hex records
     but that is not a requirement
     @param address 32-bit start address for memory block
@@ -69,11 +70,10 @@ public:
   */
   CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *pblkdata = nullptr);
 
-  /// @brief  Dtor  
+  /// @brief  Dtor
   virtual ~CBootMemBlock(void);
 
 private:
-
   /// The start addres for the memory block
   uint32_t m_startAddress;
 
@@ -95,7 +95,6 @@ public:
   */
   CBootDevice(CVscpClient *pclient, uint16_t nodeid);
 
-
   /*!
       Constructor
 
@@ -113,14 +112,19 @@ public:
   // Timeout for response
   static const uint16_t BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT = 5000;
 
-    // Hexfiles type
-    enum type_hex_file {
-      HEXFILE_TYPE_INTEL_HEX8 = 0,
-      HEXFILE_TYPE_INTEL_HEX16,
-      HEXFILE_TYPE_INTEL_HEX32,
-    };
+  // Hexfiles type
+  enum type_hex_file {
+    HEXFILE_TYPE_INTEL_HEX8 = 0,
+    HEXFILE_TYPE_INTEL_HEX16,
+    HEXFILE_TYPE_INTEL_HEX32,
+  };
 
-
+  static const uint8_t INTELHEX_LINETYPE_DATA             = 0; // Data record.
+  static const uint8_t INTELHEX_LINETYPE_EOF              = 1; // End Of File record.
+  static const uint8_t INTELHEX_LINETYPE_EXTENDED_SEGMENT = 2; // Extended segment address	record.
+  static const uint8_t INTELHEX_LINETYPE_START_SEGMENT    = 3; // Execution  start
+  static const uint8_t INTELHEX_LINETYPE_EXTENDED_LINEAR  = 4; // Extended linear address record.
+  static const uint8_t INTELHEX_LINETYPE_START_LINEAR     = 5; // Execution start for 32-bit machines
   /*!
       Load a binary file to the image
 
@@ -130,7 +134,7 @@ public:
       @param path Path to file
       @return true on success
   */
-  virtual int loadHexFile(const std::string &path);
+  virtual int loadIntelHexFile(const std::string &path);
 
   /*!
       Get info for hex file
@@ -140,24 +144,25 @@ public:
 
   /*!
     Set a device in bootmode
-    @return true on success.
+    @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual bool doDeviceInit(void) = 0;
+  virtual int doDeviceInit(void) = 0;
 
   /*!
-    Perform the actual boot process
-    @return true on success.
+    Perform the actual firmware load process
+    @param statusCallback Callback that receive status info as  presentage (int)
+          and status message (const char *)
+    @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual bool doDeviceLoad(void) = 0;
+  virtual int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr) = 0;
 
   /*!
     Restart the device
-    @return true on success.
+    @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual bool doDeviceReboot(void) = 0;
+  virtual int deviceReboot(void) = 0;
 
 protected:
-
   /*!
     VSCP Client used for communication
   */
@@ -178,12 +183,6 @@ protected:
 
   /// Checksum for firmware
   uint32_t m_checksum;
-
-  /// Lowest flash address
-  uint32_t m_minFlashAddr;
-
-  /// Highest flash address
-  uint32_t m_maxFlashAddr;
 
   /// # data bytes in file
   uint32_t m_totalCntData;

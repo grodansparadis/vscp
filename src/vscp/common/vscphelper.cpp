@@ -7014,7 +7014,7 @@ vscp_getEventExFromFrame(vscpEventEx *pEventEx, const uint8_t *frame, size_t len
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_getBootLoaderDescription
-// 
+//
 
 const char *
 vscp_getBootLoaderDescription(uint8_t code)

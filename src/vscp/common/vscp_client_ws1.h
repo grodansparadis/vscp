@@ -39,211 +39,213 @@
 #include "vscp_client_base.h"
 
 const uint32_t WS1_CONNECTION_TIMEOUT = 30000;
-const uint32_t WS1_RESPONSE_TIMEOUT	= 2000;
+const uint32_t WS1_RESPONSE_TIMEOUT   = 2000;
 
-class vscpClientWs1 : public CVscpClient
-{
-
-public:
-
-    vscpClientWs1();
-    ~vscpClientWs1();
-
-    /*!
-        Init client
-        @param host Host to connect to.
-        @param port Port on host to connect to.
-        @param bSSL True to activate SSL/TLS.
-        @param username Username credentials.
-        @param password Password credentials.
-        @param vscpkey Secret key.
-        @param connection_timeout Connection timeout in ms.
-        @param response_timeout Response timeout in ms.
-    */
-    virtual int init(const std::string host,
-                    short port,
-                    bool bSSL,
-                    const std::string username,
-                    const std::string password,
-                    uint8_t *vscpkey,
-                    uint32_t connection_timeout = WS1_CONNECTION_TIMEOUT,
-                    uint32_t response_timeout = WS1_RESPONSE_TIMEOUT );
-
-    /*!
-        Connect to remote host
-        @param bPoll If true polling is used.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int connect(void);
-
-    /*!
-        Disconnect from remote host
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int disconnect(void);
-
-    /*!
-        Check if connected.
-        @return true if connected, false otherwise.
-    */
-    virtual bool isConnected(void);
-
-    /*!
-        Send VSCP event to remote host.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int send(vscpEvent &ev);
-
-    /*!
-        Send VSCP event to remote host.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int send(vscpEventEx &ex);
-
-    /*!
-        Receive VSCP event from remote host
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int receive(vscpEvent &ev);
-
-    /*!
-        Receive VSCP event ex from remote host
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int receive(vscpEventEx &ex);
-
-    /*!
-        Set interface filter
-        @param filter VSCP Filter to set.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int setfilter(vscpEventFilter &filter);
-
-    /*!
-        Get number of events waiting to be received on remote
-        interface
-        @param pcount Pointer to an unsigned integer that get the count of events.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int getcount(uint16_t *pcount);
-
-    /*!
-        Clear the input queue
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int clear(void);
-
-    /*!
-        Get version from interface
-        @param pmajor Pointer to uint8_t that get major version of interface.
-        @param pminor Pointer to uint8_t that get minor version of interface.
-        @param prelease Pointer to uint8_t that get release version of interface.
-        @param pbuild Pointer to uint8_t that get build version of interface.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int getversion(uint8_t *pmajor,
-                            uint8_t *pminor,
-                            uint8_t *prelease,
-                            uint8_t *pbuild);
-
-    /*!
-        Get interfaces
-        @param iflist Get a list of available interfaces
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int getinterfaces(std::deque<std::string> &iflist);
-
-    /*!
-        Get capabilities (wcyd) from remote interface
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    virtual int getwcyd(uint64_t &wcyd);
-
-    /*!
-        Return a JSON representation of connection
-        @return JSON representation as string
-    */
-    virtual std::string getConfigAsJson(void);
-
-    /*!
-        Set member variables from JSON representation of connection
-        @param config JSON representation as string
-        @return True on success, false on failure.
-    */
-    virtual bool initFromJson(const std::string& config);
-
-
-    virtual void setConnectionTimeout(uint32_t timeout = WS1_CONNECTION_TIMEOUT) { m_timeout_connect = timeout; };
-    virtual uint32_t getConnectionTimeout(void) { return m_timeout_connect; };
-
-    virtual void setResponseTimeout(uint32_t timeout = WS1_RESPONSE_TIMEOUT) { m_timeout_response = timeout; };
-    virtual uint32_t getResponseTimeout(void) { return m_timeout_response; };
-
-    /*!
-        Encrypt the admin/password pair
-        @param strout Receive encrypted password
-        @param struser Username
-        @param strpassword Password
-        @param vscpkey 32 byte secret key known by client and server, This
-                key should be read from disk and NOT be stored in code.
-        @param iv initialization vector, 16 byte seed for encryption
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-    */
-    int encrypt_password(std::string& strout,
-							std::string struser,
-							std::string strpassword,
-							uint8_t *vscpkey,
-							uint8_t *iv);
-
-
-    /*!
-        Wait for data yo arrive fromthe websocket
-        @param timeout Maximum time to wait.
-        @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-                VSC_ERROR_TIMEOUT is returned for timeout.
-    */
-    int waitForResponse( uint32_t timeout = WS1_RESPONSE_TIMEOUT );
+class vscpClientWs1 : public CVscpClient {
 
 public:
+  vscpClientWs1();
+  ~vscpClientWs1();
 
-    // True if connected
-    bool m_bConnected;
+  /*!
+      Init client
+      @param host Host to connect to.
+      @param port Port on host to connect to.
+      @param bSSL True to activate SSL/TLS.
+      @param username Username credentials.
+      @param password Password credentials.
+      @param vscpkey Secret key.
+      @param connection_timeout Connection timeout in ms.
+      @param response_timeout Response timeout in ms.
+  */
+  virtual int init(const std::string host,
+                   short port,
+                   bool bSSL,
+                   const std::string username,
+                   const std::string password,
+                   uint8_t *vscpkey,
+                   uint32_t connection_timeout = WS1_CONNECTION_TIMEOUT,
+                   uint32_t response_timeout   = WS1_RESPONSE_TIMEOUT);
 
-    // Connection object
-    struct mg_connection *m_conn;
+  /*!
+      Connect to remote host
+      @param bPoll If true polling is used.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int connect(void);
 
-    // Semaphore for message receive queue
-    sem_t m_sem_msg;
+  /*!
+      Disconnect from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int disconnect(void);
 
-    // JSON message receive queue
-    std::deque<std::string> m_msgReceiveQueue;
+  /*!
+      Check if connected.
+      @return true if connected, false otherwise.
+  */
+  virtual bool isConnected(void);
 
-    // VSCP Event receive queue
-    std::deque<vscpEvent *> m_eventReceiveQueue;
+  /*!
+      Send VSCP event to remote host.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(vscpEvent &ev);
+
+  /*!
+      Send VSCP event to remote host.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(vscpEventEx &ex);
+
+  /*!
+    Send VSCP CAN(AL) message to remote host.
+    @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+*/
+  virtual int send(canalMsg &msg);
+
+  /*!
+      Receive VSCP event from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(vscpEvent &ev);
+
+  /*!
+      Receive VSCP event ex from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(vscpEventEx &ex);
+
+  /*!
+    Receive CAN(AL) message from remote host
+    @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+*/
+  virtual int receive(canalMsg &msg);
+
+  /*!
+      Set interface filter
+      @param filter VSCP Filter to set.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int setfilter(vscpEventFilter &filter);
+
+  /*!
+      Get number of events waiting to be received on remote
+      interface
+      @param pcount Pointer to an unsigned integer that get the count of events.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int getcount(uint16_t *pcount);
+
+  /*!
+      Clear the input queue
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int clear(void);
+
+  /*!
+      Get version from interface
+      @param pmajor Pointer to uint8_t that get major version of interface.
+      @param pminor Pointer to uint8_t that get minor version of interface.
+      @param prelease Pointer to uint8_t that get release version of interface.
+      @param pbuild Pointer to uint8_t that get build version of interface.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild);
+
+  /*!
+      Get interfaces
+      @param iflist Get a list of available interfaces
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int getinterfaces(std::deque<std::string> &iflist);
+
+  /*!
+      Get capabilities (wcyd) from remote interface
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int getwcyd(uint64_t &wcyd);
+
+  /*!
+      Return a JSON representation of connection
+      @return JSON representation as string
+  */
+  virtual std::string getConfigAsJson(void);
+
+  /*!
+      Set member variables from JSON representation of connection
+      @param config JSON representation as string
+      @return True on success, false on failure.
+  */
+  virtual bool initFromJson(const std::string &config);
+
+  virtual void setConnectionTimeout(uint32_t timeout = WS1_CONNECTION_TIMEOUT) { m_timeout_connect = timeout; };
+  virtual uint32_t getConnectionTimeout(void) { return m_timeout_connect; };
+
+  virtual void setResponseTimeout(uint32_t timeout = WS1_RESPONSE_TIMEOUT) { m_timeout_response = timeout; };
+  virtual uint32_t getResponseTimeout(void) { return m_timeout_response; };
+
+  /*!
+      Encrypt the admin/password pair
+      @param strout Receive encrypted password
+      @param struser Username
+      @param strpassword Password
+      @param vscpkey 32 byte secret key known by client and server, This
+              key should be read from disk and NOT be stored in code.
+      @param iv initialization vector, 16 byte seed for encryption
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  int encrypt_password(std::string &strout,
+                       std::string struser,
+                       std::string strpassword,
+                       uint8_t *vscpkey,
+                       uint8_t *iv);
+
+  /*!
+      Wait for data yo arrive fromthe websocket
+      @param timeout Maximum time to wait.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+              VSC_ERROR_TIMEOUT is returned for timeout.
+  */
+  int waitForResponse(uint32_t timeout = WS1_RESPONSE_TIMEOUT);
+
+public:
+  // True if connected
+  bool m_bConnected;
+
+  // Connection object
+  struct mg_connection *m_conn;
+
+  // Semaphore for message receive queue
+  sem_t m_sem_msg;
+
+  // JSON message receive queue
+  std::deque<std::string> m_msgReceiveQueue;
+
+  // VSCP Event receive queue
+  std::deque<vscpEvent *> m_eventReceiveQueue;
 
 private:
+  bool m_bSSL; // True for SSL/TSL
 
-    bool m_bSSL;    // True for SSL/TSL
+  // This is the encryption result over "username:password"
+  // using the vscpkey and iv from server for encryption
+  std::string m_credentials;
 
-    // This is the encryption result over "username:password"
-    // using the vscpkey and iv from server for encryption
-    std::string m_credentials;
+  // Initialization vector
+  uint8_t m_iv[16];
 
-    // Initialization vector
-    uint8_t m_iv[16];
+  // Host to connect to (default is 8884)
+  // (default is localhost)
+  std::string m_host;
 
-    // Host to connect to (default is 8884)
-    // (default is localhost)
-    std::string m_host;
+  // Port on host to connect to (8884/8843  443)
+  // (default is 8884)
+  short m_port;
 
-    // Port on host to connect to (8884/8843  443)
-    // (default is 8884)
-    short m_port;
+  uint32_t m_timeout_connect;
 
-    uint32_t m_timeout_connect;
-
-    uint32_t m_timeout_response;
-
+  uint32_t m_timeout_response;
 };
 
 #endif

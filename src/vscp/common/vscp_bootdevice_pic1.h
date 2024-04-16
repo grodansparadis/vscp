@@ -31,89 +31,16 @@
 //
 
 #pragma once
-#include "vscp_bootdevice_pic1.h"
+#include "vscp_bootdevice.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h>
 
 #include "vscp.h"
 
 #include <string>
 
-#define MEMREG_PRG_START 0x000000
-#define MEMREG_PRG_END   0x2fffff
-
-#define MEMREG_CONFIG_START 0x300000
-#define MEMREG_CONFIG_END   0x3fffff
-
-#define MEMREG_EEPROM_START 0xf00000
-#define MEMREG_EEPROM_END   0xffffff
-
-#define BUFFER_SIZE_PROGRAM 0x200000
-#define BUFFER_SIZE_USERID  0x200
-#define BUFFER_SIZE_CONFIG  0x200
-#define BUFFER_SIZE_EEPROM  0x400
-
-#define INTEL_LINETYPE_DATA             0 // Data record.
-#define INTEL_LINETYPE_EOF              1 // End Of File record.
-#define INTEL_LINETYPE_EXTENDED_SEGMENT 2 // Extended segment address	record.
-#define INTEL_LINETYPE_RESERVED         3 // Not used
-#define INTEL_LINETYPE_EXTENDED_LINEAR  4 // Extended linear address record.
-
-#ifndef MAX_PATH
-#define MAX_PATH 512
-#endif
-
-// Timeout for response
-#define BOOT_COMMAND_RESPONSE_TIMEOUT 5
-
-// flags
-// CONTROL is defined as follows
-//
-// Bit 0:   MODE_WRT_UNLCK      Set this to allow write and erase to memory.
-// Bit 1:   MODE_ERASE_ONLY     Set this to only erase program memory on a put
-// command.
-//                              Must be on a 64-bit boundary.
-// Bit 2:   MODE_AUTO_ERASE     Set this to automatically erase program memory
-// while writing
-//                              data.
-// Bit 3:   MODE_AUTO_INC       Set this to automatically increment the pointer
-// after a write. Bit 4:   MODE_ACK            Set to get acknowledge. Bit 5:
-// undefined. Bit 6:   undefined. Bit 7:   undefined.
-
-#define MODE_WRT_UNLCK  0x01
-#define MODE_ERASE_ONLY 0x02
-#define MODE_AUTO_ERASE 0x04
-#define MODE_AUTO_INC   0x08
-#define MODE_ACK        0x10
-
-// Boot Commands
-#define CMD_NOP       0x00 // No operation - Do nothing
-#define CMD_RESET     0x01 // Reset the device.
-#define CMD_RST_CHKSM 0x02 // Reset the checksum counter and verify.
-#define CMD_CHK_RUN                                                                                                    \
-  0x03 // Add checksum to CMD_DATA_LOW and
-       // CMD_DATA_HIGH, if verify and zero checksum
-       // then clear the last location of EEDATA.
-
-// Memory Type
-#define MEM_TYPE_PROGRAM 0x00 // < 0x200000
-#define MEM_TYPE_CONFIG  0x01 // 0x300000
-#define MEM_TYPE_EEPROM  0x02 // 0xF00000
-#define MEM_TYPE_USERID  0x03 // 0x200000
-
-// CAN message ID's
-#define ID_PUT_BASE_INFO 0x00001000 // Write address information.
-#define ID_PUT_DATA      0x00001100 // Write data block.
-#define ID_GET_BASE_INFO 0x00001200 // Get address information.
-#define ID_GET_DATA      0x00001300 // Get data block.
-
-#define ID_RESPONSE_PUT_BASE_INFO 0x00001400 // Response for put info request.
-#define ID_RESPONSE_PUT_DATA      0x00001500 // Response for put data request.
-#define ID_RESPONSE_GET_BASE_INFO 0x00001400 // Response for get info request.
-#define ID_RESPONSE_GET_DATA      0x00001500 // Response for get data request.
-
-// USed VSCP commands
+// Used VSCP commands
 #define VSCP_READ_REGISTER        0x09
 #define VSCP_RW_RESPONSE          0x0A
 #define VSCP_WRITE_REGISTER       0x0B
@@ -150,7 +77,7 @@ public:
       @param nodeid Nickname/nodeid for node that should be loaded
       with new code.
   */
-  CBootDevice_PIC1(CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound = true);
+  CBootDevice_PIC1(CVscpClient *pclient, uint8_t nodeid);
 
   /*!
       Constructor
@@ -159,48 +86,104 @@ public:
       @param guid GUID for node to bootload.
       @param ifguid GUID for interface node is located on
   */
-  CBootDevice_PIC1(VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound = true);
+  CBootDevice_PIC1(CVscpClient *pclient, cguid &guid, cguid &ifguid);
 
   // Dtor
   ~CBootDevice_PIC1(void);
+
+  static const uint32_t MEMREG_PRG_START = 0x000000;
+  static const uint32_t MEMREG_PRG_END   = 0x2fffff;
+
+  static const uint32_t MEMREG_CONFIG_START = 0x300000;
+  static const uint32_t MEMREG_CONFIG_END   = 0x3fffff;
+
+  static const uint32_t MEMREG_EEPROM_START = 0xf00000;
+  static const uint32_t MEMREG_EEPROM_END   = 0xffffff;
+
+  static const uint32_t BUFFER_SIZE_CODE = 0x200000; // Max 2M
+  static const uint32_t BUFFER_SIZE_USERID  = 0x200;
+  static const uint32_t BUFFER_SIZE_CONFIG  = 0x200;
+  static const uint32_t BUFFER_SIZE_EEPROM  = 0x400;
+
+  // Memory Type
+  enum men_type {
+    MEM_TYPE_PROGRAM = 0x00, // < 0x200000
+    MEM_TYPE_CONFIG,         // 0x300000
+    MEM_TYPE_EEPROM,         // 0xF00000
+    MEM_TYPE_USERID          // 0x200000
+  };
+
+  // Default timeout for response
+  static const uint8_t BOOT_COMMAND_RESPONSE_TIMEOUT = 5;
+
+  // flags
+  // CONTROL is defined as follows
+  //
+  // Bit 0:   MODE_WRT_UNLCK      Set this to allow write and erase to memory.
+  // Bit 1:   MODE_ERASE_ONLY     Set this to only erase program memory on a put
+  // command.
+  //                              Must be on a 64-bit boundary.
+  // Bit 2:   MODE_AUTO_ERASE     Set this to automatically erase program memory
+  // while writing
+  //                              data.
+  // Bit 3:   MODE_AUTO_INC       Set this to automatically increment the pointer
+  // after a write. Bit 4:   MODE_ACK            Set to get acknowledge. Bit 5:
+  // undefined. Bit 6:   undefined. Bit 7:   undefined.
+
+  static const uint8_t MODE_WRT_UNLCK  = 0x01;
+  static const uint8_t MODE_ERASE_ONLY = 0x02;
+  static const uint8_t MODE_AUTO_ERASE = 0x04;
+  static const uint8_t MODE_AUTO_INC   = 0x08;
+  static const uint8_t MODE_ACK        = 0x10;
+
+  // Boot Commands
+  static const uint8_t CMD_NOP       = 0x00; // No operation - Do nothing
+  static const uint8_t CMD_RESET     = 0x01; // Reset the device.
+  static const uint8_t CMD_RST_CHKSM = 0x02; // Reset the checksum counter and verify.
+  static const uint8_t CMD_CHK_RUN   = 0x03; // Add checksum to CMD_DATA_LOW and
+                                             // CMD_DATA_HIGH, if verify and zero checksum
+                                             // then clear the last location of EEDATA.
+
+  // CAN message ID commands
+  static const uint32_t ID_PUT_BASE_INFO = 0x00001000; // Write address information.
+  static const uint32_t ID_PUT_DATA      = 0x00001100; // Write data block.
+  static const uint32_t ID_GET_BASE_INFO = 0x00001200; // Get address information.
+  static const uint32_t ID_GET_DATA      = 0x00001300; // Get data block.
+  
+  // CAN message ID Responses
+  static const uint32_t ID_RESPONSE_PUT_BASE_INFO = 0x00001400; // Response for put info request.
+  static const uint32_t ID_RESPONSE_PUT_DATA      = 0x00001500; // Response for put data request.
+  static const uint32_t ID_RESPONSE_GET_BASE_INFO = 0x00001400; // Response for get info request.
+  static const uint32_t ID_RESPONSE_GET_DATA      = 0x00001500; // Response for get data request.
 
   /// Initialize data
   void init(void);
 
   /*!
-      Load a binary file to the image
-
-      This is typically an Intel HEX file that contains the memory
-      image of the device.
-
-      @param path Path to file
-      @return true on success
-  */
-  bool loadBinaryFile(const std::string &path, uint16_t typeHexfile);
-
-  /*!
       Show info for hex file
       @param Pointer to HTML window that will receive information.
   */
-  void showInfo(std::string *phtmlWnd);
+  std::string getInfo(void);
 
   /*!
       Set a device in bootmode
-      @return true on success.
+      @return VSCP_ERROR_SUCCESS on success.
   */
-  bool setDeviceInBootMode(void);
+  int setDeviceInBootMode(void);
 
   /*!
-      Perform the actual boot process
-      @return true on success.
+      Perform the actual firmware load process
+      @param statusCallback Callback that receive status info as  presentage (int)
+          and status message (const char *)
+      @return VSCP_ERROR_SUCCESS on success.
   */
-  bool doFirmwareLoad(void);
+  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr);
 
   /*!
       Write a sector
-      @return true on success.
+      @return VSCP_ERROR_SUCCESS on success.
   */
-  bool writeFirmwareSector(void);
+  int writeFirmwareSector(void);
 
   /*!
       Write to device control registry
@@ -210,9 +193,10 @@ public:
       @param cmd Boot command
       @param cmdData0 Boot command data byte 0
       @param cmdData1 Boot command data byte 1
+      @return VSCP_ERROR_SUCCESS on success.
 
   */
-  bool writeDeviceControlRegs(uint32_t addr,
+  int writeDeviceControlRegs(uint32_t addr,
                               uint8_t flags    = (MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK),
                               uint8_t cmd      = CMD_NOP,
                               uint8_t cmdData0 = 0,
@@ -228,9 +212,9 @@ public:
       Only extended messages are accepted as a valid response.
 
       @param id Response code to look for.
-      @return true on success.
+      @return VSCP_ERROR_SUCCESS on success.
   */
-  bool checkResponseLevel1(uint32_t id);
+  int checkResponseLevel1(uint32_t id);
 
   /*!
       Check for response from nodes over server (Level II).
@@ -242,9 +226,9 @@ public:
       Only extended messages are accepted as a valid response.
 
       @param id Response code to look for.
-      @return true on success.
+      @return VSCP_ERROR_SUCCESS on success.
   */
-  bool checkResponseLevel2(uint32_t id);
+  int checkResponseLevel2(uint32_t id);
 
 private:
   /// Flag for handshake with node
@@ -255,4 +239,26 @@ private:
 
   /// memory type
   uint8_t m_memtype;
+
+  /// Min and max mem blocks
+  uint32_t m_minFlashAddr;
+  uint32_t m_maxFlashAddr;
+  uint32_t m_minUserIdAddr;
+  uint32_t m_maxUserIdAddr;
+  uint32_t m_minConfigAddr;
+  uint32_t m_maxConfigAddr;
+  uint32_t m_minEEPROMAddr;
+  uint32_t m_maxEEPROMAddr;
+
+  // Flags for code in codeblocks (false as default)
+  bool m_bCodeMemory;
+  bool m_bUserIdMemory;
+  bool m_bCfgMemory;
+  bool m_bEepromMemory;
+
+  // Pic 1 memory buffers
+  uint8_t m_pbufCode[BUFFER_SIZE_CODE];
+  uint8_t m_pbufUserID[BUFFER_SIZE_USERID];
+  uint8_t m_pbufCfg[BUFFER_SIZE_CONFIG];
+  uint8_t m_pbufEprom[BUFFER_SIZE_EEPROM];
 };

@@ -2661,6 +2661,23 @@ vscpClientMqtt::send(vscpEventEx &ex)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int
+vscpClientMqtt::send(canalMsg &msg)
+{
+  vscpEventEx ex;
+
+  uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+    return VSCP_ERROR_INVALID_FRAME;
+  }
+
+  return send(ex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
@@ -2683,6 +2700,9 @@ vscpClientMqtt::receive(vscpEvent &ev)
 
     vscp_deleteEvent_v2(&pev);
   }
+  else {
+    return VSCP_ERROR_FIFO_EMPTY;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -2694,7 +2714,6 @@ vscpClientMqtt::receive(vscpEvent &ev)
 int
 vscpClientMqtt::receive(vscpEventEx &ex)
 {
-  // int rv;
   vscpEvent *pev = nullptr;
 
   if (m_receiveQueue.size()) {
@@ -2709,6 +2728,38 @@ vscpClientMqtt::receive(vscpEventEx &ex)
     }
 
     vscp_deleteEvent_v2(&pev);
+  }
+  else {
+    return VSCP_ERROR_FIFO_EMPTY;
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int
+vscpClientMqtt::receive(canalMsg &msg)
+{
+  vscpEvent *pev = nullptr;
+
+  if (m_receiveQueue.size()) {
+
+    pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+    if (nullptr == pev)
+      return VSCP_ERROR_MEMORY;
+
+    if (!vscp_convertEventToCanal(&msg, pev)) {
+      return VSCP_ERROR_MEMORY;
+    }
+
+    vscp_deleteEvent_v2(&pev);
+  }
+  else {
+    return VSCP_ERROR_FIFO_EMPTY;
   }
 
   return VSCP_ERROR_SUCCESS;

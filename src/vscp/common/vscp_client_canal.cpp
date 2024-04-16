@@ -280,6 +280,16 @@ vscpClientCanal::send(vscpEventEx &ex)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int
+vscpClientCanal::send(canalMsg &msg)
+{
+  return m_canalif.CanalSend(&msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
@@ -331,6 +341,30 @@ vscpClientCanal::receive(vscpEventEx &ex)
   if (VSCP_ERROR_SUCCESS != (rv = vscp_convertCanalToEventEx(&ex, &canalMsg, guid))) {
     spdlog::error("CANAL CLIENT: failed to convert ex event {}.", rv);
   }
+
+  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int
+vscpClientCanal::receive(canalMsg &msg)
+{
+  int rv;
+  canalMsg canalMsg;
+  uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+  spdlog::debug("CANAL CLIENT: Poll for event ex.");
+
+  pthread_mutex_lock(&m_mutexif);
+  if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&msg))) {
+    pthread_mutex_unlock(&m_mutexif);
+    spdlog::error("CANAL CLIENT: failed to receive ex event {}.", rv);
+    return rv;
+  }
+  pthread_mutex_unlock(&m_mutexif);
 
   return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
 }

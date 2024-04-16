@@ -34,6 +34,7 @@
 #include <canal.h>
 #include <guid.h>
 #include <vscp.h>
+#include <mdf.h>
 #include <vscp_class.h>
 #include <vscp_client_base.h>
 #include <vscp_type.h>
@@ -50,7 +51,7 @@ class CStandardRegisters;
 
 /*!
   Read VSCP register
-  @param client VSCP client derived from the client vase class over
+  @param client VSCP client derived from the client base class over
                 which the communication is carried out.
   @param guidNode GUID of the device to read from. Only the lsb (nickname)
                 is used for level I communication.
@@ -74,7 +75,7 @@ vscp_readLevel1Register(CVscpClient &client,
 
 /*!
   Write VSCP register
-  @param client VSCP client derived from the client vase class over
+  @param client VSCP client derived from the client base class over
                 which the communication is carried out.
   @param guid GUID of the device to read from. Only the lsb (nickname)
                 is used for level I communication.
@@ -98,7 +99,7 @@ vscp_writeLevel1Register(CVscpClient &client,
 
 /*!
   Read VSCP register block.
-  @param client VSCP client derived from the client vase class over
+  @param client VSCP client derived from the client base class over
                 which the communication is carried out.
   @param guidNode GUID of the device to read from. Only the lsb (nickname)
                 is used for level I communication.

@@ -132,6 +132,15 @@ int vscpClientLocal::send(vscpEventEx &ex)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int vscpClientLocal::send(canalMsg &msg)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
@@ -145,6 +154,15 @@ int vscpClientLocal::receive(vscpEvent &ev)
 //
 
 int vscpClientLocal::receive(vscpEventEx &ex)
+{
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int vscpClientLocal::receive(canalMsg &msg)
 {
     return VSCP_ERROR_SUCCESS;
 }

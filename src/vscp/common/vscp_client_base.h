@@ -120,6 +120,12 @@ public:
   virtual int send(vscpEvent &ev) = 0;
 
   /*!
+      Send CAN(AL) message to remote host.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(canalMsg &msg) = 0;
+
+  /*!
       Send VSCP event to remote host.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -136,6 +142,12 @@ public:
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEventEx &ex) = 0;
+
+  /*!
+      Receive CAN(AL) message from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(canalMsg &msg) = 0;
 
   /*!
       Set interface filter

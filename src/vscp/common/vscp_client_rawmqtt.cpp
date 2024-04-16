@@ -27,6 +27,7 @@
 #include <pch.h>
 #endif
 
+#include "vscphelper.h"
 #include "vscp_client_rawmqtt.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,6 +115,23 @@ int vscpClientRawMqtt::send(vscpEventEx &ex)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// send
+//
+
+int
+vscpClientRawMqtt::send(canalMsg &msg)
+{
+  vscpEventEx ex;
+
+  uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+    return VSCP_ERROR_INVALID_FRAME;
+  }
+
+  return send(ex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
@@ -130,6 +148,27 @@ int vscpClientRawMqtt::receive(vscpEventEx &ex)
 {
     return VSCP_ERROR_SUCCESS;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// receive
+//
+  
+int  
+vscpClientRawMqtt::receive(canalMsg &msg)
+{
+  int rv;
+  vscpEventEx ex;
+
+  if (VSCP_ERROR_SUCCESS != (rv = receive(ex))) {
+    return rv;
+  }
+
+  if (!vscp_convertEventExToCanal(&msg, &ex)) {
+    return VSCP_ERROR_INVALID_FRAME;
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}  
 
 //////////////////////////////////////////////////////////////////////////////
 // setfilter
