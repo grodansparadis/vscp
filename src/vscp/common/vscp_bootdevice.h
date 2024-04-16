@@ -42,192 +42,152 @@
 #pragma once
 
 /*!
-    This is the base class for the VSCP Works wizard
-    firmware load functionality. The code relies on code
+    This is the base class for the VSCP boot firmware
+    load functionality. The code relies on code
     in the VSCP main file to read/write to a remote  device.
 */
 
 #include "guid.h"
 #include "mdf.h"
-#include "vscp_bootdevice.h"
+#include "vscp_client_base.h"
 
-// Timeout for response
-#define BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT 5000
+#include <list>
 
-// Hexfiles type
-#define HEXFILE_TYPE_INTEL_HEX8 0
-#define HEXFILE_TYPE_INTEL_HEX16 1
-#define HEXFILE_TYPE_INTEL_HEX32 2
-#define HEXFILE_TYPE_INTEL_SRECORD 3
+class CBootMemBlock {
 
-class CBootDevice
-{
-  public:
-    /*!
-        Constructor
+public:
 
-        @param pClient Pointer to opended CANAL object.
-        @param nodeid Nickname/nodeid for node that should be loaded
-                        with new code.
-        @param bDeviceFound True if VSCP device previously has ben found.
-    */
-    CBootDevice(CVscpClient &pClient, uint8_t nodeid, bool bDeviceFound = true);
+  /*!
+    A memory blocks have a 32-bit start address and is
+    extending from this address with blksize bytes. The 
+    block size is usually the same size as intel hex records
+    but that is not a requirement
+    @param address 32-bit start address for memory block
+    @param blksize 8-bit block size
+    @param pblkdata If not nullpointer this is a pointer to
+      a block with blksize bytes.
+  */
+  CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *pblkdata = nullptr);
 
-    /*!
-        Constructor
+  /// @brief  Dtor  
+  virtual ~CBootMemBlock(void);
 
-        @param ptcpip Pointer to opened TCP/IP interface object.
-        @param guid GUID for node to bootload.
-        @param ifguid GUID for interface node is located on
-        @param bDeviceFound True if VSCP device previously has ben found.
-    */
-    CBootDevice(VscpRemoteTcpIf *ptcpip,
-                cguid &guid,
-                cguid &ifguid,
-                bool bDeviceFound = true);
+private:
 
-    /*!
-        Destructor
-    */
-    virtual ~CBootDevice(void);
+  /// The start addres for the memory block
+  uint32_t m_startAddress;
 
-    /*!
-       Init data
-    */
-    void init(void);
+  /// Size of block
+  uint8_t m_blksize;
 
-    /*!
-        Load a binary file to the image
+  /// Pointer to memory block (max 256 bytes)
+  uint8_t *m_pmemblk;
+};
 
-        This is typically an Intel HEX file that contains the memory
-        image of the device.
+class CBootDevice {
+public:
+  /*!
+      Constructor
 
-        @param path Path to file
-        @param typecode A typecode for the file to load. Typical
-            Intel HEX8, HEX6, HEX32, SRECORD etc
-        @return true on success
-    */
-    virtual bool loadBinaryFile(const wxString &path, uint16_t type) = 0;
+      @param client VSCP Communication client.
+      @param nodeid Nickname/nodeid for node that should be loaded
+                      with new code.
+  */
+  CBootDevice(CVscpClient *pclient, uint16_t nodeid);
 
-    /*!
-        Show info for hex file
-        @param Pointer to HTML window that will receive information.
-    */
-    virtual void showInfo(wxHtmlWindow *phtmlWnd) = 0;
 
-    /*!
-        Set a device in bootmode
+  /*!
+      Constructor
 
-        @return true on success.
-    */
-    virtual bool setDeviceInBootMode(void) = 0;
+      @param client VSCP Communication client.
+      @param guid GUID for node to bootload.
+      @param ifguid GUID for interface node is located on
+  */
+  CBootDevice(CVscpClient *pclient, cguid &guid, cguid &ifguid);
 
-    /*!
-        Perform the actual boot process
-        @return true on success.
-    */
-    virtual bool doFirmwareLoad(void) = 0;
+  /*!
+      Destructor
+  */
+  virtual ~CBootDevice(void);
 
-  protected:
-    /// Type of interface
-    uint8_t m_type;
+  // Timeout for response
+  static const uint16_t BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT = 5000;
 
-    /// node id for a CANAL node
-    uint8_t m_nodeid;
+    // Hexfiles type
+    enum type_hex_file {
+      HEXFILE_TYPE_INTEL_HEX8 = 0,
+      HEXFILE_TYPE_INTEL_HEX16,
+      HEXFILE_TYPE_INTEL_HEX32,
+    };
 
-    /*!
-        Pointer to DLL communication object (Expected to be open)
-    */
-    CVscpClient *m_pClient;
 
-    /*!
-        GUID for tcp/ip node
-    */
-    cguid m_guid;
+  /*!
+      Load a binary file to the image
 
-    /*!
-        GUID for remote interface
-    */
-    cguid m_ifguid;
+      This is a Intel HEX file that contains the memory
+      image of the device.
 
-    /*!
-        Set if VSCP Device found. If set to false then the VSCP daevice is
-        not found but can still be a device without firmware that can be
-        loaded.
-    */
-    bool m_bDeviceFound;
+      @param path Path to file
+      @return true on success
+  */
+  virtual int loadHexFile(const std::string &path);
 
-    /// Checksum for firmware
-    uint32_t m_checksum;
+  /*!
+      Get info for hex file
+      @return A string that contain the information for the firmware file.
+  */
+  virtual std::string getInfo(void);
 
-    /*!
-       Flag for flash memory programming or not
-   */
-    bool m_bFlashMemory;
+  /*!
+    Set a device in bootmode
+    @return true on success.
+  */
+  virtual bool doDeviceInit(void) = 0;
 
-    /*!
-        Flag for UserID memory programming or not
-    */
-    bool m_bUserIDMemory;
+  /*!
+    Perform the actual boot process
+    @return true on success.
+  */
+  virtual bool doDeviceLoad(void) = 0;
 
-    /*!
-        Flag for config memory programming or not
-    */
-    bool m_bConfigMemory;
+  /*!
+    Restart the device
+    @return true on success.
+  */
+  virtual bool doDeviceReboot(void) = 0;
 
-    /*!
-        Flag for EEPROM memory programming or not
-    */
-    bool m_bEEPROMMemory;
+protected:
 
-    /// Program memory buffer <0x200000
-    uint8_t *m_pbufPrg;
+  /*!
+    VSCP Client used for communication
+  */
+  CVscpClient *m_pclient;
 
-    /// Userid memory buffer 0x200000
-    uint8_t *m_pbufUserID;
+  /// node id for device
+  uint8_t m_nodeid;
 
-    /// Config memory buffer 0x300000
-    uint8_t *m_pbufCfg;
+  /*!
+      GUID for node (if used)
+  */
+  cguid m_guid;
 
-    /// EEPROM memory buffer 0xF00000
-    uint8_t *m_pbufEEPROM;
+  /*!
+      GUID for interface (if one is used)
+  */
+  cguid m_guidif;
 
-    /// True if there is at least one program data byte
-    bool m_bPrgData;
+  /// Checksum for firmware
+  uint32_t m_checksum;
 
-    /// True if there is at least one UserID data byte
-    bool m_bUserIDData;
+  /// Lowest flash address
+  uint32_t m_minFlashAddr;
 
-    /// True if there is at least one config data byte
-    bool m_bConfigData;
+  /// Highest flash address
+  uint32_t m_maxFlashAddr;
 
-    /// True if there is at least one EEPROM data byte
-    bool m_bEEPROMData;
+  /// # data bytes in file
+  uint32_t m_totalCntData;
 
-    /// Lowest flash address
-    unsigned long m_minFlashAddr;
-
-    /// Highest flash address
-    unsigned long m_maxFlashAddr;
-
-    /// Lowest config address
-    unsigned long m_minUserIDAddr;
-
-    /// Highest config address
-    unsigned long m_maxUserIDAddr;
-
-    /// Lowest config address
-    unsigned long m_minConfigAddr;
-
-    /// Highest config address
-    unsigned long m_maxConfigAddr;
-
-    /// Lowest EEPROM address
-    unsigned long m_minEEPROMAddr;
-
-    /// Highest EEPROM address
-    unsigned long m_maxEEPROMAddr;
-
-    /// # data bytes in file
-    unsigned long m_totalCntData;
+  /// List with boot data
+  std::list<CBootMemBlock *> m_memblkList;
 };

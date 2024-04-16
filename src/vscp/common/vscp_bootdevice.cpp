@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        bootdevice.cpp
+// Name:        vscp_bootdevice.cpp
 // Purpose:
 // Author:      Ake Hedman
 // Modified by:
 // Created:     16/12/2009 22:26:09
 // RCS-ID:
-// Copyright:  (C) 2007-2024
+// Copyright:  (C) 2000-2024
 // Ake Hedman, the VSCP project, <info@vscp.org>
 // Licence:
 // This program is free software; you can redistribute it and/or
@@ -43,38 +43,58 @@
 #pragma implementation "vscp_bootdevice.h"
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
-
 #include "vscp_bootdevice.h"
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Ctor
 //
 
-CBootDevice::CBootDevice(CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound)
+CBootMemBlock::CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *pblkdata)
 {
-    init();
-
-    m_type         = USE_DLL_INTERFACE;
-    m_pdll         = pdll;
-    m_nodeid       = nodeid;
-    m_bDeviceFound = bDeviceFound;
+  m_startAddress = address;
+  m_blksize      = blksize;
+  m_pmemblk      = nullptr;
+  if (nullptr != pblkdata) {
+    m_pmemblk = new uint8_t[blksize];
+    if (nullptr != m_pmemblk) {
+      memcpy(m_pmemblk, pblkdata, blksize);
+    }
+  }
 }
 
-CBootDevice::CBootDevice(VscpRemoteTcpIf *ptcpip,
-                         cguid &guid,
-                         cguid &ifguid,
-                         bool bDeviceFound)
-{
-    init();
+///////////////////////////////////////////////////////////////////////////////
+// Dtor
+//
 
-    m_type         = USE_TCPIP_INTERFACE;
-    m_ptcpip       = ptcpip;
-    m_guid         = guid;
-    m_ifguid       = ifguid;
-    m_bDeviceFound = bDeviceFound;
+CBootMemBlock::~CBootMemBlock(void)
+{
+  if (nullptr != m_pmemblk) {
+    delete[] m_pmemblk;
+    m_pmemblk = nullptr;
+  }
+}
+
+// ----------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+// Ctor
+//
+
+CBootDevice::CBootDevice(CVscpClient *pclient, uint16_t nodeid)
+{
+  m_pclient = pclient;
+  m_nodeid = nodeid;
+  m_guid.clear();
+  m_guid.setNicknameID(nodeid);
+  m_guidif.clear();
+}
+
+CBootDevice::CBootDevice(CVscpClient *pclient, cguid &guid, cguid &ifguid)
+{
+  m_pclient = pclient;
+  m_guid   = guid;
+  m_guidif = ifguid;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,55 +103,28 @@ CBootDevice::CBootDevice(VscpRemoteTcpIf *ptcpip,
 
 CBootDevice::~CBootDevice(void)
 {
-    if (NULL != m_pbufPrg) {
-        delete[] m_pbufPrg;
-        m_pbufPrg = NULL;
-    }
-
-    if (NULL != m_pbufUserID) {
-        delete[] m_pbufUserID;
-        m_pbufUserID = NULL;
-    }
-
-    if (NULL != m_pbufCfg) {
-        delete[] m_pbufCfg;
-        m_pbufCfg = NULL;
-    }
-
-    if (NULL != m_pbufEEPROM) {
-        delete[] m_pbufEEPROM;
-        m_pbufEEPROM = NULL;
-    }
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// init
+// loadHexFile
 //
 
-void
-CBootDevice::init(void)
+int 
+CBootDevice::loadHexFile(const std::string &path)
 {
-    m_minFlashAddr = 0;
-    m_maxFlashAddr = 0xffffffff;
-    m_totalCntData = 0;
-
-    m_pbufPrg    = NULL;
-    m_pbufUserID = NULL;
-    m_pbufCfg    = NULL;
-    m_pbufEEPROM = NULL;
-
-    m_pdll   = NULL;
-    m_ptcpip = NULL;
-
-    m_bDeviceFound = false;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// readRegister
+// getInfo
 //
 
-bool
-readRegister(uint8_t reg, uint8_t *content)
+std::string 
+CBootDevice::getInfo(void)
 {
-    return true;
+  std::string strinfo;
+
+  return strinfo;
 }
+

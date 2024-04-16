@@ -44,7 +44,7 @@ vscpClientTcp::vscpClientTcp()
     m_strHostname = "tcp://localhost:9598";
     m_strUsername = "admin";
     m_strPassword = "secret";
-    memset(m_interfaceGuid, 0, 16);
+    m_guidif.clear();
     m_bPolling = false;
     m_obid = 0;
 }
@@ -83,8 +83,7 @@ std::string vscpClientTcp::getConfigAsJson(void)
     j["connection-timeout"] = 0;
     j["response-timeout"] = 0;
     j["bfull-l2"] = isFullLevel2();
-    vscp_writeGuidArrayToString(str, m_interfaceGuid);
-    j["selected-interface"] = str;
+    j["selected-interface"] = m_guidif.toString();
 
     // TLS
 
@@ -155,7 +154,7 @@ bool vscpClientTcp::initFromJson(const std::string& config)
 
         if (j.contains("selected-interface")) {
             std::string str = j["selected-interface"].get<std::string>();
-            vscp_getGuidFromStringToArray(m_interfaceGuid, str);
+            m_guidif.getFromString(str);
         }
 
         // TLS

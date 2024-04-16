@@ -1409,7 +1409,7 @@ CMDF_Firmware::clearStorage(void)
   m_strURL.clear();
   m_strTarget.clear();
   m_strDate.clear();
-  m_strFormat.clear();
+  m_strFormat = "INTELHEX";
   m_strMd5.clear();
 
   m_targetCode    = 0;
@@ -2515,7 +2515,7 @@ CMDF::save_json(const std::string &path)
   fout << "\"module\": {" << std::endl;
   fout << "\"name\": \"" << getModuleName() << "\"," << std::endl;
   fout << "\"copyright\": \"" << getModuleCopyright() << "\"," << std::endl;
-  fout << "\"level\": " << (int)getModuleLevel() << "," << std::endl;
+  fout << "\"level\": " << (int) getModuleLevel() << "," << std::endl;
   fout << "\"model\": \"" << getModuleModel() << "\"," << std::endl;
   fout << "\"version\": \"" << getModuleVersion() << "\"," << std::endl;
   fout << "\"changed\": \"" << getModuleChangeDate() << "\"," << std::endl;
@@ -2767,7 +2767,7 @@ CMDF::save_json(const std::string &path)
       fout << "{" << std::endl;
       fout << "\"name\": \"" << pFirmware->getName() << "\", " << std::endl;
       fout << "\"path\": \"" << pFirmware->getUrl() << "\", " << std::endl;
-      fout << "\"format\": \"" << pFirmware->getFormat() << "\", " << std::endl;  
+      fout << "\"format\": \"" << pFirmware->getFormat() << "\", " << std::endl;
       fout << "\"date\": \"" << pFirmware->getDate() << "\", " << std::endl;
       fout << "\"target\": \"" << pFirmware->getTarget() << "\", " << std::endl;
       fout << "\"targetcode\": " << pFirmware->getTargetCode() << ", " << std::endl;
@@ -3013,7 +3013,7 @@ CMDF::save_json(const std::string &path)
     } // Pages
 
     // End of registers
-      fout << "]" << std::endl;
+    fout << "]" << std::endl;
 
   } // Registers
 
@@ -9653,7 +9653,7 @@ CMDF::getRegisterMap(uint16_t page, std::map<uint32_t, CMDF_Register *> &mapRegs
   }
 
   for (auto reg : regset) {
-    //std::map<uint32_t, CMDF_Register *> mapRegs;
+    // std::map<uint32_t, CMDF_Register *> mapRegs;
     mapRegs[reg] = getRegister(reg, page);
   }
 

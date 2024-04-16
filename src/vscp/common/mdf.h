@@ -32,6 +32,7 @@
 #include <canal.h>
 #include <crc.h>
 #include <vscp.h>
+#include <vscphelper.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
 
@@ -2594,16 +2595,16 @@ public:
   void setTargetCode(uint16_t code) { m_targetCode = code; };
 
   /*!
-    Get hex file string format for firmware
+    Get hex file string format for firmware (INTELHEX is default)
     @return Hex string format
   */
-  std::string getFormat(void) { return m_strFormat; };
+  std::string getFormat(void) { return vscp_makeUpper_copy(m_strFormat); };
 
   /*!
     Set format
     @param format Format to set
   */
-  void setFormat(const std::string &format) { m_strFormat = format; };
+  void setFormat(const std::string &format) { m_strFormat = vscp_makeUpper_copy(format); };
 
   /*
     Get date for object
@@ -3357,7 +3358,7 @@ public:
   void setUrl(const std::string &url) { m_strURL = url; };
 
   /*!
-    Get URL for firmware
+    Get format for manual
     @return Manual format string.
   */
   std::string getFormat(void) { return m_strFormat; };
@@ -4098,10 +4099,10 @@ public:
   int parseMDF_JSON(const std::string &path);
 
   /*!
-      Parse a MDF. The format can be XML or JSON. If the format is
-      unknown, the function will try to determine it.
-      @param path Path to downloaded MDF
-      @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+    Parse a MDF. The format can be XML or JSON. If the format is
+    unknown, the function will try to determine it.
+    @param path Path to downloaded MDF
+    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
   int parseMDF(const std::string &path);
 
@@ -4111,21 +4112,21 @@ public:
   void clearStorage(void);
 
   /*!
-      Download MDF file from a server
-      @param remoteFile remote file URL
-      @param variable that will receive temporary filename for downloaded
-     file.
-      @return Return CURLE_OK if a valid file is downloaded, else a
-              curl error code.
+    Download MDF file from a server
+    @param remoteFile remote file URL
+    @param variable that will receive temporary filename for downloaded
+    file.
+    @return Return CURLE_OK if a valid file is downloaded, else a
+            curl error code.
   */
   CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
 
   /*!
-      Load MDF from local or remote storage and parse it into
-      a MDF structure.
-      @param file or URL to MDF file.
-      @param blocalFile Asks for a local file if set to true.
-      @return returns true on success, false on failure.
+    Load MDF from local or remote storage and parse it into
+    a MDF structure.
+    @param file or URL to MDF file.
+    @param blocalFile Asks for a local file if set to true.
+    @return returns true on success, false on failure.
   */
   bool load(const std::string &file, bool bLocalFile = false);
 

@@ -234,7 +234,7 @@ private:
     vscpEventFilter m_filter;
 
     // Interface on remote host
-    uint8_t m_interfaceGuid[16];
+    cguid m_guidif;
 
     /// Workerthread
     std::thread *m_pworkerthread;
