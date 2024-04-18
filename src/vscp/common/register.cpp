@@ -241,8 +241,8 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
                              uint8_t offset,
                              uint8_t count,
                              std::map<uint8_t, uint8_t> &values,
-                             uint32_t timeout,
-                             std::function<void(int)> statusCallback)
+                             std::function<void(int)> statusCallback,
+                             uint32_t timeout)
 {
   int rv         = VSCP_ERROR_ERROR;
   uint8_t rcvcnt = 0; // Number of registers read
@@ -370,8 +370,8 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               cguid &guidInterface,
                               uint16_t page,
                               std::map<uint8_t, uint8_t> &regvalues,
-                              uint32_t timeout,
-                              std::function<void(int)> statusCallback)
+                              std::function<void(int)> statusCallback,
+                              uint32_t timeout)
 {
   int rv                         = VSCP_ERROR_SUCCESS;
   CVscpClient::connType conntype = client.getType();
@@ -511,8 +511,8 @@ int
 vscp_scanForDevices(CVscpClient &client,
                     cguid &guidIf,
                     std::set<uint16_t> &found,
-                    uint32_t timeout,
-                    std::function<void(int)> statusCallback)
+                    std::function<void(int)> statusCallback,
+                    uint32_t timeout)
 {
   int rv         = VSCP_ERROR_SUCCESS;
   uint8_t offset = guidIf.isNULL() ? 0 : 16;
@@ -591,9 +591,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         cguid &guidIf,
                         std::set<uint16_t> &search_nodes,
                         std::set<uint16_t> &found_nodes,
+                        std::function<void(int)> statusCallback,
                         uint32_t delay,
-                        uint32_t timeout,
-                        std::function<void(int)> statusCallback)
+                        uint32_t timeout)
 {
   uint8_t offset = guidIf.isNULL() ? 0 : 16;
   int rv         = VSCP_ERROR_SUCCESS;
@@ -699,9 +699,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         uint8_t start_node,
                         uint8_t end_node,
                         std::set<uint16_t> &found_nodes,
+                        std::function<void(int)> statusCallback,
                         uint32_t delay,
-                        uint32_t timeout,
-                        std::function<void(int)> statusCallback)
+                        uint32_t timeout)
 {
   std::set<uint16_t> search_nodes;
 
@@ -709,7 +709,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
     search_nodes.insert(i);
   }
 
-  return vscp_scanSlowForDevices(client, guid, search_nodes, found_nodes, delay, timeout, statusCallback);
+  return vscp_scanSlowForDevices(client, guid, search_nodes, found_nodes, statusCallback, delay, timeout);
 }
 
 // ----------------------------------------------------------------------------
@@ -1294,13 +1294,13 @@ int
 CStandardRegisters::init(CVscpClient &client,
                          cguid &guidNode,
                          cguid &guidInterface,
-                         uint32_t timeout,
-                         std::function<void(int)> statusCallback)
+                         std::function<void(int)> statusCallback,
+                         uint32_t timeout)
 {
   int rv;
   m_regs.clear();
   m_change.clear();
-  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, timeout, statusCallback);
+  rv = vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, 0, 0x80, 128, m_regs, statusCallback, timeout);
   return rv;
 }
 
@@ -1441,8 +1441,8 @@ CUserRegisters::init(CVscpClient &client,
                      cguid &guidNode,
                      cguid &guidInterface,
                      std::set<uint16_t> &pages,
-                     uint32_t timeout,
-                     std::function<void(int)> statusCallback)
+                     std::function<void(int)> statusCallback,
+                     uint32_t timeout)
 {
   int rv = VSCP_ERROR_SUCCESS;
   m_pages.clear();
@@ -1452,7 +1452,7 @@ CUserRegisters::init(CVscpClient &client,
     std::map<uint8_t, uint8_t> registers;
     m_registerPageMap[page] = new CRegisterPage(m_level, page);
     rv =
-      vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, page, 0, 127, registers, timeout, statusCallback);
+      vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, page, 0, 127, registers, statusCallback, timeout);
     if (VSCP_ERROR_SUCCESS != rv) {
       return rv;
     }

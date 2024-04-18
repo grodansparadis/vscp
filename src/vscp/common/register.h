@@ -33,8 +33,8 @@
 
 #include <canal.h>
 #include <guid.h>
-#include <vscp.h>
 #include <mdf.h>
+#include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_client_base.h>
 #include <vscp_type.h>
@@ -123,8 +123,8 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
                              uint8_t offset,
                              uint8_t count,
                              std::map<uint8_t, uint8_t> &values,
-                             uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                             std::function<void(int)> statusCallback = nullptr);
+                             std::function<void(int)> statusCallback = nullptr,
+                             uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Write VSCP register block.
@@ -149,30 +149,8 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               cguid &guidInterface,
                               uint16_t page,
                               std::map<uint8_t, uint8_t> &values,
-                              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                              std::function<void(int)> statusCallback = nullptr);
-
-/*!
-  Read all standard registers
-  @param client VSCP client derived from the client vase class over
-                which the communication is carried out.
-  @param guid GUID of the device to read from. Only the lsb (nickname)
-                is used for level I communication.
-  @param guidInterface GUID of the interface to read from. Set to all zero
-                if no interface.
-  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
-          REGISTER_DEFAULT_TIMEOUT is used as default
-  @param statusCallback Optional callback that return status information
-              in percent void f(int)
-  @return VSCP_ERROR_SUCCESS on success.
-*/
-int
-vscp_readStandardRegisters(CVscpClient &client,
-                           cguid &guid,
-                           cguid &guidInterface,
-                           CStandardRegisters &stdregs,
-                           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                           std::function<void(int)> statusCallback = nullptr);
+                              std::function<void(int)> statusCallback = nullptr,
+                              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Do a fast register scan using who is there protocol functionality
@@ -191,8 +169,8 @@ int
 vscp_scanForDevices(CVscpClient &client,
                     cguid &guid,
                     std::set<uint16_t> &found,
-                    uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                    std::function<void(int)> statusCallback = nullptr);
+                    std::function<void(int)> statusCallback = nullptr,
+                    uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Do a slow register scan using read register (firts byte of GUID)
@@ -215,9 +193,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         cguid &guid,
                         std::set<uint16_t> &search_nodes,
                         std::set<uint16_t> &found_nodes,
+                        std::function<void(int)> statusCallback = nullptr,
                         uint32_t delay                          = REGISTER_DEFAULT_DELAY,
-                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                        std::function<void(int)> statusCallback = nullptr);
+                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Do a slow register scan using register read functionality
@@ -242,9 +220,9 @@ vscp_scanSlowForDevices(CVscpClient &client,
                         uint8_t start_node,
                         uint8_t end_node,
                         std::set<uint16_t> &found_nodes,
+                        std::function<void(int)> statusCallback = nullptr,
                         uint32_t delay                          = REGISTER_DEFAULT_DELAY,
-                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-                        std::function<void(int)> statusCallback = nullptr);
+                        uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
 /*!
   Get device information on HTML format
@@ -474,8 +452,8 @@ public:
            cguid &guidNode,
            cguid &guidInterface,
            std::set<uint16_t> &pages,
-           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-           std::function<void(int)> statusCallback = nullptr);
+           std::function<void(int)> statusCallback = nullptr,
+           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Set value for register
@@ -868,8 +846,8 @@ public:
   int init(CVscpClient &client,
            cguid &guidNode,
            cguid &guidInterface,
-           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
-           std::function<void(int)> statusCallback = nullptr);
+           std::function<void(int)> statusCallback = nullptr,
+           uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
     Initialization with already read standard registers
@@ -1034,11 +1012,11 @@ public:
   */
   std::string getGUIDStr(void);
 
-    /*!
-      Get MDF URL
-      @param url - Reference to string to store URL in.
-    */
-    std::string getMDF(void);
+  /*!
+    Get MDF URL
+    @param url - Reference to string to store URL in.
+  */
+  std::string getMDF(void);
 
   /*!
     Get a standard register value from offset

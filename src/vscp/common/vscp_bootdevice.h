@@ -40,6 +40,9 @@
 //
 // https://en.wikipedia.org/wiki/Intel_HEX
 // https://www.kanda.com/blog/microcontrollers/pic-microcontrollers/pic-hex-file-format/
+//
+// uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
+// std::function<void(int)> statusCallback = nullptr
 
 #pragma once
 
@@ -47,10 +50,27 @@
     This is the base class for the VSCP boot firmware
     load functionality. The code relies on code
     in the VSCP main file to read/write to a remote  device.
+
+    An abstract memory model is used for the firmware. In this
+    model memory contents of different types is placed into
+    different memory regions. When a block of datra from that region 
+    is sent to the remote device it is up to that device to 
+    place the data at the correct location. This model can be used 
+    for code, ram, eeprom, fuses, config data etc. The pic1 bootloader 
+    use the Microchip abstract memory model. The VSCP bootloader let
+    the receiving end take the decision on where a block should be written 
+
+    Sequency of use
+    ----------------
+    - create class
+    - load firmware
+    - device Init
+    - device Load
 */
 
 #include "guid.h"
 #include "mdf.h"
+#include "register.h"
 #include "vscp_client_base.h"
 
 #include <list>
@@ -73,6 +93,14 @@ public:
   /// @brief  Dtor
   virtual ~CBootMemBlock(void);
 
+  uint32_t getStartAddress(void) { return m_startAddress; };
+  void setStartAddress(uint32_t addr) { m_startAddress = addr; };
+
+  uint8_t getSize(void) { return m_blksize; };
+  void setSize(uint8_t blksize) { m_blksize = blksize; };
+
+  uint8_t *getBlock(void) { return m_pmemblk; };
+
 private:
   /// The start addres for the memory block
   uint32_t m_startAddress;
@@ -87,32 +115,59 @@ private:
 class CBootDevice {
 public:
   /*!
-      Constructor
+    Constructor
 
-      @param client VSCP Communication client.
-      @param nodeid Nickname/nodeid for node that should be loaded
+    This is Level I over Level I interface
+
+    @param client VSCP Communication client.
+    @param nodeid Nickname/nodeid for node that should be loaded
                       with new code.
   */
-  CBootDevice(CVscpClient *pclient, uint16_t nodeid);
+  CBootDevice(CVscpClient *pclient,
+              uint16_t nodeid,
+              std::function<void(int)> statusCallback = nullptr,
+              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
-      Constructor
+    Constructor
 
-      @param client VSCP Communication client.
-      @param guid GUID for node to bootload.
-      @param ifguid GUID for interface node is located on
+    This is Level I over Level II that uses an interface on
+      a remote device to communicate with Level I nodes.
+
+    @param client VSCP Communication client.
+    @param guidif GUID for interface node is located on
   */
-  CBootDevice(CVscpClient *pclient, cguid &guid, cguid &ifguid);
+  CBootDevice(CVscpClient *pclient,
+              uint16_t nodeid,
+              cguid &guidif,
+              std::function<void(int)> statusCallback = nullptr,
+              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+
+  /*!
+    Constructor
+
+    This is a full level II device. No interface, full GUID.
+
+    @param client VSCP Communication client.
+    @param guid GUID for node to bootload.
+  */
+  CBootDevice(CVscpClient *pclient,
+              cguid &guid,
+              std::function<void(int)> statusCallback = nullptr,
+              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Destructor
   */
   virtual ~CBootDevice(void);
 
-  // Timeout for response
+  /// Timeout for response
   static const uint16_t BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT = 5000;
 
-  // Hexfiles type
+  /// Max size for a programming block
+  static const uint32_t BOOT_MAX_BLOCK_SIZE = (1024*1024*2);
+
+  /// Hexfiles type
   enum type_hex_file {
     HEXFILE_TYPE_INTEL_HEX8 = 0,
     HEXFILE_TYPE_INTEL_HEX16,
@@ -129,7 +184,8 @@ public:
       Load a binary file to the image
 
       This is a Intel HEX file that contains the memory
-      image of the device.
+      image of the device. All types of intel hex is support
+      8/16/32
 
       @param path Path to file
       @return true on success
@@ -137,16 +193,40 @@ public:
   virtual int loadIntelHexFile(const std::string &path);
 
   /*!
-      Get info for hex file
+    Get minimum and maximum address in a given memory range. This
+    is intended for use when memory areas is used to define different
+    types of memory. Such as flash, eeprom, config, ram etc.
+
+    @param start Start address for memory range (inclusive - start is part of address space)
+    @param end Stop address for memory range (inclusive - end is part of address space)
+    @param pmin Pointer to variable that will get min address
+    @param pmax Pointer to variable that will get max address
+    @return VSCP_ERROR_SUCCESS on success. VSCP_ERROR_ERROR if no memory
+              defined in the selected range.
+  */
+  virtual int getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax);
+
+  /*!
+    Fill block with firmware data
+    @param pblock Pointer to the beginning of an allocated block
+    @param size Total size of block
+    @param start Logical start address
+    @param fill Value to initialize block with- 0xff is default
+    @return VSCP_ERROR_SUCCESS or errorcode otherwise.
+  */
+  int fillBlock(uint8_t *pblock, uint32_t size, uint32_t start, uint8_t fill = 0xff);
+
+  /*!
+      Get info for hex file in html format
       @return A string that contain the information for the firmware file.
   */
-  virtual std::string getInfo(void);
+  virtual std::string deviceInfo(void);
 
   /*!
     Set a device in bootmode
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int doDeviceInit(void) = 0;
+  virtual int deviceInit(void) = 0;
 
   /*!
     Perform the actual firmware load process
@@ -168,6 +248,28 @@ protected:
   */
   CVscpClient *m_pclient;
 
+  /*!
+    Tomeout for read operations
+  */
+  uint32_t m_timeout;
+
+  /*!
+    Status callback
+      xxxxx(int, std::string)
+      int is percentage,
+      str is real text description
+  */
+  std::function<void(int)> m_statusCallback;
+
+  /*!
+    The device code tell the type of hardware of the remote device
+    Must be the same as the firmware we try to load is intended for.
+
+    Some (old) devices will have this code set to 0 in this cae no check
+    should be performed.
+  */
+  uint8_t m_firmwaredeviceCode;
+
   /// node id for device
   uint8_t m_nodeid;
 
@@ -186,6 +288,9 @@ protected:
 
   /// # data bytes in file
   uint32_t m_totalCntData;
+
+  /// Standard registers
+  CStandardRegisters m_stdRegs;
 
   /// List with boot data
   std::list<CBootMemBlock *> m_memblkList;

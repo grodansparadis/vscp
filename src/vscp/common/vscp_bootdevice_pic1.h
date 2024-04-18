@@ -20,10 +20,11 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// For info see http://ww1.microchip.com/downloads/en/AppNotes/00247a.pdf
+// For info see https://ww1.microchip.com/downloads/en/AppNotes/00247a.pdf
 // this bootloader expects a slightly moified version of the bootloader
 // described but in most aspects it is the same.
-// Repository for the bootloade is here
+//
+// Repository for the device bootloader is here
 // https://github.com/grodansparadis/vscp_pic1_bootloader
 //
 // Protocol is describe here
@@ -31,41 +32,11 @@
 //
 
 #pragma once
-#include "vscp_bootdevice.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "vscp.h"
+#include "vscp_bootdevice.h"
 
 #include <string>
-
-// Used VSCP commands
-#define VSCP_READ_REGISTER        0x09
-#define VSCP_RW_RESPONSE          0x0A
-#define VSCP_WRITE_REGISTER       0x0B
-#define VSCP_ENTER_BOOTLODER_MODE 0x0C
-
-// Used VSCP registers
-#define VSCP_REG_PAGE_SELECT_MSB 0x92
-#define VSCP_REG_PAGE_SELECT_LSB 0x93
-#define VSCP_REG_GUID0           0xD0
-#define VSCP_REG_GUID3           0xD3
-#define VSCP_REG_GUID5           0xD5
-#define VSCP_REG_GUID7           0xD7
-
-#define PIC_BOOTLOADER_RESPONSE_TIMEOUT 5
-
-typedef struct _bootclientItem {
-  unsigned char m_nickname;      // Nickname for node
-  unsigned char m_bootalgorithm; // Bootloader algorithm to use
-  unsigned char m_pageMSB;       // MSB of current page
-  unsigned char m_pageLSB;       // LSB of current page
-  unsigned char m_GUID0;         // GUID byte 0
-  unsigned char m_GUID3;         // GUID byte 3
-  unsigned char m_GUID5;         // GUID byte 5
-  unsigned char m_GUID7;         // GUID byte 7
-} bootclientItem;
 
 class CBootDevice_PIC1 : public CBootDevice {
 
@@ -73,44 +44,88 @@ public:
   /*!
       Constructor
 
+      This is Level I over Level I interface
+
       @param pdll Pointer to opended CANAL object.
       @param nodeid Nickname/nodeid for node that should be loaded
       with new code.
   */
-  CBootDevice_PIC1(CVscpClient *pclient, uint8_t nodeid);
+  CBootDevice_PIC1(CVscpClient *pclient,
+                   uint8_t nodeid,
+                   std::function<void(int)> statusCallback = nullptr,
+                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Constructor
 
+      This is Level I over Level II that uses an interface on
+      a remote device to communicate with Level I nodes.
+
+      @param pdll Pointer to opended CANAL object.
+      @param nodeid Nickname/nodeid for node that should be loaded
+      @param guidif GUID for interface.
+      with new code.
+  */
+  CBootDevice_PIC1(CVscpClient *pclient,
+                   uint8_t nodeid,
+                   cguid &guidif,
+                   std::function<void(int)> statusCallback = nullptr,
+                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+
+  /*!
+      Constructor
+
+      This is a full level II device. No interface, full GUID.
+
       @param ptcpip Pointer to opened TCP/IP interface object.
       @param guid GUID for node to bootload.
-      @param ifguid GUID for interface node is located on
   */
-  CBootDevice_PIC1(CVscpClient *pclient, cguid &guid, cguid &ifguid);
+  CBootDevice_PIC1(CVscpClient *pclient,
+                   cguid &guid,
+                   std::function<void(int)> statusCallback = nullptr,
+                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   // Dtor
   ~CBootDevice_PIC1(void);
 
-  static const uint32_t MEMREG_PRG_START = 0x000000;
-  static const uint32_t MEMREG_PRG_END   = 0x2fffff;
+  // Used VSCP commands
+  static const uint8_t VSCP_PIC1_READ_REGISTER        = 0x09;
+  static const uint8_t VSCP_PIC1_RW_RESPONSE          = 0x0A;
+  static const uint8_t VSCP_PIC1_WRITE_REGISTER       = 0x0B;
+  static const uint8_t VSCP_PIC1_ENTER_BOOTLODER_MODE = 0x0C;
 
-  static const uint32_t MEMREG_CONFIG_START = 0x300000;
-  static const uint32_t MEMREG_CONFIG_END   = 0x3fffff;
+  static const uint8_t PIC_BOOTLOADER_RESPONSE_TIMEOUT = 5;
 
-  static const uint32_t MEMREG_EEPROM_START = 0xf00000;
-  static const uint32_t MEMREG_EEPROM_END   = 0xffffff;
+  // Flash memory
+  static const uint32_t MEM_CODE_START = 0x000000;
+  static const uint32_t MEM_CODE_END   = 0x2fffff;
 
-  static const uint32_t BUFFER_SIZE_CODE = 0x200000; // Max 2M
-  static const uint32_t BUFFER_SIZE_USERID  = 0x200;
-  static const uint32_t BUFFER_SIZE_CONFIG  = 0x200;
-  static const uint32_t BUFFER_SIZE_EEPROM  = 0x400;
+  /*
+    User IDs (starting at address 200000h) are considered
+    to be part of Program Memory and are written and
+    erased like normal FLASH Program Memory.
+  */
+  static const uint32_t MEM_USERID_START = 0x200000;
+
+  // Configuration memory
+  static const uint32_t MEM_CONFIG_START = 0x300000;
+  static const uint32_t MEM_CONFIG_END   = 0x3fffff;
+
+  // EEPROM memory
+  static const uint32_t MEM_EEPROM_START = 0xf00000;
+  static const uint32_t MEM_EEPROM_END   = 0xffffff;
+
+  static const uint32_t BUFFER_SIZE_CODE   = 0x200000; // Max 2M
+  static const uint32_t BUFFER_SIZE_USERID = 0x200;
+  static const uint32_t BUFFER_SIZE_CONFIG = 0x200;
+  static const uint32_t BUFFER_SIZE_EEPROM = 0x400;
 
   // Memory Type
-  enum men_type {
-    MEM_TYPE_PROGRAM = 0x00, // < 0x200000
-    MEM_TYPE_CONFIG,         // 0x300000
-    MEM_TYPE_EEPROM,         // 0xF00000
-    MEM_TYPE_USERID          // 0x200000
+  enum mem_type {
+    MEM_TYPE_CODE = 0x00, // < 0x200000
+    MEM_TYPE_CONFIG,      // 0x300000
+    MEM_TYPE_EEPROM,      // 0xF00000
+    MEM_TYPE_USERID       // 0x200000
   };
 
   // Default timeout for response
@@ -149,7 +164,7 @@ public:
   static const uint32_t ID_PUT_DATA      = 0x00001100; // Write data block.
   static const uint32_t ID_GET_BASE_INFO = 0x00001200; // Get address information.
   static const uint32_t ID_GET_DATA      = 0x00001300; // Get data block.
-  
+
   // CAN message ID Responses
   static const uint32_t ID_RESPONSE_PUT_BASE_INFO = 0x00001400; // Response for put info request.
   static const uint32_t ID_RESPONSE_PUT_DATA      = 0x00001500; // Response for put data request.
@@ -163,13 +178,21 @@ public:
       Show info for hex file
       @param Pointer to HTML window that will receive information.
   */
-  std::string getInfo(void);
+  std::string deviceInfo(void);
 
   /*!
-      Set a device in bootmode
+      Initialize boot mode, ie set device in bootmode
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int setDeviceInBootMode(void);
+  int deviceInit(void);
+
+  /*!
+    Write a boot block to the device
+    @param start Logic memory start
+    @param end Logic memory end
+    @return VSCP_ERROR_SUCCESS if OK.
+  */
+  int writeFirmwareBlock(uint32_t start, uint32_t end);
 
   /*!
       Perform the actual firmware load process
@@ -181,9 +204,11 @@ public:
 
   /*!
       Write a sector
+      @param paddr Pointer to firts byte of 8-byte block to write
+        to remote device
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int writeFirmwareSector(void);
+  int writeFirmwareSector(uint8_t *paddr);
 
   /*!
       Write to device control registry
@@ -197,10 +222,10 @@ public:
 
   */
   int writeDeviceControlRegs(uint32_t addr,
-                              uint8_t flags    = (MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK),
-                              uint8_t cmd      = CMD_NOP,
-                              uint8_t cmdData0 = 0,
-                              uint8_t cmdData1 = 0);
+                             uint8_t flags    = (MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK),
+                             uint8_t cmd      = CMD_NOP,
+                             uint8_t cmdData0 = 0,
+                             uint8_t cmdData1 = 0);
 
   /*!
       Check for response from nodes (Level I).
@@ -238,23 +263,23 @@ private:
   uint32_t m_pAddr;
 
   /// memory type
-  uint8_t m_memtype;
+  // uint8_t m_memtype;
 
   /// Min and max mem blocks
-  uint32_t m_minFlashAddr;
-  uint32_t m_maxFlashAddr;
-  uint32_t m_minUserIdAddr;
-  uint32_t m_maxUserIdAddr;
-  uint32_t m_minConfigAddr;
-  uint32_t m_maxConfigAddr;
-  uint32_t m_minEEPROMAddr;
-  uint32_t m_maxEEPROMAddr;
+  // uint32_t m_minFlashAddr;
+  // uint32_t m_maxFlashAddr;
+  // uint32_t m_minUserIdAddr;
+  // uint32_t m_maxUserIdAddr;
+  // uint32_t m_minConfigAddr;
+  // uint32_t m_maxConfigAddr;
+  // uint32_t m_minEEPROMAddr;
+  // uint32_t m_maxEEPROMAddr;
 
   // Flags for code in codeblocks (false as default)
-  bool m_bCodeMemory;
-  bool m_bUserIdMemory;
-  bool m_bCfgMemory;
-  bool m_bEepromMemory;
+  // bool m_bCodeMemory;
+  // bool m_bUserIdMemory;
+  // bool m_bCfgMemory;
+  // bool m_bEepromMemory;
 
   // Pic 1 memory buffers
   uint8_t m_pbufCode[BUFFER_SIZE_CODE];

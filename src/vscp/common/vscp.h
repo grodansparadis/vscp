@@ -647,6 +647,7 @@ struct vscpMyNode {
 #define VSCP_ERROR_SOCKET             61 /* Unable to create socket or other socket error*/
 #define VSCP_ERROR_PARSING            62 /* Failed to parse input */
 #define VSCP_ERROR_INVALID_FRAME      63 /* A protocol has wrong format */
+#define VSCP_ERROR_SIZE               64 /* The size is wring */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

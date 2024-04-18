@@ -34,20 +34,49 @@
 
 #include "vscp_bootdevice_pic1.h"
 
-// #include <stdio.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+#include "spdlog/fmt/bin_to_hex.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 //
 
-CBootDevice_PIC1::CBootDevice_PIC1(CVscpClient *pclient, uint8_t nodeid)
-  : CBootDevice(pclient, nodeid)
+/*
+  Level I
+*/
+CBootDevice_PIC1::CBootDevice_PIC1(CVscpClient *pclient,
+                                   uint8_t nodeid,
+                                   std::function<void(int)> statusCallback,
+                                   uint32_t timeout)
+  : CBootDevice(pclient, nodeid, statusCallback, timeout)
 {
   init();
 }
 
-CBootDevice_PIC1::CBootDevice_PIC1(CVscpClient *pclient, cguid &guid, cguid &ifguid)
-  : CBootDevice(pclient, guid, ifguid)
+/*
+  Level I over interface
+*/
+CBootDevice_PIC1::CBootDevice_PIC1(CVscpClient *pclient,
+                                   uint8_t nodeid,
+                                   cguid &guidif,
+                                   std::function<void(int)> statusCallback,
+                                   uint32_t timeout)
+  : CBootDevice(pclient, nodeid, guidif, statusCallback, timeout)
+{
+  init();
+}
+
+/*
+  Full Level II
+*/
+CBootDevice_PIC1::CBootDevice_PIC1(CVscpClient *pclient,
+                                   cguid &guid,
+                                   std::function<void(int)> statusCallback,
+                                   uint32_t timeout)
+  : CBootDevice(pclient, guid, statusCallback, timeout)
 {
   init();
 }
@@ -65,14 +94,14 @@ void
 CBootDevice_PIC1::init(void)
 {
   m_bHandshake = true; // Handshake as default
-  m_pAddr      = 0;
-  m_memtype    = MEM_TYPE_PROGRAM;
+  // m_pAddr      = 0;
+  // m_memtype    = MEM_TYPE_PROGRAM;
 
   // No memory blocks
-  m_bCodeMemory   = false;
-  m_bUserIdMemory = false;
-  m_bCfgMemory    = false;
-  m_bEepromMemory = false;
+  // m_bCodeMemory   = false;
+  // m_bUserIdMemory = false;
+  // m_bCfgMemory    = false;
+  // m_bEepromMemory = false;
 
   // Reset block storage
   memset(m_pbufCode, 0xff, BUFFER_SIZE_CODE);
@@ -84,42 +113,60 @@ CBootDevice_PIC1::init(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getInfo
+// deviceInfo
 //
 
 std::string
-CBootDevice_PIC1::getInfo(void)
+CBootDevice_PIC1::deviceInfo(void)
 {
   std::string str;
   std::string strInfo;
   std::ostringstream oss;
 
+  uint32_t min;
+  uint32_t max;
+
+  // * * * Device * * *
+  oss << "<b><u>Device</u></b><br>";
+  oss << "<b>nodeid :</b><font color=\"#005CB9\">";
+  oss << m_nodeid;
+  oss << "</font><br>";
+  oss << "<b>GUID :</b><font color=\"#005CB9\">";
+  oss << m_guid.toString();
+  oss << "</font><br>";
+  oss << "<b>Interface :</b><font color=\"#005CB9\">";
+  oss << m_guidif.toString();
+  oss << "</font><br>";
+
   // * * * Flash Memory * * *
+  getMinMaxForRange(MEM_CODE_START, MEM_CODE_END, &min, &max);
   oss << "<b><u>Flash Memory</u></b><br>";
   oss << "<b>Start :</b><font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_minFlashAddr;
+  oss << std::hex << std::setw(8) << std::setfill('0') << min;
   oss << "</font><b> End :</b><font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_maxFlashAddr;
-  if (m_bCodeMemory) {
+  oss << std::hex << std::setw(8) << std::setfill('0') << max;
+  if (max > min) {
     oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
     oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
   }
   oss << "<br><br>";
+
   // * * * UserID Memory * * *
+  getMinMaxForRange(MEM_USERID_START, MEM_CODE_END, &min, &max);
   oss << "<b><u>UserID Memory</u></b><br>";
   oss << "<b>Start :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_minUserIdAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
 
   oss << "<b> End :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_maxUserIdAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
 
-  if (m_bUserIdMemory) {
+  if (max > min) {
     oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
@@ -128,18 +175,19 @@ CBootDevice_PIC1::getInfo(void)
   oss << "<br><br>";
 
   // * * * Config Memory * * *
+  getMinMaxForRange(MEM_CONFIG_START, MEM_CONFIG_END, &min, &max);
   oss << "<b><u>Config Memory</u></b><br>";
   oss << "<b>Start :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_minConfigAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
 
   oss << "<b> End :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_maxConfigAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
 
-  if (m_bCfgMemory) {
+  if (max > min) {
     oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
@@ -148,17 +196,18 @@ CBootDevice_PIC1::getInfo(void)
   oss << "<br><br>";
 
   // * * * EEPROM * * *
+  getMinMaxForRange(MEM_EEPROM_START, MEM_EEPROM_END, &min, &max);
   oss << "<b><u>EEPROM Memory</u></b><br>";
   oss << "<B>Start :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_minEEPROMAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
   oss << "<b> End :</b>";
 
   oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << m_maxEEPROMAddr << "</font>";
+  oss << std::hex << std::setw(8) << std::setfill('0') << PRIdMAX << "</font>";
 
-  if (m_bEepromMemory) {
+  if (max > min) {
     oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
@@ -170,156 +219,132 @@ CBootDevice_PIC1::getInfo(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setDeviceInBootMode
+// deviceInit
 //
 
 int
-CBootDevice_PIC1::setDeviceInBootMode(void)
+CBootDevice_PIC1::deviceInit(void)
 {
-  bool bRun;
+  /*
+    First do a test to see if the device is already in boot mode
+    if it is 0x14nn/0x15nn should be returned (nn == nodeid).
+  */
 
-  uint8_t pageSelectMsb = 0;
-  uint8_t pageSelectLsb = 0;
-  uint8_t guid0         = 0;
-  uint8_t guid3         = 0;
-  uint8_t guid5         = 0;
-  uint8_t guid7         = 0;
+  canalMsg msg, rcvmsg;
+  time_t tstart, tnow;
+  memset(msg.data, 0x00, 8);
 
-  if ((CVscpClient::connType::CANAL == m_pclient->getType()) ||
-      (CVscpClient::connType::SOCKETCAN == m_pclient->getType())) {
-
-    canalMsg msg, rcvmsg;
-    time_t tstart, tnow;
-
-    // First do a test to see if the device is already in boot mode
-    // if it is 0x14nn/0x15nn should be returned (nn == nodeid).
-
-    memset(msg.data, 0x00, 8);
-
-    // Send message
-    msg.id    = ID_PUT_BASE_INFO;
-    msg.flags = CANAL_IDFLAG_EXTENDED;
-    memset(msg.data, 0, 8);
-    msg.sizeData = 8;
-    if (CANAL_ERROR_SUCCESS == m_pclient->send(msg)) {
-
-      bRun = true;
-
-      // Get start time
-      time(&tstart);
-
-      while (bRun) {
-
-        time(&tnow);
-        if ((unsigned long) (tnow - tstart) > 2) {
-          bRun = false;
-        }
-
-        uint16_t cnt;
-        if ((VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt) { // Check if data is vaialble
-
-          m_pclient->receive(rcvmsg);
-
-          // Is this a read/write reply from the node?
-          if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_BASE_INFO + m_nodeid)) {
-            // yes already in bootmode - return
-            return true;
-          }
-
-          // Is this a read/write reply from the node?
-          if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_DATA + m_nodeid)) {
-            // yes already in bootmode - return
-            return true;
-          }
-        }
-      }
-    }
-
-    // Read page register Page select MSB
-    if (CANAL_ERROR_SUCCESS !=
-        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_PAGE_SELECT_MSB, pageSelectMsb)) {
-      return false;
-    }
-
-    // Read page register page select LSB
-    if (CANAL_ERROR_SUCCESS !=
-        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_PAGE_SELECT_LSB, pageSelectLsb)) {
-      return false;
-    }
-
-    // Read page register GUID0
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID0, guid0)) {
-      return false;
-    }
-
-    // Read page register GUID3
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID3, guid3)) {
-      return false;
-    }
-
-    // Read page register GUID5
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID5, guid5)) {
-      return false;
-    }
-
-    // Read page register GUID7
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID7, guid7)) {
-      return false;
-    }
-
-    // Set device in boot mode
-    msg.data[0] = m_nodeid;             // Nickname to read register from
-    msg.data[1] = VSCP_BOOTLOADER_PIC1; // VSCP PIC1 bootloader algorithm
-    msg.data[2] = guid0;
-    msg.data[3] = guid3;
-    msg.data[4] = guid5;
-    msg.data[5] = guid7;
-    msg.data[6] = pageSelectMsb;
-    msg.data[7] = pageSelectLsb;
-
-    // Send message
-    msg.id       = (VSCP_ENTER_BOOTLODER_MODE << 8);
-    msg.flags    = CANAL_IDFLAG_EXTENDED;
-    msg.sizeData = 8;
-    if (CANAL_ERROR_SUCCESS == m_pclient->send(msg)) {
-
-      bRun = true;
-
-      // Get start time
-      time(&tstart);
-
-      while (bRun) {
-
-        time(&tnow);
-        if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
-          bRun = false;
-        }
-
-        uint16_t cnt;
-        if ((VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt) {
-
-          m_pclient->receive(rcvmsg);
-
-          // Is this a read/write reply from the node?
-          if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_BASE_INFO + m_nodeid)) {
-            // OK in bootmode - return
-            return true;
-          }
-
-          // Is this a read/write reply from the node?
-          if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_DATA + m_nodeid)) {
-            // OK in bootmode - return
-            return true;
-          }
-        }
-      }
-    }
+  // Send probe message
+  msg.id    = ID_PUT_BASE_INFO;
+  msg.flags = CANAL_IDFLAG_EXTENDED;
+  memset(msg.data, 0, 8);
+  msg.sizeData = 8;
+  if (CANAL_ERROR_SUCCESS != m_pclient->send(msg)) {
+    return VSCP_ERROR_COMMUNICATION;
   }
-  else if ((CVscpClient::connType::TCPIP == m_pclient->getType())) {
 
-    // First do a test to see if the device is already in boot mode
-    // if it is 0x14nn/0x15nn should be returned (nn == nodeid).
+  time(&tstart); // Get start time
 
+  bool bRun = true;
+  while (bRun) {
+    time(&tnow);
+    if ((unsigned long) (tnow - tstart) > 2) {
+      bRun = false; // End loop
+    }
+
+    uint16_t cnt;
+    if ((VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt) { // Check if data is available
+
+      // There is data get message
+      m_pclient->receive(rcvmsg);
+
+      // Is this a read/write reply from the node?
+      if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_BASE_INFO + m_nodeid)) {
+        // yes already in bootmode - return
+        return VSCP_ERROR_SUCCESS;
+      }
+
+      // Is this a read/write reply from the node?
+      if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_DATA + m_nodeid)) {
+        // yes already in bootmode - return
+        return VSCP_ERROR_SUCCESS;
+      }
+    }
+  } // while
+
+  // Read standard registers
+  if (VSCP_ERROR_SUCCESS != m_stdRegs.init(*m_pclient, m_guid, m_guidif, nullptr, REGISTER_DEFAULT_TIMEOUT)) {
+    return VSCP_ERROR_COMMUNICATION;
+  }
+
+  /*
+    Check that the remote device expect the firmware load type
+    we offer
+  */
+  if (VSCP_BOOTLOADER_PIC1 != m_stdRegs.getBootloaderAlgorithm()) {
+    return VSCP_ERROR_NOT_SUPPORTED;
+  }
+
+  /*
+    The device code tell the type of hardware of the remote device
+    Must be the same as the firmware we try to load is intended for
+  */
+  if (m_firmwaredeviceCode != m_stdRegs.getFirmwareDeviceCode()) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  // Set device in boot mode
+  cguid guid;
+  m_stdRegs.getGUID(guid);
+  msg.data[0] = m_nodeid;             // Nickname to read register from
+  msg.data[1] = VSCP_BOOTLOADER_PIC1; // VSCP PIC1 bootloader algorithm
+  msg.data[2] = guid.getAt(0);
+  msg.data[3] = guid.getAt(3);
+  msg.data[4] = guid.getAt(5);
+  msg.data[5] = guid.getAt(7);
+  msg.data[6] = m_stdRegs.getRegisterPage() >> 8;
+  msg.data[7] = m_stdRegs.getRegisterPage() & 0xff;
+
+  // Send message
+  msg.id       = (VSCP_PIC1_ENTER_BOOTLODER_MODE << 8);
+  msg.flags    = CANAL_IDFLAG_EXTENDED;
+  msg.sizeData = 8;
+  if (CANAL_ERROR_SUCCESS != m_pclient->send(msg)) {
+    return VSCP_ERROR_COMMUNICATION;
+  }
+
+  bRun = true;
+
+  // Get start time
+  time(&tstart);
+
+  while (bRun) {
+
+    time(&tnow);
+    if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+      bRun = false;
+    }
+
+    uint16_t cnt;
+    if ((VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt) {
+
+      m_pclient->receive(rcvmsg);
+
+      // Is this a read/write reply from the node?
+      if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_BASE_INFO + m_nodeid)) {
+        // OK in bootmode - return
+        return VSCP_ERROR_SUCCESS;
+      }
+
+      // Is this a read/write reply from the node?
+      if ((rcvmsg.id & 0xffffff) == (uint32_t) (ID_RESPONSE_PUT_DATA + m_nodeid)) {
+        // OK in bootmode - return
+        return VSCP_ERROR_SUCCESS;
+      }
+    }
+  } // while
+
+  /*
     vscpEventEx event;
     time_t tstart, tnow;
 
@@ -366,33 +391,36 @@ CBootDevice_PIC1::setDeviceInBootMode(void)
 
     // Read page register MSB
     if (CANAL_ERROR_SUCCESS !=
-        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_PAGE_SELECT_MSB, pageSelectMsb)) {
+        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_PAGE_SELECT_MSB, pageSelectMsb)) {
       return false;
     }
 
     // Read page register LSB
     if (CANAL_ERROR_SUCCESS !=
-        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_PAGE_SELECT_LSB, pageSelectLsb)) {
+        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_PAGE_SELECT_LSB, pageSelectLsb)) {
       return false;
     }
 
     // Read GUID0
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID0, guid0)) {
-      return false;
+    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_GUID, guid0))
+    { return false;
     }
 
     // Read GUID3
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID3, guid3)) {
+    if (CANAL_ERROR_SUCCESS !=
+        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_GUID + 3, guid3)) {
       return false;
     }
 
     // Read GUID5
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID5, guid5)) {
+    if (CANAL_ERROR_SUCCESS !=
+        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_GUID + 5, guid5)) {
       return false;
     }
 
     // Read GUID7
-    if (CANAL_ERROR_SUCCESS != vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_REG_GUID7, guid7)) {
+    if (CANAL_ERROR_SUCCESS !=
+        vscp_readLevel1Register(*m_pclient, m_guid, m_guidif, 0, VSCP_STD_REGISTER_GUID + 7, guid7)) {
       return false;
     }
 
@@ -400,10 +428,10 @@ CBootDevice_PIC1::setDeviceInBootMode(void)
 
     // Send message
     event.head       = 0;
-    event.vscp_class = 512;                       // CLASS2.PROTOCOL1
-    event.vscp_type  = VSCP_ENTER_BOOTLODER_MODE; // We want to enter bootloader mode
-    memset(event.GUID, 0, 16);                    // We use interface GUID
-    event.sizeData = 16 + 8;                      // Interface GUID
+    event.vscp_class = 512;                            // CLASS2.PROTOCOL1
+    event.vscp_type  = VSCP_PIC1_ENTER_BOOTLODER_MODE; // We want to enter bootloader mode
+    memset(event.GUID, 0, 16);                         // We use interface GUID
+    event.sizeData = 16 + 8;                           // Interface GUID
     memset(event.data, 0, sizeof(event.data));
     memcpy(event.data, m_guidif.m_id, 16); // Address node i/f
     event.data[16] = m_guid.getLSB();      // Nickname for device
@@ -447,7 +475,320 @@ CBootDevice_PIC1::setDeviceInBootMode(void)
         }
       }
     }
+    */
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeDeviceControlRegs
+//
+
+int
+CBootDevice_PIC1::writeDeviceControlRegs(uint32_t addr, uint8_t flags, uint8_t cmd, uint8_t cmdData0, uint8_t cmdData1)
+{
+  int rv;
+  vscpEventEx event;
+  canalMsg msg;
+  /*
+    // Save the internal addresss
+    m_pAddr = addr;
+
+    if ((m_pAddr < MEMREG_PRG_END) && (m_pAddr < BUFFER_SIZE_PROGRAM)) {
+
+      // Flash memory
+      m_memtype = MEM_TYPE_PROGRAM;
+    }
+    else if ((m_pAddr >= MEMREG_CONFIG_START) && ((m_pAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG))) {
+
+      // Config memory
+      m_memtype = MEM_TYPE_CONFIG;
+    }
+    else if ((m_pAddr >= MEMREG_EEPROM_START) && ((m_pAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM))) {
+
+      // EEPROM
+      m_memtype = MEM_TYPE_EEPROM;
+    }
+    else {
+      return false;
+    }
+
+    if (USE_DLL_INTERFACE == m_type) {
+
+      msg.id       = ID_PUT_BASE_INFO;
+      msg.flags    = CANAL_IDFLAG_EXTENDED;
+      msg.sizeData = 8;
+      msg.id += m_nodeid; // Add node id.
+      msg.data[0] = (unsigned char) (addr & 0xff);
+      msg.data[1] = (unsigned char) ((addr >> 8) & 0xff);
+      msg.data[2] = (unsigned char) ((addr >> 16) & 0xff);
+      msg.data[3] = 0;
+      msg.data[4] = flags;
+      msg.data[5] = cmd;
+      msg.data[6] = cmdData0;
+      msg.data[7] = cmdData1;
+    }
+    else if (USE_TCPIP_INTERFACE == m_type) {
+
+      event.head       = 0;
+      event.vscp_class = 512; // CLASS2.PROTOCOL1
+      event.vscp_type  = ID_PUT_BASE_INFO >> 8;
+      memset(event.GUID, 0, 16);             // We use interface GUID
+      event.sizeData = 16 + 8;               // Interface GUID
+      memcpy(event.data, m_guidif.m_id, 16); // Address node in i/f
+      event.data[16] = (unsigned char) (addr & 0xff);
+      event.data[17] = (unsigned char) ((addr >> 8) & 0xff);
+      event.data[18] = (unsigned char) ((addr >> 16) & 0xff);
+      event.data[19] = 0;
+      event.data[20] = flags;
+      event.data[21] = cmd;
+      event.data[22] = cmdData0;
+      event.data[23] = cmdData1;
+    }
+    else {
+      return false;
+    }
+
+    if (flags & MODE_ACK) {
+      m_bHandshake = true;
+    }
+    else {
+      m_bHandshake = false;
+    }
+
+    // Send message
+    if (USE_DLL_INTERFACE == m_type) {
+
+      if (CANAL_ERROR_SUCCESS == m_pclient->send(msg)) {
+
+        // Message queued - ( wait for response from client(s) ).
+        if (m_bHandshake) {
+          rv = checkResponseLevel1(ID_RESPONSE_PUT_BASE_INFO);
+        }
+      }
+      else {
+        rv = false;
+      }
+    }
+    else {
+
+      if (CANAL_ERROR_SUCCESS == m_pclient->send(event)) {
+
+        // Message queued - ( wait for response from client(s) ).
+        if (m_bHandshake) {
+          rv = checkResponseLevel2(ID_RESPONSE_PUT_BASE_INFO);
+        }
+      }
+      else {
+        rv = false;
+      }
+    }
+  */
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// checkResponseLevel1
+//
+
+int
+CBootDevice_PIC1::checkResponseLevel1(uint32_t response_id)
+{
+  int rv;
+  canalMsg msg;
+  time_t tstart, tnow;
+
+  // Get system time
+  time(&tstart);
+
+  bool bRun = true;
+  while (bRun) {
+
+    if (CANAL_ERROR_SUCCESS == (rv = m_pclient->receive(msg))) {
+      spdlog::trace("checkResponseLevel1: < id={:X} {:n}", msg.id, spdlog::to_hex(msg.data, msg.data + 7));
+      if (((msg.id & 0xffffff00) == response_id)) { // correct id
+        if ((int) (msg.id & 0xff) == m_nodeid) {    // from correct node
+          // Response received from all - return success
+          spdlog::trace("checkResponseLevel1: < OK");
+          return VSCP_ERROR_SUCCESS;
+        }
+      }
+    }
+    else {
+      spdlog::error("checkResponseLevel1: failed to receive data {}", rv);
+      return rv;
+    }
+
+    // check for timeout
+    time(&tnow);
+    if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+      bRun = false; // End
+    }
   }
+
+  spdlog::error("checkResponseLevel1: Timeout {}", rv);
+  return VSCP_ERROR_TIMEOUT;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// checkResponseLevel2
+//
+
+int
+CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
+{
+  int rv;
+  vscpEventEx ex;
+  time_t tstart, tnow;
+
+  // Get system time
+  time(&tstart);
+
+  bool bRun = true;
+  while (bRun) {
+
+    if (VSCP_ERROR_SUCCESS == (rv = m_pclient->receive(ex))) {
+      if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (m_guid.getLSB() == ex.GUID[15])) { // correct id
+        // Response received - return success
+        return VSCP_ERROR_SUCCESS;
+      }
+    }
+    else {
+      spdlog::error("checkResponseLevel2: failed to receive data {}", rv);
+      return rv;
+    }
+
+    // check for timeout
+    time(&tnow);
+    if ((tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+      bRun = false; // abort timeout
+    }
+  }
+
+  return VSCP_ERROR_TIMEOUT;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeFirmwareSector
+//
+
+int
+CBootDevice_PIC1::writeFirmwareSector(uint8_t *paddr)
+{
+  canalMsg msg;
+  vscpEventEx ex;
+  int rv;
+  int offset = 0;
+
+  // Send event
+  if ((CVscpClient::connType::CANAL == m_pclient->getType()) ||
+      (CVscpClient::connType::SOCKETCAN == m_pclient->getType())) {
+
+    msg.id       = ID_PUT_DATA;
+    msg.flags    = CANAL_IDFLAG_EXTENDED;
+    msg.sizeData = 8;
+
+    // Put data into frame
+    for (int i = 0; i < 8; i++) {
+      msg.data[i] = paddr[i];
+      m_checksum += paddr[i];
+    };
+
+    spdlog::trace("writeFirmwareSector: > {:n}", spdlog::to_hex(msg.data, msg.data + 7));
+
+    // send
+    if (VSCP_ERROR_SUCCESS != (rv = m_pclient->send(msg))) {
+      spdlog::error("PIC1 Firmware load: writeFirmwareSector: Failed to send CANAL message rv={} ", rv);
+      return rv;
+    }
+
+    if (m_bHandshake) {
+      return checkResponseLevel1(ID_RESPONSE_PUT_DATA);
+    }
+  }
+  else {
+    ex.head       = 0;
+    ex.vscp_class = 512;                     // CLASS2.PROTOCOL1
+    ex.vscp_type  = (ID_PUT_DATA >> 8);      // 0x1100 >> 0x11
+    memset(ex.GUID, 0, 16);                  // We use interface GUID
+    ex.sizeData = 16 + 8;                    // Interface GUID
+    memcpy(ex.data, m_guidif.getGUID(), 16); // node i/f
+    offset = 16;
+
+    // Put data into frame
+    for (int i = 0; i < 8; i++) {
+      msg.data[i + offset] = paddr[i];
+      m_checksum += paddr[i];
+    };
+
+    spdlog::trace("writeFirmwareSector: > {:n}", spdlog::to_hex(ex.data, ex.data + 16+7));
+
+    // Send
+    if (VSCP_ERROR_SUCCESS != (rv = m_pclient->send(ex))) {
+      spdlog::error("PIC1 Firmware load: writeFirmwareSector: Failed to send CANAL message rv={} ", rv);
+      return rv;
+    }
+
+    if (m_bHandshake) {
+      return checkResponseLevel2(ID_RESPONSE_PUT_DATA);
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeFirmwareBlock
+//
+
+int
+CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
+{
+  int rv;
+  uint32_t size = end - start + 1;
+  uint32_t minAddr;
+  uint32_t maxAddr;
+  uint32_t nPackets;
+  uint8_t *pbuf, *paddr;
+
+  pbuf = paddr = new uint8_t[size];
+  if (nullptr == pbuf) {
+    return VSCP_ERROR_MEMORY;
+  }
+
+  if (VSCP_ERROR_SUCCESS != (rv = getMinMaxForRange(MEM_CODE_START, MEM_CODE_END, &minAddr, &maxAddr))) {
+    return rv;
+  }
+
+  if (maxAddr > minAddr) {
+    nPackets = (maxAddr - minAddr) / 8;
+    // A not completly full packet also count
+    if (0 != ((maxAddr - minAddr) % 8)) {
+      nPackets++;
+    }
+
+    // Init the block
+    if (VSCP_ERROR_SUCCESS != (rv = fillBlock(pbuf, sizeof(pbuf), MEM_CODE_START))) {
+      spdlog::error("Failed to send control info for flash data to node(s).");
+      return rv;
+    }
+
+    // Send the start block
+    if (VSCP_ERROR_SUCCESS != (rv = writeDeviceControlRegs(minAddr))) {
+      spdlog::error("Failed to send start block for flash data to node(s).");
+      return rv;
+    }
+
+    for (uint32_t blk = 0; blk < nPackets; blk++) {
+
+      spdlog::trace("Loading flash... block={0} {:X}", minAddr + (8 * blk));
+
+      if (VSCP_ERROR_SUCCESS != writeFirmwareSector(paddr)) {
+        spdlog::error("Failed to write flash data to node(s).");
+        break;
+      }
+      paddr += 8;
+    } // for
+  }   // code
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -462,531 +803,225 @@ CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallba
   bool bRun = true;
   int rv;
 
-  // wxBusyCursor busy;
-
   m_checksum        = 0;
   uint32_t progress = 0;
   uint32_t addr;
-  std::string wxStatusStr;
+  std::string strStatus;
 
-  uint32_t nFlashPackets  = 0;
-  uint32_t nConfigPackets = 0;
-  uint32_t nEEPROMPackets = 0;
+  uint8_t pbuf[BUFFER_SIZE_CODE];
+  uint32_t nPackets;
+  uint32_t minAddr;
+  uint32_t maxAddr;
 
-  // Flash memory
-  if (m_bCodeMemory) {
-    nFlashPackets = (m_maxFlashAddr - m_minFlashAddr) / 8;
-
-    if (0 != ((m_maxFlashAddr - m_minFlashAddr) % 8)) {
-      nFlashPackets++;
-    }
-  }
-
-  // Config
-  if (m_bCfgMemory) {
-    nConfigPackets = (m_maxConfigAddr - m_minConfigAddr) / 8;
-
-    if (0 != ((m_maxConfigAddr - m_minConfigAddr) % 8)) {
-      nConfigPackets++;
-    }
-  }
-
-  // EEPROM
-  if (m_bEepromMemory) {
-    nEEPROMPackets = (m_maxEEPROMAddr - m_minEEPROMAddr) / 8;
-
-    if (0 != ((m_maxEEPROMAddr - m_minEEPROMAddr) % 8)) {
-      nEEPROMPackets++;
-    }
-  }
-
-  long nTotalPackets = nFlashPackets + nConfigPackets + nEEPROMPackets;
-/*
-
-  // wxProgressDialog *pDlg =
-  //   new wxProgressDialog(_T("Boot loading in progress..."),
-  //                        _T("---"),
-  //                        nTotalPackets,
-  //                        NULL,
-  //                        wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
-
-  // Initialize checksum
-  addr = m_minFlashAddr;
   if (!writeDeviceControlRegs(addr, MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK, CMD_RST_CHKSM, 0, 0)) {
-    wxMessageBox(_T("Failed to initialize checksum at node(s)."));
-    rv   = false;
-    bRun = false;
+    spdlog::error("Failed to initialize checksum at node(s).");
+    return VSCP_ERROR_COMMUNICATION;
   }
 
-  // * * * flash memory * * *
+  // * * * * Flash memory * * * *
+  if (VSCP_ERROR_SUCCESS != (rv = writeFirmwareBlock(MEM_CODE_START, MEM_CODE_END))) {
+    return rv;
+  }
 
-  if (rv && m_bCodeData) {
+  // * * * * Flash memory * * * *
 
-    // Send the start block
+  // * * * * EEPROM * * * *
+  if (VSCP_ERROR_SUCCESS != (rv = writeFirmwareBlock(MEM_EEPROM_START, MEM_EEPROM_END))) {
+    return rv;
+  }
+
+  /*
+
+    // wxProgressDialog *pDlg =
+    //   new wxProgressDialog(_T("Boot loading in progress..."),
+    //                        _T("---"),
+    //                        nTotalPackets,
+    //                        NULL,
+    //                        wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME |
+    wxPD_REMAINING_TIME);
+
+    // Initialize checksum
     addr = m_minFlashAddr;
-    if (writeDeviceControlRegs(addr)) {
-
-      for (unsigned long blk = 0; ((blk < nFlashPackets) && bRun); blk++) {
-
-        wxStatusStr.Printf(_("Loading flash... %0X"), addr);
-        if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-          wxMessageBox(_T("Aborted by user."));
-          rv   = false;
-          bRun = false;
-        }
-
-        if (!writeFrimwareSector()) {
-          wxMessageBox(_T("Failed to write flash data to node(s)."));
-          rv   = false;
-          bRun = false;
-        }
-
-        wxMilliSleep(1);
-        progress++;
-        addr += 8;
-      }
+    if (!writeDeviceControlRegs(addr, MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK, CMD_RST_CHKSM, 0,
+    0)) { wxMessageBox(_T("Failed to initialize checksum at node(s).")); rv   = false; bRun = false;
     }
-    else {
-      wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
-      rv = false;
-    }
-  }
 
-  // * * * config memory * * *
+    // * * * flash memory * * *
 
-  if (rv && m_bCfgData) {
+    if (rv && m_bCodeData) {
 
-    // Send the start block
-    addr = m_minConfigAddr;
-    if (writeDeviceControlRegs(addr)) {
+      // Send the start block
+      addr = m_minFlashAddr;
+      if (writeDeviceControlRegs(addr)) {
 
-      for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
+        for (unsigned long blk = 0; ((blk < nFlashPackets) && bRun); blk++) {
 
-        wxStatusStr.Printf(_("Loading config memory... %0X"), addr);
-        if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-          wxMessageBox(_T("Aborted by user."));
-          rv   = false;
-          bRun = false;
-        }
-
-        if (!writeFrimwareSector()) {
-          wxMessageBox(_T("Failed to write config data to node(s)."));
-          rv   = false;
-          bRun = false;
-        }
-
-        wxMilliSleep(1);
-        progress++;
-        addr += 8;
-      }
-    }
-    else {
-      wxMessageBox(_T("Failed to send control info for config data to node(s)."));
-      rv = false;
-    }
-  }
-
-  // * * * EEPROM memory * * *
-
-  if (rv && m_bEepromData) {
-
-    // Send the start block
-    addr = m_minEEPROMAddr;
-    if (writeDeviceControlRegs(addr)) {
-
-      for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
-
-        wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr);
-        if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-          // wxMessageBox(_T("Aborted by user."));
-          rv   = false;
-          bRun = false;
-        }
-
-        if (!writeFrimwareSector()) {
-          // wxMessageBox(_T("Failed to write EEPROM data to node(s)."));
-          rv   = false;
-          bRun = false;
-        }
-
-        wxMilliSleep(1);
-        progress++;
-        addr += 8;
-      }
-    }
-    else {
-      // wxMessageBox( _T("Failed to send control info for EEPROM data to
-      // node(s).") );
-      rv = false;
-    }
-  }
-
-  if (rv) {
-
-    // Check if checksum is correct and reset device(s)
-    addr                 = m_minFlashAddr;
-    uint16_t calc_chksum = (0x10000 - (m_checksum & 0xffff));
-    if (!writeDeviceControlRegs(addr,
-                                MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_ACK,
-                                CMD_CHK_RUN,
-                                (calc_chksum & 0xff),
-                                ((calc_chksum >> 8) & 0xff))) {
-      // wxMessageBox( _T( "Failed to do finalizing and restart at
-      // node(s).Possible checksum error." ) );
-      rv   = false;
-      bRun = false;
-    }
-    else {
-
-      bool bReady = false;
-
-      // Do the device RESET
-      writeDeviceControlRegs(0x0000, 0, CMD_RESET, 0, 0);
-
-      pDlg->Update(progress, _("Reset sent."));
-
-      sleep(5);
-
-      // No use to check if we got out of bootloader mode if id is init.
-      // id.
-      if (((USE_DLL_INTERFACE == m_type) && (0xfe != m_nodeid)) ||
-          ((USE_TCPIP_INTERFACE == m_type) && (0xfe != m_guid.getAt(15)))) {
-
-        for (int i = 0; i < 3; i++) {
-
-          // Do the device RESET
-          writeDeviceControlRegs(0x0000, 0, CMD_RESET, 0, 0);
-
-          std::string str = std::string::Format(_("Trying to verify restart %d"), i);
-          pDlg->Update(progress, str);
-
-          sleep(5);
-
-          // Verify that clients got out of boot mode.
-          // If we can read register we are ready
-          unsigned char val;
-
-          if (USE_DLL_INTERFACE == m_type) {
-            if (CANAL_ERROR_SUCCESS == m_pclient->readLevel1Register(m_nodeid, 0, VSCP_REG_GUID0, &val)) {
-              bReady = true;
-              break;
-            }
+          wxStatusStr.Printf(_("Loading flash... %0X"), addr);
+          if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
+            wxMessageBox(_T("Aborted by user."));
+            rv   = false;
+            bRun = false;
           }
-          else if (USE_TCPIP_INTERFACE == m_type) {
-            if (VSCP_ERROR_SUCCESS == m_pclient->readLevel2Register(VSCP_REG_GUID0, 0, &val, m_guidif, &m_guid)) {
-              bReady = true;
-              break;
-            }
+
+          if (!writeFrimwareSector()) {
+            wxMessageBox(_T("Failed to write flash data to node(s)."));
+            rv   = false;
+            bRun = false;
           }
+
+          wxMilliSleep(1);
+          progress++;
+          addr += 8;
         }
       }
-
-      if (!bReady) {
-        pDlg->Update(progress, _("Could not verify that device came out of reset."));
-        // wxMessageBox(_T( "Could not verify that device came out of reset." ));
+      else {
+        wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
         rv = false;
       }
     }
-  }
 
-  // Done
-  progress = nTotalPackets;
-  pDlg->Update(progress, wxStatusStr);
+    // * * * config memory * * *
 
-  pDlg->Destroy();
-*/
-  return VSCP_ERROR_SUCCESS;
-}
+    if (rv && m_bCfgData) {
 
-///////////////////////////////////////////////////////////////////////////////
-// writeFirmwareSector
-//
+      // Send the start block
+      addr = m_minConfigAddr;
+      if (writeDeviceControlRegs(addr)) {
 
-int
-CBootDevice_PIC1::writeFirmwareSector(void)
-{
-  canalMsg msg;
-  vscpEventEx event;
-  int rv;
-  int offset = 0;
+        for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
 
-/*
-  // Send event
-  if (USE_DLL_INTERFACE == m_type) {
-    msg.id       = ID_PUT_DATA;
-    msg.flags    = CANAL_IDFLAG_EXTENDED;
-    msg.sizeData = 8;
-    offset       = 0;
-  }
-  else if (USE_TCPIP_INTERFACE == m_type) {
-    event.head       = 0;
-    event.vscp_class = 512; // CLASS2.PROTOCOL1
-    event.vscp_type  = (ID_PUT_DATA >> 8);
-    memset(event.GUID, 0, 16);             // We use interface GUID
-    event.sizeData = 16 + 8;               // Interface GUID
-    memcpy(event.data, m_guidif.m_id, 16); // Address node in i/f
-    offset = 16;
-  }
-  else {
-    return false;
-  }
+          wxStatusStr.Printf(_("Loading config memory... %0X"), addr);
+          if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
+            wxMessageBox(_T("Aborted by user."));
+            rv   = false;
+            bRun = false;
+          }
 
-  uint8_t b;
-  for (int i = 0; i < 8; i++) {
+          if (!writeFrimwareSector()) {
+            wxMessageBox(_T("Failed to write config data to node(s)."));
+            rv   = false;
+            bRun = false;
+          }
 
-    switch (m_memtype) {
-
-      case MEM_TYPE_PROGRAM:
-        b = m_pbufCode[m_pAddr];
-        m_checksum += m_pbufCode[m_pAddr];
-        break;
-
-      case MEM_TYPE_USERID:
-        b = m_pbufUserID[m_pAddr - 0x200000];
-        m_checksum += m_pbufUserID[m_pAddr - 0x200000];
-        break;
-
-      case MEM_TYPE_CONFIG:
-        b = m_pbufCfg[m_pAddr - 0x300000];
-        m_checksum += m_pbufCfg[m_pAddr - 0x300000];
-        break;
-
-      case MEM_TYPE_EEPROM:
-        b = m_pbufEeeprom[m_pAddr - 0xf00000];
-        m_checksum += m_pbufEEPROM[m_pAddr - 0xf00000];
-        break;
-
-      default:
-        b = 0xff;
-        break;
-    }
-
-    // Write data into frame
-    msg.data[i + offset] = b;
-
-    // Update address
-    m_pAddr++;
-  }
-
-  m_pclient->send(event);
-
-  // Message queued - ( wait for response from client(s) ).
-  if (m_bHandshake) {
-
-    if (USE_DLL_INTERFACE == m_type) {
-      if (!checkResponseLevel1(ID_RESPONSE_PUT_DATA)) {
-        // Failure
+          wxMilliSleep(1);
+          progress++;
+          addr += 8;
+        }
+      }
+      else {
+        wxMessageBox(_T("Failed to send control info for config data to node(s)."));
         rv = false;
       }
     }
-    if (USE_TCPIP_INTERFACE == m_type) {
-      if (!checkResponseLevel2(ID_RESPONSE_PUT_DATA)) {
-        // Failure
+
+    // * * * EEPROM memory * * *
+
+    if (rv && m_bEepromData) {
+
+      // Send the start block
+      addr = m_minEEPROMAddr;
+      if (writeDeviceControlRegs(addr)) {
+
+        for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
+
+          wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr);
+          if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
+            // wxMessageBox(_T("Aborted by user."));
+            rv   = false;
+            bRun = false;
+          }
+
+          if (!writeFrimwareSector()) {
+            // wxMessageBox(_T("Failed to write EEPROM data to node(s)."));
+            rv   = false;
+            bRun = false;
+          }
+
+          wxMilliSleep(1);
+          progress++;
+          addr += 8;
+        }
+      }
+      else {
+        // wxMessageBox( _T("Failed to send control info for EEPROM data to
+        // node(s).") );
         rv = false;
       }
     }
-  }
-*/
-  return VSCP_ERROR_SUCCESS;
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// writeDeviceControlRegs
-//
+    if (rv) {
 
-int
-CBootDevice_PIC1::writeDeviceControlRegs(uint32_t addr, uint8_t flags, uint8_t cmd, uint8_t cmdData0, uint8_t cmdData1)
-{
-  int rv; 
-  vscpEventEx event;
-  canalMsg msg;
-/*
-  // Save the internal addresss
-  m_pAddr = addr;
-
-  if ((m_pAddr < MEMREG_PRG_END) && (m_pAddr < BUFFER_SIZE_PROGRAM)) {
-
-    // Flash memory
-    m_memtype = MEM_TYPE_PROGRAM;
-  }
-  else if ((m_pAddr >= MEMREG_CONFIG_START) && ((m_pAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG))) {
-
-    // Config memory
-    m_memtype = MEM_TYPE_CONFIG;
-  }
-  else if ((m_pAddr >= MEMREG_EEPROM_START) && ((m_pAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM))) {
-
-    // EEPROM
-    m_memtype = MEM_TYPE_EEPROM;
-  }
-  else {
-    return false;
-  }
-
-  if (USE_DLL_INTERFACE == m_type) {
-
-    msg.id       = ID_PUT_BASE_INFO;
-    msg.flags    = CANAL_IDFLAG_EXTENDED;
-    msg.sizeData = 8;
-    msg.id += m_nodeid; // Add node id.
-    msg.data[0] = (unsigned char) (addr & 0xff);
-    msg.data[1] = (unsigned char) ((addr >> 8) & 0xff);
-    msg.data[2] = (unsigned char) ((addr >> 16) & 0xff);
-    msg.data[3] = 0;
-    msg.data[4] = flags;
-    msg.data[5] = cmd;
-    msg.data[6] = cmdData0;
-    msg.data[7] = cmdData1;
-  }
-  else if (USE_TCPIP_INTERFACE == m_type) {
-
-    event.head       = 0;
-    event.vscp_class = 512; // CLASS2.PROTOCOL1
-    event.vscp_type  = ID_PUT_BASE_INFO >> 8;
-    memset(event.GUID, 0, 16);             // We use interface GUID
-    event.sizeData = 16 + 8;               // Interface GUID
-    memcpy(event.data, m_guidif.m_id, 16); // Address node in i/f
-    event.data[16] = (unsigned char) (addr & 0xff);
-    event.data[17] = (unsigned char) ((addr >> 8) & 0xff);
-    event.data[18] = (unsigned char) ((addr >> 16) & 0xff);
-    event.data[19] = 0;
-    event.data[20] = flags;
-    event.data[21] = cmd;
-    event.data[22] = cmdData0;
-    event.data[23] = cmdData1;
-  }
-  else {
-    return false;
-  }
-
-  if (flags & MODE_ACK) {
-    m_bHandshake = true;
-  }
-  else {
-    m_bHandshake = false;
-  }
-
-  // Send message
-  if (USE_DLL_INTERFACE == m_type) {
-
-    if (CANAL_ERROR_SUCCESS == m_pclient->send(msg)) {
-
-      // Message queued - ( wait for response from client(s) ).
-      if (m_bHandshake) {
-        rv = checkResponseLevel1(ID_RESPONSE_PUT_BASE_INFO);
-      }
-    }
-    else {
-      rv = false;
-    }
-  }
-  else {
-
-    if (CANAL_ERROR_SUCCESS == m_pclient->send(event)) {
-
-      // Message queued - ( wait for response from client(s) ).
-      if (m_bHandshake) {
-        rv = checkResponseLevel2(ID_RESPONSE_PUT_BASE_INFO);
-      }
-    }
-    else {
-      rv = false;
-    }
-  }
-*/
-  return VSCP_ERROR_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// checkResponseLevel1
-//
-
-int
-CBootDevice_PIC1::checkResponseLevel1(uint32_t id)
-{
-  canalMsg msg;
-  time_t tstart, tnow;
-  int rv;
-/*
-  // Get system time
-  time(&tstart);
-
-  bool bRun = true;
-  while (bRun) {
-
-    // uint16_t cnt;
-    // if ( (VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt ) {
-
-    if (CANAL_ERROR_SUCCESS == m_pclient->receive(msg)) {
-
-      if (((msg.id & 0xffffff00) == id)) { // correct id
-
-        if ((int) (msg.id & 0xff) == m_nodeid) {
-
-          // Response received from all - return success
-          rv   = true;
-          bRun = false;
-          return true;
-
-        } // id found
-      }
-
-    } // id
-
-    //} // received message
-
-    // check for timeout
-    time(&tnow);
-    if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
-      rv   = false;
-      bRun = false;
-    }
-  }
-*/
-  return VSCP_ERROR_SUCCESS;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// checkResponseLevel2
-//
-
-int
-CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
-{
-  vscpEventEx event;
-  time_t tstart, tnow;
-  int rv;
-/*
-  // Get system time
-  time(&tstart);
-
-  bool bRun = true;
-  while (bRun) {
-
-    // uint16_t cnt;
-    // if ( (VSCP_ERROR_SUCCESS == m_pclient->getcount(&cnt)) && cnt ) {
-
-    if (VSCP_ERROR_SUCCESS == m_pclient->receive(event)) {
-
-      if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) && (m_guid.getLSB() == event.GUID[15])) { // correct id
-
-        // Response received from all - return success
-        rv   = true;
+      // Check if checksum is correct and reset device(s)
+      addr                 = m_minFlashAddr;
+      uint16_t calc_chksum = (0x10000 - (m_checksum & 0xffff));
+      if (!writeDeviceControlRegs(addr,
+                                  MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_ACK,
+                                  CMD_CHK_RUN,
+                                  (calc_chksum & 0xff),
+                                  ((calc_chksum >> 8) & 0xff))) {
+        // wxMessageBox( _T( "Failed to do finalizing and restart at
+        // node(s).Possible checksum error." ) );
+        rv   = false;
         bRun = false;
-        return true;
+      }
+      else {
 
-      } // id
+        bool bReady = false;
+
+        // Do the device RESET
+        writeDeviceControlRegs(0x0000, 0, CMD_RESET, 0, 0);
+
+        pDlg->Update(progress, _("Reset sent."));
+
+        sleep(5);
+
+        // No use to check if we got out of bootloader mode if id is init.
+        // id.
+        if (((USE_DLL_INTERFACE == m_type) && (0xfe != m_nodeid)) ||
+            ((USE_TCPIP_INTERFACE == m_type) && (0xfe != m_guid.getAt(15)))) {
+
+          for (int i = 0; i < 3; i++) {
+
+            // Do the device RESET
+            writeDeviceControlRegs(0x0000, 0, CMD_RESET, 0, 0);
+
+            std::string str = std::string::Format(_("Trying to verify restart %d"), i);
+            pDlg->Update(progress, str);
+
+            sleep(5);
+
+            // Verify that clients got out of boot mode.
+            // If we can read register we are ready
+            unsigned char val;
+
+            if (USE_DLL_INTERFACE == m_type) {
+              if (CANAL_ERROR_SUCCESS == m_pclient->readLevel1Register(m_nodeid, 0, VSCP_REG_GUID0, &val)) {
+                bReady = true;
+                break;
+              }
+            }
+            else if (USE_TCPIP_INTERFACE == m_type) {
+              if (VSCP_ERROR_SUCCESS == m_pclient->readLevel2Register(VSCP_REG_GUID0, 0, &val, m_guidif, &m_guid)) {
+                bReady = true;
+                break;
+              }
+            }
+          }
+        }
+
+        if (!bReady) {
+          pDlg->Update(progress, _("Could not verify that device came out of reset."));
+          // wxMessageBox(_T( "Could not verify that device came out of reset." ));
+          rv = false;
+        }
+      }
     }
 
-    //} // received message
+    // Done
+    progress = nTotalPackets;
+    pDlg->Update(progress, wxStatusStr);
 
-    // check for timeout
-    time(&tnow);
-    if ((tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
-      rv   = false;
-      bRun = false;
-    }
-  }
-*/
+    pDlg->Destroy();
+  */
   return VSCP_ERROR_SUCCESS;
 }

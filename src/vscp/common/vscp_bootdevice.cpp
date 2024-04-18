@@ -88,20 +88,41 @@ CBootMemBlock::~CBootMemBlock(void)
 // Ctor
 //
 
-CBootDevice::CBootDevice(CVscpClient *pclient, uint16_t nodeid)
+CBootDevice::CBootDevice(CVscpClient *pclient,
+                         uint16_t nodeid,
+                         std::function<void(int)> statusCallback,
+                         uint32_t timeout)
 {
   m_pclient = pclient;
   m_nodeid  = nodeid;
   m_guid.clear();
-  m_guid.setNicknameID(nodeid);
   m_guidif.clear();
+  m_timeout        = timeout;
+  m_statusCallback = statusCallback;
 }
 
-CBootDevice::CBootDevice(CVscpClient *pclient, cguid &guid, cguid &ifguid)
+CBootDevice::CBootDevice(CVscpClient *pclient,
+                         uint16_t nodeid,
+                         cguid &guidif,
+                         std::function<void(int)> statusCallback,
+                         uint32_t timeout)
 {
   m_pclient = pclient;
+  m_nodeid  = nodeid;
+  m_guid.clear();
+  m_guidif         = guidif;
+  m_timeout        = timeout;
+  m_statusCallback = statusCallback;
+}
+
+CBootDevice::CBootDevice(CVscpClient *pclient, cguid &guid, std::function<void(int)> statusCallback, uint32_t timeout)
+{
+  m_pclient = pclient;
+  m_nodeid  = 0;
   m_guid    = guid;
-  m_guidif  = ifguid;
+  m_guidif.clear();
+  m_timeout        = timeout;
+  m_statusCallback = statusCallback;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -234,11 +255,78 @@ CBootDevice::loadIntelHexFile(const std::string &path)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getInfo
+// getMinMaxForRange
+//
+
+int
+CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax)
+{
+  if (nullptr == pmin) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+
+  if (nullptr == pmax) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+
+  if (end <= start) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  *pmin = 0xffffffff;
+  *pmax = 0;
+
+  for (auto const &pblk : m_memblkList) {
+    if ((pblk->getStartAddress() >= start) && (pblk->getStartAddress() <= end)) {
+      // Set min to lowest address found
+      if (pblk->getStartAddress() < *pmin) {
+        *pmin = pblk->getStartAddress();
+      }
+      // Set max to highest address found
+      if ((pblk->getStartAddress() + pblk->getSize()) > *pmax) {
+        *pmax = pblk->getStartAddress() + pblk->getSize();
+      }
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// fillBlock
+//
+
+int
+CBootDevice::fillBlock(uint8_t *pblock, uint32_t size, uint32_t start, uint8_t fill)
+{
+  if (nullptr == pblock) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+
+  if (size > BOOT_MAX_BLOCK_SIZE) {
+    return VSCP_ERROR_SIZE;
+  }
+
+  // Fill block with void value (0xff for flash)
+  memset(pblock, fill, size);
+
+  for (auto const &pblk : m_memblkList) {
+    if ((pblk->getStartAddress() >= start) && (pblk->getStartAddress() < (start + size))) {
+      for (uint8_t pos = 0; pos < pblk->getSize(); pos++) {
+        pblock[(pblk->getStartAddress() - start) + pos] = *(pblk->getBlock() + pos);
+      }
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deviceInfo
 //
 
 std::string
-CBootDevice::getInfo(void)
+CBootDevice::deviceInfo(void)
 {
   std::string strinfo;
 
