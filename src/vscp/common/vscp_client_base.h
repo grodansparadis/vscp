@@ -59,7 +59,6 @@ public:
       vscp-client class types
       =======================
       - NONE - Undefined
-      - LOCAL - No connection, can handle files, logs etc
       - TCPIP - VSCP tcp/ip link protocol.
       - CANAL - The CANAL protocol. This is the same as a VSCP level I driver.
       - SOCKETCAN - VSCP events sent ovr socketcan.
@@ -69,15 +68,12 @@ public:
       - UDP - VSCP over UDP.
       - MULTICAST - VSCP multicast protocol.
       - REST - VSCP REST interface.
-      - RS232 - VSCP over serial link.
-      - RS485 - VSCP over multidrop serial link.
       - RAWCAN - Handle standard CAN and CANFD.
       - RAWMQTT - Handle standard MQTT.
   */
 
   typedef enum class connType {
     NONE = 0,
-    LOCAL,
     TCPIP,
     CANAL,
     LEVEL2,
@@ -87,9 +83,6 @@ public:
     MQTT,
     UDP,
     MULTICAST,
-    REST,
-    RS232,
-    RS485,
     RAWCAN,
     RAWMQTT
   } connType;
