@@ -566,12 +566,15 @@ vscpClientSocketCan::receive(vscpEvent &ev)
     return VSCP_ERROR_FIFO_EMPTY;
   }
 
+  pthread_mutex_lock(&m_mutexReceiveQueue);
   vscpEvent *pev = m_receiveList.front();
   if (nullptr == pev) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_INVALID_POINTER;
   }
   vscp_copyEvent(&ev, pev);
   m_receiveList.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   vscp_deleteEvent(pev);
 
   return VSCP_ERROR_SUCCESS;
@@ -608,13 +611,16 @@ vscpClientSocketCan::receive(canalMsg &msg)
     return VSCP_ERROR_FIFO_EMPTY;
   }
 
+  pthread_mutex_lock(&m_mutexReceiveQueue);
   vscpEvent *pev = m_receiveList.front();
   if (nullptr == pev) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_INVALID_POINTER;
   }
 
   vscp_convertEventToCanal(&msg, pev, 1);
   m_receiveList.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   vscp_deleteEvent(pev);
   pev = nullptr;
 

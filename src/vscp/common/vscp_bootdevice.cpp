@@ -90,32 +90,39 @@ CBootMemBlock::~CBootMemBlock(void)
 
 CBootDevice::CBootDevice(CVscpClient *pclient,
                          uint16_t nodeid,
-                         std::function<void(int)> statusCallback,
+                         std::function<void(int, const char *)> statusCallback,
                          uint32_t timeout)
 {
   m_pclient = pclient;
   m_nodeid  = nodeid;
   m_guid.clear();
+  m_guid.setNicknameID(nodeid);
   m_guidif.clear();
   m_timeout        = timeout;
   m_statusCallback = statusCallback;
+  m_startAddr      = 0; // Boot start
 }
 
 CBootDevice::CBootDevice(CVscpClient *pclient,
                          uint16_t nodeid,
                          cguid &guidif,
-                         std::function<void(int)> statusCallback,
+                         std::function<void(int, const char *)> statusCallback,
                          uint32_t timeout)
 {
   m_pclient = pclient;
   m_nodeid  = nodeid;
   m_guid.clear();
+  m_guid.setNicknameID(nodeid);
   m_guidif         = guidif;
   m_timeout        = timeout;
   m_statusCallback = statusCallback;
+  m_startAddr      = 0; // Boot start
 }
 
-CBootDevice::CBootDevice(CVscpClient *pclient, cguid &guid, std::function<void(int)> statusCallback, uint32_t timeout)
+CBootDevice::CBootDevice(CVscpClient *pclient,
+                         cguid &guid,
+                         std::function<void(int, const char *)> statusCallback,
+                         uint32_t timeout)
 {
   m_pclient = pclient;
   m_nodeid  = 0;
@@ -123,6 +130,7 @@ CBootDevice::CBootDevice(CVscpClient *pclient, cguid &guid, std::function<void(i
   m_guidif.clear();
   m_timeout        = timeout;
   m_statusCallback = statusCallback;
+  m_startAddr      = 0; // Boot start
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,21 +158,25 @@ CBootDevice::loadIntelHexFile(const std::string &path)
   char buf[16];
   char *endptr;
   std::ifstream hexfile;
-  uint16_t lowAddr     = 0; // Low part of address
-  uint16_t highAddr    = 0; // High part if address
-  uint32_t segmentAddr = 0; // Extended segment address (type=2)
+  uint16_t lowaddr     = 0; // Low part of address
+  uint16_t highaddr    = 0; // High part if address
+  uint32_t segmentaddr = 0; // Extended segment address (type=2)
   uint8_t cnt          = 0;
-  uint8_t recType      = 0;
+  uint8_t rectype      = 0;
 
   try {
     hexfile.open(path);
   }
   catch (...) {
     spdlog::error("Load intel hex: Unable to open file {%0} error={%1} '{%2}'", path, errno, strerror(errno));
+    return VSCP_ERROR_OPERATION_FAILED;
   }
 
-  bool bRun = true;
-  while (bRun && hexfile.getline(szline, sizeof(szline))) {
+  bool bRun = true; //  (is.rdstate() & std::ifstream::failbit ) != 0
+  while (bRun && !hexfile.eof()) {
+
+    hexfile.getline(szline, sizeof(szline));
+    spdlog::trace("input: {0}", szline);
 
     // We ignore all lines that does not contain
     // ':'
@@ -191,14 +203,21 @@ CBootDevice::loadIntelHexFile(const std::string &path)
       }
 
       cnt     = linebuf[0];
-      lowAddr = (uint32_t) linebuf[1] << 16 + linebuf[2];
-      recType = linebuf[3];
+      lowaddr = (((uint16_t) linebuf[1]) << 8) + linebuf[2];
+      rectype = linebuf[3];
 
       // Construct fulladdress
-      uint32_t fulladdr = (highAddr << 16) + lowAddr + segmentAddr;
+      uint32_t fulladdr = (((uint32_t) highaddr) << 16) + lowaddr + segmentaddr;
+      spdlog::trace("cnt: {0} rectype:{1} lowaddr: {2} highaddr: {3} fulladdr: {4} segment: {5}",
+                    cnt,
+                    rectype,
+                    lowaddr,
+                    highaddr,
+                    fulladdr,
+                    segmentaddr);
 
       // Handle row as of record type
-      switch (recType) {
+      switch (rectype) {
 
         case CBootDevice::INTELHEX_LINETYPE_DATA: {
           uint8_t mem[256];
@@ -225,7 +244,7 @@ CBootDevice::loadIntelHexFile(const std::string &path)
             hexfile.close();
             return VSCP_ERROR_PARAMETER;
           }
-          segmentAddr = (((uint16_t) linebuf[4]) << 8 + linebuf[5]) * 16;
+          segmentaddr = ((((uint16_t) linebuf[4]) << 8) + linebuf[5]) * 16;
           break;
 
         case CBootDevice::INTELHEX_LINETYPE_EXTENDED_LINEAR:
@@ -235,7 +254,7 @@ CBootDevice::loadIntelHexFile(const std::string &path)
             hexfile.close();
             return VSCP_ERROR_PARAMETER;
           }
-          highAddr = (((uint16_t) linebuf[4]) << 8 + linebuf[5]);
+          highaddr = ((((uint16_t) linebuf[4]) << 8) + linebuf[5]);
           break;
 
         case CBootDevice::INTELHEX_LINETYPE_START_SEGMENT:
@@ -262,14 +281,17 @@ int
 CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax)
 {
   if (nullptr == pmin) {
+    spdlog::error("getMinMaxForRange: pmin pointer is invalid (nullptr)");
     return VSCP_ERROR_INVALID_POINTER;
   }
 
   if (nullptr == pmax) {
+    spdlog::error("getMinMaxForRange: pmax pointer is invalid (nullptr)");
     return VSCP_ERROR_INVALID_POINTER;
   }
 
   if (end <= start) {
+    spdlog::error("getMinMaxForRange: end <= start");
     return VSCP_ERROR_PARAMETER;
   }
 
@@ -289,6 +311,13 @@ CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uin
     }
   }
 
+  // Set both values to zero if noting found in
+  // the range
+  if ((*pmin == 0xffffffff) && (*pmax == 0)) {
+    *pmin = 0;
+    return VSCP_ERROR_SUCCESS; // nothing to program so we are done
+  }
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -301,10 +330,6 @@ CBootDevice::fillBlock(uint8_t *pblock, uint32_t size, uint32_t start, uint8_t f
 {
   if (nullptr == pblock) {
     return VSCP_ERROR_INVALID_POINTER;
-  }
-
-  if (size > BOOT_MAX_BLOCK_SIZE) {
-    return VSCP_ERROR_SIZE;
   }
 
   // Fill block with void value (0xff for flash)

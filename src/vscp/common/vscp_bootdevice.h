@@ -125,7 +125,7 @@ public:
   */
   CBootDevice(CVscpClient *pclient,
               uint16_t nodeid,
-              std::function<void(int)> statusCallback = nullptr,
+              std::function<void(int, const char*)> statusCallback = nullptr,
               uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
@@ -140,7 +140,7 @@ public:
   CBootDevice(CVscpClient *pclient,
               uint16_t nodeid,
               cguid &guidif,
-              std::function<void(int)> statusCallback = nullptr,
+              std::function<void(int, const char*)> statusCallback = nullptr,
               uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
@@ -153,7 +153,7 @@ public:
   */
   CBootDevice(CVscpClient *pclient,
               cguid &guid,
-              std::function<void(int)> statusCallback = nullptr,
+              std::function<void(int, const char*)> statusCallback = nullptr,
               uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
@@ -201,8 +201,11 @@ public:
     @param end Stop address for memory range (inclusive - end is part of address space)
     @param pmin Pointer to variable that will get min address
     @param pmax Pointer to variable that will get max address
-    @return VSCP_ERROR_SUCCESS on success. VSCP_ERROR_ERROR if no memory
-              defined in the selected range.
+    @return VSCP_ERROR_SUCCESS on success. 
+      VSCP_ERROR_INVALID_POINTER if ponters are invalid.
+      VSCP_ERROR_INVALID_PARAMETER if end <= start
+      VSCP_ERROR_ERROR if no memory defined in the selected range. value of 
+        pmin/pmax is zero in this case.
   */
   virtual int getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax);
 
@@ -224,9 +227,11 @@ public:
 
   /*!
     Set a device in bootmode
+    @param bAbortOnFirmwareCodeFail Set to true to fail if firmware code fetched from
+        MDF is not the same as the one read from the remote device.
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int deviceInit(void) = 0;
+  virtual int deviceInit(bool bAbortOnFirmwareCodeFail = false) = 0;
 
   /*!
     Perform the actual firmware load process
@@ -255,11 +260,11 @@ protected:
 
   /*!
     Status callback
-      xxxxx(int, std::string)
+      xxxxx(int, const char *)
       int is percentage,
       str is real text description
   */
-  std::function<void(int)> m_statusCallback;
+  std::function<void(int,const char*)> m_statusCallback;
 
   /*!
     The device code tell the type of hardware of the remote device
@@ -285,6 +290,9 @@ protected:
 
   /// Checksum for firmware
   uint32_t m_checksum;
+
+  // This is the minimum code address (startvector)
+  uint32_t m_startAddr;
 
   /// # data bytes in file
   uint32_t m_totalCntData;

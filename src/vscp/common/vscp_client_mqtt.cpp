@@ -147,7 +147,7 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT CLIENT: MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
+  spdlog::debug("MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -175,7 +175,7 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT CLIENT: MQTT v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
+  spdlog::debug("MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -203,7 +203,7 @@ mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::info("MQTT CLIENT: MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
+  spdlog::debug("MQTT CLIENT: MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -231,7 +231,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::info("MQTT CLIENT: MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  spdlog::debug("MQTT CLIENT: MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -259,7 +259,7 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::trace("MQTT CLIENT: MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  spdlog::debug("MQTT CLIENT: MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -285,7 +285,7 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::trace("MQTT publish: MQTT v3.11 publish: mid={0:X}", mid);
+  spdlog::debug("MQTT publish: MQTT v3.11 publish: mid={0:X}", mid);
 
   if (nullptr != pClient->m_parentCallbackPublish) {
     pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
@@ -311,7 +311,7 @@ mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::trace("MQTT publish: MQTT v5 publish: mid={0:X} reason-code={1:X}", mid, reason_code);
+  spdlog::debug("MQTT publish: MQTT v5 publish: mid={0:X} reason-code={1:X}", mid, reason_code);
 
   if (nullptr != pClient->m_parentCallbackPublish) {
     pClient->m_parentCallbackPublish(mosq, pClient->m_pParent, mid);
@@ -343,15 +343,15 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
 
+  std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
+  spdlog::debug("MQTT CLIENT: MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+
   if (nullptr != pClient->m_parentCallbackMessage) {
     pClient->m_parentCallbackMessage(mosq, pClient->m_pParent, pMsg);
   }
 
-  std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::trace("MQTT CLIENT: MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
-
   if (!pClient->handleMessage(pMsg)) {
-    spdlog::trace("MQTT CLIENT: MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+    spdlog::debug("MQTT CLIENT: MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
 }
 
@@ -414,6 +414,7 @@ mqtt_on_subscribe(struct mosquitto *mosq, void *pData, int mid, int qos_count, c
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  spdlog::debug("MQTT CLIENT: Subscribe v3.11: mid={0} qos_count={1}", mid, qos_count);
 
   if (nullptr != pClient->m_parentCallbackSubscribe) {
     pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
@@ -448,6 +449,7 @@ mqtt_on_subscribe_v5(struct mosquitto *mosq,
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  spdlog::debug("MQTT CLIENT: Subscribe v5: mid={0} qos_count={1}", mid, qos_count);
 
   if (nullptr != pClient->m_parentCallbackSubscribe) {
     pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
@@ -473,6 +475,7 @@ mqtt_on_unsubscribe(struct mosquitto *mosq, void *pData, int mid)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  spdlog::debug("MQTT CLIENT: Unsubscribe v3.11: ");
 
   if (nullptr != pClient->m_parentCallbackUnsubscribe) {
     pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
@@ -498,6 +501,7 @@ mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosqu
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
+  spdlog::debug("MQTT CLIENT: Unsubscribe v5: ");
 
   if (nullptr != pClient->m_parentCallbackUnsubscribe) {
     pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
@@ -1391,7 +1395,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 /////////////////////////////////////////////////////////////////////////////
 // handleMessage
 //
-// Handle incoming message
+// Handle incoming (subscribe) message
 //
 
 bool
@@ -1413,20 +1417,23 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     return false;
   }
 
-  // We need to find the subscribe channel
-  if (nullptr != pmsg->topic) {
-    for (std::list<publishTopic *>::const_iterator it = m_mqtt_publishTopicList.begin();
-         it != m_mqtt_publishTopicList.end();
+  // Get subscribe format for subscribe topic
+  for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin();
+         it != m_mqtt_subscribeTopicList.end();
          ++it) {
 
-      publishTopic *ppublish = (*it);
+      subscribeTopic *psubscribe = (*it);
       // if topics match
-      if (!strstr(ppublish->getTopic().c_str(), pmsg->topic)) {
-        format = ppublish->getFormat();
+      if (!strstr(psubscribe->getTopic().c_str(), pmsg->topic)) {
+        format = psubscribe->getFormat();
+        break;
       }
     }
-  }
-  else {
+
+  // If autofmt the payload must be checked to find the correct format
+  // top convert MQTT msg to VSCP event
+  if (autofmt == format) {
+    
     // Topic is nill we need to find format
 
     // If First char of payload...
@@ -1460,7 +1467,8 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
   }
 
-  // Binary payload will result in zero length string as first character
+  // Note!!!
+  // Binary payload will result in zero length string as the first character
   // is a zero.
   std::string payload((const char *) pmsg->payload, pmsg->payloadlen);
 

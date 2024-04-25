@@ -1752,6 +1752,7 @@ CMDF::downLoadMDF(const std::string &url, const std::string &tempFileName)
   if (curl) {
     fp = fopen(tempFileName.c_str(), "wb");
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     res = curl_easy_perform(curl);

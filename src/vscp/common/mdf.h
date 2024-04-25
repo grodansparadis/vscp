@@ -4119,7 +4119,7 @@ public:
     @return Return CURLE_OK if a valid file is downloaded, else a
             curl error code.
   */
-  CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
+  static CURLcode downLoadMDF(const std::string &remoteFile, const std::string &tempFile);
 
   /*!
     Load MDF from local or remote storage and parse it into

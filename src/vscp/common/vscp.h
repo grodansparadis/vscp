@@ -292,14 +292,14 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 
 /* Interface types */
 #define VSCP_INTERFACE_TYPE_UNKNOWN        0
-#define VSCP_INTERFACE_TYPE_INTERNAL       1
-#define VSCP_INTERFACE_TYPE_LEVEL1DRV      2
-#define VSCP_INTERFACE_TYPE_LEVEL2DRV      3
-#define VSCP_INTERFACE_TYPE_CLIENT_TCPIP   4
-#define VSCP_INTERFACE_TYPE_CLIENT_UDP     5
-#define VSCP_INTERFACE_TYPE_CLIENT_WEB     6
-#define VSCP_INTERFACE_TYPE_CLIENT_WEBSOCK 7
-#define VSCP_INTERFACE_TYPE_CLIENT_REST    8
+#define VSCP_INTERFACE_TYPE_INTERNAL       1  // Internal to daemon/server
+#define VSCP_INTERFACE_TYPE_LEVEL1DRV      2  // Level I driver
+#define VSCP_INTERFACE_TYPE_LEVEL2DRV      3  // Level II driver
+#define VSCP_INTERFACE_TYPE_CLIENT_TCPIP   4  // TCP/IP client
+#define VSCP_INTERFACE_TYPE_CLIENT_UDP     5  // UDP client
+#define VSCP_INTERFACE_TYPE_CLIENT_WEB     6  // Web server
+#define VSCP_INTERFACE_TYPE_CLIENT_WEBSOCK 7  // Websocket client
+#define VSCP_INTERFACE_TYPE_CLIENT_REST    8  // REST client
 
 /* VSCP Encryption types */
 #define VSCP_ENCRYPTION_NONE           0

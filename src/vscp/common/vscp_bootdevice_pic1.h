@@ -52,8 +52,8 @@ public:
   */
   CBootDevice_PIC1(CVscpClient *pclient,
                    uint8_t nodeid,
-                   std::function<void(int)> statusCallback = nullptr,
-                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Constructor
@@ -69,8 +69,8 @@ public:
   CBootDevice_PIC1(CVscpClient *pclient,
                    uint8_t nodeid,
                    cguid &guidif,
-                   std::function<void(int)> statusCallback = nullptr,
-                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Constructor
@@ -82,8 +82,8 @@ public:
   */
   CBootDevice_PIC1(CVscpClient *pclient,
                    cguid &guid,
-                   std::function<void(int)> statusCallback = nullptr,
-                   uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   // Dtor
   ~CBootDevice_PIC1(void);
@@ -98,7 +98,7 @@ public:
 
   // Flash memory
   static const uint32_t MEM_CODE_START = 0x000000;
-  static const uint32_t MEM_CODE_END   = 0x2fffff;
+  static const uint32_t MEM_CODE_END   = 0x1fffff;
 
   /*
     User IDs (starting at address 200000h) are considered
@@ -106,6 +106,7 @@ public:
     erased like normal FLASH Program Memory.
   */
   static const uint32_t MEM_USERID_START = 0x200000;
+  static const uint32_t MEM_USERID_END   = 0x2fffff;
 
   // Configuration memory
   static const uint32_t MEM_CONFIG_START = 0x300000;
@@ -176,15 +177,17 @@ public:
 
   /*!
       Show info for hex file
-      @param Pointer to HTML window that will receive information.
+      @return String that will receive information.
   */
   std::string deviceInfo(void);
 
   /*!
       Initialize boot mode, ie set device in bootmode
+      @param bAbortOnFirmwareCodeFail Set to true to fail if firmware code fetched from
+        MDF is not the same as the one read from the remote device.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceInit(void);
+  int deviceInit(bool bAbortOnFirmwareCodeFail = false);
 
   /*!
     Write a boot block to the device
@@ -201,6 +204,18 @@ public:
       @return VSCP_ERROR_SUCCESS on success.
   */
   int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr);
+
+  /*!
+    Restart remote device
+    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+  */
+  int deviceRestart(void);
+
+  /*!
+    Reboot remote device
+    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+  */
+  int deviceReboot(void);
 
   /*!
       Write a sector
@@ -259,31 +274,9 @@ private:
   /// Flag for handshake with node
   bool m_bHandshake;
 
+  /// Code checksum
+  uint16_t m_checksum;
+
   /// Internal address pointer
   uint32_t m_pAddr;
-
-  /// memory type
-  // uint8_t m_memtype;
-
-  /// Min and max mem blocks
-  // uint32_t m_minFlashAddr;
-  // uint32_t m_maxFlashAddr;
-  // uint32_t m_minUserIdAddr;
-  // uint32_t m_maxUserIdAddr;
-  // uint32_t m_minConfigAddr;
-  // uint32_t m_maxConfigAddr;
-  // uint32_t m_minEEPROMAddr;
-  // uint32_t m_maxEEPROMAddr;
-
-  // Flags for code in codeblocks (false as default)
-  // bool m_bCodeMemory;
-  // bool m_bUserIdMemory;
-  // bool m_bCfgMemory;
-  // bool m_bEepromMemory;
-
-  // Pic 1 memory buffers
-  uint8_t m_pbufCode[BUFFER_SIZE_CODE];
-  uint8_t m_pbufUserID[BUFFER_SIZE_USERID];
-  uint8_t m_pbufCfg[BUFFER_SIZE_CONFIG];
-  uint8_t m_pbufEprom[BUFFER_SIZE_EEPROM];
 };
