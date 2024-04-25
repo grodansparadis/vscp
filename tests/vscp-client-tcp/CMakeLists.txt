@@ -49,15 +49,19 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/common/crc8.c
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../third_party/fastpbkdf2/fastpbkdf2.h
+    ${PROJECT_SOURCE_DIR}/../../third_party/fastpbkdf2/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../third_party/nlohmann/include/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../third_party/spdlog/include/spdlog/spdlog.h
     )
 
 target_include_directories(test PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../third_party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../third_party/nlohmann/include/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../third_party/spdlog/include/
+
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     )
