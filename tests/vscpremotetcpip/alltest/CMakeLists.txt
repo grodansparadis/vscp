@@ -23,7 +23,12 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 message(STATUS "Build dir: " ${PROJECT_SOURCE_DIR})
 
-find_package(GTest CONFIG REQUIRED)
+# Locate GTest
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+ find_package(spdlog REQUIRED)
+
 find_package(OpenSSL REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -64,9 +69,9 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc8.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp_aes.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp_aes.c
-    ${PROJECT_SOURCE_DIR}/../../../src/common/fastpbkdf2.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/fastpbkdf2.c
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.h
+    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/nlohmann/json.hpp
     )
 
 
@@ -77,8 +82,8 @@ if (WIN32)
   target_include_directories(unittest PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.9.2/include/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
@@ -87,8 +92,8 @@ else()
   target_include_directories(unittest PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.9.2/include/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
@@ -101,8 +106,8 @@ if (WIN32)
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
-    GTest::gtest
-    GTest::gmock
+    ${GTEST_LIBRARIES}
+    spdlog::spdlog
   )
 else()
   target_link_libraries(unittest PRIVATE
@@ -110,8 +115,8 @@ else()
     OpenSSL::SSL OpenSSL::Crypto
     ${OPENSSL_LIBRARIES}
     ${EXPAT_LIBRARIES}
-    GTest::gtest
-    GTest::gmock
+    ${GTEST_LIBRARIES}
+    spdlog::spdlog
   )    
 endif()
 

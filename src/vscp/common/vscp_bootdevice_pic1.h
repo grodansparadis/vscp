@@ -94,8 +94,6 @@ public:
   static const uint8_t VSCP_PIC1_WRITE_REGISTER       = 0x0B;
   static const uint8_t VSCP_PIC1_ENTER_BOOTLODER_MODE = 0x0C;
 
-  static const uint8_t PIC_BOOTLOADER_RESPONSE_TIMEOUT = 5;
-
   // Flash memory
   static const uint32_t MEM_CODE_START = 0x000000;
   static const uint32_t MEM_CODE_END   = 0x1fffff;
@@ -129,8 +127,7 @@ public:
     MEM_TYPE_USERID       // 0x200000
   };
 
-  // Default timeout for response
-  static const uint8_t BOOT_COMMAND_RESPONSE_TIMEOUT = 5;
+  
 
   // flags
   // CONTROL is defined as follows
@@ -183,11 +180,13 @@ public:
 
   /*!
       Initialize boot mode, ie set device in bootmode
+      @param outguid Our local GUID
+      @param devicecode Device code user expect device tro have
       @param bAbortOnFirmwareCodeFail Set to true to fail if firmware code fetched from
         MDF is not the same as the one read from the remote device.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceInit(bool bAbortOnFirmwareCodeFail = false);
+  int deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false);
 
   /*!
     Write a boot block to the device

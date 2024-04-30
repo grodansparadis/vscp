@@ -224,9 +224,12 @@ CBootDevice_PIC1::deviceInfo(void)
 //
 
 int
-CBootDevice_PIC1::deviceInit(bool bAbortOnFirmwareCodeFail)
+CBootDevice_PIC1::deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
+
+  // Save our local GUID
+  m_ourguid = ourguid;
 
   /*
     First do a test to see if the device is already in boot mode
@@ -339,7 +342,7 @@ CBootDevice_PIC1::deviceInit(bool bAbortOnFirmwareCodeFail)
                  m_firmwaredeviceCode,
                  m_stdRegs.getFirmwareDeviceCode());
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, "Firware device code is not equal the one on the device local: {0} device: {1}");
+      m_statusCallback(-1, "Firmware device code is not equal the one on the device local: {0} device: {1}");
     }
     if (bAbortOnFirmwareCodeFail) {
       return VSCP_ERROR_PARAMETER;
@@ -378,7 +381,7 @@ CBootDevice_PIC1::deviceInit(bool bAbortOnFirmwareCodeFail)
   while (bRun) {
 
     time(&tnow);
-    if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+    if ((unsigned long) (tnow - tstart) > BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT) {
       bRun = false;
     }
 
@@ -639,7 +642,7 @@ CBootDevice_PIC1::checkResponseLevel1(uint32_t response_id)
 
     // check for timeout
     time(&tnow);
-    if ((unsigned long) (tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+    if ((unsigned long) (tnow - tstart) > BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT) {
       bRun = false; // End
     }
   }
@@ -685,7 +688,7 @@ CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
 
     // check for timeout
     time(&tnow);
-    if ((tnow - tstart) > PIC_BOOTLOADER_RESPONSE_TIMEOUT) {
+    if ((tnow - tstart) > BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT) {
       bRun = false; // abort timeout
     }
   }

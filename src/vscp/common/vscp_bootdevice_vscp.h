@@ -1,14 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        bootdevice_vscp.cpp
-// Purpose:
-// Author:      Ake Hedman
-// Modified by:
-// Created:     16/12/2009 22:26:09
-// RCS-ID:
-// Copyright:  (C) 2007-2024
-// Ake Hedman, the VSCP project, <info@vscp.org>
-//              (C) 2012 Dinesh Guleria
-// Licence:
+// bootdevice_vscp.cpp
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
@@ -16,28 +8,19 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
+// Copyright:  (C) 2000-2024
+// Ake Hedman, the VSCP project, <info@vscp.org>
+//
 // This file is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
-//  Boston, MA 02111-1307, USA.
+// Boston, MA 02111-1307, USA.
 //
-//  As a special exception, if other files instantiate templates or use macros
-//  or inline functions from this file, or you compile this file and link it
-//  with other works to produce a work based on this file, this file does not
-//  by itself cause the resulting work to be covered by the GNU General Public
-//  License. However the source code for this file must still be made available
-//  in accordance with section (3) of the GNU General Public License.
-//
-//  This exception does not invalidate any other reasons why a work based on
-//  this file might be covered by the GNU General Public License.
-//
-//  Alternative licenses for VSCP & Friends may be arranged by contacting
-//  the VSCP project at info@vscp.org, https://www.vscp.org
 //
 
 #pragma once
@@ -50,144 +33,299 @@
 
 #include <string>
 
-class CBootDevice_vscp : public CBootDevice
-{
-  public:
-    /*!
-        Constructor
+// This macro construct a signed integer from two unsigned chars in a safe way
+#define construct_signed16(msb, lsb) ((int16_t) ((((uint16_t) msb) << 8) + (uint16_t) lsb))
 
-        @param pdll Pointer to opended CANAL object.
-        @param nodeid Nickname/nodeid for node that should be loaded
-        with new code.
-    */
-    CBootDevice_vscp(CDllWrapper *pdll,
-                     uint8_t nodeid,
-                     bool bDeviceFound = true);
+// This macro construct a unsigned integer from two unsigned chars in a safe way
+#define construct_unsigned16(msb, lsb) ((uint16_t) ((((uint16_t) msb) << 8) + (uint16_t) lsb))
 
-    /*!
-        Constructor
+// This macro construct a signed long from four unsigned chars in a safe way
+#define construct_signed32(b0, b1, b2, b3)                                                                             \
+  ((int32_t) ((((uint32_t) b0) << 24) + (((uint32_t) b0) << 16) + (((uint32_t) b0) << 8) + (uint32_t) b0))
 
-        @param ptcpip Pointer to opened TCP/IP interface object.
-        @param guid GUID for node to bootload.
-        @param ifguid GUID for interface node is located on
-    */
-    CBootDevice_vscp(VscpRemoteTcpIf *ptcpip,
-                     cguid &guid,
-                     cguid &ifguid,
-                     bool bDeviceFound = true);
+// This macro construct a unsigned long from four unsigned chars in a safe way
+#define construct_unsigned32(b0, b1, b2, b3)                                                                           \
+  ((uint32_t) ((((uint32_t) b0) << 24) + (((uint32_t) b0) << 16) + (((uint32_t) b0) << 8) + (uint32_t) b0))
 
-    /// Dtor
-    ~CBootDevice_vscp(void);
+class CBootDevice_VSCP : public CBootDevice {
+public:
+  /*!
+      Constructor
 
-    // Initialise data
-    void init(void);
+      @param pdll Pointer to opended CANAL object.
+      @param nodeid Nickname/nodeid for node that should be loaded
+      with new code.
+  */
+  CBootDevice_VSCP(CVscpClient *pclient,
+                   uint8_t nodeid,
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
-    /*!
-        Load a binary file to the image
+  /*!
+    Constructor
 
-        This is typically an Intel HEX file that contains the memory
-        image of the device.
+    This is Level I over Level II that uses an interface on
+    a remote device to communicate with Level I nodes.
 
-        @param path Path to file
-        @return true on success
-    */
-    bool loadBinaryFile(const std::string &path, uint16_t typeHexfile);
+    @param pdll Pointer to opended CANAL object.
+    @param nodeid Nickname/nodeid for node that should be loaded
+    @param guidif GUID for interface.
+    with new code.
+*/
+  CBootDevice_VSCP(CVscpClient *pclient,
+                   uint8_t nodeid,
+                   cguid &guidif,
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
-    /*!
-        Show info for hex file
-        @param Pointer to HTML window that will receive information.
-    */
-    void showInfo(std::string *phtmlWnd);
+  /*!
+      Constructor
 
-    /*!
-        Set a device in bootmode
-        @return true on success.
-    */
-    bool setDeviceInBootMode(void);
+      This is a full level II device. No interface, full GUID.
 
-    /*!
-        Perform the actual boot process
-        @return true on success.
-    */
-    bool doFirmwareLoad(void);
+      @param ptcpip Pointer to opened TCP/IP interface object.
+      @param guid GUID for node to bootload.
+  */
+  CBootDevice_VSCP(CVscpClient *pclient,
+                   cguid &guid,
+                   std::function<void(int, const char *)> statusCallback = nullptr,
+                   uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
-    /*!
-        Write a sector
-        @return true on success.
-    */
-    bool writeFirmwareSector(void);
+  /// Dtor
+  ~CBootDevice_VSCP(void);
 
-    /*!
-    // sendVSCPCommandStartBlock
-    // PageAddress : Page to be programmed
-    // This command have no ACK
-    */
-    bool sendVSCPCommandStartBlock(uint16_t PageAddress);
+  // Memory Types
+  enum mem_type {
+    MEM_TYPE_FLASH  = 0x00, // 0x00000000 - 0x3FFFFFFF 1G
+    MEM_TYPE_RAM    = 0x03, // 0x40000000 - 0xBFFFFFFF 2G
+    MEM_TYPE_USERID = 0x04, // 0xC1000000 - 0xC1FFFFFF 16M
+    MEM_TYPE_CONFIG = 0x02, // 0xC2000000 - 0xC2FFFFFF 16M
+    MEM_TYPE_EEPROM = 0x01, // 0xC3000000 - 0xC3FFFFFF 16M
+    MEM_TYPE_USER1  = 0x05, // 0xD0000000 - 0xDFFFFFFF 256M
+    MEM_TYPE_USER2  = 0x06, // 0xE0000000 - 0xEFFFFFFF 256M
+    MEM_TYPE_USER3  = 0x07, // 0xF0000000 - 0xFFFFFFFF 256M
+  };
 
-    /*!
-        Send command to node under test nodes (Level I).
+  // Flash memory
+  static const uint32_t MEM_CODE_START = 0x00000000;
+  static const uint32_t MEM_CODE_END   = 0x3FFFFFFF;
 
-        This routine is used to send command from nodes under boot.
-        Index tells which Type & class to send.
+  // Ram memory
+  static const uint32_t MEM_RAM_START = 0x40000000;
+  static const uint32_t MEM_RAM_END   = 0xBFFFFFFF;
 
-        @return true on success.
-    */
-    bool sendVSCPBootCommand(uint8_t index);
+  // User id memory
+  static const uint32_t MEM_USERID_START = 0xC1000000;
+  static const uint32_t MEM_USERID_END   = 0xC1FFFFFF;
 
-    /*!
-        sendVSCPCommandSeqenceLevel1
-        This routine is used to check ack & send command from nodes under boot.
-        check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
-        send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-        check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-    */
-    bool sendVSCPCommandSeqenceLevel1(void);
+  // Config memory
+  static const uint32_t MEM_CONFIG_START = 0xC2000000;
+  static const uint32_t MEM_CONFIG_END   = 0xC2FFFFFF;
 
-    /*!
-        sendVSCPCommandSeqenceLevel1
-        This routine is used to check ack & send command from nodes under boot.
-        check response VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK   --- Check CRC
-        send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-        check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-    */
-    bool sendVSCPCommandSeqenceLevel2(void);
+  // EEPROM memory
+  static const uint32_t MEM_EEPROM_START = 0xC3000000;
+  static const uint32_t MEM_EEPROM_END   = 0xC3FFFFFF;
 
-    /*!
-        Check for response from nodes (Level I).
+  // User defined memory 0
+  static const uint32_t MEM_USER0_START = 0xD0000000;
+  static const uint32_t MEM_USER0_END   = 0xDFFFFFFF;
 
-        This routine is used as a check for response from nodes under boot.
-        Index tells which Type & class to check
+  // User defined memory 1
+  static const uint32_t MEM_USER1_START = 0xE0000000;
+  static const uint32_t MEM_USER1_END   = 0xEFFFFFFF;
 
-        @return true on success.
-    */
-    bool checkResponseLevel1(uint8_t index);
+  // User defined memory 2
+  static const uint32_t MEM_USER2_START = 0xF0000000;
+  static const uint32_t MEM_USER2_END   = 0xFFFFFFFF;
 
-    /*!
-        Check for response from nodes over server (Level II).
+  // Default timeout for response
+  static const uint8_t BOOT_COMMAND_RESPONSE_TIMEOUT = 5;
 
-        This routine is used as a check for response from nodes under boot.
-        Index tells which Type & class to check
+  // Initialize data
+  void init(void);
 
-        @return true on success.
-    */
-    bool checkResponseLevel2(uint8_t index);
+  /*!
+      Show info for hex file
+      @return String that will receive information.
+  */
+  std::string deviceInfo(void);
 
-  private:
-    /// Internal address pointer
-    uint32_t m_pAddr;
+  /*!
+      Initialize boot mode, ie set device in bootmode
+      @param ourguid Our local GUID
+      @param devicecode This is the devicecode expected by the user
+      @param bAbortOnFirmwareCodeFail Set to true to fail if firmware code fetched from
+        MDF is not the same as the one read from the remote device.
+      @return VSCP_ERROR_SUCCESS on success.
+  */
+  int deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false);
 
-    /// Current page
-    uint32_t m_page;
+  /*!
+      Perform the actual firmware load process
+      @param statusCallback Callback that receive status info as  presentage (int)
+          and status message (const char *)
+      @param bAbortOnFirmwareCodeFail If firmware device code stored in standard registers
+        is different then  the one we try to load, abort if true.
+      @return VSCP_ERROR_SUCCESS on success.
+  */
+  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr,bool bAbortOnFirmwareCodeFail = true);
 
-    /// Current block number
-    uint32_t m_blockNumber;
+  /*!
+    Restart remote device
+    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+  */
+  int deviceRestart(void);
 
-    /// Block size in byte
-    uint32_t m_blockSize;
+  /*!
+    Reboot remote device
+    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+  */
+  int deviceReboot(void);
 
-    /// Number of blocks
-    uint32_t m_numBlocks;
+  /*!
+      Write a sector
+      @param paddr Pointer to firts byte of 8-byte block to write
+        to remote device
+      @param size Number of data bytes to send. Must be less than the
+        max event data (8/512)
+      @return VSCP_ERROR_SUCCESS on success.
+  */
+  int writeFirmwareBlockDataChunk(const uint8_t *paddr, uint16_t size);
 
-    uint16_t crc_16_remote;
-    uint16_t crc_16_host;
+  /*!
+    Write a firmware flock to the device
+    @param paddr Address to beginning of data to write
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int writeFirmwareBlock(const uint8_t *paddr);
+
+  /*!
+      Write to device control registry
+
+      @param addr Address to set as start address
+      @param flags Control Flags
+      @param cmd Boot command
+      @param cmdData0 Boot command data byte 0
+      @param cmdData1 Boot command data byte 1
+      @return VSCP_ERROR_SUCCESS on success.
+
+  */
+  // int writeDeviceControlRegs(uint32_t addr,
+  //                            uint8_t flags    = (MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK),
+  //                            uint8_t cmd      = CMD_NOP,
+  //                            uint8_t cmdData0 = 0,
+  //                            uint8_t cmdData1 = 0);
+
+  /*!
+    Check response event
+    @param ex Event that is the result of the response
+    @param guid GUID for our device the expected event should originate from.
+    @param response_event_ack ACK event type.
+    @param response_event_nack  NACK event type.
+    @return VSCP_ERROR_SUCCESS if ack is received within the timoeut time. VSCP_ERROR_NACK if NACK
+      event is received. VSCP_ERROR_TIMEOUT if timeout occured.
+  */
+  int checkResponse(vscpEventEx &ex,
+                    cguid &guid,
+                    uint16_t response_event_ack,
+                    uint16_t response_event_nack,
+                    uint32_t timeout = BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT);
+
+  /*!
+      Check for response from nodes (Level I).
+
+      This routine is used as a check for response from nodes under boot.
+
+      The supplied id is valid from bit 8 and upwards. The lower eight bits
+      are the id.
+      Only extended messages are accepted as a valid response.
+
+      @param id Response code to look for.
+      @return VSCP_ERROR_SUCCESS on success.
+  */
+  int checkResponseLevel1(uint32_t id);
+
+  /*!
+      Check for response from nodes over server (Level II).
+
+      This routine is used as a check for response from nodes under boot.
+
+      The supplied id is valid from bit 8 and upwards. The lower eight bits
+      are the id.
+      Only extended messages are accepted as a valid response.
+
+      @param id Response code to look for.
+      @return VSCP_ERROR_SUCCESS on success.
+  */
+  int checkResponseLevel2(uint32_t id);
+
+private:
+
+  /// Current set page in register space on remote device
+  uint32_t m_page;
+
+  /// Our GUID
+  cguid m_ourguid;
+
+  /*!
+    Current block number
+    This is the current block we are writing
+  */
+  //uint32_t m_blockNumber;
+
+  /*!
+    Internal address pointer
+    This is the next address to write
+  */
+  uint32_t m_pAddr;
+
+  /*!
+    Chunk size in bytes
+    -------------------
+    This is the (max) size for each part sent over the wire
+    to transfer a block from a host and a master. It can have
+    two values 8  (Level I) or 512 (Level II).
+
+    Special cases
+    -------------
+    The last chunk may have a size less than 8/512 or
+    it holds 8/512 bytes. It's up to the remote device to handle both
+    cases.
+
+    block size can be less then chunk size. This is escpecially true
+    for level II 
+  */
+  uint16_t m_chunkSize;
+
+  /*!
+    Block size in bytes
+    -------------------
+    This is the block size the remote device expect us to send before
+    programing a block.
+    Programming is done in chunks of 8 or 512 bytes or less until a full
+    block has been written.
+  */
+  uint32_t m_blockSize;
+
+  /*!
+    Number of blocks
+    ----------------
+    This is the number of blocks available at the remote device. We can not program more than
+    this amount of blocks but it's OK to program less.
+   */
+  uint32_t m_numBlocks;
+
+  /*!
+    CRC for full programming data.
+  */
+  uint16_t m_crc16;
+
+  struct memory_range {
+    uint8_t type;
+    uint32_t beginning;
+    uint32_t end;
+  } memory_range[8] = { { 0x00, MEM_CODE_START, MEM_CODE_START },   { 0x01, MEM_EEPROM_START, MEM_EEPROM_END },
+                        { 0x02, MEM_CONFIG_START, MEM_CONFIG_END }, { 0x03, MEM_RAM_START, MEM_RAM_END },
+                        { 0x04, MEM_USERID_START, MEM_USERID_END }, { 0xfd, MEM_USER0_START, MEM_USER0_END },
+                        { 0xfe, MEM_USER1_START, MEM_USER1_END },   { 0xff, MEM_USER2_START, MEM_USER2_END } };
 };

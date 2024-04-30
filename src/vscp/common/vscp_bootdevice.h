@@ -53,12 +53,12 @@
 
     An abstract memory model is used for the firmware. In this
     model memory contents of different types is placed into
-    different memory regions. When a block of datra from that region 
-    is sent to the remote device it is up to that device to 
-    place the data at the correct location. This model can be used 
-    for code, ram, eeprom, fuses, config data etc. The pic1 bootloader 
+    different memory regions. When a block of datra from that region
+    is sent to the remote device it is up to that device to
+    place the data at the correct location. This model can be used
+    for code, ram, eeprom, fuses, config data etc. The pic1 bootloader
     use the Microchip abstract memory model. The VSCP bootloader let
-    the receiving end take the decision on where a block should be written 
+    the receiving end take the decision on where a block should be written
 
     Sequency of use
     ----------------
@@ -125,8 +125,8 @@ public:
   */
   CBootDevice(CVscpClient *pclient,
               uint16_t nodeid,
-              std::function<void(int, const char*)> statusCallback = nullptr,
-              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+              std::function<void(int, const char *)> statusCallback = nullptr,
+              uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
     Constructor
@@ -140,8 +140,8 @@ public:
   CBootDevice(CVscpClient *pclient,
               uint16_t nodeid,
               cguid &guidif,
-              std::function<void(int, const char*)> statusCallback = nullptr,
-              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+              std::function<void(int, const char *)> statusCallback = nullptr,
+              uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
     Constructor
@@ -153,8 +153,8 @@ public:
   */
   CBootDevice(CVscpClient *pclient,
               cguid &guid,
-              std::function<void(int, const char*)> statusCallback = nullptr,
-              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+              std::function<void(int, const char *)> statusCallback = nullptr,
+              uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Destructor
@@ -162,10 +162,10 @@ public:
   virtual ~CBootDevice(void);
 
   /// Timeout for response
-  static const uint16_t BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT = 5000;
+  static const uint16_t BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT = 5;
 
   /// Max size for a programming block
-  static const uint32_t BOOT_MAX_BLOCK_SIZE = (1024*1024*2);
+  static const uint32_t BOOT_MAX_BLOCK_SIZE = (1024 * 1024 * 2);
 
   /// Hexfiles type
   enum type_hex_file {
@@ -201,10 +201,10 @@ public:
     @param end Stop address for memory range (inclusive - end is part of address space)
     @param pmin Pointer to variable that will get min address
     @param pmax Pointer to variable that will get max address
-    @return VSCP_ERROR_SUCCESS on success. 
+    @return VSCP_ERROR_SUCCESS on success.
       VSCP_ERROR_INVALID_POINTER if ponters are invalid.
       VSCP_ERROR_INVALID_PARAMETER if end <= start
-      VSCP_ERROR_ERROR if no memory defined in the selected range. value of 
+      VSCP_ERROR_ERROR if no memory defined in the selected range. value of
         pmin/pmax is zero in this case.
   */
   virtual int getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax);
@@ -227,11 +227,13 @@ public:
 
   /*!
     Set a device in bootmode
+    @param ourguid GUID for local device
+    @param devicecode This is the device code expected by the user
     @param bAbortOnFirmwareCodeFail Set to true to fail if firmware code fetched from
         MDF is not the same as the one read from the remote device.
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int deviceInit(bool bAbortOnFirmwareCodeFail = false) = 0;
+  virtual int deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false) = 0;
 
   /*!
     Perform the actual firmware load process
@@ -264,7 +266,7 @@ protected:
       int is percentage,
       str is real text description
   */
-  std::function<void(int,const char*)> m_statusCallback;
+  std::function<void(int, const char *)> m_statusCallback;
 
   /*!
     The device code tell the type of hardware of the remote device
@@ -274,6 +276,9 @@ protected:
     should be performed.
   */
   uint8_t m_firmwaredeviceCode;
+
+  /// Our local GUID
+  cguid m_ourguid;
 
   /// node id for device
   uint8_t m_nodeid;
@@ -293,9 +298,6 @@ protected:
 
   // This is the minimum code address (startvector)
   uint32_t m_startAddr;
-
-  /// # data bytes in file
-  uint32_t m_totalCntData;
 
   /// Standard registers
   CStandardRegisters m_stdRegs;
