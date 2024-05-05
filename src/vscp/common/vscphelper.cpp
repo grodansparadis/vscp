@@ -63,7 +63,7 @@
 #include <canal_macro.h>
 #include <crc.h>
 #include <crc8.h>
-#include <fastpbkdf2.h>
+//#include <fastpbkdf2.h>
 #include <vscp_aes.h>
 #include <vscpbase64.h>
 #include <vscpmd5.h>
@@ -7379,7 +7379,7 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_makePasswordHash
 //
-
+/*
 bool
 vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t *pSalt)
 {
@@ -7419,32 +7419,33 @@ vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t 
 
   return true;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_isPasswordValid
 //
 
-bool
-vscp_isPasswordValid(const std::string &stored_pw, const std::string &password)
-{
-  std::string calcHash; // Calculated hash
-  uint8_t salt[16];     // Stored salt
-  uint8_t hash[32];     // Stored hash
+// bool
+// vscp_isPasswordValid(const std::string &stored_pw, const std::string &password)
+// {
+//   std::string calcHash; // Calculated hash
+//   uint8_t salt[16];     // Stored salt
+//   uint8_t hash[32];     // Stored hash
 
-  if (!vscp_getHashPasswordComponents(salt, hash, stored_pw)) {
-    return false;
-  }
+//   if (!vscp_getHashPasswordComponents(salt, hash, stored_pw)) {
+//     return false;
+//   }
 
-  if (!vscp_makePasswordHash(calcHash, password, salt)) {
-    return false;
-  }
+//   if (!vscp_makePasswordHash(calcHash, password, salt)) {
+//     return false;
+//   }
 
-  if (stored_pw != calcHash) {
-    return false;
-  }
+//   if (stored_pw != calcHash) {
+//     return false;
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getSalt

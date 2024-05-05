@@ -2229,8 +2229,8 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
  * @param password Clear text password to be hashed.
  * @return true on success, false otherwise.
  */
-bool
-vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t *pSalt = NULL);
+//bool
+//vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t *pSalt = NULL);
 
 /*!
  * Validate password
@@ -2240,8 +2240,8 @@ vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t 
  * @return true on success, false otherwise.
  */
 
-bool
-vscp_isPasswordValid(const std::string &stored_pw, const std::string &password);
+//bool
+//vscp_isPasswordValid(const std::string &stored_pw, const std::string &password);
 
 /*!
  * Get salt
