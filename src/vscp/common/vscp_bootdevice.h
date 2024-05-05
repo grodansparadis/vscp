@@ -210,14 +210,16 @@ public:
   virtual int getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax);
 
   /*!
-    Fill block with firmware data
-    @param pblock Pointer to the beginning of an allocated block
+    Fill memory buffer with firmware data
+    The memory buffer is an area that hold an image of the memory on a remote 
+    device. Typically for one type of memory.
+    @param pmem Pointer to the beginning of an allocated memory buffer
     @param size Total size of block
     @param start Logical start address
     @param fill Value to initialize block with- 0xff is default
     @return VSCP_ERROR_SUCCESS or errorcode otherwise.
   */
-  int fillBlock(uint8_t *pblock, uint32_t size, uint32_t start, uint8_t fill = 0xff);
+  int fillMemoryBuffer(uint8_t *pmem, uint32_t size, uint32_t start, uint8_t fill = 0xff);
 
   /*!
       Get info for hex file in html format

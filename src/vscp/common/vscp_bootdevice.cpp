@@ -322,23 +322,29 @@ CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uin
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// fillBlock
+// fillMemoryBuffer
 //
 
 int
-CBootDevice::fillBlock(uint8_t *pblock, uint32_t size, uint32_t start, uint8_t fill)
+CBootDevice::fillMemoryBuffer(uint8_t *pmem, uint32_t size, uint32_t start, uint8_t fill)
 {
-  if (nullptr == pblock) {
+  // Check pointers
+  if (nullptr == pmem) {
     return VSCP_ERROR_INVALID_POINTER;
   }
 
+  // Check size
+  if (!size) {
+    return VSCP_ERROR_SIZE;
+  }
+
   // Fill block with void value (0xff for flash)
-  memset(pblock, fill, size);
+  memset(pmem, fill, size);
 
   for (auto const &pblk : m_memblkList) {
     if ((pblk->getStartAddress() >= start) && (pblk->getStartAddress() < (start + size))) {
       for (uint8_t pos = 0; pos < pblk->getSize(); pos++) {
-        pblock[(pblk->getStartAddress() - start) + pos] = *(pblk->getBlock() + pos);
+        pmem[(pblk->getStartAddress() - start) + pos] = *(pblk->getBlock() + pos);
       }
     }
   }

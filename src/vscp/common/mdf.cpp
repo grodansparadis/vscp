@@ -1918,7 +1918,7 @@ CMDF::save_xml(const std::string &path)
       fout << "</address>" << std::endl;
     }
 
-    if (cnt = pManufacturer->getPhoneObjCount()) {
+    if ((cnt = pManufacturer->getPhoneObjCount())) {
       for (int i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
         if (nullptr != pitem) {
@@ -1931,7 +1931,7 @@ CMDF::save_xml(const std::string &path)
       }
     }
 
-    if (cnt = pManufacturer->getFaxObjCount()) {
+    if ((cnt = pManufacturer->getFaxObjCount())) {
       for (int i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getFaxObj(i);
         if (nullptr != pitem) {
@@ -1944,7 +1944,7 @@ CMDF::save_xml(const std::string &path)
       }
     }
 
-    if (cnt = pManufacturer->getEmailObjCount()) {
+    if ((cnt = pManufacturer->getEmailObjCount())) {
       for (int i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getEmailObj(i);
         if (nullptr != pitem) {
@@ -1957,7 +1957,7 @@ CMDF::save_xml(const std::string &path)
       }
     }
 
-    if (cnt = pManufacturer->getWebObjCount()) {
+    if ((cnt = pManufacturer->getWebObjCount())) {
       for (int i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getWebObj(i);
         if (nullptr != pitem) {
@@ -1970,7 +1970,7 @@ CMDF::save_xml(const std::string &path)
       }
     }
 
-    if (cnt = pManufacturer->getSocialObjCount()) {
+    if ((cnt = pManufacturer->getSocialObjCount())) {
       for (int i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getSocialObj(i);
         if (nullptr != pitem) {
@@ -2545,7 +2545,7 @@ CMDF::save_json(const std::string &path)
       fout << "}" << std::endl;
     }
 
-    if (cnt = pManufacturer->getPhoneObjCount()) {
+    if ((cnt = pManufacturer->getPhoneObjCount())) {
       fout << "," << std::endl;
       fout << "\"telephone\": [" << std::endl;
       int i = 0;
@@ -2568,7 +2568,7 @@ CMDF::save_json(const std::string &path)
       fout << "]";
     }
 
-    if (cnt = pManufacturer->getFaxObjCount()) {
+    if ((cnt = pManufacturer->getFaxObjCount())) {
       fout << "," << std::endl;
       fout << "\"fax\": [" << std::endl;
       int i = 0;
@@ -2591,7 +2591,7 @@ CMDF::save_json(const std::string &path)
       fout << "]";
     }
 
-    if (cnt = pManufacturer->getEmailObjCount()) {
+    if ((cnt = pManufacturer->getEmailObjCount())) {
       fout << "," << std::endl;
       fout << "\"email\": [" << std::endl;
       int i = 0;
@@ -2614,7 +2614,7 @@ CMDF::save_json(const std::string &path)
       fout << "]";
     }
 
-    if (cnt = pManufacturer->getWebObjCount()) {
+    if ((cnt = pManufacturer->getWebObjCount())) {
       fout << "," << std::endl;
       fout << "\"web\": [" << std::endl;
       int i = 0;
@@ -2637,7 +2637,7 @@ CMDF::save_json(const std::string &path)
       fout << "]";
     }
 
-    if (cnt = pManufacturer->getSocialObjCount()) {
+    if ((cnt = pManufacturer->getSocialObjCount())) {
       fout << "," << std::endl;
       fout << "\"social\": [" << std::endl;
       int i = 0;
@@ -7029,12 +7029,12 @@ CMDF::getDescriptionList(json &j, std::map<std::string, std::string> &map)
 
     if (j["description"].is_string()) {
       map["en"] = j["description"];
-      spdlog::debug("Parse-JSON: Description: {0} language: 'en' ", j["description"]);
+      spdlog::debug("Parse-JSON: Description: {0} language: 'en' ", map["en"]);
     }
     else if (j["description"].is_object()) {
       for (auto &item : j["description"].items()) {
         map[item.key()] = item.value();
-        spdlog::debug("Parse-JSON: Description: {0} language: '{1}'", item.value(), item.key());
+        spdlog::debug("Parse-JSON: Description: {0} language: '{1}'", (std::string)item.value(), (std::string)item.key());
       }
     }
     else {
@@ -7060,12 +7060,12 @@ CMDF::getInfoUrlList(json &j, std::map<std::string, std::string> &map)
 
     if (j["infourl"].is_string()) {
       map["en"] = j["infourl"];
-      spdlog::debug("Parse-JSON: InfoURL: {0} language: 'en' ", j["infourl"]);
+      spdlog::debug("Parse-JSON: InfoURL: {0} language: 'en' ", map["en"]);
     }
     else if (j["infourl"].is_object()) {
       for (auto &item : j["infourl"].items()) {
         map[item.key()] = item.value();
-        spdlog::debug("Parse-JSON: InfoURL: {0} language: '{1}'", item.value(), item.key());
+        spdlog::debug("Parse-JSON: InfoURL: {0} language: '{1}'", (std::string)item.value(), (std::string)item.key());
       }
     }
     else {
@@ -7759,7 +7759,7 @@ CMDF::parseMDF_JSON(const std::string &path)
             if (jreg.contains("size") && jreg["size"].is_number()) {
               preg->m_span = jreg["size"];
               spdlog::trace("Parse-JSON: Module register span: {0}", preg->m_span);
-              if ((preg->m_span == 0)) {
+              if (preg->m_span == 0) {
                 spdlog::warn("Parse-JSON: Register span is zero. This is not supported. "
                              "Default set (1)");
               }
@@ -7767,7 +7767,7 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("size") && jreg["size"].is_string()) {
               preg->m_span = vscp_readStringValue(jreg["size"]);
               spdlog::trace("Parse-JSON: Module register span: {0}", preg->m_span);
-              if ((preg->m_span == 0)) {
+              if (preg->m_span == 0) {
                 spdlog::warn("Parse-JSON: Register span is zero. This is not supported. "
                              "Default set (1)");
               }
@@ -8095,7 +8095,7 @@ CMDF::parseMDF_JSON(const std::string &path)
       if (j["module"].contains("remotevar") && j["module"]["remotevar"].is_array()) {
         for (auto &rvar : j["module"]["remotevar"].items()) {
           // std::cout << "key: " << rvar.key() << ", value:" << rvar.value() << '\n';
-          spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", rvar.key(), rvar.value());
+          spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", (std::string)rvar.key(), (std::string)rvar.value());
           if (rvar.value().is_object()) {
 
             CMDF_RemoteVariable *prvar = new CMDF_RemoteVariable();
@@ -8889,7 +8889,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jpic.contains("name") && jpic["name"].is_string()) {
             ppicture->m_strName = jpic["name"];
-            spdlog::trace("Parse-JSON: Picture name: {0} ", jpic["name"]);
+            spdlog::trace("Parse-JSON: Picture name: {0} ", ppicture->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No picture name.");
@@ -8897,7 +8897,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jpic.contains("url") && jpic["url"].is_string()) {
             ppicture->m_strURL = jpic["url"];
-            spdlog::trace("Parse-JSON: Picture URL: {0} ", jpic["url"]);
+            spdlog::trace("Parse-JSON: Picture URL: {0} ", ppicture->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No picture url.");
@@ -8905,7 +8905,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jpic.contains("format") && jpic["format"].is_string()) {
             ppicture->m_strFormat = jpic["format"];
-            spdlog::trace("Parse-JSON: Picture Format: {0} ", jpic["url"]);
+            spdlog::trace("Parse-JSON: Picture Format: {0} ", ppicture->m_strFormat);
           }
           else {
             spdlog::warn("Parse-JSON: No picture format.");
@@ -8913,7 +8913,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jpic.contains("date") && jpic["date"].is_string()) {
             ppicture->m_strDate = jpic["date"];
-            spdlog::trace("Parse-JSON: Picture date: {0} ", jpic["date"]);
+            spdlog::trace("Parse-JSON: Picture date: {0} ", ppicture->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No picture date");
@@ -8945,7 +8945,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jvideo.contains("name") && jvideo["name"].is_string()) {
             pvideo->m_strName = jvideo["name"];
-            spdlog::trace("Parse-JSON: Video name: {0} ", jvideo["name"]);
+            spdlog::trace("Parse-JSON: Video name: {0} ", pvideo->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No video name.");
@@ -8953,7 +8953,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jvideo.contains("url") && jvideo["url"].is_string()) {
             pvideo->m_strURL = jvideo["url"];
-            spdlog::trace("Parse-JSON: Video URL: {0} ", jvideo["url"]);
+            spdlog::trace("Parse-JSON: Video URL: {0} ", pvideo->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No video url.");
@@ -8961,7 +8961,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jvideo.contains("format") && jvideo["format"].is_string()) {
             pvideo->m_strFormat = jvideo["format"];
-            spdlog::trace("Parse-JSON: Video Format: {0} ", jvideo["url"]);
+            spdlog::trace("Parse-JSON: Video Format: {0} ", pvideo->m_strFormat);
           }
           else {
             spdlog::warn("Parse-JSON: No video format.");
@@ -8969,7 +8969,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jvideo.contains("date") && jvideo["date"].is_string()) {
             pvideo->m_strDate = jvideo["date"];
-            spdlog::trace("Parse-JSON: Video date: {0} ", jvideo["date"]);
+            spdlog::trace("Parse-JSON: Video date: {0} ", pvideo->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No video date");
@@ -9001,7 +9001,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("name") && jfirmware["name"].is_string()) {
             pfirmware->m_strName = jfirmware["name"];
-            spdlog::trace("Parse-JSON: Fiirmware name: {0} ", jfirmware["name"]);
+            spdlog::trace("Parse-JSON: Fiirmware name: {0} ", pfirmware->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware name.");
@@ -9009,7 +9009,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("url") && jfirmware["url"].is_string()) {
             pfirmware->m_strURL = jfirmware["url"];
-            spdlog::trace("Parse-JSON: Firmware URL: {0} ", jfirmware["url"]);
+            spdlog::trace("Parse-JSON: Firmware URL: {0} ", pfirmware->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware url.");
@@ -9017,7 +9017,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("target") && jfirmware["target"].is_string()) {
             pfirmware->m_strTarget = jfirmware["target"];
-            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["target"]);
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", pfirmware->m_strTarget);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware target.");
@@ -9025,7 +9025,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_number()) {
             pfirmware->m_targetCode = jfirmware["targetcode"];
-            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", pfirmware->m_targetCode);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware target code.");
@@ -9034,7 +9034,7 @@ CMDF::parseMDF_JSON(const std::string &path)
           // Target code string value
           if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_string()) {
             pfirmware->m_targetCode = vscp_readStringValue(jfirmware["targetcode"]);
-            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", pfirmware->m_targetCode);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware target code.");
@@ -9042,7 +9042,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("targetcode") && jfirmware["targetcode"].is_number()) {
             pfirmware->m_targetCode = jfirmware["targetcode"];
-            spdlog::trace("Parse-JSON: Firmware target: {0} ", jfirmware["targetcode"]);
+            spdlog::trace("Parse-JSON: Firmware target: {0} ", pfirmware->m_targetCode);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware target code.");
@@ -9050,7 +9050,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("format") && jfirmware["format"].is_string()) {
             pfirmware->m_strFormat = jfirmware["format"];
-            spdlog::trace("Parse-JSON: Firmware format: {0} ", jfirmware["format"]);
+            spdlog::trace("Parse-JSON: Firmware format: {0} ", pfirmware->m_strFormat);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware format.");
@@ -9058,7 +9058,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("date") && jfirmware["date"].is_string()) {
             pfirmware->m_strDate = jfirmware["date"];
-            spdlog::trace("Parse-JSON: Firmware date: {0} ", jfirmware["date"]);
+            spdlog::trace("Parse-JSON: Firmware date: {0} ", pfirmware->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware date");
@@ -9066,7 +9066,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_major") && jfirmware["version_major"].is_number()) {
             pfirmware->m_version_major = jfirmware["version_major"];
-            spdlog::trace("Parse-JSON: Firmware version major: {0} ", jfirmware["version_major"]);
+            spdlog::trace("Parse-JSON: Firmware version major: {0} ", pfirmware->m_version_major);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version_major");
@@ -9074,7 +9074,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_major") && jfirmware["version_major"].is_string()) {
             pfirmware->m_version_major = vscp_readStringValue(jfirmware["version_major"]);
-            spdlog::trace("Parse-JSON: Firmware version major: {0} ", jfirmware["version_major"]);
+            spdlog::trace("Parse-JSON: Firmware version major: {0} ", pfirmware->m_version_major);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version_major");
@@ -9082,7 +9082,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_minor") && jfirmware["version_minor"].is_number()) {
             pfirmware->m_version_minor = jfirmware["version_minor"];
-            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", jfirmware["version_minor"]);
+            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", pfirmware->m_version_minor);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version_minor");
@@ -9090,7 +9090,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_minor") && jfirmware["version_minor"].is_string()) {
             pfirmware->m_version_minor = vscp_readStringValue(jfirmware["version_minor"]);
-            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", jfirmware["version_minor"]);
+            spdlog::trace("Parse-JSON: Firmware version minor: {0} ", pfirmware->m_version_minor);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version_minor");
@@ -9098,7 +9098,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_patch") && jfirmware["version_patch"].is_number()) {
             pfirmware->m_version_patch = jfirmware["version_patch"];
-            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", jfirmware["version_patch"]);
+            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", pfirmware->m_version_patch);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version patch");
@@ -9106,7 +9106,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("version_patch") && jfirmware["version_patch"].is_string()) {
             pfirmware->m_version_patch = vscp_readStringValue(jfirmware["version_patch"]);
-            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", jfirmware["version_patch"]);
+            spdlog::trace("Parse-JSON: Firmware version patch: {0} ", pfirmware->m_version_patch );
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version patch");
@@ -9114,7 +9114,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("size") && jfirmware["size"].is_number()) {
             pfirmware->m_size = jfirmware["size"];
-            spdlog::trace("Parse-JSON: Firmware version size: {0} ", jfirmware["size"]);
+            spdlog::trace("Parse-JSON: Firmware version size: {0} ", pfirmware->m_size);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version size");
@@ -9122,7 +9122,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("size") && jfirmware["size"].is_string()) {
             pfirmware->m_size = vscp_readStringValue(jfirmware["size"]);
-            spdlog::trace("Parse-JSON: Firmware version size: {0} ", jfirmware["size"]);
+            spdlog::trace("Parse-JSON: Firmware version size: {0} ", pfirmware->m_size);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version size");
@@ -9130,7 +9130,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jfirmware.contains("md5sum") && jfirmware["md5sum"].is_string()) {
             pfirmware->m_strMd5 = jfirmware["md5sum"];
-            spdlog::trace("Parse-JSON: Firmware version md5: {0} ", jfirmware["md5sum"]);
+            spdlog::trace("Parse-JSON: Firmware version md5: {0} ", pfirmware->m_strMd5);
           }
           else {
             spdlog::warn("Parse-JSON: No firmware version md5sum");
@@ -9162,7 +9162,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("name") && jdriver["name"].is_string()) {
             pdriver->m_strName = jdriver["name"];
-            spdlog::trace("Parse-JSON: Driver name: {0} ", jdriver["name"]);
+            spdlog::trace("Parse-JSON: Driver name: {0} ", pdriver->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No driver name.");
@@ -9170,7 +9170,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("url") && jdriver["url"].is_string()) {
             pdriver->m_strURL = jdriver["url"];
-            spdlog::trace("Parse-JSON: Driver URL: {0} ", jdriver["url"]);
+            spdlog::trace("Parse-JSON: Driver URL: {0} ", pdriver->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No driver url.");
@@ -9178,7 +9178,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("name") && jdriver["name"].is_string()) {
             pdriver->m_strName = jdriver["name"];
-            spdlog::trace("Parse-JSON: Driver name: {0} ", jdriver["name"]);
+            spdlog::trace("Parse-JSON: Driver name: {0} ", pdriver->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No driver name.");
@@ -9187,7 +9187,7 @@ CMDF::parseMDF_JSON(const std::string &path)
           // Type
           if (jdriver.contains("type") && jdriver["type"].is_string()) {
             pdriver->m_strType = jdriver["type"];
-            spdlog::trace("Parse-JSON: driver type: {0} ", jdriver["type"]);
+            spdlog::trace("Parse-JSON: driver type: {0} ", pdriver->m_strType);
           }
           else {
             spdlog::warn("Parse-JSON: No driver type.");
@@ -9196,7 +9196,7 @@ CMDF::parseMDF_JSON(const std::string &path)
           // OS
           if (jdriver.contains("os") && jdriver["os"].is_string()) {
             pdriver->m_strOS = jdriver["os"];
-            spdlog::trace("Parse-JSON: driver OS: {0} ", jdriver["os"]);
+            spdlog::trace("Parse-JSON: driver OS: {0} ", pdriver->m_strOS);
           }
           else {
             spdlog::warn("Parse-JSON: No driver OS.");
@@ -9205,7 +9205,7 @@ CMDF::parseMDF_JSON(const std::string &path)
           // OS version
           if (jdriver.contains("osver") && jdriver["osver"].is_string()) {
             pdriver->m_strOSVer = jdriver["osver"];
-            spdlog::trace("Parse-JSON: driver OS version: {0} ", jdriver["osver"]);
+            spdlog::trace("Parse-JSON: driver OS version: {0} ", pdriver->m_strOSVer);
           }
           else {
             spdlog::warn("Parse-JSON: No driver OS version.");
@@ -9214,7 +9214,7 @@ CMDF::parseMDF_JSON(const std::string &path)
           //  Architecture
           if (jdriver.contains("architecture") && jdriver["architecture"].is_string()) {
             pdriver->m_strArchitecture = jdriver["architecture"];
-            spdlog::trace("Parse-JSON: driver OS architecture: {0} ", jdriver["architecture"]);
+            spdlog::trace("Parse-JSON: driver OS architecture: {0} ", pdriver->m_strArchitecture);
           }
           else {
             spdlog::warn("Parse-JSON: No driver architecture.");
@@ -9222,7 +9222,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("date") && jdriver["date"].is_string()) {
             pdriver->m_strDate = jdriver["date"];
-            spdlog::trace("Parse-JSON: Driver date: {0} ", jdriver["date"]);
+            spdlog::trace("Parse-JSON: Driver date: {0} ", pdriver->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No driver date");
@@ -9230,7 +9230,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_major") && jdriver["version_major"].is_number()) {
             pdriver->m_version_major = jdriver["version_major"];
-            spdlog::trace("Parse-JSON: Driver version major: {0} ", jdriver["version_major"]);
+            spdlog::trace("Parse-JSON: Driver version major: {0} ", pdriver->m_version_major);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version_major");
@@ -9238,7 +9238,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_major") && jdriver["version_major"].is_string()) {
             pdriver->m_version_major = vscp_readStringValue(jdriver["version_major"]);
-            spdlog::trace("Parse-JSON: Driver version major: {0} ", jdriver["version_major"]);
+            spdlog::trace("Parse-JSON: Driver version major: {0} ", pdriver->m_version_major);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version_major");
@@ -9246,7 +9246,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_minor") && jdriver["version_minor"].is_number()) {
             pdriver->m_version_minor = jdriver["version_minor"];
-            spdlog::trace("Parse-JSON: Driver version minor: {0} ", jdriver["version_minor"]);
+            spdlog::trace("Parse-JSON: Driver version minor: {0} ", pdriver->m_version_minor);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version_minor");
@@ -9254,7 +9254,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_minor") && jdriver["version_minor"].is_string()) {
             pdriver->m_version_minor = vscp_readStringValue(jdriver["version_minor"]);
-            spdlog::trace("Parse-JSON: Driver version minor: {0} ", jdriver["version_minor"]);
+            spdlog::trace("Parse-JSON: Driver version minor: {0} ", pdriver->m_version_minor);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version_minor");
@@ -9262,7 +9262,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_patch") && jdriver["version_patch"].is_number()) {
             pdriver->m_version_patch = jdriver["version_patch"];
-            spdlog::trace("Parse-JSON: Driver version patch: {0} ", jdriver["version_patch"]);
+            spdlog::trace("Parse-JSON: Driver version patch: {0} ", pdriver->m_version_patch);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version patch");
@@ -9270,7 +9270,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("version_patch") && jdriver["version_patch"].is_string()) {
             pdriver->m_version_patch = vscp_readStringValue(jdriver["version_patch"]);
-            spdlog::trace("Parse-JSON: Driver version patch: {0} ", jdriver["version_patch"]);
+            spdlog::trace("Parse-JSON: Driver version patch: {0} ", pdriver->m_version_patch);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version patch");
@@ -9278,7 +9278,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jdriver.contains("md5sum") && jdriver["md5sum"].is_string()) {
             pdriver->m_strMd5 = jdriver["md5sum"];
-            spdlog::trace("Parse-JSON: Driver version md5: {0} ", jdriver["md5sum"]);
+            spdlog::trace("Parse-JSON: Driver version md5: {0} ", pdriver->m_strMd5);
           }
           else {
             spdlog::warn("Parse-JSON: No driver version md5sum");
@@ -9310,7 +9310,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jmanual.contains("name") && jmanual["name"].is_string()) {
             pmanual->m_strName = jmanual["name"];
-            spdlog::trace("Parse-JSON: Manual name: {0} ", jmanual["name"]);
+            spdlog::trace("Parse-JSON: Manual name: {0} ", pmanual->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No manual name.");
@@ -9318,7 +9318,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jmanual.contains("url") && jmanual["url"].is_string()) {
             pmanual->m_strURL = jmanual["url"];
-            spdlog::trace("Parse-JSON: Manual URL: {0} ", jmanual["url"]);
+            spdlog::trace("Parse-JSON: Manual URL: {0} ", pmanual->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No manual url.");
@@ -9326,7 +9326,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jmanual.contains("format") && jmanual["format"].is_string()) {
             pmanual->m_strFormat = jmanual["format"];
-            spdlog::trace("Parse-JSON: Manual Format: {0} ", jmanual["format"]);
+            spdlog::trace("Parse-JSON: Manual Format: {0} ", pmanual->m_strFormat);
           }
           else {
             spdlog::warn("Parse-JSON: No manual format.");
@@ -9334,7 +9334,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jmanual.contains("lang") && jmanual["lang"].is_string()) {
             pmanual->m_strLanguage = jmanual["lang"];
-            spdlog::trace("Parse-JSON: Manual language: {0} ", jmanual["lang"]);
+            spdlog::trace("Parse-JSON: Manual language: {0} ", pmanual->m_strLanguage);
           }
           else {
             spdlog::warn("Parse-JSON: No manual language.");
@@ -9342,7 +9342,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jmanual.contains("date") && jmanual["date"].is_string()) {
             pmanual->m_strDate = jmanual["date"];
-            spdlog::trace("Parse-JSON: Manual date: {0} ", jmanual["date"]);
+            spdlog::trace("Parse-JSON: Manual date: {0} ", pmanual->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No manual date");
@@ -9374,7 +9374,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jsetup.contains("name") && jsetup["name"].is_string()) {
             psetup->m_strName = jsetup["name"];
-            spdlog::trace("Parse-JSON: Setup name: {0} ", jsetup["name"]);
+            spdlog::trace("Parse-JSON: Setup name: {0} ", psetup->m_strName);
           }
           else {
             spdlog::warn("Parse-JSON: No setup name.");
@@ -9382,7 +9382,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jsetup.contains("url") && jsetup["url"].is_string()) {
             psetup->m_strURL = jsetup["url"];
-            spdlog::trace("Parse-JSON: Setup URL: {0} ", jsetup["url"]);
+            spdlog::trace("Parse-JSON: Setup URL: {0} ", psetup->m_strURL);
           }
           else {
             spdlog::warn("Parse-JSON: No setup url.");
@@ -9390,7 +9390,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jsetup.contains("format") && jsetup["format"].is_string()) {
             psetup->m_strFormat = jsetup["format"];
-            spdlog::trace("Parse-JSON: Setup Format: {0} ", jsetup["url"]);
+            spdlog::trace("Parse-JSON: Setup Format: {0} ", psetup->m_strFormat);
           }
           else {
             spdlog::warn("Parse-JSON: No setup format.");
@@ -9398,7 +9398,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 
           if (jsetup.contains("date") && jsetup["date"].is_string()) {
             psetup->m_strDate = jsetup["date"];
-            spdlog::trace("Parse-JSON: Setup date: {0} ", jsetup["date"]);
+            spdlog::trace("Parse-JSON: Setup date: {0} ", psetup->m_strDate);
           }
           else {
             spdlog::warn("Parse-JSON: No setup date");

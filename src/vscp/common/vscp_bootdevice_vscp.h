@@ -141,6 +141,19 @@ public:
   // Default timeout for response
   static const uint8_t BOOT_COMMAND_RESPONSE_TIMEOUT = 5;
 
+  static const uint8_t NUMBER_OF_MEMORY_TYPES = 8;
+
+  struct memory_range {
+    uint8_t type;
+    uint32_t beginning;
+    uint32_t end;
+  } memory_range[NUMBER_OF_MEMORY_TYPES] = {
+    { 0x00, MEM_CODE_START, MEM_CODE_START },   { 0x01, MEM_EEPROM_START, MEM_EEPROM_END },
+    { 0x02, MEM_CONFIG_START, MEM_CONFIG_END }, { 0x03, MEM_RAM_START, MEM_RAM_END },
+    { 0x04, MEM_USERID_START, MEM_USERID_END }, { 0xfd, MEM_USER0_START, MEM_USER0_END },
+    { 0xfe, MEM_USER1_START, MEM_USER1_END },   { 0xff, MEM_USER2_START, MEM_USER2_END }
+  };
+
   // Initialize data
   void init(void);
 
@@ -158,17 +171,18 @@ public:
         MDF is not the same as the one read from the remote device.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false);
+  int deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false);
 
   /*!
       Perform the actual firmware load process
+      All memory areas are loaded to the device
       @param statusCallback Callback that receive status info as  presentage (int)
           and status message (const char *)
       @param bAbortOnFirmwareCodeFail If firmware device code stored in standard registers
         is different then  the one we try to load, abort if true.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr,bool bAbortOnFirmwareCodeFail = true);
+  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr, bool bAbortOnFirmwareCodeFail = true);
 
   /*!
     Restart remote device
@@ -182,7 +196,24 @@ public:
   */
   int deviceReboot(void);
 
+ 
+
   /*!
+    Write block start to remote device
+    @param block Block number to write
+    @param type Memoty type code for memory to write
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int writeBlockStart(uint32_t block, uint8_t type);
+
+  /*!
+    Program block on remote device
+    @param block Block number to write
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int programBlock(uint32_t block);
+
+   /*!
       Write a sector
       @param paddr Pointer to firts byte of 8-byte block to write
         to remote device
@@ -190,31 +221,14 @@ public:
         max event data (8/512)
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int writeFirmwareBlockDataChunk(const uint8_t *paddr, uint16_t size);
+  int writeChunk(const uint8_t *paddr, uint16_t size);
 
   /*!
     Write a firmware flock to the device
     @param paddr Address to beginning of data to write
     @return VSCP_ERROR_SUCCESS on success.
   */
-  int writeFirmwareBlock(const uint8_t *paddr);
-
-  /*!
-      Write to device control registry
-
-      @param addr Address to set as start address
-      @param flags Control Flags
-      @param cmd Boot command
-      @param cmdData0 Boot command data byte 0
-      @param cmdData1 Boot command data byte 1
-      @return VSCP_ERROR_SUCCESS on success.
-
-  */
-  // int writeDeviceControlRegs(uint32_t addr,
-  //                            uint8_t flags    = (MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_AUTO_INC | MODE_ACK),
-  //                            uint8_t cmd      = CMD_NOP,
-  //                            uint8_t cmdData0 = 0,
-  //                            uint8_t cmdData1 = 0);
+  int writeBlock(const uint8_t *paddr);
 
   /*!
     Check response event
@@ -231,36 +245,7 @@ public:
                     uint16_t response_event_nack,
                     uint32_t timeout = BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT);
 
-  /*!
-      Check for response from nodes (Level I).
-
-      This routine is used as a check for response from nodes under boot.
-
-      The supplied id is valid from bit 8 and upwards. The lower eight bits
-      are the id.
-      Only extended messages are accepted as a valid response.
-
-      @param id Response code to look for.
-      @return VSCP_ERROR_SUCCESS on success.
-  */
-  int checkResponseLevel1(uint32_t id);
-
-  /*!
-      Check for response from nodes over server (Level II).
-
-      This routine is used as a check for response from nodes under boot.
-
-      The supplied id is valid from bit 8 and upwards. The lower eight bits
-      are the id.
-      Only extended messages are accepted as a valid response.
-
-      @param id Response code to look for.
-      @return VSCP_ERROR_SUCCESS on success.
-  */
-  int checkResponseLevel2(uint32_t id);
-
 private:
-
   /// Current set page in register space on remote device
   uint32_t m_page;
 
@@ -271,7 +256,7 @@ private:
     Current block number
     This is the current block we are writing
   */
-  //uint32_t m_blockNumber;
+  // uint32_t m_blockNumber;
 
   /*!
     Internal address pointer
@@ -293,7 +278,7 @@ private:
     cases.
 
     block size can be less then chunk size. This is escpecially true
-    for level II 
+    for level II
   */
   uint16_t m_chunkSize;
 
@@ -319,13 +304,4 @@ private:
     CRC for full programming data.
   */
   uint16_t m_crc16;
-
-  struct memory_range {
-    uint8_t type;
-    uint32_t beginning;
-    uint32_t end;
-  } memory_range[8] = { { 0x00, MEM_CODE_START, MEM_CODE_START },   { 0x01, MEM_EEPROM_START, MEM_EEPROM_END },
-                        { 0x02, MEM_CONFIG_START, MEM_CONFIG_END }, { 0x03, MEM_RAM_START, MEM_RAM_END },
-                        { 0x04, MEM_USERID_START, MEM_USERID_END }, { 0xfd, MEM_USER0_START, MEM_USER0_END },
-                        { 0xfe, MEM_USER1_START, MEM_USER1_END },   { 0xff, MEM_USER2_START, MEM_USER2_END } };
 };

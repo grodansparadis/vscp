@@ -1668,7 +1668,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
       pstr = new uint8_t[remoteVar.getTypeByteCount() + 1];
       if (nullptr == pstr)
         return false;
-      memset(pstr, 0, sizeof(pstr));
+      memset(pstr, 0, remoteVar.getTypeByteCount() + 1);
       for (unsigned int i = remoteVar.getOffset(); i < (remoteVar.getOffset() + remoteVar.getTypeByteCount()); i++) {
         pstr[i] = ppage->getReg(i);
       }

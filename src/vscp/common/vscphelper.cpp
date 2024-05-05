@@ -58,12 +58,11 @@
 #endif
 
 #include <expat.h>
-#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp>
 
 #include <canal_macro.h>
 #include <crc.h>
 #include <crc8.h>
-//#include <fastpbkdf2.h>
 #include <vscp_aes.h>
 #include <vscpbase64.h>
 #include <vscpmd5.h>
@@ -7376,76 +7375,7 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
   return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// vscp_makePasswordHash
-//
-/*
-bool
-vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t *pSalt)
-{
-  int i;
-  uint8_t salt[16];
-  uint8_t buf[32];
 
-  result.clear();
-
-  // Get random IV
-  if (nullptr == pSalt) {
-    if (16 != getRandomIV(salt, 16)) {
-      return false;
-    }
-  }
-  else {
-    memcpy(salt, pSalt, 16);
-  }
-
-  uint8_t *p = new uint8_t[strlen((const char *) password.c_str())];
-  if (nullptr == p) {
-    return false;
-  }
-
-  memcpy(p, (const char *) password.c_str(), strlen((const char *) password.c_str()));
-
-  fastpbkdf2_hmac_sha256(p, strlen((const char *) password.c_str()), salt, 16, 70000, buf, 32);
-  delete[] p;
-
-  for (i = 0; i < 16; i++) {
-    result += vscp_str_format("%02X", salt[i]);
-  }
-  result += (";");
-  for (i = 0; i < 32; i++) {
-    result += vscp_str_format("%02X", buf[i]);
-  }
-
-  return true;
-}
-*/
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_isPasswordValid
-//
-
-// bool
-// vscp_isPasswordValid(const std::string &stored_pw, const std::string &password)
-// {
-//   std::string calcHash; // Calculated hash
-//   uint8_t salt[16];     // Stored salt
-//   uint8_t hash[32];     // Stored hash
-
-//   if (!vscp_getHashPasswordComponents(salt, hash, stored_pw)) {
-//     return false;
-//   }
-
-//   if (!vscp_makePasswordHash(calcHash, password, salt)) {
-//     return false;
-//   }
-
-//   if (stored_pw != calcHash) {
-//     return false;
-//   }
-
-//   return true;
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getSalt

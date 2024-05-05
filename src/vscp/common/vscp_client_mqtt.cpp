@@ -52,11 +52,14 @@
 #include <deque>
 #include <string>
 
-#include <mustache.hpp>
-using namespace kainjow::mustache;
-
-#include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
+
+#include <mustache.hpp>
+#include <nlohmann/json.hpp> 
+
+// for convenience
+using json = nlohmann::json;
+using namespace kainjow::mustache;
 
 // Forward declaration
 static void *
@@ -1291,7 +1294,9 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
       for (auto it = j["user-escapes"].begin(); it != j["user-escapes"].end(); ++it) {
         m_mapUserEscapes[it.key()] = it.value();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'user-escapes' Set to {0}={1}.", it.key(), it.value());
+        spdlog::debug("MQTT CLIENT: json mqtt init: 'user-escapes' Set to {0}={1}.",
+                      (std::string) it.key(),
+                      (std::string) it.value());
       }
     }
 
@@ -1376,7 +1381,9 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (jj.contains("user-properties") && jj["user-properties"].is_object()) {
         for (auto it = jj.begin(); it != jj.end(); ++it) {
           m_mapMqttProperties[it.key()] = it.value();
-          spdlog::debug("MQTT CLIENT: json mqtt init: v5 'user-properties' Set to {0}={1}.", it.key(), it.value());
+          spdlog::debug("MQTT CLIENT: json mqtt init: v5 'user-properties' Set to {0}={1}.",
+                        (std::string) it.key(),
+                        (std::string) it.value());
         }
       }
     }
@@ -1419,21 +1426,21 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
   // Get subscribe format for subscribe topic
   for (std::list<subscribeTopic *>::const_iterator it = m_mqtt_subscribeTopicList.begin();
-         it != m_mqtt_subscribeTopicList.end();
-         ++it) {
+       it != m_mqtt_subscribeTopicList.end();
+       ++it) {
 
-      subscribeTopic *psubscribe = (*it);
-      // if topics match
-      if (!strstr(psubscribe->getTopic().c_str(), pmsg->topic)) {
-        format = psubscribe->getFormat();
-        break;
-      }
+    subscribeTopic *psubscribe = (*it);
+    // if topics match
+    if (!strstr(psubscribe->getTopic().c_str(), pmsg->topic)) {
+      format = psubscribe->getFormat();
+      break;
     }
+  }
 
   // If autofmt the payload must be checked to find the correct format
   // top convert MQTT msg to VSCP event
   if (autofmt == format) {
-    
+
     // Topic is nill we need to find format
 
     // If First char of payload...

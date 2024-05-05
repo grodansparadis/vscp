@@ -35,9 +35,9 @@
 #include "vscp_bootdevice_pic1.h"
 
 #include "spdlog/fmt/bin_to_hex.h"
-#include <spdlog/async.h>
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
+// #include <spdlog/async.h>
+// #include <spdlog/sinks/rotating_file_sink.h>
+// #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -824,7 +824,7 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
     }
 
     // Init the block
-    if (VSCP_ERROR_SUCCESS != (rv = fillBlock(pbuf, size, start))) {
+    if (VSCP_ERROR_SUCCESS != (rv = fillMemoryBuffer(pbuf, size, start))) {
       spdlog::error("writeFirmwareBlock: Failed to fill code block with data.");
       if (nullptr != m_statusCallback) {
         m_statusCallback(-1,
@@ -880,13 +880,13 @@ CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallba
 
   m_checksum        = 0;
   uint32_t progress = 0;
-  uint32_t addr;
+  uint32_t addr = 0;
   std::string strStatus;
 
   uint8_t pbuf[BUFFER_SIZE_CODE];
   uint32_t nPackets;
-  uint32_t minAddr;
-  uint32_t maxAddr;
+  // uint32_t minAddr;
+  // uint32_t maxAddr;
 
   if (nullptr != m_statusCallback) {
     m_statusCallback(0, "Starting firmware download");

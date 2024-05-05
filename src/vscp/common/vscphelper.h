@@ -1823,7 +1823,7 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
 
 /*!
     Covert VSCP event to CANAL message
-    /*!
+    
     Convert VSCP event to a CANAL message    
     @param pcanalMsg Pointer to CANAL message that get result
     @param pvscpEventEx Pointer to VSCP event ex that should be converted
@@ -2220,28 +2220,6 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr);
  */
 bool
 vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string &stored_pw);
-
-/*!
- * Make password hash with prepended salt from clear text password.
- *
- * @param result Will get hex hash string with random salt prepended
- * separated with ";".
- * @param password Clear text password to be hashed.
- * @return true on success, false otherwise.
- */
-//bool
-//vscp_makePasswordHash(std::string &result, const std::string &password, uint8_t *pSalt = NULL);
-
-/*!
- * Validate password
- *
- * @param stored_pw Stored password on the form "salt;hash"
- * @param password Password to test (clear text).
- * @return true on success, false otherwise.
- */
-
-//bool
-//vscp_isPasswordValid(const std::string &stored_pw, const std::string &password);
 
 /*!
  * Get salt

@@ -38,7 +38,16 @@
 #include "vscp_client_canal.h"
 #include "vscphelper.h"
 
-#include <spdlog/sinks/rotating_file_sink.h>
+
+
+//#include <mustache.hpp>
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+
+// for convenience
+using json = nlohmann::json;
+//using namespace kainjow::mustache;
+
+//#include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
 
 // Forward declaration
@@ -124,13 +133,13 @@ vscpClientCanal::initFromJson(const std::string &config)
       spdlog::error("CANAL CLIENT: JSON init: Name must be set.");
       return false; // Must be set
     }
-    spdlog::debug("CANAL CLIENT: JSON init: name={}.", j["name"]);
+    spdlog::debug("CANAL CLIENT: JSON init: name={}.", (std::string)j["name"]);
 
     if (!j["path"].is_string()) {
       spdlog::error("CANAL CLIENT: JSON init: Path must be set.");
       return false; // Must be set
     }
-    spdlog::debug("CANAL CLIENT: JSON init: path={}.", j["path"]);
+    spdlog::debug("CANAL CLIENT: JSON init: path={}.", (std::string)j["path"]);
 
     if (j.contains("config")) {
       if (!j["config"].is_string()) {
@@ -141,7 +150,7 @@ vscpClientCanal::initFromJson(const std::string &config)
     else {
       j["config"] = ""; // Set default
     }
-    spdlog::debug("CANAL CLIENT: JSON init: config=\"{}\".", j["config"]);
+    spdlog::debug("CANAL CLIENT: JSON init: config=\"{}\".", (std::string)j["config"]);
 
     if (j.contains("flags")) {
       if (j["flags"].is_string()) {
@@ -151,7 +160,7 @@ vscpClientCanal::initFromJson(const std::string &config)
     else {
       j["flags"] = 0; // Set default
     }
-    spdlog::debug("CANAL CLIENT: JSON init: flags={}.", j["flags"]);
+    spdlog::debug("CANAL CLIENT: JSON init: flags={}.", (uint32_t)j["flags"]);
 
     if (j.contains("datarate")) {
       if (j["datarate"].is_string()) {
@@ -161,7 +170,7 @@ vscpClientCanal::initFromJson(const std::string &config)
     else {
       j["datarate"] = 0; // Set default
     }
-    spdlog::debug("CANAL CLIENT: JSON init: datarate={}.", j["datarate"]);
+    spdlog::debug("CANAL CLIENT: JSON init: datarate={}.", (int)j["datarate"]);
 
     setName(j["name"]);
     return (init(j["path"], j["config"], j["flags"], j["datarate"]));

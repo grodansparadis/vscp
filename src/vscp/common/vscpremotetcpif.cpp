@@ -657,11 +657,6 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg *pCanalMsg)
 
   event.GUID[0] = pCanalMsg->id & 0xff;
 
-  // Protect event.data for out ouf bounce access
-  if (sizeof(event.data) < pCanalMsg->sizeData) {
-    return VSCP_ERROR_PARAMETER;
-  }
-
   event.sizeData = pCanalMsg->sizeData;
   memcpy(event.data, pCanalMsg->data, pCanalMsg->sizeData);
 
@@ -2120,7 +2115,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
       while (CANAL_ERROR_SUCCESS == doCmdReceiveEx(&e)) { // Valid event
 
         // Quit if done?
-        if ((allRcvValue == (receive_flags & 0xffffffff))) break;
+        if (allRcvValue == (receive_flags & 0xffffffff)) break;
 
           // Check for correct reply event
 #ifdef DEBUG_LIB_VSCP_HELPER

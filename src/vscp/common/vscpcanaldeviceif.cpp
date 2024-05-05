@@ -493,7 +493,7 @@ VscpCanalDeviceIf::init(std::string strpath,
     m_strPath      = strpath;
     m_strParameter = strparam;
     m_deviceFlags  = flags;
-    m_bAsync       = m_bAsync;
+    m_bAsync       = bAsync;
 
     return init();
 }
