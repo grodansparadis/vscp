@@ -749,46 +749,47 @@ vscpClientSocketCan::getResponseTimeout(void)
 void
 vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
 {
-  printf("sendToCallbacks\n");
-  if (nullptr != m_evcallback) {
-    printf("----->\n");
-    m_evcallback(pev, m_callbackObject);
+  if (isCallbackEvActive()) {
+    m_callbackev(*pev, getCallbackObj());
   }
 
-  if (nullptr != m_excallback) {
+  if (isCallbackExActive()) {
     vscpEventEx ex;
     vscp_convertEventToEventEx(&ex, pev);
-    m_excallback(&ex, m_callbackObject);
+    m_callbackex(ex, getCallbackObj());
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setCallback
+// setCallbackEv
 //
 
 int
-vscpClientSocketCan::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
+vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback)
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
-  m_evcallback = m_evcallback;
+  
+  CVscpClient::setCallbackEv(callback);
+
   return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setCallback
+// setCallbackEx
 //
 
 int
-vscpClientSocketCan::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+vscpClientSocketCan::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback)
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
-  m_excallback = m_excallback;
+
+  CVscpClient::setCallbackEx(callback);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -978,21 +979,21 @@ workerThread(void *pData)
 
           if (vscp_doLevel2Filter(pEvent, &pObj->m_filterIn)) {
 
-            if (nullptr != pObj->m_evcallback) {
-              pObj->m_evcallback(pEvent, pObj->m_callbackObject);
+            if (pObj->isCallbackEvActive()) {
+              pObj->m_callbackev(*pEvent, pObj->getCallbackObj());
             }
 
-            if (nullptr != pObj->m_excallback) {
+            if (pObj->isCallbackExActive()) {
               vscpEventEx ex;
               if (vscp_convertEventToEventEx(&ex, pEvent)) {
-                pObj->m_excallback(&ex, pObj->m_callbackObject);
+                pObj->m_callbackex(ex, pObj->getCallbackObj());
               }
             }
 
             // printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
 
             // Add to input queue only if no callback set
-            if ((nullptr == pObj->m_evcallback) && (nullptr == pObj->m_excallback)) {
+            if (pObj->isCallbackEvActive() && pObj->isCallbackExActive()) {
               // std::cout << "add to receive queue" << std::endl;
               pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
               pObj->m_receiveList.push_back(pEvent);

@@ -42,11 +42,13 @@ using json = nlohmann::json;
 // as it wants.
 
 #ifdef WIN32
-typedef void(__stdcall *LPFNDLL_EV_CALLBACK)(vscpEvent *pev, void *pobj);   // Event callback
-typedef void(__stdcall *LPFNDLL_EX_CALLBACK)(vscpEventEx *pex, void *pobj); // Event ex callbac
+// std::function<void(vscpEvent &ev, void *pobj)>
+// std::function<void(vscpEventEx &ex, void *pobj)>
+// typedef void(__stdcall *CALLBACK_EV)(vscpEvent *pev, void *pobj);   // Event callback
+// typedef void(__stdcall *CALLBACK_EX)(vscpEventEx *pex, void *pobj); // Event ex callbac
 #else
-typedef void (*LPFNDLL_EV_CALLBACK)(vscpEvent *pev, void *pobj);   // Event callback
-typedef void (*LPFNDLL_EX_CALLBACK)(vscpEventEx *pex, void *pobj); // Event ex callback
+// typedef void (*CALLBACK_EV)(vscpEvent *pev, void *pobj);   // Event callback
+// typedef void (*CALLBACK_EX)(vscpEventEx *pex, void *pobj); // Event ex callback
 #endif
 
 class CVscpClient {
@@ -192,7 +194,7 @@ public:
       @param pData User defined data to pass in callback call
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData = nullptr);
+  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Set (and enable) receive callback ex events
@@ -200,7 +202,7 @@ public:
       @param pData User defined data to pass in callback call
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData = nullptr);
+  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Getter/setters for connection timeout
@@ -220,13 +222,25 @@ public:
       Check if ev callback is defined
       @return true if callback is defined
   */
-  bool isEvCallback(void) { return (nullptr != m_evcallback); }
+  bool isCallbackEvActive(void) { return m_bActiveCallbackEv; }
 
   /*!
       Check if ex callback is defined
       @return true if callback is defined
   */
-  bool isExCallback(void) { return (nullptr != m_excallback); }
+  bool isCallbackExActive(void) { return m_bActiveCallbackEx; }
+
+  /*!
+    Activate or deactivate Ev callback
+    @param b Set to true (default) to activate.
+  */
+  void setCallbackEvActive(bool b = true) { m_bActiveCallbackEv = b; };
+
+  /*!
+    Activate or deactivate Ex callback
+    @param b Set to true (default) to activate.
+  */
+  void setCallbackExActive(bool b = true) { m_bActiveCallbackEx = b; };
 
   /*!
       Return a JSON representation of connection
@@ -263,7 +277,7 @@ public:
     Mark as full level II or not
     @param b Set to true to mark as full level II working client
   */
-  void setFullLevel2(bool b=true) { m_bFullLevel2 = b; };
+  void setFullLevel2(bool b = true) { m_bFullLevel2 = b; };
 
   /*!
     Check if client is afull level II client
@@ -271,16 +285,45 @@ public:
   */
   bool isFullLevel2(void) { return m_bFullLevel2; };
 
+  /*!
+    Set callback object
+    @param Pointer to object to set
+  */
+
+ void setCallbackObj(void *pobj) { m_callbackObject = pobj; };
+
+  /*!
+    Return Callback object
+    @return Pointer to object
+  */
+  void *getCallbackObj(void) { return m_callbackObject; };
+
 public:
+
   /*!
       Callback for events
   */
-  LPFNDLL_EV_CALLBACK m_evcallback;
+  std::function<void(vscpEvent &ev, void *pobj)> m_callbackev;
 
   /*!
       Callback for ex events
   */
-  LPFNDLL_EX_CALLBACK m_excallback;
+  std::function<void(vscpEventEx &ex, void *pobj)> m_callbackex;
+
+protected:
+
+  /// Type of connection object
+  connType m_type = CVscpClient::connType::NONE;
+
+  /*!
+    Flag that is true when an ev  callback is installed
+  */
+  bool m_bActiveCallbackEv;
+
+  /*!
+    Flag that is true when an ex  callback is installed
+  */
+  bool m_bActiveCallbackEx;
 
   /*!
       This data pointer is set by the callback
@@ -288,8 +331,7 @@ public:
   */
   void *m_callbackObject;
 
-  /// Type of connection object
-  connType m_type = CVscpClient::connType::NONE;
+  
 
   /// Name for connection object
   std::string m_name;

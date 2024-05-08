@@ -201,7 +201,7 @@ vscpClientCanal::connect(void)
   }
 
   // Start worker thread if a callback has been defined
-  if ((NULL != m_evcallback) || (NULL != m_excallback)) {
+  if (isCallbackEvActive() || isCallbackExActive()) {
     rv = pthread_create(&m_tid, NULL, workerThread, this);
   }
 
@@ -225,16 +225,12 @@ vscpClientCanal::disconnect(void)
 #endif
 
   pthread_mutex_unlock(&m_mutexif);
-  if ((NULL != m_evcallback) || (NULL != m_excallback)) {
+  if (isCallbackEvActive() || isCallbackExActive()) {
     pthread_join(m_tid, NULL);
   }
   pthread_mutex_destroy(&m_mutexif);
 
   m_bConnected = false;
-
-  // Disable callbacks
-  // m_evcallback = nullptr;
-  // m_excallback = nullptr;
   spdlog::debug("CANAL CLIENT: Disconnect");
 
   return m_canalif.CanalClose();
@@ -407,7 +403,7 @@ vscpClientCanal::getcount(uint16_t *pcount)
 {
   int cnt;
 
-  if ((NULL == m_evcallback) && (NULL == m_excallback)) {
+  if (isCallbackEvActive() && isCallbackExActive()) {
     pthread_mutex_lock(&m_mutexif);
     cnt = m_canalif.CanalDataAvailable();
     pthread_mutex_unlock(&m_mutexif);
@@ -507,11 +503,11 @@ vscpClientCanal::getResponseTimeout(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setCallback
+// setCallbackEv
 //
 
 int
-vscpClientCanal::setCallback(LPFNDLL_EV_CALLBACK evcallback)
+vscpClientCanal::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -520,7 +516,7 @@ vscpClientCanal::setCallback(LPFNDLL_EV_CALLBACK evcallback)
   }
 
   spdlog::debug("CANAL CLIENT: ev callback set.");
-  m_evcallback = evcallback;
+ CVscpClient::setCallbackEv(callback);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -529,7 +525,7 @@ vscpClientCanal::setCallback(LPFNDLL_EV_CALLBACK evcallback)
 //
 
 int
-vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK excallback)
+vscpClientCanal::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -538,7 +534,7 @@ vscpClientCanal::setCallback(LPFNDLL_EX_CALLBACK excallback)
   }
 
   spdlog::debug("CANAL CLIENT: ex callback set.");
-  m_excallback = excallback;
+  CVscpClient::setCallbackEx(callback);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -590,18 +586,18 @@ workerThread(void *pObj)
         canalMsg msg;
         if (CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalReceive(&msg)) {
           spdlog::debug("CANAL CLIENT: workthread. Event recived");
-          if (NULL != pClient->m_evcallback) {
+          if (pClient->isCallbackEvActive()) {
             vscpEvent ev;
             if (vscp_convertCanalToEvent(&ev, &msg, guid)) {
               spdlog::trace("CANAL CLIENT: workthread. Event sent to ev callback");
-              pClient->m_evcallback(&ev, pClient->m_callbackObject);
+              pClient->m_callbackev(ev, pClient->getCallbackObj());
             }
           }
-          if (NULL != pClient->m_excallback) {
+          if (pClient->isCallbackExActive()) {
             vscpEventEx ex;
             if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
               spdlog::trace("CANAL CLIENT: workthread. Event sent to ex callback");
-              pClient->m_excallback(&ex, pClient->m_callbackObject);
+              pClient->m_callbackex(ex, pClient->getCallbackObj());
             }
           }
         }

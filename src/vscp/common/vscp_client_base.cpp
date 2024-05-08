@@ -43,8 +43,8 @@
 
 CVscpClient::CVscpClient()
 {
-  m_evcallback     = nullptr;
-  m_excallback     = nullptr;
+  m_bActiveCallbackEv = false;
+  m_bActiveCallbackEx = false;
   m_callbackObject = nullptr;
   m_bFullLevel2    = false; // This is not a full level II communication client
 }
@@ -63,22 +63,25 @@ CVscpClient::~CVscpClient()
 //
 
 int
-CVscpClient::setCallback(LPFNDLL_EV_CALLBACK evcallback, void *pData)
+CVscpClient::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData)
 {
-  m_evcallback     = evcallback;
+  m_callbackev     = callback;
   m_callbackObject = pData;
+  m_bActiveCallbackEv = true;
 
   return VSCP_ERROR_SUCCESS;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// setCallback
+// setCallbackEx
 //
 
 int
-CVscpClient::setCallback(LPFNDLL_EX_CALLBACK excallback, void *pData)
+CVscpClient::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData)
 {
-  m_excallback     = excallback;
+  m_callbackex     = callback;
   m_callbackObject = pData;
+  m_bActiveCallbackEv = true;
+
   return VSCP_ERROR_SUCCESS;
 };

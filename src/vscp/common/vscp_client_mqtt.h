@@ -461,7 +461,7 @@ public:
     @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData = nullptr);
+  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
 
   /*!
     Set (and enable) receive callback ex events
@@ -469,7 +469,7 @@ public:
     @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData = nullptr);
+  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Return a JSON representation of connection

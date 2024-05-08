@@ -558,7 +558,7 @@ vscpClientWs2::receive(vscpEvent &ev)
   }
 
   // only valid if no callback is defined
-  if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
+  if (isCallbackEvActive() || isCallbackExActive()) {
     return VSCP_ERROR_NOT_SUPPORTED;
   }
 
@@ -592,7 +592,7 @@ vscpClientWs2::receive(vscpEventEx &ex)
   }
 
   // only valid if no callback is defined
-  if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
+  if (isCallbackEvActive() || isCallbackExActive()) {
     return VSCP_ERROR_NOT_SUPPORTED;
   }
 

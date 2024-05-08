@@ -1492,11 +1492,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     // If callback is defined send event
-    if (nullptr != m_evcallback) {
-      m_evcallback(&ev, m_callbackObject);
+    if (isCallbackEvActive()) {
+      m_callbackev(ev, getCallbackObj());
     }
-    else if (nullptr != m_excallback) {
-      m_excallback(&ex, m_callbackObject);
+    else if (isCallbackExActive()) {
+      m_callbackex(ex, getCallbackObj());
     }
     else {
       // Put event in input queue
@@ -1531,11 +1531,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     // If callback is defined send event
-    if (nullptr != m_evcallback) {
-      m_evcallback(&ev, m_callbackObject);
+    if (isCallbackEvActive()) {
+      m_callbackev(ev, getCallbackObj());
     }
-    else if (nullptr != m_excallback) {
-      m_excallback(&ex, m_callbackObject);
+    else if (isCallbackExActive()) {
+      m_callbackex(ex, getCallbackObj());
     }
     else {
       // Put event in input queue
@@ -1570,11 +1570,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     // If callback is defined send event
-    if (nullptr != m_evcallback) {
-      m_evcallback(&ev, m_callbackObject);
+    if (isCallbackEvActive()) {
+      m_callbackev(ev, getCallbackObj());
     }
-    else if (nullptr != m_excallback) {
-      m_excallback(&ex, m_callbackObject);
+    else if (isCallbackExActive()) {
+      m_callbackex(ex, getCallbackObj());
     }
     else {
       // Put event in input queue
@@ -1611,11 +1611,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     // If callback is defined send event
-    if (nullptr != m_evcallback) {
-      m_evcallback(&ev, m_callbackObject);
+    if (isCallbackEvActive()) {
+      m_callbackev(ev, getCallbackObj());
     }
-    else if (nullptr != m_excallback) {
-      m_excallback(&ex, m_callbackObject);
+    else if (isCallbackExActive()) {
+      m_callbackex(ex, getCallbackObj());
     }
     else {
       // Put event in input queue
@@ -2075,7 +2075,7 @@ vscpClientMqtt::connect(void)
   }
 
   // Start worker thread if a callback has been defined
-  if ((nullptr != m_evcallback) || (nullptr != m_excallback)) {
+  if (isCallbackEvActive()|| isCallbackExActive()) {
     int rv = pthread_create(&m_tid, nullptr, workerThread, this);
     switch (rv) {
 
@@ -2114,7 +2114,7 @@ vscpClientMqtt::disconnect(void)
 
   spdlog::debug("MQTT CLIENT: Enter disconnect.");
 
-  if ((nullptr == m_evcallback) && (nullptr == m_excallback)) {
+  if (isCallbackEvActive() && isCallbackExActive()) {
     pthread_join(m_tid, nullptr);
   }
 
@@ -2879,14 +2879,14 @@ vscpClientMqtt::getwcyd(uint64_t &wcyd)
 //
 
 int
-vscpClientMqtt::setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData)
+vscpClientMqtt::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
 
-  CVscpClient::setCallback(m_evcallback, pData);
+  CVscpClient::setCallbackEv(callback, pData);
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -2896,14 +2896,14 @@ vscpClientMqtt::setCallback(LPFNDLL_EV_CALLBACK m_evcallback, void *pData)
 //
 
 int
-vscpClientMqtt::setCallback(LPFNDLL_EX_CALLBACK m_excallback, void *pData)
+vscpClientMqtt::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
 
-  CVscpClient::setCallback(m_excallback, pData);
+  CVscpClient::setCallbackEx(callback, pData);
 
   return VSCP_ERROR_SUCCESS;
 }

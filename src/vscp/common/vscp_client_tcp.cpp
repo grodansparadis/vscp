@@ -527,14 +527,14 @@ vscpClientTcp::getResponseTimeout(void)
 void
 vscpClientTcp::sendToCallbacks(vscpEvent *pev)
 {
-  if (nullptr != m_evcallback) {
-    m_evcallback(pev, m_callbackObject);
+  if (isCallbackEvActive()) {
+    m_callbackev(*pev, m_callbackObject);
   }
 
-  if (nullptr != m_excallback) {
+  if (isCallbackExActive()) {
     vscpEventEx ex;
     vscp_convertEventToEventEx(&ex, pev);
-    m_excallback(&ex, m_callbackObject);
+    m_callbackex(ex, m_callbackObject);
   }
 }
 
