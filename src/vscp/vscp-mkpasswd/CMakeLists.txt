@@ -52,8 +52,8 @@ add_executable(vscp-mkpasswd
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc8.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc8.c
-    ${PROJECT_SOURCE_DIR}/../../../src/common/vscp_aes.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/vscp_aes.c
+    ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.h
+    ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.c
     ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.h
     ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.c
     ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/nlohmann/json.hpp

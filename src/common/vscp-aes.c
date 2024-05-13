@@ -29,8 +29,8 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 
 */
 
-#ifndef ___VSCP_AES_H
-#define ___VSCP_AES_H
+#ifndef ___vscp-aes_H
+#define ___vscp-aes_H
 
 
 /*****************************************************************************/

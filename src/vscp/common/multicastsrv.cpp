@@ -49,7 +49,7 @@
 #include <dllist.h>
 #include <guid.h>
 #include <mongoose.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscp_debug.h>
 
 

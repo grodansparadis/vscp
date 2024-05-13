@@ -48,7 +48,7 @@
 
 #include "userlist.h"
 #include <vscp.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscphelper.h>
 
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11

@@ -32,7 +32,7 @@
 #include <math.h>
 
 #include <vscp.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <fastpbkdf2.h>
 #include "vscp-mkpasswd.h"
 

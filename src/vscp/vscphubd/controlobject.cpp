@@ -75,7 +75,7 @@
 #include <expat.h>
 
 #include <fastpbkdf2.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 
 #include <actioncodes.h>
 #include <automation.h>

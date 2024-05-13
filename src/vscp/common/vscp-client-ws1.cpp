@@ -35,7 +35,7 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscphelper.h>
 // #include "civetweb.h"
 

@@ -4,7 +4,7 @@
 #include <pthread.h> 
 #include <semaphore.h> 
 #include <unistd.h> 
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscphelper.h>
 #include "civetweb.h"
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11

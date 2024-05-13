@@ -74,7 +74,7 @@
 #include <remotevariablecodes.h>
 #include <version.h>
 #include <vscp.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
 #include <websrv.h>

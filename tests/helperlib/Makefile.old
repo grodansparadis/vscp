@@ -20,8 +20,8 @@ guid.o: ../../common/guid.cpp ../../common/guid.h
 vscpdatetime.o: ../../common/vscpdatetime.cpp ../../common/vscpdatetime.h
         $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@
 
-vscp_aes.o: ../../../common/vscp_aes.c ../../../common/vscp_aes.h
-        $(CC) $(CFLAGS) -c ../../../common/vscp_aes.c -o $@
+vscp-aes.o: ../../../common/vscp-aes.c ../../../common/vscp-aes.h
+        $(CC) $(CFLAGS) -c ../../../common/vscp-aes.c -o $@
 
 crc.o: ../../../common/crc.c ../../../common/crc.h
         $(CC) $(CFLAGS) -c ../../../common/crc.c -o $@

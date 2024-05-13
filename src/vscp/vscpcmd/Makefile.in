@@ -78,7 +78,7 @@ VSCPCMD_OBJECTS =  vscpcmd.o \
 	crc8.o \
 	guid.o \
 	sockettcp.o \
-	vscp_aes.o \
+	vscp-aes.o \
 	vscpmd5.o \
 	fastpbkdf2.o \
 	vscpbase64.o
@@ -108,8 +108,8 @@ guid.o: ../common/guid.cpp ../common/guid.h
 sockettcp.o: ../../common/sockettcp.c ../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../common/sockettcp.c -o $@
 
-vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
-	$(CC) $(CFLAGS) -c ../../common/vscp_aes.c -o $@
+vscp-aes.o: ../../common/vscp-aes.c ../../common/vscp-aes.h
+	$(CC) $(CFLAGS) -c ../../common/vscp-aes.c -o $@
 
 crc.o: ../../common/crc.c ../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@

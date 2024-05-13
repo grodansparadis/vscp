@@ -39,7 +39,7 @@
 #include <tcpipsrv.h>
 #include <version.h>
 #include <vscp.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscphelper.h>
 
 #include <string>

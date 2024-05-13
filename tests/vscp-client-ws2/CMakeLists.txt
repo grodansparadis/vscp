@@ -54,8 +54,8 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/common/crc.c
     ${PROJECT_SOURCE_DIR}/../../src/common/crc8.h
     ${PROJECT_SOURCE_DIR}/../../src/common/crc8.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/vscp_aes.c
+    ${PROJECT_SOURCE_DIR}/../../src/common/vscp-aes.h
+    ${PROJECT_SOURCE_DIR}/../../src/common/vscp-aes.c
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.h
     ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.c
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include/civetweb.h
