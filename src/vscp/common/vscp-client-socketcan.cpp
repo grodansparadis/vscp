@@ -129,7 +129,7 @@ vscpClientSocketCan::vscpClientSocketCan()
   m_interface  = "vcan0";
   m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
   m_flags  = 0;
-  m_socket = -1;
+  m_socket = 0;
   m_mode   = CAN_MTU;
 
   setResponseTimeout(3); // Response timeout 3 ms
@@ -993,7 +993,7 @@ workerThread(void *pData)
             // printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
 
             // Add to input queue only if no callback set
-            if (pObj->isCallbackEvActive() && pObj->isCallbackExActive()) {
+            if (!pObj->isCallbackEvActive() || !pObj->isCallbackExActive()) {
               // std::cout << "add to receive queue" << std::endl;
               pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
               pObj->m_receiveList.push_back(pEvent);

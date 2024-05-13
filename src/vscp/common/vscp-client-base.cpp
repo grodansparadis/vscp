@@ -81,7 +81,7 @@ CVscpClient::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> call
 {
   m_callbackex     = callback;
   m_callbackObject = pData;
-  m_bActiveCallbackEv = true;
-
+  m_bActiveCallbackEx = true;
+  
   return VSCP_ERROR_SUCCESS;
 };
