@@ -29,8 +29,7 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 
 */
 
-#ifndef ___vscp-aes_H
-#define ___vscp-aes_H
+
 
 
 /*****************************************************************************/
@@ -714,4 +713,4 @@ size_t getRandomIV( uint8_t *buf, size_t len )
 
 #endif // #if defined(CBC) && CBC
 
-#endif
+

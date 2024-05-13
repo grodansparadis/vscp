@@ -1,5 +1,5 @@
-#ifndef _AES_H_
-#define _AES_H_
+#ifndef _VSCP__AES__H_
+#define _VSCP__AES__H_
 
 #ifdef __cplusplus
 extern "C" {
