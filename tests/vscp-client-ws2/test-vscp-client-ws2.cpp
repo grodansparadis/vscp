@@ -9,7 +9,7 @@
 #include "civetweb.h"
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
-#include "vscp_client_ws2.h"
+#include "vscp-client-ws2.h"
 
 #define WS2_RESPONSE_TIMEOUT	2000	
 

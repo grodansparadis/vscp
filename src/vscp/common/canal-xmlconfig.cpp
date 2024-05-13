@@ -43,7 +43,7 @@
 #include "vscp.h"
 #include "vscphelper.h"
 
-#include "canal_xmlconfig.h"
+#include "canal-xmlconfig.h"
 
 #include <limits>
 #include <cfloat>

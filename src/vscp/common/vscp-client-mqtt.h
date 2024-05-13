@@ -152,7 +152,7 @@ mqtt-options/protocol-version can be set to 310/311/500
 #if !defined(VSCPCLIENTMQTT_H__INCLUDED_)
 #define VSCPCLIENTMQTT_H__INCLUDED_
 
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 #include <guid.h>
 #include <vscp.h>
 #include <vscphelper.h>

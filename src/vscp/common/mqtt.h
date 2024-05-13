@@ -32,7 +32,7 @@
 #include <guid.h>
 #include <vscp.h>
 #include <vscphelper.h>
-#include <vscp_client_mqtt.h>
+#include <vscp-client-mqtt.h>
 
 #include <stdlib.h>
 #include <string>

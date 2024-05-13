@@ -27,7 +27,7 @@
 #define VSCPCLIENTMULTICAST_H__INCLUDED_
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 
 class vscpClientMulticast : public CVscpClient {
 

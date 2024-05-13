@@ -273,12 +273,12 @@ if (WIN32)
     src/vscp/common/canaldlldef.h
     src/vscp/common/vscpcanaldeviceif.h
     src/vscp/common/vscpcanaldeviceif.cpp
-    src/vscp/common/canal_xmlconfig.h
-    src/vscp/common/canal_xmlconfig.cpp
-    src/vscp/common/vscp_client_base.h
-    src/vscp/common/vscp_client_base.cpp
-    src/vscp/common/vscp_client_mqtt.h
-    src/vscp/common/vscp_client_mqtt.cpp
+    src/vscp/common/canal-xmlconfig.h
+    src/vscp/common/canal-xmlconfig.cpp
+    src/vscp/common/vscp-client-base.h
+    src/vscp/common/vscp-client-base.cpp
+    src/vscp/common/vscp-client-mqtt.h
+    src/vscp/common/vscp-client-mqtt.cpp
     ./third_party/mustache/mustache.hpp
     ./third_party/sqlite3/sqlite3.h
     ./third_party/sqlite3/sqlite3.c
@@ -323,12 +323,12 @@ else()
     src/vscp/common/canaldlldef.h
     src/vscp/common/vscpcanaldeviceif.h
     src/vscp/common/vscpcanaldeviceif.cpp
-    src/vscp/common/canal_xmlconfig.h
-    src/vscp/common/canal_xmlconfig.cpp
-    src/vscp/common/vscp_client_base.h
-    src/vscp/common/vscp_client_base.cpp
-    src/vscp/common/vscp_client_mqtt.h
-    src/vscp/common/vscp_client_mqtt.cpp
+    src/vscp/common/canal-xmlconfig.h
+    src/vscp/common/canal-xmlconfig.cpp
+    src/vscp/common/vscp-client-base.h
+    src/vscp/common/vscp-client-base.cpp
+    src/vscp/common/vscp-client-mqtt.h
+    src/vscp/common/vscp-client-mqtt.cpp
     ./third_party/mustache/mustache.hpp
     ./third_party/sqlite3/sqlite3.h
     ./third_party/sqlite3/sqlite3.c
@@ -400,7 +400,6 @@ if(MSVC)
         OpenSSL::SSL 
         OpenSSL::Crypto
         OpenSSL::SSL OpenSSL::Crypto
-#        websockets_shared
         ${MOSQUITTO_LIBRARIES}
         ${LIBWEBSOCKETS_LIBRARIES}
         expat::expat

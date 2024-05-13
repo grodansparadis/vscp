@@ -27,7 +27,7 @@
 #include <pch.h>
 #endif
 
-#include "vscp_client_mqtt.h"
+#include "vscp-client-mqtt.h"
 
 #include <pthread.h>
 #ifndef WIN32

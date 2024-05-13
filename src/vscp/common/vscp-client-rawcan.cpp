@@ -27,7 +27,7 @@
 #include <pch.h>
 #endif
 
-#include "vscp_client_rawcan.h"
+#include "vscp-client-rawcan.h"
 #include "vscphelper.h"
 
 ///////////////////////////////////////////////////////////////////////////////

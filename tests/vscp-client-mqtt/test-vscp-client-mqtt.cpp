@@ -26,7 +26,7 @@
 #include <iostream>
 
 #include "spdlog/spdlog.h"
-#include "vscp_client_mqtt.h"
+#include "vscp-client-mqtt.h"
 
 void test_ev_callback( vscpEvent *pev, void *pobj )
 {

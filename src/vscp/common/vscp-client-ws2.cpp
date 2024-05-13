@@ -39,7 +39,7 @@
 #include <vscphelper.h>
 // #include "civetweb.h"
 
-#include "vscp_client_ws2.h"
+#include "vscp-client-ws2.h"
 
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 

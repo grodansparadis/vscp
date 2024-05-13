@@ -60,7 +60,7 @@
 #include <expat.h>
 #include <nlohmann/json.hpp>
 
-#include <canal_macro.h>
+#include <canal-macro.h>
 #include <crc.h>
 #include <crc8.h>
 #include <vscp_aes.h>

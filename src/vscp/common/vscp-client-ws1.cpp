@@ -39,7 +39,7 @@
 #include <vscphelper.h>
 // #include "civetweb.h"
 
-#include "vscp_client_ws1.h"
+#include "vscp-client-ws1.h"
 
 /*
 static int

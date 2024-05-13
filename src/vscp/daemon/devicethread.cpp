@@ -51,12 +51,12 @@
 
 #include "devicethread.h"
 
-#include <canal_macro.h>
+#include <canal-macro.h>
 #include <controlobject.h>
 #include <devicelist.h>
 #include <level2drvdef.h>
 #include <vscp.h>
-#include <vscp_debug.h>
+#include <vscp-debug.h>
 #include <vscphelper.h>
 
 #include <mustache.hpp>
@@ -81,27 +81,23 @@ extern uint64_t gDebugLevel;
 //
 
 static void
-receive_event_callback(vscpEvent *pev, void *pobj)
+receive_event_callback(vscpEvent &ev, void *pobj)
 {
   int rv;
 
   // Check pointers
-  if (nullptr == pev) {
-    return;
-  }
-
   if (nullptr == pobj) {
     return;
   }
 
   CDeviceItem *pDeviceItem = (CDeviceItem *) pobj;
 
-  spdlog::trace("VSCP Event received. class={0} type={1}", pev->vscp_class, pev->vscp_type);
+  spdlog::trace("VSCP Event received. class={0} type={1}", ev.vscp_class, ev.vscp_type);
 
   if (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) {
 
     canalMsg msg;
-    vscp_convertEventToCanal(&msg, pev);
+    vscp_convertEventToCanal(&msg, &ev);
 
     // Use blocking method if available
     if (nullptr != pDeviceItem->m_proc_CanalBlockingSend) {
@@ -121,7 +117,7 @@ receive_event_callback(vscpEvent *pev, void *pobj)
     }
   }
   else if (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) {
-    if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, pev, 500)) {
+    if (CANAL_ERROR_SUCCESS != pDeviceItem->m_proc_VSCPWrite(pDeviceItem->m_openHandle, &ev, 500)) {
       spdlog::error("driver: mqtt_on_message - Failed to send level II event.");
     }
   }
@@ -406,7 +402,7 @@ deviceThread(void *pData)
                                            &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
     // Set event callback
-    pDeviceItem->m_mqttClient.setCallback(receive_event_callback, pDeviceItem);
+    pDeviceItem->m_mqttClient.setCallbackEv(receive_event_callback, pDeviceItem);
 
     // Connect to server
     if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {
@@ -687,7 +683,7 @@ deviceThread(void *pData)
                                            &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
     // Set event callback
-    pDeviceItem->m_mqttClient.setCallback(receive_event_callback);
+    pDeviceItem->m_mqttClient.setCallbackEv(receive_event_callback);
 
     // Connect to server
     if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {

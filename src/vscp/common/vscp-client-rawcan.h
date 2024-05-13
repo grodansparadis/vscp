@@ -27,7 +27,7 @@
 #define VSCPCLIENTRAWCAN_H__INCLUDED_
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 
 class vscpClientRawCan : public CVscpClient
 {

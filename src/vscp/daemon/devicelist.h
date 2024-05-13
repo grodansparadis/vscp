@@ -34,7 +34,7 @@
 
 #include <canaldlldef.h>
 #include <vscp.h>
-#include <vscp_client_mqtt.h>
+#include <vscp-client-mqtt.h>
 //#include <devicethread.h>
 #include <guid.h>
 #include <level2drvdef.h>

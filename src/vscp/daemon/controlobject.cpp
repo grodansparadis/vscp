@@ -79,9 +79,9 @@
 #include <randpassword.h>
 #include <version.h>
 #include <vscp.h>
-#include <vscp_client_mqtt.h>
-#include <vscp_debug.h>
-#include <vscpd_caps.h>
+#include <vscp-client-mqtt.h>
+#include <vscp-debug.h>
+#include <vscpd-caps.h>
 #include <vscphelper.h>
 
 #include <algorithm>

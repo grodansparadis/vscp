@@ -1,5 +1,5 @@
 
-#include "vscp_client_tcp.h"
+#include "vscp-client-tcp.h"
 
 
 int main()

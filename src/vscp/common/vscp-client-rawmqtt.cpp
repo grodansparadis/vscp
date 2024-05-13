@@ -28,7 +28,7 @@
 #endif
 
 #include "vscphelper.h"
-#include "vscp_client_rawmqtt.h"
+#include "vscp-client-rawmqtt.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTor

@@ -71,7 +71,7 @@
 #include "guid.h"
 #include "mdf.h"
 #include "register.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 
 #include <list>
 

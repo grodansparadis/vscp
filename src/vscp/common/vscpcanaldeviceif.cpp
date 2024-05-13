@@ -42,7 +42,7 @@
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
 #include <canal.h>
-#include <canal_macro.h>
+#include <canal-macro.h>
 #include <canaldlldef.h>
 #include <vscp.h>
 #include <vscpcanaldeviceif.h>

@@ -35,7 +35,7 @@
 #include <list>
 #include <string>
 
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CVscpClient

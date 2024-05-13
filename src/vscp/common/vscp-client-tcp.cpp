@@ -27,7 +27,7 @@
 #include <pch.h>
 #endif
 
-#include "vscp_client_tcp.h"
+#include "vscp-client-tcp.h"
 
 void
 workerThread(vscpClientTcp *pObj);

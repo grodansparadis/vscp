@@ -52,8 +52,8 @@
 #include <devicethread.h>
 #include <guid.h>
 #include <vscp.h>
-#include <vscp_client_mqtt.h>
-#include <vscp_debug.h>
+#include <vscp-client-mqtt.h>
+#include <vscp-debug.h>
 #include <vscphelper.h>
 
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11

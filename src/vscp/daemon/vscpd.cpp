@@ -59,7 +59,7 @@
 
 #endif
 
-#include "canal_macro.h"
+#include "canal-macro.h"
 #include "vscpd.h"
 #include "controlobject.h"
 #include <crc.h>

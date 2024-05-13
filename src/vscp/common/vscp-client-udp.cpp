@@ -28,7 +28,7 @@
 #endif
 
 #include "vscphelper.h"
-#include "vscp_client_udp.h"
+#include "vscp-client-udp.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTor

@@ -35,7 +35,7 @@
 #endif
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 #include <nlohmann/json.hpp>
 
 const uint32_t WS2_CONNECTION_TIMEOUT = 30000;

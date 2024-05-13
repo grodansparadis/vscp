@@ -28,7 +28,7 @@
 #endif
 
 #include "vscphelper.h"
-#include "vscp_client_multicast.h"
+#include "vscp-client-multicast.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTor

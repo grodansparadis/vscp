@@ -27,7 +27,7 @@
 #define VSCPCLIENTCANAL_H__INCLUDED_
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 #include "vscpcanaldeviceif.h"
 
 #include <pthread.h>

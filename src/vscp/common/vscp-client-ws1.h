@@ -36,7 +36,7 @@
 #endif
 
 #include "vscp.h"
-#include "vscp_client_base.h"
+#include "vscp-client-base.h"
 
 const uint32_t WS1_CONNECTION_TIMEOUT = 30000;
 const uint32_t WS1_RESPONSE_TIMEOUT   = 2000;

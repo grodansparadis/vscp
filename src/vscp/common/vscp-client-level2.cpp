@@ -62,7 +62,7 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>
-#include "vscp_client_level2.h"
+#include "vscp-client-level2.h"
 
 #include <string>
 #include <list>

@@ -54,7 +54,7 @@
 
 #include <expat.h>
 
-#include "vscp_client_socketcan.h"
+#include "vscp-client-socketcan.h"
 #include <guid.h>
 #include <vscp.h>
 #include <vscp_class.h>
