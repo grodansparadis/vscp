@@ -40,7 +40,7 @@
 #include <mdf.h>
 #include <register.h>
 #include <vscp.h>
-#include <vscp_client_base.h>
+#include <vscp-client-base.h>
 #include <vscphelper.h>
 
 #ifdef WIN32

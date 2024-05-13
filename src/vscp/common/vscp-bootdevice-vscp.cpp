@@ -31,7 +31,7 @@
 #include <winsock2.h>
 #endif
 
-#include "vscp_bootdevice_vscp.h"
+#include "vscp-bootdevice-vscp.h"
 
 #include <stdio.h>
 

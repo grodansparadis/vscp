@@ -57,8 +57,8 @@
 #include "vscp-client-socketcan.h"
 #include <guid.h>
 #include <vscp.h>
-#include <vscp_class.h>
-#include <vscp_type.h>
+#include <vscp-class.h>
+#include <vscp-type.h>
 #include <vscphelper.h>
 
 #include <fstream>

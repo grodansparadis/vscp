@@ -35,9 +35,9 @@
 #include <guid.h>
 #include <mdf.h>
 #include <vscp.h>
-#include <vscp_class.h>
-#include <vscp_client_base.h>
-#include <vscp_type.h>
+#include <vscp-class.h>
+#include <vscp-type.h>
+#include <vscp-client-base.h>
 
 #define FORMAT_REMOTEVAR_DECIMAL 0
 #define FORMAT_REMOTEVAR_HEX     1

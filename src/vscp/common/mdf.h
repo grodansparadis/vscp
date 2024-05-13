@@ -33,8 +33,8 @@
 #include <crc.h>
 #include <vscp.h>
 #include <vscphelper.h>
-#include <vscp_class.h>
-#include <vscp_type.h>
+#include <vscp-class.h>
+#include <vscp-type.h>
 
 #include <expat.h>
 

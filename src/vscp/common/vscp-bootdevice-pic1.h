@@ -34,7 +34,7 @@
 #pragma once
 
 #include "vscp.h"
-#include "vscp_bootdevice.h"
+#include "vscp-bootdevice.h"
 
 #include <string>
 

@@ -44,18 +44,18 @@
 #include <unistd.h>
 
 #include <canal.h>
-#include <canal_macro.h>
+#include <canal-macro.h>
 #include <guid.h>
 #include <hlo.h>
 #include <remotevariablecodes.h>
 #include <vscp.h>
-#include <vscp_class.h>
-#include <vscp_client_base.h>
-#include <vscp_type.h>
+#include <vscp-class.h>
+#include <vscp-type.h>
+#include <vscp-client-base.h>
 #include <vscpdatetime.h>
 #include <vscphelper.h>
 
-#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> 
 
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"

@@ -43,7 +43,7 @@
 #pragma implementation "vscp_bootdevice.h"
 #endif
 
-#include "vscp_bootdevice.h"
+#include "vscp-bootdevice.h"
 
 #include <fstream>
 #include <iostream>

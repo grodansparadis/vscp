@@ -32,7 +32,7 @@
 
 #include <register.h>
 
-#include "vscp_bootdevice_pic1.h"
+#include "vscp-bootdevice-pic1.h"
 
 #include "spdlog/fmt/bin_to_hex.h"
 // #include <spdlog/async.h>

@@ -24,7 +24,7 @@
 //
 
 #pragma once
-#include "vscp_bootdevice.h"
+#include "vscp-bootdevice.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

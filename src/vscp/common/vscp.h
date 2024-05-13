@@ -38,8 +38,8 @@
 
 #include <canal.h>
 #include <inttypes.h>
-#include <vscp_class.h>
-#include <vscp_type.h>
+#include <vscp-class.h>
+#include <vscp-type.h>
 
 #define VSCP_DEFAULT_UDP_PORT        33333
 #define VSCP_DEFAULT_TCP_PORT        9598
