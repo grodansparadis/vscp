@@ -289,8 +289,8 @@ if (WIN32)
     src/common/sockettcp.c
     src/common/vscpbase64.h
     src/common/vscpbase64.c
-    src/common/vscp_aes.h
-    src/common/vscp_aes.c
+    src/common/vscp-aes.h
+    src/common/vscp-aes.c
     src/common/crc.h
     src/common/crc.c
     src/common/crc8.h
@@ -338,8 +338,8 @@ else()
     src/common/sockettcp.c
     src/common/vscpbase64.h
     src/common/vscpbase64.c
-    src/common/vscp_aes.h
-    src/common/vscp_aes.c
+    src/common/vscp-aes.h
+    src/common/vscp-aes.c
     src/common/crc.h
     src/common/crc.c
     src/common/crc8.h

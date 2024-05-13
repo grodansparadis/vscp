@@ -63,7 +63,7 @@
 #include <canal-macro.h>
 #include <crc.h>
 #include <crc8.h>
-#include <vscp_aes.h>
+#include <vscp-aes.h>
 #include <vscpbase64.h>
 #include <vscpmd5.h>
 
