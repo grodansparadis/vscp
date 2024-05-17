@@ -140,6 +140,19 @@
    (((val) >> 24) & 0x0000000000FF0000) | (((val) >> 8) & 0x00000000FF000000) | (((val) << 8) & 0x000000FF00000000) |  \
    (((val) << 24) & 0x0000FF0000000000) | (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000))
 
+/*!
+ * @name Min/max macros
+ * @{
+ */
+#if !defined(MIN)
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#if !defined(MAX)
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+/* @} */
+
 // For platform independet non-case dependent string compare
 #ifdef _MSC_VER
 // not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw

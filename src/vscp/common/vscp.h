@@ -292,14 +292,14 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 
 /* Interface types */
 #define VSCP_INTERFACE_TYPE_UNKNOWN        0
-#define VSCP_INTERFACE_TYPE_INTERNAL       1  // Internal to daemon/server
-#define VSCP_INTERFACE_TYPE_LEVEL1DRV      2  // Level I driver
-#define VSCP_INTERFACE_TYPE_LEVEL2DRV      3  // Level II driver
-#define VSCP_INTERFACE_TYPE_CLIENT_TCPIP   4  // TCP/IP client
-#define VSCP_INTERFACE_TYPE_CLIENT_UDP     5  // UDP client
-#define VSCP_INTERFACE_TYPE_CLIENT_WEB     6  // Web server
-#define VSCP_INTERFACE_TYPE_CLIENT_WEBSOCK 7  // Websocket client
-#define VSCP_INTERFACE_TYPE_CLIENT_REST    8  // REST client
+#define VSCP_INTERFACE_TYPE_INTERNAL       1 // Internal to daemon/server
+#define VSCP_INTERFACE_TYPE_LEVEL1DRV      2 // Level I driver
+#define VSCP_INTERFACE_TYPE_LEVEL2DRV      3 // Level II driver
+#define VSCP_INTERFACE_TYPE_CLIENT_TCPIP   4 // TCP/IP client
+#define VSCP_INTERFACE_TYPE_CLIENT_UDP     5 // UDP client
+#define VSCP_INTERFACE_TYPE_CLIENT_WEB     6 // Web server
+#define VSCP_INTERFACE_TYPE_CLIENT_WEBSOCK 7 // Websocket client
+#define VSCP_INTERFACE_TYPE_CLIENT_REST    8 // REST client
 
 /* VSCP Encryption types */
 #define VSCP_ENCRYPTION_NONE           0
@@ -479,11 +479,16 @@ struct vscpMyNode {
 /* * * * Standard VSCP registers * * *  */
 
 /* Register defines above 0x7f (Level I) / 0xffffff7f (Level II)  */
+#define VSCP_STD_REGISTER_START 0x80
+
+// Alarm status (Read only)
 #define VSCP_STD_REGISTER_ALARM_STATUS 0x80
 
 #define VSCP_STD_REGISTER_MAJOR_VERSION 0x81
 #define VSCP_STD_REGISTER_MINOR_VERSION 0x82
-#define VSCP_STD_REGISTER_SUB_VERSION   0x83
+
+// Counts errors
+#define VSCP_STD_REGISTER_ERROR_COUNTER 0x83
 
 /* 0x84 - 0x88  -   User id space           */
 #define VSCP_STD_REGISTER_USER_ID 0x84
@@ -506,10 +511,11 @@ struct vscpMyNode {
 #define VSCP_STD_REGISTER_FIRMWARE_MAJOR    0x94
 #define VSCP_STD_REGISTER_FIRMWARE_MINOR    0x95
 #define VSCP_STD_REGISTER_FIRMWARE_SUBMINOR 0x96
+#define VSCP_STD_REGISTER_FIRMWARE_RELEASE  0x96
 
 #define VSCP_STD_REGISTER_BOOT_LOADER 0x97
-#define VSCP_STD_REGISTER_BUFFER_SIZE 0x98
-#define VSCP_STD_REGISTER_PAGES_COUNT 0x99
+#define VSCP_STD_REGISTER_BUFFER_SIZE 0x98 // Deprecated
+#define VSCP_STD_REGISTER_PAGES_COUNT 0x99 // Deprecated
 
 /* Unsigned 32-bit integer for family code */
 #define VSCP_STD_REGISTER_FAMILY_CODE 0x9A
