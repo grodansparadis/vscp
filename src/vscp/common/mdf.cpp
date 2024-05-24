@@ -54,7 +54,7 @@
 #include <expat.h>
 #include <maddy/parser.h> // Markdown -> HTML
 #include <mustache.hpp>
-#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+#include <nlohmann/json.hpp> 
 
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"

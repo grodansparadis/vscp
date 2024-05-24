@@ -68,25 +68,35 @@
 
 /*  byte swapping */
 
+#if !defined(VSCP_UINT16_SWAP_ALWAYS)
 #define VSCP_UINT16_SWAP_ALWAYS(val)                                                                                   \
   ((uint16_t) ((((uint16_t) (val) & (uint16_t) 0x00ffU) << 8) | (((uint16_t) (val) & (uint16_t) 0xff00U) >> 8)))
+#endif
 
+#if !defined(VSCP_INT16_SWAP_ALWAYS)
 #define VSCP_INT16_SWAP_ALWAYS(val)                                                                                    \
   ((int16_t) ((((uint16_t) (val) & (uint16_t) 0x00ffU) << 8) | (((uint16_t) (val) & (uint16_t) 0xff00U) >> 8)))
+#endif
 
+#if !defined(VSCP_UINT32_SWAP_ALWAYS)
 #define VSCP_UINT32_SWAP_ALWAYS(val)                                                                                   \
   ((uint32_t) ((((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) |                                                   \
                (((uint32_t) (val) & (uint32_t) 0x0000ff00U) << 8) |                                                    \
                (((uint32_t) (val) & (uint32_t) 0x00ff0000U) >> 8) |                                                    \
                (((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)))
+#endif
 
+#if !defined(VSCP_INT32_SWAP_ALWAYS)
 #define VSCP_INT32_SWAP_ALWAYS(val)                                                                                    \
   ((int32_t) ((((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) |                                                    \
               (((uint32_t) (val) & (uint32_t) 0x0000ff00U) << 8) |                                                     \
               (((uint32_t) (val) & (uint32_t) 0x00ff0000U) >> 8) |                                                     \
               (((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)))
+#endif
+
 /*  machine specific byte swapping */
 
+#if !defined(VSCP_UINT64_SWAP_ALWAYS)
 #define VSCP_UINT64_SWAP_ALWAYS(val)                                                                                   \
   ((uint64_t) ((((uint64_t) (val) & (uint64_t) (0x00000000000000ff)) << 56) |                                          \
                (((uint64_t) (val) & (uint64_t) (0x000000000000ff00)) << 40) |                                          \
@@ -96,7 +106,9 @@
                (((uint64_t) (val) & (uint64_t) (0x0000ff0000000000)) >> 24) |                                          \
                (((uint64_t) (val) & (uint64_t) (0x00ff000000000000)) >> 40) |                                          \
                (((uint64_t) (val) & (uint64_t) (0xff00000000000000)) >> 56)))
+#endif
 
+#if !defined(VSCP_INT64_SWAP_ALWAYS)
 #define VSCP_INT64_SWAP_ALWAYS(val)                                                                                    \
   ((int64_t) ((((uint64_t) (val) & (uint64_t) (0x00000000000000ff)) << 56) |                                           \
               (((uint64_t) (val) & (uint64_t) (0x000000000000ff00)) << 40) |                                           \
@@ -106,8 +118,9 @@
               (((uint64_t) (val) & (uint64_t) (0x0000ff0000000000)) >> 24) |                                           \
               (((uint64_t) (val) & (uint64_t) (0x00ff000000000000)) >> 40) |                                           \
               (((uint64_t) (val) & (uint64_t) (0xff00000000000000)) >> 56)))
-
+#endif
 #ifdef __BIG_ENDIAN__
+#if !defined(VSCP_UINT16_SWAP_ON_BE)
 #define VSCP_UINT16_SWAP_ON_BE(val) VSCP_UINT16_SWAP_ALWAYS(val)
 #define VSCP_INT16_SWAP_ON_BE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_LE(val) (val)
@@ -120,7 +133,9 @@
 #define VSCP_UINT64_SWAP_ON_LE(val) (val)
 #define VSCP_INT64_SWAP_ON_BE(val)  VSCP_INT64_SWAP_ALWAYS(val)
 #define VSCP_INT64_SWAP_ON_LE(val)  (val)
+#endif
 #else
+#if !defined(VSCP_UINT16_SWAP_ON_LE)
 #define VSCP_UINT16_SWAP_ON_LE(val) VSCP_UINT16_SWAP_ALWAYS(val)
 #define VSCP_INT16_SWAP_ON_LE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_BE(val) (val)
@@ -134,11 +149,14 @@
 #define VSCP_INT64_SWAP_ON_LE(val)  VSCP_INT64_SWAP_ALWAYS(val)
 #define VSCP_INT64_SWAP_ON_BE(val)  (val)
 #endif
+#endif
 
+#if !defined(Swap8Bytes)
 #define Swap8Bytes(val)                                                                                                \
   ((((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) |                                       \
    (((val) >> 24) & 0x0000000000FF0000) | (((val) >> 8) & 0x00000000FF000000) | (((val) << 8) & 0x000000FF00000000) |  \
    (((val) << 24) & 0x0000FF0000000000) | (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000))
+#endif
 
 /*!
  * @name Min/max macros

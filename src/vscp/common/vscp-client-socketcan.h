@@ -120,6 +120,12 @@ public:
   virtual bool isConnected(void);
 
   /*!
+    Set state of connected flag
+    @param b True for connected, false for not connected.
+  */
+  void setConnected(bool b=true) {m_bConnected = b;};
+
+  /*!
       Send VSCP event to remote host.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */

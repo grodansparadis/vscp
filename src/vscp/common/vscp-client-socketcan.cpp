@@ -168,7 +168,7 @@ vscpClientSocketCan::~vscpClientSocketCan()
 int
 vscpClientSocketCan::init(const std::string &interface, const std::string &guid, unsigned long flags, uint32_t timeout)
 {
-  m_interface = interface;
+   m_interface = interface;
   m_guid.getFromString(guid);
   m_flags = flags;
   setResponseTimeout(DEAULT_RESPONSE_TIMEOUT); // Response timeout 3 ms
@@ -393,9 +393,7 @@ vscpClientSocketCan::connect(void)
   if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
     spdlog::critical("SOCKETCAN client: Failed to start workerthread");
     return false;
-  }
-
-  m_bConnected = true;
+  }  
 
   return rv;
 }
@@ -879,6 +877,9 @@ workerThread(void *pData)
         return NULL;
       }
     }
+
+    // Mark as connected
+    pObj->setConnected(true);
 
     pthread_mutex_unlock(&pObj->m_mutexSocket);
 
