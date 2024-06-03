@@ -33,7 +33,7 @@ class vscpClientMulticast : public CVscpClient {
 
 public:
   vscpClientMulticast();
-  ~vscpClientMulticast();
+  virtual ~vscpClientMulticast();
 
   /*!
       Connect to remote host

@@ -45,7 +45,7 @@ class vscpClientWs1 : public CVscpClient {
 
 public:
   vscpClientWs1();
-  ~vscpClientWs1();
+  virtual ~vscpClientWs1();
 
   /*!
       Init client

@@ -40,8 +40,8 @@
 class vscpClientLevel2 : public CVscpClient {
 
 public:
-  vscpClientLevel2();
-  ~vscpClientLevel2();
+  virtual vscpClientLevel2();
+  virtual ~vscpClientLevel2();
 
   static const uint32_t FLAG_ENABLE_DEBUG = 0x80000000; // Debug mode
 

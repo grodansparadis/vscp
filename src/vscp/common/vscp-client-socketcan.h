@@ -74,7 +74,7 @@ class vscpClientSocketCan : public CVscpClient {
 
 public:
   vscpClientSocketCan();
-  ~vscpClientSocketCan();
+  virtual ~vscpClientSocketCan();
 
   // Socketcan flags
   const u_int32_t sockletcan_flag_fd_enable = 0x00008000; // FD frames will be handled

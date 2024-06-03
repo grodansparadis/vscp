@@ -39,7 +39,7 @@ class vscpClientCanal : public CVscpClient {
 
 public:
   vscpClientCanal();
-  ~vscpClientCanal();
+  virtual ~vscpClientCanal();
 
   /*!
       Initialize the CANAL client

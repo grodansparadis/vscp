@@ -55,7 +55,7 @@ class CVscpClient {
 
 public:
   CVscpClient();
-  ~CVscpClient();
+  virtual ~CVscpClient();
 
   /*!
       vscp-client class types
@@ -78,15 +78,12 @@ public:
     NONE = 0,
     TCPIP,
     CANAL,
-    LEVEL2,
     SOCKETCAN,
     WS1,
     WS2,
     MQTT,
     UDP,
     MULTICAST,
-    RAWCAN,
-    RAWMQTT
   } connType;
 
   /*!

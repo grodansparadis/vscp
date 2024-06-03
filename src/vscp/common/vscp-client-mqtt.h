@@ -208,7 +208,7 @@ public:
 #else
   publishTopic(const std::string &topic, enumMqttMsgFormat format = jsonfmt, int qos = 0, bool bretain = false);
 #endif
-  ~publishTopic();
+  virtual ~publishTopic();
 
   /// Getters/Setters for topic
   std::string getTopic(void) { return m_topic; };

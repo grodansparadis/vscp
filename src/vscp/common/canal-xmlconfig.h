@@ -1062,7 +1062,7 @@ class canalXmlConfig
     std::string getDescription(void) { return m_description; }
 
     // Setters for level
-    void setLevel(uint8_t level) { m_level = m_level; };
+    void setLevel(uint8_t level) { m_level = level; };
     uint8_t getLevel(void) { return m_level; }
 
     // Setters for bBlocking

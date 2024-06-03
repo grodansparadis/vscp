@@ -92,7 +92,7 @@ public:
                    uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   /// Dtor
-  ~CBootDevice_VSCP(void);
+  virtual ~CBootDevice_VSCP(void);
 
   // Memory Types
   enum mem_type {

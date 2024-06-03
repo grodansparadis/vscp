@@ -86,7 +86,7 @@ public:
                    uint32_t timeout                                      = REGISTER_DEFAULT_TIMEOUT);
 
   // Dtor
-  ~CBootDevice_PIC1(void);
+  virtual ~CBootDevice_PIC1(void);
 
   // Used VSCP commands
   static const uint8_t VSCP_PIC1_READ_REGISTER        = 0x09;

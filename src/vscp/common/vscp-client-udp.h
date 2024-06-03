@@ -33,7 +33,7 @@ class vscpClientUdp : public CVscpClient {
 
 public:
   vscpClientUdp();
-  ~vscpClientUdp();
+  virtual ~vscpClientUdp();
 
   /*!
       Connect to remote host

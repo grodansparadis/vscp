@@ -36,7 +36,7 @@ class vscpClientTcp : public CVscpClient {
 
 public:
   vscpClientTcp();
-  ~vscpClientTcp();
+  virtual ~vscpClientTcp();
 
   /*!
       Initialize the tcp client
