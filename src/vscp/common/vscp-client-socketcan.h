@@ -293,7 +293,7 @@ public:
   // ------------------------------------------------------------------------
 
   // Event lists
-  std::list<vscpEvent *> m_sendList;
+  //std::list<vscpEvent *> m_sendList;
   std::list<vscpEvent *> m_receiveList;
 
   /*!

@@ -21,6 +21,6 @@ BreakBeforeBraces: Stroustrup
 SpaceAfterCStyleCast: true
 AllowShortFunctionsOnASingleLine: Inline
 BreakBeforeBinaryOperators: None
-AllowShortBlocksOnASingleLine: true
+#AllowShortBlocksOnASingleLine: true
 
 # google-readability-braces-around-statements
