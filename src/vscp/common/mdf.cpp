@@ -4220,9 +4220,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           return;
         }
 
-        // pmdf->m_list_register.push_back(gpRegisterStruct);
-        // Moved to end
-
         // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
 
@@ -4348,7 +4345,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
         } // Register attributes
 
-        //pmdf->m_list_register.push_back(gpRegisterStruct);
         /*!
           Apply pyjamas coloring if at least one of the pyjamas colors are set.
         */
