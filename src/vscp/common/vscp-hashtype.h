@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2024-04-08 08:39:20.640516
+                        Generated: 2024-08-23 16:27:27.315130
 */
  
 
@@ -878,8 +878,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,5) ] = _("VSCP_TYPE_DISPLAY_SHOW_DISPLAY_BUFFER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,6) ] = _("VSCP_TYPE_DISPLAY_SET_DISPLAY_BUFFER_PARAM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,32) ] = _("VSCP_TYPE_DISPLAY_SHOW_TEXT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(102,48) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED");
-	m_hashType[ MAKE_CLASSTYPE_LONG(102,49) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED_COLOR");
+	m_hashType[ MAKE_CLASSTYPE_LONG(102,48) ] = _("VSCP_TYPE_DISPLAY_SET_LED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(102,49) ] = _("VSCP_TYPE_DISPLAY_SET_COLOR");
 
 	//  CLASS1.IR = 110  -  IR Remote I/f
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,0) ] = _("VSCP_TYPE_REMOTE_GENERAL");
@@ -1945,8 +1945,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,5) ] = _("VSCP_TYPE_DISPLAY_SHOW_DISPLAY_BUFFER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,6) ] = _("VSCP_TYPE_DISPLAY_SET_DISPLAY_BUFFER_PARAM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,32) ] = _("VSCP_TYPE_DISPLAY_SHOW_TEXT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(614,48) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED");
-	m_hashType[ MAKE_CLASSTYPE_LONG(614,49) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED_COLOR");
+	m_hashType[ MAKE_CLASSTYPE_LONG(614,48) ] = _("VSCP_TYPE_DISPLAY_SET_LED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(614,49) ] = _("VSCP_TYPE_DISPLAY_SET_COLOR");
 
 	//  CLASS2.LEVEL1.IR = 622  -  Class2 Level I IR
 	// 	Event types is the same as  CLASS1.IR = 110  -  IR Remote I/f

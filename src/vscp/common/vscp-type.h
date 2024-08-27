@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2024-04-08 08:39:19.726474
+                        Generated: 2024-08-23 16:27:26.321269
 */
  
 #ifndef VSCP_TYPE_H
@@ -595,8 +595,8 @@
 #define VSCP_TYPE_DISPLAY_SHOW_DISPLAY_BUFFER       5   /* Show Display Buffer */
 #define VSCP_TYPE_DISPLAY_SET_DISPLAY_BUFFER_PARAM  6   /* Set Display Buffer Parameter */
 #define VSCP_TYPE_DISPLAY_SHOW_TEXT                 32  /* Show Text */
-#define VSCP_TYPE_DISPLAY_SHOW_LED                  48  /* Set LED */
-#define VSCP_TYPE_DISPLAY_SHOW_LED_COLOR            49  /* Set RGB Color */
+#define VSCP_TYPE_DISPLAY_SET_LED                   48  /* Set LED */
+#define VSCP_TYPE_DISPLAY_SET_COLOR                 49  /* Set RGB Color */
     
 /*  CLASS1.IR = 110  -  IR Remote I/f */
 #define VSCP_TYPE_REMOTE_GENERAL                    0   /* General event */
