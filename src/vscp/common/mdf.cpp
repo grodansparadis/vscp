@@ -2161,14 +2161,14 @@ CMDF::save_xml(const std::string &path)
           fout << "default=\"" << (int) pbit->getDefault() << "\" ";
           fout << "min=\"" << (int) pbit->getMin() << "\" ";
           fout << "max=\"" << (int) pbit->getMax() << "\" ";
-          fout << "access=\"" << pbit->getAccessStr() << "\" >" << std::endl;
+          fout << "access=\"" << pbit->getAccessStr() << "\" > " << std::endl;
 
           writeMap_xml(fout, pbit->getMapDescription(), "description");
           writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
 
           std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
           if (pvalues->size()) {
-            fout << "<valuelist> ";
+            fout << "<valuelist> " << std::endl;
             for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
               CMDF_Value *pvalue = *it;
               fout << "<item ";
@@ -2176,18 +2176,18 @@ CMDF::save_xml(const std::string &path)
               fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
               writeMap_xml(fout, pvalue->getMapDescription(), "description");
               writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-              fout << "</item> ";
+              fout << "</item> " << std::endl;
             }
             fout << "</valuelist> " << std::endl;
           }
 
-          fout << "</bit>" << std::endl; // Bits
+          fout << "</bit> " << std::endl; // Bits
         }                                // for bits
       }                                  // pbits size
 
       std::deque<CMDF_Value *> *pvalues = preg->getListValues();
       if (pvalues->size()) {
-        fout << "<valuelist> ";
+        fout << "<valuelist> " << std::endl;
         for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
           CMDF_Value *pvalue = *it;
           fout << "<item ";
@@ -2195,7 +2195,7 @@ CMDF::save_xml(const std::string &path)
           fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
           writeMap_xml(fout, pvalue->getMapDescription(), "description");
           writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-          fout << "</item> ";
+          fout << "</item> " << std::endl;
         }
         fout << "</valuelist> " << std::endl;
       }
@@ -2250,7 +2250,7 @@ CMDF::save_xml(const std::string &path)
 
         std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
         if (pvalues->size()) {
-          fout << "<valuelist> ";
+          fout << "<valuelist> " << std::endl;
           for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
             CMDF_Value *pvalue = *it;
             fout << "<item ";
@@ -2258,7 +2258,7 @@ CMDF::save_xml(const std::string &path)
             fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
             writeMap_xml(fout, pvalue->getMapDescription(), "description");
             writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-            fout << "</item> ";
+            fout << "</item> " << std::endl;
           }
           fout << "</valuelist> " << std::endl;
         }
@@ -2269,7 +2269,7 @@ CMDF::save_xml(const std::string &path)
 
     std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
     if (pvalues->size()) {
-      fout << "<valuelist> ";
+      fout << "<valuelist> " << std::endl;
       for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
         CMDF_Value *pvalue = *it;
         fout << "<item ";
@@ -2277,7 +2277,7 @@ CMDF::save_xml(const std::string &path)
         fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
         writeMap_xml(fout, pvalue->getMapDescription(), "description");
         writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-        fout << "</item> ";
+        fout << "</item> " << std::endl;
       }
       fout << "</valuelist> " << std::endl;
     }
@@ -2364,7 +2364,7 @@ CMDF::save_xml(const std::string &path)
 
                 std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
                 if (pvalues->size()) {
-                  fout << "<valuelist> ";
+                  fout << "<valuelist> " << std::endl;
                   for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
                     CMDF_Value *pvalue = *it;
                     fout << "<item ";
@@ -2372,7 +2372,7 @@ CMDF::save_xml(const std::string &path)
                     fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
                     writeMap_xml(fout, pvalue->getMapDescription(), "description");
                     writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                    fout << "</item> ";
+                    fout << "</item> " << std::endl;
                   }
                   fout << "</valuelist> " << std::endl;
                 }
@@ -2383,7 +2383,7 @@ CMDF::save_xml(const std::string &path)
 
             std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
             if (pvalues->size()) {
-              fout << "<valuelist> ";
+              fout << "<valuelist> " << std::endl;
               for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
                 CMDF_Value *pvalue = *it;
                 fout << "<item ";
@@ -2391,7 +2391,7 @@ CMDF::save_xml(const std::string &path)
                 fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
                 writeMap_xml(fout, pvalue->getMapDescription(), "description");
                 writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                fout << "</item> ";
+                fout << "</item> " << std::endl;
               }
               fout << "</valuelist> " << std::endl;
             }
@@ -2452,7 +2452,7 @@ CMDF::save_xml(const std::string &path)
 
               std::deque<CMDF_Value *> *pvalues = pdata->getListValues();
               if (pvalues->size()) {
-                fout << "<valuelist> ";
+                fout << "<valuelist> " << std::endl;
                 for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
                   CMDF_Value *pvalue = *it;
                   fout << "<item ";
@@ -2460,7 +2460,7 @@ CMDF::save_xml(const std::string &path)
                   fout << "value=\"" << pvalue->getValue() << "\" >" << std::endl;
                   writeMap_xml(fout, pvalue->getMapDescription(), "description");
                   writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                  fout << "</item> ";
+                  fout << "</item> " << std::endl;
                 }
                 fout << "</valuelist> " << std::endl;
               }
