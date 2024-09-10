@@ -655,6 +655,8 @@ struct vscpMyNode {
 #define VSCP_ERROR_INVALID_FRAME      63 /* A protocol has wrong format */
 #define VSCP_ERROR_SIZE               64 /* The size is wring */
 #define VSCP_ERROR_NACK               65 /* NACK received */
+#define VSCP_ERROR_READ_ERROR         66 /* Error when reading data */
+#define VSCP_ERROR_READ               66 /* Error when reading data */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)
