@@ -1452,7 +1452,7 @@ CUserRegisters::init(CVscpClient &client,
     std::map<uint8_t, uint8_t> registers;
     m_registerPageMap[page] = new CRegisterPage(m_level, page);
     rv =
-      vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, page, 0, 127, registers, statusCallback, timeout);
+      vscp_readLevel1RegisterBlock(client, guidNode, guidInterface, page, 0, 128, registers, statusCallback, timeout);
     if (VSCP_ERROR_SUCCESS != rv) {
       return rv;
     }
