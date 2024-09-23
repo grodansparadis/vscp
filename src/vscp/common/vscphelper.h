@@ -66,6 +66,11 @@
 #include <vscp-class.h>
 #include <vscp-type.h>
 
+// For windows
+#ifndef CAN_MTU
+#define CAN_MTU 8         // TODO
+#endif
+
 /*  byte swapping */
 
 #if !defined(VSCP_UINT16_SWAP_ALWAYS)

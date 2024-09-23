@@ -130,7 +130,7 @@ typedef struct structCanalMsgFD {
   uint32_t timestamp; /* Relative time stamp for package in microseconds */
   uint8_t _reserved[7];
   uint8_t sizeData;                             /* Data size 0-8 (fd: 0-15) */
-  uint8_t data[64] __attribute__((aligned(8))); /* CAN Data	 */
+  uint8_t data[64] /*__attribute__((aligned(8)))*/; /* CAN Data	 */
 } canalMsgFD;
 
 typedef canalMsgFD *PCANALMSGFD;
