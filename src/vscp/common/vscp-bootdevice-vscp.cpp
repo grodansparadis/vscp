@@ -111,93 +111,93 @@ CBootDevice_VSCP::deviceInfo(void)
   uint32_t max;
 
   // * * * Device * * *
-  oss << "<b><u>Device</u></b><br>";
-  oss << "<b>nodeid :</b><font color=\"#005CB9\">";
+  oss << std::string("<b><u>Device</u></b><br>");
+  oss << std::string("<b>nodeid :</b><font color=\"#005CB9\">");
   oss << m_nodeid;
-  oss << "</font><br>";
-  oss << "<b>GUID :</b><font color=\"#005CB9\">";
+  oss << std::string("</font><br>");
+  oss << std::string("<b>GUID :</b><font color=\"#005CB9\">");
   oss << m_guid.toString();
-  oss << "</font><br>";
-  oss << "<b>Interface :</b><font color=\"#005CB9\">";
+  oss << std::string("</font><br>");
+  oss << std::string("<b>Interface :</b><font color=\"#005CB9\">");
   oss << m_guidif.toString();
-  oss << "</font><br>";
+  oss << std::string("</font><br>");
 
   // * * * Flash Memory * * *
   getMinMaxForRange(MEM_CODE_START, MEM_CODE_END, &min, &max);
-  oss << "<b><u>Flash Memory</u></b><br>";
-  oss << "<b>Start :</b><font color=\"#005CB9\">";
+  oss << std::string("<b><u>Flash Memory</u></b><br>");
+  oss << std::string("<b>Start :</b><font color=\"#005CB9\">");
   oss << std::hex << std::setw(8) << std::setfill('0') << min;
-  oss << "</font><b> End :</b><font color=\"#005CB9\">";
+  oss << std::string("</font><b> End :</b><font color=\"#005CB9\">");
   oss << std::hex << std::setw(8) << std::setfill('0') << max;
   if (max > min) {
-    oss << "<font color=\"#348017\">Will be programmed</font><br>";
+    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
   }
   else {
-    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
+    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
   }
-  oss << "<br><br>";
+  oss << std::string("<br><br>");
 
   // * * * UserID Memory * * *
   getMinMaxForRange(MEM_USERID_START, MEM_CODE_END, &min, &max);
-  oss << "<b><u>UserID Memory</u></b><br>";
-  oss << "<b>Start :</b>";
+  oss << std::string("<b><u>UserID Memory</u></b><br>");
+  oss << std::string("<b>Start :</b>");
 
-  oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
+  oss << std::string("<font color=\"#005CB9\">");
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
 
-  oss << "<b> End :</b>";
+  oss << std::string("<b> End :</b>");
 
-  oss << "<font color=\"#005CB9\">";
+  oss << std::string("<font color=\"#005CB9\">");
   oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
 
   if (max > min) {
-    oss << "<font color=\"#348017\">Will be programmed</font><br>";
+    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
   }
   else {
-    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
+    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
   }
-  oss << "<br><br>";
+  oss << std::string("<br><br>");
 
   // * * * Config Memory * * *
   getMinMaxForRange(MEM_CONFIG_START, MEM_CONFIG_END, &min, &max);
-  oss << "<b><u>Config Memory</u></b><br>";
-  oss << "<b>Start :</b>";
+  oss << std::string("<b><u>Config Memory</u></b><br>");
+  oss << std::string("<b>Start :</b>");
 
-  oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
+  oss << std::string("<font color=\"#005CB9\">");
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
 
-  oss << "<b> End :</b>";
+  oss << std::string("<b> End :</b>");
 
-  oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
+  oss << std::string("<font color=\"#005CB9\">");
+  oss << std::hex << std::setw(8) << std::setfill('0') << max << std::string("</font>");
 
   if (max > min) {
-    oss << "<font color=\"#348017\">Will be programmed</font><br>";
+    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
   }
   else {
-    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
+    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
   }
-  oss << "<br><br>";
+  oss << std::string("<br><br>");
 
   // * * * EEPROM * * *
   getMinMaxForRange(MEM_EEPROM_START, MEM_EEPROM_END, &min, &max);
-  oss << "<b><u>EEPROM Memory</u></b><br>";
-  oss << "<B>Start :</b>";
+  oss << std::string("<b><u>EEPROM Memory</u></b><br>");
+  oss << std::string("<B>Start :</b>");
 
-  oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
-  oss << "<b> End :</b>";
+  oss << std::string("<font color=\"#005CB9\">");
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
+  oss << std::string("<b> End :</b>");
 
-  oss << "<font color=\"#005CB9\">";
-  oss << std::hex << std::setw(8) << std::setfill('0') << PRIdMAX << "</font>";
+  oss << std::string("<font color=\"#005CB9\">");
+  oss << std::hex << std::setw(8) << std::setfill('0') << PRIdMAX << std::string("</font>");
 
   if (max > min) {
-    oss << "<font color=\"#348017\">Will be programmed</font><br>";
+    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
   }
   else {
-    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
+    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
   }
-  oss << "<br><br>";
+  oss << std::string("<br><br>");
 
   return oss.str();
 }
