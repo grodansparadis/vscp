@@ -31,6 +31,7 @@
 #define _POSIX
 
 #ifdef WIN32
+#include <winsock2.h>
 #include <nb30.h>
 #include <pch.h>
 #endif
