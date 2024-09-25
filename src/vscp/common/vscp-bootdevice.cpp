@@ -43,15 +43,21 @@
 #pragma implementation "vscp_bootdevice.h"
 #endif
 
-#include "vscp-bootdevice.h"
+#ifdef WIN32
+#include <winsock2.h>
+#endif
 
-#include <fstream>
-#include <iostream>
+#include "vscp-bootdevice.h"
 
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+
+#include <fstream>
+#include <iostream>
+#include <iomanip> 
+#include <sstream> 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Ctor
@@ -155,8 +161,8 @@ int
 CBootDevice::loadIntelHexFile(const std::string &path)
 {
   char szline[2048];
-  char buf[16];
-  char *endptr;
+  //char buf[16];
+  //char *endptr;
   std::ifstream hexfile;
   uint16_t lowaddr     = 0; // Low part of address
   uint16_t highaddr    = 0; // High part if address
@@ -183,7 +189,7 @@ CBootDevice::loadIntelHexFile(const std::string &path)
     if (':' == szline[0]) {
 
       uint8_t linebuf[1024];
-      int linecnt = vscp_hexStr2ByteArray(linebuf, sizeof(linebuf), (szline + 1));
+      size_t linecnt = vscp_hexStr2ByteArray(linebuf, sizeof(linebuf), (szline + 1));
       // Length must be at least cnt + addr + type + sum = 5
       if (linecnt < 5) {
         spdlog::error("Load intel hex: Line length is wrong cnt={%0} '{%1}'", cnt, szline);

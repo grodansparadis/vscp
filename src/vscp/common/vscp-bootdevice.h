@@ -283,7 +283,7 @@ protected:
   cguid m_ourguid;
 
   /// node id for device
-  uint8_t m_nodeid;
+  uint16_t m_nodeid;
 
   /*!
       GUID for node (if used)

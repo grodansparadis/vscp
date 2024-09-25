@@ -606,7 +606,9 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_mapMqttIntOptions["receive-maximum"]  = 20;
   m_mapMqttIntOptions["send-maximum"]     = 20;
 
+#ifndef WIN32
   m_tid                 = 0;           // pthread
+#endif  
   m_bConnected          = false;       // Not connected
   m_bJsonMeasurementAdd = true;        // Add measurement block to JSON publish event
   m_bindInterface       = "";          // No bind interface

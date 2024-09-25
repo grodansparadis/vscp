@@ -43,6 +43,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <iostream>
+#include <iomanip> 
+#include <sstream>
+
 CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
                                    uint8_t nodeid,
                                    std::function<void(int, const char *)> statusCallback,
@@ -111,93 +115,93 @@ CBootDevice_VSCP::deviceInfo(void)
   uint32_t max;
 
   // * * * Device * * *
-  oss << std::string("<b><u>Device</u></b><br>");
-  oss << std::string("<b>nodeid :</b><font color=\"#005CB9\">");
+  oss << "<b><u>Device</u></b><br>";
+  oss << "<b>nodeid :</b><font color=\"#005CB9\">";
   oss << m_nodeid;
-  oss << std::string("</font><br>");
-  oss << std::string("<b>GUID :</b><font color=\"#005CB9\">");
+  oss << "</font><br>";
+  oss << "<b>GUID :</b><font color=\"#005CB9\">";
   oss << m_guid.toString();
-  oss << std::string("</font><br>");
-  oss << std::string("<b>Interface :</b><font color=\"#005CB9\">");
+  oss << "</font><br>";
+  oss << "<b>Interface :</b><font color=\"#005CB9\">";
   oss << m_guidif.toString();
-  oss << std::string("</font><br>");
+  oss << "</font><br>";
 
   // * * * Flash Memory * * *
   getMinMaxForRange(MEM_CODE_START, MEM_CODE_END, &min, &max);
-  oss << std::string("<b><u>Flash Memory</u></b><br>");
-  oss << std::string("<b>Start :</b><font color=\"#005CB9\">");
+  oss << "<b><u>Flash Memory</u></b><br>";
+  oss << "<b>Start :</b><font color=\"#005CB9\">";
   oss << std::hex << std::setw(8) << std::setfill('0') << min;
-  oss << std::string("</font><b> End :</b><font color=\"#005CB9\">");
+  oss << "</font><b> End :</b><font color=\"#005CB9\">";
   oss << std::hex << std::setw(8) << std::setfill('0') << max;
   if (max > min) {
-    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
+    oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
-    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
+    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
   }
-  oss << std::string("<br><br>");
+  oss << "<br><br>";
 
   // * * * UserID Memory * * *
   getMinMaxForRange(MEM_USERID_START, MEM_CODE_END, &min, &max);
-  oss << std::string("<b><u>UserID Memory</u></b><br>");
-  oss << std::string("<b>Start :</b>");
+  oss << "<b><u>UserID Memory</u></b><br>";
+  oss << "<b>Start :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
+  oss << "<font color=\"#005CB9\">";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
 
-  oss << std::string("<b> End :</b>");
+  oss << "<b> End :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
+  oss << "<font color=\"#005CB9\">";
   oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
 
   if (max > min) {
-    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
+    oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
-    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
+    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
   }
-  oss << std::string("<br><br>");
+  oss << "<br><br>";
 
   // * * * Config Memory * * *
   getMinMaxForRange(MEM_CONFIG_START, MEM_CONFIG_END, &min, &max);
-  oss << std::string("<b><u>Config Memory</u></b><br>");
-  oss << std::string("<b>Start :</b>");
+  oss << "<b><u>Config Memory</u></b><br>";
+  oss << "<b>Start :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
+  oss << "<font color=\"#005CB9\">";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
 
-  oss << std::string("<b> End :</b>");
+  oss << "<b> End :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
-  oss << std::hex << std::setw(8) << std::setfill('0') << max << std::string("</font>");
+  oss << "<font color=\"#005CB9\">";
+  oss << std::hex << std::setw(8) << std::setfill('0') << max << "</font>";
 
   if (max > min) {
-    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
+    oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
-    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
+    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
   }
-  oss << std::string("<br><br>");
+  oss << "<br><br>";
 
   // * * * EEPROM * * *
   getMinMaxForRange(MEM_EEPROM_START, MEM_EEPROM_END, &min, &max);
-  oss << std::string("<b><u>EEPROM Memory</u></b><br>");
-  oss << std::string("<B>Start :</b>");
+  oss << "<b><u>EEPROM Memory</u></b><br>";
+  oss << "<B>Start :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
-  oss << std::hex << std::setw(8) << std::setfill('0') << min << std::string("</font>");
-  oss << std::string("<b> End :</b>");
+  oss << "<font color=\"#005CB9\">";
+  oss << std::hex << std::setw(8) << std::setfill('0') << min << "</font>";
+  oss << "<b> End :</b>";
 
-  oss << std::string("<font color=\"#005CB9\">");
-  oss << std::hex << std::setw(8) << std::setfill('0') << PRIdMAX << std::string("</font>");
+  oss << "<font color=\"#005CB9\">";
+  oss << std::hex << std::setw(8) << std::setfill('0') << PRIdMAX << "</font>";
 
   if (max > min) {
-    oss << std::string("<font color=\"#348017\">Will be programmed</font><br>");
+    oss << "<font color=\"#348017\">Will be programmed</font><br>";
   }
   else {
-    oss << std::string("<font color=\"#F6358A\">Will not be programmed</font><br>");
+    oss << "<font color=\"#F6358A\">Will not be programmed</font><br>";
   }
-  oss << std::string("<br><br>");
+  oss << "<br><br>";
 
   return oss.str();
 }
@@ -256,7 +260,7 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFi
   m_stdRegs.getGUID(node_guid);
 
   ex.sizeData = 8;
-  ex.data[0]  = m_nodeid;             // Nickname to read register from
+  ex.data[0]  = (uint8_t)m_nodeid;             // Nickname to read register from
   ex.data[1]  = VSCP_BOOTLOADER_VSCP; // VSCP bootloader algorithm
   ex.data[2]  = node_guid.getAt(0);
   ex.data[3]  = node_guid.getAt(3);
@@ -456,7 +460,7 @@ int
 CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
 {
   int rv;
-  vscpEventEx ex;
+  //vscpEventEx ex;
   cguid guid;
   uint32_t nChunks;
 
@@ -504,10 +508,10 @@ int
 CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
-  vscpEventEx ex;
+  //vscpEventEx ex;
 
   uint32_t progress = 0;
-  uint32_t addr;
+  //uint32_t addr;
   std::string strStatus;
 
   m_checksum = 0;
@@ -638,7 +642,7 @@ CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallba
 int
 CBootDevice_VSCP::deviceReboot(void)
 {
-  int rv;
+  //int rv;
 
   return VSCP_ERROR_SUCCESS;
 }
