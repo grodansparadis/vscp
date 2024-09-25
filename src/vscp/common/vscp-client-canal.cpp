@@ -358,7 +358,7 @@ int
 vscpClientCanal::receive(canalMsg &msg)
 {
   int rv;
-  canalMsg canalMsg;
+  //canalMsg canalMsg;
   uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   spdlog::debug("CANAL CLIENT: Poll for event ex.");

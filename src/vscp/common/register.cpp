@@ -568,7 +568,7 @@ vscp_scanForDevices(CVscpClient &client,
     */
     if (nullptr != statusCallback) {
       if ((vscp_getMsTimeStamp() - callbackTime) > 500) {
-        statusCallback(found.size());
+        statusCallback((int)found.size());
         callbackTime = vscp_getMsTimeStamp();
       }
     }
@@ -619,7 +619,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
   // Send reads (First byte of GUID)
   for (auto const &idx : search_nodes) {
 
-    ex.data[0 + offset] = idx;  // nodeid
+    ex.data[0 + offset] = (uint8_t)idx;  // nodeid
     ex.data[1 + offset] = 0xd0; // register: First byte of GUID
 
     rv = client.send(ex);
@@ -674,7 +674,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
     */
     if (nullptr != statusCallback) {
       if ((vscp_getMsTimeStamp() - callbackTime) > 500) {
-        statusCallback((100 * found_nodes.size()) / search_nodes.size());
+        statusCallback((100 * (int)found_nodes.size()) / (int)search_nodes.size());
         callbackTime = vscp_getMsTimeStamp();
       }
     }

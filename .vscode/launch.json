@@ -4,194 +4,214 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "(gdb) vscpd",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
-            "args": ["-s","-c/home/akhe/development/VSCP/vscp/debug/linux/vscpd.json"],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "build vscpd",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-          "name": "(gdb) vscpd test with /etc/...",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
-          "args": ["-s","-c/etc/vscp/vscpd.json"],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}",
-          "environment": [],
-          "externalConsole": false,
-          "MIMode": "gdb",
-          "setupCommands": [
-              {
-                  "description": "Enable pretty-printing for gdb",
-                  "text": "-enable-pretty-printing",
-                  "ignoreFailures": true
-              }
-          ],
-          "preLaunchTask": "build vscpd",
-          "miDebuggerPath": "/usr/bin/gdb"
+      {
+        "name": "(gdb) vscpd",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
+        "args": [
+          "-s",
+          "-c/home/akhe/development/VSCP/vscp/debug/linux/vscpd.json"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build vscpd",
+        "miDebuggerPath": "/usr/bin/gdb"
       },
-        {
-            "name": "(gdb) vscp w/ automation driver",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
-            "args": ["-s","-c/home/akhe/development/VSCP/vscpl2drv-automation/debug/linux/vscpd.json"],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "build all",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "(gdb) vscp w/ tcpiplink driver",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "/home/akhe/development/VSCP/build/vscpd",
-            "args": ["-s","-c /home/akhe/development/VSCP/vscpl2drv-tcpiplink/debug/linux/vscpd.json"],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "(gdb) unittest for helperlib",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "/home/akhe/development/VSCP/vscp/tests/helperlib/unittest",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "build all",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-          "name": "(gdb) test remotetcpif",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "/home/akhe/development/VSCP/vscp/tests/remotetcpif/build/test_vscpremotetcpif",
-          "args": [],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}",
-          "environment": [],
-          "externalConsole": false,
-          "MIMode": "gdb",
-          "setupCommands": [
-              {
-                  "description": "Enable pretty-printing for gdb",
-                  "text": "-enable-pretty-printing",
-                  "ignoreFailures": true
-              }
-          ],
-          "preLaunchTask": "build test remotetcpif",
-          "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-            "name": "(gdb) vscp-client-mqtt",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/vscp-client-mqtt/build/test",            
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/tests/vscp-client-mqtt/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "build test code for vscp-client-mqtt",
-            "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-          "name": "(gdb) mdfparser",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "${workspaceFolder}/tests/mdfparser/build/test",            
-          "args": [],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}/tests/mdfparser/",
-          "environment": [],
-          "externalConsole": false,
-          "MIMode": "gdb",
-          "setupCommands": [
-              {
-                  "description": "Enable pretty-printing for gdb",
-                  "text": "-enable-pretty-printing",
-                  "ignoreFailures": true
-              }
-          ],
-          "preLaunchTask": "build test code for mdfparser",
-          "miDebuggerPath": "/usr/bin/gdb"
-        },
-        {
-          "name": "(gdb) test register",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "/home/akhe/development/VSCP/vscp/tests/register/build/test",
-          "args": [],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}",
-          "environment": [],
-          "externalConsole": false,
-          "MIMode": "gdb",
-          "setupCommands": [
-              {
-                  "description": "Enable pretty-printing for gdb",
-                  "text": "-enable-pretty-printing",
-                  "ignoreFailures": true
-              }
-          ],
-          "preLaunchTask": "build test code for register-test",
-          "miDebuggerPath": "/usr/bin/gdb"
-        }
+      {
+        "name": "(gdb) vscpd test with /etc/...",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
+        "args": [
+          "-s",
+          "-c/etc/vscp/vscpd.json"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build vscpd",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) vscp w/ automation driver",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/build/vscpd",
+        "args": [
+          "-s",
+          "-c/home/akhe/development/VSCP/vscpl2drv-automation/debug/linux/vscpd.json"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build all",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) vscp w/ tcpiplink driver",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/build/vscpd",
+        "args": [
+          "-s",
+          "-c /home/akhe/development/VSCP/vscpl2drv-tcpiplink/debug/linux/vscpd.json"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) unittest for helperlib",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/tests/helperlib/unittest",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build all",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) test remotetcpif",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/tests/remotetcpif/build/test_vscpremotetcpif",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build test remotetcpif",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) vscp-client-mqtt",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/tests/vscp-client-mqtt/build/test",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}/tests/vscp-client-mqtt/",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build test code for vscp-client-mqtt",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) mdfparser",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/tests/mdfparser/build/test",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}/tests/mdfparser/",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build test code for mdfparser",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "name": "(gdb) test register",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/akhe/development/VSCP/vscp/tests/register/build/test",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build test code for register-test",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      {
+        "type": "cmake",
+        "request": "launch",
+        "name": "Debug portfile(s)",
+        "cmakeDebugType": "external",
+        "pipeName": "\\\\.\\pipe\\vcpkg_ext_portfile_dbg",
+        "preLaunchTask": "Debug vcpkg commands"
+      }
     ]
 }
