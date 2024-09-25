@@ -1,4 +1,4 @@
-name: Build
+name: Build and deploy on Linux
 
 on: [push]
 
@@ -70,7 +70,7 @@ jobs:
         make -j$(nproc)
         sudo cpack -G DEB 
         sudo make install DESTDIR=AppDir
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}_vscpd_15.0.0.deb
         path: /home/runner/work/vscp/vscp/build/vscpd_15.0.0.deb
