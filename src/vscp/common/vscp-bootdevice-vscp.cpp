@@ -43,8 +43,8 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <iomanip>
 #include <iostream>
-#include <iomanip> 
 #include <sstream>
 
 CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
@@ -260,7 +260,7 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFi
   m_stdRegs.getGUID(node_guid);
 
   ex.sizeData = 8;
-  ex.data[0]  = (uint8_t)m_nodeid;             // Nickname to read register from
+  ex.data[0]  = (uint8_t) m_nodeid;   // Nickname to read register from
   ex.data[1]  = VSCP_BOOTLOADER_VSCP; // VSCP bootloader algorithm
   ex.data[2]  = node_guid.getAt(0);
   ex.data[3]  = node_guid.getAt(3);
@@ -460,7 +460,7 @@ int
 CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
 {
   int rv;
-  //vscpEventEx ex;
+  // vscpEventEx ex;
   cguid guid;
   uint32_t nChunks;
 
@@ -481,19 +481,20 @@ CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
 
     spdlog::debug("Loading memory chunk on remote device. chunk={0} {1:X} ", chunk, chunk * m_chunkSize);
     if (nullptr != m_statusCallback) {
-      m_statusCallback((100 * chunk) / nChunks, vscp_str_format("Loading memory chunk on remote device. chunk = %d.", chunk).c_str());
+      m_statusCallback((100 * chunk) / nChunks,
+                       vscp_str_format("Loading memory chunk on remote device. chunk = %d.", chunk).c_str());
     }
-    
+
     if (VSCP_ERROR_SUCCESS != writeChunk(paddr + (m_chunkSize * nChunks), m_chunkSize)) {
       spdlog::error("Failed to write chunk to remote device. rv={}", rv);
       if (nullptr != m_statusCallback) {
-        m_statusCallback((100 * chunk) / nChunks, vscp_str_format("Failed to write chunk to remote device rv=%d.", rv).c_str());
+        m_statusCallback((100 * chunk) / nChunks,
+                         vscp_str_format("Failed to write chunk to remote device rv=%d.", rv).c_str());
       }
       break;
     }
 
     paddr += m_chunkSize;
-    
 
   } // for
 
@@ -508,10 +509,10 @@ int
 CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
-  //vscpEventEx ex;
+  // vscpEventEx ex;
 
-  uint32_t progress = 0;
-  //uint32_t addr;
+  //uint32_t progress = 0;
+  // uint32_t addr;
   std::string strStatus;
 
   m_checksum = 0;
@@ -630,7 +631,7 @@ CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallba
       delete[] pbuf;
 
     } // There is bytes to write
-  }   // for memory types
+  } // for memory types
 
   return VSCP_ERROR_TIMEOUT;
 }
@@ -642,7 +643,7 @@ CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallba
 int
 CBootDevice_VSCP::deviceReboot(void)
 {
-  //int rv;
+  // int rv;
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -658,7 +659,7 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
                                 uint16_t response_event_nack,
                                 uint32_t timeout)
 {
-  int rv;
+  int rv = VSCP_ERROR_TIMEOUT;
   time_t tstart, tnow;
 
   // Get start time
@@ -670,6 +671,7 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
     time(&tnow);
     if ((unsigned long) (tnow - tstart) > timeout) {
       spdlog::debug("VSCP Bootloader: Timeout.");
+      rv = VSCP_ERROR_TIMEOUT;
       break;
     }
 
@@ -690,7 +692,8 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
         if (nullptr != m_statusCallback) {
           m_statusCallback(-1, "VSCP Bootloader:ACK recived");
         }
-        return VSCP_ERROR_SUCCESS;
+        rv = VSCP_ERROR_SUCCESS;
+        break;
       }
 
       // Is this a read/write reply from the node?
@@ -701,10 +704,11 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
         if (nullptr != m_statusCallback) {
           m_statusCallback(-1, "VSCP Bootloader: NACK recived.");
         }
-        return VSCP_ERROR_NACK;
+        rv = VSCP_ERROR_NACK;
+        break;
       }
     }
   } // while
 
-  return VSCP_ERROR_TIMEOUT;
+  return rv;
 }

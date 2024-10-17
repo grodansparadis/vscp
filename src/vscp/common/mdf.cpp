@@ -2089,7 +2089,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Setup *> *pSetupQueue = getSetupObjList();
   if ((nullptr != pSetupQueue) && (pSetupQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pSetupQueue->begin(); it != pSetupQueue->end(); it++) {
       CMDF_Setup *pSetup = *it;
       fout << "<setup name=\"" << pSetup->getName() << "\" ";
@@ -2617,7 +2617,7 @@ CMDF::save_json(const std::string &path)
     if ((cnt = pManufacturer->getWebObjCount())) {
       fout << "," << std::endl;
       fout << "\"web\": [" << std::endl;
-      int i = 0;
+      size_t i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getWebObj(i);
         if (nullptr != pitem) {
@@ -2640,7 +2640,7 @@ CMDF::save_json(const std::string &path)
     if ((cnt = pManufacturer->getSocialObjCount())) {
       fout << "," << std::endl;
       fout << "\"social\": [" << std::endl;
-      int i = 0;
+      size_t i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getSocialObj(i);
         if (nullptr != pitem) {
@@ -2872,10 +2872,10 @@ CMDF::save_json(const std::string &path)
       // get pages
       std::set<uint16_t> pages;
       std::deque<CMDF_Register *> *pregs = getRegisterObjList();
-      uint32_t nPageCnt                  = getPages(pages);
+      //uint32_t nPageCnt                  = getPages(pages);
 
       // Go throu pages create set/map with sorted registers
-      int pos = 0;
+      size_t pos = 0;
 
       // Add registers for page
       std::set<uint32_t> regset;
@@ -2910,7 +2910,7 @@ CMDF::save_json(const std::string &path)
         // bits
         std::deque<CMDF_Bit *> *pbits = preg->getListBits();
         if (pbits->size()) {
-          int pos = 0;
+          size_t pos = 0;
           fout << "," << std::endl;
           fout << "\"bit\": [" << std::endl;
           for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
@@ -2930,7 +2930,7 @@ CMDF::save_json(const std::string &path)
 
             std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
             if (pvalues->size()) {
-              int pos = 0;
+              size_t pos = 0;
               fout << "," << std::endl;
               fout << "\"valuelist\": [" << std::endl;
               for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -2969,7 +2969,7 @@ CMDF::save_json(const std::string &path)
 
         std::deque<CMDF_Value *> *pvalues = preg->getListValues();
         if (pvalues->size()) {
-          int pos = 0;
+          size_t pos = 0;
           fout << "," << std::endl;
           fout << "\"valuelist\": [" << std::endl;
           for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -3029,7 +3029,7 @@ CMDF::save_json(const std::string &path)
     std::deque<CMDF_RemoteVariable *> *prvarList = getRemoteVariableList();
 
     // Go throu pages create set/map with sorted registers
-    int pos = 0;
+    size_t pos = 0;
 
     for (auto it = prvarList->cbegin(); it != prvarList->cend(); ++it) {
       CMDF_RemoteVariable *prvar = *it;
@@ -3048,7 +3048,7 @@ CMDF::save_json(const std::string &path)
       // bits
       std::deque<CMDF_Bit *> *pbits = prvar->getListBits();
       if (pbits->size()) {
-        int pos = 0;
+        size_t pos = 0;
         fout << "," << std::endl;
         fout << "\"bit\": [" << std::endl;
         for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
@@ -3068,7 +3068,7 @@ CMDF::save_json(const std::string &path)
 
           std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
           if (pvalues->size()) {
-            int pos = 0;
+            size_t pos = 0;
             fout << "," << std::endl;
             fout << "\"valuelist\": [" << std::endl;
             for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -3107,7 +3107,7 @@ CMDF::save_json(const std::string &path)
 
       std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
       if (pvalues->size()) {
-        int pos = 0;
+        size_t pos = 0;
         fout << "," << std::endl;
         fout << "\"valuelist\": [" << std::endl;
         for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -3157,7 +3157,7 @@ CMDF::save_json(const std::string &path)
   // bits
   std::deque<CMDF_Bit *> *pbits = getAlarmList();
   if (pbits->size()) {
-    int pos = 0;
+    size_t pos = 0;
     for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
       CMDF_Bit *pbit = *it;
       fout << "{" << std::endl;
@@ -3198,7 +3198,7 @@ CMDF::save_json(const std::string &path)
     fout << "," << std::endl;
     fout << "\"events\": [" << std::endl;
 
-    int pos = 0;
+    size_t pos = 0;
 
     for (auto it = peventlst->cbegin(); it != peventlst->cend(); ++it) {
       CMDF_Event *pevent = *it;
@@ -3213,7 +3213,7 @@ CMDF::save_json(const std::string &path)
       std::deque<CMDF_EventData *> *peventdtalst = pevent->getListEventData(); // Get pointer to event list
       if (nullptr != peventdtalst) {
 
-        int pos = 0;
+        size_t pos = 0;
         fout << "\"data\": [" << std::endl;
 
         for (auto it = peventdtalst->cbegin(); it != peventdtalst->cend(); ++it) {
@@ -3226,7 +3226,7 @@ CMDF::save_json(const std::string &path)
           // bits
           std::deque<CMDF_Bit *> *pbits = peventdata->getListBits();
           if (pbits->size()) {
-            int pos = 0;
+            size_t pos = 0;
             fout << "," << std::endl;
             fout << "\"bit\": [" << std::endl;
             for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
@@ -3246,7 +3246,7 @@ CMDF::save_json(const std::string &path)
 
               std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
               if (pvalues->size()) {
-                int pos = 0;
+                size_t pos = 0;
                 fout << "," << std::endl;
                 fout << "\"valuelist\": [" << std::endl;
                 for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -3285,7 +3285,7 @@ CMDF::save_json(const std::string &path)
 
           std::deque<CMDF_Value *> *pvalues = peventdata->getListValues();
           if (pvalues->size()) {
-            int pos = 0;
+            size_t pos = 0;
             fout << "," << std::endl;
             fout << "\"valuelist\": [" << std::endl;
             for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
@@ -3673,7 +3673,8 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
   }
 
   // Verify structure <vscp><module>.....</module></vscp>
-  if (gdepth_xml_parser >= 2 && (gTokenList.at(gTokenList.size() - 2) != "module") || (gTokenList.back() != "vscp")) {
+  if (((gdepth_xml_parser >= 2) && (gTokenList.at(gTokenList.size() - 2) != "module")) || 
+      (gTokenList.back() != "vscp")) {
     spdlog::error("Parse-XML: startSetupMDFParser: Invalid structure");
     return;
   }
@@ -6018,7 +6019,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(1) == "data") && 
                (gTokenList.at(2) == "event") &&
                (gpEventDataStruct != nullptr)) {
-        int i = 9;
+        //int i = 9;
       }
 
       
@@ -6847,7 +6848,7 @@ __endSetupMDFParser(void *data, const char *name)
                (gTokenList.at(1) == "parm") && 
                (gTokenList.at(2) == "action") &&
                (gpActionStruct != nullptr)) {
-        int i = 0;
+        //int i = 0;
       }
       // event data
       else if ((currentToken == "description") && 

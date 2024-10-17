@@ -879,11 +879,11 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
 int
 CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallback)
 {
-  bool bRun = true;
+  //bool bRun = true;
   int rv;
 
   m_checksum        = 0;
-  uint32_t progress = 0;
+  //uint32_t progress = 0;
   uint32_t addr = 0;
   std::string strStatus;
 

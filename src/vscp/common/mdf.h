@@ -205,7 +205,7 @@ class CMDF_Object {
 
 public:
   CMDF_Object(mdf_record_type type = mdf_type_unknown);
-  ~CMDF_Object();
+  virtual ~CMDF_Object();
 
   /*!
     Get the object type
@@ -236,7 +236,7 @@ class CMDF_Value : public CMDF_Object {
 
 public:
   CMDF_Value();
-  ~CMDF_Value();
+  virtual ~CMDF_Value();
 
   // Friend declarations
   friend CMDF;

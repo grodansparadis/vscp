@@ -199,7 +199,7 @@ CBootDevice::loadIntelHexFile(const std::string &path)
 
       // Validate checksum
       uint16_t sum = 0;
-      for (int i = 0; i < linecnt; i++) {
+      for (size_t i = 0; i < linecnt; i++) {
         sum += linebuf[i];
       }
       if (sum & 0xff) {
