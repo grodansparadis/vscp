@@ -1740,7 +1740,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         else {
           strValue = vscp_str_format("0x%04lx", val);
         }
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1758,7 +1758,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         else {
           strValue = vscp_str_format("0x%04lx", val);
         }
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1780,7 +1780,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         else {
           strValue = vscp_str_format("0x%llx", val);
         }
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1801,7 +1801,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         else {
           strValue = vscp_str_format("0x%ullx", val);
         }
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1815,7 +1815,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *) buf));
         float f    = *((float *) ((uint8_t *) &n));
         strValue   = vscp_str_format("%f", *((float *) buf));
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1830,7 +1830,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         double f   = *((double *) ((uint8_t *) &n));
         strValue   = vscp_str_format("%g", *((double *) buf));
 
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1843,7 +1843,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         }
         strValue =
           vscp_str_format("%02d-%02d-%02d", *((uint8_t *) buf), *((uint8_t *) (buf + 2)), *((uint8_t *) (buf + 4)));
-        delete[] buf;
+        free(buf);
       }
     } break;
 
@@ -1856,7 +1856,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         }
         strValue =
           vscp_str_format("%02d:%02d:%02d", *((uint8_t *) buf), *((uint8_t *) (buf + 2)), *((uint8_t *) (buf + 4)));
-        delete[] buf;
+        free(buf);
       }
     } break;
 
