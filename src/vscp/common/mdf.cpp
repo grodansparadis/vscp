@@ -2548,7 +2548,7 @@ CMDF::save_json(const std::string &path)
     if ((cnt = pManufacturer->getPhoneObjCount())) {
       fout << "," << std::endl;
       fout << "\"telephone\": [" << std::endl;
-      int i = 0;
+      size_t i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
         if (nullptr != pitem) {
@@ -2571,7 +2571,7 @@ CMDF::save_json(const std::string &path)
     if ((cnt = pManufacturer->getFaxObjCount())) {
       fout << "," << std::endl;
       fout << "\"fax\": [" << std::endl;
-      int i = 0;
+      size_t i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getFaxObj(i);
         if (nullptr != pitem) {
@@ -2594,7 +2594,7 @@ CMDF::save_json(const std::string &path)
     if ((cnt = pManufacturer->getEmailObjCount())) {
       fout << "," << std::endl;
       fout << "\"email\": [" << std::endl;
-      int i = 0;
+      size_t i = 0;
       while (i < cnt) {
         CMDF_Item *pitem = pManufacturer->getEmailObj(i);
         if (nullptr != pitem) {

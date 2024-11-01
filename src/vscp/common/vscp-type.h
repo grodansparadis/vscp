@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2024-08-23 16:27:26.321269
+                        Generated: 2024-11-01 12:00:41.598489
 */
  
 #ifndef VSCP_TYPE_H
@@ -919,6 +919,8 @@
 #define VSCP2_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE 34 /* Level II get DM info response */
 #define VSCP2_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE 36 /* Level II get embedded MDF response */
 #define VSCP2_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE 41 /* Level II events of interest response */
+#define VSCP2_TYPE_PROTOCOL_READ_REGISTER_DIRECT    43  /* Read a Level II register from the 32-bit register space direct */
+#define VSCP2_TYPE_PROTOCOL_READ_REGISTER_DIRECT    44  /* Write a Level II register to the 32-bit register space direct */
     
 /*  CLASS2.CONTROL = 1025  -  Level II Control */
 #define VSCP2_TYPE_CONTROL_GENERAL                  0   /* General event */

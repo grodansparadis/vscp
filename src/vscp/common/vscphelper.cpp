@@ -7324,7 +7324,7 @@ readHexChar(char input)
 size_t
 vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 {
-  int cnt          = 0;
+  size_t cnt          = 0;
   const char *phex = hexstr;
 
   while (*(phex + 2 * cnt) && *(phex + 2 * cnt + 1) && (cnt < size)) {
