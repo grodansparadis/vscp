@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2024-11-01 12:00:42.593785
+                        Generated: 2024-11-05 21:03:51.292883
 */
  
 
@@ -2121,7 +2121,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,36) ] = _("VSCP2_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,41) ] = _("VSCP2_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,43) ] = _("VSCP2_TYPE_PROTOCOL_READ_REGISTER_DIRECT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(1024,44) ] = _("VSCP2_TYPE_PROTOCOL_READ_REGISTER_DIRECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1024,44) ] = _("VSCP2_TYPE_PROTOCOL_WRITE_REGISTER_DIRECT");
 
 	//  CLASS2.CONTROL = 1025  -  Level II Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(1025,0) ] = _("VSCP2_TYPE_CONTROL_GENERAL");
