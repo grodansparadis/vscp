@@ -696,14 +696,14 @@ vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
 //
 
 int
-vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback)
+vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData )
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
 
-  CVscpClient::setCallbackEv(callback);
+  CVscpClient::setCallbackEv(callback, pData);
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -713,14 +713,14 @@ vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)
 //
 
 int
-vscpClientSocketCan::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback)
+vscpClientSocketCan::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData )
 {
   // Can not be called when connected
   if (m_bConnected) {
     return VSCP_ERROR_ERROR;
   }
 
-  CVscpClient::setCallbackEx(callback);
+  CVscpClient::setCallbackEx(callback, pData);
   return VSCP_ERROR_SUCCESS;
 }
 

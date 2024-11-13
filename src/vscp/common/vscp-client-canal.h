@@ -161,13 +161,13 @@ public:
       Set (and enable) receive callback for events
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback);
+  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Set (and enable) receive callback ex events
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback);
+  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Return a JSON representation of connection

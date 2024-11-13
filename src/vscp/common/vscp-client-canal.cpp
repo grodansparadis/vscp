@@ -507,7 +507,7 @@ vscpClientCanal::getResponseTimeout(void)
 //
 
 int
-vscpClientCanal::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback)
+vscpClientCanal::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -516,7 +516,7 @@ vscpClientCanal::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> ca
   }
 
   spdlog::debug("CANAL CLIENT: ev callback set.");
- CVscpClient::setCallbackEv(callback);
+ CVscpClient::setCallbackEv(callback, pData);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -525,7 +525,7 @@ vscpClientCanal::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> ca
 //
 
 int
-vscpClientCanal::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback)
+vscpClientCanal::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -534,7 +534,7 @@ vscpClientCanal::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> 
   }
 
   spdlog::debug("CANAL CLIENT: ex callback set.");
-  CVscpClient::setCallbackEx(callback);
+  CVscpClient::setCallbackEx(callback, pData);
   return VSCP_ERROR_SUCCESS;
 }
 

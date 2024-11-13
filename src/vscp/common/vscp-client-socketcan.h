@@ -43,19 +43,19 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <canal.h>
 #include <canal-macro.h>
+#include <canal.h>
 #include <guid.h>
 #include <hlo.h>
 #include <remotevariablecodes.h>
-#include <vscp.h>
 #include <vscp-class.h>
-#include <vscp-type.h>
 #include <vscp-client-base.h>
+#include <vscp-type.h>
+#include <vscp.h>
 #include <vscpdatetime.h>
 #include <vscphelper.h>
 
-#include <nlohmann/json.hpp> 
+#include <nlohmann/json.hpp>
 
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/spdlog.h"
@@ -123,7 +123,7 @@ public:
     Set state of connected flag
     @param b True for connected, false for not connected.
   */
-  void setConnected(bool b=true) {m_bConnected = b;};
+  void setConnected(bool b = true) { m_bConnected = b; };
 
   /*!
       Send VSCP event to remote host.
@@ -211,13 +211,15 @@ public:
       Set (and enable) receive callback for events
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback);
+  //using CVscpClient::setCallbackEv;
+  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Set (and enable) receive callback ex events
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback);
+  //using CVscpClient::setCallbackEx;
+  virtual int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData = nullptr);
 
   /*!
       Return a JSON representation of connection
@@ -293,7 +295,7 @@ public:
   // ------------------------------------------------------------------------
 
   // Event lists
-  //std::list<vscpEvent *> m_sendList;
+  // std::list<vscpEvent *> m_sendList;
   std::list<vscpEvent *> m_receiveList;
 
   /*!
