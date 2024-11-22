@@ -21,7 +21,7 @@
 // Boston, MA 02111-1307, USA.
 //
 // For info see https://ww1.microchip.com/downloads/en/AppNotes/00247a.pdf
-// this bootloader expects a slightly moified version of the bootloader
+// this bootloader expects a slightly modified version of the bootloader
 // described but in most aspects it is the same.
 //
 // Repository for the device bootloader is here
@@ -46,7 +46,7 @@ public:
 
       This is Level I over Level I interface
 
-      @param pdll Pointer to opended CANAL object.
+      @param pdll Pointer to opened CANAL object.
       @param nodeid Nickname/nodeid for node that should be loaded
       with new code.
   */
@@ -61,7 +61,7 @@ public:
       This is Level I over Level II that uses an interface on
       a remote device to communicate with Level I nodes.
 
-      @param pdll Pointer to opended CANAL object.
+      @param pdll Pointer to opened CANAL object.
       @param nodeid Nickname/nodeid for node that should be loaded
       @param guidif GUID for interface.
       with new code.
@@ -202,23 +202,23 @@ public:
           and status message (const char *)
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr);
+  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr, bool bAbortOnFirmwareCodeFail = false);
 
   /*!
     Restart remote device
-    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+    @return VSCP_ERROR_SUCCESS is returned on success, otherwise error code
   */
   int deviceRestart(void);
 
   /*!
     Reboot remote device
-    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+    @return VSCP_ERROR_SUCCESS is returned on success, otherwise error code
   */
   int deviceReboot(void);
 
   /*!
       Write a sector
-      @param paddr Pointer to firts byte of 8-byte block to write
+      @param paddr Pointer to first byte of 8-byte block to write
         to remote device
       @return VSCP_ERROR_SUCCESS on success.
   */

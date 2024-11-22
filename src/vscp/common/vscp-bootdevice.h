@@ -53,7 +53,7 @@
 
     An abstract memory model is used for the firmware. In this
     model memory contents of different types is placed into
-    different memory regions. When a block of datra from that region
+    different memory regions. When a block of data from that region
     is sent to the remote device it is up to that device to
     place the data at the correct location. This model can be used
     for code, ram, eeprom, fuses, config data etc. The pic1 bootloader

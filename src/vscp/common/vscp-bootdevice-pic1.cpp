@@ -284,10 +284,10 @@ CBootDevice_PIC1::deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFi
 
       // There is data get message
       if (VSCP_ERROR_SUCCESS != (rv = m_pclient->receive(rcvmsg))) {
-        spdlog::error("Failed to receive reponse form init command (ID_PUT_BASE_INFO). rv = {0}.", rv);
+        spdlog::error("Failed to receive response form init command (ID_PUT_BASE_INFO). rv = {0}.", rv);
         if (nullptr != m_statusCallback) {
           m_statusCallback(-1,
-                           vscp_str_format("Failed to receive reponse form init command (ID_PUT_BASE_INFO). "
+                           vscp_str_format("Failed to receive response form init command (ID_PUT_BASE_INFO). "
                                            "rv = %d.",
                                            rv)
                              .c_str());
@@ -653,7 +653,7 @@ CBootDevice_PIC1::checkResponseLevel1(uint32_t response_id)
 
   spdlog::error("checkResponseLevel1: Timeout {}", rv);
   if (nullptr != m_statusCallback) {
-    m_statusCallback(-1, "checkResponseLevel1: Timout waiting while for response");
+    m_statusCallback(-1, "checkResponseLevel1: Timeout waiting while for response");
   }
 
   return VSCP_ERROR_TIMEOUT;
@@ -699,7 +699,7 @@ CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
 
   spdlog::error("checkResponseLevel2: Timeout {}", rv);
   if (nullptr != m_statusCallback) {
-    m_statusCallback(-1, "checkResponseLevel2: Timout waiting while for response");
+    m_statusCallback(-1, "checkResponseLevel2: Timeout waiting while for response");
   }
 
   return VSCP_ERROR_TIMEOUT;
@@ -877,7 +877,7 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
 //
 
 int
-CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallback)
+CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
 {
   //bool bRun = true;
   int rv;
