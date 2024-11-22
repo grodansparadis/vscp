@@ -235,6 +235,9 @@ CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnF
   // Save our local GUID
   m_ourguid = ourguid;
 
+  // Save Firmware device code 
+  m_firmwaredeviceCode = devicecode;
+
   /*
     First do a test to see if the device is already in boot mode
     if it is 0x14nn/0x15nn should be returned (nn == nodeid).

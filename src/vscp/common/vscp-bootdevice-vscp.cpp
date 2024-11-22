@@ -216,6 +216,12 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnF
   int rv;
   vscpEventEx ex;
 
+  // Save our local GUID
+  m_ourguid = ourguid;
+
+  // Save Firmware device code 
+  m_firmwaredeviceCode = devicecode;
+
   // Read standard registers
   if (VSCP_ERROR_SUCCESS != m_stdRegs.init(*m_pclient, m_guid, m_guidif, nullptr, REGISTER_DEFAULT_TIMEOUT)) {
     spdlog::error("VSCP bootloader: Failed to read standard registers");
