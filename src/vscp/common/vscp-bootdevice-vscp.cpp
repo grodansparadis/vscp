@@ -239,11 +239,14 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFi
     Must be the same as the firmware we try to load is intended for
   */
   if (m_firmwaredeviceCode != m_stdRegs.getFirmwareDeviceCode()) {
-    spdlog::warn("Firware device code is not equal the one on the device local: {0} device: {1}",
+    spdlog::warn("Firmware device code is not equal the one on the device local: {0} device: {1}",
                  m_firmwaredeviceCode,
                  m_stdRegs.getFirmwareDeviceCode());
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, "Firware device code is not equal the one on the device local: {0} device: {1}");
+      m_statusCallback(-1,
+                       "Firmware device code is not equal! <strong>Firmware</strong>: {0} <strong>Device</strong>: {1}",
+                       m_firmwaredeviceCode,
+                       m_stdRegs.getFirmwareDeviceCode());
     }
     if (bAbortOnFirmwareCodeFail) {
       return VSCP_ERROR_PARAMETER;
@@ -511,8 +514,8 @@ CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallba
   int rv;
   // vscpEventEx ex;
 
-  //uint32_t progress = 0;
-  // uint32_t addr;
+  // uint32_t progress = 0;
+  //  uint32_t addr;
   std::string strStatus;
 
   m_checksum = 0;
