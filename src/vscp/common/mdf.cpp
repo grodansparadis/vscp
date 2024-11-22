@@ -9744,11 +9744,11 @@ CMDF::deleteEvent(CMDF_Event *pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// createRegisterStortedSet
+// createRegisterSortedSet
 //
 
 void
-CMDF::createRegisterStortedSet(std::set<uint32_t> &set, uint16_t page)
+CMDF::createRegisterSortedSet(std::set<uint32_t> &set, uint16_t page)
 {
   std::deque<CMDF_Register *> *regset = getRegisterObjList();
   for (auto it = regset->cbegin(); it != regset->cend(); ++it) {

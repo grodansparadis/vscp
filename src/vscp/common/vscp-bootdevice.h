@@ -202,7 +202,7 @@ public:
     @param pmin Pointer to variable that will get min address
     @param pmax Pointer to variable that will get max address
     @return VSCP_ERROR_SUCCESS on success.
-      VSCP_ERROR_INVALID_POINTER if ponters are invalid.
+      VSCP_ERROR_INVALID_POINTER if pointers are invalid.
       VSCP_ERROR_INVALID_PARAMETER if end <= start
       VSCP_ERROR_ERROR if no memory defined in the selected range. value of
         pmin/pmax is zero in this case.
@@ -243,7 +243,7 @@ public:
           and status message (const char *)
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr) = 0;
+  virtual int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr, bool bAbortOnFirmwareCodeFail = false) = 0;
 
   /*!
     Restart the device
@@ -258,7 +258,7 @@ protected:
   CVscpClient *m_pclient;
 
   /*!
-    Tomeout for read operations
+    Timeout for read operations
   */
   uint32_t m_timeout;
 

@@ -31,7 +31,6 @@
 
 #include "vscp.h"
 
-#include <string>
 
 // This macro construct a signed integer from two unsigned chars in a safe way
 #define construct_signed16(msb, lsb) ((int16_t) ((((uint16_t) msb) << 8) + (uint16_t) lsb))
@@ -52,9 +51,11 @@ public:
   /*!
       Constructor
 
-      @param pdll Pointer to opended CANAL object.
+      @param pclient Pointer to active client object.
       @param nodeid Nickname/nodeid for node that should be loaded
-      with new code.
+        with new code.
+      @param statusCallback Status callback function or NULL
+      @param timeout Timeout for response  
   */
   CBootDevice_VSCP(CVscpClient *pclient,
                    uint8_t nodeid,
@@ -67,10 +68,11 @@ public:
     This is Level I over Level II that uses an interface on
     a remote device to communicate with Level I nodes.
 
-    @param pdll Pointer to opended CANAL object.
+    @param pclient Pointer to active client object.
     @param nodeid Nickname/nodeid for node that should be loaded
     @param guidif GUID for interface.
-    with new code.
+    @param statusCallback Status callback function or NULL
+    @param timeout Timeout for response
 */
   CBootDevice_VSCP(CVscpClient *pclient,
                    uint8_t nodeid,
@@ -83,8 +85,10 @@ public:
 
       This is a full level II device. No interface, full GUID.
 
-      @param ptcpip Pointer to opened TCP/IP interface object.
+      @param pclient Pointer to active client object.
       @param guid GUID for node to bootload.
+      @param statusCallback Status callback function or NULL
+      @param timeout Timeout for response
   */
   CBootDevice_VSCP(CVscpClient *pclient,
                    cguid &guid,
@@ -186,13 +190,13 @@ public:
 
   /*!
     Restart remote device
-    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+    @return VSCP_ERROR_SUCCESS is returned on success, otherwise error code
   */
   int deviceRestart(void);
 
   /*!
     Reboot remote device
-    @return VSCP_ERROR_SUCCESS is returned on success, ortherwise error code
+    @return VSCP_ERROR_SUCCESS is returned on success, otherwise error code
   */
   int deviceReboot(void);
 
@@ -201,7 +205,7 @@ public:
   /*!
     Write block start to remote device
     @param block Block number to write
-    @param type Memoty type code for memory to write
+    @param type Memory type code for memory to write
     @return VSCP_ERROR_SUCCESS on success.
   */
   int writeBlockStart(uint32_t block, uint8_t type);
@@ -215,7 +219,7 @@ public:
 
    /*!
       Write a sector
-      @param paddr Pointer to firts byte of 8-byte block to write
+      @param paddr Pointer to first byte of 8-byte block to write
         to remote device
       @param size Number of data bytes to send. Must be less than the
         max event data (8/512)
@@ -236,8 +240,8 @@ public:
     @param guid GUID for our device the expected event should originate from.
     @param response_event_ack ACK event type.
     @param response_event_nack  NACK event type.
-    @return VSCP_ERROR_SUCCESS if ack is received within the timoeut time. VSCP_ERROR_NACK if NACK
-      event is received. VSCP_ERROR_TIMEOUT if timeout occured.
+    @return VSCP_ERROR_SUCCESS if ack is received within the timeout time. VSCP_ERROR_NACK if NACK
+      event is received. VSCP_ERROR_TIMEOUT if timeout occurred.
   */
   int checkResponse(vscpEventEx &ex,
                     cguid &guid,
@@ -277,7 +281,7 @@ private:
     it holds 8/512 bytes. It's up to the remote device to handle both
     cases.
 
-    block size can be less then chunk size. This is escpecially true
+    block size can be less then chunk size. This is especially true
     for level II
   */
   uint16_t m_chunkSize;
@@ -286,7 +290,7 @@ private:
     Block size in bytes
     -------------------
     This is the block size the remote device expect us to send before
-    programing a block.
+    programming a block.
     Programming is done in chunks of 8 or 512 bytes or less until a full
     block has been written.
   */

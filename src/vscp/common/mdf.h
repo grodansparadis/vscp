@@ -3911,7 +3911,7 @@ public:
     Create a set with sorted register offsets for a page
     @param set a std_set with offset uint32_t items
   */
-  void createRegisterStortedSet(std::set<uint32_t> &set, uint16_t page);
+  void createRegisterSortedSet(std::set<uint32_t> &set, uint16_t page);
 
   /*!
     Get all registers for a specific page

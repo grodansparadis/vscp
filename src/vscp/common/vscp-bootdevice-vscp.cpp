@@ -280,7 +280,7 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFi
   if (VSCP_ERROR_SUCCESS !=
       (rv = checkResponse(ex, node_guid, VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER, VSCP_TYPE_PROTOCOL_NACK_BOOT_LOADER))) {
     // Negative response on bootmode request- return
-    spdlog::debug("VSCP bootloader: NACK recived from set bootloader request.");
+    spdlog::debug("VSCP bootloader: NACK received from set bootloader request.");
     if (nullptr != m_statusCallback) {
       m_statusCallback(-1, "VSCP bootloader: NACK received from set bootloader request.");
     }
@@ -688,9 +688,9 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
       // Is this a read/write reply from the node?
       if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_ack == ex.vscp_type) && guid.isSameGUID(ex.GUID)) {
         // ACK response
-        spdlog::debug("VSCP Bootloader: ACK recived.");
+        spdlog::debug("VSCP Bootloader: ACK received.");
         if (nullptr != m_statusCallback) {
-          m_statusCallback(-1, "VSCP Bootloader:ACK recived");
+          m_statusCallback(-1, "VSCP Bootloader:ACK received");
         }
         rv = VSCP_ERROR_SUCCESS;
         break;
@@ -700,9 +700,9 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
       if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_nack == ex.vscp_type) &&
           guid.isSameGUID(ex.GUID)) {
         // NACK response
-        spdlog::debug("VSCP Bootloader: NACK recived.");
+        spdlog::debug("VSCP Bootloader: NACK received.");
         if (nullptr != m_statusCallback) {
-          m_statusCallback(-1, "VSCP Bootloader: NACK recived.");
+          m_statusCallback(-1, "VSCP Bootloader: NACK received.");
         }
         rv = VSCP_ERROR_NACK;
         break;
