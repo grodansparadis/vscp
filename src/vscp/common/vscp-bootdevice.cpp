@@ -107,6 +107,7 @@ CBootDevice::CBootDevice(CVscpClient *pclient,
   m_timeout        = timeout;
   m_statusCallback = statusCallback;
   m_startAddr      = 0; // Boot start
+  m_firmwaredeviceCode = 0;
 }
 
 CBootDevice::CBootDevice(CVscpClient *pclient,

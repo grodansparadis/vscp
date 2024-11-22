@@ -342,7 +342,7 @@ CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnF
     Must be the same as the firmware we try to load is intended for
   */
   if (m_firmwaredeviceCode != m_stdRegs.getFirmwareDeviceCode()) {
-    spdlog::warn("Firware device code is not equal the one on the device local: {0} device: {1}",
+    spdlog::warn("Firmware device code is not equal the one on the device local: {0} device: {1}",
                  m_firmwaredeviceCode,
                  m_stdRegs.getFirmwareDeviceCode());
     if (nullptr != m_statusCallback) {
