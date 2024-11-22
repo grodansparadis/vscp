@@ -244,9 +244,11 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnF
                  m_stdRegs.getFirmwareDeviceCode());
     if (nullptr != m_statusCallback) {
       m_statusCallback(-1,
-                       "Firmware device code is not equal! <strong>Firmware</strong>: {0} <strong>Device</strong>: {1}",
-                       m_firmwaredeviceCode,
-                       m_stdRegs.getFirmwareDeviceCode());
+                        vscp_str_format(
+                          "Firmware device code is not equal! Firmware: {0} Device: {1}", 
+                            m_firmwaredeviceCode, 
+                            m_stdRegs.getFirmwareDeviceCode())
+                          .c_str());                       
     }
     if (bAbortOnFirmwareCodeFail) {
       return VSCP_ERROR_PARAMETER;
