@@ -186,7 +186,7 @@ public:
         MDF is not the same as the one read from the remote device.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceInit(cguid& ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false);
+  int deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail = false);
 
   /*!
     Write a boot block to the device

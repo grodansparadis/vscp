@@ -211,7 +211,7 @@ CBootDevice_VSCP::deviceInfo(void)
 //
 
 int
-CBootDevice_VSCP::deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail)
+CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
   vscpEventEx ex;

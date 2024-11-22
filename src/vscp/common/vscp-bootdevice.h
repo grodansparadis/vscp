@@ -235,7 +235,7 @@ public:
         MDF is not the same as the one read from the remote device.
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int deviceInit(cguid &ourguid, uint8_t devicecode, bool bAbortOnFirmwareCodeFail = false) = 0;
+  virtual int deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail = false) = 0;
 
   /*!
     Perform the actual firmware load process
@@ -272,12 +272,12 @@ protected:
 
   /*!
     The device code tell the type of hardware of the remote device
-    Must be the same as the firmware we try to load is intended for.
+    Must/should be the same as for the firmware we try to load.
 
     Some (old) devices will have this code set to 0 in this cae no check
     should be performed.
   */
-  uint8_t m_firmwaredeviceCode;
+  uint16_t m_firmwaredeviceCode;
 
   /// Our local GUID
   cguid m_ourguid;
