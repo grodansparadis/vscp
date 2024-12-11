@@ -55,9 +55,9 @@
 #include <spdlog/spdlog.h>
 
 #include <fstream>
+#include <iomanip>
 #include <iostream>
-#include <iomanip> 
-#include <sstream> 
+#include <sstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Ctor
@@ -104,9 +104,9 @@ CBootDevice::CBootDevice(CVscpClient *pclient,
   m_guid.clear();
   m_guid.setNicknameID(nodeid);
   m_guidif.clear();
-  m_timeout        = timeout;
-  m_statusCallback = statusCallback;
-  m_startAddr      = 0; // Boot start
+  m_timeout            = timeout;
+  m_statusCallback     = statusCallback;
+  m_startAddr          = 0; // Boot start
   m_firmwaredeviceCode = 0;
 }
 
@@ -162,8 +162,8 @@ int
 CBootDevice::loadIntelHexFile(const std::string &path)
 {
   char szline[2048];
-  //char buf[16];
-  //char *endptr;
+  // char buf[16];
+  // char *endptr;
   std::ifstream hexfile;
   uint16_t lowaddr     = 0; // Low part of address
   uint16_t highaddr    = 0; // High part if address

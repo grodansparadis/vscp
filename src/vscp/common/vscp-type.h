@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2024-11-05 21:03:48.911038
+                        Generated: 2024-12-09 21:43:37.152426
 */
  
 #ifndef VSCP_TYPE_H
@@ -101,8 +101,11 @@
 #define VSCP_TYPE_PROTOCOL_GET_EVENT_INTEREST_RESPONSE 41 /* Get event interest response. */
 #define VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_ACK   48  /* Activate new image ACK. */
 #define VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK  49  /* Activate new image NACK. */
-#define VSCP_TYPE_PROTOCOL_START_BLOCK_ACK          50  /* Block data transfer ACK. */
-#define VSCP_TYPE_PROTOCOL_START_BLOCK_NACK         51  /* Block data transfer NACK. */
+#define VSCP_TYPE_PROTOCOL_START_BLOCK_ACK          50  /* Start Block ACK. */
+#define VSCP_TYPE_PROTOCOL_START_BLOCK_NACK         51  /* Start Block NACK. */
+#define VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_ACK          52  /* Block Data Chunk ACK. */
+#define VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_NACK         53  /* Block Data Chunk NACK. */
+#define VSCP_TYPE_PROTOCOL_BOOT_LOADER_CHECK        54  /* Bootloader CHECK. */
     
 /*  CLASS1.ALARM = 1  -  Alarm functionality */
 #define VSCP_TYPE_ALARM_GENERAL                     0   /* General event */

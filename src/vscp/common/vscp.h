@@ -656,7 +656,9 @@ struct vscpMyNode {
 #define VSCP_ERROR_SIZE               64 /* The size is wring */
 #define VSCP_ERROR_NACK               65 /* NACK received */
 #define VSCP_ERROR_READ_ERROR         66 /* Error when reading data */
-#define VSCP_ERROR_READ               66 /* Error when reading data */
+#define VSCP_ERROR_READ               66 /* DUPLICATE FOR CONVENIENCE! Error when reading data */
+#define VSCP_ERROR_INVALID_CHECKSUM   67 /* Checksum is not correct */
+#define VSCP_ERROR_INTERFACE          68 /* Interface error (not defined etc) */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

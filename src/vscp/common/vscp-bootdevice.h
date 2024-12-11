@@ -274,6 +274,8 @@ protected:
     The device code tell the type of hardware of the remote device
     Must/should be the same as for the firmware we try to load.
 
+    This code is set in devicInit and is compared with the code in the device
+
     Some (old) devices will have this code set to 0 in this cae no check
     should be performed.
   */

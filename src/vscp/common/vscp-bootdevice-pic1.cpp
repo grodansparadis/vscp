@@ -40,9 +40,9 @@
 // #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <iomanip>
 #include <iostream>
-#include <iomanip> 
-#include <sstream> 
+#include <sstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -228,14 +228,14 @@ CBootDevice_PIC1::deviceInfo(void)
 //
 
 int
-CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail)
+CBootDevice_PIC1::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
 
   // Save our local GUID
   m_ourguid = ourguid;
 
-  // Save Firmware device code 
+  // Save Firmware device code
   m_firmwaredeviceCode = devicecode;
 
   /*
@@ -359,7 +359,7 @@ CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnF
   // Set device in boot mode
   cguid guid;
   m_stdRegs.getGUID(guid);
-  msg.data[0] = (uint8_t)m_nodeid;             // Nickname to read register from
+  msg.data[0] = (uint8_t) m_nodeid;   // Nickname to read register from
   msg.data[1] = VSCP_BOOTLOADER_PIC1; // VSCP PIC1 bootloader algorithm
   msg.data[2] = guid.getAt(0);
   msg.data[3] = guid.getAt(3);
@@ -566,7 +566,7 @@ int
 CBootDevice_PIC1::writeDeviceControlRegs(uint32_t addr, uint8_t flags, uint8_t cmd, uint8_t cmdData0, uint8_t cmdData1)
 {
   int rv;
-  //vscpEventEx event;
+  // vscpEventEx event;
   canalMsg msg;
 
   // Save the internal addresss
@@ -640,7 +640,7 @@ CBootDevice_PIC1::checkResponseLevel1(uint32_t response_id)
           // Response received from all - return success
           spdlog::debug("checkResponseLevel1: RECEIVE OK");
           if (nullptr != m_statusCallback) {
-            //m_statusCallback(-1, "checkResponseLevel1: Response received OK.");
+            // m_statusCallback(-1, "checkResponseLevel1: Response received OK.");
           }
           return VSCP_ERROR_SUCCESS;
         }
@@ -688,7 +688,7 @@ CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
       // Response received - return success
       spdlog::debug("checkResponseLevel2: RECEIVE OK");
       if (nullptr != m_statusCallback) {
-        //m_statusCallback(-1, "checkResponseLevel2: Response received OK.");
+        // m_statusCallback(-1, "checkResponseLevel2: Response received OK.");
       }
       return VSCP_ERROR_SUCCESS;
     }
@@ -855,7 +855,7 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
     }
 
     // Start at beginning
-    paddr += minAddr-start;
+    paddr += minAddr - start;
 
     for (uint32_t blk = 0; blk < nPackets; blk++) {
       spdlog::debug("Loading flash on remote device... block={0} {1:X}", blk, blk * 8);
@@ -865,11 +865,11 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
       }
       paddr += 8;
       if (nullptr != m_statusCallback) {
-        m_statusCallback((100 * blk) / nPackets, ""/*vscp_str_format("blk %d.", blk).c_str()*/);
+        m_statusCallback((100 * blk) / nPackets, "" /*vscp_str_format("blk %d.", blk).c_str()*/);
       }
 
     } // for
-  }   // code
+  } // code
 
   delete[] pbuf;
   return VSCP_ERROR_SUCCESS;
@@ -882,18 +882,18 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
 int
 CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
 {
-  //bool bRun = true;
+  // bool bRun = true;
   int rv;
 
-  m_checksum        = 0;
-  //uint32_t progress = 0;
+  m_checksum = 0;
+  // uint32_t progress = 0;
   uint32_t addr = 0;
   std::string strStatus;
 
-  //uint8_t pbuf[BUFFER_SIZE_CODE];
-  //uint32_t nPackets;
-  // uint32_t minAddr;
-  // uint32_t maxAddr;
+  // uint8_t pbuf[BUFFER_SIZE_CODE];
+  // uint32_t nPackets;
+  //  uint32_t minAddr;
+  //  uint32_t maxAddr;
 
   if (nullptr != m_statusCallback) {
     m_statusCallback(0, "Starting firmware download");

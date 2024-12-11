@@ -33,8 +33,8 @@
 
 #pragma once
 
-#include "vscp.h"
 #include "vscp-bootdevice.h"
+#include "vscp.h"
 
 #include <string>
 
@@ -127,8 +127,6 @@ public:
     MEM_TYPE_USERID       // 0x200000
   };
 
-  
-
   // flags
   // CONTROL is defined as follows
   //
@@ -186,7 +184,7 @@ public:
         MDF is not the same as the one read from the remote device.
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail = false);
+  int deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail = false);
 
   /*!
     Write a boot block to the device
@@ -202,7 +200,8 @@ public:
           and status message (const char *)
       @return VSCP_ERROR_SUCCESS on success.
   */
-  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr, bool bAbortOnFirmwareCodeFail = false);
+  int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr,
+                 bool bAbortOnFirmwareCodeFail                         = false);
 
   /*!
     Restart remote device

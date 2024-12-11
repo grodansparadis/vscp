@@ -22,5 +22,6 @@ SpaceAfterCStyleCast: true
 AllowShortFunctionsOnASingleLine: Inline
 BreakBeforeBinaryOperators: None
 #AllowShortBlocksOnASingleLine: true
+SortIncludes: false
 
 # google-readability-braces-around-statements

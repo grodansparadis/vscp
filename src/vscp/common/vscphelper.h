@@ -28,7 +28,7 @@
 /*!
     \file vscphelper.h
     \brief	The vscphelper file contains often used functionality when
-   working with VSCP. \details vscphealper have common used functionality to do
+   working with VSCP. \details vscphelper have common used functionality to do
    things in the VSCP world. It can be seen as the main toolbox for the VSCP
    programmer.
  */
