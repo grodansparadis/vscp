@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-#define CRC_CCITT
+#define CRC16
 #include <crc.h>
 
 #include <spdlog/async.h>
@@ -47,11 +47,6 @@
 #include <iostream>
 #include <sstream>
 
-///////////////////////////////////////////////////////////////////////////////
-// CTORS
-//
-
-// Level I
 CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
                                    uint8_t nodeid,
                                    std::function<void(int, const char *)> statusCallback,
@@ -62,7 +57,6 @@ CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
   init();
 }
 
-// Level I over interface
 CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
                                    uint8_t nodeid,
                                    cguid &guidif,
@@ -74,7 +68,6 @@ CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
   init();
 }
 
-// Level II
 CBootDevice_VSCP::CBootDevice_VSCP(CVscpClient *pclient,
                                    cguid &guid,
                                    std::function<void(int, const char *)> statusCallback,
@@ -223,6 +216,12 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnF
   int rv;
   vscpEventEx ex;
 
+  // Save our local GUID
+  m_ourguid = ourguid;
+
+  // Save Firmware device code 
+  m_firmwaredeviceCode = devicecode;
+
   // Read standard registers
   if (VSCP_ERROR_SUCCESS != m_stdRegs.init(*m_pclient, m_guid, m_guidif, nullptr, REGISTER_DEFAULT_TIMEOUT)) {
     spdlog::error("VSCP bootloader: Failed to read standard registers");
@@ -246,17 +245,16 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnF
     Must be the same as the firmware we try to load is intended for
   */
   if (m_firmwaredeviceCode != m_stdRegs.getFirmwareDeviceCode()) {
-    spdlog::warn("Firmware device code is not equal! Firmware: {0} Device: {1} (disable requirement in configuration)",
+    spdlog::warn("Firmware device code is not equal! Firmware: {0} Device: {1}",
                  m_firmwaredeviceCode,
                  m_stdRegs.getFirmwareDeviceCode());
     if (nullptr != m_statusCallback) {
-      m_statusCallback(
-        -1,
-        vscp_str_format(
-          "Firmware device code is not equal! Firmware: {0} Device: {1} (disable requirement in configuration)",
-          m_firmwaredeviceCode,
-          m_stdRegs.getFirmwareDeviceCode())
-          .c_str());
+      m_statusCallback(-1,
+                        vscp_str_format(
+                          "Firmware device code is not equal! Firmware: {0} Device: {1}", 
+                            m_firmwaredeviceCode, 
+                            m_stdRegs.getFirmwareDeviceCode())
+                          .c_str());                       
     }
     if (bAbortOnFirmwareCodeFail) {
       return VSCP_ERROR_PARAMETER;
@@ -300,7 +298,7 @@ CBootDevice_VSCP::deviceInit(cguid &ourguid, uint16_t devicecode, bool bAbortOnF
     return rv;
   }
 
-  // OK now in bootmode - return if valid block data
+  // OK now in bootmode - return
   m_blockSize = construct_unsigned32(ex.data[0], ex.data[1], ex.data[2], ex.data[3]);
   m_numBlocks = construct_unsigned32(ex.data[4], ex.data[5], ex.data[6], ex.data[7]);
   spdlog::debug("VSCP bootloader: Confirmed, device is in boot mood.");
@@ -342,13 +340,12 @@ CBootDevice_VSCP::writeBlockStart(uint32_t block, uint8_t type)
   cguid node_guid;
   m_stdRegs.getGUID(node_guid);
 
-  ex.sizeData = 6;
+  ex.sizeData = 8;
   ex.data[0]  = (block >> 24) & 0xff;
   ex.data[1]  = (block >> 16) & 0xff;
   ex.data[2]  = (block >> 8) & 0xff;
   ex.data[3]  = block & 0xff;
   ex.data[4]  = type;
-  ex.data[5]  = 0;
 
   if (VSCP_ERROR_SUCCESS != (rv = m_pclient->send(ex))) {
     spdlog::error("VSCP bootloader: Failed to send start block transfer event {0}", rv);
@@ -358,19 +355,15 @@ CBootDevice_VSCP::writeBlockStart(uint32_t block, uint8_t type)
     return rv;
   }
 
-
-
   // Wait for response on start block transfer event
   if (VSCP_ERROR_SUCCESS !=
       (rv = checkResponse(ex, node_guid, VSCP_TYPE_PROTOCOL_START_BLOCK_ACK, VSCP_TYPE_PROTOCOL_START_BLOCK_NACK))) {
     spdlog::error("VSCP bootloader: Negative response from block start request {0}", rv);
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1,
-                       vscp_str_format("VSCP bootloader: Negative response from block start request %d", rv).c_str());
+      m_statusCallback(-1, "VSCP bootloader: Negative response from block start request");
     }
     return rv;
   }
-
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -393,7 +386,7 @@ CBootDevice_VSCP::programBlock(uint32_t block)
   cguid node_guid;
   m_stdRegs.getGUID(node_guid);
 
-  ex.sizeData = 4;
+  ex.sizeData = 8;
   ex.data[0]  = (block >> 24) & 0xff;
   ex.data[1]  = (block >> 16) & 0xff;
   ex.data[2]  = (block >> 8) & 0xff;
@@ -407,14 +400,14 @@ CBootDevice_VSCP::programBlock(uint32_t block)
     return rv;
   }
 
-  // Wait for response on program block data
+  // Wait for response on start block transfer event
   if (VSCP_ERROR_SUCCESS != (rv = checkResponse(ex,
                                                 node_guid,
                                                 VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK,
                                                 VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_NACK))) {
-    spdlog::error("VSCP bootloader: Negative response from ProgramBlock. {0}", rv);
+    spdlog::error("VSCP bootloader: Negative response from block start request {0}", rv);
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, vscp_str_format("VSCP bootloader: Negative response from ProgramBlock. %d", rv).c_str());
+      m_statusCallback(-1, "VSCP bootloader: Negative response from block start request");
     }
     return rv;
   }
@@ -459,10 +452,10 @@ CBootDevice_VSCP::writeChunk(const uint8_t *paddr, uint16_t size)
 
   // Wait for response on start block transfer event
   if (VSCP_ERROR_SUCCESS !=
-      (rv = checkResponse(ex, node_guid, VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_ACK, VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_NACK))) {
-    spdlog::error("VSCP bootloader: Negative response from block chunk send {0}", rv);
+      (rv = checkResponse(ex, node_guid, VSCP_TYPE_PROTOCOL_START_BLOCK_ACK, VSCP_TYPE_PROTOCOL_START_BLOCK_NACK))) {
+    spdlog::error("VSCP bootloader: Negative response from block start request {0}", rv);
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, vscp_str_format("VSCP bootloader: Negative response from block chunk send", rv).c_str());
+      m_statusCallback(-1, "VSCP bootloader: Negative response from block start request");
     }
     return rv;
   }
@@ -477,13 +470,10 @@ CBootDevice_VSCP::writeChunk(const uint8_t *paddr, uint16_t size)
 int
 CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
 {
-  int rv = VSCP_ERROR_SUCCESS;
+  int rv;
+  // vscpEventEx ex;
   cguid guid;
-  uint32_t nChunks = 1;
-  vscpEventEx ex;
-
-  cguid node_guid;
-  m_stdRegs.getGUID(node_guid);
+  uint32_t nChunks;
 
   if (m_blockSize > m_chunkSize) {
     nChunks = m_blockSize / m_chunkSize;
@@ -492,61 +482,34 @@ CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
       nChunks++;
     }
   }
+  else {
+    // There is just one chunk
+    // We have taken care of chunk > block in init
+    nChunks = 1;
+  }
 
   for (uint32_t chunk = 0; chunk < nChunks; chunk++) {
 
-    spdlog::debug("VSCP bootloader: memory chunk on remote device. chunk={0} {1:X} ", chunk, chunk * m_chunkSize);
+    spdlog::debug("Loading memory chunk on remote device. chunk={0} {1:X} ", chunk, chunk * m_chunkSize);
     if (nullptr != m_statusCallback) {
-      m_statusCallback(
-        -1 /*(100 * chunk) / nChunks*/,
-        // vscp_str_format("VSCP bootloader: Loading memory chunk on remote device. chunk = %d.", chunk).c_str()
-        "");
+      m_statusCallback((100 * chunk) / nChunks,
+                       vscp_str_format("Loading memory chunk on remote device. chunk = %d.", chunk).c_str());
     }
 
-    if (VSCP_ERROR_SUCCESS != (rv = writeChunk(paddr + (chunk * m_chunkSize), m_chunkSize))) {
-      spdlog::error("VSCP bootloader: Failed to write chunk to remote device. rv={}", rv);
+    if (VSCP_ERROR_SUCCESS != writeChunk(paddr + (m_chunkSize * nChunks), m_chunkSize)) {
+      spdlog::error("Failed to write chunk to remote device. rv={}", rv);
       if (nullptr != m_statusCallback) {
-        m_statusCallback(
-          (100 * chunk) / nChunks,
-          vscp_str_format("VSCP bootloader: Failed to write chunk %lu/%lu to remote device rv=%d.", chunk, nChunks, rv)
-            .c_str());
-        spdlog::error("VSCP bootloader: Failed to write chunk {0}/{1} to remote device rv={2}.", chunk, nChunks, rv);
+        m_statusCallback((100 * chunk) / nChunks,
+                         vscp_str_format("Failed to write chunk to remote device rv=%d.", rv).c_str());
       }
       break;
     }
 
-    //paddr += m_chunkSize;
+    paddr += m_chunkSize;
 
   } // for
 
-  // Wait for data block ACK/NACK response
-  if (VSCP_ERROR_SUCCESS !=
-      (rv = checkResponse(ex, node_guid, VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK, VSCP_TYPE_PROTOCOL_BLOCK_DATA_NACK))) {
-    spdlog::error("VSCP bootloader: NACK received for data block {0}", rv);
-    if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, "VSCP bootloader: NACK received for data block");
-    }
-  }
-
-  // Check that the crc is equal
-  uint16_t crc_block    = crcFast(paddr, m_blockSize);
-  uint16_t crc_packet   = construct_unsigned16(ex.data[0], ex.data[1]);
-  uint32_t block_packet = construct_unsigned32(ex.data[2], ex.data[3], ex.data[4], ex.data[5]);
-
-  if (crc_packet != crc_block) {
-    spdlog::error("VSCP bootloader: CRC error for block. CRC Packet={0:0X} CRC_Block={1:0X}", crc_packet, crc_block);
-    if (nullptr != m_statusCallback) {
-      m_statusCallback(
-        -1,
-        vscp_str_format("VSCP bootloader: CRC error for block CRC Packet=%04X CRC_Block=%04X", crc_packet, crc_block)
-          .c_str());
-    }
-    return VSCP_ERROR_INVALID_FRAME; // TODO: Change to CRC error
-  }
-
-  // We have a valid block
-
-  return rv;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -556,7 +519,7 @@ CBootDevice_VSCP::writeBlock(const uint8_t *paddr)
 int
 CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
 {
-  int rv = VSCP_ERROR_SUCCESS;
+  int rv;
   std::string strStatus;
 
   m_checksum = 0;
@@ -569,226 +532,115 @@ CBootDevice_VSCP::deviceLoad(std::function<void(int, const char *)> statusCallba
   m_checksum = 0;
 
   // Iterate over memory types
-  for (int memtype = 0; memtype < NUMBER_OF_MEMORY_TYPES; memtype++) {
+  for (int pos = 0; pos < NUMBER_OF_MEMORY_TYPES; pos++) {
 
-    spdlog::debug("VSCP bootloader: Memory type {0}", m_memory_range[memtype].type);
+    spdlog::error("writeFirmwareBlock: Handling memory range {0}", memory_range[pos].type);
     if (nullptr != m_statusCallback) {
-      m_statusCallback(-1, vscp_str_format("VSCP bootloader: Memory type %d", m_memory_range[memtype].type).c_str());
+      m_statusCallback(-1,
+                       vscp_str_format("writeFirmwareBlock: Handling memory range %d", memory_range[pos].type).c_str());
     }
 
     uint32_t minAddr;
     uint32_t maxAddr;
 
-    // Fetch min and max address for selected memory type
+    // Fetch min and max address for selected memory range
     if (VSCP_ERROR_SUCCESS !=
-        (rv = getMinMaxForRange(m_memory_range[memtype].start, m_memory_range[memtype].end, &minAddr, &maxAddr))) {
-      spdlog::error("VSCP bootloader: Failed to get min max range for memory type {0} rv={1}", memtype, rv);
+        (rv = getMinMaxForRange(memory_range[pos].beginning, memory_range[pos].end, &minAddr, &maxAddr))) {
+      spdlog::error("writeFirmwareBlock: Failed to get min max range for block {0:X}-{1:X} rv=%d",
+                    minAddr,
+                    maxAddr,
+                    rv);
       if (nullptr != m_statusCallback) {
         m_statusCallback(
           -1,
-          vscp_str_format("VSCP bootloader: Failed to get min max range for memory type %d. rv=%d", memtype, rv)
-            .c_str());
+          vscp_str_format("writeFirmwareBlock: Failed to get min max range for block. rv=%d", rv).c_str());
       }
-      continue;
-    }
-
-    // Check if there is any data to write
-    if (maxAddr <= minAddr) {
-      spdlog::error("VSCP bootloader: No data to write for memory type {0} block {1:X}-{2:X}.",
-                    memtype,
-                    m_memory_range[memtype].start,
-                    m_memory_range[memtype].end);
-      if (nullptr != m_statusCallback) {
-        m_statusCallback(-1,
-                         vscp_str_format("VSCP bootloader: No data to write for memory type %d block %X-%X.",
-                                         memtype,
-                                         m_memory_range[memtype].start,
-                                         m_memory_range[memtype].end)
-                           .c_str());
-      }
-      continue;
-    }
-
-    /*
-      The block where the first bytes of the image is located.
-    */
-    uint32_t startBlock = minAddr / m_blockSize;
-    spdlog::debug("VSCP bootloader: Startblock {0}.", startBlock);
-
-    /*
-      The number of blocks to transfer count from the first byte to the
-      last byte. The lowest address may need to be adjusted to a block
-      boundary. There is no need to do this for the upper address
-    */
-    uint32_t nBlocks = (maxAddr - minAddr) / m_blockSize;
-
-    // A not completely full packet also count
-    if (0 != ((maxAddr - minAddr) % m_blockSize)) {
-      nBlocks++;
-    }
-
-    spdlog::debug("VSCP bootloader: Number of blocks {0}.", nBlocks);
-
-    /*
-      Allocate buffer memory for the block
-      Some notes to remember (and handle):
-       - Blocksize can be less than data size (ChunkSize) for a frame (8/512)
-    */
-    uint8_t *pbuf = new uint8_t[m_blockSize * nBlocks];
-    if (nullptr == pbuf) {
-      spdlog::error("VSCP bootloader: Failed to allocate memory for block {0:X}-{1:X}.", minAddr, maxAddr);
-      if (nullptr != m_statusCallback) {
-        m_statusCallback(
-          -1,
-          vscp_str_format("VSCP bootloader: Failed to allocate memory for block {0:X}-{1:X}.", minAddr, maxAddr)
-            .c_str());
-      }
-      return VSCP_ERROR_MEMORY;
-    }
-
-    // Init the memory image. Fill unused positions with 0xff
-    // After fill we have a block with data that is
-    // offset memory_range[pos].beginning
-    if (VSCP_ERROR_SUCCESS != (rv = fillMemoryBuffer(pbuf,
-                                                     m_blockSize * nBlocks,
-                                                     m_memory_range[memtype].start,
-                                                     m_memory_range[memtype].end,
-                                                     startBlock * m_blockSize))) {
-      spdlog::error("VSCP bootloader: Failed to fill memory buffer with data.");
-      if (nullptr != m_statusCallback) {
-        m_statusCallback(
-          -1,
-          vscp_str_format("VSCP bootloader: Failed to fill memory buffer with with data rv=%d", rv).c_str());
-      }
-      delete[] pbuf;
       return rv;
     }
 
-    spdlog::debug("VSCP bootloader: Filled memory buffer with with data.");
-    m_statusCallback(-1, vscp_str_format("VSCP bootloader: Filled memory buffer with with data.").c_str());
+    // If there is a memory range to work with
+    if (maxAddr > minAddr) {
 
-    // Write blocks to remote device
+      /*!
+        The number of blocks to transfer count from the first byte to the
+        last byte. The lowest address may need to be adjusted to a block
+        boundary. There is no ned to do this for the upper address
+      */
+      minAddr -= (minAddr % m_blockSize); // Adjust to block boundary
 
-    uint32_t block = 0;
-    while (block < nBlocks) {
-
-      spdlog::debug("VSCP bootloader: Start block {0} of {1}.", block, nBlocks);
-      if (nullptr != m_statusCallback) {
-        m_statusCallback(
-          -1,
-          vscp_str_format("VSCP bootloader: Start block %lu of %lu", (unsigned long) block, (unsigned long) nBlocks)
-            .c_str());
+      uint32_t nBlocks = (maxAddr - minAddr) / m_blockSize;
+      // A not completely full packet also count
+      if (0 != ((maxAddr - minAddr) % m_blockSize)) {
+        nBlocks++;
       }
 
-      // ----------------------------------------------------------------------
+      uint32_t startBlock = (minAddr - memory_range[pos].beginning) / m_blockSize;
 
-      int trycnt = 3; // We give block transfer + program three tries for each block
-      while (trycnt > 0) {
+      /*
+        Some notes to remember (and handle):
+         - Blocksize can be less than data size (ChunkSize) for a frame (8/512)
+         - A block size that is less than
+      */
+      uint8_t *pbuf = new uint8_t[memory_range[pos].end - memory_range[pos].beginning + 1];
+
+      // Init the memory image. Fill unused positions with 0xff
+      // After fill we have a block with data that is that is
+      // offset memory_range[pos].beginning
+      if (VSCP_ERROR_SUCCESS != (rv = fillMemoryBuffer(pbuf, m_blockSize, memory_range[pos].beginning))) {
+        spdlog::error("writeFirmwareBlock: Failed to fill code block with data.");
+        if (nullptr != m_statusCallback) {
+          m_statusCallback(
+            -1,
+            vscp_str_format("writeFirmwareBlock: Failed to fill code block with data rv=%d", rv).c_str());
+        }
+        delete[] pbuf;
+        return rv;
+      }
+
+      // Write blocks to remote device
+
+      uint32_t block = 0;
+      while (block < nBlocks) {
 
         /*!
           * * * start block * * *
 
-          Startblock is the first block in an area. The block number6
-          is given and also memory type. It is possible to skip
+          Startblock is the first block in an area. The block number
+          is given and also memory type. Blocknumbers can skip
           blocks that should not be written.
          */
-        if (VSCP_ERROR_SUCCESS != (rv = writeBlockStart(block, m_memory_range[memtype].type))) {
-          spdlog::error("VSCP bootloader: Failed to write block {0}, memory-type={1}, rv={3}.", block, memtype, rv);
-          if (nullptr != m_statusCallback) {
-            m_statusCallback(-1,
-                             vscp_str_format("VSCP bootloader: Failed to write block %lu, memory-type=%d, rv=%d",
-                                             (unsigned long) block,
-                                             memtype,
-                                             rv)
-                               .c_str());
-          }
-          trycnt--;
-          if (trycnt > 0) {
-            spdlog::debug("VSCP bootloader: Retry block start {0}.", block);
-            continue;
-          }
-          // Last try failed
+        if (VSCP_ERROR_SUCCESS != (rv = writeBlockStart(block, memory_range[pos].type))) {
           delete[] pbuf;
           return rv;
         }
-
-        spdlog::debug("VSCP bootloader: Block start succeeded {0}.", block);
-        if (nullptr != m_statusCallback) {
-          m_statusCallback(
-            -1,
-            vscp_str_format("VSCP bootloader: Block start succeeded %lu ", (unsigned long) block).c_str());
-        }
-
-        // for (int i = 0; i < m_blockSize; i++) {
-        //   printf("%02X ", pbuf[block * m_blockSize + i]);
-        //   if (i % 8 == 7) {
-        //     printf("\n");
-        //   }
-        // }
 
         // Write the block
         if (VSCP_ERROR_SUCCESS != (rv = writeBlock(pbuf + (block * m_blockSize)))) {
           spdlog::error("VSCP bootloader: Failed to write block {0}", rv);
           if (nullptr != m_statusCallback) {
-            m_statusCallback(
-              -1,
-              vscp_str_format("VSCP bootloader: Failed to write block %lu rv=%d", (unsigned long) block, rv).c_str());
+            m_statusCallback(-1, "VSCP bootloader: Failed to write block");
           }
-          trycnt--;
-          if (trycnt > 0) {
-            spdlog::debug("VSCP bootloader: Retry write block {0}.", block);
-            continue;
-          }
-          // Last try failed
           delete[] pbuf;
           return rv;
         }
-
-        spdlog::debug("VSCP bootloader: Write block succeeded {0}.", block);
 
         // Program the block
         if (VSCP_ERROR_SUCCESS != (rv = programBlock(block))) {
-          spdlog::error("VSCP bootloader: Program block failed. block={0} rv={1}", block, rv);
-          if (nullptr != m_statusCallback) {
-            m_statusCallback(
-              -1,
-              vscp_str_format("VSCP bootloader: Program block failed. block=%lu rv=%d", (unsigned long) block, rv)
-                .c_str());
-          }
-          trycnt--;
-          if (trycnt > 0) {
-            spdlog::debug("VSCP bootloader: Retry block start {0}.", block);
-            continue;
-          }
-          // Last try failed
           delete[] pbuf;
           return rv;
         }
 
-        spdlog::debug("VSCP bootloader: Program block succeeded {0}.", block);
-        // Update transfer status
-        if (nullptr != m_statusCallback) {
-          m_statusCallback(
-            (100 * block) / nBlocks,
-            vscp_str_format("VSCP bootloader: Program block succeeded %lu ", (unsigned long) block).c_str());
-        }
-        // Done
-        trycnt = 0;
+        // Next block
+        block++;
 
-      } // while block
+      } // Writing blocks
 
-      // ----------------------------------------------------------------------
+      delete[] pbuf;
 
-      // Next block
-      block++;
-
-    } // Writing blocks
-
-    delete[] pbuf;
-
+    } // There is bytes to write
   } // for memory types
 
-  return rv;
+  return VSCP_ERROR_TIMEOUT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -799,6 +651,7 @@ int
 CBootDevice_VSCP::deviceReboot(void)
 {
   // int rv;
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -834,66 +687,32 @@ CBootDevice_VSCP::checkResponse(vscpEventEx &ex,
 
       rv = m_pclient->receive(ex);
 
-      cguid evguid(ex.GUID);
-
-      spdlog::debug("VSCP Bootloader: Received event: class={0} type={1} size={2} ev.guid={3} guid={4}",
+      spdlog::debug("VSCP Bootloader: Received event: class={0} type={1} size={2}",
                     ex.vscp_class,
                     ex.vscp_type,
-                    ex.sizeData,
-                    evguid.toString(),
-                    guid.toString());
+                    ex.sizeData);
 
-      if (m_pclient->isFullLevel2()) {
-
-        // Is this an ack reply from the node?
-        if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_ack == ex.vscp_type) &&
-            guid.isSameGUID(ex.GUID)) {
-          // ACK response
-          spdlog::debug("VSCP bootloader: Check response: Level II ACK received.");
-          if (nullptr != m_statusCallback) {
-            m_statusCallback(-1, "VSCP bootloader: Check response: Level II ACK received");
-          }
-          rv = VSCP_ERROR_SUCCESS;
-          break;
+      // Is this a read/write reply from the node?
+      if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_ack == ex.vscp_type) && guid.isSameGUID(ex.GUID)) {
+        // ACK response
+        spdlog::debug("VSCP Bootloader: ACK received.");
+        if (nullptr != m_statusCallback) {
+          m_statusCallback(-1, "VSCP Bootloader:ACK received");
         }
-
-        // Is this a nack reply from the node?
-        if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_nack == ex.vscp_type) &&
-            guid.isSameGUID(ex.GUID)) {
-          // NACK response
-          spdlog::error("VSCP bootloader: Check response: Level II NACK received.");
-          rv = VSCP_ERROR_NACK;
-          break;
-        }
+        rv = VSCP_ERROR_SUCCESS;
+        break;
       }
-      else {
 
-        // Level I - Only LSB byte (nickname id) is of interest
-
-        // ACK received?
-        if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_ack == ex.vscp_type) &&
-            guid[15] == ex.GUID[15]) {
-          // ACK response
-          spdlog::debug("VSCP bootloader: Check response: Level I ACK received. nickname={0} ev.nickname={1}",
-                        guid[15],
-                        ex.GUID[15]);
-          rv = VSCP_ERROR_SUCCESS;
-          break;
+      // Is this a read/write reply from the node?
+      if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_nack == ex.vscp_type) &&
+          guid.isSameGUID(ex.GUID)) {
+        // NACK response
+        spdlog::debug("VSCP Bootloader: NACK received.");
+        if (nullptr != m_statusCallback) {
+          m_statusCallback(-1, "VSCP Bootloader: NACK received.");
         }
-
-        // NACK received?
-        if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) && (response_event_nack == ex.vscp_type) &&
-            guid[15] == ex.GUID[15]) {
-          // ACK response
-          spdlog::error("VSCP bootloader: Check response: Level I NACK received. nickname={0} ev.nickname={1}",
-                        guid[15],
-                        ex.GUID[15]);
-          if (nullptr != m_statusCallback) {
-            m_statusCallback(-1, "VSCP bootloader: Check response: Level I NACK received");
-          }
-          rv = VSCP_ERROR_SUCCESS;
-          break;
-        }
+        rv = VSCP_ERROR_NACK;
+        break;
       }
     }
   } // while

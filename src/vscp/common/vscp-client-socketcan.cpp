@@ -51,7 +51,7 @@
 #include <time.h>
 
 #include <linux/can/raw.h>
-#include <linux/sockios.h>    // For SIOCGSTAMP
+#include <linux/sockios.h> // For SIOCGSTAMP
 
 #include <expat.h>
 
@@ -559,6 +559,38 @@ vscpClientSocketCan::receive(canalMsg &msg)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// receive
+//
+
+int
+vscpClientSocketCan::receiveBlocking(vscpEventEx &ex, long timeout)
+{
+  int rv;
+  vscpEvent ev;
+
+  if (-1 == (rv = vscp_sem_wait(&m_semReceiveQueue, timeout))) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
+
+  // pthread_mutex_lock(&m_mutexReceiveQueue);
+  // if (m_inqueue.size()) {
+  //   *pex = m_inqueue.dequeue();
+  //   pthread_mutex_unlock(&m_mutexReceiveQueue);
+  //   spdlog::trace("[btest::getEventEx] {0:X}:{1:X}", (*pex)->vscp_class, (*pex)->vscp_type);
+
+  if (VSCP_ERROR_SUCCESS != (rv = receive(ev))) {
+    return rv;
+  }
+
+  return (vscp_convertEventToEventEx(&ex, &ev) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setfilter
 //
 
@@ -696,7 +728,7 @@ vscpClientSocketCan::sendToCallbacks(vscpEvent *pev)
 //
 
 int
-vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData )
+vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -713,7 +745,7 @@ vscpClientSocketCan::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)
 //
 
 int
-vscpClientSocketCan::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData )
+vscpClientSocketCan::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData)
 {
   // Can not be called when connected
   if (m_bConnected) {
@@ -890,7 +922,7 @@ workerThread(void *pData)
           // Get timetstamp
           struct timeval tv;
           ioctl(pObj->m_socket, SIOCGSTAMP, &tv);
-          pEvent->timestamp =  tv.tv_sec * 1000000L + tv.tv_usec;
+          pEvent->timestamp = tv.tv_sec * 1000000L + tv.tv_usec;
 
           // This can lead to level I frames having to
           // much data. Later code will handel this case.
@@ -930,7 +962,7 @@ workerThread(void *pData)
               }
             }
 
-            printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
+            // printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
 
             // Add to input queue only if no callback set
             if (!pObj->isCallbackEvActive() || !pObj->isCallbackExActive()) {

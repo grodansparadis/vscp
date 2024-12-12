@@ -156,6 +156,12 @@ public:
   virtual int receive(vscpEventEx &ex);
 
   /*!
+      Blocking receive of VSCP event ex from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout);
+
+  /*!
       Receive CAN(AL) message from remote host
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
