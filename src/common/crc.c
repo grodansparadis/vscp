@@ -161,7 +161,6 @@ crcInit(void)
     int            dividend;
     unsigned char  bit;
 
-
     /*
      * Compute the remainder of each possible dividend.
      */

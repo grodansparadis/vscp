@@ -63,15 +63,15 @@
 // Ctor
 //
 
-CBootMemBlock::CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *pblkdata)
+CBootMemSegment::CBootMemSegment(uint32_t address, uint8_t size, const uint8_t *pdata)
 {
   m_startAddress = address;
-  m_blksize      = blksize;
-  m_pmemblk      = nullptr;
-  if (nullptr != pblkdata) {
-    m_pmemblk = new uint8_t[blksize];
-    if (nullptr != m_pmemblk) {
-      memcpy(m_pmemblk, pblkdata, blksize);
+  m_segSize      = size;
+  m_pmemSegment  = nullptr;
+  if (nullptr != pdata) {
+    m_pmemSegment = new uint8_t[size];
+    if (nullptr != m_pmemSegment) {
+      memcpy(m_pmemSegment, pdata, size);
     }
   }
 }
@@ -80,11 +80,11 @@ CBootMemBlock::CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *p
 // Dtor
 //
 
-CBootMemBlock::~CBootMemBlock(void)
+CBootMemSegment::~CBootMemSegment(void)
 {
-  if (nullptr != m_pmemblk) {
-    delete[] m_pmemblk;
-    m_pmemblk = nullptr;
+  if (nullptr != m_pmemSegment) {
+    delete[] m_pmemSegment;
+    m_pmemSegment = nullptr;
   }
 }
 
@@ -146,9 +146,9 @@ CBootDevice::CBootDevice(CVscpClient *pclient,
 
 CBootDevice::~CBootDevice(void)
 {
-  while (m_memblkList.size()) {
-    CBootMemBlock *pblk = m_memblkList.front();
-    m_memblkList.pop_front();
+  while (m_memSegList.size()) {
+    CBootMemSegment *pblk = m_memSegList.front();
+    m_memSegList.pop_front();
     delete pblk;
     pblk = nullptr;
   }
@@ -162,8 +162,6 @@ int
 CBootDevice::loadIntelHexFile(const std::string &path)
 {
   char szline[2048];
-  // char buf[16];
-  // char *endptr;
   std::ifstream hexfile;
   uint16_t lowaddr     = 0; // Low part of address
   uint16_t highaddr    = 0; // High part if address
@@ -215,7 +213,7 @@ CBootDevice::loadIntelHexFile(const std::string &path)
 
       // Construct fulladdress
       uint32_t fulladdr = (((uint32_t) highaddr) << 16) + lowaddr + segmentaddr;
-      spdlog::trace("cnt: {0} rectype:{1} lowaddr: {2} highaddr: {3} fulladdr: {4} segment: {5}",
+      spdlog::trace("cnt: {0} rectype:{1} lowaddr: {2:X} highaddr: {3:X} fulladdr: {4:X} segment: {5}",
                     cnt,
                     rectype,
                     lowaddr,
@@ -231,13 +229,13 @@ CBootDevice::loadIntelHexFile(const std::string &path)
           for (int i = 0; i < cnt; i++) {
             mem[i] = linebuf[4 + i];
           }
-          CBootMemBlock *pblk = new CBootMemBlock(fulladdr, cnt, mem);
+          CBootMemSegment *pblk = new CBootMemSegment(fulladdr, cnt, mem);
           if (nullptr == pblk) {
-            spdlog::error("Load intel hex: Unabled to allocate block");
+            spdlog::error("Load intel hex: Unable to allocate block");
             hexfile.close();
             return VSCP_ERROR_MEMORY;
           }
-          m_memblkList.push_back(pblk);
+          m_memSegList.push_back(pblk);
         } break;
 
         case CBootDevice::INTELHEX_LINETYPE_EOF:
@@ -305,7 +303,7 @@ CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uin
   *pmin = 0xffffffff;
   *pmax = 0;
 
-  for (auto const &pblk : m_memblkList) {
+  for (auto const &pblk : m_memSegList) {
     if ((pblk->getStartAddress() >= start) && (pblk->getStartAddress() <= end)) {
       // Set min to lowest address found
       if (pblk->getStartAddress() < *pmin) {
@@ -333,7 +331,12 @@ CBootDevice::getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uin
 //
 
 int
-CBootDevice::fillMemoryBuffer(uint8_t *pmem, uint32_t size, uint32_t start, uint8_t fill)
+CBootDevice::fillMemoryBuffer(uint8_t *pmem,
+                              uint32_t size,
+                              uint32_t start,
+                              uint32_t end,
+                              uint32_t offset,
+                              uint8_t fillbyte)
 {
   // Check pointers
   if (nullptr == pmem) {
@@ -346,13 +349,15 @@ CBootDevice::fillMemoryBuffer(uint8_t *pmem, uint32_t size, uint32_t start, uint
   }
 
   // Fill block with void value (0xff for flash)
-  memset(pmem, fill, size);
+  memset(pmem, fillbyte, size);
 
-  for (auto const &pblk : m_memblkList) {
-    if ((pblk->getStartAddress() >= start) && (pblk->getStartAddress() < (start + size))) {
-      for (uint8_t pos = 0; pos < pblk->getSize(); pos++) {
-        pmem[(pblk->getStartAddress() - start) + pos] = *(pblk->getBlock() + pos);
-      }
+  /*!
+    Fill the memory buffer with data for this address range (given by start and size)
+  */
+  for (auto const &pblk : m_memSegList) {
+    // Only add if the segment fits in the range
+    if ((pblk->getStartAddress() >= start) && ((pblk->getStartAddress() + pblk->getSize()) < end)) {
+      memcpy(pmem + (pblk->getStartAddress() - start - offset), pblk->getSegment(), pblk->getSize());
     }
   }
 

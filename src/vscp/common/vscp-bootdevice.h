@@ -56,7 +56,7 @@
     different memory regions. When a block of data from that region
     is sent to the remote device it is up to that device to
     place the data at the correct location. This model can be used
-    for code, ram, eeprom, fuses, config data etc. The pic1 bootloader
+    for code, ram, EEPROM, fuses, config data etc. The pic1 bootloader
     use the Microchip abstract memory model. The VSCP bootloader let
     the receiving end take the decision on where a block should be written
 
@@ -75,41 +75,78 @@
 
 #include <list>
 
-class CBootMemBlock {
+class CBootMemSegment {
 
 public:
   /*!
-    A memory blocks have a 32-bit start address and is
-    extending from this address with blksize bytes. The
-    block size is usually the same size as intel hex records
+    A memory segments have a 32-bit start address and is
+    extending from this address with segmentsize bytes. The
+    segment size is usually the same size as intel hex records
     but that is not a requirement
     @param address 32-bit start address for memory block
-    @param blksize 8-bit block size
-    @param pblkdata If not nullpointer this is a pointer to
-      a block with blksize bytes.
+    @param size 8-bit chunk size
+    @param pdata If not nullpointer this is a pointer to
+      a block with size bytes.
   */
-  CBootMemBlock(uint32_t address, uint8_t blksize, const uint8_t *pblkdata = nullptr);
+  CBootMemSegment(uint32_t address, uint8_t size, const uint8_t *pdata = nullptr);
 
   /// @brief  Dtor
-  virtual ~CBootMemBlock(void);
+  virtual ~CBootMemSegment(void);
 
+  /*!
+    Get the abstract start address for the segment
+
+    @return Start address for segment
+  */
   uint32_t getStartAddress(void) { return m_startAddress; };
+
+  /*!
+    Set the abstract start address for the segment
+
+    @param addr Start address for segment
+  */
   void setStartAddress(uint32_t addr) { m_startAddress = addr; };
 
-  uint8_t getSize(void) { return m_blksize; };
-  void setSize(uint8_t blksize) { m_blksize = blksize; };
+  /*!
+    Get the size of the segment
 
-  uint8_t *getBlock(void) { return m_pmemblk; };
+    @return Size of segment
+  */
+  uint8_t getSize(void) { return m_segSize; };
+
+  /*!
+    Set the size of the segment
+
+    @param size Size of segment
+  */
+  void setSize(uint8_t size) { m_segSize = size; };
+
+  /*!
+    Get a pointer to the segment data
+
+    @return Pointer to segment data
+  */
+  uint8_t *getSegment(void) { return m_pmemSegment; };
+
+  /*!
+    Get the memory type for this segment
+
+    @return Memory type as numeric defined in the VSCP specification
+  */
+  uint8_t getType(void) { return m_type; };
 
 private:
   /// The start addres for the memory block
   uint32_t m_startAddress;
 
-  /// Size of block
-  uint8_t m_blksize;
+  /// Size of segment
+  uint8_t m_segSize;
 
   /// Pointer to memory block (max 256 bytes)
-  uint8_t *m_pmemblk;
+  uint8_t *m_pmemSegment;
+
+  /// Memory type
+  uint8_t m_type;
 };
 
 class CBootDevice {
@@ -195,7 +232,7 @@ public:
   /*!
     Get minimum and maximum address in a given memory range. This
     is intended for use when memory areas is used to define different
-    types of memory. Such as flash, eeprom, config, ram etc.
+    types of memory. Such as flash, EEPROM, config, ram etc.
 
     @param start Start address for memory range (inclusive - start is part of address space)
     @param end Stop address for memory range (inclusive - end is part of address space)
@@ -210,16 +247,24 @@ public:
   virtual int getMinMaxForRange(uint32_t start, uint32_t end, uint32_t *pmin, uint32_t *pmax);
 
   /*!
-    Fill memory buffer with firmware data
-    The memory buffer is an area that hold an image of the memory on a remote 
-    device. Typically for one type of memory.
-    @param pmem Pointer to the beginning of an allocated memory buffer
-    @param size Total size of block
-    @param start Logical start address
-    @param fill Value to initialize block with- 0xff is default
-    @return VSCP_ERROR_SUCCESS or errorcode otherwise.
-  */
-  int fillMemoryBuffer(uint8_t *pmem, uint32_t size, uint32_t start, uint8_t fill = 0xff);
+   Fill memory buffer with firmware data
+   The memory buffer is an area that hold an image of the memory on a remote
+   device. Typically for one type of memory.
+   @param pmem Pointer to the beginning of an allocated memory buffer
+   @param size Total size of memory buffer
+   @param start Logical start address (inclusive)
+   @param end Logical end address (inclusive)
+   @param offset Memory offset for first used block. Always on a block
+                 boundary. Defaults to zero.
+   @param fillbyte Value to initialize block with - 0xff is default
+   @return VSCP_ERROR_SUCCESS or errorcode otherwise.
+ */
+  int fillMemoryBuffer(uint8_t *pmem,
+                       uint32_t size,
+                       uint32_t start,
+                       uint32_t end,
+                       uint32_t blockstart = 0,
+                       uint8_t fillbyte    = 0xff);
 
   /*!
       Get info for hex file in html format
@@ -243,7 +288,8 @@ public:
           and status message (const char *)
     @return VSCP_ERROR_SUCCESS on success.
   */
-  virtual int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr, bool bAbortOnFirmwareCodeFail = false) = 0;
+  virtual int deviceLoad(std::function<void(int, const char *)> statusCallback = nullptr,
+                         bool bAbortOnFirmwareCodeFail                         = false) = 0;
 
   /*!
     Restart the device
@@ -273,8 +319,6 @@ protected:
   /*!
     The device code tell the type of hardware of the remote device
     Must/should be the same as for the firmware we try to load.
-
-    This code is set in devicInit and is compared with the code in the device
 
     Some (old) devices will have this code set to 0 in this cae no check
     should be performed.
@@ -307,5 +351,5 @@ protected:
   CStandardRegisters m_stdRegs;
 
   /// List with boot data
-  std::list<CBootMemBlock *> m_memblkList;
+  std::list<CBootMemSegment *> m_memSegList;
 };
