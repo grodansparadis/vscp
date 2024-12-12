@@ -475,7 +475,7 @@ vscpClientTcp::getinterfaces(std::deque<std::string> &iflist)
 //
 
 int
-vscpClientTcp::getwcyd(uint64_t &wcyd)
+vscpClientTcp::getwcyd(uint64_t & /*wcyd*/)
 {
   return VSCP_ERROR_SUCCESS;
 }

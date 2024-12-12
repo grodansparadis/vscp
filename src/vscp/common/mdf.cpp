@@ -1827,7 +1827,7 @@ void
 CMDF::writeMap_json(std::ofstream &fout,
                     std::map<std::string, std::string> *pmap,
                     const std::string &tag,
-                    bool bCommaAtEnd)
+                    bool /*bCommaAtEnd*/)
 {
   if ((nullptr != pmap) && pmap->size()) {
     fout << "," << std::endl;
@@ -1919,7 +1919,7 @@ CMDF::save_xml(const std::string &path)
     }
 
     if ((cnt = pManufacturer->getPhoneObjCount())) {
-      for (int i = 0; i < cnt; i++) {
+      for (size_t i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
         if (nullptr != pitem) {
           fout << "<telephone>" << std::endl;
@@ -1932,7 +1932,7 @@ CMDF::save_xml(const std::string &path)
     }
 
     if ((cnt = pManufacturer->getFaxObjCount())) {
-      for (int i = 0; i < cnt; i++) {
+      for (size_t i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getFaxObj(i);
         if (nullptr != pitem) {
           fout << "<fax>" << std::endl;
@@ -1945,7 +1945,7 @@ CMDF::save_xml(const std::string &path)
     }
 
     if ((cnt = pManufacturer->getEmailObjCount())) {
-      for (int i = 0; i < cnt; i++) {
+      for (size_t i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getEmailObj(i);
         if (nullptr != pitem) {
           fout << "<email>" << std::endl;
@@ -1958,7 +1958,7 @@ CMDF::save_xml(const std::string &path)
     }
 
     if ((cnt = pManufacturer->getWebObjCount())) {
-      for (int i = 0; i < cnt; i++) {
+      for (size_t i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getWebObj(i);
         if (nullptr != pitem) {
           fout << "<web>" << std::endl;
@@ -1971,7 +1971,7 @@ CMDF::save_xml(const std::string &path)
     }
 
     if ((cnt = pManufacturer->getSocialObjCount())) {
-      for (int i = 0; i < cnt; i++) {
+      for (size_t i = 0; i < cnt; i++) {
         CMDF_Item *pitem = pManufacturer->getSocialObj(i);
         if (nullptr != pitem) {
           fout << "<social>" << std::endl;
@@ -1999,7 +1999,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Picture *> *pPictureQueue = getPictureObjList();
   if ((nullptr != pPictureQueue) && (pPictureQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pPictureQueue->begin(); it != pPictureQueue->end(); it++) {
       CMDF_Picture *pPicture = *it;
       fout << "<picture name=\"" << pPicture->getName() << "\" ";
@@ -2013,7 +2013,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Video *> *pVideoQueue = getVideoObjList();
   if ((nullptr != pVideoQueue) && (pVideoQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pVideoQueue->begin(); it != pVideoQueue->end(); it++) {
       CMDF_Video *pVideo = *it;
       fout << "<video name=\"" << pVideo->getName() << "\" ";
@@ -2027,7 +2027,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Manual *> *pManualQueue = getManualObjList();
   if ((nullptr != pManualQueue) && (pManualQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pManualQueue->begin(); it != pManualQueue->end(); it++) {
       CMDF_Manual *pManual = *it;
       fout << "<manual name=\"" << pManual->getName() << "\" ";
@@ -2042,7 +2042,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Firmware *> *pFirmwareQueue = getFirmwareObjList();
   if ((nullptr != pFirmwareQueue) && (pFirmwareQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pFirmwareQueue->begin(); it != pFirmwareQueue->end(); it++) {
       CMDF_Firmware *pFirmware = *it;
       fout << "<firmware name=\"" << pFirmware->getName() << "\" ";
@@ -2065,7 +2065,7 @@ CMDF::save_xml(const std::string &path)
 
   std::deque<CMDF_Driver *> *pDriverQueue = getDriverObjList();
   if ((nullptr != pDriverQueue) && (pDriverQueue->size())) {
-    size_t pos = 0;
+    //size_t pos = 0;
     for (auto it = pDriverQueue->begin(); it != pDriverQueue->end(); it++) {
       CMDF_Driver *pDriver = *it;
       fout << "<driver name=\"" << pDriver->getName() << "\" ";
@@ -2113,7 +2113,7 @@ CMDF::save_xml(const std::string &path)
   // get pages
   std::set<uint16_t> pages;
   std::deque<CMDF_Register *> *pregs = getRegisterObjList();
-  uint32_t nPageCnt                  = getPages(pages);
+  //uint32_t nPageCnt                  = getPages(pages);
 
   // Go throu pages
   for (auto itr : pages) {

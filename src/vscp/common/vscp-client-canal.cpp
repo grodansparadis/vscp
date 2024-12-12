@@ -359,7 +359,7 @@ vscpClientCanal::receive(canalMsg &msg)
 {
   int rv;
   //canalMsg canalMsg;
-  uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  //uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   spdlog::debug("CANAL CLIENT: Poll for event ex.");
 
@@ -433,9 +433,9 @@ vscpClientCanal::clear()
 //
 
 int
-vscpClientCanal::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
+vscpClientCanal::getversion(uint8_t * /*pmajor*/, uint8_t * /*pminor*/, uint8_t * /*prelease*/, uint8_t * /*pbuild*/)
 {
-  uint32_t ver = m_canalif.CanalGetDllVersion();
+  //uint32_t ver = m_canalif.CanalGetDllVersion();
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -445,7 +445,7 @@ vscpClientCanal::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease,
 //
 
 int
-vscpClientCanal::getinterfaces(std::deque<std::string> &iflist)
+vscpClientCanal::getinterfaces(std::deque<std::string> & /*iflist*/ )
 {
   // No interfaces available
   return VSCP_ERROR_SUCCESS;
@@ -467,7 +467,7 @@ vscpClientCanal::getwcyd(uint64_t &wcyd)
 //
 
 void
-vscpClientCanal::setConnectionTimeout(uint32_t timeout)
+vscpClientCanal::setConnectionTimeout(uint32_t /*timeout*/)
 {
   ;
 }
@@ -487,7 +487,7 @@ vscpClientCanal::getConnectionTimeout(void)
 //
 
 void
-vscpClientCanal::setResponseTimeout(uint32_t timeout)
+vscpClientCanal::setResponseTimeout(uint32_t /*timeout*/)
 {
   ;
 }

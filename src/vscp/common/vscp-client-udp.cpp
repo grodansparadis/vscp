@@ -64,7 +64,7 @@ std::string vscpClientUdp::getConfigAsJson(void)
 // initFromJson
 //
 
-bool vscpClientUdp::initFromJson(const std::string& config)
+bool vscpClientUdp::initFromJson(const std::string& /*config*/)
 {
     return true;
 }
@@ -100,7 +100,7 @@ bool vscpClientUdp::isConnected(void)
 // send
 //
 
-int vscpClientUdp::send(vscpEvent &ev)
+int vscpClientUdp::send(vscpEvent & /*ev*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -109,7 +109,7 @@ int vscpClientUdp::send(vscpEvent &ev)
 // send
 //
 
-int vscpClientUdp::send(vscpEventEx &ex)
+int vscpClientUdp::send(vscpEventEx & /*ex*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -135,7 +135,7 @@ vscpClientUdp::send(canalMsg &msg)
 // receive
 //
 
-int vscpClientUdp::receive(vscpEvent &ev)
+int vscpClientUdp::receive(vscpEvent & /*ev*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -144,7 +144,7 @@ int vscpClientUdp::receive(vscpEvent &ev)
 // receive
 //
 
-int vscpClientUdp::receive(vscpEventEx &ex)
+int vscpClientUdp::receive(vscpEventEx & /*ex*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -174,7 +174,7 @@ vscpClientUdp::receive(canalMsg &msg)
 // setfilter
 //
 
-int vscpClientUdp::setfilter(vscpEventFilter &filter)
+int vscpClientUdp::setfilter(vscpEventFilter & /*filter*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -219,7 +219,7 @@ int vscpClientUdp::getversion(uint8_t *pmajor,
 // getinterfaces
 //
 
-int vscpClientUdp::getinterfaces(std::deque<std::string> &iflist)
+int vscpClientUdp::getinterfaces(std::deque<std::string> & /*iflist*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -228,7 +228,7 @@ int vscpClientUdp::getinterfaces(std::deque<std::string> &iflist)
 // getwcyd
 //
 
-int vscpClientUdp::getwcyd(uint64_t &wcyd)
+int vscpClientUdp::getwcyd(uint64_t & /*wcyd*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -237,7 +237,7 @@ int vscpClientUdp::getwcyd(uint64_t &wcyd)
 // setConnectionTimeout
 //
 
-void vscpClientUdp::setConnectionTimeout(uint32_t timeout)
+void vscpClientUdp::setConnectionTimeout(uint32_t /*timeout*/)
 {
     ;
 }
@@ -255,7 +255,7 @@ uint32_t vscpClientUdp::getConnectionTimeout(void)
 // setResponseTimeout
 //
 
-void vscpClientUdp::setResponseTimeout(uint32_t timeout)
+void vscpClientUdp::setResponseTimeout(uint32_t /*timeout*/)
 {
     ;
 }

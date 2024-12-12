@@ -79,7 +79,7 @@ vscp_readLevel1Register(CVscpClient &client,
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
 
-  CVscpClient::connType conntype = client.getType();
+  //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
 
@@ -160,7 +160,7 @@ vscp_writeLevel1Register(CVscpClient &client,
 {
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
-  CVscpClient::connType conntype = client.getType();
+  //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
 
@@ -247,7 +247,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   int rv         = VSCP_ERROR_ERROR;
   uint8_t rcvcnt = 0; // Number of registers read
   vscpEventEx ex;
-  CVscpClient::connType conntype = client.getType();
+  //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
 
@@ -374,13 +374,13 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               uint32_t timeout)
 {
   int rv                         = VSCP_ERROR_SUCCESS;
-  CVscpClient::connType conntype = client.getType();
+  //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
   int reg                        = -99;
   int count                      = 0;
   vscpEventEx ex;
-  uint8_t offset_data = 0;
+  //uint8_t offset_data = 0;
   std::map<uint8_t, uint8_t> startmap;
 
   // The startregs map contains reg, count for each sequence start
@@ -439,7 +439,7 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
       }
 
       uint32_t startTime    = vscp_getMsTimeStamp();
-      uint32_t callbackTime = vscp_getMsTimeStamp();
+      //uint32_t callbackTime = vscp_getMsTimeStamp();
 
       // Wait for reponse
 
@@ -598,7 +598,7 @@ vscp_scanSlowForDevices(CVscpClient &client,
   uint8_t offset = guidIf.isNULL() ? 0 : 16;
   int rv         = VSCP_ERROR_SUCCESS;
   vscpEventEx ex;
-  CVscpClient::connType conntype = client.getType();
+  //CVscpClient::connType conntype = client.getType();
 
   memset(&ex, 0, sizeof(vscpEventEx));
   ex.vscp_class = VSCP_CLASS1_PROTOCOL + (guidIf.isNULL() ? 0 : 512);
@@ -1035,7 +1035,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Pictures</b><ul>";
 
-    for (int i = 0; i < mdf.getPictureCount(); i++) {
+    for (size_t i = 0; i < mdf.getPictureCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getPictureObj(i)->getUrl();
       html += "\">";
@@ -1056,7 +1056,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Videos</b><ul>";
 
-    for (int i = 0; i < mdf.getVideoCount(); i++) {
+    for (size_t i = 0; i < mdf.getVideoCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getVideoObj(i)->getUrl();
       html += "\">";
@@ -1077,7 +1077,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Firmware</b><ul>";
 
-    for (int i = 0; i < mdf.getFirmwareCount(); i++) {
+    for (size_t i = 0; i < mdf.getFirmwareCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getFirmwareObj(i)->getUrl();
       html += "\">";
@@ -1098,7 +1098,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Drivers</b><ul>";
 
-    for (int i = 0; i < mdf.getDriverCount(); i++) {
+    for (size_t i = 0; i < mdf.getDriverCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getDriverObj(i)->getUrl();
       html += "\">";
@@ -1119,7 +1119,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Manuals</b><ul>";
 
-    for (int i = 0; i < mdf.getManualCount(); i++) {
+    for (size_t i = 0; i < mdf.getManualCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getManualObj(i)->getUrl();
       html += "\">";
@@ -1140,7 +1140,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
 
     html += "<br><b>Setup wizards</b><ul>";
 
-    for (int i = 0; i < mdf.getSetupCount(); i++) {
+    for (size_t i = 0; i < mdf.getSetupCount(); i++) {
       html += "<li><a href=\"";
       html += mdf.getSetupObj(i)->getUrl();
       html += "\">";
@@ -1812,8 +1812,8 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         for (int i = 0; i < remoteVar.getTypeByteCount(); i++) {
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
-        uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *) buf));
-        float f    = *((float *) ((uint8_t *) &n));
+        //uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *) buf));
+        //float f    = *((float *) ((uint8_t *) &n));
         strValue   = vscp_str_format("%f", *((float *) buf));
         free(buf);
       }
@@ -1826,8 +1826,8 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
         for (int i = 0; i < remoteVar.getTypeByteCount(); i++) {
           buf[i] = ppage->getReg(remoteVar.getOffset() + i);
         }
-        uint64_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *) buf));
-        double f   = *((double *) ((uint8_t *) &n));
+        //uint64_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *) buf));
+        //double f   = *((double *) ((uint8_t *) &n));
         strValue   = vscp_str_format("%g", *((double *) buf));
 
         free(buf);
@@ -1889,7 +1889,7 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable &remoteVar, std::st
         for a level I device but that is not a problem as they never
         will be written to the device.
       */
-      for (int i = 0; i < strValue.length(); i++) {
+      for (size_t i = 0; i < strValue.length(); i++) {
         ppage->putReg(remoteVar.getOffset() + i, strValue[i]);
       }
     } break;

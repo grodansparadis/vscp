@@ -418,7 +418,7 @@ startInitXMLParser(void *data, const char *name, const char **attr)
 }
 
 static void
-endInitXMLParser(void *data, const char *name)
+endInitXMLParser(void * /*data*/, const char * /*name*/)
 {
     depth_init_parser--;
 }
@@ -658,7 +658,7 @@ startCanalXMLParser(void *data, const char *name, const char **attr)
 }
 
 static void
-endCanalXMLParser(void *data, const char *name)
+endCanalXMLParser(void * /*data*/, const char * /*name*/)
 {
     depth_canal_parser--;
 }

@@ -130,16 +130,41 @@ public:
   virtual int receive(vscpEvent &ev) = 0;
 
   /*!
+      Blocking receive of VSCP event ex from remote host
+      @param ev VSCP event that will get the result.
+      @param timeout Timeout in milliseconds. Zero is no wait. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100) = 0;
+
+  /*!
       Receive VSCP event ex from remote host
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEventEx &ex) = 0;
 
   /*!
+     Blocking receive of VSCP event ex from remote host
+     @param ex VSCP event ex that will get the result.
+     @param timeout Timeout in milliseconds. Zero is no wait. Default is 100 ms.
+     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+ */
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100) = 0;
+
+  /*!
       Receive CAN(AL) message from remote host
+      @param msg CANAL message that will get the result.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(canalMsg &msg) = 0;
+
+  /*!
+      Blocking receive of VSCP event ex from remote host
+      @param msg CANAL message that will get the result.
+      @param timeout Timeout in milliseconds. Zero is no wait. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(canalMsg &msg, long timeout = 100) = 0;
 
   /*!
       Set interface filter
@@ -287,7 +312,7 @@ public:
     @param Pointer to object to set
   */
 
- void setCallbackObj(void *pobj) { m_callbackObject = pobj; };
+  void setCallbackObj(void *pobj) { m_callbackObject = pobj; };
 
   /*!
     Return Callback object
@@ -296,7 +321,6 @@ public:
   void *getCallbackObj(void) { return m_callbackObject; };
 
 public:
-
   /*!
       Callback for events
   */
@@ -308,7 +332,6 @@ public:
   std::function<void(vscpEventEx &ex, void *pobj)> m_callbackex;
 
 protected:
-
   /// Type of connection object
   connType m_type = CVscpClient::connType::NONE;
 
@@ -327,8 +350,6 @@ protected:
       setter and is sent with the callback call
   */
   void *m_callbackObject;
-
-  
 
   /// Name for connection object
   std::string m_name;

@@ -209,7 +209,7 @@ vscpClientWs1::getConfigAsJson(void)
 //
 
 bool
-vscpClientWs1::initFromJson(const std::string &config)
+vscpClientWs1::initFromJson(const std::string & /*config*/)
 {
   return true;
 }
@@ -254,7 +254,7 @@ vscpClientWs1::connect(void)
   std::deque<std::string> args;
   std::string reply;
   char ebuf[100]   = { 0 };
-  const char *path = "/ws1";
+  //const char *path = "/ws1";
 
   // m_conn = mg_connect_websocket_client( m_host.c_str(),
   //                                        m_port,
@@ -318,7 +318,7 @@ vscpClientWs1::connect(void)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if ((args.size() >= 2) && ("+" != args.at(0)) || ("AUTH1" != args.at(1))) {
+  if ((args.size() >= 2) && (("+" != args.at(0)) || ("AUTH1" != args.at(1)))) {
     printf("Invalid response on AUTH\n");
     disconnect();
     return VSCP_ERROR_TIMEOUT;
@@ -748,7 +748,7 @@ vscpClientWs1::getinterfaces(std::deque<std::string> &iflist)
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
-  for (int i = 3; i < args.size(); i++) {
+  for (size_t i = 3; i < args.size(); i++) {
     std::string str = args.front();
     args.pop_front();
     iflist.push_back(str);

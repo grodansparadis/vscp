@@ -64,7 +64,7 @@ std::string vscpClientMulticast::getConfigAsJson(void)
 // initFromJson
 //
 
-bool vscpClientMulticast::initFromJson(const std::string& config)
+bool vscpClientMulticast::initFromJson(const std::string& /*config*/)
 {
     return true;
 }
@@ -101,7 +101,7 @@ bool vscpClientMulticast::isConnected(void)
 // send
 //
 
-int vscpClientMulticast::send(vscpEvent &ev)
+int vscpClientMulticast::send(vscpEvent & /*ev*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -110,7 +110,7 @@ int vscpClientMulticast::send(vscpEvent &ev)
 // send
 //
 
-int vscpClientMulticast::send(vscpEventEx &ex)
+int vscpClientMulticast::send(vscpEventEx & /*ex*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -136,7 +136,7 @@ vscpClientMulticast::send(canalMsg &msg)
 // receive
 //
 
-int vscpClientMulticast::receive(vscpEvent &ev)
+int vscpClientMulticast::receive(vscpEvent & /*ev*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -145,7 +145,7 @@ int vscpClientMulticast::receive(vscpEvent &ev)
 // receive
 //
 
-int vscpClientMulticast::receive(vscpEventEx &ex)
+int vscpClientMulticast::receive(vscpEventEx & /*ex*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -175,7 +175,7 @@ vscpClientMulticast::receive(canalMsg &msg)
 // setfilter
 //
 
-int vscpClientMulticast::setfilter(vscpEventFilter &filter)
+int vscpClientMulticast::setfilter(vscpEventFilter & /*filter*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -220,7 +220,7 @@ int vscpClientMulticast::getversion(uint8_t *pmajor,
 // getinterfaces
 //
 
-int vscpClientMulticast::getinterfaces(std::deque<std::string> &iflist)
+int vscpClientMulticast::getinterfaces(std::deque<std::string> & /*iflist*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -229,7 +229,7 @@ int vscpClientMulticast::getinterfaces(std::deque<std::string> &iflist)
 // getwcyd
 //
 
-int vscpClientMulticast::getwcyd(uint64_t &wcyd)
+int vscpClientMulticast::getwcyd(uint64_t & /*wcyd*/)
 {
     return VSCP_ERROR_SUCCESS;
 }
@@ -238,7 +238,7 @@ int vscpClientMulticast::getwcyd(uint64_t &wcyd)
 // setConnectionTimeout
 //
 
-void vscpClientMulticast::setConnectionTimeout(uint32_t timeout)
+void vscpClientMulticast::setConnectionTimeout(uint32_t /*timeout*/)
 {
     ;
 }
@@ -256,7 +256,7 @@ uint32_t vscpClientMulticast::getConnectionTimeout(void)
 // setResponseTimeout
 //
 
-void vscpClientMulticast::setResponseTimeout(uint32_t timeout)
+void vscpClientMulticast::setResponseTimeout(uint32_t /*timeout*/)
 {
     ;
 }

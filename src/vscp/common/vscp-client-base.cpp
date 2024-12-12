@@ -35,6 +35,7 @@
 #include <list>
 #include <string>
 
+#include <vscphelper.h>
 #include "vscp-client-base.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,3 +86,4 @@ CVscpClient::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> call
   
   return VSCP_ERROR_SUCCESS;
 };
+

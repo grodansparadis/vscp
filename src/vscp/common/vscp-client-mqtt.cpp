@@ -83,7 +83,7 @@ workerThread(void *pObj);
 */
 
 int
-password_callback(char *buf, int size, int rwflag, void *userdata)
+password_callback(char *buf, int size, int /*rwflag*/, void *userdata)
 {
   // Check pointers
   if ((nullptr == buf) || (nullptr == userdata)) {
@@ -191,7 +191,7 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
-mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const mosquitto_property *props)
+mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -247,7 +247,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
-mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquitto_property *props)
+mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -301,7 +301,7 @@ mqtt_on_publish(struct mosquitto *mosq, void *pData, int mid)
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
-mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code, const mosquitto_property *props)
+mqtt_on_publish_v5(struct mosquitto *mosq, void *pData, int mid, int reason_code, const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -367,7 +367,7 @@ static void
 mqtt_on_message_v5(struct mosquitto *mosq,
                    void *pData,
                    const struct mosquitto_message *pMsg,
-                   const mosquitto_property *props)
+                   const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -435,7 +435,7 @@ mqtt_on_subscribe_v5(struct mosquitto *mosq,
                      int mid,
                      int qos_count,
                      const int *granted_qos,
-                     const mosquitto_property *props)
+                     const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -491,7 +491,7 @@ mqtt_on_unsubscribe(struct mosquitto *mosq, void *pData, int mid)
 
 #if LIBMOSQUITTO_MAJOR > 1 || (LIBMOSQUITTO_MAJOR == 1 && LIBMOSQUITTO_MINOR >= 6)
 static void
-mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosquitto_property *props)
+mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosquitto_property * /*props*/)
 {
   // Check for valid handle
   if (nullptr == mosq) {
@@ -2859,7 +2859,7 @@ vscpClientMqtt::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, 
 //
 
 int
-vscpClientMqtt::getinterfaces(std::deque<std::string> &iflist)
+vscpClientMqtt::getinterfaces(std::deque<std::string> & /*iflist*/)
 {
   // No interfaces available
   return VSCP_ERROR_SUCCESS;
@@ -2956,7 +2956,7 @@ win_usleep(__int64 usec)
 static void *
 workerThread(void *pObj)
 {
-  uint8_t guid[]          = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  //uint8_t guid[]          = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   vscpClientMqtt *pClient = (vscpClientMqtt *) pObj;
   //  if (nullptr == pif) return nullptr;
 

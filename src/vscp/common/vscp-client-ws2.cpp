@@ -222,7 +222,7 @@ vscpClientWs2::getConfigAsJson(void)
 //
 
 bool
-vscpClientWs2::initFromJson(const std::string &config)
+vscpClientWs2::initFromJson(const std::string & /*config*/)
 {
   return true;
 }
@@ -265,8 +265,8 @@ int
 vscpClientWs2::connect(void)
 {
   json j;
-  char ebuf[100]   = { 0 };
-  const char *path = "/ws2";
+  char ebuf[100] = { 0 };
+  // const char *path = "/ws2";
 
   // m_conn = mg_connect_websocket_client( m_host.c_str(),
   //                                        m_port,
@@ -462,8 +462,9 @@ vscpClientWs2::send(vscpEvent &ev)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -519,8 +520,9 @@ vscpClientWs2::send(vscpEventEx &ex)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -672,8 +674,9 @@ vscpClientWs2::setfilter(vscpEventFilter &filter)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -726,8 +729,9 @@ vscpClientWs2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   // Version is delivered as array on form [major,minor,release,build]
 
@@ -790,8 +794,9 @@ vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   std::deque<std::string> args = j["args"];
   iflist                       = args;
@@ -829,8 +834,9 @@ vscpClientWs2::getwcyd(uint64_t &wcyd)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
-  if ("+" != j["type"])
-    VSCP_ERROR_OPERATION_FAILED;
+  if ("+" != j["type"]) {
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   std::deque<std::string> args = j["args"];
   if (!args.size()) {

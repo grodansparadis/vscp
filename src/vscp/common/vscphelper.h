@@ -255,7 +255,7 @@ vscp_mem_usage(double &vm_usage, double &resident_set);
 
     @param sem Pointer to semaphore to wait for
     @param waitms Time in milliseconds to wait. Max 3999 ms.
-    return 0 is semaphore is signaled, -1 if error. errno
+    @return Return 0 if semaphore is signaled, -1 if error. errno
     is set accordingly. ETIMEDOUT is returned for timeout.
 */
 int

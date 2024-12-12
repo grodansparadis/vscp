@@ -256,7 +256,7 @@ public:
     @param paddr Address to beginning of data to write
     @return VSCP_ERROR_SUCCESS on success.
   */
-  int writeBlock(const uint8_t *paddr);
+  int writeBlock(uint32_t block, const uint8_t *paddr);
 
   /*!
     Check response event

@@ -859,7 +859,7 @@ vscp_safe_encode_str(const std::string &str)
 //
 
 bool
-vscp_XML_Escape(char *dst, size_t dst_len, const char *src)
+vscp_XML_Escape(char * /*dst*/, size_t /*dst_len*/, const char * /*src*/)
 {
   /*const char escapeCharTbl[6]      = { '&', '\'', '\"', '>', '<', '\0' };
   const char *const escapeSeqTbl[] = {
@@ -1810,7 +1810,7 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pEven
 //
 
 bool
-vscp_getMeasurementWithZoneAsString(const vscpEvent *pEvent, std::string &strValue)
+vscp_getMeasurementWithZoneAsString(const vscpEvent *pEvent, std::string & /*strValue*/)
 {
   int offset = 0;
 
@@ -2417,8 +2417,8 @@ bool
 vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
                                          uint16_t *psize,
                                          uint64_t val64,
-                                         uint8_t unit,
-                                         uint8_t sensoridx)
+                                         uint8_t /*unit*/,
+                                         uint8_t /*sensoridx*/)
 {
   uint8_t i;
   uint8_t data[8];
@@ -4795,7 +4795,7 @@ startEventXMLParser(void *data, const char *name, const char **attr)
 }
 
 static void
-endEventXMLParser(void *data, const char *name)
+endEventXMLParser(void * /*data*/, const char * /*name*/)
 {
   depth_event_parser--;
 }
@@ -4942,7 +4942,7 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
 }
 
 static void
-endEventExXMLParser(void *data, const char *name)
+endEventExXMLParser(void * /*data*/, const char * /*name*/)
 {
   depth_eventex_parser--;
 }
@@ -5624,7 +5624,7 @@ startFilterMaskXMLParser(void *data, const char *name, const char **attr)
 }
 
 static void
-endFilterMaskXMLParser(void *data, const char *name)
+endFilterMaskXMLParser(void * /*data*/, const char * /*name*/)
 {
   depth_filtermask_parser--;
 }
@@ -5887,7 +5887,7 @@ vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx, const canalMsg *pcanalMsg,
 //
 
 bool
-vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8_t mode)
+vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8_t /*mode*/)
 {
   unsigned char nodeid = 0;
   short sizeData       = 0;
@@ -5962,7 +5962,7 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
 //
 
 bool
-vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx, uint8_t mode)
+vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx, uint8_t /*mode*/)
 {
   bool rv;
 

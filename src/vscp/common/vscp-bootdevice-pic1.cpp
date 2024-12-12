@@ -228,7 +228,7 @@ CBootDevice_PIC1::deviceInfo(void)
 //
 
 int
-CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t devicecode, bool bAbortOnFirmwareCodeFail)
+CBootDevice_PIC1::deviceInit(cguid& ourguid, uint16_t /*devicecode*/, bool bAbortOnFirmwareCodeFail)
 {
   int rv;
 
@@ -664,7 +664,7 @@ CBootDevice_PIC1::checkResponseLevel1(uint32_t response_id)
 //
 
 int
-CBootDevice_PIC1::checkResponseLevel2(uint32_t id)
+CBootDevice_PIC1::checkResponseLevel2(uint32_t /*id*/)
 {
   int rv;
   vscpEventEx ex;
@@ -877,7 +877,7 @@ CBootDevice_PIC1::writeFirmwareBlock(uint32_t start, uint32_t end)
 //
 
 int
-CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> statusCallback, bool bAbortOnFirmwareCodeFail)
+CBootDevice_PIC1::deviceLoad(std::function<void(int, const char *)> /*statusCallback*/, bool /*bAbortOnFirmwareCodeFail*/)
 {
   //bool bRun = true;
   int rv;
