@@ -99,16 +99,40 @@ public:
   virtual int receive(vscpEvent &ev);
 
   /*!
+      Blocking receive of VSCP event ex from remote host
+      @param ev VSCP event ex that will get the result.
+      @param timeout Timeout in milliseconds. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100);
+
+  /*!
       Receive VSCP event ex from remote host
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEventEx &ex);
 
   /*!
+      Blocking receive of VSCP event ex from remote host
+      @param ex VSCP event ex that will get the result.
+      @param timeout Timeout in milliseconds. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100);
+
+  /*!
     Receive CAN(AL) message from remote host
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
 */
   virtual int receive(canalMsg &msg);
+
+  /*!
+      Receive blocking CAN(AL) message from remote host
+      @param msg CANAL message that will get the result.
+      @param timeout Timeout in milliseconds. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
 
   /*!
       Set interface filter
@@ -236,8 +260,14 @@ public:
   /// Flag for workerthread run as long it's true
   bool m_bRun;
 
-  /// Mutex to protect receive tcop/ip object
+  /// Mutex to protect receive tcp/ip object
   std::mutex m_mutexReceive;
+
+  /*!
+    Event object to indicate that there is an event in the
+    output queue
+  */
+  sem_t m_semReceiveQueue;
 
   /// Used for channel id (prevent sent events from being received)
   uint32_t m_obid;

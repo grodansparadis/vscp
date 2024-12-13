@@ -171,6 +171,63 @@ vscpClientMulticast::receive(canalMsg &msg)
   return VSCP_ERROR_SUCCESS;
 } 
 
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientMulticast::receiveBlocking(vscpEvent &ev, long timeout)
+{
+  // if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+  //   if (errno == ETIMEDOUT) {
+  //     return VSCP_ERROR_TIMEOUT;
+  //   }
+  //   else {
+  //     return VSCP_ERROR_ERROR;
+  //   }
+  // }
+
+  return receive(ev);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientMulticast::receiveBlocking(vscpEventEx &ex, long timeout)
+{
+  // if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+  //   if (errno == ETIMEDOUT) {
+  //     return VSCP_ERROR_TIMEOUT;
+  //   }
+  //   else {
+  //     return VSCP_ERROR_ERROR;
+  //   }
+  // }
+
+  return receive(ex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientMulticast::receiveBlocking(canalMsg &msg, long timeout)
+{
+  // if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+  //   if (errno == ETIMEDOUT) {
+  //     return VSCP_ERROR_TIMEOUT;
+  //   }
+  //   else {
+  //     return VSCP_ERROR_ERROR;
+  //   }
+  // }
+
+  return receive(msg);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // setfilter
 //

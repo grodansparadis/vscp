@@ -410,6 +410,63 @@ vscpClientTcp::receive(canalMsg &msg)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientTcp::receiveBlocking(vscpEvent &ev, long timeout)
+{
+  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
+
+  return receive(ev);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientTcp::receiveBlocking(vscpEventEx &ex, long timeout)
+{
+  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
+
+  return receive(ex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientTcp::receiveBlocking(canalMsg &msg, long timeout)
+{
+  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
+
+  return receive(msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setfilter
 //
 
