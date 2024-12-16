@@ -44,8 +44,8 @@ public:
           tcp:// or stcp:// (SSL connection)
       @param strUsername Username used to login on remote host.
       @param strPassword Password used to login on remote host.
-      @param bPolling If true only one connection will be opended to the remote server
-          on which polling for events will be done. If false one connection will be opended
+      @param bPolling If true only one connection will be opened to the remote server
+          on which polling for events will be done. If false one connection will be opened
           for send and one for receive. The polling is intended for low end devices which
           only accepts one client at the time.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -257,11 +257,18 @@ public:
   void sendToCallbacks(vscpEvent *pev);
 
 public:
-  /// Flag for workerthread run as long it's true
+  /// Flag for worker thread run as long it's true
   bool m_bRun;
 
+  // Event lists
+  // std::list<vscpEvent *> m_sendList;
+  std::list<vscpEvent *> m_receiveList;
+
   /// Mutex to protect receive tcp/ip object
-  std::mutex m_mutexReceive;
+  pthread_mutex_t m_mutexTcpIpObject;
+
+  /// Mutex to protect receive queue
+  pthread_mutex_t m_mutexReceiveQueue;
 
   /*!
     Event object to indicate that there is an event in the
@@ -269,13 +276,17 @@ public:
   */
   sem_t m_semReceiveQueue;
 
+  /// Filters for input/output
+  vscpEventFilter m_filterIn;
+  vscpEventFilter m_filterOut;
+
   /// Used for channel id (prevent sent events from being received)
   uint32_t m_obid;
 
 private:
   /*!
       The main interface (sending) is always opened (both in poll and
-      standard mode). The Receive interface is opended only in normal mode
+      standard mode). The Receive interface is opened only in normal mode
       and do just connect - log in - enable receive loop. Received events
       will be sent on the defined callbacks.
   */
@@ -286,11 +297,12 @@ private:
   /// Receiving interface
   VscpRemoteTcpIf m_tcpReceive;
 
-  // Filter used for both channels
-  vscpEventFilter m_filter;
-
   // Interface on remote host
   cguid m_guidif;
+
+  // ------------------------------------------------------------------------
+
+  
 
   /// Workerthread
   std::thread *m_pworkerthread;
@@ -311,6 +323,8 @@ private:
 
   /// If true the remote host interface will be polled.
   bool m_bPolling;
+
+  
 
   // ------------------------------------------------------------------------
   //                                 TLS / SSL

@@ -882,7 +882,7 @@ workerThread(void *pData)
     setsockopt(pObj->m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(struct timeval));
 
     if (bind(pObj->m_socket, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-      spdlog::error("SOCKETCAN client: wrkthread socketcan client: Error in socket bind. Terminating!");
+      spdlog::error("SOCKETCAN client: workthread socketcan client: Error in socket bind. Terminating!");
       close(pObj->m_socket);
       sleep(2);
       // continue;
