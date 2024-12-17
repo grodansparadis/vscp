@@ -153,6 +153,7 @@ vscpClientSocketCan::vscpClientSocketCan()
 vscpClientSocketCan::~vscpClientSocketCan()
 {
   disconnect();
+
   pthread_mutex_destroy(&m_mutexSocket);
 
   sem_destroy(&m_semSendQueue);
@@ -160,6 +161,13 @@ vscpClientSocketCan::~vscpClientSocketCan()
 
   pthread_mutex_destroy(&m_mutexSendQueue);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
+
+  // Clear the input queue (if needed)
+  while (m_receiveList.size()) {
+    vscpEvent *pev = m_receiveList.front();
+    m_receiveList.pop_front();
+    vscp_deleteEvent(pev);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,7 +175,10 @@ vscpClientSocketCan::~vscpClientSocketCan()
 //
 
 int
-vscpClientSocketCan::init(const std::string &interface, const std::string &guid, unsigned long flags, uint32_t /*timeout*/)
+vscpClientSocketCan::init(const std::string &interface,
+                          const std::string &guid,
+                          unsigned long flags,
+                          uint32_t /*timeout*/)
 {
   m_interface = interface;
   m_guid.getFromString(guid);
@@ -634,7 +645,7 @@ vscpClientSocketCan::setfilter(vscpEventFilter & /*filter*/)
   //                  ((unsigned long) filter.mask_type << 8) | filter.mask_GUID[0];
   // m_canalif.CanalSetMask(_mask);
 
-  return rv; 
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -663,7 +674,10 @@ vscpClientSocketCan::clear()
 //
 
 int
-vscpClientSocketCan::getversion(uint8_t * /*pmajor*/, uint8_t * /*pminor*/, uint8_t * /*prelease*/, uint8_t * /*pbuild*/)
+vscpClientSocketCan::getversion(uint8_t * /*pmajor*/,
+                                uint8_t * /*pminor*/,
+                                uint8_t * /*prelease*/,
+                                uint8_t * /*pbuild*/)
 {
   // uint32_t ver = m_canalif.CanalGetDllVersion();
 
@@ -675,7 +689,7 @@ vscpClientSocketCan::getversion(uint8_t * /*pmajor*/, uint8_t * /*pminor*/, uint
 //
 
 int
-vscpClientSocketCan::getinterfaces(std::deque<std::string> &/*iflist*/)
+vscpClientSocketCan::getinterfaces(std::deque<std::string> & /*iflist*/)
 {
   // No interfaces available
   return VSCP_ERROR_SUCCESS;
@@ -792,13 +806,13 @@ workerThread(void *pData)
 {
   int mtu, enable_canfd = 1;
   fd_set rdfs;
-  //struct timeval tv;
+  // struct timeval tv;
   struct sockaddr_can addr;
   struct ifreq ifr;
-  //struct cmsghdr *cmsg;
+  // struct cmsghdr *cmsg;
   struct canfd_frame frame;
-  //char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-  //const int canfd_on = 1;
+  // char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
+  // const int canfd_on = 1;
 
   vscpClientSocketCan *pObj = (vscpClientSocketCan *) pData;
   if (NULL == pObj) {

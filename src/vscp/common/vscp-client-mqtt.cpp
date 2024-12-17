@@ -692,7 +692,7 @@ vscpClientMqtt::~vscpClientMqtt()
   while (m_receiveQueue.size()) {
     pev = m_receiveQueue.front();
     m_receiveQueue.pop_front();
-    vscp_deleteEvent_v2(&pev);
+    vscp_deleteEvent(pev);
   }
 
   // Delete subscription objects

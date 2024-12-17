@@ -73,11 +73,11 @@ vscpClientTcp::~vscpClientTcp()
   pthread_mutex_destroy(&m_mutexReceiveQueue);
 
   // Clear the input queue (if needed)
-  // while (m_inputQue.size()) {
-  //     vscpEvent *pev = m_inputQue.front();
-  //     m_inputQue.pop_front();
-  //     vscp_deleteEvent(pev);
-  // }
+  while (m_receiveList.size()) {
+      vscpEvent *pev = m_receiveList.front();
+      m_receiveList.pop_front();
+      vscp_deleteEvent(pev);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

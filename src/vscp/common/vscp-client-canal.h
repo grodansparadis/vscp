@@ -27,13 +27,14 @@
 #define VSCPCLIENTCANAL_H__INCLUDED_
 
 #include "vscp.h"
+#include <vscphelper.h>
 #include "vscp-client-base.h"
 #include "vscpcanaldeviceif.h"
 
 #include <pthread.h>
 
 // When a callback is set and connect is called this object is shared
-// with a workerthread that
+// with a worker thread that
 
 class vscpClientCanal : public CVscpClient {
 
@@ -226,9 +227,27 @@ public:
 
   // Mutex that protect CANAL interface when callbacks are defined
   pthread_mutex_t m_mutexif;
+  pthread_mutex_t m_mutexReceiveQueue;
+
+  /*!
+    Event object to indicate that there is an event in the
+    output queue
+  */
+  sem_t m_semReceiveQueue;
+
+  /*!
+    If no callback is defined received events are connected in
+    this queue
+  */
+  std::deque<vscpEvent *> m_receiveQueue;
 
   // CANAL functionality
   VscpCanalDeviceIf m_canalif;
+
+  /*!
+    Receive filter
+  */
+  vscpEventFilter m_filterIn;
 
 private:
   /*!
