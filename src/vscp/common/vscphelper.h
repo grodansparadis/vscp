@@ -262,6 +262,15 @@ int
 vscp_sem_wait(sem_t *sem, uint32_t waitms);
 #endif
 
+/*!
+  Sleep for a number of microseconds
+  @param usec Number of microseconds to sleep
+*/
+#ifdef WIN32
+static void
+vscp_usleep(__int64 usec);
+#endif
+
 /*
  * Check two floats for equality
  * @param A Float to compare

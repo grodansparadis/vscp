@@ -405,7 +405,7 @@ public:
       @param timeout Timeout in milliseconds. Default is 100 ms.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100 );
+  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100);
 
   /*!
       Receive VSCP event ex from remote host
@@ -419,7 +419,7 @@ public:
       @param timeout Timeout in milliseconds. Default is 100 ms.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100 );
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100);
 
   /*!
       Receive CAN(AL) message from remote host
@@ -728,6 +728,7 @@ public:
     Mutex that protect CANAL interface when callbacks are defined
   */
   pthread_mutex_t m_mutexif;
+  pthread_mutex_t m_mutexReceiveQueue;
 
   /*!
     Event object to indicate that there is an event in the

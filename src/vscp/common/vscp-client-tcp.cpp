@@ -503,8 +503,9 @@ vscpClientTcp::setfilter(vscpEventFilter &filter)
 int
 vscpClientTcp::getcount(uint16_t *pcount)
 {
-  if (NULL == pcount)
+  if (NULL == pcount) {
     return VSCP_ERROR_INVALID_POINTER;
+  }
   *pcount = m_tcp.doCmdDataAvailable();
   return VSCP_ERROR_SUCCESS;
 }
@@ -621,8 +622,9 @@ workerThread(vscpClientTcp *pObj)
   ev.pdata    = NULL;
 
   // Check pointer
-  if (nullptr == pObj)
+  if (nullptr == pObj) {
     return;
+  }
 
   VscpRemoteTcpIf *m_pifReceive = pObj->getTcpReceive();
 
