@@ -274,13 +274,6 @@ public:
    */
   bool setAllowedRemotesFromString(const std::string &strConnect);
 
-  /*!
-      Check password for user
-      @param password Password to check
-      @return true ff password is correct
-  */
-  bool checkPassword(const std::string &password) { return (getPassword() == password); };
-
   // * * * Getters/Setters * * *
 
   // UserID
@@ -292,33 +285,31 @@ public:
   void setUserName(const std::string &strUser) { m_user = strUser; };
 
   /*!
-      Get Password
-      @return Return password hash on hex form (iv(16);pw(32))
+      Get Password hash
+      @return Return password hash
   */
-  std::string getPassword(void);
-
-  /*!
-      Set clear text password
-      Password is hashed with vscp_makePasswordHash
-      over "username:passpword"
-      @param password Clear text password to set
-      @return true on success, false on failure.
-  */
-  bool setPasswordFromClearText(const std::string &strPassword);
+  std::string getPasswordHash(void);
 
   /*!
       Set (already) hashed password. Typically used
       when loading user data from file. The hash should
       be done over "user:password"
-      @param password on (iv(16);pw(32)) hex form
+      @param pmd5hash Reference to string containing hashed password on hex format.
+  */
+  void setPasswordHash(const std::string &md5hash);
+
+  /*!
+      Set clear text password
+      The password is stored hashed with md5 over "username:password"
+      @param password Clear text password to set
       @return true on success, false on failure.
   */
-  void setPassword(const std::string &strPassword) { m_password = strPassword; };
+  void setPasswordFromClearText(const std::string &strPassword);
 
   /*!
       Validate user password
       @param password Clear text password to validate
-      @return true if user is a valied user
+      @return true if user is a valid user
   */
   bool validateUser(const std::string &password);
 
@@ -510,8 +501,7 @@ protected:
   std::string m_user;
 
   /*!
-      Password (iv(16);pw(32))  (user:password)
-          vscp_makePasswordHash(pw, password, NULL);
+    md5 hash over "user:password"
    */
   std::string m_password;
 

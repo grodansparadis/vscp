@@ -35,7 +35,7 @@
 #include <unistd.h>
 #endif
 
-#include <canal_macro.h>
+#include <canal-macro.h>
 #include <vscp.h>
 #include <vscpdatetime.h>
 #include <vscphelper.h>
