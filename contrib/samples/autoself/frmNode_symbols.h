@@ -14,7 +14,7 @@
 // 
 // This file is part of the VSCP (https://www.vscp.org) 
 //
-// Copyright (C) 2000-2010 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright (C) 2000-2025 Ake Hedman, eurosource, <ake@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of

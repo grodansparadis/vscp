@@ -1,6 +1,6 @@
 // md5.h: interface for the Cmd5 class.
 //
-// Copyright (C) 2000-2024 Ake Hedman, the VSCP project, <info@vscp.org>
+// Copyright (C) 2000-2025 Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

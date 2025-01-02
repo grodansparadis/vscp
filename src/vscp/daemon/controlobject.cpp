@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2025 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -647,31 +647,6 @@ CControlObject::cleanup(void)
     spdlog::debug("ControlObject: cleanup - Stopping VSCP Server worker thread...");
   }
 
-  // // Disconnect from MQTT broker}
-  // int rv = mosquitto_disconnect(m_mosq);
-  // if (MOSQ_ERR_SUCCESS != rv) {
-  //   if (MOSQ_ERR_INVAL == rv) {
-  //     spdlog::error("ControlObject: mosquitto_disconnect: input parameters were invalid.");
-  //   }
-  //   else if (MOSQ_ERR_NO_CONN == rv) {
-  //     spdlog::error("ControlObject: mosquitto_disconnect: client isn’t connected to a broker.");
-  //   }
-  // }
-
-  // // stop the worker loop
-  // rv = mosquitto_loop_stop(m_mosq, false);
-  // if (MOSQ_ERR_SUCCESS != rv) {
-  //   if (MOSQ_ERR_INVAL == rv) {
-  //     spdlog::error("ControlObject: mosquitto_loop_stop: input parameters were invalid.");
-  //   }
-  //   else if (MOSQ_ERR_NOT_SUPPORTED == rv) {
-  //     spdlog::error("ControlObject: mosquitto_loop_stop: thread support is not available.");
-  //   }
-  // }
-
-  // // Clean up
-  // mosquitto_destroy(m_mosq);
-
   // Disconnect in case were not
   m_mqttClient.disconnect();
 
@@ -688,12 +663,6 @@ bool
 CControlObject::init_mqtt()
 {
   int rv;
-
-  // Setup MQTT for server
-  // if (!m_mqttClient.init()) {
-  //   spdlog::error("Failed to initialize MQTT client.");
-  //   return false;
-  // }
 
   // Set GUID
   m_mqttClient.setSrvGuid(m_guid);

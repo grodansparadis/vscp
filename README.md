@@ -41,5 +41,5 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 </p>
 
 
-Copyright (C) 2000-2024 Ake Hedman, the VSCP project - MIT license.
+Copyright (C) 2000-2025 Ake Hedman, the VSCP project - MIT license.
 

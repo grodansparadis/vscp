@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2024 Ake Hedman, Grodans Paradis AB
+// Copyright © 2000-2025 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,10 +40,10 @@
 #define VSCPD_DISPLAY_VERSION   "14.0.5-4 Silicon"
 
 #define VSCPD_COPYRIGHT                                                        \
-    "Copyright © 2000-2024 Ake Hedman, Grodans Paradis AB, "                \
+    "Copyright © 2000-2025 Ake Hedman, Grodans Paradis AB, "                \
     "https://www.grodansparadis.com"
 #define VSCPD_COPYRIGHT_HTML                                                   \
-    "Copyright Ⓒ 2000-2024 Ake Hedman, <a "                                 \
+    "Copyright Ⓒ 2000-2025 Ake Hedman, <a "                                 \
     "href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a "      \
     "href=\"https://www.grodansparadis.com\">https://"                        \
     "www.grodansparadis.com</a>"

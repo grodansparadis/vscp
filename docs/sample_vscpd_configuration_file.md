@@ -7,4 +7,4 @@ A absolute minimum version is [here](https://github.com/grodansparadis/vscp/blob
 
 \\ 
 ----
-Copyright (c) 2000-2021 [Åke Hedman](mailto/info@vscp.org), [the VSCP project](https://www.vscp.org)
+Copyright (c) 2000-2025 [Åke Hedman](mailto/info@vscp.org), [the VSCP project](https://www.vscp.org)

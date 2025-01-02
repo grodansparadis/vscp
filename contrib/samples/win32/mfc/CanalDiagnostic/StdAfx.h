@@ -8,7 +8,7 @@
 // Interface Network which you can download from 
 //	http://www.eurosource.se
 //
-// Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2025 Ake Hedman, eurosource, <akhe@eurosource.se>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

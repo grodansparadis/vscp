@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2024 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2025 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,10 +40,10 @@
 #define VSCPD_DISPLAY_VERSION   "15.0.3-0 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                     \
-    "Copyright (C) 2000-2024 Ake Hedman, the VSCP project, "                 \
+    "Copyright (C) 2000-2025 Ake Hedman, the VSCP project, "                 \
     "https://www.vscp.org"
 #define VSCPD_COPYRIGHT_HTML                                                \
-    "Copyright (C) 2000-2024 Ake Hedman, <a "                               \
+    "Copyright (C) 2000-2025 Ake Hedman, <a "                               \
     "href=\"mailto:info@vscp.org\">the VSCP project</a>, <a "               \
     "href=\"https://www.vscp.org\">https://"                                \
     "www.grodansparadis.com</a>"

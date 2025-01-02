@@ -9,7 +9,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 //  (https://www.vscp.org)
 //
-// Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2025 Ake Hedman, eurosource, <akhe@eurosource.se>
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of

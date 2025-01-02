@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright © 2000-2024 Ake Hedman, Grodans Paradis AB
+// Copyright © 2000-2025 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -414,7 +414,7 @@ copyleft(void)
       stderr,
       "The MIT License (MIT)"
       "\n"
-      "Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB\n"
+      "Copyright © 2000-2025 Ake Hedman, Grodans Paradis AB\n"
       "<info@grodansparadis.com>\n"
       "\n"
       "Permission is hereby granted, free of charge, to any person obtaining a "
