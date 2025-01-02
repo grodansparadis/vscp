@@ -463,7 +463,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     sqlite3 *db_vscp_classtype;
     if (SQLITE_OK == sqlite3_open(m_pathClassTypeDefinitionDb.c_str(), &db_vscp_classtype)) {
 
-      // * * *   C L A S S E S   * * *
+      // * * *   C L A S S E S   * * * 
 
       sqlite3_stmt *ppStmt;
       if (SQLITE_OK !=
