@@ -458,6 +458,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
   // Read in class/type info if available
   if (m_pathClassTypeDefinitionDb.length()) {
 
+    int rv;
+
     sqlite3 *db_vscp_classtype;
     if (SQLITE_OK == sqlite3_open(m_pathClassTypeDefinitionDb.c_str(), &db_vscp_classtype)) {
 
@@ -465,8 +467,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
       sqlite3_stmt *ppStmt;
       if (SQLITE_OK !=
-          sqlite3_prepare(db_vscp_classtype, "SELECT class,name,token from vscp_class", -1, &ppStmt, NULL)) {
-        spdlog::error("Failed to prepare class fetch from class & type database.");
+          (rv = sqlite3_prepare(db_vscp_classtype, "SELECT class,name,token from vscp_class", -1, &ppStmt, NULL))) {
+        spdlog::error("Failed to prepare class fetch from class & type database. rv={0} {1}", rv, sqlite3_errmsg(db_vscp_classtype));
       }
 
       while (SQLITE_ROW == sqlite3_step(ppStmt)) {
@@ -487,8 +489,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
       // * * *   T Y P E S   * * *
 
       if (SQLITE_OK !=
-          sqlite3_prepare(db_vscp_classtype, "SELECT type,link_to_class,token from vscp_type", -1, &ppStmt, NULL)) {
-        spdlog::error("Failed to prepare type fetch from class & type database.");
+          (rv = sqlite3_prepare(db_vscp_classtype, "SELECT type,link_to_class,token from vscp_type", -1, &ppStmt, NULL))) {
+        spdlog::error("Failed to prepare type fetch from class & type database. rv={0} {1}", rv, sqlite3_errmsg(db_vscp_classtype));
       }
 
       while (SQLITE_ROW == sqlite3_step(ppStmt)) {
@@ -517,6 +519,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
   // Open the discovery database (create if not available)
   if (m_pathMainDb.length()) {
 
+    int rv;
+
     // If file does not exist. Create it and tables and indexes
     if (vscp_fileExists(m_pathMainDb)) {
 
@@ -533,8 +537,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
         // Read in discovered nodes to in memory map
 
         sqlite3_stmt *ppStmt;
-        if (SQLITE_OK != sqlite3_prepare(m_db_vscp_daemon, "SELECT guid,name from discovery", -1, &ppStmt, NULL)) {
-          spdlog::error("Failed to prepare discovery node fetch.");
+        if (SQLITE_OK != (rv = sqlite3_prepare(m_db_vscp_daemon, "SELECT guid,name from discovery", -1, &ppStmt, NULL))) {
+          spdlog::error("Failed to prepare discovery node fetch. rv={0} {1}", rv, sqlite3_errmsg(m_db_vscp_daemon));
         }
 
         while (SQLITE_ROW == sqlite3_step(ppStmt)) {
