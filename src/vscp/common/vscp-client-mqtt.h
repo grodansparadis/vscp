@@ -481,15 +481,15 @@ public:
 
   /*!
     Set (and enable) receive callback for events
-    @param m_evcallback Pointer to callback for VSCP event delivery
+    @param callback Pointer to callback for VSCP event delivery
     @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
+  int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData = nullptr);
 
   /*!
     Set (and enable) receive callback ex events
-    @param m_evcallback Pointer to callback for VSCP event ex delivery
+    @param callback Pointer to callback for VSCP event ex delivery
     @param pData Pointer to optional user data.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */

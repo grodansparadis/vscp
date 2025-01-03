@@ -45,7 +45,7 @@ using json = nlohmann::json;
 // std::function<void(vscpEvent &ev, void *pobj)>
 // std::function<void(vscpEventEx &ex, void *pobj)>
 // typedef void(__stdcall *CALLBACK_EV)(vscpEvent *pev, void *pobj);   // Event callback
-// typedef void(__stdcall *CALLBACK_EX)(vscpEventEx *pex, void *pobj); // Event ex callbac
+// typedef void(__stdcall *CALLBACK_EX)(vscpEventEx *pex, void *pobj); // Event ex callback
 #else
 // typedef void (*CALLBACK_EV)(vscpEvent *pev, void *pobj);   // Event callback
 // typedef void (*CALLBACK_EX)(vscpEventEx *pex, void *pobj); // Event ex callback
@@ -212,7 +212,7 @@ public:
 
   /*!
       Set (and enable) receive callback for events
-      @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+      @param callback Callback to call when an event is received
       @param pData User defined data to pass in callback call
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -220,7 +220,7 @@ public:
 
   /*!
       Set (and enable) receive callback ex events
-      @param LPFNDLL_EX_CALLBACK Callback to call when an event is received
+      @param callback Callback to call when an event is received
       @param pData User defined data to pass in callback call
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */

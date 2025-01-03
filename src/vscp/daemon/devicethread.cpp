@@ -401,7 +401,7 @@ deviceThread(void *pData)
     pDeviceItem->m_mqttClient.setTokenMaps(&pDeviceItem->m_pCtrlObj->m_map_class_id2Token,
                                            &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
-    // Set event callback
+    // Set event callback - level I
     pDeviceItem->m_mqttClient.setCallbackEv(receive_event_callback, pDeviceItem);
 
     // Connect to server
@@ -682,8 +682,9 @@ deviceThread(void *pData)
     pDeviceItem->m_mqttClient.setTokenMaps(&pDeviceItem->m_pCtrlObj->m_map_class_id2Token,
                                            &pDeviceItem->m_pCtrlObj->m_map_type_id2Token);
 
-    // Set event callback
-    pDeviceItem->m_mqttClient.setCallbackEv(receive_event_callback);
+    // Set event callback - level II
+    void *pParent = (void *) pDeviceItem;
+    pDeviceItem->m_mqttClient.setCallbackEv(receive_event_callback, pParent);
 
     // Connect to server
     if (VSCP_ERROR_SUCCESS != pDeviceItem->m_mqttClient.connect()) {
