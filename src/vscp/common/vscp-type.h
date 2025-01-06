@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2025-01-02 22:13:42.719725
+                        Generated: 2025-01-06 18:11:12.330629
 */
  
 #ifndef VSCP_TYPE_H
@@ -211,7 +211,7 @@
 #define VSCP_TYPE_MEASUREMENT_LUMINANCE             44  /* Luminance */
 #define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION_MOLAR 45 /* Chemical (molar) concentration */
 #define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION_MASS 46 /* Chemical (mass) concentration */
-#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT       47  /* Reserved */
+#define VSCP_TYPE_MEASUREMENT_RESERVED47            47  /* Reserved */
 #define VSCP_TYPE_MEASUREMENT_RESERVED48            48  /* Reserved */
 #define VSCP_TYPE_MEASUREMENT_DEWPOINT              49  /* Dew Point */
 #define VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL        50  /* Relative Level */
@@ -225,7 +225,7 @@
 #define VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE        58  /* Sound pressure (acoustic pressure) */
 #define VSCP_TYPE_MEASUREMENT_SOUND_DENSITY         59  /* Sound energy density */
 #define VSCP_TYPE_MEASUREMENT_SOUND_LEVEL           60  /* Sound level */
-#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EQ     61  /* Radiation dose (equivalent) */
+#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT       61  /* Radiation dose (equivalent) */
 #define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE_EXPOSURE 62 /* Radiation dose (exposure) */
 #define VSCP_TYPE_MEASUREMENT_POWER_FACTOR          63  /* Power factor */
 #define VSCP_TYPE_MEASUREMENT_REACTIVE_POWER        64  /* Reactive Power */
