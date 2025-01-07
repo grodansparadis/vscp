@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2025-01-06 18:11:12.330629
+                        Generated: 2025-01-07 12:06:43.396468
 */
  
 #ifndef VSCP_TYPE_H
@@ -361,9 +361,9 @@
 #define VSCP_TYPE_CONTROL_PAUSE                     14  /* Pause */
 #define VSCP_TYPE_CONTROL_ACTIVATE                  15  /* Activate */
 #define VSCP_TYPE_CONTROL_DEACTIVATE                16  /* Deactivate */
-#define VSCP_TYPE_CONTROL_RESERVED17                17  /* Reserved for future use */
-#define VSCP_TYPE_CONTROL_RESERVED18                18  /* Reserved for future use */
-#define VSCP_TYPE_CONTROL_RESERVED19                19  /* Reserved for future use */
+#define VSCP_TYPE_CONTROL_TURN_ALL_OFF              17  /* Set all devices off */
+#define VSCP_TYPE_CONTROL_TURN_ALL_ON               18  /* Set all devices on */
+#define VSCP_TYPE_CONTROL_TURN_ALL_X                19  /* Set all device on/off as of argument */
 #define VSCP_TYPE_CONTROL_DIM_LAMPS                 20  /* Dim lamp(s) */
 #define VSCP_TYPE_CONTROL_CHANGE_CHANNEL            21  /* Change Channel */
 #define VSCP_TYPE_CONTROL_CHANGE_LEVEL              22  /* Change Level */
@@ -378,12 +378,12 @@
 #define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF           31  /* Timed pulse off */
 #define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE      32  /* Set country/language */
 #define VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL          33  /* Big Change level */
-#define VSCP_TYPE_CONTROL_SHUTTER_UP                34  /* Move shutter up */
-#define VSCP_TYPE_CONTROL_SHUTTER_DOWN              35  /* Move shutter down */
-#define VSCP_TYPE_CONTROL_SHUTTER_LEFT              36  /* Move shutter left */
-#define VSCP_TYPE_CONTROL_SHUTTER_RIGHT             37  /* Move shutter right */
-#define VSCP_TYPE_CONTROL_SHUTTER_MIDDLE            38  /* Move shutter to middle position */
-#define VSCP_TYPE_CONTROL_SHUTTER_PRESET            39  /* Move shutter to preset position */
+#define VSCP_TYPE_CONTROL_SHUTTER_UP                34  /* Move (shutter) up */
+#define VSCP_TYPE_CONTROL_SHUTTER_DOWN              35  /* Move (shutter) down */
+#define VSCP_TYPE_CONTROL_SHUTTER_LEFT              36  /* Move (shutter) left */
+#define VSCP_TYPE_CONTROL_SHUTTER_RIGHT             37  /* Move (shutter) right */
+#define VSCP_TYPE_CONTROL_SHUTTER_MIDDLE            38  /* Move (shutter) to middle position */
+#define VSCP_TYPE_CONTROL_SHUTTER_PRESET            39  /* Move (shutter) to preset position */
 #define VSCP_TYPE_CONTROL_ALL_LAMPS_ON              40  /* (All) Lamp(s) on */
 #define VSCP_TYPE_CONTROL_ALL_LAMPS_OFF             41  /* (All) Lamp(s) off */
 #define VSCP_TYPE_CONTROL_LOCK                      42  /* Lock */
