@@ -34,13 +34,13 @@
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
 #define VSCPD_MAJOR_VERSION     15
 #define VSCPD_MINOR_VERSION     0
-#define VSCPD_RELEASE_VERSION   3
+#define VSCPD_RELEASE_VERSION   4
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "15.0.3-0 Phosphorus"
+#define VSCPD_DISPLAY_VERSION   "15.0.4-0 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                     \
-    "Copyright (C) 2000-2025 Ake Hedman, the VSCP project, "                 \
+    "Copyright (C) 2000-2025 Ake Hedman, the VSCP project, "                \
     "https://www.vscp.org"
 #define VSCPD_COPYRIGHT_HTML                                                \
     "Copyright (C) 2000-2025 Ake Hedman, <a "                               \
