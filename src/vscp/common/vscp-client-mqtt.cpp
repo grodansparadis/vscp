@@ -1349,31 +1349,32 @@ vscpClientMqtt::initFromJson(const std::string &config)
           }
 
           if (pubobj.contains("format") && pubobj["format"].is_number()) {
-
             format = static_cast<enumMqttMsgFormat>(pubobj["format"].get<int>());
+          }
+          else if (pubobj.contains("format") && pubobj["format"].is_string()) {
+            std::string str = pubobj["format"].get<std::string>();
+            vscp_makeLower(str);
 
-            // vscp_makeLower(str);
-            //  std::string str;
-            //  if (std::string::npos != str.find("binary")) {
-            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
-            //    format = binfmt;
-            //  }
-            //  else if (std::string::npos != str.find("string")) {
-            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
-            //    format = strfmt;
-            //  }
-            //  else if (std::string::npos != str.find("json")) {
-            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
-            //    format = jsonfmt;
-            //  }
-            //  else if (std::string::npos != str.find("xml")) {
-            //    spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
-            //    format = xmlfmt;
-            //  }
-            //  else {
-            //    spdlog::error("MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
-            //    format = jsonfmt;
-            //  }
+            if (std::string::npos != str.find("binary")) {
+              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
+              format = binfmt;
+            }
+            else if (std::string::npos != str.find("string")) {
+              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
+              format = strfmt;
+            }
+            else if (std::string::npos != str.find("json")) {
+              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
+              format = jsonfmt;
+            }
+            else if (std::string::npos != str.find("xml")) {
+              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
+              format = xmlfmt;
+            }
+            else {
+              spdlog::error("MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
+              format = jsonfmt;
+            }
           }
 
           addPublish(topic, format, qos, bretain);
@@ -2398,7 +2399,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
-      //printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
+      // printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
     }
 
   } // for each topic
