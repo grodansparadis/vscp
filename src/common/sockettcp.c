@@ -2592,6 +2592,211 @@ stcp_connect_remote(const char *host, int port, int timeout)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// stcp_pull_inner
+//
+// Read from IO channel - opened file descriptor, socket, or SSL descriptor.
+// Return value:
+//  >=0 .. number of bytes successfully read
+//   -1 .. timeout
+//   -2 .. stopped (socket closed by remote)
+//
+
+static int
+stcp_pull_inner(FILE *fp, struct stcp_connection *conn, char *buf, int len, int mstimeout)
+{
+  int nread, err = 0;
+
+#ifdef _WIN32
+  typedef int len_t;
+#else
+  typedef size_t len_t;
+#endif
+  int ssl_pending;
+
+  // We need an additional wait loop around this, because in some cases
+  // with TLSwe may get data from the socket but not from SSL_read.
+  // In this case we need to repeat at least once.
+
+  if (fp != NULL) {
+    // Use read() instead of fread(), because if we're reading from the
+    // CGI pipe, fread() may block until IO buffer is filled up. We
+    // cannot afford to block and must pass all read bytes immediately
+    // to the client.
+    nread = (int) read(fileno(fp), buf, (size_t) len);
+    err   = (nread < 0) ? errno : 0;
+
+    if ((0 == nread) && (len > 0)) {
+      // Should get data, but got EOL
+      return -2;
+    }
+  }
+  else if ((conn->ssl != NULL) && ((ssl_pending = SSL_pending(conn->ssl)) > 0)) {
+    // We already know there is no more data buffered in conn->buf
+    // but there is more available in the SSL layer. So don't poll
+    // conn->client.sock yet.
+    if (ssl_pending > len) {
+      ssl_pending = len;
+    }
+
+    nread = SSL_read(conn->ssl, buf, ssl_pending);
+
+    if (nread <= 0) {
+      err = SSL_get_error(conn->ssl, nread);
+      if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
+        err = errno;
+      }
+      else if ((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) {
+        nread = 0;
+      }
+      else {
+        // DEBUG_TRACE("SSL_read() failed, error %d", err);
+        return -1;
+      }
+    }
+    else {
+      err = 0;
+    }
+  }
+
+  // SSL read
+  else if (conn->ssl != NULL) {
+
+    struct pollfd pfd[1];
+    int pollres;
+
+    pfd[0].fd     = conn->client.sock;
+    pfd[0].events = POLLIN;
+    pollres       = stcp_poll(pfd, 1, mstimeout, &(conn->stop_flag));
+
+    if (conn->stop_flag) {
+      return -2;
+    }
+
+    if (pollres > 0) {
+
+      nread = SSL_read(conn->ssl, buf, len);
+
+      if (nread <= 0) {
+        err = SSL_get_error(conn->ssl, nread);
+        if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
+          err = errno;
+        }
+        else if ((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) {
+          nread = 0;
+        }
+        else {
+          // DEBUG_TRACE("SSL_read() failed, error %d", err); TODO
+          return -2;
+        }
+      }
+      else {
+        err = 0;
+      }
+    }
+    else if (pollres < 0) {
+      // Error
+      return -2;
+    }
+    else {
+      // pollres = 0 means timeout
+      nread = 0;
+    }
+  }
+
+  // Non SSL read
+  else {
+    struct pollfd pfd[1];
+    int pollres;
+
+    pfd[0].fd     = conn->client.sock;
+    pfd[0].events = POLLIN;
+    pollres       = stcp_poll(pfd, 1, mstimeout, &(conn->stop_flag));
+
+    if (conn->stop_flag) {
+      return -2;
+    }
+
+    if (pollres > 0) {
+
+      nread = (int) recv(conn->client.sock, buf, (len_t) len, 0);
+      err   = (nread < 0) ? errno : 0;
+
+      if (nread <= 0) {
+        // shutdown of the socket at client side
+        return -2;
+      }
+    }
+    else if (pollres < 0) {
+      // error callint poll
+      return -2;
+    }
+    else {
+      // pollres = 0 means timeout
+      nread = 0;
+    }
+  }
+
+  if (conn->stop_flag) {
+    return -2;
+  }
+
+  if ((nread > 0) || ((nread == 0) && (len == 0))) {
+    // some data has been read, or no data was requested
+    return nread;
+  }
+
+  if (nread < 0) {
+    // socket error - check errno
+#ifdef _WIN32
+    if (err == WSAEWOULDBLOCK) {
+      // TODO (low): check if this is still required
+      // standard case if called from close_socket_gracefully
+      return -2;
+    }
+    else if (err == WSAETIMEDOUT) {
+      // TODO (low): check if this is still required
+      // timeout is handled by the while loop
+      return 0;
+    }
+    else if (err == WSAECONNABORTED) {
+      // See https://www.chilkatsoft.com/p/p_299.asp
+      return -2;
+    }
+    else {
+      // DEBUG_TRACE("recv() failed, error %d", err);
+      return -2;
+    }
+#else
+    // TODO: POSIX returns either EAGAIN or EWOULDBLOCK in both cases,
+    // if the timeout is reached and if the socket was set to non-
+    // blocking in close_socket_gracefully, so we can not distinguish
+    // here. We have to wait for the timeout in both cases for now.
+
+    if ((err == EAGAIN) || (err == EWOULDBLOCK) || (err == EINTR)) {
+      // TODO (low): check if this is still required
+      // EAGAIN/EWOULDBLOCK:
+      // standard case if called from close_socket_gracefully
+      // => should return -1
+      // or timeout occurred
+      // => the code must stay in the while loop
+
+      // EINTR can be generated on a socket with a timeout set even
+      // when SA_RESTART is effective for all relevant signals
+      // (see signal(7)).
+      // => stay in the while loop
+    }
+    else {
+      // DEBUG_TRACE("recv() failed, error %d", err);
+      return -2;
+    }
+#endif
+  }
+
+  // Timeout occurred, but no data available.
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // stcp_close_socket_gracefully
 //
 
@@ -3030,210 +3235,7 @@ stcp_push_all(struct stcp_connection *conn, FILE *fp, const char *buf, int64_t l
   return nwritten;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_pull_inner
-//
-// Read from IO channel - opened file descriptor, socket, or SSL descriptor.
-// Return value:
-//  >=0 .. number of bytes successfully read
-//   -1 .. timeout
-//   -2 .. stopped (socket closed by remote)
-//
 
-static int
-stcp_pull_inner(FILE *fp, struct stcp_connection *conn, char *buf, int len, int mstimeout)
-{
-  int nread, err = 0;
-
-#ifdef _WIN32
-  typedef int len_t;
-#else
-  typedef size_t len_t;
-#endif
-  int ssl_pending;
-
-  // We need an additional wait loop around this, because in some cases
-  // with TLSwe may get data from the socket but not from SSL_read.
-  // In this case we need to repeat at least once.
-
-  if (fp != NULL) {
-    // Use read() instead of fread(), because if we're reading from the
-    // CGI pipe, fread() may block until IO buffer is filled up. We
-    // cannot afford to block and must pass all read bytes immediately
-    // to the client.
-    nread = (int) read(fileno(fp), buf, (size_t) len);
-    err   = (nread < 0) ? errno : 0;
-
-    if ((0 == nread) && (len > 0)) {
-      // Should get data, but got EOL
-      return -2;
-    }
-  }
-  else if ((conn->ssl != NULL) && ((ssl_pending = SSL_pending(conn->ssl)) > 0)) {
-    // We already know there is no more data buffered in conn->buf
-    // but there is more available in the SSL layer. So don't poll
-    // conn->client.sock yet.
-    if (ssl_pending > len) {
-      ssl_pending = len;
-    }
-
-    nread = SSL_read(conn->ssl, buf, ssl_pending);
-
-    if (nread <= 0) {
-      err = SSL_get_error(conn->ssl, nread);
-      if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
-        err = errno;
-      }
-      else if ((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) {
-        nread = 0;
-      }
-      else {
-        // DEBUG_TRACE("SSL_read() failed, error %d", err);
-        return -1;
-      }
-    }
-    else {
-      err = 0;
-    }
-  }
-
-  // SSL read
-  else if (conn->ssl != NULL) {
-
-    struct pollfd pfd[1];
-    int pollres;
-
-    pfd[0].fd     = conn->client.sock;
-    pfd[0].events = POLLIN;
-    pollres       = stcp_poll(pfd, 1, mstimeout, &(conn->stop_flag));
-
-    if (conn->stop_flag) {
-      return -2;
-    }
-
-    if (pollres > 0) {
-
-      nread = SSL_read(conn->ssl, buf, len);
-
-      if (nread <= 0) {
-        err = SSL_get_error(conn->ssl, nread);
-        if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
-          err = errno;
-        }
-        else if ((err == SSL_ERROR_WANT_READ) || (err == SSL_ERROR_WANT_WRITE)) {
-          nread = 0;
-        }
-        else {
-          // DEBUG_TRACE("SSL_read() failed, error %d", err); TODO
-          return -2;
-        }
-      }
-      else {
-        err = 0;
-      }
-    }
-    else if (pollres < 0) {
-      // Error
-      return -2;
-    }
-    else {
-      // pollres = 0 means timeout
-      nread = 0;
-    }
-  }
-
-  // Non SSL read
-  else {
-    struct pollfd pfd[1];
-    int pollres;
-
-    pfd[0].fd     = conn->client.sock;
-    pfd[0].events = POLLIN;
-    pollres       = stcp_poll(pfd, 1, mstimeout, &(conn->stop_flag));
-
-    if (conn->stop_flag) {
-      return -2;
-    }
-
-    if (pollres > 0) {
-
-      nread = (int) recv(conn->client.sock, buf, (len_t) len, 0);
-      err   = (nread < 0) ? errno : 0;
-
-      if (nread <= 0) {
-        // shutdown of the socket at client side
-        return -2;
-      }
-    }
-    else if (pollres < 0) {
-      // error callint poll
-      return -2;
-    }
-    else {
-      // pollres = 0 means timeout
-      nread = 0;
-    }
-  }
-
-  if (conn->stop_flag) {
-    return -2;
-  }
-
-  if ((nread > 0) || ((nread == 0) && (len == 0))) {
-    // some data has been read, or no data was requested
-    return nread;
-  }
-
-  if (nread < 0) {
-    // socket error - check errno
-#ifdef _WIN32
-    if (err == WSAEWOULDBLOCK) {
-      // TODO (low): check if this is still required
-      // standard case if called from close_socket_gracefully
-      return -2;
-    }
-    else if (err == WSAETIMEDOUT) {
-      // TODO (low): check if this is still required
-      // timeout is handled by the while loop
-      return 0;
-    }
-    else if (err == WSAECONNABORTED) {
-      // See https://www.chilkatsoft.com/p/p_299.asp
-      return -2;
-    }
-    else {
-      // DEBUG_TRACE("recv() failed, error %d", err);
-      return -2;
-    }
-#else
-    // TODO: POSIX returns either EAGAIN or EWOULDBLOCK in both cases,
-    // if the timeout is reached and if the socket was set to non-
-    // blocking in close_socket_gracefully, so we can not distinguish
-    // here. We have to wait for the timeout in both cases for now.
-
-    if ((err == EAGAIN) || (err == EWOULDBLOCK) || (err == EINTR)) {
-      // TODO (low): check if this is still required
-      // EAGAIN/EWOULDBLOCK:
-      // standard case if called from close_socket_gracefully
-      // => should return -1
-      // or timeout occurred
-      // => the code must stay in the while loop
-
-      // EINTR can be generated on a socket with a timeout set even
-      // when SA_RESTART is effective for all relevant signals
-      // (see signal(7)).
-      // => stay in the while loop
-    }
-    else {
-      // DEBUG_TRACE("recv() failed, error %d", err);
-      return -2;
-    }
-#endif
-  }
-
-  // Timeout occurred, but no data available.
-  return -1;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_pull_all
