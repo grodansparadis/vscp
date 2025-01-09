@@ -257,7 +257,7 @@ vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
 {
   int rv;
 
-  DWORD dwrv = WaitForSingleObject(*hHandle, waitms);
+  DWORD dwrv = WaitForSingleObject(*phHandle, waitms);
   if (WAIT_OBJECT_0 == dwrv) {
     rv= 0;
   }
