@@ -141,8 +141,13 @@ main(int argc, char **argv)
 #endif
   crcInit();
 
+#ifdef WIN32
+  rootFolder   = "c:\\ProgramData\\vscp\\";
+  strcfgfile   = "c:\\ProgramData\\vscp\\vscpd.json";
+#else
   rootFolder   = "/var/lib/vscp/";
   strcfgfile   = "/etc/vscp/vscpd.json";
+#endif  
   gbStopDaemon = false;
 
   while ((opt = getopt(argc, argv, "d:c:r:k:hgsv")) != -1) {
