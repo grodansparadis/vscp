@@ -104,7 +104,7 @@ unzip file
 If you want to use bleeding edge source use git and clone the repository with
 
 ```bash
-git clone https://github.com/grodansparadis/vscp.git
+git clone -j4 --recurse-submodules https://github.com/grodansparadis/vscp.git
 ```    
 
 *Note* For a production system choosing a stable release version is strongly recommended.
@@ -113,7 +113,7 @@ You can also download a zip of the latest bleeding edge source by clicking on th
 [GitHub](https://github.com/grodansparadis/vscp).
 
 ```
-git clone https://github.com/grodansparadis/vscp
+git clone -j4 --recurse-submodules https://github.com/grodansparadis/vscp
 ```
 
 Enter the 'vscp' folder created by the unpacking/clone process
@@ -183,7 +183,7 @@ to start the service
 
 ## Setting up the system on Rasperry Pi
 
-The [Raspberry Pi](https://www.raspberrypi.org/) is a very nice single board computer and a perfect match for VSCP & Friends. __The VSCP daemon should work on all Raspberry Pi's except the RPi1 with 256 MB memory where the SSL lib fails probably due to out of memory.__ 
+The [Raspberry Pi](https://www.raspberrypi.org/) is a very nice single board computer and a perfect match for VSCP & Friends. __The VSCP daemon should work on all Raspberry Pi's except the RPi1 with 256 MB memory where the SSL lib probably fails due to out of memory.__ 
 
 If the startup script does not work or if you experience other startup problems you may need to update the firmware of your Raspberry Pi with **rpi-update**
 
@@ -199,6 +199,45 @@ The setup is the same as on other Unix systems so the instructions to [setup VSC
 
 VSCP & Friends has been tested and works very well on Beaglebone Black. The setup is the same as on other Unix systems so the instructions to [setup VSCP & Friends on a Unix system](./setting_up_the_system_on_linux.md) can be used.
 
+
+## Setting up the system on Windows
+
+The VSCP daemon is not (yet) available on Windows. You can however use Windows Subsystem for Linux (WSL) to run it if you like. With the system installed follow the Linux install instructions. The main problem is that the daemon is not yet available as a service on Windows. This is something that will be added in the future. However the VSCP daemon compiles and runs just fine on windows.
+
+### Compile and run on Windows
+
+Firts make a folder **build** and enter it
+
+```bash
+mkdir build
+cd build
+```
+
+If vcpkg is installed on the G: drive and the vcpkg triplet is x64-windows the following cmake commands can be used to compile the VSCP daemon on Windows.
+
+```bash
+cmake .. -G "Visual Studio 17 2022" -DVCPKG_TARGET_TRIPLET=x64-windows  -D CMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=G:\vcpkg\scripts\buildsystems\vcpkg.cmake
+```
+
+Build with
+
+```bash
+cmake --build . --config Release
+```
+
+
+
+
+#### Run as sercice
+  * http://nssm.cc/
+  * https://github.com/winsw/winsw/
+  * https://github.com/kflu/serman
+  * https://stackoverflow.com/questions/3582108/create-windows-service-from-executable
+
+
+## Setting up the system on MacOS
+
+t.b.d.
 
 ### Related Links
 
