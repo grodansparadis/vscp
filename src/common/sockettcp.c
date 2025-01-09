@@ -9,7 +9,7 @@
 // Copyright (c) 2013-2017 the Civetweb developers ()
 //
 // Adopted for VSCP, Small changes  additions
-// Copyright (C) 2018-2023 Ake Hedman, the VSCP project
+// Copyright (C) 2018-2025 Ake Hedman, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1526,7 +1526,7 @@ sockaddr_to_string(char *buf, size_t len, const union usa *usa)
 //                                 OPENSSL
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 #else
 static pthread_mutex_t *ssl_mutexes;
 #endif /* OPENSSL_API_1_1 */
@@ -1870,7 +1870,7 @@ ssl_get_client_cert_info(struct stcp_connection *conn, struct stcp_srv_client_ce
 // ssl_locking_callback
 //
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 
 // Not needed of for 1.1
 
@@ -1912,7 +1912,7 @@ int
 stcp_init_mt_ssl(void)
 {
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 
   if (atomic_inc(&cryptolib_users) > 1) {
     return 1;
@@ -1957,7 +1957,7 @@ stcp_init_mt_ssl(void)
   return 1;
 }
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_get_protocol
@@ -2079,7 +2079,7 @@ stcp_init_ssl(SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts)
     }
   }
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
   // Initialize SSL library
   OPENSSL_init_ssl(0, NULL);
   OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
@@ -2205,7 +2205,7 @@ stcp_init_ssl(SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts)
 void
 stcp_uninit_ssl(void)
 {
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 
   if (0 == atomic_dec(&cryptolib_users)) {
 
@@ -2481,7 +2481,7 @@ stcp_connect_remote_impl(const char *host,
     return NULL;
   }
 
-#ifdef OPENSSL_API_1_1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
   if (bUseSSL && (NULL == (conn->ssl_ctx = SSL_CTX_new(TLS_client_method())))) {
     stcp_report_error("sockettcp: SSL_CTX_new error");
     close(sock);
