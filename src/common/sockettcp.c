@@ -2444,7 +2444,7 @@ stcp_connect_remote_impl(const char *host,
                          int port,
                          struct stcp_secure_options *secure_options,
                          int bUseSSL,
-                         int /*timeout*/)
+                         int timeout)
 {
   struct stcp_connection *conn = NULL;
   int sock;
