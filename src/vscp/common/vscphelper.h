@@ -249,7 +249,23 @@ void
 vscp_mem_usage(double &vm_usage, double &resident_set);
 #endif
 
-#ifndef WIN32
+#ifdef WIN32
+/*!
+    Wait for semaphore
+
+    @param hHandle Pointer to handle to semaphore. The pointer 
+      is needed to be compatible with Linux semaphore handles.
+    @param waitms Time in milliseconds to wait. 
+      if waitms is 0 - return immidiatly
+      if waitms is INFINITE - wait forever
+      else wait for waitms milliseconds
+    @return Return 0 if semaphore is signaled, -1 if error. errno
+    is set accordingly. ETIMEDOUT is returned for timeout.
+    https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+*/
+int
+vscp_sem_wait(HANDLE *phHandle, uint32_t waitms);
+#else
 /*!
     Wait a number of milliseconds for semaphore
 

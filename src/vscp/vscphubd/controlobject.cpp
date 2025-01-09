@@ -74,7 +74,6 @@
 
 #include <expat.h>
 
-#include <fastpbkdf2.h>
 #include <vscp-aes.h>
 
 #include <actioncodes.h>
@@ -95,6 +94,7 @@
 #include <vscpmd5.h>
 #include <websocket.h>
 #include <websrv.h>
+
 
 #define UNUSED(x) (void)(x)
 void

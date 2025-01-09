@@ -251,7 +251,25 @@ vscp_mem_usage(double &vm_usage, double &resident_set)
 // vscp_sem_wait
 //
 
-#ifndef WIN32
+#ifdef WIN32
+int
+vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
+{
+  int rv;
+
+  DWORD dwrv = WaitForSingleObject(*hHandle, waitms);
+  if (WAIT_OBJECT_0 == dwrv) {
+    rv= 0;
+  }
+  else if (WAIT_TIMEOUT == dwrv) {
+    rv = ETIMEDOUT;
+  }
+  else {
+    rv = -1;
+  }
+  return rv;
+}
+#else
 int
 vscp_sem_wait(sem_t *sem, uint32_t waitms)
 {

@@ -274,7 +274,11 @@ public:
     Event object to indicate that there is an event in the
     output queue
   */
+  #ifdef WIN32
+ HANDLE m_semReceiveQueue;
+ #else  
   sem_t m_semReceiveQueue;
+ #endif
 
   /// Filters for input/output
   vscpEventFilter m_filterIn;

@@ -661,7 +661,11 @@ vscpClientMqtt::vscpClientMqtt(void)
     return;
   }
 
+#ifdef WIN32
+  m_semReceiveQueue = CreateSemaphore(NULL, 0, 0x7fffffff, NULL);
+#else
   sem_init(&m_semReceiveQueue, 0, 0);
+#endif
 
   pthread_mutex_init(&m_mutexif, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
@@ -683,7 +687,11 @@ vscpClientMqtt::~vscpClientMqtt()
   // Clean up the lib
   mosquitto_lib_cleanup();
 
+#ifdef WIN32
+  CloseHandle(m_semReceiveQueue);
+#else
   sem_destroy(&m_semReceiveQueue);
+#endif    
 
   pthread_mutex_destroy(&m_mutexif);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
@@ -1525,7 +1533,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
         pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
+#ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
         sem_post(&m_semReceiveQueue);
+#endif        
         pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
     }
@@ -1567,7 +1579,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
         pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
+#ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
         sem_post(&m_semReceiveQueue);
+#endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
     }
@@ -1609,7 +1625,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
         pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
+#ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
         sem_post(&m_semReceiveQueue);
+#endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
     }
@@ -1654,7 +1674,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
         pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
+#ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
         sem_post(&m_semReceiveQueue);
+#endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
     }
