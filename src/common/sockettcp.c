@@ -155,6 +155,9 @@
 
 typedef const char *SOCK_OPT_TYPE;
 
+// Prototype to avoid warnings
+const char * inet_ntop(int af, const void *src, char *dst, size_t size);
+
 #if !defined(PATH_MAX)
 #define W_PATH_MAX (MAX_PATH)
 /* at most three UTF-8 chars per wchar_t */
@@ -2832,7 +2835,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
   // when server decides to close the connection; then when client
   // does recv() it gets no data back.
   do {
-    n = stcp_pull_inner(NULL, conn, buf, sizeof(buf), /* Timeout in s: */ 1.0);
+    n = stcp_pull_inner(NULL, conn, buf, sizeof(buf), /* Timeout in s: */ 1);
   } while (n > 0);
 #endif
 
