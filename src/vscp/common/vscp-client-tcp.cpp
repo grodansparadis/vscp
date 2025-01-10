@@ -52,7 +52,11 @@ vscpClientTcp::vscpClientTcp()
   vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
   vscp_clearVSCPFilter(&m_filterOut); // Send all events
 
+#ifdef WIN32
+  m_semReceiveQueue = CreateSemaphore(NULL, 0, 0x7fffffff, NULL);
+#else
   sem_init(&m_semReceiveQueue, 0, 0);
+#endif
 
   pthread_mutex_init(&m_mutexTcpIpObject, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
@@ -67,16 +71,20 @@ vscpClientTcp::~vscpClientTcp()
   // Just to be sure
   disconnect();
 
+#ifdef WIN32
+  CloseHandle(m_semReceiveQueue);
+#else
   sem_destroy(&m_semReceiveQueue);
+#endif
 
   pthread_mutex_destroy(&m_mutexTcpIpObject);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
 
   // Clear the input queue (if needed)
   while (m_receiveList.size()) {
-      vscpEvent *pev = m_receiveList.front();
-      m_receiveList.pop_front();
-      vscp_deleteEvent(pev);
+    vscpEvent *pev = m_receiveList.front();
+    m_receiveList.pop_front();
+    vscp_deleteEvent(pev);
   }
 }
 

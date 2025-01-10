@@ -42,5 +42,7 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_)

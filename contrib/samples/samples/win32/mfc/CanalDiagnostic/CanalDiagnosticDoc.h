@@ -26,8 +26,8 @@
 // $Revision: 1.3 $ 
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_)
-#define AFX_CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_
+#if !defined(CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_)
+#define CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -152,7 +152,5 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_)
+#endif // !defined(CANALDIAGNOSTICDOC_H__73D0D1F3_987B_4A42_ADD5_AE5718C9D792__INCLUDED_)

@@ -68,8 +68,12 @@ vscpClientCanal::vscpClientCanal()
   pthread_mutex_init(&m_mutexif, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
 
-  // sem_init(&m_semSendQueue, 0, 0);
+// sem_init(&m_semSendQueue, 0, 0);
+#ifdef WIN32
+  m_semReceiveQueue = CreateSemaphore(NULL, 0, 0x7fffffff, NULL);
+#else
   sem_init(&m_semReceiveQueue, 0, 0);
+#endif
 
   // pthread_mutex_init(&m_mutexSendQueue, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
@@ -85,16 +89,20 @@ vscpClientCanal::~vscpClientCanal()
 {
   disconnect();
 
+#ifdef WIN32
+  CloseHandle(m_semReceiveQueue);
+#else
   sem_destroy(&m_semReceiveQueue);
+#endif
 
   pthread_mutex_destroy(&m_mutexif);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
 
   // Clear the input queue (if needed)
   while (m_receiveQueue.size()) {
-      vscpEvent *pev = m_receiveQueue.front();
-      m_receiveQueue.pop_front();
-      vscp_deleteEvent(pev);
+    vscpEvent *pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+    vscp_deleteEvent(pev);
   }
 
   spdlog::trace("CANAL CLIENT: destructor vscp_client_canal object.");
@@ -659,8 +667,6 @@ workerThread(void *pObj)
     // if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
 
     // while (cnt) {
-
-    
 
     if (CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalBlockingReceive(&msg, 100)) {
 

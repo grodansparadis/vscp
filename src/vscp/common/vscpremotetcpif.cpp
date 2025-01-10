@@ -743,7 +743,7 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
   }
 
   if (!m_inputStrArray.size()) {
-    return VSCP_ERROR_ERROR;
+    return VSCP_ERROR_RCV_EMPTY;
   }
 
   vscpEvent *pEvent = new vscpEvent;
