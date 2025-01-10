@@ -659,6 +659,7 @@ struct vscpMyNode {
 #define VSCP_ERROR_READ               66 /* DUPLICATE FOR CONVENIENCE! Error when reading data */
 #define VSCP_ERROR_INVALID_CHECKSUM   67 /* Checksum is not correct */
 #define VSCP_ERROR_INTERFACE          68 /* Interface error (not defined etc) */
+#define VSCP_ERROR_CONVERSION         69 /* Error in conversion */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

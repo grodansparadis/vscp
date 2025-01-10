@@ -695,7 +695,7 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
   }
 
   if (NULL == pEvent) {
-    return VSCP_ERROR_PARAMETER;
+    return VSCP_ERROR_MEMORY;
   }
 
   // If in receive loop terminate
@@ -712,7 +712,7 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
   }
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
-    return VSCP_ERROR_PARAMETER;
+    return VSCP_ERROR_READ;
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -748,16 +748,16 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
 
   vscpEvent *pEvent = new vscpEvent;
   if (NULL == pEvent) {
-    return VSCP_ERROR_PARAMETER;
+    return VSCP_ERROR_MEMORY;
   }
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
-    return VSCP_ERROR_PARAMETER;
+    return VSCP_ERROR_READ;
   }
 
   if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
     vscp_deleteEvent(pEvent);
-    return VSCP_ERROR_PARAMETER;
+    return VSCP_ERROR_CONVERSION;
   }
 
   vscp_deleteEvent(pEvent);
@@ -906,7 +906,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
       // This should be an event - Get it
       if (!getEventFromLine(pEvent, strItem)) {
-        return VSCP_ERROR_PARAMETER;
+        return VSCP_ERROR_READ;
       }
 
       return VSCP_ERROR_SUCCESS;
@@ -953,7 +953,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
         // This should be an event - Get it
         if (!getEventFromLine(pEvent, strItem)) {
-          return VSCP_ERROR_PARAMETER;
+          return VSCP_ERROR_READ;
         }
 
         return VSCP_ERROR_SUCCESS;
