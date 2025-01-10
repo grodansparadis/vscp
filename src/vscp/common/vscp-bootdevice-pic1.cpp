@@ -757,7 +757,7 @@ CBootDevice_PIC1::writeFirmwareSector(uint8_t *paddr)
 
     // Put data into frame
     for (int i = 0; i < 8; i++) {
-      msg.data[i] = paddr[i];
+      ex.data[i+offset] = paddr[i];
       m_checksum += paddr[i];
     };
 
