@@ -69,7 +69,7 @@ ws1_client_data_handler(struct mg_connection *conn,
     // They should be replied with a PONG with the same data.
     //
         printf("Ping\n");
-    mg_websocket_client_write(pObj->m_conn,
+    mg_websocket_client_write(pClient->m_conn,
                                 MG_WEBSOCKET_OPCODE_PONG,
                                 data,
                                 data_len);
@@ -102,17 +102,17 @@ ws1_client_data_handler(struct mg_connection *conn,
 
         if ( 'E' == str[0] ) {
 
-            if (pObj->isEvCallback()) {
+            if (pClient->isEvCallback()) {
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
                 if ( !vscp_convertStringToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev, pObj->m_callbackObject);
+                pClient->m_evcallback(pev, pClient->m_callbackObject);
             }
-            else if (pObj->isExCallback()) {
+            else if (pClient->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 if ( !vscp_convertStringToEventEx(pex, str) ) return 1;
-                pObj->m_excallback(pex, pObj->m_callbackObject);
+                pClient->m_excallback(pex, pClient->m_callbackObject);
             }
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -120,12 +120,17 @@ ws1_client_data_handler(struct mg_connection *conn,
                 if ( !vscp_convertStringToEvent(pev, str) ) return 1;
 
                 // Add to event queue
-                pObj->m_eventReceiveQueue.push_back(pev);
+                pClient->m_eventReceiveQueue.push_back(pev);
             }
         }
         else {
-            pObj->m_msgReceiveQueue.push_back(str);
-            sem_post(&pObj->m_sem_msg);
+            pClient->m_msgReceiveQueue.push_back(str);
+            sem_post(&pClient->m_sem_msg);
+            #ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
+        sem_post(&m_semReceiveQueue);
+#endif 
         }
     }
 
@@ -150,7 +155,7 @@ ws1_client_close_handler(const struct mg_connection *conn,
   vscpClientWs1 *pObj =
       (vscpClientWs1 *)mg_get_user_data(ctx);
 
-    pObj->m_bConnected = false;
+    pClient->m_bConnected = false;
   printf("----------------> Client: Close handler\n");
 }
 */

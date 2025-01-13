@@ -74,7 +74,7 @@ ws2_client_data_handler(struct mg_connection *conn,
     // They should be replied with a PONG with the same data.
     //
         printf("Ping\n");
-    mg_websocket_client_write(pObj->m_conn,
+    mg_websocket_client_write(pClient->m_conn,
                                 MG_WEBSOCKET_OPCODE_PONG,
                                 data,
                                 data_len);
@@ -112,19 +112,19 @@ ws2_client_data_handler(struct mg_connection *conn,
 
         if ( "event" == j["type"]) {
 
-            if (pObj->isEvCallback()) {
+            if (pClient->isEvCallback()) {
                 vscpEvent *pev = new vscpEvent;
                 if ( NULL == pev ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEvent(pev, str) ) return 1;
-                pObj->m_evcallback(pev, pObj->m_callbackObject);
+                pClient->m_evcallback(pev, pClient->m_callbackObject);
             }
-            else if (pObj->isExCallback()) {
+            else if (pClient->isExCallback()) {
                 vscpEventEx *pex = new vscpEventEx;
                 if ( NULL == pex ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
-                pObj->m_excallback(pex, pObj->m_callbackObject);
+                pClient->m_excallback(pex, pClient->m_callbackObject);
             }
             else {
                 vscpEvent *pev = new vscpEvent;
@@ -132,13 +132,18 @@ ws2_client_data_handler(struct mg_connection *conn,
                 std::string str = j["event"].dump();
 
                 // Add to event queue
-                pObj->m_eventReceiveQueue.push_back(pev);
+                pClient->m_eventReceiveQueue.push_back(pev);
             }
 
         }
         else {
-            pObj->m_msgReceiveQueue.push_back(j);
-            sem_post(&pObj->m_sem_msg);
+            pClient->m_msgReceiveQueue.push_back(j);
+            sem_post(&pClient->m_sem_msg);
+            #ifdef WIN32
+        ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+#else        
+        sem_post(&m_semReceiveQueue);
+#endif 
         }
     }
 
@@ -163,7 +168,7 @@ ws2_client_close_handler(const struct mg_connection *conn,
   vscpClientWs2 *pObj =
       (vscpClientWs2 *)mg_get_user_data(ctx);
 
-    pObj->m_bConnected = false;
+    pClient->m_bConnected = false;
   printf("----------------> Client: Close handler\n");
 }
 */

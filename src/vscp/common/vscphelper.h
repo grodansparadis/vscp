@@ -278,6 +278,21 @@ int
 vscp_sem_wait(sem_t *sem, uint32_t waitms);
 #endif
 
+
+if WIN32
+/*!
+  @param phHandle Pointer to handle of semaphore to wait for
+  @return 0 on success, -1 on error
+*/
+int vscp_sem_post(HANDLE *phHandle);
+#else
+/*!
+  @param sem Pointer to semaphore to wait for
+  @return 0 on success, -1 on error
+*/
+int vscp_sem_post(sem_t *sem);
+#endif
+
 /*!
   Sleep for a number of microseconds
   @param usec Number of microseconds to sleep

@@ -622,7 +622,7 @@ vscpClientTcp::sendToCallbacks(vscpEvent *pev)
 // ----------------------------------------------------------------------------
 
 void
-workerThread(vscpClientTcp *pObj)
+workerThread(vscpClientTcp *pClient)
 {
   vscpEvent ev;
 
@@ -630,48 +630,52 @@ workerThread(vscpClientTcp *pObj)
   ev.pdata    = NULL;
 
   // Check pointer
-  if (nullptr == pObj) {
+  if (nullptr == pClient) {
     return;
   }
 
-  VscpRemoteTcpIf *m_pifReceive = pObj->getTcpReceive();
+  VscpRemoteTcpIf *m_pifReceive = pClient->getTcpReceive();
 
   m_pifReceive->doCmdEnterReceiveLoop();
 
-  while (pObj->m_bRun) {
+  while (pClient->m_bRun) {
 
-    pthread_mutex_lock(&pObj->m_mutexTcpIpObject);
+    pthread_mutex_lock(&pClient->m_mutexTcpIpObject);
 
     if (VSCP_ERROR_SUCCESS == m_pifReceive->doCmdBlockingReceive(&ev)) {
 
-      if (vscp_doLevel2Filter(&ev, &pObj->m_filterIn)) {
+      if (vscp_doLevel2Filter(&ev, &pClient->m_filterIn)) {
 
-        if (pObj->isCallbackEvActive()) {
-          pObj->m_callbackev(ev, pObj->getCallbackObj());
+        if (pClient->isCallbackEvActive()) {
+          pClient->m_callbackev(ev, pClient->getCallbackObj());
         }
 
-        if (pObj->isCallbackExActive()) {
+        if (pClient->isCallbackExActive()) {
           vscpEventEx ex;
           if (vscp_convertEventToEventEx(&ex, &ev)) {
-            pObj->m_callbackex(ex, pObj->getCallbackObj());
+            pClient->m_callbackex(ex, pClient->getCallbackObj());
           }
         }
 
         // Add to input queue only if no callback set
-        if (!pObj->isCallbackEvActive() || !pObj->isCallbackExActive()) {
-          pthread_mutex_lock(&pObj->m_mutexReceiveQueue);
-          pObj->m_receiveList.push_back(&ev);
-          sem_post(&pObj->m_semReceiveQueue);
-          pthread_mutex_unlock(&pObj->m_mutexReceiveQueue);
+        if (!pClient->isCallbackEvActive() || !pClient->isCallbackExActive()) {
+          pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
+          pClient->m_receiveList.push_back(&ev);
+#ifdef WIN32
+          ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+#else
+          sem_post(&pClient->m_semReceiveQueue);
+#endif
+          pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
         }
       }
       vscp_deleteEvent(&ev);
     }
 
     if (!m_pifReceive->isConnected()) {
-      pObj->m_bRun = false;
+      pClient->m_bRun = false;
     }
 
-    pthread_mutex_unlock(&pObj->m_mutexTcpIpObject);
+    pthread_mutex_unlock(&pClient->m_mutexTcpIpObject);
   }
 }

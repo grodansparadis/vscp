@@ -50,6 +50,7 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 else()
 SET(GCC_VSCP_COMPILE_FLAGS "-Wno-psabi -D WITH_SYSTEMD")
 endif()
+
 # Profiling
 #SET(GCC_VSCP_LINK_FLAGS    "-lgcov")
 

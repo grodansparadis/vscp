@@ -705,7 +705,11 @@ workerThread(void *pObj)
           if (vscp_doLevel2Filter(pev, &pClient->m_filterIn)) {
             pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
             pClient->m_receiveQueue.push_back(pev);
+#ifdef WIN32
+            ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+#else
             sem_post(&pClient->m_semReceiveQueue);
+#endif
             pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
           }
         }

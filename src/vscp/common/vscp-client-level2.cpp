@@ -67,121 +67,126 @@
 #include <string>
 #include <list>
 
-
 // Forward declaration
-static void *workerThread(void *pObj);
+static void *
+workerThread(void *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
 //
 
-vscpClientLevel2::vscpClientLevel2() 
+vscpClientLevel2::vscpClientLevel2()
 {
-    m_bConnected = false;  // Not connected
-    m_tid = 0;
-    m_bRun = false;
+  m_bConnected = false; // Not connected
+  m_tid        = 0;
+  m_bRun       = false;
 
-    setResponseTimeout(3);  // Response timeout 3 ms
-    pthread_mutex_init(&m_mutexif,NULL);
+  setResponseTimeout(3); // Response timeout 3 ms
+  pthread_mutex_init(&m_mutexif, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // D-tor
 //
 
-vscpClientLevel2::~vscpClientLevel2() 
+vscpClientLevel2::~vscpClientLevel2()
 {
-    disconnect();
-    pthread_mutex_destroy(&m_mutexif);
+  disconnect();
+  pthread_mutex_destroy(&m_mutexif);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // init
 //
 
-int vscpClientLevel2::init(const std::string &interface, 
-                                unsigned long flags,
-                                uint32_t timeout)
+int
+vscpClientLevel2::init(const std::string &interface, unsigned long flags, uint32_t timeout)
 {
-    m_interface = interface;
-    m_flags = flags;
-    setResponseTimeout(DEAULT_RESPONSE_TIMEOUT);  // Response timeout 3 ms
-    return VSCP_ERROR_SUCCESS;
+  m_interface = interface;
+  m_flags     = flags;
+  setResponseTimeout(DEAULT_RESPONSE_TIMEOUT); // Response timeout 3 ms
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getConfigAsJson
 //
 
-std::string vscpClientLevel2::getConfigAsJson(void) 
+std::string
+vscpClientLevel2::getConfigAsJson(void)
 {
-    json j;
-    std::string rv;
-    
-    j["interface"] = m_interface;
-    j["flags"] = m_flags;
-    j["responsetimeout"] = getResponseTimeout();
+  json j;
+  std::string rv;
 
-    return rv;
+  j["interface"]       = m_interface;
+  j["flags"]           = m_flags;
+  j["responsetimeout"] = getResponseTimeout();
+
+  return rv;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // initFromJson
 //
 
-bool vscpClientLevel2::initFromJson(const std::string& config)
+bool
+vscpClientLevel2::initFromJson(const std::string &config)
 {
-    return true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // connect
 //
 
-int vscpClientLevel2::connect(void) 
+int
+vscpClientLevel2::connect(void)
 {
-    int rv = CANAL_ERROR_SUCCESS;
-    return rv;
+  int rv = CANAL_ERROR_SUCCESS;
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // disconnect
 //
 
-int vscpClientLevel2::disconnect(void)
+int
+vscpClientLevel2::disconnect(void)
 {
-    m_bRun = false;
-    pthread_join(m_tid, NULL);
-    
-    m_bConnected = false;
-    return CANAL_ERROR_SUCCESS;
+  m_bRun = false;
+  pthread_join(m_tid, NULL);
+
+  m_bConnected = false;
+  return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // isConnected
 //
 
-bool vscpClientLevel2::isConnected(void)
+bool
+vscpClientLevel2::isConnected(void)
 {
-    return m_bConnected;
+  return m_bConnected;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // send
 //
 
-int vscpClientLevel2::send(vscpEvent &ev)
+int
+vscpClientLevel2::send(vscpEvent &ev)
 {
 
-    return VSCP_ERROR_WRITE_ERROR;
+  return VSCP_ERROR_WRITE_ERROR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // send
 //
 
-int vscpClientLevel2::send(vscpEventEx &ex)
+int
+vscpClientLevel2::send(vscpEventEx &ex)
 {
   rv = VSCP_ERROR_WRITE_ERROR;
 
@@ -192,18 +197,20 @@ int vscpClientLevel2::send(vscpEventEx &ex)
 // receive
 //
 
-int vscpClientLevel2::receive(vscpEvent &ev)
+int
+vscpClientLevel2::receive(vscpEvent &ev)
 {
-    int rv = VSCP_ERROR_ERROR;
+  int rv = VSCP_ERROR_ERROR;
 
-    return rv;
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
-int vscpClientLevel2::receive(vscpEventEx &ex)
+int
+vscpClientLevel2::receive(vscpEventEx &ex)
 {
   int rv = VSCP_ERROR_ERROR;
 
@@ -214,142 +221,148 @@ int vscpClientLevel2::receive(vscpEventEx &ex)
 // setfilter
 //
 
-int vscpClientLevel2::setfilter(vscpEventFilter &filter)
+int
+vscpClientLevel2::setfilter(vscpEventFilter &filter)
 {
-    int rv;
+  int rv;
 
-    uint32_t _filter = ((unsigned long)filter.filter_priority << 26) |
-                    ((unsigned long)filter.filter_class << 16) |
-                    ((unsigned long)filter.filter_type << 8) | filter.filter_GUID[0];
-    if ( CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
-        return rv;
-    }
+  uint32_t _filter = ((unsigned long) filter.filter_priority << 26) | ((unsigned long) filter.filter_class << 16) |
+                     ((unsigned long) filter.filter_type << 8) | filter.filter_GUID[0];
+  if (CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
+    return rv;
+  }
 
-    uint32_t _mask = ((unsigned long)filter.mask_priority << 26) |
-                    ((unsigned long)filter.mask_class << 16) |
-                    ((unsigned long)filter.mask_type << 8) | filter.mask_GUID[0];
-    return m_canalif.CanalSetMask(_mask);
+  uint32_t _mask = ((unsigned long) filter.mask_priority << 26) | ((unsigned long) filter.mask_class << 16) |
+                   ((unsigned long) filter.mask_type << 8) | filter.mask_GUID[0];
+  return m_canalif.CanalSetMask(_mask);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getcount
 //
 
-int vscpClientLevel2::getcount(uint16_t *pcount)
+int
+vscpClientLevel2::getcount(uint16_t *pcount)
 {
-    return m_canalif.CanalDataAvailable();
+  return m_canalif.CanalDataAvailable();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // clear
 //
 
-int vscpClientLevel2::clear()
+int
+vscpClientLevel2::clear()
 {
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getversion
 //
 
-int vscpClientLevel2::getversion(uint8_t *pmajor,
-                                    uint8_t *pminor,
-                                    uint8_t *prelease,
-                                    uint8_t *pbuild)
+int
+vscpClientLevel2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
 {
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getinterfaces
 //
 
-int vscpClientLevel2::getinterfaces(std::deque<std::string> &iflist)
+int
+vscpClientLevel2::getinterfaces(std::deque<std::string> &iflist)
 {
-    // No interfaces available
-    return VSCP_ERROR_SUCCESS;
+  // No interfaces available
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getwcyd
 //
 
-int vscpClientLevel2::getwcyd(uint64_t &wcyd)
+int
+vscpClientLevel2::getwcyd(uint64_t &wcyd)
 {
-    wcyd = VSCP_SERVER_CAPABILITY_NONE;   // No capabilities
-    return VSCP_ERROR_SUCCESS;
+  wcyd = VSCP_SERVER_CAPABILITY_NONE; // No capabilities
+  return VSCP_ERROR_SUCCESS;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // setConnectionTimeout
 //
 
-void vscpClientLevel2::setConnectionTimeout(uint32_t timeout)
+void
+vscpClientLevel2::setConnectionTimeout(uint32_t timeout)
 {
-    ;
+  ;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // getConnectionTimeout
 //
 
-uint32_t vscpClientLevel2::getConnectionTimeout(void)
+uint32_t
+vscpClientLevel2::getConnectionTimeout(void)
 {
-    return 0;
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // setResponseTimeout
 //
 
-void vscpClientLevel2::setResponseTimeout(uint32_t timeout)
+void
+vscpClientLevel2::setResponseTimeout(uint32_t timeout)
 {
-    ;
+  ;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // getResponseTimeout
 //
 
-uint32_t vscpClientLevel2::getResponseTimeout(void)
+uint32_t
+vscpClientLevel2::getResponseTimeout(void)
 {
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// setCallback
-//
-
-int vscpClientLevel2::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
-{
-    // Can not be called when connected
-    if ( m_bConnected ) return VSCP_ERROR_ERROR;
-
-    return VSCP_ERROR_SUCCESS;
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // setCallback
 //
 
-int vscpClientLevel2::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+int
+vscpClientLevel2::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
 {
-    // Can not be called when connected
-    if ( m_bConnected ) return VSCP_ERROR_ERROR;
+  // Can not be called when connected
+  if (m_bConnected)
+    return VSCP_ERROR_ERROR;
 
-    return VSCP_ERROR_SUCCESS;
+  return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// setCallback
+//
+
+int
+vscpClientLevel2::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+{
+  // Can not be called when connected
+  if (m_bConnected)
+    return VSCP_ERROR_ERROR;
+
+  return VSCP_ERROR_SUCCESS;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Workerthread
 //
 // This thread call the appropriate callback when events are received
 //
-
 
 // static void *workerThread(void *pObj)
 // {
@@ -362,7 +375,7 @@ int vscpClientLevel2::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 //     while (pClient->m_bRun) {
 
 //         //pthread_mutex_lock(&pif->m_mutexif);
-        
+
 //         // Check if there are events to fetch
 //         int cnt;
 //         if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
@@ -399,209 +412,215 @@ int vscpClientLevel2::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
 //     return NULL;
 // }
 
-void *workerThread(void *pData)
+void *
+workerThread(void *pData)
 {
-    int sock;
-    char devname[IFNAMSIZ + 1];
-    fd_set rdfs;
-    struct timeval tv;
-    struct sockaddr_can addr;
-    struct ifreq ifr;
-    struct cmsghdr *cmsg;
-    struct canfd_frame frame;
-    char
-      ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-    const int canfd_on = 1;
+  int sock;
+  char devname[IFNAMSIZ + 1];
+  fd_set rdfs;
+  struct timeval tv;
+  struct sockaddr_can addr;
+  struct ifreq ifr;
+  struct cmsghdr *cmsg;
+  struct canfd_frame frame;
+  char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
+  const int canfd_on = 1;
 
-    vscpClientLevel2 *pObj = (vscpClientLevel2 *)pData;
-    if (NULL == pObj) {
-        //syslog(LOG_ERR, "No object data supplied for worker thread");
-        return NULL;
+  vscpClientLevel2 *pClient = (vscpClientLevel2 *) pData;
+  if (NULL == pClient) {
+    // syslog(LOG_ERR, "No object data supplied for worker thread");
+    return NULL;
+  }
+
+  strncpy(devname, pClient->m_interface.c_str(), sizeof(devname) - 1);
+
+  while (pClient->m_bRun) {
+
+    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (sock < 0) {
+
+      if (ENETDOWN == errno) {
+        sleep(1);
+        continue; // We try again
+      }
+
+      if (pClient->m_flags & pClient->FLAG_ENABLE_DEBUG) {
+        syslog(LOG_ERR,
+               "%s",
+               (const char *) "ReadSocketCanTread: Error while "
+                              "opening socket. Terminating!");
+      }
+      break;
     }
 
-    strncpy(devname, pObj->m_interface.c_str(), sizeof(devname) - 1);
+    strcpy(ifr.ifr_name, devname);
+    ioctl(sock, SIOCGIFINDEX, &ifr);
 
-    while (pObj->m_bRun) {
-
-        sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-        if (sock < 0) {
-
-            if (ENETDOWN == errno) {
-                sleep(1);
-                continue;   // We try again
-            }
-
-            if (pObj->m_flags & pObj->FLAG_ENABLE_DEBUG) {
-                syslog(LOG_ERR,
-                       "%s",
-                    (const char *)"ReadSocketCanTread: Error while "
-                                     "opening socket. Terminating!");
-            }
-            break;
-        }
-
-        strcpy(ifr.ifr_name, devname);
-        ioctl(sock, SIOCGIFINDEX, &ifr);
-
-        addr.can_family  = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex;
+    addr.can_family  = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
 
 #ifdef DEBUG
-        printf("using interface name '%s'.\n", ifr.ifr_name);
+    printf("using interface name '%s'.\n", ifr.ifr_name);
 #endif
 
-        // try to switch the socket into CAN FD mode
-        setsockopt(
-          sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
+    // try to switch the socket into CAN FD mode
+    setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
 
-        if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-            syslog(LOG_ERR,
-                   "%s",
-                   (const char *)"CReadSocketCanTread: Error in socket bind. "
-                                 "Terminating!");
-            close(sock);
+    if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+      syslog(LOG_ERR,
+             "%s",
+             (const char *) "CReadSocketCanTread: Error in socket bind. "
+                            "Terminating!");
+      close(sock);
+      sleep(2);
+      continue;
+    }
+
+    bool bInnerLoop = true;
+    while (!pClient->m_bRun && bInnerLoop) {
+
+      FD_ZERO(&rdfs);
+      FD_SET(sock, &rdfs);
+
+      tv.tv_sec  = 0;
+      tv.tv_usec = 5000; // 5ms timeout
+
+      int ret;
+      if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
+        // Error
+        if (ENETDOWN == errno) {
+          // We try to get contact with the net
+          // again if it goes down
+          bInnerLoop = false;
+        }
+        else {
+          pClient->m_bRun = false;
+        }
+        continue;
+      }
+
+      if (ret) {
+
+        // There is data to read
+
+        ret = read(sock, &frame, sizeof(struct can_frame));
+        if (ret < 0) {
+          if (ENETDOWN == errno) {
+            // We try to get contact with the net
+            // again if it goes down
+            bInnerLoop = false;
             sleep(2);
-            continue;
+          }
+          else {
+            pClient->m_bRun = false;
+          }
+          continue;
         }
 
-        bool bInnerLoop = true;
-        while (!pObj->m_bRun && bInnerLoop) {
+        // Must be Extended
+        if (!(frame.can_id & CAN_EFF_FLAG))
+          continue;
 
-            FD_ZERO(&rdfs);
-            FD_SET(sock, &rdfs);
+        // Mask of control bits
+        frame.can_id &= CAN_EFF_MASK;
 
-            tv.tv_sec  = 0;
-            tv.tv_usec = 5000; // 5ms timeout
+        vscpEvent *pEvent = new vscpEvent();
+        if (NULL != pEvent) {
 
-            int ret;
-            if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
-                // Error
-                if (ENETDOWN == errno) {
-                    // We try to get contact with the net
-                    // again if it goes down
-                    bInnerLoop = false;
-                } else {
-                    pObj->m_bRun = false;
-                }
-                continue;
-            }
+          pEvent->pdata = new uint8_t[frame.len];
+          if (NULL == pEvent->pdata) {
+            delete pEvent;
+            continue;
+          }
 
-            if (ret) {
+          // GUID will be set to GUID of interface
+          // by driver interface with LSB set to nickname
+          memset(pEvent->GUID, 0, 16);
+          pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
-                // There is data to read
+          // Set VSCP class
+          pEvent->vscp_class = vscp_getVscpClassFromCANALid(frame.can_id);
 
-                ret = read(sock, &frame, sizeof(struct can_frame));
-                if (ret < 0) {
-                    if (ENETDOWN == errno) {
-                        // We try to get contact with the net
-                        // again if it goes down
-                        bInnerLoop = false;
-                        sleep(2);
-                    } else {
-                        pObj->m_bRun = false;
-                    }
-                    continue;
-                }
+          // Set VSCP type
+          pEvent->vscp_type = vscp_getVscpTypeFromCANALid(frame.can_id);
 
-                // Must be Extended
-                if (!(frame.can_id & CAN_EFF_FLAG)) continue;
+          // Copy data if any
+          pEvent->sizeData = frame.len;
+          if (frame.len) {
+            memcpy(pEvent->pdata, frame.data, frame.len);
+          }
 
-                // Mask of control bits
-                frame.can_id &= CAN_EFF_MASK;
+          // if (vscp_doLevel2Filter(pEvent, &pClient->m_vscpfilter)) {
+          //     pthread_mutex_lock( &pClient->m_mutexReceiveQueue);
+          //     pClient->m_receiveList.push_back(pEvent);
+          //     #ifdef WIN32
+          //         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
+          // #else
+          //         sem_post(&m_semReceiveQueue);
+          // #endif
+          //     pthread_mutex_unlock( &pClient->m_mutexReceiveQueue);
+          // } else {
+          //     vscp_deleteVscpEvent(pEvent);
+          // }
+        }
+      }
+      else {
 
-                vscpEvent *pEvent = new vscpEvent();
-                if (NULL != pEvent) {
+        // Check if there is event(s) to send
+        // if (pClient->m_sendList.size()) {
 
-                    pEvent->pdata = new uint8_t[frame.len];
-                    if (NULL == pEvent->pdata) {
-                        delete pEvent;
-                        continue;
-                    }
+        //     // Yes there are data to send
+        //     // So send it out on the CAN bus
 
-                    // GUID will be set to GUID of interface
-                    // by driver interface with LSB set to nickname
-                    memset(pEvent->GUID, 0, 16);
-                    pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
+        //     pthread_mutex_lock( &pClient->m_mutexSendQueue);
+        //     vscpEvent *pEvent = pClient->m_sendList.front();
+        //     pClient->m_sendList.pop_front();
+        //     pthread_mutex_unlock( &pClient->m_mutexSendQueue);
 
-                    // Set VSCP class
-                    pEvent->vscp_class = vscp_getVscpClassFromCANALid(frame.can_id);
+        //     if (NULL == pEvent) continue;
 
-                    // Set VSCP type
-                    pEvent->vscp_type = vscp_getVscpTypeFromCANALid(frame.can_id);
+        //     // Class must be a Level I class or a Level II
+        //     // mirror class
+        //     if (pEvent->vscp_class < 512) {
+        //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
+        //         frame.can_id |= CAN_EFF_FLAG; // Always extended
+        //         if (0 != pEvent->sizeData) {
+        //             frame.len =
+        //               (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
+        //             memcpy(frame.data, pEvent->pdata, frame.len);
+        //         }
+        //     } else if (pEvent->vscp_class < 1024) {
+        //         pEvent->vscp_class -= 512;
+        //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
+        //         frame.can_id |= CAN_EFF_FLAG; // Always extended
+        //         if (0 != pEvent->sizeData) {
+        //             frame.len = ((pEvent->sizeData - 16) > 8
+        //                            ? 8
+        //                            : pEvent->sizeData - 16);
+        //             memcpy(frame.data, pEvent->pdata + 16, frame.len);
+        //         }
+        //     }
 
-                    // Copy data if any
-                    pEvent->sizeData = frame.len;
-                    if (frame.len) {
-                        memcpy(pEvent->pdata, frame.data, frame.len);
-                    }
+        //     // Remove the event
+        //     pthread_mutex_lock( &pClient->m_mutexSendQueue);
+        //     vscp_deleteVSCPevent(pEvent);
+        //     pthread_mutex_unlock( &pClient->m_mutexSendQueue);
 
-                    // if (vscp_doLevel2Filter(pEvent, &pObj->m_vscpfilter)) {
-                    //     pthread_mutex_lock( &pObj->m_mutexReceiveQueue);
-                    //     pObj->m_receiveList.push_back(pEvent);
-                    //     sem_post(&pObj->m_semReceiveQueue);
-                    //     pthread_mutex_unlock( &pObj->m_mutexReceiveQueue);
-                    // } else {
-                    //     vscp_deleteVscpEvent(pEvent);
-                    // }
-                }
+        //     // Write the data
+        //     int nbytes = write(sock, &frame, sizeof(struct can_frame));
 
-            } else {
+        //} // event to send
 
-                // Check if there is event(s) to send
-                // if (pObj->m_sendList.size()) {
+      } // No data to read
 
-                //     // Yes there are data to send
-                //     // So send it out on the CAN bus
+    } // Inner loop
 
-                //     pthread_mutex_lock( &pObj->m_mutexSendQueue);
-                //     vscpEvent *pEvent = pObj->m_sendList.front();
-                //     pObj->m_sendList.pop_front();
-                //     pthread_mutex_unlock( &pObj->m_mutexSendQueue);
+    // Close the socket
+    close(sock);
 
-                //     if (NULL == pEvent) continue;
+  } // Outer loop
 
-                //     // Class must be a Level I class or a Level II
-                //     // mirror class
-                //     if (pEvent->vscp_class < 512) {
-                //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-                //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-                //         if (0 != pEvent->sizeData) {
-                //             frame.len =
-                //               (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                //             memcpy(frame.data, pEvent->pdata, frame.len);
-                //         }
-                //     } else if (pEvent->vscp_class < 1024) {
-                //         pEvent->vscp_class -= 512;
-                //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-                //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-                //         if (0 != pEvent->sizeData) {
-                //             frame.len = ((pEvent->sizeData - 16) > 8
-                //                            ? 8
-                //                            : pEvent->sizeData - 16);
-                //             memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                //         }
-                //     }
-
-                //     // Remove the event
-                //     pthread_mutex_lock( &pObj->m_mutexSendQueue);
-                //     vscp_deleteVSCPevent(pEvent);
-                //     pthread_mutex_unlock( &pObj->m_mutexSendQueue);
-
-                //     // Write the data
-                //     int nbytes = write(sock, &frame, sizeof(struct can_frame));
-
-                //} // event to send
-
-            } // No data to read
-
-        } // Inner loop
-
-        // Close the socket
-        close(sock);
-
-    } // Outer loop
-
-    return NULL;
+  return NULL;
 }
 
 #endif
