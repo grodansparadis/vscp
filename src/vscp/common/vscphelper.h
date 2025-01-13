@@ -279,7 +279,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms);
 #endif
 
 
-if WIN32
+#ifdef WIN32
 /*!
   @param phHandle Pointer to handle of semaphore to wait for
   @return 0 on success, -1 on error
