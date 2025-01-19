@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2025-01-15 20:51:52.238142
+                        Generated: 2025-01-19 17:20:09.936142
 */
  
 
@@ -56,6 +56,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,52) ] = _("VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_ACK ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,53) ] = _("VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_NACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,54) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_CHECK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(0,55) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(0,56) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_ACK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(0,57) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_NACK");
 
 	//  CLASS1.ALARM = 1  -  Alarm functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,0) ] = _("VSCP_TYPE_ALARM_GENERAL");
@@ -1111,6 +1114,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,52) ] = _("VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_ACK ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,53) ] = _("VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_NACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,54) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_CHECK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(512,55) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(512,56) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_ACK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(512,57) ] = _("VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_NACK");
 
 	//  CLASS2.LEVEL1.ALARM = 513  -  Class2 Level I Alarm
 	// 	Event types is the same as  CLASS1.ALARM = 1  -  Alarm functionality

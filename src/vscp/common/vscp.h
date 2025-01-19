@@ -360,7 +360,7 @@ typedef VSCPChannelInfo *PVSCPCHANNELINFO;
 
 #define SET_VSCP_MULTICAST_TYPE(type, encryption)  ((type << 4) | encryption)
 #define GET_VSCP_MULTICAST_PACKET_TYPE(type)       ((type >> 4) & 0x0f)
-#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION(type) ((type) &0x0f)
+#define GET_VSCP_MULTICAST_PACKET_ENCRYPTION(type) ((type) & 0x0f)
 
 /* Multicast proxy CLASS=1026, TYPE=3  */
 /* https://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat

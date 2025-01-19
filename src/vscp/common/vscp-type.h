@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2025-01-15 20:51:51.273098
+                        Generated: 2025-01-19 17:20:08.958339
 */
  
 #ifndef VSCP_TYPE_H
@@ -106,6 +106,9 @@
 #define VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_ACK          52  /* Block Data Chunk ACK. */
 #define VSCP_TYPE_PROTOCOL_BLOCK_CHUNK_NACK         53  /* Block Data Chunk NACK. */
 #define VSCP_TYPE_PROTOCOL_BOOT_LOADER_CHECK        54  /* Bootloader CHECK. */
+#define VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT        55  /* Bootloader abort */
+#define VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_ACK    56  /* Bootloader abort ACK */
+#define VSCP_TYPE_PROTOCOL_BOOT_LOADER_ABORT_NACK   57  /* Bootloader abort NACK */
     
 /*  CLASS1.ALARM = 1  -  Alarm functionality */
 #define VSCP_TYPE_ALARM_GENERAL                     0   /* General event */
