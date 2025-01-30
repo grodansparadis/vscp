@@ -1746,8 +1746,7 @@ CMDF::downLoadMDF(const std::string &url, const std::string &tempFileName)
   CURL *curl;
   FILE *fp;
   CURLcode res;
-  // char *url = "http://localhost/aaa.txt";
-  // char outfilename[FILENAME_MAX] = "C:\\bbb.txt";
+
   curl = curl_easy_init();
   if (curl) {
     fp = fopen(tempFileName.c_str(), "wb");

@@ -1349,7 +1349,7 @@ CStandardRegisters::getFirmwareVersionString(void)
 {
   std::string str;
 
-  str = str = vscp_str_format("%d.%d.%d", m_regs[0x94 - 0x80], m_regs[0x95 - 0x80], m_regs[0x96 - 0x80]);
+  str = str = vscp_str_format("%d.%d.%d", m_regs[0x94], m_regs[0x95], m_regs[0x96]);
   return str;
 }
 
