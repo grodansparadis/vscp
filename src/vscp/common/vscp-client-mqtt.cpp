@@ -691,7 +691,7 @@ vscpClientMqtt::~vscpClientMqtt()
   CloseHandle(m_semReceiveQueue);
 #else
   sem_destroy(&m_semReceiveQueue);
-#endif    
+#endif
 
   pthread_mutex_destroy(&m_mutexif);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
@@ -1535,9 +1535,9 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
-#else        
+#else
         sem_post(&m_semReceiveQueue);
-#endif        
+#endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
     }
@@ -1581,7 +1581,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
-#else        
+#else
         sem_post(&m_semReceiveQueue);
 #endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
@@ -1627,7 +1627,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
-#else        
+#else
         sem_post(&m_semReceiveQueue);
 #endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
@@ -1676,7 +1676,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
-#else        
+#else
         sem_post(&m_semReceiveQueue);
 #endif
         pthread_mutex_unlock(&m_mutexReceiveQueue);
@@ -2014,6 +2014,11 @@ vscpClientMqtt::connect(void)
   }
   else {
     rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepAlive);
+#ifdef WIN32
+    Sleep(1000); // Wait for connection to be established   TODO
+#else
+    sleep(1); // Wait for connection to be established   TODO
+#endif
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
