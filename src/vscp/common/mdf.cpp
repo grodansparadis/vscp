@@ -2114,7 +2114,8 @@ CMDF::save_xml(const std::string &path)
   std::deque<CMDF_Register *> *pregs = getRegisterObjList();
   //uint32_t nPageCnt                  = getPages(pages);
 
-  // Go throu pages
+  // Go thru pages
+  size_t nPages = getPages(pages);
   for (auto itr : pages) {
 
     // Add registers for page
