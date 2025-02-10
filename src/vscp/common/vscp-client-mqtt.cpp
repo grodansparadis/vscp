@@ -118,7 +118,7 @@ mqtt_on_log(struct mosquitto *mosq, void *pData, int level, const char *logmsg)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::trace("MQTT CLIENT: mqtt_on_log: {}", logmsg);
+  spdlog::trace("VSCP MQTT CLIENT: mqtt_on_log: {}", logmsg);
 
   if (nullptr != pClient->m_parentCallbackLog) {
     pClient->m_parentCallbackLog(mosq, pClient->m_pParent, level, logmsg);
@@ -148,7 +148,7 @@ mqtt_on_connect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::debug("MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
+  spdlog::debug("VSCP MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -176,7 +176,7 @@ mqtt_on_connect_flags(struct mosquitto *mosq, void *pData, int rv, int flags)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::debug("MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
+  spdlog::debug("VSCP MQTT CLIENT: v3.11 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -204,7 +204,7 @@ mqtt_on_connect_v5(struct mosquitto *mosq, void *pData, int rv, int flags, const
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = true;
 
-  spdlog::debug("MQTT CLIENT: MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
+  spdlog::debug("VSCP MQTT CLIENT: MQTT v5 connect: rv={0:X} flags={1:X} {2}", rv, flags, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackConnect) {
     pClient->m_parentCallbackConnect(mosq, pClient->m_pParent, rv);
@@ -232,7 +232,7 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::debug("MQTT CLIENT: MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  spdlog::debug("VSCP MQTT CLIENT: MQTT v3.11 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -260,7 +260,7 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::debug("MQTT CLIENT: MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  spdlog::debug("VSCP MQTT CLIENT: MQTT v5 disconnect: rv={0:X} {1}", rv, mosquitto_strerror(rv));
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -345,14 +345,14 @@ mqtt_on_message(struct mosquitto *mosq, void *pData, const struct mosquitto_mess
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
 
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::debug("MQTT CLIENT: MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  spdlog::debug("VSCP MQTT CLIENT: MQTT v3 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   if (nullptr != pClient->m_parentCallbackMessage) {
     pClient->m_parentCallbackMessage(mosq, pClient->m_pParent, pMsg);
   }
 
   if (!pClient->handleMessage(pMsg)) {
-    spdlog::debug("MQTT CLIENT: MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+    spdlog::debug("VSCP MQTT CLIENT: MQTT v3 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
 }
 
@@ -383,7 +383,7 @@ mqtt_on_message_v5(struct mosquitto *mosq,
   }
 
   std::string payload((const char *) pMsg->payload, pMsg->payloadlen);
-  spdlog::trace("MQTT CLIENT: MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+  spdlog::trace("VSCP MQTT CLIENT: MQTT v5 Message trace: Topic = {0} - Payload: {1}", pMsg->topic, payload);
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
 
@@ -392,7 +392,7 @@ mqtt_on_message_v5(struct mosquitto *mosq,
   }
 
   if (!pClient->handleMessage(pMsg)) {
-    spdlog::error("MQTT CLIENT: MQTT v5 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
+    spdlog::error("VSCP MQTT CLIENT: MQTT v5 Message parse failure: Topic = {0} - Payload: {1}", pMsg->topic, payload);
   }
 }
 #endif
@@ -415,7 +415,7 @@ mqtt_on_subscribe(struct mosquitto *mosq, void *pData, int mid, int qos_count, c
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::debug("MQTT CLIENT: Subscribe v3.11: mid={0} qos_count={1}", mid, qos_count);
+  spdlog::debug("VSCP MQTT CLIENT: Subscribe v3.11: mid={0} qos_count={1}", mid, qos_count);
 
   if (nullptr != pClient->m_parentCallbackSubscribe) {
     pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
@@ -450,7 +450,7 @@ mqtt_on_subscribe_v5(struct mosquitto *mosq,
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::debug("MQTT CLIENT: Subscribe v5: mid={0} qos_count={1}", mid, qos_count);
+  spdlog::debug("VSCP MQTT CLIENT: Subscribe v5: mid={0} qos_count={1}", mid, qos_count);
 
   if (nullptr != pClient->m_parentCallbackSubscribe) {
     pClient->m_parentCallbackSubscribe(mosq, pClient->m_pParent, mid, qos_count, granted_qos);
@@ -476,7 +476,7 @@ mqtt_on_unsubscribe(struct mosquitto *mosq, void *pData, int mid)
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::debug("MQTT CLIENT: Unsubscribe v3.11: ");
+  spdlog::debug("VSCP MQTT CLIENT: Unsubscribe v3.11: ");
 
   if (nullptr != pClient->m_parentCallbackUnsubscribe) {
     pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
@@ -502,7 +502,7 @@ mqtt_on_unsubscribe_v5(struct mosquitto *mosq, void *pData, int mid, const mosqu
   }
 
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
-  spdlog::debug("MQTT CLIENT: Unsubscribe v5: ");
+  spdlog::debug("VSCP MQTT CLIENT: Unsubscribe v5: ");
 
   if (nullptr != pClient->m_parentCallbackUnsubscribe) {
     pClient->m_parentCallbackUnsubscribe(mosq, pClient->m_pParent, mid);
@@ -593,7 +593,7 @@ subscribeTopic::~subscribeTopic()
 
 vscpClientMqtt::vscpClientMqtt(void)
 {
-  spdlog::trace("MQTT CLIENT: MQTT CLIENT: constructor vscp_client_mqtt object.");
+  spdlog::trace("VSCP MQTT CLIENT: MQTT CLIENT: constructor vscp_client_mqtt object.");
 
   m_type = CVscpClient::connType::MQTT; // This is a MQTT client
 
@@ -657,7 +657,7 @@ vscpClientMqtt::vscpClientMqtt(void)
 
   // Initialize MQTT
   if (MOSQ_ERR_SUCCESS != mosquitto_lib_init()) {
-    spdlog::error("MQTT CLIENT: MQTT CLIENT: init object: Unable to initialize mosquitto library.");
+    spdlog::error("VSCP MQTT CLIENT: MQTT CLIENT: init object: Unable to initialize mosquitto library.");
     return;
   }
 
@@ -677,7 +677,7 @@ vscpClientMqtt::vscpClientMqtt(void)
 
 vscpClientMqtt::~vscpClientMqtt()
 {
-  spdlog::trace("MQTT CLIENT: MQTT CLIENT: destructor vscp_client_mqtt object.");
+  spdlog::trace("VSCP MQTT CLIENT: MQTT CLIENT: destructor vscp_client_mqtt object.");
 
   // Disconnect if we still are connected
   if (isConnected()) {
@@ -749,7 +749,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Bind address
     if (j.contains("bind")) {
       m_bindInterface = j["bind"].get<std::string>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: bind interface set to {}.", m_bindInterface);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: bind interface set to {}.", m_bindInterface);
     }
 
     if (j.contains("bfull-l2")) {
@@ -760,19 +760,19 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("host")) {
 
       m_host = j["host"].get<std::string>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: host set to {}.", m_host);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: host set to {}.", m_host);
 
       // Get hostname
       vscp_trim(m_host);
       if (0 == m_host.find("tcp://")) {
         m_host = m_host.substr(6);
         m_bTLS = false;
-        spdlog::debug("MQTT CLIENT: json mqtt init: Unsecure connection {}.", m_host);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: Unsecure connection {}.", m_host);
       }
       else if (0 == m_host.find("stcp://")) {
         m_host = m_host.substr(7);
         m_bTLS = true;
-        spdlog::debug("MQTT CLIENT: json mqtt init: Secure connection {}.", m_host);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: Secure connection {}.", m_host);
       }
 
       // Get port
@@ -780,14 +780,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (std::string::npos != (pos = m_host.rfind(":"))) {
         m_port = vscp_readStringValue(m_host.substr(pos + 1));
         m_host = m_host.substr(0, pos);
-        spdlog::debug("MQTT CLIENT: json mqtt init: port (from host string) set to {}.", m_port);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: port (from host string) set to {}.", m_port);
       }
     }
 
     // Port
     if (j.contains("port")) {
       m_port = j["port"].get<uint16_t>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: port set to {}.", m_port);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: port set to {}.", m_port);
     }
 
     // MQTT options
@@ -797,67 +797,67 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("tcp-nodelay") && j["tcp-nodelay"].is_number()) {
         m_mapMqttIntOptions["tcp-nodelay"] = jj["tcp-nodelay"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tcp-nodelay set to {}.", m_mapMqttIntOptions["tcp-nodelay"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tcp-nodelay set to {}.", m_mapMqttIntOptions["tcp-nodelay"]);
       }
 
       if (jj.contains("protocol-version") && j["protocol-version"].is_number()) {
         m_mapMqttIntOptions["protocol-version"] = jj["protocol-version"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: protocol-version set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: protocol-version set to {}.",
                       m_mapMqttIntOptions["protocol-version"]);
       }
 
       if (jj.contains("receive-maximum") && j["receive-maximum"].is_number()) {
         m_mapMqttIntOptions["receive-maximum"] = jj["receive-maximum"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: receive-maximum set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: receive-maximum set to {}.",
                       m_mapMqttIntOptions["receive-maximum"]);
       }
 
       if (jj.contains("send-maximum") && j["send-maximum"].is_number()) {
         m_mapMqttIntOptions["send-maximum"] = jj["send-maximum"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: send-maximum set to {}.", m_mapMqttIntOptions["send-maximum"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: send-maximum set to {}.", m_mapMqttIntOptions["send-maximum"]);
       }
 
       if (jj.contains("ssl-ctx-with-defaults") && j["ssl-ctx-with-defaults"].is_number()) {
         m_mapMqttIntOptions["ssl-ctx-with-defaults"] = jj["ssl-ctx-with-defaults"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: ssl-ctx-with-defaults set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: ssl-ctx-with-defaults set to {}.",
                       m_mapMqttIntOptions["ssl-ctx-with-defaults"]);
       }
 
       if (jj.contains("tls-ocsp-required") && j["tls-ocsp-required"].is_number()) {
         m_mapMqttIntOptions["tls-ocsp-required"] = jj["tls-ocsp-required"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-ocsp-required set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-ocsp-required set to {}.",
                       m_mapMqttIntOptions["tls-ocsp-required"]);
       }
 
       if (jj.contains("tls-use-os-certs") && j["tls-use-os-certs"].is_number()) {
         m_mapMqttIntOptions["tls-use-os-certs"] = jj["tls-use-os-certs"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-use-os-certs set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-use-os-certs set to {}.",
                       m_mapMqttIntOptions["tls-use-os-certs"]);
       }
 
       if (jj.contains("tls-engine") && j["tls-engine"].is_string()) {
         m_mapMqttStringOptions["tls-engine"] = jj["tls-engine"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-engine set to {}.", m_mapMqttIntOptions["tls-engine"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-engine set to {}.", m_mapMqttIntOptions["tls-engine"]);
       }
 
       if (jj.contains("tls-keyform") && j["tls-keyform"].is_string()) {
         m_mapMqttStringOptions["tls-keyform"] = jj["tls-keyform"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-keyform set to {}.", m_mapMqttIntOptions["tls-keyform"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-keyform set to {}.", m_mapMqttIntOptions["tls-keyform"]);
       }
 
       if (jj.contains("tls-kpass-sha1") && j["tls-kpass-sha1"].is_string()) {
         m_mapMqttStringOptions["tls-kpass-sha1"] = jj["tls-kpass-sha1"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-kpass-sha1 set to {}.", m_mapMqttIntOptions["tls-kpass-sha1"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-kpass-sha1 set to {}.", m_mapMqttIntOptions["tls-kpass-sha1"]);
       }
 
       if (jj.contains("tls-alpn") && j["tls-alpn"].is_string()) {
         m_mapMqttStringOptions["tls-alpn"] = jj["tls-alpn"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: tls-alpn set to {}.", m_mapMqttIntOptions["tls-alpn"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-alpn set to {}.", m_mapMqttIntOptions["tls-alpn"]);
       }
 
       if (jj.contains("bind-address") && j["bind-address"].is_string()) {
         m_mapMqttStringOptions["bind-address"] = jj["bind-address"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: bind-address set to {}.", m_mapMqttIntOptions["bind-address"]);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: bind-address set to {}.", m_mapMqttIntOptions["bind-address"]);
       }
 
       // if (jj.contains("ssl-ctx")) {
@@ -866,19 +866,19 @@ vscpClientMqtt::initFromJson(const std::string &config)
     }
     else if (j.contains("mqtt-options")) {
       // Format is invalid
-      spdlog::warn("MQTT CLIENT: json mqtt init: 'mqtt-options' present but not an object.");
+      spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'mqtt-options' present but not an object.");
     }
 
     // user
     if (j.contains("user") && j["user"].is_string()) {
       m_username = j["user"].get<std::string>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'user' set to {}.", m_username);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'user' set to {}.", m_username);
     }
 
     // password
     if (j.contains("password") && j["password"].is_string()) {
       m_password = j["password"].get<std::string>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'password' set to {}.", "*******");
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'password' set to {}.", "*******");
     }
 
     // Client ID
@@ -886,9 +886,9 @@ vscpClientMqtt::initFromJson(const std::string &config)
       m_clientid = j["clientid"].get<std::string>();
       // TODO
       // {rnd} mustasch is replaces with hex random value
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'client id' set to {}.", m_clientid);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'client id' set to {}.", m_clientid);
       if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
-        spdlog::warn("MQTT CLIENT: json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 "
+        spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 "
                      "characters but longer "
                      "is OK with most brokers).",
                      m_clientid,
@@ -899,19 +899,19 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Keep Alive
     if (j.contains("keepalive") && j["keepalive"].is_number()) {
       m_keepAlive = j["keepalive"].get<int>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
     }
 
     // Clean Session
     if (j.contains("bcleansession") && j["bcleansession"].is_boolean()) {
       m_bCleanSession = j["bcleansession"].get<bool>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'bcleansession' Set to {}.", m_bCleanSession);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bcleansession' Set to {}.", m_bCleanSession);
     }
 
     // Enable measurement block
     if (j.contains("bjsonmeasurementblock") && j["bjsonmeasurementblock"].is_boolean()) {
       m_bJsonMeasurementAdd = j["bjsonmeasurementblock"].get<bool>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'bjsonmeasurementblock' Set to {}.", m_bJsonMeasurementAdd);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bjsonmeasurementblock' Set to {}.", m_bJsonMeasurementAdd);
     }
 
     // Reconnect
@@ -921,17 +921,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("delay") && j["delay"].is_number()) {
         m_reconnect_delay = jj["delay"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'reconnect delay' Set to {}.", m_reconnect_delay);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect delay' Set to {}.", m_reconnect_delay);
       }
 
       if (jj.contains("delay-max") && j["delay-max"].is_number()) {
         m_reconnect_delay_max = jj["delay-max"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
       }
 
       if (jj.contains("exponential-backoff") && j["exponential-backoff"].is_boolean()) {
         m_reconnect_exponential_backoff = jj["exponential-backoff"].get<bool>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'reconnect exponential-backoff' Set to {}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect exponential-backoff' Set to {}.",
                       m_reconnect_exponential_backoff);
       }
     }
@@ -943,39 +943,39 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("priority-filter") && j["priority-filter"].is_number_unsigned()) {
         m_filter.filter_priority = jj["priority-filter"].get<uint8_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'priority-filter' set to {}.", m_filter.filter_priority);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'priority-filter' set to {}.", m_filter.filter_priority);
       }
 
       if (jj.contains("priority-mask") && j["priority-mask"].is_number_unsigned()) {
         m_filter.mask_priority = jj["priority-mask"].get<uint8_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'priority-mask' set to {}.", m_filter.mask_priority);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'priority-mask' set to {}.", m_filter.mask_priority);
       }
 
       if (jj.contains("class-filter") && j["class-filter"].is_number_unsigned()) {
         m_filter.filter_class = jj["class-filter"].get<uint16_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'class-filter' set to {}.", m_filter.filter_class);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'class-filter' set to {}.", m_filter.filter_class);
       }
 
       if (jj.contains("class-mask") && j["class-mask"].is_number_unsigned()) {
         m_filter.mask_class = jj["class-mask"].get<uint16_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'class mask' set to {}.", m_filter.mask_class);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'class mask' set to {}.", m_filter.mask_class);
       }
 
       if (jj.contains("type-filter") && j["type-filter"].is_number_unsigned()) {
         m_filter.filter_type = jj["type-filter"].get<uint16_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'type-filter' set to {}.", m_filter.filter_type);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'type-filter' set to {}.", m_filter.filter_type);
       }
 
       if (jj.contains("type-mask") && j["type-mask"].is_number_unsigned()) {
         m_filter.mask_type = jj["type-mask"].get<uint16_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'type-mask' set to {}.", m_filter.mask_type);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'type-mask' set to {}.", m_filter.mask_type);
       }
 
       if (jj.contains("guid-filter") && j["guid-filter"].is_string()) {
         std::string str = jj["guid-filter"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
         spdlog::debug(
-          "MQTT CLIENT: json mqtt init: 'guid-filter' set to "
+          "VSCP MQTT CLIENT: json mqtt init: 'guid-filter' set to "
           "{0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.",
           m_filter.filter_GUID[0],
           m_filter.filter_GUID[1],
@@ -999,7 +999,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
         std::string str = jj["guid-mask"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
         spdlog::debug(
-          "MQTT CLIENT: json mqtt init: 'guid-mask' set to "
+          "VSCP MQTT CLIENT: json mqtt init: 'guid-mask' set to "
           "{0:x}:{1:x}:{2:x}:{3:x}:{4:x}:{5:x}:{6:x}:{7:x}:{8:x}:{9:x}:{10:x}:{11:x}:{12:x}:{13:x}:{14:x}:{15:x}.",
           m_filter.mask_GUID[0],
           m_filter.mask_GUID[1],
@@ -1028,68 +1028,68 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       if (jj.contains("cafile") && j["cafile"].is_string()) {
         m_tls_cafile = jj["cafile"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls cafile' Set to {}.", m_tls_cafile);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls cafile' Set to {}.", m_tls_cafile);
       }
 
       if (jj.contains("capath") && j["capath"].is_string()) {
         m_tls_capath = jj["capath"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls capath' Set to {}.", m_tls_capath);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls capath' Set to {}.", m_tls_capath);
       }
 
       if (jj.contains("certfile") && j["certfile"].is_string()) {
         m_tls_certfile = jj["certfile"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls certfile' Set to {}.", m_tls_certfile);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls certfile' Set to {}.", m_tls_certfile);
       }
 
       if (jj.contains("keyfile") && j["keyfile"].is_string()) {
         m_tls_keyfile = jj["keyfile"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls keyfile' Set to {}.", m_tls_keyfile);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls keyfile' Set to {}.", m_tls_keyfile);
       }
 
       if (jj.contains("pwkeyfile") && j["pwkeyfile"].is_string()) {
         m_tls_pwKeyfile = jj["pwkeyfile"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
       }
 
       if (jj.contains("no-hostname-checking") && j["no-hostname-checking"].is_boolean()) {
         m_tls_bNoHostNameCheck = jj["no-hostname-checking"].get<bool>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls no-hostname-checking' Set to {}.", m_tls_bNoHostNameCheck);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls no-hostname-checking' Set to {}.", m_tls_bNoHostNameCheck);
       }
 
       if (jj.contains("cert-reqs") && j["cert-reqs"].is_number()) {
         m_tls_cert_reqs = jj["cert-reqs"].get<int>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
       }
 
       if (jj.contains("version") && j["version"].is_string()) {
         m_tls_version = jj["version"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls version' Set to {}.", m_tls_version);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls version' Set to {}.", m_tls_version);
       }
 
       if (jj.contains("ciphers") && j["ciphers"].is_string()) {
         m_tls_ciphers = jj["ciphers"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls ciphers' Set to {}.", m_tls_ciphers);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls ciphers' Set to {}.", m_tls_ciphers);
       }
 
       if (jj.contains("psk") && j["psk"].is_string()) {
         m_tls_psk = jj["psk"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls psk' Set to {}.", m_tls_psk);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls psk' Set to {}.", m_tls_psk);
       }
 
       if (jj.contains("psk-identity") && j["psk-identity"].is_string()) {
         m_tls_identity = jj["psk-identity"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'tls psk-identity' Set to {}.", m_tls_identity);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls psk-identity' Set to {}.", m_tls_identity);
       }
 
       // Both of cafile/capath can not be null
       if (!m_tls_cafile.length() && !m_tls_capath.length()) {
-        spdlog::warn("MQTT CLIENT: json mqtt init: 'TLS'  Both cafile and capath must not be NULL. TLS disabled.");
+        spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'TLS'  Both cafile and capath must not be NULL. TLS disabled.");
         m_bTLS = false;
       }
 
       // If certfile == NULL, keyfile must also be NULL and no client certificate will be used.
       if (!m_tls_certfile.length()) {
-        spdlog::warn("MQTT CLIENT: json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client "
+        spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client "
                      "certificate will be "
                      "used. keyfile set to NULL.");
         m_tls_keyfile = "";
@@ -1097,7 +1097,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       // If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate will be used.
       if (!m_tls_keyfile.length()) {
-        spdlog::warn("MQTT CLIENT: json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no "
+        spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no "
                      "client certificate "
                      "will be used. certfile set to NULL.");
         m_tls_certfile = "";
@@ -1108,27 +1108,27 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("will") && j["will"].is_object()) {
 
       json jj = j["will"];
-      spdlog::debug("MQTT CLIENT: will={}", jj.dump());
+      spdlog::debug("VSCP MQTT CLIENT: will={}", jj.dump());
       m_bWill = true;
 
       if (jj.contains("topic") && jj["topic"].is_string()) {
         m_will_topic = jj["topic"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'will topic' Set to {}.", m_will_topic);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'will topic' Set to {}.", m_will_topic);
       }
 
       if (jj.contains("qos") && jj["qos"].is_number_unsigned()) {
         m_will_qos = jj["qos"].get<uint8_t>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'will qos' Set to {}.", m_will_qos);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'will qos' Set to {}.", m_will_qos);
       }
 
       if (jj.contains("retain") && jj["retain"].is_boolean()) {
         m_will_bretain = jj["retain"].get<bool>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'will retain' Set to {}.", m_will_bretain);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'will retain' Set to {}.", m_will_bretain);
       }
 
       if (jj.contains("payload") && jj["payload"].is_string()) {
         m_will_payload = jj["payload"].get<std::string>();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'will payload' Set to {}.", m_will_payload);
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'will payload' Set to {}.", m_will_payload);
       }
     }
 
@@ -1152,25 +1152,25 @@ vscpClientMqtt::initFromJson(const std::string &config)
             topic = subobj["topic"].get<std::string>();
             vscp_trim(topic);
             if (!topic.size()) {
-              spdlog::error("MQTT CLIENT: json mqtt init: Subscribe topic has unallowed length zero");
+              spdlog::error("VSCP MQTT CLIENT: json mqtt init: Subscribe topic has unallowed length zero");
               continue;
             }
-            spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe topic' Set to {}.", topic);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe topic' Set to {}.", topic);
           }
           else {
-            spdlog::error("MQTT CLIENT: json mqtt init: Missing subscription topic. Will skip it");
+            spdlog::error("VSCP MQTT CLIENT: json mqtt init: Missing subscription topic. Will skip it");
             continue;
           }
 
           if (subobj.contains("qos") && subobj["qos"].is_number_unsigned()) {
             qos = subobj["qos"].get<uint8_t>();
-            spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe qos' Set to {}.", qos);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe qos' Set to {}.", qos);
           }
 
           // Numerically
           if (subobj.contains("v5-options") && subobj["v5-options"].is_number_integer()) {
             v5_options = subobj["v5-options"].get<int>();
-            spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe c5_options' Set to {}.", v5_options);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe c5_options' Set to {}.", v5_options);
           }
           // From token
           else if (subobj.contains("v5-options") && subobj["v5-options"].is_string()) {
@@ -1262,34 +1262,34 @@ vscpClientMqtt::initFromJson(const std::string &config)
 #endif
             }
 
-            spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe v5_options' Set to {}.", v5_options);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe v5_options' Set to {}.", v5_options);
           }
 
           if (subobj.contains("format") && subobj["format"].is_string()) {
             std::string str = j["subscribe-format"].get<std::string>();
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to BINARY.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to BINARY.");
               format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to STRING.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to STRING.");
               format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to JSON.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to JSON.");
               format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to XML.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to XML.");
               format = xmlfmt;
             }
             else if (std::string::npos != str.find("auto")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to AUTO.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to AUTO.");
               format = autofmt;
             }
             else {
-              spdlog::error("MQTT CLIENT: json mqtt init: 'subscribe obj format' Ivalid value. Set to AUTO.");
+              spdlog::error("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Ivalid value. Set to AUTO.");
               format = autofmt;
             }
           }
@@ -1302,14 +1302,14 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
     if (j.contains("bescape-pub-topics") && j["bescape-pub-topics"].is_boolean()) {
       m_bEscapesPubTopics = j["bescape-pub-topics"].get<bool>();
-      spdlog::debug("MQTT CLIENT: json mqtt init: 'bescape-pub-topics' Set to {}.", m_bEscapesPubTopics);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bescape-pub-topics' Set to {}.", m_bEscapesPubTopics);
     }
 
     // User escapes m_mapUserEscapes
     if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
       for (auto it = j["user-escapes"].begin(); it != j["user-escapes"].end(); ++it) {
         m_mapUserEscapes[it.key()] = it.value();
-        spdlog::debug("MQTT CLIENT: json mqtt init: 'user-escapes' Set to {0}={1}.",
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'user-escapes' Set to {0}={1}.",
                       (std::string) it.key(),
                       (std::string) it.value());
       }
@@ -1336,24 +1336,24 @@ vscpClientMqtt::initFromJson(const std::string &config)
             topic = pubobj["topic"].get<std::string>();
             vscp_trim(topic);
             if (!topic.size()) {
-              spdlog::error("MQTT CLIENT: json mqtt init: Publish topic has unallowed length zero");
+              spdlog::error("VSCP MQTT CLIENT: json mqtt init: Publish topic has unallowed length zero");
               continue;
             }
-            spdlog::debug("MQTT CLIENT: json mqtt init: publish 'topic' Set to {}.", topic);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: publish 'topic' Set to {}.", topic);
           }
           else {
-            spdlog::error("MQTT CLIENT: json mqtt init: Missing publish topic. Will skip it");
+            spdlog::error("VSCP MQTT CLIENT: json mqtt init: Missing publish topic. Will skip it");
             continue;
           }
 
           if (pubobj.contains("qos") && pubobj["qos"].is_number_unsigned()) {
             qos = pubobj["qos"].get<uint8_t>();
-            spdlog::debug("MQTT CLIENT: json mqtt init: publish 'qos' Set to {}.", qos);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: publish 'qos' Set to {}.", qos);
           }
 
           if (pubobj.contains("bretain") && pubobj["bretain"].is_boolean()) {
             bretain = pubobj["bretain"].get<bool>();
-            spdlog::debug("MQTT CLIENT: json mqtt init: publish 'bretain' Set to {}.", bretain);
+            spdlog::debug("VSCP MQTT CLIENT: json mqtt init: publish 'bretain' Set to {}.", bretain);
           }
 
           if (pubobj.contains("format") && pubobj["format"].is_number()) {
@@ -1364,23 +1364,23 @@ vscpClientMqtt::initFromJson(const std::string &config)
             vscp_makeLower(str);
 
             if (std::string::npos != str.find("binary")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'publish obj format' Set to BINARY.");
               format = binfmt;
             }
             else if (std::string::npos != str.find("string")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'publish obj format' Set to STRING.");
               format = strfmt;
             }
             else if (std::string::npos != str.find("json")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'publish obj format' Set to JSON.");
               format = jsonfmt;
             }
             else if (std::string::npos != str.find("xml")) {
-              spdlog::debug("MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
+              spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'publish obj format' Set to XML.");
               format = xmlfmt;
             }
             else {
-              spdlog::error("MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
+              spdlog::error("VSCP MQTT CLIENT: json mqtt init: 'publish obj format' Ivalid value. Set to JSON.");
               format = jsonfmt;
             }
           }
@@ -1397,7 +1397,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
       if (jj.contains("user-properties") && jj["user-properties"].is_object()) {
         for (auto it = jj.begin(); it != jj.end(); ++it) {
           m_mapMqttProperties[it.key()] = it.value();
-          spdlog::debug("MQTT CLIENT: json mqtt init: v5 'user-properties' Set to {0}={1}.",
+          spdlog::debug("VSCP MQTT CLIENT: json mqtt init: v5 'user-properties' Set to {0}={1}.",
                         (std::string) it.key(),
                         (std::string) it.value());
         }
@@ -1405,7 +1405,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
     }
   }
   catch (...) {
-    spdlog::error("MQTT CLIENT: json init: JSON parsing error.");
+    spdlog::error("VSCP MQTT CLIENT: json init: JSON parsing error.");
     return false;
   }
 
@@ -1430,13 +1430,13 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
   // Check pointers
   if (nullptr == pmsg) {
-    spdlog::error("MQTT CLIENT: handleMessage: No message to handle.");
+    spdlog::error("VSCP MQTT CLIENT: handleMessage: No message to handle.");
     return false;
   }
 
   // Must/Should be a payload
   if (!pmsg->payloadlen) {
-    spdlog::error("MQTT CLIENT: handleMessage: No payload to handle.");
+    spdlog::error("VSCP MQTT CLIENT: handleMessage: No payload to handle.");
     return false;
   }
 
@@ -1483,7 +1483,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       size_t n      = std::count(s.begin(), s.end(), ',');
       if (n < 6) {
         // This is not a VSCP event on string format
-        spdlog::trace("MQTT CLIENT: Payload is not a VSCP event.");
+        spdlog::trace("VSCP MQTT CLIENT: Payload is not a VSCP event.");
         return false;
       }
       format = strfmt;
@@ -1498,12 +1498,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   if (jsonfmt == format) {
 
     if (!vscp_convertJSONToEvent(&ev, payload)) {
-      spdlog::trace("MQTT CLIENT: JSON->Event conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: JSON->Event conversion failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
-      spdlog::trace("MQTT CLIENT: JSON->EventEx conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: JSON->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1518,7 +1518,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
       if (nullptr == pEvent) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         return false;
       }
 
@@ -1544,12 +1544,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   }
   else if (xmlfmt == format) {
     if (!vscp_convertXMLToEvent(&ev, payload)) {
-      spdlog::trace("MQTT CLIENT: XML->Event conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: XML->Event conversion failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
-      spdlog::trace("MQTT CLIENT: XML->EventEx conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: XML->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1564,13 +1564,13 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
       if (nullptr == pEvent) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         return false;
       }
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         delete pEvent;
         return false;
       }
@@ -1590,12 +1590,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
   }
   else if (strfmt == format) {
     if (!vscp_convertStringToEvent(&ev, payload)) {
-      spdlog::trace("MQTT CLIENT: str->Event conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: str->Event conversion failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
-      spdlog::trace("MQTT CLIENT: str->EventEx conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: str->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1610,14 +1610,14 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
       if (nullptr == pEvent) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         return false;
       }
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
         delete pEvent;
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         return false;
       }
 
@@ -1638,12 +1638,12 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
     // Binary frame starts offset one in payload (after zero marker byte)
     if (!vscp_getEventFromFrame(&ev, (const uint8_t *) pmsg->payload + 1, pmsg->payloadlen)) {
-      spdlog::trace("MQTT CLIENT: bin->Event conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: bin->Event conversion failed. Payload is not VSCP event.");
       return false;
     }
 
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
-      spdlog::trace("MQTT CLIENT: bin->EventEx conversion failed. Payload is not VSCP event.");
+      spdlog::trace("VSCP MQTT CLIENT: bin->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
 
@@ -1658,14 +1658,14 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       // Put event in input queue
       vscpEvent *pEvent = new vscpEvent;
       if (nullptr == pEvent) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         return false;
       }
 
       pEvent->pdata = nullptr;
 
       if (!vscp_copyEvent(pEvent, &ev)) {
-        spdlog::critical("MQTT CLIENT: Memory problem.");
+        spdlog::critical("VSCP MQTT CLIENT: Memory problem.");
         delete pEvent;
         return false;
       }
@@ -1732,10 +1732,10 @@ vscpClientMqtt::init(void)
 
   if (nullptr == m_mosq) {
     if (ENOMEM == errno) {
-      spdlog::error("MQTT CLIENT: Failed to create new mosquitto session (out of memory).");
+      spdlog::error("VSCP MQTT CLIENT: Failed to create new mosquitto session (out of memory).");
     }
     else if (EINVAL == errno) {
-      spdlog::error("MQTT CLIENT: Failed to create new mosquitto session (invalid parameters).");
+      spdlog::error("VSCP MQTT CLIENT: Failed to create new mosquitto session (invalid parameters).");
     }
     return false;
   }
@@ -1770,7 +1770,7 @@ vscpClientMqtt::init(void)
                                                         m_reconnect_delay,
                                                         m_reconnect_delay_max,
                                                         m_reconnect_exponential_backoff)) {
-    spdlog::warn("MQTT CLIENT: Failed to set reconnect settings.");
+    spdlog::warn("VSCP MQTT CLIENT: Failed to set reconnect settings.");
   }
 
   std::string strTopic;
@@ -1830,7 +1830,7 @@ vscpClientMqtt::init(void)
                                                  m_will_qos,
                                                  m_will_bretain)) {
 #endif
-        spdlog::warn("MQTT CLIENT: Failed to set last will. rv={0} {1}", rv, mosquitto_strerror(rv));
+        spdlog::warn("VSCP MQTT CLIENT: Failed to set last will. rv={0} {1}", rv, mosquitto_strerror(rv));
       }
     }
     else {
@@ -1840,7 +1840,7 @@ vscpClientMqtt::init(void)
                                                  m_will_payload.c_str(),
                                                  m_will_qos,
                                                  m_will_bretain)) {
-        spdlog::error("MQTT CLIENT: Failed to set last will. rv={0} {1}", rv, mosquitto_strerror(rv));
+        spdlog::error("VSCP MQTT CLIENT: Failed to set last will. rv={0} {1}", rv, mosquitto_strerror(rv));
       }
     }
   }
@@ -1849,7 +1849,7 @@ vscpClientMqtt::init(void)
   if (m_username.length()) {
     int rv;
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_username_pw_set(m_mosq, m_username.c_str(), m_password.c_str()))) {
-      spdlog::error("MQTT CLIENT: mosquitto_username_pw_set failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: mosquitto_username_pw_set failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -1859,7 +1859,7 @@ vscpClientMqtt::init(void)
 #if LIBMOSQUITTO_MAJOR >= 2
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_TCP_NODELAY, m_mapMqttIntOptions["tcp-nodelay"]))) {
-    spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_TCP_NODELAY. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: Failed to set option MOSQ_OPT_TCP_NODELAY. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 #endif
 
@@ -1883,7 +1883,7 @@ vscpClientMqtt::init(void)
     };
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_PROTOCOL_VERSION, ver))) {
-      spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}",
+      spdlog::error("VSCP MQTT CLIENT: Failed to set option MOSQ_OPT_PROTOCOL_VERSION. rv={0} {1}",
                     rv,
                     mosquitto_strerror(rv));
     }
@@ -1892,13 +1892,13 @@ vscpClientMqtt::init(void)
   // receive-maximum
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_RECEIVE_MAXIMUM, m_mapMqttIntOptions["receive-maximum"]))) {
-    spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_RECEIVE_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: Failed to set option MOSQ_OPT_RECEIVE_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
   // send-maximum
   if (MOSQ_ERR_SUCCESS !=
       (rv = mosquitto_int_option(m_mosq, MOSQ_OPT_SEND_MAXIMUM, m_mapMqttIntOptions["send-maximum"]))) {
-    spdlog::error("MQTT CLIENT: Failed to set option MOSQ_OPT_SEND_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: Failed to set option MOSQ_OPT_SEND_MAXIMUM. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 #endif
 
@@ -1911,18 +1911,18 @@ vscpClientMqtt::init(void)
                                                     m_tls_certfile.length() ? m_tls_certfile.c_str() : NULL,
                                                     m_tls_keyfile.length() ? m_tls_keyfile.c_str() : NULL,
                                                     password_callback))) {
-      spdlog::error("MQTT CLIENT: Failed to set mosquitto tls. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: Failed to set mosquitto tls. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_tls_insecure_set(m_mosq, m_tls_bNoHostNameCheck))) {
-      spdlog::error("MQTT CLIENT: Failed to set mosquitto tls insecure. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: Failed to set mosquitto tls insecure. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_tls_opts_set(m_mosq,
                                                          m_tls_cert_reqs,
                                                          m_tls_version.length() ? m_tls_version.c_str() : NULL,
                                                          m_tls_ciphers.length() ? m_tls_ciphers.c_str() : NULL))) {
-      spdlog::error("MQTT CLIENT: Failed to set mosquitto tls options. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: Failed to set mosquitto tls options. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
   else {
@@ -1931,7 +1931,7 @@ vscpClientMqtt::init(void)
                                                           m_tls_psk.c_str(),
                                                           m_tls_identity.c_str(),
                                                           m_tls_ciphers.length() ? m_tls_ciphers.c_str() : NULL))) {
-        spdlog::error("MQTT CLIENT: Failed to set mosquitto tls psk. rv={0} {1}", rv, mosquitto_strerror(rv));
+        spdlog::error("VSCP MQTT CLIENT: Failed to set mosquitto tls psk. rv={0} {1}", rv, mosquitto_strerror(rv));
       }
     }
   }
@@ -2014,6 +2014,7 @@ vscpClientMqtt::connect(void)
   }
   else {
     rv = mosquitto_connect(m_mosq, m_host.c_str(), m_port, m_keepAlive);
+    spdlog::trace("VSCP MQTT CLIENT: Waiting for connection to be established.");
 #ifdef WIN32
     Sleep(1000); // Wait for connection to be established   TODO
 #else
@@ -2022,7 +2023,7 @@ vscpClientMqtt::connect(void)
   }
 
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("MQTT CLIENT: Failed to connect to MQTT remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: Failed to connect to MQTT remote host. rv={0} {1}", rv, mosquitto_strerror(rv));
     return VSCP_ERROR_NOT_CONNECTED;
   }
 
@@ -2031,7 +2032,7 @@ vscpClientMqtt::connect(void)
   // Start the worker loop
   rv = mosquitto_loop_start(m_mosq);
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("MQTT CLIENT: Failed to start mosquitto worker loop. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: Failed to start mosquitto worker loop. rv={0} {1}", rv, mosquitto_strerror(rv));
     mosquitto_disconnect(m_mosq);
     return VSCP_ERROR_ERROR;
   }
@@ -2077,7 +2078,7 @@ vscpClientMqtt::connect(void)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("MQTT CLIENT: Publish will: Topic: {0} Payload: empty qos=1 retain=true", strTopic);
+    spdlog::trace("VSCP MQTT CLIENT: Publish will: Topic: {0} Payload: empty qos=1 retain=true", strTopic);
 
     if (MOSQ_ERR_SUCCESS != (rv = mosquitto_publish(m_mosq,
                                                     NULL, // msg id
@@ -2086,7 +2087,7 @@ vscpClientMqtt::connect(void)
                                                     NULL,
                                                     1,
                                                     true))) {
-      spdlog::error("MQTT CLIENT: mosquitto_publish (will) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: mosquitto_publish (will) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
   }
 
@@ -2116,7 +2117,7 @@ vscpClientMqtt::connect(void)
     // Subscribe to specified topic
     rv = mosquitto_subscribe(m_mosq, nullptr, subscribe_topic.c_str(), psubtopic->getQos());
     if (MOSQ_ERR_SUCCESS != rv) {
-      spdlog::error("MQTT CLIENT: Failed to subscribed to topic '{0}' - rv={1} {2}.",
+      spdlog::error("VSCP MQTT CLIENT: Failed to subscribed to topic '{0}' - rv={1} {2}.",
                     subscribe_topic,
                     rv,
                     mosquitto_strerror(rv));
@@ -2137,7 +2138,7 @@ vscpClientMqtt::disconnect(void)
   m_bRun       = false;
   int rv;
 
-  spdlog::debug("MQTT CLIENT: Enter disconnect.");
+  spdlog::debug("VSCP MQTT CLIENT: Enter disconnect.");
 
   if (isCallbackEvActive() && isCallbackExActive()) {
     pthread_join(m_tid, nullptr);
@@ -2146,13 +2147,13 @@ vscpClientMqtt::disconnect(void)
   // Disconnect from MQTT broker}
   rv = mosquitto_disconnect(m_mosq);
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("MQTT CLIENT: mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: mosquitto_disconnect failed. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
   // stop the worker loop
   rv = mosquitto_loop_stop(m_mosq, false);
   if (MOSQ_ERR_SUCCESS != rv) {
-    spdlog::error("MQTT CLIENT: mosquitto_loop_stop failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: mosquitto_loop_stop failed. rv={0} {1}", rv, mosquitto_strerror(rv));
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -2223,7 +2224,7 @@ vscpClientMqtt::send(vscpEvent &ev)
 
         double value = 0;
         if (!vscp_getMeasurementAsDouble(&value, &ev)) {
-          spdlog::error("MQTT CLIENT: sendEvent: Failed to convert measurement event to value.");
+          spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to convert measurement event to value.");
         }
         else {
           try {
@@ -2239,7 +2240,7 @@ vscpClientMqtt::send(vscpEvent &ev)
             strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
-            spdlog::error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
+            spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
       } // is measurement
@@ -2410,7 +2411,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("MQTT CLIENT: sendEvent: Publish send ev: Topic: {0} qos={1} retain={2}",
+    spdlog::trace("VSCP MQTT CLIENT: sendEvent: Publish send ev: Topic: {0} qos={1} retain={2}",
                   strTopic,
                   ppublish->getQos(),
                   ppublish->getRetain());
@@ -2427,7 +2428,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
       // printf("mosquitto_publish: %s\n", mosquitto_strerror(rv));
     }
 
@@ -2481,7 +2482,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
 
         double value = 0;
         if (!vscp_getMeasurementAsDoubleEx(&value, &ex)) {
-          spdlog::error("MQTT CLIENT: sendEvent: Failed to convert event to value.");
+          spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to convert event to value.");
         }
         else {
           try {
@@ -2497,7 +2498,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
             strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
-            spdlog::error("MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
+            spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
           }
         } // OK to insert extra info
       } // is measurement
@@ -2679,7 +2680,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       strTopic = subtemplate.render(data);
     }
 
-    spdlog::trace("MQTT CLIENT: sendEvent: Publish send ex: Topic: {0} qos={1} retain={2}",
+    spdlog::trace("VSCP MQTT CLIENT: sendEvent: Publish send ex: Topic: {0} qos={1} retain={2}",
                   strTopic,
                   /*(unsigned char *)payload,*/
                   ppublish->getQos(),
@@ -2692,7 +2693,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     payload,
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
-      spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ex) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+      spdlog::error("VSCP MQTT CLIENT: sendEvent: mosquitto_publish (ex) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     }
 
   } // for each topic
@@ -2924,7 +2925,7 @@ vscpClientMqtt::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, 
 
   int v1, v2, v3;
   mosquitto_lib_version(&v1, &v2, &v3);
-  spdlog::debug("MQTT CLIENT: getversion: {}.{}.{}.{}", v1, v2, v3, 0);
+  spdlog::debug("VSCP MQTT CLIENT: getversion: {}.{}.{}.{}", v1, v2, v3, 0);
 
   *pmajor   = v1;
   *pminor   = v2;
@@ -3005,7 +3006,7 @@ vscpClientMqtt::clearRetain4Topic(std::string &strTopic)
                                                   nullptr,
                                                   0,
                                                   true))) {
-    spdlog::error("MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
+    spdlog::error("VSCP MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}", rv, mosquitto_strerror(rv));
     rv = VSCP_ERROR_ERROR;
   }
   return rv;
