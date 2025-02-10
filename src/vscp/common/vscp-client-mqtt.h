@@ -698,6 +698,18 @@ public:
   */
   int clearRetain4Topic(std::string &strTopic);
 
+  /*!
+    We send an empty payload if will is defined
+    !!! Must be done after we are confirmed to be connected (connect callback).
+  */
+  int sendWillPayload(void);
+
+  /*!
+    Do the actual subscribe
+    !!! Must be done after we are confirmed to be connected (connect callback).
+  */
+ int doSubscribe(void);
+
 public:
   // Timeout in milliseconds for host connection.
   uint32_t m_timeoutConnection;
