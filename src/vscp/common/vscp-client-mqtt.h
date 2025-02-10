@@ -349,6 +349,17 @@ public:
   bool init(void);
 
   /*!
+    Handle default event values from topic
+    @param ex VSCP event ex that will get the result.
+    @param pTopic Topic to get defaults from.
+
+    If standard topic format is used, that is
+    vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
+    and instructed to do so we can find the GUID, class and type from the topic
+   */
+  void writeEventDefaultsFromTopic(vscpEvent &ex, const char *pTopic);
+
+  /*!
       Handle incoming message
       @param pmsg Incoming MQTT message
       @return true on success, false on failure.
@@ -594,9 +605,9 @@ public:
   /*!
     Getter/setter for bUseTopicForEventDefaults
   */
- void setUseTopicForEventDefaults(bool b) { m_bUseTopicForEventDefaults = b; };
- bool getUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
- bool isUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
+  void setUseTopicForEventDefaults(bool b) { m_bUseTopicForEventDefaults = b; };
+  bool getUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
+  bool isUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
 
   /*!
     Getter for remote port
@@ -715,7 +726,7 @@ public:
     Do the actual subscribe
     !!! Must be done after we are confirmed to be connected (connect callback).
   */
- int doSubscribe(void);
+  int doSubscribe(void);
 
 public:
   // Timeout in milliseconds for host connection.
@@ -747,7 +758,7 @@ public:
     Use topic for defaults.
 
     If the standard format for topics is used, that is
-    vscp/guid/class/type/index/zone/subzone 
+    vscp/guid/class/type/index/zone/subzone
     the by enabling this guid, class and type information that
     is absent from the received event can be filled in from the
     MQTT topic of the message. This allows for very compact
@@ -766,11 +777,11 @@ public:
     Event object to indicate that there is an event in the
     output queue
   */
- #ifdef WIN32
- HANDLE m_semReceiveQueue;
- #else  
+#ifdef WIN32
+  HANDLE m_semReceiveQueue;
+#else
   sem_t m_semReceiveQueue;
- #endif
+#endif
 
   /*!
     If no callback is defined received events are connected in

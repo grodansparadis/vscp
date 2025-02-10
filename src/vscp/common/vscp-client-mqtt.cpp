@@ -925,11 +925,11 @@ vscpClientMqtt::initFromJson(const std::string &config)
       spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'Connect timeout' Set to {}.", m_keepAlive);
     }
 
-    
     // Connection timeout
     if (j.contains("bUseTopicForEventDefaults") && j["bUseTopicForEventDefaults"].is_boolean()) {
       m_bUseTopicForEventDefaults = j["bUseTopicForEventDefaults"].get<bool>();
-      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bUseTopicForEventDefaults' Set to {}.", m_bUseTopicForEventDefaults);
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bUseTopicForEventDefaults' Set to {}.",
+                    m_bUseTopicForEventDefaults);
     }
 
     // Clean Session
@@ -1449,6 +1449,42 @@ vscpClientMqtt::initFromJson(const std::string &config)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// writeEventDefaultsFromTopic
+//
+// Handle default event values from topic
+//
+
+void
+vscpClientMqtt::writeEventDefaultsFromTopic(vscpEvent &ex, const char *pTopic)
+{
+  // If standard topic format is used, that is
+  // vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
+  // and instructed to do so we can find the GUID, class and type from the topic
+  if (m_bUseTopicForEventDefaults) {
+    std::deque<std::string> vec;
+    vscp_split(vec, pTopic, "/");
+    if (vec.size() >= 4) { // at least "vscp/<vscp-guid>/<vscp-class>/<vscp-type>"
+
+      // Assign GUID from topic if all nills from event.
+      cguid guid(ex.GUID);
+      if (guid.isNULL()) {
+        vscp_getGuidFromStringToArray(ex.GUID, vec[1]);
+      }
+
+      // Assign class from topic if set to zero in event.
+      if (!ex.vscp_class) {
+        ex.vscp_class = vscp_readStringValue(vec[2]);
+      }
+
+      // Assign type from topic if set to zero in event.
+      if (!ex.vscp_type) {
+        ex.vscp_type = vscp_readStringValue(vec[3]);
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // handleMessage
 //
 // Handle incoming (subscribe) message
@@ -1540,31 +1576,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
-    // If standard topic format is used, that is
-    // vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
-    // and instructed to do so we can find the GUID, class and type from the topic
-    if (m_bUseTopicForEventDefaults) {
-      std::deque<std::string> vec;
-      vscp_split(vec, pmsg->topic, "/");
-      if (vec.size() >= 4) { // at least "vscp/<vscp-guid>/<vscp-class>/<vscp-type>"
-        
-        // Assigne GUID from topic if all nills from event.
-        cguid guid(ex.GUID);
-        if (guid.isNULL()) {
-          vscp_getGuidFromStringToArray(ex.GUID, vec[1]);
-        }
-
-        // Assign class from topic if set to zeror in event.
-        if (!ex.vscp_class) {
-          ex.vscp_class = vscp_readStringValue(vec[2]);
-        }
-
-        // Assign type from topic if set to zero in event.
-        if (!ex.vscp_type) {
-          ex.vscp_type  = vscp_readStringValue(vec[3]);
-        }
-      }
-    }
+    writeEventDefaultsFromTopic(ex, pMsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1612,6 +1624,8 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
+    writeEventDefaultsFromTopic(ex, pMsg->topic);
+
     // If callback is defined send event
     if (isCallbackEvActive()) {
       m_callbackev(ev, getCallbackObj());
@@ -1657,6 +1671,8 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       spdlog::trace("VSCP MQTT CLIENT: str->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
+
+    writeEventDefaultsFromTopic(ex, pMsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1705,6 +1721,8 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       spdlog::trace("VSCP MQTT CLIENT: bin->EventEx conversion failed. Payload is not VSCP event.");
       return false;
     }
+
+    writeEventDefaultsFromTopic(ex, pMsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -2106,7 +2124,7 @@ vscpClientMqtt::connect(void)
     }
 #ifdef WIN32
     Sleep(1000);
-#else    
+#else
     sleep(1);
 #endif
   }
