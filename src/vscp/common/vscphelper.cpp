@@ -4479,6 +4479,9 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
     return false;
   }
 
+  // Initialize event
+  memset(pEvent, 0, sizeof(vscpEvent));
+
   try {
     auto j = json::parse(strJSON);
 
@@ -4631,6 +4634,9 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
   if (nullptr == pEventEx) {
     return false;
   }
+
+  // Initialize event
+  memset(pEventEx, 0, sizeof(vscpEventEx));
 
   try {
 

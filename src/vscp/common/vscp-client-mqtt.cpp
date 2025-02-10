@@ -631,6 +631,8 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_keepAlive           = 30;          // 30 seconds for keepalive
   // m_bCleanSession = false;       // Do not start with a clean session
 
+  m_bUseTopicForEventDefaults = false; // Do not use topic for event defaults
+
   // Defaults for timing
   m_timeoutConnection = 5000; // 5 seconds
   m_timeoutResponse   = 200;
@@ -1529,6 +1531,32 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     if (!vscp_convertEventToEventEx(&ex, &ev)) {
       spdlog::trace("VSCP MQTT CLIENT: JSON->EventEx conversion failed. Payload is not VSCP event.");
       return false;
+    }
+
+    // If standard topic format is used, that is
+    // vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
+    // and instructed to do so we can find the GUID, class and type from the topic
+    if (m_bUseTopicForEventDefaults) {
+      std::deque<std::string> vec;
+      vscp_split(vec, pmsg->topic, "/");
+      if (vec.size() >= 4) { // at least "vscp/<vscp-guid>/<vscp-class>/<vscp-type>"
+        
+        // Assigne GUID from topic if all nills from event.
+        cguid guid(ex.GUID);
+        if (guid.isNULL()) {
+          vscp_getGuidFromStringToArray(ex.GUID, vec[1]);
+        }
+
+        // Assign class from topic if set to zeror in event.
+        if (!ex.vscp_class) {
+          ex.vscp_class = vscp_readStringValue(vec[2]);
+        }
+
+        // Assign type from topic if set to zero in event.
+        if (!ex.vscp_type) {
+          ex.vscp_type  = vscp_readStringValue(vec[3]);
+        }
+      }
     }
 
     // If callback is defined send event

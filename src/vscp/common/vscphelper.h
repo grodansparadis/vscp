@@ -1621,12 +1621,26 @@ vscp_convertEventExToJSON(std::string &strJSON, vscpEventEx *pEventEx);
 
 /*!
  * Convert JSON string to event
+ *
+ * If a value is not found in the JSON string
+ * it will be set to zero. This means a value
+ * can be omitted in the JSON string. The only
+ * values that must be in the JSON string is
+ * class and type as long as the GUID is known 
+ * beforehand
  */
 bool
 vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON);
 
 /*!
  * Convert JSON string to eventex
+ * 
+ * If a value is not found in the JSON string
+ * it will be set to zero. This means a value
+ * can be omitted in the JSON string. The only
+ * values that must be in the JSON string is
+ * class and type as long as the GUID is known 
+ * beforehand
  */
 bool
 vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSONx);

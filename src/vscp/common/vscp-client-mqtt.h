@@ -592,6 +592,13 @@ public:
   uint32_t getKeepAlive(void) { return m_keepAlive; };
 
   /*!
+    Getter/setter for bUseTopicForEventDefaults
+  */
+ void setUseTopicForEventDefaults(bool b) { m_bUseTopicForEventDefaults = b; };
+ bool getUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
+ bool isUseTopicForEventDefaults(void) { return m_bUseTopicForEventDefaults; };
+
+  /*!
     Getter for remote port
     @return remote host port.
   */
@@ -658,7 +665,7 @@ public:
   /*!
     Set parent disconnect callback
   */
-  void setFuncParentCallbackDisconnet(LPFN_PARENT_CALLBACK_DISCONNECT func) { m_parentCallbackDisconnect = func; };
+  void setFuncParentCallbackDisconnect(LPFN_PARENT_CALLBACK_DISCONNECT func) { m_parentCallbackDisconnect = func; };
 
   /*!
     Set parent publish callback
@@ -735,6 +742,19 @@ public:
     events if true
   */
   bool m_bJsonMeasurementAdd;
+
+  /*!
+    Use topic for defaults.
+
+    If the standard format for topics is used, that is
+    vscp/guid/class/type/index/zone/subzone 
+    the by enabling this guid, class and type information that
+    is absent from the received event can be filled in from the
+    MQTT topic of the message. This allows for very compact
+    MQTT messages while still preserving the full VSCP event
+    information.
+  */
+  bool m_bUseTopicForEventDefaults;
 
   /*!
     Mutex that protect CANAL interface when callbacks are defined
