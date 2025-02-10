@@ -925,6 +925,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
       spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'Connect timeout' Set to {}.", m_keepAlive);
     }
 
+    
+    // Connection timeout
+    if (j.contains("bUseTopicForEventDefaults") && j["bUseTopicForEventDefaults"].is_boolean()) {
+      m_bUseTopicForEventDefaults = j["bUseTopicForEventDefaults"].get<bool>();
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bUseTopicForEventDefaults' Set to {}.", m_bUseTopicForEventDefaults);
+    }
+
     // Clean Session
     if (j.contains("bcleansession") && j["bcleansession"].is_boolean()) {
       m_bCleanSession = j["bcleansession"].get<bool>();
