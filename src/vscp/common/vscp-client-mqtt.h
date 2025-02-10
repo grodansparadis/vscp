@@ -357,7 +357,7 @@ public:
     vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
     and instructed to do so we can find the GUID, class and type from the topic
    */
-  void writeEventDefaultsFromTopic(vscpEvent &ex, const char *pTopic);
+  void writeEventDefaultsFromTopic(vscpEventEx &ex, const char *pTopic);
 
   /*!
       Handle incoming message

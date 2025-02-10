@@ -623,7 +623,7 @@ vscpClientMqtt::vscpClientMqtt(void)
   m_bindInterface       = "";          // No bind interface
   m_mosq                = nullptr;     // No mosquitto connection
   m_bRun                = true;        // Run to the Hills...
-  m_host                = "localhost"; // tcp://localhost:1883
+  m_host                = "localhost"; // mqtt://localhost:1883
   m_port                = 1883;        // Default port
   m_clientid            = "";          // No client id set
   m_username            = "";          // No username set
@@ -787,6 +787,16 @@ vscpClientMqtt::initFromJson(const std::string &config)
       }
       else if (0 == m_host.find("stcp://")) {
         m_host = m_host.substr(7);
+        m_bTLS = true;
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: Secure connection {}.", m_host);
+      }
+      else if (0 == m_host.find("mqtt://")) {
+        m_host = m_host.substr(7);
+        m_bTLS = false;
+        spdlog::debug("VSCP MQTT CLIENT: json mqtt init: Unsecure connection {}.", m_host);
+      }
+      else if (0 == m_host.find("mqtts://")) {
+        m_host = m_host.substr(8);
         m_bTLS = true;
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: Secure connection {}.", m_host);
       }
@@ -1455,7 +1465,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
 //
 
 void
-vscpClientMqtt::writeEventDefaultsFromTopic(vscpEvent &ex, const char *pTopic)
+vscpClientMqtt::writeEventDefaultsFromTopic(vscpEventEx &ex, const char *pTopic)
 {
   // If standard topic format is used, that is
   // vscp/<vscp-guid>/<vscp-class>/<vscp-type>/index/zone/subzone
@@ -1576,7 +1586,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
-    writeEventDefaultsFromTopic(ex, pMsg->topic);
+    writeEventDefaultsFromTopic(ex, pmsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1624,7 +1634,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
-    writeEventDefaultsFromTopic(ex, pMsg->topic);
+    writeEventDefaultsFromTopic(ex, pmsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1672,7 +1682,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
-    writeEventDefaultsFromTopic(ex, pMsg->topic);
+    writeEventDefaultsFromTopic(ex, pmsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1722,7 +1732,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       return false;
     }
 
-    writeEventDefaultsFromTopic(ex, pMsg->topic);
+    writeEventDefaultsFromTopic(ex, pmsg->topic);
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
