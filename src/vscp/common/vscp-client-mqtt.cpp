@@ -633,7 +633,7 @@ vscpClientMqtt::vscpClientMqtt(void)
 
   // Defaults for timing
   m_timeoutConnection = 5000; // 5 seconds
-  m_timeoutResponse   = 200;  
+  m_timeoutResponse   = 200;
 
   m_bTLS                 = false;
   m_tls_cafile           = "";
@@ -915,6 +915,12 @@ vscpClientMqtt::initFromJson(const std::string &config)
     if (j.contains("keepalive") && j["keepalive"].is_number()) {
       m_keepAlive = j["keepalive"].get<int>();
       spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'keepalive' Set to {}.", m_keepAlive);
+    }
+
+    // Connection timeout
+    if (j.contains("connection-timeout") && j["connection-timeout"].is_number()) {
+      m_timeoutConnection = j["connection-timeout"].get<int>();
+      spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'Connect timeout' Set to {}.", m_keepAlive);
     }
 
     // Clean Session
@@ -2063,6 +2069,11 @@ vscpClientMqtt::connect(void)
       spdlog::error("VSCP MQTT CLIENT: Connection timeout.");
       return VSCP_ERROR_TIMEOUT;
     }
+#ifdef WIN32
+    Sleep(1000);
+#else    
+    sleep(1);
+#endif
   }
 
   return VSCP_ERROR_SUCCESS;
