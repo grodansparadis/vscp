@@ -1348,7 +1348,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
       spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'bescape-pub-topics' Set to {}.", m_bEscapesPubTopics);
     }
 
-    // User escapes m_mapUserEscapes
+    // User escapes
     if (j.contains("user-escapes") && j["user-escapes"].is_object()) {
       for (auto it = j["user-escapes"].begin(); it != j["user-escapes"].end(); ++it) {
         m_mapUserEscapes[it.key()] = it.value();
@@ -2326,6 +2326,14 @@ vscpClientMqtt::send(vscpEvent &ev)
 
     memset(payload, 0, sizeof(payload));
 
+    // Save for mustache inserts later
+    bool bMeasurement           = false;
+    double measurement_value    = 0;
+    int measurement_unit        = 0;
+    int measurement_sensorindex = 0;
+    int measurement_zone        = 0;
+    int measurement_subzone     = 0;
+
     if (ppublish->getFormat() == jsonfmt) {
 
       std::string strPayload;
@@ -2349,6 +2357,8 @@ vscpClientMqtt::send(vscpEvent &ev)
       if (vscp_isMeasurement(&ev) && m_bJsonMeasurementAdd) {
 
         double value = 0;
+        bMeasurement = true;
+
         if (!vscp_getMeasurementAsDouble(&value, &ev)) {
           spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to convert measurement event to value.");
         }
@@ -2356,11 +2366,11 @@ vscpClientMqtt::send(vscpEvent &ev)
           try {
             auto j = json::parse(strPayload);
 
-            j["measurement"]["value"]       = value;
-            j["measurement"]["unit"]        = vscp_getMeasurementUnit(&ev);
-            j["measurement"]["sensorindex"] = vscp_getMeasurementSensorIndex(&ev);
-            j["measurement"]["zone"]        = vscp_getMeasurementZone(&ev);
-            j["measurement"]["subzone"]     = vscp_getMeasurementSubZone(&ev);
+            j["measurement"]["value"] = measurement_value = value;
+            j["measurement"]["unit"] = measurement_unit = vscp_getMeasurementUnit(&ev);
+            j["measurement"]["sensorindex"] = measurement_sensorindex = vscp_getMeasurementSensorIndex(&ev);
+            j["measurement"]["zone"] = measurement_zone = vscp_getMeasurementZone(&ev);
+            j["measurement"]["subzone"] = measurement_subzone = vscp_getMeasurementSubZone(&ev);
 
             strPayload = j.dump();
             strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
@@ -2505,6 +2515,13 @@ vscpClientMqtt::send(vscpEvent &ev)
       data.set("clientid", m_clientid);
       data.set("user", m_username);
       data.set("host", m_host);
+
+      data.set("is-measurement", bMeasurement ? "true" : "false");
+      data.set("measurement-value", std::to_string(measurement_value));
+      data.set("measurement-unit", std::to_string(measurement_unit));
+      data.set("measurement-sensorindex", std::to_string(measurement_sensorindex));
+      data.set("measurement-zone", std::to_string(measurement_zone));
+      data.set("measurement-subzone", std::to_string(measurement_subzone));
 
       switch (ppublish->getFormat()) {
         case jsonfmt:
