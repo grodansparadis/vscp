@@ -660,6 +660,7 @@ struct vscpMyNode {
 #define VSCP_ERROR_INVALID_CHECKSUM   67 /* Checksum is not correct */
 #define VSCP_ERROR_INTERFACE          68 /* Interface error (not defined etc) */
 #define VSCP_ERROR_CONVERSION         69 /* Error in conversion */
+#define VSCP_ERROR_CHECKSUM           70 /* Invalid checksum/crc */
 
 /*!
     HLO (High Level Object) type (bits 7,6,5,4)

@@ -6705,7 +6705,7 @@ vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_getUDpFrameSizeFromEvent
+// vscp_getFrameSizeFromEvent
 //
 
 size_t
@@ -6722,7 +6722,7 @@ vscp_getFrameSizeFromEvent(vscpEvent *pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_getUDpFrameSizeFromEventEx
+// vscp_getFrameSizeFromEventEx
 //
 
 size_t
