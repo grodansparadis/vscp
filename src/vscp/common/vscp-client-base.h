@@ -26,6 +26,7 @@
 #if !defined(VSCPCLIENTBASE_H__INCLUDED_)
 #define VSCPCLIENTBASE_H__INCLUDED_
 
+#include "canal.h"
 #include "vscp.h"
 
 #include <nlohmann/json.hpp> // nlohmann
