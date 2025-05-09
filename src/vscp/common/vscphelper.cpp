@@ -259,7 +259,7 @@ vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
 
   DWORD dwrv = WaitForSingleObject(*phHandle, waitms);
   if (WAIT_OBJECT_0 == dwrv) {
-    rv= 0;
+    rv = 0;
   }
   else if (WAIT_TIMEOUT == dwrv) {
     rv = ETIMEDOUT;
@@ -2520,8 +2520,8 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value);
     data[1] = *((uint8_t *) &value + 1);
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
 #endif
   }
   else if ((uint64_t) value <= 0xffffff) {
@@ -2531,9 +2531,9 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value + 1);
     data[1] = *((uint8_t *) &value + 2);
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
-    data[3]                    = *((uint8_t *) &value + 2);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffff) {
@@ -2544,10 +2544,10 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value + 2);
     data[1] = *((uint8_t *)&value + 3;
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
-    data[3]                    = *((uint8_t *) &value + 2);
-    data[4]                    = *((uint8_t *) &value + 3);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
+    data[4] = *((uint8_t *) &value + 3);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffff) {
@@ -2559,11 +2559,11 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value + 3);
     data[1] = *((uint8_t *) &value + 4);
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
-    data[3]                    = *((uint8_t *) &value + 2);
-    data[4]                    = *((uint8_t *) &value + 3);
-    data[5]                    = *((uint8_t *) &value + 4);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
+    data[4] = *((uint8_t *) &value + 3);
+    data[5] = *((uint8_t *) &value + 4);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffff) {
@@ -2576,12 +2576,12 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value + 4);
     data[1] = *((uint8_t *) &value + 5);
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
-    data[3]                    = *((uint8_t *) &value + 2);
-    data[4]                    = *((uint8_t *) &value + 3);
-    data[5]                    = *((uint8_t *) &value + 4);
-    data[6]                    = *((uint8_t *) &value + 5);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
+    data[4] = *((uint8_t *) &value + 3);
+    data[5] = *((uint8_t *) &value + 4);
+    data[6] = *((uint8_t *) &value + 5);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffffff) {
@@ -2595,13 +2595,13 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
     data[2] = *((uint8_t *) &value + 5);
     data[1] = *((uint8_t *) &value + 6);
 #else
-    data[1]                    = *((uint8_t *) &value);
-    data[2]                    = *((uint8_t *) &value + 1);
-    data[3]                    = *((uint8_t *) &value + 2);
-    data[4]                    = *((uint8_t *) &value + 3);
-    data[5]                    = *((uint8_t *) &value + 4);
-    data[6]                    = *((uint8_t *) &value + 5);
-    data[7]                    = *((uint8_t *) &value + 6);
+    data[1] = *((uint8_t *) &value);
+    data[2] = *((uint8_t *) &value + 1);
+    data[3] = *((uint8_t *) &value + 2);
+    data[4] = *((uint8_t *) &value + 3);
+    data[5] = *((uint8_t *) &value + 4);
+    data[6] = *((uint8_t *) &value + 5);
+    data[7] = *((uint8_t *) &value + 6);
 #endif
   }
   else {
@@ -7203,10 +7203,12 @@ vscp_encryptFrame(uint8_t *output,
       padlen += 16;
       break;
 
-    default:
     case VSCP_ENCRYPTION_NONE:
       memcpy(output + 1, input + 1, padlen);
       break;
+
+    default:
+      return VSCP_ERROR_PARAMETER;
   }
 
   padlen++; // Count packet type byte
@@ -7285,7 +7287,6 @@ vscp_decryptFrame(uint8_t *output,
                              (const uint8_t *) appended_iv);
       break;
 
-    default:
     case VSCP_ENCRYPTION_AES128:
       AES_CBC_decrypt_buffer(AES128,
                              output + 1,
@@ -7294,6 +7295,9 @@ vscp_decryptFrame(uint8_t *output,
                              key,
                              (const uint8_t *) appended_iv);
       break;
+
+    default:
+      return VSCP_ERROR_PARAMETER;
   }
 
   return true;
@@ -7364,7 +7368,7 @@ readHexChar(char input)
 size_t
 vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 {
-  size_t cnt          = 0;
+  size_t cnt       = 0;
   const char *phex = hexstr;
 
   while (*(phex + 2 * cnt) && *(phex + 2 * cnt + 1) && (cnt < size)) {
@@ -7414,8 +7418,6 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
 
   return true;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getSalt
