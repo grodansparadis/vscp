@@ -41,6 +41,11 @@
 // #include <mustache.hpp>
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11
 
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 // for convenience
 using json = nlohmann::json;
 // using namespace kainjow::mustache;

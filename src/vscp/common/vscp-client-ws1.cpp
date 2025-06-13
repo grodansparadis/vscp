@@ -35,6 +35,15 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
+
+#include <mustache.hpp>
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 #include <vscp-aes.h>
 #include <vscphelper.h>
 // #include "civetweb.h"

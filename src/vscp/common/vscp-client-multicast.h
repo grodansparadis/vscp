@@ -29,6 +29,9 @@
 #include "vscp.h"
 #include "vscp-client-base.h"
 
+#include <mutex>
+#include <thread>
+
 class vscpClientMulticast : public CVscpClient {
 
 public:
@@ -185,7 +188,94 @@ public:
   virtual void setResponseTimeout(uint32_t timeout);
   virtual uint32_t getResponseTimeout(void);
 
+public:
+  // JSON configuration
+  json m_j_config;
+
+  /// Flag for worker thread run as long it's true
+  bool m_bRun;
+
+  /*!
+    True if sent frames should be encrypted
+   */
+  bool m_bEncrypt;
+
+  /*!
+    Encryption algorithm. Defines in vscp.h
+      0 = None
+      1 = AES-128
+      2 = AES-192
+      3 = AES-256
+  */
+  uint8_t m_encryptType;
+
+  /*!
+    Encryption key
+    16-bit for AES-128
+    24-bit for AES-192
+    32-bit for AES-256
+  */
+  uint8_t m_key[32]; // AES-(128/192/256) key
+
+  // Event lists
+  // std::list<vscpEvent *> m_sendQueue;
+  std::list<vscpEvent *> m_receiveQueue;
+
+  /// Mutex to protect communication socket
+  pthread_mutex_t m_mutexSocket;
+
+  /// Mutex to protect receive queue
+  pthread_mutex_t m_mutexReceiveQueue;
+
+/*!
+  Event object to indicate that there is an event
+  in the receive queue
+*/
+#ifdef WIN32
+  HANDLE m_semReceiveQueue;
+#else
+  sem_t m_semReceiveQueue;
+#endif
+
+#ifdef WIN32
+  WSADATA m_wsaData;
+  SOCKET m_sock;
+#else
+  int m_sock;
+#endif
+
+  /// Filters for input
+  vscpEventFilter m_filter;
+
 private:
+  /*!
+    Interface to use for multicast communication.
+    Default is empty string which means all interfaces.
+  */
+  std::string m_interface;
+
+  /*!
+      Set the multicast address. Default is VSCP multicast address 224.0.23.158
+      @param addr Multicast address to set
+  */
+  std::string m_multicastGroupAddr;
+
+  /*!
+      Set the multicast port. Default is 9598
+      @param port Multicast port to set
+  */
+  short m_multicastPort;
+
+  /*!
+    Time to live for multicast packets
+    Default is 1 (local network only)
+  */
+  uint8_t m_ttl;
+
+  // ------------------------------------------------------------------------
+
+  /// Workerthread
+  std::thread *m_pworkerthread;
 };
 
 #endif

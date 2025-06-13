@@ -185,6 +185,11 @@ public:
   virtual void setResponseTimeout(uint32_t timeout);
   virtual uint32_t getResponseTimeout(void);
 
+public:
+
+  /// Filters for input
+  vscpEventFilter m_filter;  
+
 private:
 };
 

@@ -274,11 +274,11 @@ public:
     Event object to indicate that there is an event in the
     output queue
   */
-  #ifdef WIN32
- HANDLE m_semReceiveQueue;
- #else  
+#ifdef WIN32
+  HANDLE m_semReceiveQueue;
+#else
   sem_t m_semReceiveQueue;
- #endif
+#endif
 
   /// Filters for input/output
   vscpEventFilter m_filterIn;
@@ -306,8 +306,6 @@ private:
 
   // ------------------------------------------------------------------------
 
-  
-
   /// Workerthread
   std::thread *m_pworkerthread;
 
@@ -327,8 +325,6 @@ private:
 
   /// If true the remote host interface will be polled.
   bool m_bPolling;
-
-  
 
   // ------------------------------------------------------------------------
   //                                 TLS / SSL

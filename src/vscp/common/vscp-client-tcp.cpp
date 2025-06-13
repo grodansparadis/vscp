@@ -27,6 +27,14 @@
 #include <pch.h>
 #endif
 
+#include <mustache.hpp>
+#include <nlohmann/json.hpp> // Needs C++11  -std=c++11
+
+#include <spdlog/async.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 #include "vscp-client-tcp.h"
 
 void
@@ -672,10 +680,11 @@ workerThread(vscpClientTcp *pClient)
       vscp_deleteEvent(&ev);
     }
 
+    // Terminate if we are not connected
     if (!m_pifReceive->isConnected()) {
       pClient->m_bRun = false;
     }
 
     pthread_mutex_unlock(&pClient->m_mutexTcpIpObject);
-  }
+  } // loop
 }
