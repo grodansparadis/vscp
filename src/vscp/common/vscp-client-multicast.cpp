@@ -323,20 +323,43 @@ vscpClientMulticast::connect(void)
     return VSCP_ERROR_CONNECTION;
   }
 
+  std::string interfaceName;
+  char interfaceAddress[INET_ADDRSTRLEN];
+
+  std::deque<std::string> interfaceSplit;
+  vscp_split(interfaceSplit, m_interface, " ");
+  if (interfaceSplit.empty()) {
+    // If no specific interface is set, use the default one
+    interfaceName = ""; // We use all interfaces
+  }
+  else {
+    // Use the first interface in the list
+    interfaceName = interfaceSplit.front();
 #ifdef WIN32
 #else
-  struct ifreq ifr;
-  strncpy(ifr.ifr_name, "enp3s0", IFNAMSIZ);
-  ioctl(m_sock, SIOCGIFADDR, &ifr);
-  char ip_address[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ip_address, INET_ADDRSTRLEN);
-  printf("IP Address: %s %s\n", ip_address, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+    struct ifreq ifr;
+    strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ);
+    ioctl(m_sock, SIOCGIFADDR, &ifr);    
+    inet_ntop(AF_INET, &(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr), interfaceAddress, INET_ADDRSTRLEN);
+    printf("IP Address: %s %s\n", interfaceAddress, inet_ntoa(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr));
 #endif
+  }
 
   // Set the outgoing interface (optional, for multi-homed hosts)
   // https://github.com/bk138/Multicast-Client-Server-Example/blob/master/src/msock.c
   struct in_addr localInterface;
-  localInterface.s_addr = htonl(INADDR_ANY); // or use inet_addr("your.interface.ip")
+  if (interfaceName.empty()) {
+    // Use all interfaces
+    localInterface.s_addr = htonl(INADDR_ANY);
+  }
+  else {
+#ifdef WIN32
+    // For Windows, we need to convert the interface name to an address
+#else
+    localInterface.s_addr = inet_addr(interfaceAddress);
+#endif
+  }
+
   if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_IF, (char *) &localInterface, sizeof(localInterface)) < 0) {
     perror("setsockopt (IP_MULTICAST_IF)");
     close(m_sock);
@@ -452,15 +475,15 @@ vscpClientMulticast::send(vscpEvent &ev)
   // Find the needed buffer length
   size_t framelen = vscp_getFrameSizeFromEvent(&ev);
 
-  uint8_t *pframe = new uint8_t[framelen];
+  uint8_t *pframe = new uint8_t[BUFFER_SIZE];
   if (NULL == pframe) {
     return VSCP_ERROR_MEMORY;
   }
 
-  memset(pframe, 0, framelen);
+  memset(pframe, 0, BUFFER_SIZE);
 
   // Write event to frame
-  if (!vscp_writeEventToFrame(pframe, framelen, 0, &ev)) {
+  if (!vscp_writeEventToFrame(pframe, BUFFER_SIZE, 0, &ev)) {
     free(pframe);
     fprintf(stderr, "Error writing event to frame.\n");
     return VSCP_ERROR_INVALID_FRAME;
@@ -469,8 +492,8 @@ vscpClientMulticast::send(vscpEvent &ev)
   // Encrypt frame as needed
   if (m_encryptType) {
 
-    uint8_t newlen       = 0;
-    uint8_t encbuf[1024] = { 0 };
+    uint16_t newlen       = 0;
+    uint8_t encbuf[BUFFER_SIZE] = { 0 };
 
     if (0 == (newlen = vscp_encryptFrame(encbuf, pframe, framelen, m_key, NULL, m_encryptType))) {
       fprintf(stderr, "Error encrypting frame. newlen = %d\n", newlen);
@@ -478,7 +501,7 @@ vscpClientMulticast::send(vscpEvent &ev)
     }
 
     memcpy(pframe, encbuf, newlen);
-    pframe[0] = (pframe[0] & 0xF0) | (VSCP_HLO_ENCRYPTION_AES128 & 0x0F); // Set encryption type
+    pframe[0] = (pframe[0] & 0xF0) | (m_encryptType & 0x0F); // Set encryption type
     // Set the new length (may be padded to be modulo 16 + 1)
     framelen = newlen;
 
