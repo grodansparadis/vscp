@@ -558,6 +558,15 @@ vscpClientMulticast::send(vscpEvent &ev)
 int
 vscpClientMulticast::send(vscpEventEx &ex)
 {
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(vscpEvent));
+
+  if (!vscp_convertEventExToEvent(&ev, &ex)) {
+    return VSCP_ERROR_INVALID_FRAME;
+  }
+
+  send(ev);
+
   return VSCP_ERROR_SUCCESS;
 }
 
