@@ -29,15 +29,22 @@
 #include "vscp.h"
 #include "vscp-client-base.h"
 
+#include <mutex>
+#include <thread>
+
 class vscpClientUdp : public CVscpClient {
 
 public:
   vscpClientUdp();
   virtual ~vscpClientUdp();
 
+  static const uint8_t VSCP_MAJOR_MULTICAST_CLIENT_VERSION   = 1;
+  static const uint8_t VSCP_MINOR_MULTICAST_CLIENT_VERSION   = 0;
+  static const uint8_t VSCP_RELEASE_MULTICAST_CLIENT_VERSION = 0;
+  static const uint8_t VSCP_BUILD_MULTICAST_CLIENT_VERSION   = 0;
+
   /*!
       Connect to remote host
-      @param bPoll If true polling is used.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int connect(void);
@@ -186,11 +193,86 @@ public:
   virtual uint32_t getResponseTimeout(void);
 
 public:
+  // JSON configuration
+  json m_j_config;
+
+  /// Flag for worker thread run as long it's true
+  bool m_bRun;
+
+  /*!
+    True if sent frames should be encrypted
+   */
+  bool m_bEncrypt;
+
+  /*!
+    Encryption algorithm. Defines in vscp.h
+      0 = None
+      1 = AES-128
+      2 = AES-192
+      3 = AES-256
+  */
+  uint8_t m_encryptType;
+
+  /*!
+    Encryption key
+    16-bit for AES-128
+    24-bit for AES-192
+    32-bit for AES-256
+  */
+  uint8_t m_key[32]; // AES-(128/192/256) key
+
+  // Queue for received events
+  std::list<vscpEvent *> m_receiveQueue;
+
+  /// Mutex to protect communication socket
+  pthread_mutex_t m_mutexSocket;
+
+  /// Mutex to protect receive queue
+  pthread_mutex_t m_mutexReceiveQueue;
+
+/*!
+  Event object to indicate that there is an event
+  in the receive queue
+*/
+#ifdef WIN32
+  HANDLE m_semReceiveQueue;
+#else
+  sem_t m_semReceiveQueue;
+#endif
+
+#ifdef WIN32
+  WSADATA m_wsaData;
+  SOCKET m_sock;
+#else
+  int m_sock;
+#endif
 
   /// Filters for input
-  vscpEventFilter m_filter;  
+  vscpEventFilter m_filter;
 
 private:
+  /*!
+    Interface to use for UDP communication.
+    Default is empty string which means all interfaces.
+  */
+  std::string m_interface;
+
+  /*!
+      Set the UDP destination address. Default is "255.255.255.255:9598" (broadcast)
+      @param addr UDP destination address to set
+  */
+  std::string m_udpAddr;
+
+  /*!
+      Set the UDP port. Default is 9598
+      @param port UDP port to set
+  */
+  short m_udpPort;
+
+  // ------------------------------------------------------------------------
+
+  /// Workerthread
+  std::thread *m_pworkerthread;
 };
 
 #endif

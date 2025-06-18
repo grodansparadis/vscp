@@ -102,7 +102,6 @@ public:
 
   /*!
       Connect to remote host
-      @param bPoll If true polling is used.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int connect(void);

@@ -625,7 +625,7 @@ vscp_isNumber(const std::string &strNumber)
   std::string str = strNumber;
   vscp_trim(str);
   vscp_makeLower(str);
-  if (isdigit(str[0]) || vscp_startsWith(str, "0x")) {
+  if (isdigit(str[0]) || vscp_startsWith(str, "0x")|| vscp_startsWith(str, "0o")|| vscp_startsWith(str, "0b")) {
     return true;
   }
 

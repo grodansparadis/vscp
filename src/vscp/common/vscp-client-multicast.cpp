@@ -23,6 +23,10 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#ifdef WIN32
+#include <pch.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -147,10 +151,12 @@ vscpClientMulticast::getConfigAsJson(void)
   char buf[65];
   json j;
 
-  // j["type"] = static_cast<int>(CVscpClient::connType::MULTICAST);
-  j["interface"]  = m_interface.c_str();
-  j["group"]      = m_multicastGroupAddr.c_str();
-  j["port"]       = m_multicastPort;
+  j["interface"]       = m_interface.c_str();
+  std::string strGroup = "udp://";
+  strGroup += m_multicastGroupAddr;
+  strGroup += ":";
+  strGroup += std::to_string(m_multicastPort);
+  j["ip"]         = strGroup.c_str(); // addr:port
   j["ttl"]        = m_ttl;
   j["encryption"] = m_encryptType;
   switch (m_encryptType) {
@@ -209,8 +215,24 @@ vscpClientMulticast::initFromJson(const std::string &config)
       m_interface = m_j_config["interface"].get<std::string>();
     }
 
-    if (m_j_config.contains("group") && m_j_config["group"].is_string()) {
-      m_multicastGroupAddr = m_j_config["group"].get<std::string>();
+    // Can be of form [udp://]addr[:port]
+    if (m_j_config.contains("ip") && m_j_config["ip"].is_string()) {
+      std::string strAddr = m_j_config["ip"].get<std::string>();
+
+      if (strAddr.find("udp://") == 0) {
+        strAddr = strAddr.substr(6); // Remove "udp://"
+      }
+      size_t pos = strAddr.find(':');
+      if (pos != std::string::npos) {
+        // If there is a port number, split it off
+        std::string portStr = strAddr.substr(pos + 1);
+        if (vscp_isNumber(portStr)) {
+          m_multicastPort = vscp_readStringValue(portStr);
+        }
+        strAddr = strAddr.substr(0, pos); // Remove port from address
+      }
+
+      m_multicastGroupAddr = strAddr;
     }
 
     if (m_j_config.contains("port") && m_j_config["port"].is_number()) {
@@ -281,38 +303,10 @@ vscpClientMulticast::initFromJson(const std::string &config)
 int
 vscpClientMulticast::connect(void)
 {
-#ifdef WIN32
-  // https://learn.microsoft.com/en-us/windows/win32/api/iphlpapi/nf-iphlpapi-getadaptersaddresses?redirectedfrom=MSDN
-#else
-  // https://stackoverflow.com/questions/2283494/get-ip-address-of-an-interface-on-linux
-  struct ifaddrs *ifaddrs; // Interface addresses
-
-  if (-1 == getifaddrs(&ifaddrs)) {
-    perror("getifaddrs failed");
-    exit(1);
+  if (isConnected()) {
+    // Already connected
+    return VSCP_ERROR_SUCCESS;
   }
-
-  for (struct ifaddrs *ifa = ifaddrs; ifa != NULL; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr != NULL) {
-      // Check if it's an IPv4 address
-      if (ifa->ifa_addr->sa_family == AF_INET) {
-        // Get the address name
-        char *interfaceName = ifa->ifa_name;
-        // Get the IPv4 address
-        struct sockaddr_in *addr = (struct sockaddr_in *) ifa->ifa_addr;
-        char ip_address[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &(addr->sin_addr), ip_address, INET_ADDRSTRLEN);
-
-        // Print the information
-        printf("Interface: %s\n", interfaceName);
-        printf("IP Address: %s\n", ip_address);
-      }
-    }
-  }
-
-  freeifaddrs(ifaddrs);
-
-#endif
 
   // Create a multicast socket
   if ((m_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -333,13 +327,13 @@ vscpClientMulticast::connect(void)
     interfaceName = ""; // We use all interfaces
   }
   else {
-    // Use the first interface in the list
+    // Use the first element ("interface ip")
     interfaceName = interfaceSplit.front();
 #ifdef WIN32
 #else
     struct ifreq ifr;
     strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ);
-    ioctl(m_sock, SIOCGIFADDR, &ifr);    
+    ioctl(m_sock, SIOCGIFADDR, &ifr);
     inet_ntop(AF_INET, &(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr), interfaceAddress, INET_ADDRSTRLEN);
     printf("IP Address: %s %s\n", interfaceAddress, inet_ntoa(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr));
 #endif
@@ -492,7 +486,7 @@ vscpClientMulticast::send(vscpEvent &ev)
   // Encrypt frame as needed
   if (m_encryptType) {
 
-    uint16_t newlen       = 0;
+    uint16_t newlen             = 0;
     uint8_t encbuf[BUFFER_SIZE] = { 0 };
 
     if (0 == (newlen = vscp_encryptFrame(encbuf, pframe, framelen, m_key, NULL, m_encryptType))) {
@@ -594,7 +588,6 @@ vscpClientMulticast::send(canalMsg &msg)
 int
 vscpClientMulticast::receive(vscpEvent &ev)
 {
-  // int rv;
   vscpEvent *pev = nullptr;
 
   if (m_receiveQueue.size()) {
@@ -694,14 +687,14 @@ vscpClientMulticast::receiveBlocking(vscpEvent &ev, long timeout)
 int
 vscpClientMulticast::receiveBlocking(vscpEventEx &ex, long timeout)
 {
-  // if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
-  //   if (errno == ETIMEDOUT) {
-  //     return VSCP_ERROR_TIMEOUT;
-  //   }
-  //   else {
-  //     return VSCP_ERROR_ERROR;
-  //   }
-  // }
+  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
 
   return receive(ex);
 }
@@ -713,14 +706,14 @@ vscpClientMulticast::receiveBlocking(vscpEventEx &ex, long timeout)
 int
 vscpClientMulticast::receiveBlocking(canalMsg &msg, long timeout)
 {
-  // if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
-  //   if (errno == ETIMEDOUT) {
-  //     return VSCP_ERROR_TIMEOUT;
-  //   }
-  //   else {
-  //     return VSCP_ERROR_ERROR;
-  //   }
-  // }
+  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
 
   return receive(msg);
 }
@@ -730,8 +723,20 @@ vscpClientMulticast::receiveBlocking(canalMsg &msg, long timeout)
 //
 
 int
-vscpClientMulticast::setfilter(vscpEventFilter & /*filter*/)
+vscpClientMulticast::setfilter(vscpEventFilter &filter)
 {
+  // Set filter
+  m_filter.filter_priority = filter.filter_priority;
+  m_filter.mask_priority   = filter.mask_priority;
+  m_filter.filter_class    = filter.filter_class;
+  m_filter.mask_class      = filter.mask_class;
+  m_filter.filter_type     = filter.filter_type;
+  m_filter.mask_type       = filter.mask_type;
+
+  // Copy GUIDs
+  memcpy(m_filter.filter_GUID, filter.filter_GUID, sizeof(m_filter.filter_GUID));
+  memcpy(m_filter.mask_GUID, filter.mask_GUID, sizeof(m_filter.mask_GUID));
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -742,9 +747,14 @@ vscpClientMulticast::setfilter(vscpEventFilter & /*filter*/)
 int
 vscpClientMulticast::getcount(uint16_t *pcount)
 {
-  if (NULL == pcount)
+  if (NULL == pcount) {
     return VSCP_ERROR_INVALID_POINTER;
-  *pcount = 0;
+  }
+
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  *pcount = m_receiveQueue.size();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -755,6 +765,15 @@ vscpClientMulticast::getcount(uint16_t *pcount)
 int
 vscpClientMulticast::clear()
 {
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  while (!m_receiveQueue.empty()) {
+    vscpEvent *pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+    if (NULL != pev) {
+      vscp_deleteEvent_v2(&pev);
+    }
+  }
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -765,14 +784,27 @@ vscpClientMulticast::clear()
 int
 vscpClientMulticast::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
 {
-  if (NULL == pmajor)
+  if (NULL == pmajor) {
     return VSCP_ERROR_INVALID_POINTER;
-  if (NULL == pminor)
+  }
+
+  if (NULL == pminor) {
     return VSCP_ERROR_INVALID_POINTER;
-  if (NULL == prelease)
+  }
+
+  if (NULL == prelease) {
     return VSCP_ERROR_INVALID_POINTER;
-  if (NULL == pbuild)
+  }
+
+  if (NULL == pbuild) {
     return VSCP_ERROR_INVALID_POINTER;
+  }
+
+  *pmajor   = VSCP_MAJOR_MULTICAST_CLIENT_VERSION;
+  *pminor   = VSCP_MINOR_MULTICAST_CLIENT_VERSION;
+  *prelease = VSCP_RELEASE_MULTICAST_CLIENT_VERSION;
+  *pbuild   = VSCP_BUILD_MULTICAST_CLIENT_VERSION;
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -781,8 +813,9 @@ vscpClientMulticast::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prele
 //
 
 int
-vscpClientMulticast::getinterfaces(std::deque<std::string> & /*iflist*/)
+vscpClientMulticast::getinterfaces(std::deque<std::string> &iflist)
 {
+  iflist.clear();
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -791,8 +824,12 @@ vscpClientMulticast::getinterfaces(std::deque<std::string> & /*iflist*/)
 //
 
 int
-vscpClientMulticast::getwcyd(uint64_t & /*wcyd*/)
+vscpClientMulticast::getwcyd(uint64_t &wcyd)
 {
+  // This is not applicable for multicast client
+  wcyd = 0;
+
+  // Return success
   return VSCP_ERROR_SUCCESS;
 }
 

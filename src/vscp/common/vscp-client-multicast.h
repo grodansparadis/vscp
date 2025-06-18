@@ -38,9 +38,13 @@ public:
   vscpClientMulticast();
   virtual ~vscpClientMulticast();
 
+  static const uint8_t VSCP_MAJOR_MULTICAST_CLIENT_VERSION   = 1;
+  static const uint8_t VSCP_MINOR_MULTICAST_CLIENT_VERSION   = 0;
+  static const uint8_t VSCP_RELEASE_MULTICAST_CLIENT_VERSION = 0;
+  static const uint8_t VSCP_BUILD_MULTICAST_CLIENT_VERSION   = 0;
+
   /*!
       Connect to remote host
-      @param bPoll If true polling is used.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int connect(void);
@@ -217,8 +221,7 @@ public:
   */
   uint8_t m_key[32]; // AES-(128/192/256) key
 
-  // Event lists
-  // std::list<vscpEvent *> m_sendQueue;
+  // Queue for received events
   std::list<vscpEvent *> m_receiveQueue;
 
   /// Mutex to protect communication socket
