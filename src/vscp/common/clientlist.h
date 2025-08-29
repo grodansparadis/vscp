@@ -65,8 +65,9 @@ enum {
 // Description of each interface type (for web interface etc)
 // const char **interface_description;
 
-// Both the UDP send and receive id clients use this is. This way
-// received UDP events will not be transmitted on the UDP interface.
+// Both the UDP send and receive id clients use this id. This way
+// received broadcast UDP events will not be transmitted on the
+// UDP interface.
 #define CLIENT_ITEM_SPECIAL_ID_UDP 0xffffffff
 
 /*!
@@ -89,7 +90,7 @@ public:
       Set device name
       @param name Name to set
   */
-  void setDeviceName(const std::string& name);
+  void setDeviceName(const std::string &name);
 
   /*!
       Get device name
@@ -99,7 +100,7 @@ public:
   /*!
       Get input que list
   */
-  std::deque<vscpEvent*> getInputQue(void) { return m_clientInputQueue; };
+  std::deque<vscpEvent *> getInputQue(void) { return m_clientInputQueue; };
 
   /*!
       Check if the command line start with the command
@@ -108,7 +109,7 @@ public:
       @param bFix The command string have the command removed.
       @return true if command is found
    */
-  bool CommandStartsWith(const std::string& cmd, bool bFix = true);
+  bool CommandStartsWith(const std::string &cmd, bool bFix = true);
 
   /*!
       Get client on string form
@@ -118,9 +119,8 @@ public:
   std::string getAsString(void);
 
 public:
-
   // Input Queue (events to this client)
-  std::deque<vscpEvent*> m_clientInputQueue;
+  std::deque<vscpEvent *> m_clientInputQueue;
 
   // Semaphore to signal that an event has been received
   sem_t m_semClientInputQueue;
@@ -128,10 +128,10 @@ public:
   // Mutex handle that is used for sharing of the client object
   pthread_mutex_t m_mutexClientInputQueue;
 
-  /*! 
-    Maximum number of events allowed in input queue. 
+  /*!
+    Maximum number of events allowed in input queue.
     Set to zero for no limit
-  */  
+  */
   uint32_t m_maxItemsInClientInputQueue;
 
   // Client ID for this client item
@@ -211,7 +211,7 @@ public:
   bool bAuthenticated;
 
   // pointer ti the user
-  CUserItem* m_pUserItem;
+  CUserItem *m_pUserItem;
 
   // Read buffer
   std::string m_readBuffer;
@@ -243,7 +243,7 @@ public:
       pid Pointer to uint16_t that return free id.
       @return True if id could be found
   */
-  bool findFreeId(uint16_t* pid);
+  bool findFreeId(uint16_t *pid);
 
   /*!
       Add a client to the list
@@ -251,7 +251,7 @@ public:
       @param id Normally not used but can be used to set a specific id
       @return true om success.
   */
-  bool addClient(CClientItem* pClientItem, uint32_t id = 0);
+  bool addClient(CClientItem *pClientItem, uint32_t id = 0);
 
   /*!
       Add a client to the list using set GUID
@@ -260,14 +260,14 @@ public:
       significant bytes will be set to zero.
       @return true om success.
   */
-  bool addClient(CClientItem* pClientItem, cguid& guid);
+  bool addClient(CClientItem *pClientItem, cguid &guid);
 
   /*!
       Remove a client from the list
       @param pClientItem Pointer to client item
       @return true on success
   */
-  bool removeClient(CClientItem* pClientItem);
+  bool removeClient(CClientItem *pClientItem);
 
   /*!
       Remove all clinets
@@ -280,21 +280,21 @@ public:
       @param id Numeric id for the client
       @return A pointer to a clientitem on success or NULL on failure.
   */
-  CClientItem* getClientFromId(uint16_t id);
+  CClientItem *getClientFromId(uint16_t id);
 
   /*!
       Get client form ordinal
       @param id Numeric ordinal for the client
       @return A pointer to a clientitem on success or NULL on failure.
   */
-  CClientItem* getClientFromOrdinal(uint16_t ordinal);
+  CClientItem *getClientFromOrdinal(uint16_t ordinal);
 
   /*!
       Get Client from GUID
       @param guid Guid for the client
       @return A pointer to a cientitem on success or NULL on failure.
   */
-  CClientItem* getClientFromGUID(cguid& guid);
+  CClientItem *getClientFromGUID(cguid &guid);
 
   /*!
       Get current number of clients
@@ -315,15 +315,15 @@ public:
       @param client [out] Client data on string form
       @return true on success
   */
-  bool getClient(uint16_t n, std::string& client);
+  bool getClient(uint16_t n, std::string &client);
 
   /*!
     Send event to client
-    @param pClientItem Pointer to clientitem that should receive event.    
+    @param pClientItem Pointer to clientitem that should receive event.
     @param pEvent Event that should be sent.
     @return True on success, false on failure.
   */
-  bool sendEventToClient(CClientItem* pClientItem, const vscpEvent* pEvent);
+  bool sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent);
 
   /*!
     Send event to all clients
@@ -331,12 +331,12 @@ public:
     @param excludeID Event with this obid will be excluded. Set to zero
         if all events should be sent.
     @return true on success, false on failure
-  */  
-  bool sendEventAllClients(const vscpEvent* pEvent, uint32_t excludeID = 0);
+  */
+  bool sendEventAllClients(const vscpEvent *pEvent, uint32_t excludeID = 0);
 
 public:
   // List with clients
-  std::deque<CClientItem*> m_itemList;
+  std::deque<CClientItem *> m_itemList;
 
   // Mutex that protect the list
   pthread_mutex_t m_mutexItemList;

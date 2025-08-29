@@ -110,8 +110,8 @@ CClientItem::CClientItem()
   m_statistics.cntReceiveData    = 0; // # of received data bytes
   m_statistics.cntTransmitData   = 0; // # of transmitted data bytes
   m_statistics.cntOverruns       = 0; // # of overruns
-  m_statistics.cntBusWarnings    = 0; // # of bus warnings
-  m_statistics.cntBusOff         = 0; // # of bus off's
+  m_statistics.cntBusWarnings    = 0; // # of bus warnings (CAN)
+  m_statistics.cntBusOff         = 0; // # of bus off's (CAN)
 
   m_status.channel_status   = 0;
   m_status.lasterrorcode    = 0;
@@ -132,6 +132,7 @@ CClientItem::CClientItem()
 
 CClientItem::~CClientItem()
 {
+  // Clear the input queue
   std::deque<vscpEvent *>::iterator iter;
   for (iter = m_clientInputQueue.begin(); iter != m_clientInputQueue.end(); ++iter) {
     vscpEvent *pEvent = *iter;
@@ -215,7 +216,7 @@ CClientItem::getAsString(void)
 // Type of compare function for list sort operation (as in 'qsort')
 //
 
-bool
+static bool
 compareClientItems(const uint16_t element1, const uint16_t element2)
 {
   return (element1 < element2);
@@ -363,7 +364,6 @@ CClientList::removeClient(CClientItem *pClientItem)
 
   std::deque<vscpEvent *>::iterator iter;
   for (iter = pClientItem->m_clientInputQueue.begin(); iter != pClientItem->m_clientInputQueue.end(); ++iter) {
-
     vscpEvent *pEvent = *iter;
     vscp_deleteEvent_v2(&pEvent);
   }

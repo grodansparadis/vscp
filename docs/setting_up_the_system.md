@@ -80,7 +80,7 @@ Prepare the build environment with
 ```bash
 sudo apt update
 sudo apt install build-essential cmake
-sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev
+sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev libwebsockets-dev
 ```    
 to install the build tools and required libraries. 
 
