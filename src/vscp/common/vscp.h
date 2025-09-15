@@ -66,7 +66,7 @@ typedef struct _vscpEvent {
 
   uint32_t obid; /* Used by driver for channel info etc. */
 
-  /* Time block - Always UTC time */
+  /* Time block - Always UTC time. I all zero set current time on receiving end */
   uint16_t year;
   uint8_t month;  /* 1-12 */
   uint8_t day;    /* 1-31 */
@@ -76,6 +76,7 @@ typedef struct _vscpEvent {
 
   uint32_t timestamp; /* Relative time stamp for package in microseconds */
                       /* ~71 minutes before roll over */
+                      /* If all zero set relative time on receiving end */
 
   /* ----- CRC should be calculated from here to end + data block ----  */
 

@@ -1,52 +1,35 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
-  "C"
-  "CXX"
-  )
-# The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_C
-  "/home/akhe/development/VSCP/vscp/src/common/crc.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/crc8.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/fastpbkdf2.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/third_party/civetweb-1.13/src/civetweb.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp_aes.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o"
-  "/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o"
-  )
-set(CMAKE_C_COMPILER_ID "GNU")
-
-# The include file search paths:
-set(CMAKE_C_TARGET_INCLUDE_PATH
-  "."
-  "../"
-  "../../../src/vscp/common"
-  "../../../src/common"
-  "../../../src/common/third_party/civetweb-1.13/include"
-  "../../../src/common/third_party/nlohmann"
-  )
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o"
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_base.cpp.o"
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp_client_ws1.cpp.o"
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o"
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o"
-  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o"
-  "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp" "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/build/CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o"
-  )
-set(CMAKE_CXX_COMPILER_ID "GNU")
-
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "."
-  "../"
-  "../../../src/vscp/common"
-  "../../../src/common"
-  "../../../src/common/third_party/civetweb-1.13/include"
-  "../../../src/common/third_party/nlohmann"
   )
 
-# Targets to which this target links.
-set(CMAKE_TARGET_LINKED_INFO_FILES
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/akhe/development/VSCP/vscp/src/common/crc.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc.c.o.d"
+  "/home/akhe/development/VSCP/vscp/src/common/crc8.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/crc8.c.o.d"
+  "/home/akhe/development/VSCP/vscp/src/common/vscp-aes.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp-aes.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscp-aes.c.o.d"
+  "/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpbase64.c.o.d"
+  "/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c.o.d"
+  "/home/akhe/development/VSCP/vscp/third_party/fastpbkdf2/fastpbkdf2.c" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/third_party/fastpbkdf2/fastpbkdf2.c.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/third_party/fastpbkdf2/fastpbkdf2.c.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/guid.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-base.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-base.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-base.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-ws1.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-ws1.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-ws1.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpcanaldeviceif.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscpdatetime.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o" "gcc" "CMakeFiles/test.dir/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp.o.d"
+  "/home/akhe/development/VSCP/vscp/tests/vscp-client-ws1/test-vscp-client-ws1.cpp" "CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o" "gcc" "CMakeFiles/test.dir/test-vscp-client-ws1.cpp.o.d"
+  "" "test" "gcc" "CMakeFiles/test.dir/link.d"
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_FORWARD_LINKED_INFO_FILES
   )
 
 # Fortran module output directory.

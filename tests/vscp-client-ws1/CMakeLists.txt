@@ -41,10 +41,10 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscphelper.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpcanaldeviceif.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscpcanaldeviceif.cpp
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.h
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_base.cpp
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws1.h
-    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_ws1.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp-client-base.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp-client-base.cpp
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp-client-ws1.h
+    ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp-client-ws1.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c
@@ -56,18 +56,18 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/common/crc8.c
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp-aes.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscp-aes.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/fastpbkdf2.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include/civetweb.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/src/civetweb.c
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../third_party/fastpbkdf2/fastpbkdf2.h
+    ${PROJECT_SOURCE_DIR}/../../third_party/fastpbkdf2/fastpbkdf2.c
+#    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include/civetweb.h
+#    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/src/civetweb.c
+    ${PROJECT_SOURCE_DIR}/../../third_party/nlohmann/include/nlohmann/json.hpp
     )
 
 target_include_directories(test PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include
-    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/
+#    ${PROJECT_SOURCE_DIR}/../../src/common/third_party/civetweb-1.13/include
+    ${PROJECT_SOURCE_DIR}/../../third_party/nlohmann/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}
