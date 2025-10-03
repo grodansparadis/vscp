@@ -4441,7 +4441,7 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertEventToJSON(std::string &strJSON, vscpEvent *pEvent)
+vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent)
 {
   std::string strguid;
   std::string strdata;
@@ -4601,7 +4601,7 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
 //
 
 bool
-vscp_convertEventExToJSON(std::string &strJSON, vscpEventEx *pEventEx)
+vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx)
 {
   std::string strguid;
   std::string strdata;

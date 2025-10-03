@@ -1611,13 +1611,13 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx);
  * Convert VSCP Event to JSON formated string
  */
 bool
-vscp_convertEventToJSON(std::string &strJSON, vscpEvent *pEvent);
+vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent);
 
 /*!
  * Convert VSCP EventEx to JSON formated string
  */
 bool
-vscp_convertEventExToJSON(std::string &strJSON, vscpEventEx *pEventEx);
+vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx);
 
 /*!
  * Convert JSON string to event
