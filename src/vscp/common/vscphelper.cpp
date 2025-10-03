@@ -293,6 +293,27 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_sem_post
+//
+
+#ifdef WIN32
+int vscp_sem_post(HANDLE *phHandle)
+{
+  ReleaseSemaphore(*phHandle,  // handle to semaphore
+                    1,         // increase count by one
+                    NULL);
+  return 0;
+}
+#else
+int vscp_sem_post(sem_t *sem)
+{
+  sem_post(sem);
+  return 0;
+}
+#endif
+
+
 #ifdef WIN32
 static void
 vscp_usleep(__int64 usec)

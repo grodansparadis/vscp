@@ -439,6 +439,7 @@ deviceThread(void *pData)
         canalMsg msg;
         vscpEvent ev;
 
+        // Get an CANAL event - blocking
         if (CANAL_ERROR_SUCCESS == pDeviceItem->m_proc_CanalBlockingReceive(pDeviceItem->m_openHandle, &msg, 50)) {
 
           // Publish to MQTT broker
@@ -450,7 +451,7 @@ deviceThread(void *pData)
 
           // Convert CANAL message to VSCP event
           if (!vscp_convertCanalToEvent(&ev, &msg, (unsigned char *) pDeviceItem->m_guid.getGUID())) {
-            spdlog::error("Driver L1: {} Failed to convet CANAL to event.", pDeviceItem->m_strName);
+            spdlog::error("Driver L1: {} Failed to convert CANAL to event.", pDeviceItem->m_strName);
             break;
           }
           ev.obid     = 0;
@@ -488,7 +489,7 @@ deviceThread(void *pData)
             continue;
           }
         }
-      }
+      } // while
 
       // Signal worker threads to quit
       pDeviceItem->m_bQuit = true;

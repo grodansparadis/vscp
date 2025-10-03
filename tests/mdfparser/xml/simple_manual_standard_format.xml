@@ -55,7 +55,7 @@
 
       <firmware target="pic18f2580"
                 targetcode="11"
-                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" 
+                path="https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.6/paris_relay_pic18f2580_1_1_6_relocated.hex" 
                 format="intelhex8" 
                 date="2020-05-15" 
                 size="8192"
@@ -69,7 +69,7 @@
 
       <firmware target="pic18f26K80" 
                 targetcode="22"
-                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/paris_relay_pic18f26k80_1_1_6_relocated.hex" 
+                path="https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.6/paris_relay_pic18f26k80_1_1_6_relocated.hex" 
                 format="intelhex8" 
                 date="2020-05-15" 
                 size="8192"
@@ -82,7 +82,7 @@
 
       <firmware target="pic18f2580" 
                 targetcode="33"
-                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.2/paris_relay_1_1_2.hex" 
+                path="https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.2/paris_relay_1_1_2.hex" 
                 format="intelhex8" 
                 date="2015-11-12" 
                 size="8192"
@@ -95,7 +95,7 @@
 
       <firmware target="esp32c3" 
                 targetcode="44"
-                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" 
+                path="https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" 
                 format="intelhex16" 
                 date="2021-11-02" 
                 version_major="99" 
@@ -108,7 +108,7 @@
 
       <firmware target="pic18f2580" 
                 targetcode="55"
-                path="https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.0/paris_relay_1_1_0.hex" 
+                path="https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.0/paris_relay_1_1_0.hex" 
                 format="intelhex8" 
                 date="2015-03-20" 
                 size="8192"

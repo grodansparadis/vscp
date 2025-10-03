@@ -3,7 +3,9 @@
     "ignorePaths": [],
     "dictionaryDefinitions": [],
     "dictionaries": [],
-    "words": [],
+    "words": [
+        "Hedman"
+    ],
     "ignoreWords": [],
     "import": []
 }

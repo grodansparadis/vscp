@@ -293,7 +293,7 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
   pFirmware = mdf.getFirmwareObj();
   ASSERT_EQ(pFirmware->getName(), "firmware1");
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.6/"
               "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
   ASSERT_TRUE(11 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
@@ -312,7 +312,7 @@ TEST(parseMDF, Simple_Firmware_Standard_Format)
   pFirmware = mdf.getFirmwareObj(3);
   ASSERT_EQ(pFirmware->getName(), "firmware4");
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
               pFirmware->getUrl());
   ASSERT_TRUE(44 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex16" == pFirmware->getFormat());
@@ -353,7 +353,7 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
   pFirmware = mdf.getFirmwareObj(0);
   ASSERT_EQ(pFirmware->getName(), "firmware1");
   ASSERT_TRUE("pic18f2580" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.6/"
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.6/"
               "paris_relay_pic18f2580_1_1_6_relocated.hex" == pFirmware->getUrl());
   ASSERT_TRUE(11 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex8" == pFirmware->getFormat());
@@ -372,7 +372,7 @@ TEST(parseMDF, Simple_Firmware_Old_Format)
   pFirmware = mdf.getFirmwareObj(3);
   ASSERT_EQ(pFirmware->getName(), "firmware4");
   ASSERT_TRUE("esp32c3" == pFirmware->getTarget());
-  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp_paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
+  ASSERT_TRUE("https://github.com/grodansparadis/can4vscp-paris/releases/download/v1.1.1/paris_relay_1_1_1.hex" ==
               pFirmware->getUrl());
   ASSERT_TRUE(44 == pFirmware->getTargetCode());
   ASSERT_TRUE("intelhex16" == pFirmware->getFormat());

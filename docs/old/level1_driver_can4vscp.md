@@ -6,7 +6,7 @@
 
 **Driver for Linux** vscpl1_can4vscpdrv.so (*/usr/local/lib/vscpl1_can4vscpdrv.so*) When using the drive on Linux remember to set rw permissions for the user that the VSCP daemon and VSCP works run under (*chmod a+rw /dev/ttyUSB0* for example).
 
-This is a driver for the low cost **Frankfurt RS-232 module** that us the [VSCP serial protocol](http://docs.vscp.org/spec/latest/#/./vscp_over_a_serial_channel_rs-232). The Frankfurt RS-232 module is described [here](https://www.vscp.org/can4vscp_rs232/can4vscp_rs232.html) where there also is a description of how to use it with VSCP Works and the VSCP daemon.
+This is a driver for the low cost **Frankfurt RS-232 module** that us the [VSCP serial protocol](http://docs.vscp.org/spec/latest/#/./vscp_over_a_serial_channel_rs-232). The Frankfurt RS-232 module is described [here](https://www.vscp.org/can4vscp-rs232/can4vscp-rs232.html) where there also is a description of how to use it with VSCP Works and the VSCP daemon.
 
 As the VSCP serial protocol is very generic this may also be the driver to use for your own hardware that have a serial port available.
 

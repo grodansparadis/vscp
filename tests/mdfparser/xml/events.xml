@@ -51,7 +51,7 @@
     <files>
     
     <firmware target="pic18f2558"
-    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.04/Vilnius_pic18f2580_1_0_4_relocated.hex" 
+    	path="https://github.com/grodansparadis/can4vscp-vilnius/releases/download/v1.04/Vilnius_pic18f2580_1_0_4_relocated.hex" 
         format="intelhex8"
         date="2020-05-15"
         version_major="1"
@@ -63,7 +63,7 @@
     </firmware>
     
     <firmware target="pic18f26k58"
-    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.3/Vilnius_2580_1_0_3.hex" 
+    	path="https://github.com/grodansparadis/can4vscp-vilnius/releases/download/v1.0.3/Vilnius_2580_1_0_3.hex" 
         format="intelhex8"
         date="2016-03-23"
         version_major="1"
@@ -75,7 +75,7 @@
     </firmware>
     
     <firmware target="pic18f2558"
-    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
+    	path="https://github.com/grodansparadis/can4vscp-vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
         format="intelhex8"
         date="2015-07-07"
         version_major="1"
@@ -87,7 +87,7 @@
     </firmware>
     
     <firmware target="pic18f2558"
-    	path="https://github.com/grodansparadis/can4vscp_vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
+    	path="https://github.com/grodansparadis/can4vscp-vilnius/releases/download/v1.0.0/Vilnius_1.0.0.hex" 
         format="intelhex8"
         date="2015-07-07"
         version_major="1"

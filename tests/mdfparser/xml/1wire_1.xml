@@ -56,7 +56,7 @@
     <files>
     
     <firmware target="pic18f2580"
-        path="https://github.com/grodansparadis/can4vscp_kelvin_1wire/releases/download/v1.0.0/Kelvin_1wire_pic2580_1_0_0_relocated.hex" 
+        path="https://github.com/grodansparadis/can4vscp-kelvin_1wire/releases/download/v1.0.0/Kelvin_1wire_pic2580_1_0_0_relocated.hex" 
         format="intelhex8"
         size="32000"
         date="2020-05-15"
@@ -69,7 +69,7 @@
     </firmware>
     
     <firmware target="pic18f26k80"
-        path="https://github.com/grodansparadis/can4vscp_kelvin_1wire/releases/download/v1.0.0/kelvin_1wire_pic18f26k80_1_0_0_relocated.hex" 
+        path="https://github.com/grodansparadis/can4vscp-kelvin_1wire/releases/download/v1.0.0/kelvin_1wire_pic18f26k80_1_0_0_relocated.hex" 
         format="intelhex8"
         size="32000"
         date="2020-05-15"
