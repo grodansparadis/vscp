@@ -389,11 +389,9 @@ else()
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
-                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
-                            ${LOCAL_WIN_INCLUDE}
-                            ${LIBWEBSOCKETS_INCLUDE_DIR} )
+                            ${LOCAL_WIN_INCLUDE} )
  endif()   
 
 if(MSVC)
@@ -404,7 +402,6 @@ if(MSVC)
         OpenSSL::Crypto
         OpenSSL::SSL OpenSSL::Crypto
         ${MOSQUITTO_LIBRARIES}
-        ${LIBWEBSOCKETS_LIBRARIES}
         expat::expat
         dlfcn-win32::dl
 #        spdlog::spdlog spdlog::spdlog_header_only
@@ -418,7 +415,6 @@ else()
         OpenSSL::SSL 
         OpenSSL::Crypto
         ${OPENSSL_LIBRARIES}
-        ${LIBWEBSOCKETS_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${EXPAT_LIBRARIES}
     )
