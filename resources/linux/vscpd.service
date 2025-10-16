@@ -9,7 +9,11 @@ Type=notify
 NotifyAccess=main
 ExecStart=/usr/sbin/vscpd -s -c /etc/vscp/vscpd.json
 ExecReload=/bin/kill -HUP $MAINPID
+# Auto restart on crash
 Restart=on-failure
+RestartSec=20
+# Tag things in the log
+SysLogIdentifier=vscpd
 User=vscp
 Group=vscp
 
