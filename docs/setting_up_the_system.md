@@ -80,9 +80,9 @@ Prepare the build environment with
 ```bash
 sudo apt update
 sudo apt install build-essential cmake
-sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev libwebsockets-dev
+sudo apt install git libssl-dev libsystemd-dev libexpat-dev libwrap0-dev libz-dev libmosquitto-dev 
 ```    
-to install the build tools and required libraries. 
+to install the build tools and required libraries. `libwebsockets-dev` is needed on older versions of vscp.
 
 #### Step 2
 
