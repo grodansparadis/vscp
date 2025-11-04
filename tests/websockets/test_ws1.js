@@ -3,7 +3,7 @@
   send 0,30,5,,,0,-,15,14,13,12,11,10,9,8,7,6,5,4,3,2,0,0,1,35
   Code from: https://github.com/websockets/ws
 
-  Copyright 2020 Ake Hedman, the VSCP project - MIT license
+  Copyright 2020-2025 Ake Hedman, the VSCP project - MIT license
 */
 
 WebSocket = require('ws');
@@ -21,7 +21,7 @@ ws.on('open', function open() {
   ws.send(cmdauth);
 
 
-  var cmdnoop = "C;AUTH";
+  var cmdnoop = "C;NOOP";
 
   console.log("\n* * * Sending NOOP command.");
   console.log(cmdnoop);

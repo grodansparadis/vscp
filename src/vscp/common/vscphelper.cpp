@@ -7318,7 +7318,7 @@ vscp_decryptFrame(uint8_t *output,
       break;
 
     default:
-      return VSCP_ERROR_PARAMETER;
+      return false;
   }
 
   return true;

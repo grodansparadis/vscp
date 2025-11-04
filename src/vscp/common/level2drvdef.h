@@ -31,7 +31,6 @@
 
 #include "vscp.h"
 
-
 #ifdef WIN32
 
 typedef long ( __stdcall * LPFNDLL_VSCPOPEN ) ( const char *pPathConfig, const unsigned char*pguid );

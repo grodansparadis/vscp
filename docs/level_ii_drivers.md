@@ -92,10 +92,10 @@ Send an event while blocking for 'timeout' milliseconds (forever if timeout=0).
 A valid handle received from a successful call to VSCPOpen.
 
 ### pEvent
-A pointer to a VSCP event as defined in [vscp.h](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp.h).
+A pointer to a VSCP event as defined in [vscp.h](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp.h). The driver copies the event so the caller is free to reuse the memory after the call.
 
 ### timeout
-Time to block in milliseconds if the event canät be sent. If timeout is set to zero it should block for ever.
+Time to block in milliseconds if the event can't be sent. If timeout is set to zero it should block for ever.
 
 ### return
 VSCP_ERROR_SUCCESS if successful otherwise one of the error codes defined in [vscp.h](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp.h)
@@ -115,7 +115,7 @@ Blocking receive of an event. Blocks for 'timeout' milliseconds and forever if t
 A valid handle received from a successful call to VSCPOpen.
 
 ### pEvent
-A pointer to a VSCP event as defined in [vscp.h](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp.h).
+A pointer to a VSCP event as defined in [vscp.h](https://github.com/grodansparadis/vscp/blob/master/src/vscp/common/vscp.h). The receiver is responsible for allocating and freeing the event.
 
 ### timeout
 Time to block in milliseconds if no event is received. If timeout is set to zero it should block for ever.

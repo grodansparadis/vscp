@@ -191,10 +191,6 @@ find_package(Threads REQUIRED)
 # openssl
 find_package(OpenSSL REQUIRED)
 
-# libwebsockets
-#find_package(libwebsockets CONFIG REQUIRED)
-include(FindLibWebSockets)
-
 # Windows Libs
 if (WIN32)
     # pthread
@@ -372,7 +368,6 @@ if (WIN32)
                             ${CMAKE_BINARY_DIR}
                             ${OPENSSL_INCLUDE_DIR}
                             ${MOSQUITTO_INCLUDE_DIRS}
-                            ${LIBWEBSOCKETS_INCLUDE_DIR}
                             ${EXPAT_INCLUDE_DIRS}
                             ${DLFCN_INCLUDES}
                             ${LOCAL_WIN_INCLUDE} )

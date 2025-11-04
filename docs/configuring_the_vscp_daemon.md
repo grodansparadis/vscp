@@ -20,7 +20,7 @@ ps aux | grep vscpd
 
 to see if the VSCP daemon is running or not.
 
-The sample configuration file that is installed holds a lot of information. You can use degaults for most of it. A minimum configuration file looks like this
+The sample configuration file that is installed holds a lot of information. You can use defaults for most of it. A minimum configuration file looks like this
 
 '''json
 {
