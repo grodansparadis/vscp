@@ -300,7 +300,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
   }
   
   return ETIMEDOUT; // Timeout
-#else
+#elif defined(__linux__)
   // Linux version with sem_timedwait
   if (-1 == clock_gettime(CLOCK_REALTIME, &ts)) {
     return -1;
@@ -311,6 +311,25 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
   ts.tv_nsec = ns % 1000000000;
 
   return sem_timedwait(sem, &ts);
+#else
+  // Other Unix systems - use polling approach as fallback
+  uint32_t elapsed = 0;
+  const uint32_t sleep_ms = 1; // Sleep 1ms between attempts
+  
+  while (elapsed < waitms) {
+    if (sem_trywait(sem) == 0) {
+      return 0; // Successfully acquired semaphore
+    }
+    
+    if (errno != EAGAIN) {
+      return -1; // Real error
+    }
+    
+    usleep(sleep_ms * 1000); // Sleep 1ms
+    elapsed += sleep_ms;
+  }
+  
+  return ETIMEDOUT; // Timeout
 #endif
 }
 #endif
