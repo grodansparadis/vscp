@@ -273,35 +273,16 @@ vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
 int
 vscp_sem_wait(sem_t *sem, uint32_t waitms)
 {
-  uint64_t ns;
-  struct timespec ts;
-
   // Wait time must be less than four seconds
   if (waitms >= 4000) {
     return -1;
   }
 
-#ifdef __APPLE__
-  // macOS doesn't have sem_timedwait, so we use sem_trywait with polling
-  uint32_t elapsed = 0;
-  const uint32_t sleep_ms = 1; // Sleep 1ms between attempts
+#if defined(__linux__) && defined(_GNU_SOURCE)
+  // Linux version with sem_timedwait (only on Linux with GNU extensions)
+  uint64_t ns;
+  struct timespec ts;
   
-  while (elapsed < waitms) {
-    if (sem_trywait(sem) == 0) {
-      return 0; // Successfully acquired semaphore
-    }
-    
-    if (errno != EAGAIN) {
-      return -1; // Real error
-    }
-    
-    usleep(sleep_ms * 1000); // Sleep 1ms
-    elapsed += sleep_ms;
-  }
-  
-  return ETIMEDOUT; // Timeout
-#elif defined(__linux__)
-  // Linux version with sem_timedwait
   if (-1 == clock_gettime(CLOCK_REALTIME, &ts)) {
     return -1;
   }
@@ -312,7 +293,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
 
   return sem_timedwait(sem, &ts);
 #else
-  // Other Unix systems - use polling approach as fallback
+  // Portable version using sem_trywait with polling (macOS, BSD, other Unix)
   uint32_t elapsed = 0;
   const uint32_t sleep_ms = 1; // Sleep 1ms between attempts
   
