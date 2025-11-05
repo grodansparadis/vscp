@@ -913,7 +913,33 @@ vscpClientWs1::waitForResponse(uint32_t timeout)
   to.tv_nsec = 0;
   to.tv_sec  = ts + timeout / 1000;
 
+#ifdef __APPLE__
+  // macOS doesn't have sem_timedwait, use polling approach
+  uint32_t elapsed = 0;
+  const uint32_t sleep_ms = 10; // Sleep 10ms between attempts
+  uint32_t timeout_ms = timeout;
+  
+  while (elapsed < timeout_ms) {
+    if (sem_trywait(&m_sem_msg) == 0) {
+      break; // Successfully acquired semaphore
+    }
+    
+    if (errno != EAGAIN) {
+      // Real error, handle it below
+      break;
+    }
+    
+    usleep(sleep_ms * 1000); // Sleep 10ms
+    elapsed += sleep_ms;
+  }
+  
+  // Check if we timed out
+  if (elapsed >= timeout_ms && errno == EAGAIN) {
+    errno = ETIMEDOUT;
+  }
+#else
   if (-1 == sem_timedwait(&m_sem_msg, &to)) {
+#endif
 
     switch (errno) {
 
@@ -930,7 +956,9 @@ vscpClientWs1::waitForResponse(uint32_t timeout)
       default:
         return VSCP_ERROR_TIMEOUT;
     }
+#ifndef __APPLE__
   }
+#endif
 
   return VSCP_ERROR_SUCCESS;
 }
