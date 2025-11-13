@@ -109,8 +109,8 @@ CClientItem::CClientItem()
   m_dtutc = vscpdatetime::UTCNow();
 
 #ifdef WIN32
-  m_semClientInputQueue = CreateSemaphore(NULL, 0, MAX_ITEMS_IN_QUEUE, NULL);
-  m_hEventSend = CreateSemaphore(NULL, 0, MAX_ITEMS_IN_QUEUE, NULL);
+  m_semClientInputQueue = CreateSemaphore(NULL, 0, 100, NULL);
+  m_hEventSend = CreateSemaphore(NULL, 0, 100, NULL);
 #else  
   sem_init(&m_semClientInputQueue, 0, 0);
   sem_init(&m_hEventSend, 0, 0);
