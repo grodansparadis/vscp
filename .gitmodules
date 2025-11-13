@@ -13,9 +13,6 @@
 [submodule "third_party/tiny-aes"]
 	path = third_party/tiny-aes
 	url = https://github.com/kokke/tiny-AES-c.git
-[submodule "third_party/fastpbkdf2"]
-	path = third_party/fastpbkdf2
-	url = https://github.com/ctz/fastpbkdf2.git
 [submodule "third_party/mongoose"]
 	path = third_party/mongoose
 	url = https://github.com/cesanta/mongoose.git

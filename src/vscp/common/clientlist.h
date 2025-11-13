@@ -24,6 +24,20 @@
 #if !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
 #define CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_
 
+// Robust Windows platform detection for GitHub Actions and various build environments
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#ifndef WIN32
+#define WIN32
+#endif
+#ifndef _WIN32
+#define _WIN32
+#endif
+#endif
+
+#ifdef WIN32
+#include "StdAfx.h"
+#endif
+
 #include <list>
 
 #include <guid.h>
@@ -123,7 +137,11 @@ public:
   std::deque<vscpEvent *> m_clientInputQueue;
 
   // Semaphore to signal that an event has been received
+#ifdef WIN32
+  HANDLE m_semClientInputQueue;
+#else  
   sem_t m_semClientInputQueue;
+#endif
 
   // Mutex handle that is used for sharing of the client object
   pthread_mutex_t m_mutexClientInputQueue;
@@ -176,7 +194,11 @@ public:
   canalStatistics m_statistics;
 
   // Event to indicate that there is an event to send
+#ifdef WIN32
+  HANDLE m_hEventSend;
+#else  
   sem_t m_hEventSend;
+#endif
 
   // Interface type: CANAL, TCP/IP
   uint8_t m_type;

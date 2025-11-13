@@ -30,7 +30,20 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 #ifdef WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+// _WINSOCK_DEPRECATED_NO_WARNINGS is already defined by mongoose.h
+// #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+// #define _WINSOCK_DEPRECATED_NO_WARNINGS
+// #endif
+#include "StdAfx.h"
+#include <pch.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #else
 #include <unistd.h>
 #endif
@@ -95,8 +108,13 @@ CClientItem::CClientItem()
 
   m_dtutc = vscpdatetime::UTCNow();
 
+#ifdef WIN32
+  m_semClientInputQueue = CreateSemaphore(NULL, 0, MAX_ITEMS_IN_QUEUE, NULL);
+  m_hEventSend = CreateSemaphore(NULL, 0, MAX_ITEMS_IN_QUEUE, NULL);
+#else  
   sem_init(&m_semClientInputQueue, 0, 0);
   sem_init(&m_hEventSend, 0, 0);
+#endif  
   pthread_mutex_init(&m_mutexClientInputQueue, NULL);
 
   // Nill GUID
@@ -140,8 +158,14 @@ CClientItem::~CClientItem()
   }
   m_clientInputQueue.clear();
 
+#ifdef WIN32
+  CloseHandle(m_hEventSend);
+  CloseHandle(m_semClientInputQueue);
+#else
   sem_destroy(&m_hEventSend);
   sem_destroy(&m_semClientInputQueue);
+#endif
+  
   pthread_mutex_destroy(&m_mutexClientInputQueue);
 }
 
@@ -557,7 +581,11 @@ CClientList::sendEventToClient(CClientItem *pClientItem, const vscpEvent *pEvent
     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
     pClientItem->m_clientInputQueue.push_back(pnewvscpEvent);
     pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
+#ifdef WIN32
+    ReleaseSemaphore(pClientItem->m_semClientInputQueue, 1, NULL);
+#else
     sem_post(&pClientItem->m_semClientInputQueue);
+#endif
   }
 
   return true;
