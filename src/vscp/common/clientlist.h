@@ -40,6 +40,8 @@
 
 #include <list>
 
+#include <pthread.h>
+
 #include <guid.h>
 #include <userlist.h>
 #include <vscp.h>
