@@ -31,7 +31,20 @@
 #endif
 
 #ifdef WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+// _WINSOCK_DEPRECATED_NO_WARNINGS is already defined by mongoose.h
+// #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+// #define _WINSOCK_DEPRECATED_NO_WARNINGS
+// #endif
+#include "StdAfx.h"
 #include <pch.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
+#include <unistd.h>
 #endif
 
 #include <deque>
@@ -48,7 +61,6 @@
 
 #include "userlist.h"
 #include <vscp.h>
-// #include <vscp-aes.h>
 #include <vscphelper.h>
 
 #include <nlohmann/json.hpp> // Needs C++11  -std=c++11
