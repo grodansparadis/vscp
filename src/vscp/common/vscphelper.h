@@ -36,7 +36,6 @@
 #if !defined(VSCPHELPER_H__INCLUDED_)
 #define VSCPHELPER_H__INCLUDED_
 
-// #include <config.h> // autoconf
 
 #ifndef WIN32
 #include <byteswap.h>
@@ -44,9 +43,6 @@
 #include <sys/socket.h>
 #include <sys/times.h>
 #include <sys/types.h>
-#else
-// #include <winsock2.h>
-// #include <windows.h>
 #endif
 
 #include <algorithm>
