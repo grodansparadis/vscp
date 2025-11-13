@@ -42,6 +42,7 @@
 #include <sys/types.h>
 
 #ifdef _WIN32
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <io.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
