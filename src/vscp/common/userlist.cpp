@@ -104,6 +104,8 @@ CUserItem::CUserItem(void)
 
   // No user rights
   m_userRights = 0x00000000;
+
+  m_pdata                      = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

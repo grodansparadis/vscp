@@ -105,6 +105,7 @@ CClientItem::CClientItem()
   m_type                       = CLIENT_ITEM_INTERFACE_TYPE_NONE;
   m_bUDPReceiveChannel         = false;
   m_maxItemsInClientInputQueue = 0;
+  m_pdata                      = NULL;
 
   m_dtutc = vscpdatetime::UTCNow();
 

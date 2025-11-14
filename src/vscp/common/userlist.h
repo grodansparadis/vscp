@@ -507,6 +507,18 @@ public:
    */
   bool getAsMap(std::map<std::string, std::string> &mapUser);
 
+  /*!
+      Set pointer to arbitrary user data object
+      @param pdata Pointer to user data object
+  */
+  void setUserDataObject(void *pdata) { m_pdata = pdata; };
+
+  /*!
+      Get pointer to arbitrary user data object
+      @return Pointer to user data object
+  */
+  void *getUserDataObject(void) { return m_pdata; };
+
 protected:
   // System assigned ID for user
   long m_userID;
@@ -553,6 +565,11 @@ protected:
       Filter associated with this user
   */
   vscpEventFilter m_filterVSCP;
+
+  /*!
+      Pointer to arbitrary user data object
+  */ 
+  void *m_pdata; 
 };
 
 // ----------------------------------------------------------------------------
