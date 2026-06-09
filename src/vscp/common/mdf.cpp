@@ -8866,45 +8866,61 @@ CMDF::parseMDF_JSON(const std::string &path)
       // ------------------------------------------------------------------------
 
       bool alarmParsed = false;
+      bool alarmSeen   = false;
+
+      auto parseAlarmEntry = [this](const json &jentry) -> bool {
+        if (jentry.is_array()) {
+          json jalarmwrap;
+          jalarmwrap["bit"] = jentry;
+          return (getBitList(jalarmwrap, m_list_alarm) == VSCP_ERROR_SUCCESS);
+        }
+
+        if (jentry.is_object()) {
+          json jalarmobj = jentry;
+          if (!jalarmobj.contains("bit") && jalarmobj.contains("bits")) {
+            jalarmobj["bit"] = jalarmobj["bits"];
+          }
+          return (getBitList(jalarmobj, m_list_alarm) == VSCP_ERROR_SUCCESS);
+        }
+
+        return false;
+      };
 
       if (j["module"].contains("alarm")) {
-        if (j["module"]["alarm"].is_array()) {
-          json jalarmwrap;
-          jalarmwrap["bit"] = j["module"]["alarm"];
-          if (getBitList(jalarmwrap, m_list_alarm) != VSCP_ERROR_SUCCESS) {
-            spdlog::warn("Parse-JSON: Failed to parse module alarm bits.");
-          }
-          else {
-            alarmParsed = true;
-          }
-        }
-        else if (j["module"]["alarm"].is_object()) {
-          // Accept { "alarm": { "bit": [ ... ] } } variant.
-          json jalarmobj = j["module"]["alarm"];
-          if (getBitList(jalarmobj, m_list_alarm) != VSCP_ERROR_SUCCESS) {
-            spdlog::warn("Parse-JSON: Failed to parse module alarm bit list.");
-          }
-          else {
-            alarmParsed = true;
-          }
+        alarmSeen = true;
+        if (parseAlarmEntry(j["module"]["alarm"])) {
+          alarmParsed = true;
         }
       }
 
-      if (!alarmParsed && j["module"].contains("alarms")) {
-        if (j["module"]["alarms"].is_array()) {
-          json jalarmwrap;
-          jalarmwrap["bit"] = j["module"]["alarms"];
-          if (getBitList(jalarmwrap, m_list_alarm) != VSCP_ERROR_SUCCESS) {
-            spdlog::warn("Parse-JSON: Failed to parse module alarms bits.");
-          }
-          else {
-            alarmParsed = true;
-          }
+      if ((!alarmParsed) && j["module"].contains("alarms")) {
+        alarmSeen = true;
+        if (parseAlarmEntry(j["module"]["alarms"])) {
+          alarmParsed = true;
+        }
+      }
+
+      if ((!alarmParsed) && j.contains("alarm")) {
+        alarmSeen = true;
+        if (parseAlarmEntry(j["alarm"])) {
+          alarmParsed = true;
+        }
+      }
+
+      if ((!alarmParsed) && j.contains("alarms")) {
+        alarmSeen = true;
+        if (parseAlarmEntry(j["alarms"])) {
+          alarmParsed = true;
         }
       }
 
       if (!alarmParsed) {
-        spdlog::warn("Parse-JSON: Failed to read module alarm bits");
+        if (alarmSeen) {
+          spdlog::warn("Parse-JSON: Failed to parse module alarm bits");
+        }
+        else {
+          spdlog::warn("Parse-JSON: Failed to read module alarm bits");
+        }
       }
     }
 
