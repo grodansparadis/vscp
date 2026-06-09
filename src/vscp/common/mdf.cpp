@@ -7456,9 +7456,10 @@ CMDF::parseMDF_JSON(const std::string &path)
 
     // Module infourl - not mandatory
     // Can either be string or object
-    if (j["module"].contains("manufacturer") && j["module"]["manufacturer"].is_object()) {
-
-      json jsub = j["module"]["manufacturer"];
+    {
+      json jsub = (j["module"].contains("manufacturer") && j["module"]["manufacturer"].is_object())
+                    ? j["module"]["manufacturer"]
+                    : json::object();
 
       if (jsub.contains("name") && jsub["name"].is_string()) {
         m_manufacturer.m_strName = jsub["name"];
@@ -8905,9 +8906,6 @@ CMDF::parseMDF_JSON(const std::string &path)
       if (!alarmParsed) {
         spdlog::warn("Parse-JSON: Failed to read module alarm bits");
       }
-    }
-    else {
-      spdlog::warn("Parse-JSON: No manufacturer defined");
     }
 
     ///////////////////////////////////////////////////////////////////////////
