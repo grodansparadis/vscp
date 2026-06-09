@@ -8532,11 +8532,11 @@ CMDF::parseMDF_JSON(const std::string &path)
                 return VSCP_ERROR_PARSING;
               }
 
-              if (jaction.contains("code") && jaction["name"].is_number()) {
+              if (jaction.contains("code") && jaction["code"].is_number()) {
                 paction->m_code = jaction["code"];
                 spdlog::trace("Parse-JSON: DM action code set to {0}.", paction->m_name);
               }
-              else if (jaction.contains("code") && jaction["name"].is_string()) {
+              else if (jaction.contains("code") && jaction["code"].is_string()) {
                 paction->m_code = vscp_readStringValue(jaction["code"]);
                 spdlog::trace("Parse-JSON: DM action code set to {0}.", paction->m_code);
               }
