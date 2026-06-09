@@ -7021,6 +7021,26 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
 int
 CMDF::getDescriptionList(json &j, std::map<std::string, std::string> &map)
 {
+  auto toJsonString = [](const json &value) -> std::string {
+    if (value.is_string()) {
+      return value.get<std::string>();
+    }
+    else if (value.is_number_integer()) {
+      return std::to_string(value.get<int64_t>());
+    }
+    else if (value.is_number_unsigned()) {
+      return std::to_string(value.get<uint64_t>());
+    }
+    else if (value.is_number_float()) {
+      return std::to_string(value.get<double>());
+    }
+    else if (value.is_boolean()) {
+      return value.get<bool>() ? "true" : "false";
+    }
+
+    return value.dump();
+  };
+
   // Register description
   if (j.contains("description")) {
 
@@ -7030,8 +7050,8 @@ CMDF::getDescriptionList(json &j, std::map<std::string, std::string> &map)
     }
     else if (j["description"].is_object()) {
       for (auto &item : j["description"].items()) {
-        map[item.key()] = item.value();
-        spdlog::debug("Parse-JSON: Description: {0} language: '{1}'", (std::string)item.value(), (std::string)item.key());
+        map[item.key()] = toJsonString(item.value());
+        spdlog::debug("Parse-JSON: Description: {0} language: '{1}'", map[item.key()], (std::string)item.key());
       }
     }
     else {
@@ -7052,6 +7072,26 @@ CMDF::getDescriptionList(json &j, std::map<std::string, std::string> &map)
 int
 CMDF::getInfoUrlList(json &j, std::map<std::string, std::string> &map)
 {
+  auto toJsonString = [](const json &value) -> std::string {
+    if (value.is_string()) {
+      return value.get<std::string>();
+    }
+    else if (value.is_number_integer()) {
+      return std::to_string(value.get<int64_t>());
+    }
+    else if (value.is_number_unsigned()) {
+      return std::to_string(value.get<uint64_t>());
+    }
+    else if (value.is_number_float()) {
+      return std::to_string(value.get<double>());
+    }
+    else if (value.is_boolean()) {
+      return value.get<bool>() ? "true" : "false";
+    }
+
+    return value.dump();
+  };
+
   // Info URL
   if (j.contains("infourl")) {
 
@@ -7061,8 +7101,8 @@ CMDF::getInfoUrlList(json &j, std::map<std::string, std::string> &map)
     }
     else if (j["infourl"].is_object()) {
       for (auto &item : j["infourl"].items()) {
-        map[item.key()] = item.value();
-        spdlog::debug("Parse-JSON: InfoURL: {0} language: '{1}'", (std::string)item.value(), (std::string)item.key());
+        map[item.key()] = toJsonString(item.value());
+        spdlog::debug("Parse-JSON: InfoURL: {0} language: '{1}'", map[item.key()], (std::string)item.key());
       }
     }
     else {
@@ -7313,6 +7353,8 @@ CMDF::parseMDF_JSON(const std::string &path)
   }
 
   spdlog::trace("Parse-JSON: <<{}>>", j.dump());
+
+  try {
 
   // REDIRECT  <-----
   if (j.contains("redirect") && j["redirect"].is_string()) {
@@ -9411,8 +9453,20 @@ CMDF::parseMDF_JSON(const std::string &path)
         }
       }
     }
-
   } // Module
+  }
+  catch (const json::exception &ex) {
+    spdlog::error("Parse-JSON: JSON type/parsing error while reading module data: {}", ex.what());
+    return VSCP_ERROR_PARSING;
+  }
+  catch (const std::exception &ex) {
+    spdlog::error("Parse-JSON: Unexpected error while reading module data: {}", ex.what());
+    return VSCP_ERROR_PARSING;
+  }
+  catch (...) {
+    spdlog::error("Parse-JSON: Unknown error while reading module data.");
+    return VSCP_ERROR_PARSING;
+  }
 
   return rv;
 }
