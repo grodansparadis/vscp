@@ -7728,8 +7728,16 @@ CMDF::parseMDF_JSON(const std::string &path)
       //                                Registers
       // ------------------------------------------------------------------------
 
+      const json *pRegisters = nullptr;
       if (j["module"].contains("register") && j["module"]["register"].is_array()) {
-        for (auto &reg : j["module"]["register"].items()) {
+        pRegisters = &j["module"]["register"];
+      }
+      else if (j["module"].contains("registers") && j["module"]["registers"].is_array()) {
+        pRegisters = &j["module"]["registers"];
+      }
+
+      if (nullptr != pRegisters) {
+        for (auto &reg : pRegisters->items()) {
           // std::cout << "key: " << reg.key() << ", value:" << reg.value() << '\n';
           if (reg.value().is_object()) {
 
@@ -8131,8 +8139,16 @@ CMDF::parseMDF_JSON(const std::string &path)
       //                             Remote variable
       //------------------------------------------------------------------------
 
+      const json *pRemoteVars = nullptr;
       if (j["module"].contains("remotevar") && j["module"]["remotevar"].is_array()) {
-        for (auto &rvar : j["module"]["remotevar"].items()) {
+        pRemoteVars = &j["module"]["remotevar"];
+      }
+      else if (j["module"].contains("remotevars") && j["module"]["remotevars"].is_array()) {
+        pRemoteVars = &j["module"]["remotevars"];
+      }
+
+      if (nullptr != pRemoteVars) {
+        for (auto &rvar : pRemoteVars->items()) {
           // std::cout << "key: " << rvar.key() << ", value:" << rvar.value() << '\n';
           spdlog::trace("Parse-JSON: Remote variable key = {0} type = {1}.", (std::string)rvar.key(), rvar.value().dump());
           if (rvar.value().is_object()) {
@@ -9515,30 +9531,44 @@ CMDF::parseMDF(const std::string &path)
   size_t pos;
   std::string str;
 
-  while (std::getline(ifs, str)) {
-    // if (!ifs.gcount()) {
-    //   spdlog::error("Parse-XML: Failed to read file {}", path);
-    //   ifs.close();
-    //   return false;
-    // }
-    vscp_trim(str);
-    if ((pos = str.find('{')) != std::string::npos) {
-      spdlog::info("Parse-XML: MDF file format is JSON");
-      ifs.close();
-      rv = parseMDF_JSON(path);
-      break;
+  try {
+    while (std::getline(ifs, str)) {
+      // if (!ifs.gcount()) {
+      //   spdlog::error("Parse-XML: Failed to read file {}", path);
+      //   ifs.close();
+      //   return false;
+      // }
+      vscp_trim(str);
+      if ((pos = str.find('{')) != std::string::npos) {
+        spdlog::info("Parse-XML: MDF file format is JSON");
+        ifs.close();
+        rv = parseMDF_JSON(path);
+        break;
+      }
+      else if ((pos = str.find('<')) != std::string::npos) {
+        spdlog::info("Parse-XML: MDF file format is XML");
+        rv = parseMDF_XML(ifs);
+        ifs.close();
+        break;
+      }
+      else {
+        rv = VSCP_ERROR_INVALID_SYNTAX;
+        spdlog::error("Parse-XML: MDF file format not supported");
+        break;
+      }
     }
-    else if ((pos = str.find('<')) != std::string::npos) {
-      spdlog::info("Parse-XML: MDF file format is XML");
-      rv = parseMDF_XML(ifs);
-      ifs.close();
-      break;
-    }
-    else {
-      rv = VSCP_ERROR_INVALID_SYNTAX;
-      spdlog::error("Parse-XML: MDF file format not supported");
-      break;
-    }
+  }
+  catch (const json::exception &ex) {
+    spdlog::error("Parse-XML: JSON parsing exception for {}: {}", path, ex.what());
+    rv = VSCP_ERROR_PARSING;
+  }
+  catch (const std::exception &ex) {
+    spdlog::error("Parse-XML: Parsing exception for {}: {}", path, ex.what());
+    rv = VSCP_ERROR_PARSING;
+  }
+  catch (...) {
+    spdlog::error("Parse-XML: Unknown parsing exception for {}", path);
+    rv = VSCP_ERROR_PARSING;
   }
 
   return rv;
