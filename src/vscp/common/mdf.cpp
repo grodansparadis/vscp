@@ -8864,54 +8864,45 @@ CMDF::parseMDF_JSON(const std::string &path)
       //                               Alarm bits
       // ------------------------------------------------------------------------
 
-      if (j["module"].contains("alarms") && j["module"]["alarms"].is_array()) {
-        for (auto &alarm : j["module"]["alarms"].items()) {
-          // std::cout << "key: " << alarm.key() << ", value:" << alarm.value() << '\n';
-          if (alarm.value().is_object()) {
+      bool alarmParsed = false;
 
-            CMDF_Bit *palarm = new CMDF_Bit();
-            if (palarm == nullptr) {
-              spdlog::error("Parse-JSON: Failed to allocate memory for alarm item.");
-              return VSCP_ERROR_PARSING;
-            }
-
-            m_list_alarm.push_back(palarm);
-
-            json jalarm = alarm.value();
-
-            // name
-            if (jalarm.contains("name") && jalarm["name"].is_string()) {
-              palarm->m_name = jalarm["name"];
-              vscp_trim(palarm->m_name);
-              vscp_makeLower(palarm->m_name);
-              spdlog::trace("Parse-JSON: Alarm name set to {0}.", palarm->m_name);
-            }
-
-            // pos
-            if (jalarm.contains("pos") && jalarm["pos"].is_string()) {
-              palarm->m_pos = vscp_readStringValue(jalarm["pos"]);
-              spdlog::trace("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos);
-            }
-            else if (jalarm.contains("pos") && jalarm["pos"].is_number()) {
-              palarm->m_pos = jalarm["pos"];
-              spdlog::trace("Parse-JSON: Alarm pos set to {0}.", palarm->m_pos);
-            }
-            else {
-              palarm->m_pos = 0;
-              spdlog::warn("Parse-JSON: No alarm pos defined (set to 0.");
-            }
-
-            if (getDescriptionList(jalarm, palarm->m_mapDescription) != VSCP_ERROR_SUCCESS) {
-              spdlog::warn("Parse-JSON: Failed to get event data description.");
-            }
-
-            if (getInfoUrlList(jalarm, palarm->m_mapInfoURL) != VSCP_ERROR_SUCCESS) {
-              spdlog::warn("Parse-JSON: Failed to get event data infourl.");
-            }
+      if (j["module"].contains("alarm")) {
+        if (j["module"]["alarm"].is_array()) {
+          json jalarmwrap;
+          jalarmwrap["bit"] = j["module"]["alarm"];
+          if (getBitList(jalarmwrap, m_list_alarm) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to parse module alarm bits.");
+          }
+          else {
+            alarmParsed = true;
+          }
+        }
+        else if (j["module"]["alarm"].is_object()) {
+          // Accept { "alarm": { "bit": [ ... ] } } variant.
+          json jalarmobj = j["module"]["alarm"];
+          if (getBitList(jalarmobj, m_list_alarm) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to parse module alarm bit list.");
+          }
+          else {
+            alarmParsed = true;
           }
         }
       }
-      else {
+
+      if (!alarmParsed && j["module"].contains("alarms")) {
+        if (j["module"]["alarms"].is_array()) {
+          json jalarmwrap;
+          jalarmwrap["bit"] = j["module"]["alarms"];
+          if (getBitList(jalarmwrap, m_list_alarm) != VSCP_ERROR_SUCCESS) {
+            spdlog::warn("Parse-JSON: Failed to parse module alarms bits.");
+          }
+          else {
+            alarmParsed = true;
+          }
+        }
+      }
+
+      if (!alarmParsed) {
         spdlog::warn("Parse-JSON: Failed to read module alarm bits");
       }
     }
