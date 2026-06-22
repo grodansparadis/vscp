@@ -211,7 +211,10 @@ vscpClientTcp::initFromJson(const std::string &config)
       else {
         m_tlsMode = tls_mode::auto_select;
       }
-      bHasTlsMode = true;
+
+      // Keep legacy flag consistent with the selected mode
+      m_bTLS       = (tls_mode::force_tls == m_tlsMode);
+      bHasTlsMode  = true;
     }
 
     if (j.contains("bverifypeer")) {
