@@ -35,6 +35,13 @@
 class vscpClientTcp : public CVscpClient {
 
 public:
+  enum class tls_mode
+  {
+    auto_select = 0, // Select TLS based on endpoint prefix (stcp://)
+    force_tls,       // Always use TLS
+    force_plain      // Never use TLS
+  };
+
   vscpClientTcp();
   virtual ~vscpClientTcp();
 
@@ -204,40 +211,93 @@ public:
   virtual void setResponseTimeout(uint32_t timeout);
   virtual uint32_t getResponseTimeout(void);
 
-  // Init MQTT CaFile
-  void setMqttCaFile(const std::string cafile)
+  void setTLSMode(tls_mode mode)
   {
-    m_bTLS   = true;
-    m_cafile = cafile;
+    m_tlsMode = mode;
+    if (tls_mode::force_tls == m_tlsMode) {
+      m_bTLS = true;
+    }
+    else if (tls_mode::force_plain == m_tlsMode) {
+      m_bTLS = false;
+    }
   };
 
-  // Init MQTT CaPath
-  void setMqttCaPath(const std::string capath)
+  tls_mode getTLSMode(void) const { return m_tlsMode; };
+
+  void enableTLS(bool bEnable = true)
   {
-    m_bTLS   = true;
+    setTLSMode(bEnable ? tls_mode::force_tls : tls_mode::force_plain);
+  };
+
+  void setTLSAutoSelect(void)
+  {
+    m_tlsMode = tls_mode::auto_select;
+    m_bTLS    = false;
+  };
+
+  void setTLSOptions(bool bVerifyPeer,
+                     const std::string &cafile = "",
+                     const std::string &capath = "",
+                     const std::string &certfile = "",
+                     const std::string &keyfile = "",
+                     const std::string &pwKeyfile = "")
+  {
+    m_tlsMode     = tls_mode::force_tls;
+    m_bTLS        = true;
+    m_bVerifyPeer = bVerifyPeer;
+    m_cafile = cafile;
+    m_capath = capath;
+    m_certfile = certfile;
+    m_keyfile = keyfile;
+    m_pwKeyfile = pwKeyfile;
+  };
+
+  // Init TCP CaFile
+  void setTlsCaFile(const std::string &cafile)
+  {
+    m_tlsMode = tls_mode::force_tls;
+    m_bTLS    = true;
+    m_cafile  = cafile;
+  };
+
+  // Init TCP CaPath
+  void setTlsCaPath(const std::string &capath)
+  {
+    m_tlsMode = tls_mode::force_tls;
+    m_bTLS    = true;
     m_capath = capath;
   };
 
-  // Init MQTT CertFile
-  void setMqttCertFile(const std::string certfile)
+  // Init TCP CertFile
+  void setTlsCertFile(const std::string &certfile)
   {
-    m_bTLS     = true;
+    m_tlsMode   = tls_mode::force_tls;
+    m_bTLS      = true;
     m_certfile = certfile;
   };
 
-  // Init MQTT KeyFile
-  void setMqttKeyFile(const std::string keyfile)
+  // Init TCP KeyFile
+  void setTlsKeyFile(const std::string &keyfile)
   {
-    m_bTLS    = true;
+    m_tlsMode  = tls_mode::force_tls;
+    m_bTLS     = true;
     m_keyfile = keyfile;
   };
 
-  // Init MQTT PwKeyFile
-  void setMqttPwKeyFile(const std::string pwkeyfile)
+  // Init TCP PwKeyFile
+  void setTlsPwKeyFile(const std::string &pwkeyfile)
   {
-    m_bTLS      = true;
+    m_tlsMode    = tls_mode::force_tls;
+    m_bTLS       = true;
     m_pwKeyfile = pwkeyfile;
   };
+
+  // Backward-compatible aliases (legacy naming)
+  void setMqttCaFile(const std::string &cafile) { setTlsCaFile(cafile); };
+  void setMqttCaPath(const std::string &capath) { setTlsCaPath(capath); };
+  void setMqttCertFile(const std::string &certfile) { setTlsCertFile(certfile); };
+  void setMqttKeyFile(const std::string &keyfile) { setTlsKeyFile(keyfile); };
+  void setMqttPwKeyFile(const std::string &pwkeyfile) { setTlsPwKeyFile(pwkeyfile); };
 
   // ------------------------------------------------------------------------
   //  Receive worker thread functions
@@ -331,6 +391,9 @@ private:
 
   /// Enable TLS/SSL
   bool m_bTLS;
+
+  /// How TLS should be selected for connections
+  tls_mode m_tlsMode;
 
   /*!
       the server certificate will be verified and the connection

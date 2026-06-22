@@ -31,6 +31,7 @@
 //
 
 #include <list>
+#include <deque>
 #include <string>
 
 #include <arpa/inet.h>
@@ -69,6 +70,22 @@ tcpipListenThread(void* pData);
 void*
 tcpipClientThread(void* pData);
 
+static bool
+tcpipHasSecureEndpoint(const std::string& strListeningPort)
+{
+    std::deque<std::string> endpoints;
+    vscp_split(endpoints, strListeningPort, ",");
+
+    for (auto& endpoint : endpoints) {
+        vscp_trim(endpoint);
+        if (!endpoint.empty() && ('s' == endpoint.back() || 'S' == endpoint.back())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                  GLOBALS
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,6 +113,7 @@ tcpipListenThreadObj::tcpipListenThreadObj(CControlObject* pobj)
 
     m_nStopTcpIpSrv = VSCP_TCPIP_SRV_RUN;
     m_idCounter     = 0;
+    m_bTlsInitialized = false;
 
     pthread_mutex_init(&m_mutexTcpClientList, NULL);
 }
@@ -138,6 +156,13 @@ tcpipListenThread(void* pData)
 
     // * * * Init. secure options * * *
 
+    bool bSecureEndpoints = tcpipHasSecureEndpoint(pListenObj->m_strListeningPort);
+    if (bSecureEndpoints && !pObj->m_tcpip_ssl_certificate.length()) {
+        syslog(LOG_ERR,
+               "[TCP/IP srv thread] Secure listening endpoint configured but no TLS certificate configured.");
+        return NULL;
+    }
+
     // Certificate
     if (pObj->m_tcpip_ssl_certificate.length()) {
         opts.pem = strdup((const char*)pObj->m_tcpip_ssl_certificate.c_str());
@@ -173,12 +198,13 @@ tcpipListenThread(void* pData)
 
     opts.short_trust = pObj->m_tcpip_ssl_short_trust ? 1 : 0;
 
-    // Init. SSL subsystem
-    if (pObj->m_tcpip_ssl_certificate.length()) {
+    // Init. SSL subsystem (only needed when one or more secure sockets are used)
+    if (bSecureEndpoints) {
         if (0 == stcp_init_ssl(pListenObj->m_srvctx.ssl_ctx, &opts)) {
             syslog(LOG_ERR, "[TCP/IP srv thread] Failed to init. ssl.\n");
             return NULL;
         }
+        pListenObj->m_bTlsInitialized = true;
     }
 
     // --------------------------------------------------------------------------------------
@@ -358,8 +384,9 @@ tcpipListenThread(void* pData)
         opts.chipher_list = NULL;
     }
 
-    if (pObj->m_tcpip_ssl_certificate.length()) {
+    if (pListenObj->m_bTlsInitialized) {
         stcp_uninit_ssl();
+        pListenObj->m_bTlsInitialized = false;
     }
 
     syslog(LOG_DEBUG, "[TCP/IP srv listen thread] Exit.");

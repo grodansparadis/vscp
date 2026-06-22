@@ -131,6 +131,13 @@ class VscpRemoteTcpIf;
 class VscpRemoteTcpIf
 {
   public:
+    enum class tls_mode
+    {
+        auto_select = 0, // Select TLS based on endpoint prefix (stcp://)
+        force_tls,       // Always use TLS
+        force_plain      // Never use TLS
+    };
+
     /// Constructor
     VscpRemoteTcpIf();
 
@@ -729,7 +736,30 @@ class VscpRemoteTcpIf
         When set, doCmdOpen will use stcp_connect_remote_secure()
         instead of stcp_connect_remote().
     */
-    void enableTLS(bool bEnable = true) { m_bTLS = bEnable; };
+    void enableTLS(bool bEnable = true)
+    {
+        m_tlsMode = bEnable ? tls_mode::force_tls : tls_mode::force_plain;
+        m_bTLS = bEnable;
+    };
+
+    /*!
+        Set TLS selection mode.
+    */
+    void setTLSMode(tls_mode mode)
+    {
+        m_tlsMode = mode;
+        if (tls_mode::force_tls == m_tlsMode) {
+            m_bTLS = true;
+        }
+        else if (tls_mode::force_plain == m_tlsMode) {
+            m_bTLS = false;
+        }
+    };
+
+    /*!
+        Get current TLS selection mode.
+    */
+    tls_mode getTLSMode(void) const { return m_tlsMode; };
 
     /*!
         Set TLS/SSL options
@@ -747,6 +777,7 @@ class VscpRemoteTcpIf
                        const std::string &keyfile = "",
                        const std::string &pwKeyfile = "")
     {
+        m_tlsMode = tls_mode::force_tls;
         m_bTLS = true;
         m_bVerifyPeer = bVerifyPeer;
         m_cafile = cafile;
@@ -758,6 +789,9 @@ class VscpRemoteTcpIf
 
     /// Enable TLS/SSL
     bool m_bTLS;
+
+    /// How TLS should be selected for connections
+    tls_mode m_tlsMode;
 
     /// Verify peer certificate
     bool m_bVerifyPeer;
