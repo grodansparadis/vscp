@@ -46,7 +46,7 @@
 #ifdef __linux__
 #include <linux/can.h>
 #elif defined(_WIN32)
-#elif __APPLE__
+#elif defined(__APPLE__)
 #endif
 
 #define CAN_MAX_STANDARD_ID 0x7ff
