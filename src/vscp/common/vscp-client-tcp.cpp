@@ -123,8 +123,8 @@ vscpClientTcp::getConfigAsJson(void)
 
   j["btls"]        = (tls_mode::force_tls == m_tlsMode);
   j["tls-mode"]    = (tls_mode::force_tls == m_tlsMode)
-                       ? "force-tls"
-                       : ((tls_mode::force_plain == m_tlsMode) ? "force-plain" : "auto");
+                       ? "tls"
+                       : ((tls_mode::force_plain == m_tlsMode) ? "plain" : "auto");
   j["bverifypeer"] = m_bVerifyPeer;
   j["cafile"]      = m_cafile;
   j["capath"]      = m_capath;
