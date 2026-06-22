@@ -742,6 +742,12 @@ class VscpRemoteTcpIf
         m_bTLS = bEnable;
     };
 
+    void setTLSAutoSelect(void)
+    {
+        m_tlsMode = tls_mode::auto_select;
+        m_bTLS = false;
+    };
+
     /*!
         Set TLS selection mode.
     */
