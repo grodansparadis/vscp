@@ -1,5 +1,5 @@
 // "License": Public Domain
-// I, Mathias Panzenböck, place this file hereby into the public domain. Use it at your own risk for whatever you like.
+// I, Mathias Panzenbï¿½ck, place this file hereby into the public domain. Use it at your own risk for whatever you like.
 // In case there are jurisdictions that don't support putting things in the public domain you can also consider it to
 // be "dual licensed" under the BSD, MIT and Apache licenses, if you want to. This code is trivial anyway. Consider it
 // an example on how to get the endian conversion functions on different platforms.
@@ -61,7 +61,21 @@
 #elif defined(__WINDOWS__)
 
 #	include <winsock2.h>
+#	include <stdint.h>
 #	include <sys/param.h>
+#	ifdef _MSC_VER
+#		include <stdlib.h>
+#	endif
+
+#	if !defined(htonll)
+#		if BYTE_ORDER == LITTLE_ENDIAN
+#			define htonll(x) _byteswap_uint64((uint64_t) (x))
+#			define ntohll(x) _byteswap_uint64((uint64_t) (x))
+#		else
+#			define htonll(x) (x)
+#			define ntohll(x) (x)
+#		endif
+#	endif
 
 #	if BYTE_ORDER == LITTLE_ENDIAN
 
@@ -84,19 +98,26 @@
 
 /* that would be xbox 360 */
 #		define htobe16(x) (x)
-#		define htole16(x) __builtin_bswap16(x)
+#		ifdef _MSC_VER
+#			define htole16(x) _byteswap_ushort((uint16_t) (x))
+#			define le16toh(x) _byteswap_ushort((uint16_t) (x))
+#			define htole32(x) _byteswap_ulong((uint32_t) (x))
+#			define le32toh(x) _byteswap_ulong((uint32_t) (x))
+#			define htole64(x) _byteswap_uint64((uint64_t) (x))
+#			define le64toh(x) _byteswap_uint64((uint64_t) (x))
+#		else
+#			define htole16(x) __builtin_bswap16(x)
+#			define le16toh(x) __builtin_bswap16(x)
+#			define htole32(x) __builtin_bswap32(x)
+#			define le32toh(x) __builtin_bswap32(x)
+#			define htole64(x) __builtin_bswap64(x)
+#			define le64toh(x) __builtin_bswap64(x)
+#		endif
 #		define be16toh(x) (x)
-#		define le16toh(x) __builtin_bswap16(x)
-
 #		define htobe32(x) (x)
-#		define htole32(x) __builtin_bswap32(x)
 #		define be32toh(x) (x)
-#		define le32toh(x) __builtin_bswap32(x)
-
 #		define htobe64(x) (x)
-#		define htole64(x) __builtin_bswap64(x)
 #		define be64toh(x) (x)
-#		define le64toh(x) __builtin_bswap64(x)
 
 #	else
 
