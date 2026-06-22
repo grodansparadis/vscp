@@ -33,6 +33,7 @@ add_subdirectory(vscp-client-base)
 add_subdirectory(vscp-client-canal)
 add_subdirectory(vscp-client-mqtt)
 add_subdirectory(vscp-client-multicast)
+add_subdirectory(vscp-client-tcp)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_subdirectory(vscp-client-socketcan)
 endif()
@@ -54,11 +55,13 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-canal/unittest_vscp_client_canal
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-mqtt/unittest_vscp_client_mqtt
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-multicast/unittest_vscp_client_multicast
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-tcp/unittest_vscp_client_tcp
 )
 set(TEST_DEPENDS
     unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
     unittest_tcpiptls unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
+    unittest_vscp_client_tcp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

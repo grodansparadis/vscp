@@ -58,6 +58,7 @@ vscpClientTcp::vscpClientTcp()
   m_obid     = 0;
 
   m_bTLS        = false;
+  m_tlsMode     = tls_mode::auto_select;
   m_bVerifyPeer = false;
 
   vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
@@ -120,7 +121,10 @@ vscpClientTcp::getConfigAsJson(void)
 
   // TLS
 
-  j["btls"]        = m_bTLS;
+  j["btls"]        = (tls_mode::force_tls == m_tlsMode);
+  j["tls-mode"]    = (tls_mode::force_tls == m_tlsMode)
+                       ? "tls"
+                       : ((tls_mode::force_plain == m_tlsMode) ? "plain" : "auto");
   j["bverifypeer"] = m_bVerifyPeer;
   j["cafile"]      = m_cafile;
   j["capath"]      = m_capath;
@@ -152,6 +156,7 @@ bool
 vscpClientTcp::initFromJson(const std::string &config)
 {
   json j;
+  bool bHasTlsMode = false;
 
   try {
     j = json::parse(config);
@@ -195,6 +200,23 @@ vscpClientTcp::initFromJson(const std::string &config)
       m_bTLS = j["btls"].get<bool>();
     }
 
+    if (j.contains("tls-mode")) {
+      std::string mode = vscp_lower(j["tls-mode"].get<std::string>());
+      if ("force-tls" == mode || "tls" == mode || "on" == mode || "true" == mode) {
+        m_tlsMode = tls_mode::force_tls;
+      }
+      else if ("force-plain" == mode || "plain" == mode || "off" == mode || "false" == mode) {
+        m_tlsMode = tls_mode::force_plain;
+      }
+      else {
+        m_tlsMode = tls_mode::auto_select;
+      }
+
+      // Keep legacy flag consistent with the selected mode
+      m_bTLS       = (tls_mode::force_tls == m_tlsMode);
+      bHasTlsMode  = true;
+    }
+
     if (j.contains("bverifypeer")) {
       m_bVerifyPeer = j["bverifypeer"].get<bool>();
     }
@@ -217,6 +239,10 @@ vscpClientTcp::initFromJson(const std::string &config)
 
     if (j.contains("pwkeyfile")) {
       m_pwKeyfile = j["pwkeyfile"].get<std::string>();
+    }
+
+    if (!bHasTlsMode) {
+      m_tlsMode = m_bTLS ? tls_mode::force_tls : tls_mode::auto_select;
     }
 
     // Filter
@@ -288,12 +314,22 @@ vscpClientTcp::connect(void)
 {
   int rv;
 
-  // Propagate TLS settings to the remote tcp/ip interfaces
-  if (m_bTLS) {
+  // Propagate TLS mode/settings to the remote tcp/ip interfaces
+  if (tls_mode::force_tls == m_tlsMode) {
+    m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::force_tls);
+    m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::force_tls);
     m_tcp.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
                         m_certfile, m_keyfile, m_pwKeyfile);
     m_tcpReceive.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
                                m_certfile, m_keyfile, m_pwKeyfile);
+  }
+  else if (tls_mode::force_plain == m_tlsMode) {
+    m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::force_plain);
+    m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::force_plain);
+  }
+  else {
+    m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
+    m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
   }
 
   if (m_bPolling) {
