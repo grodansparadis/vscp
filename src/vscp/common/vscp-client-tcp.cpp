@@ -336,6 +336,7 @@ vscpClientTcp::connect(void)
     return m_tcp.doCmdOpen(m_strHostname, m_strUsername, m_strPassword);
   }
   else {
+    
     // Open main interface
     if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdOpen(m_strHostname, m_strUsername, m_strPassword))) {
       return rv;
