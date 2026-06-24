@@ -428,6 +428,12 @@ vscpClientTcp::isConnected(void)
 int
 vscpClientTcp::send(vscpEvent &ev)
 {
+  if (m_bPolling) {
+    pthread_mutex_lock(&m_mutexTcpIpObject);
+    int rv = m_tcp.doCmdSend(&ev);
+    pthread_mutex_unlock(&m_mutexTcpIpObject);
+    return rv;
+  }
   return m_tcp.doCmdSend(&ev);
 }
 
@@ -438,6 +444,12 @@ vscpClientTcp::send(vscpEvent &ev)
 int
 vscpClientTcp::send(vscpEventEx &ex)
 {
+  if (m_bPolling) {
+    pthread_mutex_lock(&m_mutexTcpIpObject);
+    int rv = m_tcp.doCmdSendEx(&ex);
+    pthread_mutex_unlock(&m_mutexTcpIpObject);
+    return rv;
+  }
   return m_tcp.doCmdSendEx(&ex);
 }
 
@@ -455,6 +467,12 @@ vscpClientTcp::send(canalMsg &msg)
     return VSCP_ERROR_INVALID_FRAME;
   }
 
+  if (m_bPolling) {
+    pthread_mutex_lock(&m_mutexTcpIpObject);
+    int rv = m_tcp.doCmdSendEx(&ex);
+    pthread_mutex_unlock(&m_mutexTcpIpObject);
+    return rv;
+  }
   return m_tcp.doCmdSendEx(&ex);
 }
 
