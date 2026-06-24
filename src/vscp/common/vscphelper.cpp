@@ -7867,7 +7867,7 @@ vscp_convertEventToString(std::string &str, const vscpEvent *pEvent)
   uint16_t head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with nanosecond timestamp
-  str = vscp_str_format("%hu,%hu,%hu,%lu,%llu,",
+  str = vscp_str_format("%hu,%hu,%hu,%lu,,%llu,",
                         (unsigned short) head,
                         (unsigned short) pEvent->vscp_class,
                         (unsigned short) pEvent->vscp_type,

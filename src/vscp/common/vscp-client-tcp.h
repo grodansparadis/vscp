@@ -58,7 +58,7 @@ public:
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   int init(const std::string &strHostname = "tcp://localhost:9598",
-           const std::string &strUsername = "admin",
+           const std::string &strUsername = "vscp",
            const std::string &strPassword = "secret",
            bool bPolling                  = false);
 

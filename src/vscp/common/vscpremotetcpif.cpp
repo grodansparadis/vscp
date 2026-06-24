@@ -118,7 +118,7 @@ bool
 VscpRemoteTcpIf::checkReturnValue(bool bClear)
 {
   bool rv = false;
-  char buf[0xffff];
+  char buf[0x2000];
 
   if (bClear) {
     doClrInputQueue();
@@ -186,7 +186,7 @@ int
 VscpRemoteTcpIf::rcvloopRead(int timeout)
 {
   // bool rv = false;
-  char buf[0xffff];
+  char buf[8192];
 
   memset(buf, 0, sizeof(buf));
   int nRead = stcp_read(m_conn, buf, sizeof(buf), timeout);
@@ -633,7 +633,7 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
     return VSCP_ERROR_PARAMETER;
   }
 
-  // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
+  // send head,class,type,obid,,timestamp,GUID,data1,data2,data3....
   if (!vscp_convertEventToString(strBuf, pEvent)) {
     return VSCP_ERROR_PARAMETER;
   }

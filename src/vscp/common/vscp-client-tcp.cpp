@@ -37,8 +37,8 @@
 
 #include "vscp-client-tcp.h"
 
-void
-workerThread(vscpClientTcp *pObj);
+void workerThread(vscpClientTcp *pObj);
+void pollWorkerThread(vscpClientTcp *pObj);
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -333,7 +333,14 @@ vscpClientTcp::connect(void)
   }
 
   if (m_bPolling) {
-    return m_tcp.doCmdOpen(m_strHostname, m_strUsername, m_strPassword);
+    // Open the single shared connection
+    if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdOpen(m_strHostname, m_strUsername, m_strPassword))) {
+      return rv;
+    }
+    m_tcp.doCmdGetChannelID(&m_obid);
+    // Start the poll worker thread that drains the connection and fires callbacks
+    m_bRun          = true;
+    m_pworkerthread = new std::thread(pollWorkerThread, this);
   }
   else {
     
@@ -372,6 +379,12 @@ vscpClientTcp::disconnect(void)
   int rv;
 
   if (m_bPolling) {
+    m_bRun = false;
+    if (nullptr != m_pworkerthread) {
+      m_pworkerthread->join();
+      delete m_pworkerthread;
+      m_pworkerthread = nullptr;
+    }
     return m_tcp.doCmdClose();
   }
   else {
@@ -734,5 +747,67 @@ workerThread(vscpClientTcp *pClient)
     }
 
     pthread_mutex_unlock(&pClient->m_mutexTcpIpObject);
-  } // loop
+} // workerThread loop
+}
+
+// ----------------------------------------------------------------------------
+//                             Poll worker thread
+// Used when m_bPolling = true: one connection, non-blocking receive loop.
+// Events are dispatched through sendToCallbacks() so the caller's registered
+// callback receives them exactly as in non-poll mode.
+// ----------------------------------------------------------------------------
+
+void
+pollWorkerThread(vscpClientTcp *pClient)
+{
+  if (nullptr == pClient) {
+    return;
+  }
+
+  while (pClient->m_bRun) {
+
+    vscpEvent ev;
+    ev.sizeData = 0;
+    ev.pdata    = nullptr;
+
+    pthread_mutex_lock(&pClient->m_mutexTcpIpObject);
+    int rv = pClient->receive(ev);
+    pthread_mutex_unlock(&pClient->m_mutexTcpIpObject);
+
+    if (VSCP_ERROR_SUCCESS == rv) {
+
+      if (vscp_doLevel2Filter(&ev, &pClient->m_filterIn)) {
+
+        // Fire registered callbacks
+        pClient->sendToCallbacks(&ev);
+
+        // Also push to receive queue for callers using blocking receive
+        if (!pClient->isCallbackEvActive() && !pClient->isCallbackExActive()) {
+          vscpEvent *pnew = new vscpEvent;
+          pnew->sizeData  = 0;
+          pnew->pdata     = nullptr;
+          vscp_copyEvent(pnew, &ev);
+          pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
+          pClient->m_receiveList.push_back(pnew);
+#ifdef WIN32
+          ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+#else
+          sem_post(&pClient->m_semReceiveQueue);
+#endif
+          pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
+        }
+      }
+
+      vscp_deleteEvent(&ev);
+
+    } else {
+      // No event available — yield before next poll to avoid busy-waiting
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // Stop if connection dropped
+    if (!pClient->isConnected()) {
+      pClient->m_bRun = false;
+    }
+  }
 }
