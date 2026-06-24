@@ -94,7 +94,7 @@
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT 100
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT 10
 
 // Default values for read/write register functions
 // used in device config and scan.
