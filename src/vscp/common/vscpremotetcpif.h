@@ -95,7 +95,7 @@
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    100
 
 
 // Default values for read/write register functions
@@ -183,8 +183,23 @@ class VscpRemoteTcpIf
      */
     void setAfterCommandSleep(uint16_t to)
     {
-        TCPIP_UNUSED(to); // For backward compability
+        TCPIP_UNUSED(to); // For backward compatibility
     }
+
+    /*!
+        Set inner response timeout
+        @param to Timeout value in milliseconds. 0 = return immediately, -1 = use default value (2000 ms) 
+     */
+    void setInnerResponseTimeout(uint32_t to = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT)
+    {
+        m_innerResponseTimeout = to;
+    };
+
+    /*!
+        Get inner response timeout
+        @return Inner response timeout in milliseconds. 0 = return immediately, -1 = use default value (2000 ms)
+    */
+    uint32_t getInnerResponseTimeout(void) { return m_innerResponseTimeout; };
 
     /*!
         Set register read/write timings
@@ -703,7 +718,7 @@ class VscpRemoteTcpIf
     uint8_t m_registerOpMaxRetries;
 
     /*!
-     * The tcp inner timout. Will always wait this amount of time for data
+     * The tcp inner timeout. Will always wait this amount of time for data
      * if set to -1 default value 2000 ms will be used.
      * Min value is 0 == return directly.
      */
