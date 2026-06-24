@@ -342,7 +342,7 @@ vscpClientTcp::connect(void)
     }
 
     // Get channel id
-    // Received canm check obid in received events to see if they
+    // Received can message check obid in received events to see if they
     // are sent from ourself and if so skip them
     m_tcp.doCmdGetChannelID(&m_obid);
 
