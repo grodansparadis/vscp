@@ -177,6 +177,9 @@ class tcpipListenThreadObj
 
     int m_nStopTcpIpSrv;
 
+    // True if SSL context has been initialized for this listen thread
+    bool m_bTlsInitialized;
+
     // Pointer to the mother of all things
     CControlObject* m_pObj;
 };

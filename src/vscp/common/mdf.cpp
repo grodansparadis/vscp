@@ -52,7 +52,9 @@
 #include <string>
 
 #include <expat.h>
+#ifdef VSCP_HAVE_MADDY
 #include <maddy/parser.h> // Markdown -> HTML
+#endif
 #include <mustache.hpp>
 #include <nlohmann/json.hpp> 
 
@@ -9878,9 +9880,18 @@ CMDF::format(std::string &docs)
       docs.replace(idx, 2, "\n");
     } while (true);
 
+#ifdef VSCP_HAVE_MADDY
     std::stringstream markdownInput(docs);
     std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
     docs                                  = parser->Parse(markdownInput);
+#else
+    do {
+      idx = docs.find("\n", idx);
+      if (idx == std::string::npos)
+        break;
+      docs.replace(idx, 1, "<br>");
+    } while (true);
+#endif
   }
   else {
     // HTML

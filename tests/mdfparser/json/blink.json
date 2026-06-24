@@ -1,0 +1,631 @@
+{
+  "module": {
+    "name": "VSCP Blink",
+    "copyright": "Grodans Paradis AB",
+    "level": 0,
+    "model": "A",
+    "version": "0.0.1",
+    "changed": "2026-06-08",
+    "buffersize": 8,
+    "description": {
+      "en": "This is the simplest possible demo of a VSCP node. It can do one thing, light a led, blink a led, turn a led off. The blink frequency can be set.  It has a decsion matrix with some actions like turn on/off led is defined.",
+      "se": "Detta är det enklaste möjliga demo av en VSCP nod. Den kan göra en sak, tända en led, blinka en led, släcka en led. Blinkfrekvensen kan ställas in. Den har en beslutsmatris med några åtgärder som att tända/släcka led definierade.",
+      "no": "Dette er den enkleste mulige demoen av en VSCP-node. Den kan gjøre en ting, lyse en led, blinke en led, slå av en led. Blinkfrekvensen kan settes. Den har en beslutningsmatrise med noen handlinger som å slå på/av led definert.",
+      "dk": "Dette er den enkleste mulige demo af en VSCP-node. Den kan gøre en ting, lyse en led, blinke en led, slukke en led. Blinkfrekvensen kan indstilles. Den har en beslutningsmatrix med nogle handlinger som at tænde/slukke led defineret.",
+      "de": "Dies ist die einfachste mögliche Demo eines VSCP-Knotens. Es kann eine Sache tun, eine LED einschalten, eine LED blinken lassen, eine LED ausschalten. Die Blinkfrequenz kann eingestellt werden. Es hat eine Entscheidungsmatrix mit einigen Aktionen wie Ein-/Ausschalten der LED definiert.",
+      "fr": "Ceci est la démonstration la plus simple d'un nœud VSCP. Il peut faire une chose, allumer une LED, faire clignoter une LED, éteindre une LED. La fréquence de clignotement peut être réglée. Il a une matrice de décision avec certaines actions comme allumer/éteindre la LED définie.",
+      "es": "Esta es la demostración más simple de un nodo VSCP. Puede hacer una cosa, encender un LED, hacer parpadear un LED, apagar un LED. La frecuencia de parpadeo se puede configurar. Tiene una matriz de decisión con algunas acciones como encender/apagar el LED definida.",
+      "it": "Questa è la dimostrazione più semplice di un nodo VSCP. Può fare una cosa, accendere un LED, far lampeggiare un LED, spegnere un LED. La frequenza di lampeggio può essere impostata. Ha una matrice decisionale con alcune azioni come accendere/spegnere il LED definita.",
+      "ru": "Это самая простая демонстрация узла VSCP. Он может делать одну вещь, включать светодиод, заставлять светодиод мигать, выключать светодиод. Частота мигания может быть настроена. У него есть матрица решений с некоторыми действиями, такими как включение/выключение светодиода.",
+      "fi": "Tämä on yksinkertaisin mahdollinen demo VSCP-solmusta. Se voi tehdä yhden asian, sytyttää ledin, saada ledin vilkkumaan, sammuttaa ledin. Vilkkumisnopeus voidaan asettaa. Siinä on päätösmatriisi, jossa on määritetty joitain toimintoja, kuten ledin päälle/pois.",
+      "zh-CN": "这是一个VSCP节点的最简单演示。它可以做一件事，点亮一个LED，让一个LED闪烁，关闭一个LED。闪烁频率可以设置。它有一个决策矩阵，其中定义了一些操作，如打开/关闭LED。",
+      "ja-JP": "これはVSCPノードの最も簡単なデモです。1つのことができます。LEDを点灯させ、LEDを点滅させ、LEDを消灯させることができます。点滅の頻度は設定できます。いくつかのアクションが定義された意思決定マトリックスがあります。",
+      "pt": "Esta é a demonstração mais simples de um nó VSCP. Ele pode fazer uma coisa, acender um LED, fazer um LED piscar, apagar um LED. A frequência de piscar pode ser configurada. Ele tem uma matriz de decisão com algumas ações como ligar/desligar o LED definida.",
+      "ar": "هذه أبسط عرض ممكن لعقدة VSCP. يمكنه القيام بشيء واحد ، وهو إضاءة LED ، وجعل LED يومض ، وإيقاف تشغيل LED. يمكن ضبط تردد الوميض. لديه مصفوفة قرار مع بعض الإجراءات مثل تشغيل / إيقاف تشغيل LED المحددة.",
+      "sk": "Toto je nejjednodušší možná ukázka uzlu VSCP. Může dělat jednu věc, rozsvítit LED, nechat LED blikat, vypnout LED. Frekvence blikání může být nastavena. Má rozhodovací matici s některými akcemi, jako je zapnutí/vypnutí LED definováno.",
+      "hu": "Ez a legegyszerűbb lehetséges bemutató egy VSCP csomópontnak. Egy dolgot tud csinálni, egy LED-et világít, egy LED-et villogtat, egy LED-et kikapcsol. A villogás gyakorisága beállítható. Van egy döntési mátrixa néhány olyan művelettel, mint a LED bekapcsolása/kikapcsolása definiálva.",
+      "kr": "이것은 VSCP 노드의 가장 간단한 데모입니다. 하나의 작업을 수행할 수 있습니다. LED를 켜고, LED를 깜박이고, LED를 끌 수 있습니다. 깜박이는 빈도는 설정할 수 있습니다. LED 켜기/끄기와 같은 몇 가지 작업이 정의된 의사 결정 매트릭스가 있습니다."
+    },
+    "manufacturer": {
+      "name": "Grodans Paradis AB",
+      "address": {
+        "street": "Brattbergavägen 17",
+        "city": "LOS",
+        "town": "LOS",
+        "region": "Hälsingland",
+        "postcode": "82770",
+        "state": "HA",
+        "country": "Sweden"
+      }
+    },
+    "boot": {
+      "algorithm": 0,
+      "blocksize": 0,
+      "blockcount": 0
+    },
+    "files": [
+      {
+        "picture": []
+      },
+      {
+        "video": []
+      },
+      {
+        "manual": []
+      },
+      {
+        "firmware": []
+      },
+      {
+        "driver": []
+      },
+      {
+        "setup": []
+      }
+    ],
+    "registers": [
+      {
+        "name": "Zone",
+        "page": 0,
+        "offset": 0,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Zone for the node. This is a way to distinguish between different nodes.",
+          "se": "Zon för noden. Detta är ett sätt att skilja mellan olika noder.",
+          "no": "Sone for noden. Dette er en måte å skille mellom forskjellige noder.",
+          "dk": "Zone for noden. Dette er en måde at skelne mellem forskellige noder.",
+          "de": "Zone für den Knoten. Dies ist eine Möglichkeit, zwischen verschiedenen Knoten zu unterscheiden.",
+          "fr": "Zone pour le nœud. C'est un moyen de distinguer les différents nœuds.",
+          "es": "Zona para el nodo. Esta es una forma de distinguir entre diferentes nodos.",
+          "it": "Zona per il nodo. Questo è un modo per distinguere tra diversi nodi.",
+          "ru": "Зона для узла. Это способ отличить разные узлы.",
+          "fi": "Alue solmulle. Tämä on tapa erottaa eri solmut toisistaan.",
+          "zh": "节点的区域。这是区分不同节点的一种方式。",
+          "ja": "ノードのゾーン。これは、異なるノードを区別する方法です。",
+          "pt": "Zona para o nó. Esta é uma forma de distinguir entre diferentes nós.",
+          "ar": "المنطقة للعقدة. هذه طريقة لتمييز بين العقد المختلفة.",
+          "sk": "Zóna pro uzel. Toto je způsob, jak rozlišit různé uzly.",
+          "hu": "Zóna a csomópont számára. Ez egy módja annak, hogy megkülönböztesse a különböző csomópontokat.",
+          "kr": "노드의 영역입니다. 이것은 서로 다른 노드를 구별하는 방법입니다."
+        }
+      },
+      {
+        "name": "Subzone",
+        "page": 0,
+        "offset": 1,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Subzone for the node. This is a way to distinguish between different nodes within the same zone.",
+          "se": "Subzon för noden. Detta är ett sätt att skilja mellan olika noder inom samma zon.",
+          "no": "Subzone for noden. Dette er en måte å skille mellom forskjellige noder innenfor samme sone.",
+          "dk": "Subzone for noden. Dette er en måde at skelne mellem forskellige noder inden for samme zone.",
+          "de": "Subzone für den Knoten. Dies ist eine Möglichkeit, zwischen verschiedenen Knoten innerhalb derselben Zone zu unterscheiden.",
+          "fr": "Sous-zone pour le nœud. C'est un moyen de distinguer les différents nœuds au sein de la même zone.",
+          "es": "Subzona para el nodo. Esta es una forma de distinguir entre diferentes nodos dentro de la misma zona.",
+          "it": "Sottozona per il nodo. Questo è un modo per distinguere tra diversi nodi all'interno della stessa zona.",
+          "ru": "Подзона для узла. Это способ отличить разные узлы в одной и той же зоне.",
+          "fi": "Alue solmulle. Tämä on tapa erottaa eri solmut toisistaan samassa alueessa.",
+          "zh": "节点的子区域。这是区分同一区域内不同节点的一种方式。",
+          "ja": "ノードのサブゾーン。これは、同じゾーン内の異なるノードを区別する方法です。",
+          "pt": "Subzona para o nó. Esta é uma forma de distinguir entre diferentes nós dentro da mesma zona.",
+          "ar": "المنطقة الفرعية للعقدة. هذه طريقة لتمييز بين العقد المختلفة داخل نفس المنطقة.",
+          "sk": "Subzóna pro uzel. Toto je způsob, jak rozlišit různé uzly v rámci stejné zóny.",
+          "hu": "Alzóna a csomópont számára. Ez egy módja annak, hogy megkülönböztesse a különböző csomópontokat ugyanazon zónán belül.",
+          "kr": "노드의 하위 영역입니다. 이것은 동일한 영역 내에서 서로 다른 노드를 구별하는 방법입니다."
+        }
+      },
+      {
+        "name": "Status",
+        "page": 0,
+        "offset": 2,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Status of the node. This indicates the current state of the LED, 0=ON, 1=OFF.",
+          "se": "Status för noden. Detta indikerar det aktuella tillståndet för LED, 0=ON, 1=OFF.",
+          "no": "Status for noden. Dette indikerer den nåværende tilstanden til LED, 0=ON, 1=OFF.",
+          "dk": "Status for noden. Dette indikerer den aktuelle tilstand for LED, 0=ON, 1=OFF.",
+          "de": "Status des Knotens. Dies zeigt den aktuellen Zustand der LED an, 0=ON, 1=OFF.",
+          "fr": "Statut du nœud. Cela indique l'état actuel de la LED, 0=ON, 1=OFF.",
+          "es": "Estado del nodo. Esto indica el estado actual del LED, 0=ON, 1=OFF.",
+          "it": "Stato del nodo. Questo indica lo stato attuale del LED, 0=ON, 1=OFF.",
+          "ru": "Статус узла. Это указывает текущее состояние светодиода, 0=ВКЛ, 1=ВЫКЛ.",
+          "fi": "Solmun tila. Tämä osoittaa LEDin nykyisen tilan, 0=ON, 1=OFF.",
+          "zh": "节点的状态。这表示LED的当前状态，0 = ON，1 = OFF。",
+          "ja": "ノードのステータス。これはLEDの現在の状態を示します。0 = ON、1 = OFF。",
+          "pt": "Status do nó. Isso indica o estado atual do LED, 0 = ON, 1 = OFF.",
+          "ar": "حالة العقدة. هذا يشير إلى الحالة الحالية للLED، 0 = ON، 1 = OFF.",
+          "sk": "Stav uzlu. To ukazuje aktuální stav LED, 0 = ON, 1 = OFF.",
+          "hu": "A csomópont állapota. Ez jelzi a LED aktuális állapot"
+        }
+      },
+      {
+        "name": "Control",
+        "page": 0,
+        "offset": 3,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "bit": [
+          {
+            "name": "Enable",
+            "pos": 7,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to enable control of the LED. Clear bit to disable control of the LED.",
+              "se": "Sätt bit för att aktivera kontroll av LED. Rensa bit för att inaktivera kontroll av LED.",
+              "no": "Sett bit for å aktivere kontroll av LED. Rens bit for å deaktivere kontroll av LED.",
+              "dk": "Sæt bit for at aktivere kontrol af LED. Rens bit for at deaktivere kontrol af LED.",
+              "de": "Setzen Sie das Bit, um die Steuerung der LED zu aktivieren. Löschen Sie das Bit, um die Steuerung der LED zu deaktivieren.",
+              "fr": "Définissez le bit pour activer le contrôle de la LED. Effacez le bit pour désactiver le contrôle de la LED.",
+              "es": "Establezca el bit para habilitar el control del LED. Borre el bit para deshabilitar el control del LED.",
+              "it": "Imposta il bit per abilitare il controllo del LED. Cancella il bit per disabilitare il controllo del LED.",
+              "ru": "Установите бит для включения управления светодиодом. Очистите бит для отключения управления светодиодом.",
+              "fi": "Aseta bitti, jotta voit ohjata LEDiä. Tyhjennä bitti, jotta et voi ohjata LEDiä.",
+              "zh": "设置位以启用LED的控制。清除位以禁用LED的控制。",
+              "ja": "LEDの制御を有効にするにはビットを設定します。LEDの制御を無効にするにはビットをクリアします。",
+              "pt": "Defina o bit para habilitar o controle do LED. Limpe o bit para desabilitar o controle do LED.",
+              "ar": "قم بتعيين البت لتمكين التحكم في LED. امسح البت لتعطيل التحكم في LED.",
+              "sk": "Nastavte bit pro povolení ovládání LED. Vymažte bit pro zakázání ovládání LED."
+            }
+          },
+          {
+            "name": "Send ON event",
+            "pos": 5,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to send ON event when LED is turned on.",
+              "se": "Sätt bit för att skicka ON-händelse när LED är på.",
+              "no": "Sett bit for å sende ON-hendelse når LED er på.",
+              "dk": "Sæt bit for at sende ON-begivenhed, når LED er tændt.",
+              "de": "Setzen Sie das Bit, um ein ON-Ereignis zu senden, wenn die LED eingeschaltet wird.",
+              "fr": "Définissez le bit pour envoyer un événement ON lorsque la LED est allumée.",
+              "es": "Establezca el bit para enviar un evento ON cuando el LED esté encendido.",
+              "it": "Imposta il bit per inviare un evento ON quando il LED è acceso.",
+              "ru": "Установите бит для отправки события ON, когда светодиод включается.",
+              "fi": "Aseta bitti lähettämään ON-tapahtuma, kun LED on päällä.",
+              "zh": "设置位以在LED打开时发送ON事件。",
+              "ja": "LEDがオンのときにONイベントを送信するにはビットを設定します。",
+              "pt": "Defina o bit para enviar um evento ON quando o LED estiver ligado.",
+              "ar": "قم بتعيين البت لتمكين إرسال حدث ON عند تشغيل LED.",
+              "sk": "Nastavte bit pro odeslání události ON, když je LED zapnutá."
+            }
+          },
+          {
+            "name": "Send off event",
+            "pos": 5,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to send OFF event when LED is turned off.",
+              "se": "Sätt bit för att skicka OFF-händelse när LED är av.",
+              "no": "Sett bit for å sende OFF-hendelse når LED er av.",
+              "dk": "Sæt bit for at sende OFF-begivenhed, når LED er slukket.",
+              "de": "Setzen Sie das Bit, um ein OFF-Ereignis zu senden, wenn die LED ausgeschaltet wird.",
+              "fr": "Définissez le bit pour envoyer un événement OFF lorsque la LED est éteinte.",
+              "es": "Establezca el bit para enviar un evento OFF cuando el LED esté apagado.",
+              "it": "Imposta il bit per inviare un evento OFF quando il LED è spento.",
+              "ru": "Установите бит для отправки события OFF, когда светодиод выключается.",
+              "fi": "Aseta bitti lähettämään OFF-tapahtuma, kun LED on pois päältä.",
+              "zh": "设置位以在LED关闭时发送OFF事件。",
+              "ja": "LEDがオフのときにOFFイベントを送信するにはビットを設定します。",
+              "pt": "Defina o bit para enviar um evento OFF quando o LED estiver desligado.",
+              "ar": "قم بتعيين البت لتمكين إرسال حدث OFF عند إيقاف تشغيل LED.",
+              "sk": "Nastavte bit pro odeslání události OFF, když je LED vypnutá."
+            }
+          }
+        ]
+      },
+      {
+        "name": "Blink interval MSB",
+        "page": 0,
+        "offset": 4,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0x03",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Most significant byte of the blink interval.",
+          "se": "Most significant byte of the blink interval.",
+          "no": "Most significant byte of the blink interval.",
+          "dk": "Most significant byte of the blink interval.",
+          "de": "Most significant byte of the blink interval.",
+          "fr": "Most significant byte of the blink interval.",
+          "es": "Most significant byte of the blink interval.",
+          "it": "Most significant byte of the blink interval.",
+          "ru": "Most significant byte of the blink interval.",
+          "fi": "Most significant byte of the blink interval.",
+          "zh": "Most significant byte of the blink interval.",
+          "ja": "Most significant byte of the blink interval.",
+          "pt": "Most significant byte of the blink interval.",
+          "ar": "Most significant byte of the blink interval.",
+          "sk": "Most significant byte of the blink interval.",
+          "hu": "Most significant byte of the blink interval.",
+          "kr": "Most significant byte of the blink interval."
+        }
+      },
+      {
+        "name": "Blink interval LSB",
+        "page": 0,
+        "offset": 5,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0xe8",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Least significant byte of the blink interval.",
+          "se": "Least significant byte of the blink interval.",
+          "no": "Least significant byte of the blink interval.",
+          "dk": "Least significant byte of the blink interval.",
+          "de": "Least significant byte of the blink interval.",
+          "fr": "Least significant byte of the blink interval.",
+          "es": "Least significant byte of the blink interval.",
+          "it": "Least significant byte of the blink interval.",
+          "ru": "Least significant byte of the blink interval.",
+          "fi": "Least significant byte of the blink interval.",
+          "zh": "Least significant byte of the blink interval.",
+          "ja": "Least significant byte of the blink interval.",
+          "pt": "Least significant byte of the blink interval.",
+          "ar": "Least significant byte of the blink interval.",
+          "sk": "Least significant byte of the blink interval.",
+          "hu": "Least significant byte of the blink interval.",
+          "kr": "Least significant byte of the blink interval."
+        }
+      },
+      {
+        "name": "Millisecond counter MSB",
+        "page": 0,
+        "offset": 6,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Most significant byte of the millisecond counter."
+        }
+      },
+      {
+        "name": "Millisecond counter",
+        "page": 0,
+        "offset": 7,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Least significant byte of the millisecond counter.",
+          "se": "Least significant byte of the millisecond counter.",
+          "no": "Least significant byte of the millisecond counter.",
+          "dk": "Least significant byte of the millisecond counter.",
+          "de": "Least significant byte of the millisecond counter.",
+          "fr": "Least significant byte of the millisecond counter.",
+          "es": "Least significant byte of the millisecond counter.",
+          "it": "Least significant byte of the millisecond counter.",
+          "ru": "Least significant byte of the millisecond counter.",
+          "fi": "Least significant byte of the millisecond counter.",
+          "zh": "Least significant byte of the millisecond counter.",
+          "ja": "Least significant byte of the millisecond counter.",
+          "pt": "Least significant byte of the millisecond counter.",
+          "ar": "Least significant byte of the millisecond counter.",
+          "sk": "Least significant byte of the millisecond counter.",
+          "hu": "Least significant byte of the millisecond counter.",
+          "kr": "Least significant byte of the millisecond counter."
+        }
+      },
+      {
+        "name": "Millisecond counter MSB",
+        "page": 0,
+        "offset": 8,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Most significant byte of the millisecond counter.",
+          "se": "Most significant byte of the millisecond counter.",
+          "no": "Most significant byte of the millisecond counter.",
+          "dk": "Most significant byte of the millisecond counter.",
+          "de": "Most significant byte of the millisecond counter.",
+          "fr": "Most significant byte of the millisecond counter.",
+          "es": "Most significant byte of the millisecond counter.",
+          "it": "Most significant byte of the millisecond counter.",
+          "ru": "Most significant byte of the millisecond counter.",
+          "fi": "Most significant byte of the millisecond counter.",
+          "zh": "Most significant byte of the millisecond counter.",
+          "ja": "Most significant byte of the millisecond counter.",
+          "pt": "Most significant byte of the millisecond counter.",
+          "ar": "Most significant byte of the millisecond counter.",
+          "sk": "Most significant byte of the millisecond counter.",
+          "hu": "Most significant byte of the millisecond counter.",
+          "kr": "Most significant byte of the millisecond counter."
+        }
+      },
+      {
+        "name": "Millisecond counter LSB",
+        "page": 0,
+        "offset": 9,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Least significant byte of the millisecond counter.",
+          "se": "Least significant byte of the millisecond counter.",
+          "no": "Least significant byte of the millisecond counter.",
+          "dk": "Least significant byte of the millisecond counter.",
+          "de": "Least significant byte of the millisecond counter.",
+          "fr": "Least significant byte of the millisecond counter.",
+          "es": "Least significant byte of the millisecond counter.",
+          "it": "Least significant byte of the millisecond counter.",
+          "ru": "Least significant byte of the millisecond counter.",
+          "fi": "Least significant byte of the millisecond counter.",
+          "zh": "Least significant byte of the millisecond counter.",
+          "ja": "Least significant byte of the millisecond counter.",
+          "pt": "Least significant byte of the millisecond counter.",
+          "ar": "Least significant byte of the millisecond counter.",
+          "sk": "Least significant byte of the millisecond counter.",
+          "hu": "Least significant byte of the millisecond counter.",
+          "kr": "Least significant byte of the millisecond counter."
+        }
+      },
+      {
+        "name": "Decision Matrix",
+        "page": 255,
+        "offset": 0,
+        "span": 24,
+        "width": 8,
+        "access": "rw",
+        "type": "dmatrix1",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Decision matrix. This defines where the decision matrix is stored.",
+          "se": "Decision matrix. This defines where the decision matrix is stored.",
+          "no": "Decision matrix. This defines where the decision matrix is stored.",
+          "dk": "Decision matrix. This defines where the decision matrix is stored.",
+          "de": "Decision matrix. This defines where the decision matrix is stored.",
+          "fr": "Decision matrix. This defines where the decision matrix is stored.",
+          "es": "Decision matrix. This defines where the decision matrix is stored.",
+          "it": "Decision matrix. This defines where the decision matrix is stored.",
+          "ru": "Decision matrix. This defines where the decision matrix is stored.",
+          "fi": "Decision matrix. This defines where the decision matrix is stored.",
+          "zh-CN": "Decision matrix. This defines where the decision matrix is stored.",
+          "ja": "Decision matrix. This defines where the decision matrix is stored.",
+          "pt": "Decision matrix. This defines where the decision matrix is stored.",
+          "ar": "Decision matrix. This defines where the decision matrix is stored.",
+          "sk": "Decision matrix. This defines where the decision matrix is stored.",
+          "hu": "Decision matrix. This defines where the decision matrix is stored.",
+          "kr": "Decision matrix. This defines where the decision matrix is stored."
+        }
+      }
+    ],
+    "remotevars": [
+      {
+        "name": "Blink interval",
+        "type": "uint16_t",
+        "default": 1000,
+        "page": 0,
+        "offset": 4,
+        "access": "rw",
+        "fgcolor": "0x112233",
+        "bgcolor": "0xE0E0FF",
+        "description": {
+          "en": "Interval in milliseconds for blinking. 0 means no blinking.",
+          "se": "Intervall i millisekunder för blinkning. 0 betyder ingen blinkning.",
+          "no": "Intervall i millisekunder for blinking. 0 betyr ingen blinking.",
+          "dk": "Interval i millisekunder for blinkning. 0 betyder ingen blinkning.",
+          "de": "Intervall in Millisekunden für das Blinken. 0 bedeutet kein Blinken.",
+          "fr": "Intervalle en millisecondes pour le clignotement. 0 signifie pas de clignotement.",
+          "es": "Intervalo en milisegundos para el parpadeo. 0 significa sin parpadeo.",
+          "it": "Intervallo in millisecondi per il lampeggio. 0 significa nessun lampeggio.",
+          "ru": "Интервал в миллисекундах для мигания. 0 означает отсутствие мигания.",
+          "fi": "Intervalli millisekunteina vilkkumiselle. 0 tarkoittaa ei vilkkumista.",
+          "zh-CN": "点亮的毫秒间隔。0表示不闪烁。",
+          "ja-JP": "点滅のミリ秒単位の間隔。0は点滅なしを意味します。",
+          "pt": "Intervalo em milissegundos para piscar. 0 significa sem piscar.",
+          "ar": "فاصل بالمللي ثانية للوميض. 0 يعني لا وميض.",
+          "sk": "Interval v milisekundách pro blikání. 0 znamená žádné blikání.",
+          "hu": "Intervallum milliszekundumban a villogáshoz. 0 azt jelenti, hogy nincs villogás.",
+          "kr": "점멸의 밀리초 단위 간격입니다. 0은 점멸이 없음을 의미합니다."
+        },
+        "infourl": {
+          "en": "Remote var url en",
+          "se": "Variabel url se"
+        }
+      },
+      {
+        "name": "Millisecond counter",
+        "type": "uint32_t",
+        "default": "UNDEF",
+        "page": 0,
+        "offset": 8,
+        "access": "rw",
+        "fgcolor": "0x112233",
+        "bgcolor": "0xE0E0FF",
+        "description": {
+          "en": "Millisecond counter value. Write zero to any of the counter registers to reset the counter.",
+          "se": "Räknarvärde för millisekunder. Skriv noll till någon av räknarregistren för att återställa räknaren."
+        }
+      }
+    ],
+    "alarm": [],
+    "events": [],
+    "dmatrix": {
+      "level": 1,
+      "start-page": "0xff",
+      "start-offset": 0,
+      "rowcount": 4,
+      "rowsize": 8,
+      "action": [
+        {
+          "name": "NOOP",
+          "code": 0,
+          "description": {
+            "en": "No Operation, does nothing"
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_noop.html"
+          }
+        },
+        {
+          "name": "Turn on/off led.",
+          "code": "0x01",
+          "description": {
+            "en": "Turn on/off led. Argument tells state."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_turn_on_off_led.html"
+          },
+          "param": [
+            {
+              "name": "control",
+              "description": {
+                "en": "Argument tells state. 0 = off, 1 = on, 2 = toggle"
+              },
+              "infourl": {
+                "en": "http://www.vscp.org/docs/dm_param_turn_on_off_led.html"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Turn on led.",
+          "code": "0x02",
+          "description": {
+            "en": "Turn on led."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_turn_on_led.html"
+          }
+        },
+        {
+          "name": "Turn off led.",
+          "code": "0x03",
+          "description": {
+            "en": "Turn off led."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_turn_off_led.html"
+          }
+        },
+        {
+          "name": "Toggle led.",
+          "code": "0x04",
+          "description": {
+            "en": "Toggle led."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_toggle_led.html"
+          }
+        },
+        {
+          "name": "Start blink.",
+          "code": "0x05",
+          "description": {
+            "en": "Start blink."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_start_blink.html"
+          }
+        },
+        {
+          "name": "Start blink.",
+          "code": "0x05",
+          "description": {
+            "en": "Start blink."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_start_blink.html"
+          }
+        },
+        {
+          "name": "Stop blink.",
+          "code": "0x06",
+          "description": {
+            "en": "Stop blink."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_stop_blink.html"
+          }
+        },
+        {
+          "name": "Clear counter.",
+          "code": "0x06",
+          "description": {
+            "en": "Clear counter."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_clear_counter.html"
+          }
+        }
+      ]
+    }
+  }
+}

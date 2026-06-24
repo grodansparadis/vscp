@@ -97,9 +97,8 @@ vscpClientUdp::vscpClientUdp()
 
 #ifdef WIN32
   // Initialize Winsock
-  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+  if (WSAStartup(MAKEWORD(2, 2), &m_wsaData) != 0) {
     fprintf(stderr, "WSAStartup failed\n");
-    return EXIT_FAILURE;
   }
 #endif
 
@@ -351,7 +350,11 @@ vscpClientUdp::connect(void)
 
   // Allow broadcast (for UDP)
   int broadcastPermission = 1; // 0 = disable, 1 = enable
-  if (setsockopt(m_sock, SOL_SOCKET, SO_BROADCAST, &broadcastPermission, sizeof(broadcastPermission)) < 0) {
+  if (setsockopt(m_sock,
+                 SOL_SOCKET,
+                 SO_BROADCAST,
+                 reinterpret_cast<const char *>(&broadcastPermission),
+                 sizeof(broadcastPermission)) < 0) {
     perror("setsockopt failed");
     close(m_sock);
     return VSCP_ERROR_PARAMETER;
@@ -474,7 +477,7 @@ vscpClientUdp::send(vscpEvent &ev)
   multicastAddr.sin_addr.s_addr = inet_addr(m_udpAddr.c_str());
   multicastAddr.sin_port        = htons(m_udpPort);
 
-  ssize_t nSent =
+  int nSent =
     sendto(m_sock, (const char *) pframe, framelen, 0, (struct sockaddr *) &multicastAddr, sizeof(multicastAddr));
 
   // Frame buffer not needed anymore
@@ -839,11 +842,15 @@ void
 workerThread(vscpClientUdp *pClient)
 {
   uint8_t buf[BUFFER_SIZE];
-  int rv;
+  int rv = 0;
   fd_set readfds;
   struct timeval timeout;
   struct sockaddr_in senderAddr;
+#ifdef WIN32
+  int addrLen = sizeof(senderAddr);
+#else
   socklen_t addrLen = sizeof(senderAddr);
+#endif
 
   // Check pointer
   if (nullptr == pClient) {
@@ -875,7 +882,12 @@ workerThread(vscpClientUdp *pClient)
       if (FD_ISSET(pClient->m_sock, &readfds)) {
 
         pthread_mutex_lock(&pClient->m_mutexSocket);
-        int nReceived = recvfrom(pClient->m_sock, buf, BUFFER_SIZE, 0, (struct sockaddr *) &senderAddr, &addrLen);
+        int nReceived = recvfrom(pClient->m_sock,
+               reinterpret_cast<char *>(buf),
+               BUFFER_SIZE,
+               0,
+               (struct sockaddr *) &senderAddr,
+               &addrLen);
         pthread_mutex_unlock(&pClient->m_mutexSocket);
 
         if (nReceived > 0) {

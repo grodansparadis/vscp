@@ -85,6 +85,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
   m_conn = NULL; // Not yet used
 
   m_bTLS        = false;
+  m_tlsMode     = tls_mode::auto_select;
   m_bVerifyPeer = false;
 
   m_bModeReceiveLoop     = false;
@@ -352,13 +353,18 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strInterface, uint32_t flags)
     strHostname = tokens.front();
     tokens.pop_front();
     vscp_trim(strHostname);
-    // Check for stcp:// prefix (secure connection)
+
+    // Detect the transport prefix and pass it through to the second overload
+    // so that prefix-based TLS auto-detection works correctly there.
     std::string strLower = vscp_lower(strHostname);
-    if (vscp_startsWith(strLower, "stcp://", &strHostname)) {
-      m_bTLS = true;
+    std::string strAfterPrefix;
+    if (vscp_startsWith(strLower, "stcp://", &strAfterPrefix)) {
+      // Re-attach the canonical stcp:// prefix so the second overload sees it.
+      strHostname = "stcp://" + strAfterPrefix;
     } else {
+      // Strip tcp:// (plain) prefix; no prefix also means plain.
       std::string prefix = "tcp://";
-      vscp_startsWith(strHostname, prefix, &strHostname); // Remove "tcp://"
+      vscp_startsWith(strHostname, prefix, &strHostname);
     }
   }
 
@@ -413,12 +419,24 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   vscp_trim(strHost);
 
   // Check for stcp:// prefix (secure connection)
-  bool bSecure = m_bTLS;
+  bool bPrefixSecure = false;
   if (vscp_startsWith(strHost, "stcp://", &strHost)) {
-    bSecure = true;
+    bPrefixSecure = true;
   } else {
     vscp_startsWith(strHost, "tcp://", &strHost); // Remove "tcp://" if there
   }
+
+  bool bSecure = false;
+  if (tls_mode::force_tls == m_tlsMode) {
+    bSecure = true;
+  }
+  else if (tls_mode::force_plain == m_tlsMode) {
+    bSecure = false;
+  }
+  else {
+    bSecure = bPrefixSecure;
+  }
+  m_bTLS = bSecure;
 
   std::deque<std::string> tokens;
   vscp_split(tokens, strHost, ":");

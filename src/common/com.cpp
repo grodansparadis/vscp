@@ -459,7 +459,7 @@ int Comm::isTransmitterEmpty()
 // Set port parameters.
 //
 
-void Comm::setParam(iconst char *baud,
+void Comm::setParam(const char *baud,
     const char *parity,
     const char *bits,
     int HWFlow,

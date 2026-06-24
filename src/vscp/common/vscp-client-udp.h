@@ -29,6 +29,8 @@
 #include "vscp.h"
 #include "vscp-client-base.h"
 
+#include <pthread.h>
+
 #include <mutex>
 #include <thread>
 

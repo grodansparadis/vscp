@@ -34,10 +34,6 @@
 #endif
 #endif
 
-#ifdef WIN32
-#include "StdAfx.h"
-#endif
-
 #include <list>
 
 #include <pthread.h>

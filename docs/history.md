@@ -1,5 +1,6 @@
 # Document History
 
+*  **2026-04-15 AKHE** - VSCP daemon is now in it's own repository. VSCP common code is described here.
 *  **2021-06-17 AKHE** - Version 15.0
 *  **2020-12-05 AKHE** - Removed obsolete parts
 *  **2020-10-27 AKHE** - libmosquitto-dev now required for build.

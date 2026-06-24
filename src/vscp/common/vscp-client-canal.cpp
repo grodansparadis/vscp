@@ -65,7 +65,7 @@ vscpClientCanal::vscpClientCanal()
 {
   m_type       = CVscpClient::connType::CANAL;
   m_bConnected = false; // Not connected
-  m_tid = 0;
+  memset(&m_tid, 0, sizeof(pthread_t));
   m_bRun = true;
 
   vscp_clearVSCPFilter(&m_filterIn); // Accept all events

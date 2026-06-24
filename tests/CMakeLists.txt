@@ -1,6 +1,13 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
-# Combined test project for guid, vscpdatetime in vscphelper
+# Combined test project for VSCP common library unit tests.
+#
+# Primary build entry point (used by CI):
+#   cd tests && cmake -B build && cmake --build build
+#
+# The vscp_common and vscp_util library targets are required. When this
+# CMakeLists is processed without a parent that already defines them,
+# the parent VSCP root CMakeLists is added as a subdirectory automatically.
 project(vscp_common_tests LANGUAGES CXX C)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -10,6 +17,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(STATUS "Building VSCP common unit tests")
+
+# Bootstrap: build the VSCP library targets when not provided by a parent
+if(NOT TARGET vscp_common)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_BINARY_DIR}/vscp)
+endif()
 
 # Add subdirectories for individual tests
 add_subdirectory(guid)
@@ -21,7 +33,8 @@ add_subdirectory(vscp-client-base)
 add_subdirectory(vscp-client-canal)
 add_subdirectory(vscp-client-mqtt)
 add_subdirectory(vscp-client-multicast)
-if(LINUX)
+add_subdirectory(vscp-client-tcp)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_subdirectory(vscp-client-socketcan)
 endif()
 add_subdirectory(vscp-client-udp)
@@ -42,14 +55,16 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-canal/unittest_vscp_client_canal
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-mqtt/unittest_vscp_client_mqtt
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-multicast/unittest_vscp_client_multicast
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-tcp/unittest_vscp_client_tcp
 )
 set(TEST_DEPENDS
     unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
     unittest_tcpiptls unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
+    unittest_vscp_client_tcp
 )
 
-if(LINUX)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     list(APPEND TEST_COMMANDS COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-socketcan/unittest_vscp_client_socketcan)
     list(APPEND TEST_DEPENDS unittest_vscp_client_socketcan)
 endif()

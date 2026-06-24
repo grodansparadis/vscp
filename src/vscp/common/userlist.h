@@ -43,10 +43,6 @@
 #endif
 #endif
 
-#ifdef WIN32
-#include "StdAfx.h"
-#endif
-
 #include <vscp.h>
 #include <vscphelper.h>
 

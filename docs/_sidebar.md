@@ -7,6 +7,7 @@
 
 * Configure
  * [The configuration file](configuring_the_vscp_daemon.md)
+ * [Selectable TCP TLS](selectable_tcp_tls.md)
  * [Startup switches](startup_switches.md)
  * [Files and directory structure](files_and_directory_structure.md)
 

@@ -55,7 +55,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(
-  MOSQUITTO DEFAULT_MSG
+  Mosquitto DEFAULT_MSG
   MOSQUITTO_LIBRARY MOSQUITTO_INCLUDE_DIR)
 
 message(STATUS "libmosquitto include dir: ${MOSQUITTO_INCLUDE_DIR}")

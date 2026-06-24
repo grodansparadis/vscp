@@ -2,9 +2,9 @@
 
 ![VSCP logo](./images/logo_400.png)
 
-# The VSCP Daemon
+# The VSCP Common code
 
-This documentation describe the current version of the VSCP daemon software.
+This documentation describe the current version of the VSCP common code.
 
 ---
 

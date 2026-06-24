@@ -4,6 +4,7 @@
   "version-string": "15.0.3",
   "description": "The VSCP daemon",
   "dependencies": [
+    "curl",
     "openssl",
     "expat",
     {
