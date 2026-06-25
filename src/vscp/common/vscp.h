@@ -127,7 +127,7 @@ typedef struct _vscp_event_t {
 
 } vscp_event_t;
 
-typedef  vscp_event_t vscpEvent; // For backward compability
+typedef vscp_event_t vscpEvent; // For backward compability
 typedef const vscp_event_t *PCVSCPEVENT;
 
 /*
@@ -199,9 +199,8 @@ typedef struct _vscp_event_ex_t {
 
 } vscp_event_ex_t;
 
-typedef  vscp_event_ex_t vscpEventEx; // For backward compability
+typedef vscp_event_ex_t vscpEventEx; // For backward compability
 typedef const vscp_event_ex_t *PCVSCPEVENTEX;
-
 
 /* Priorities in the header byte as or'in values */
 /* Priorities goes from 0-7 where 0 is highest   */
@@ -282,7 +281,7 @@ typedef struct _vscpEventFilter {
 
 } vscp_event_filter_t;
 
-typedef  vscp_event_filter_t vscpEventFilter;
+typedef vscp_event_filter_t vscpEventFilter;
 typedef vscp_event_filter_t *PVSCPEVENTFILTER;
 
 /*
@@ -683,7 +682,7 @@ struct vscpMyNode {
 #define VSCP_STD_REGISTER_PAGES_COUNT 0x99 // Deprecated
 
 /* Unsigned 32-bit integer for family code */
-#define VSCP_STD_REGISTER_FAMILY_CODE 0x9A
+#define VSCP_STD_REGISTER_DEVICE_FAMILY 0x9A
 
 /* Unsigned 32-bit integer for device type */
 #define VSCP_STD_REGISTER_DEVICE_TYPE 0x9E
