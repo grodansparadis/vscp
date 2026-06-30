@@ -32,12 +32,12 @@
 */
 // I M P O T A N T ! ! ! Lines below must be located at line
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     16
-#define VSCPD_MINOR_VERSION     0
-#define VSCPD_RELEASE_VERSION   0
+#define VSCPD_MAJOR_VERSION     15
+#define VSCPD_MINOR_VERSION     1
+#define VSCPD_RELEASE_VERSION   1
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "16.0.0-0 Sulphur"
+#define VSCPD_DISPLAY_VERSION   "15.1.1-0 Phosphorus"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman, the VSCP project, "                \

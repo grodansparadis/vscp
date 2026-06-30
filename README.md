@@ -48,5 +48,21 @@ The whole source code is published under the MIT license. Consider the different
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, shall be licensed as above, without any additional terms or conditions.
 
+
+## Thanks
+First a big thanks to my [sponsors](https://github.com/sponsors/grodansparadis) and [here](https://vscp.org). Support them please. Every cent is valuable and there support has helped me and the project a lot.
+
+The a big thank you to the following project that this code is built upon
+
+* The excellent [nlohmann json parser](https://github.com/nlohmann/json)
+* The excellent [libexpat xml library](https://github.com/libexpat/libexpat)
+* The excellent [mosquitto library](https://github.com/eclipse/mosquitto)
+* The excellent [spdlog library](https://github.com/gabime/spdlog)
+* The excellent [civetweb project](https://github.com/civetweb/civetweb)
+* The excellent [mustache library](https://github.com/janl/mustache.js)
+* And all other code I used to build this on.
+
+_Great things are built on the shoulders of giants. Thank you!_
+
 Copyright (C) 2000-2026 Ake Hedman, the VSCP project - MIT license.
 
