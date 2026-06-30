@@ -38,7 +38,6 @@ set(VSCP_VERSION_PATCH 3)
 
 # ---- Build options ----
 option(VSCP_BUILD_TESTS "Build unit tests (use tests/ directory for standalone test builds)" OFF)
-option(VSCP_BUILD_DAEMON "Build the vscpd daemon executable" ${PROJECT_IS_TOP_LEVEL})
 option(VSCP_INSTALL "Install VSCP library targets and headers" ${PROJECT_IS_TOP_LEVEL})
 
 # ---- C++ standard ----
@@ -306,97 +305,6 @@ elseif(WIN32)
     target_link_libraries(vscp_common PUBLIC ws2_32)
     if(TARGET dlfcn-win32::dl)
         target_link_libraries(vscp_common PUBLIC dlfcn-win32::dl)
-    endif()
-endif()
-
-# =====================================================================
-# vscpd — VSCP daemon executable
-# =====================================================================
-if(VSCP_BUILD_DAEMON)
-    add_executable(vscpd
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon/vscpd.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon/controlobject.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon/devicethread.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon/devicelist.cpp
-    )
-
-    target_include_directories(vscpd PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon
-    )
-
-    target_link_libraries(vscpd PRIVATE
-        vscp_common
-        vscp_util
-        vscp_sqlite3
-    )
-
-    if(UNIX AND NOT APPLE)
-        target_link_libraries(vscpd PRIVATE systemd)
-    endif()
-
-    if(WIN32)
-        if(VSCP_PTHREAD_TARGET)
-            target_link_libraries(vscpd PRIVATE ${VSCP_PTHREAD_TARGET})
-        endif()
-        if(TARGET dlfcn-win32::dl)
-            target_link_libraries(vscpd PRIVATE dlfcn-win32::dl)
-        endif()
-        target_link_libraries(vscpd PRIVATE ws2_32 netapi32)
-    endif()
-
-    if(VSCP_INSTALL AND NOT WIN32)
-        install(TARGETS vscpd
-            RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR}
-        )
-
-        # Runtime directory structure
-        foreach(_dir
-            "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp"
-            "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level1"
-            "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/drivers/level2"
-            "${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd"
-            "${CMAKE_INSTALL_LOCALSTATEDIR}/log/vscp"
-        )
-            install(DIRECTORY DESTINATION ${_dir}
-                DIRECTORY_PERMISSIONS
-                    OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                    GROUP_READ GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE
-            )
-        endforeach()
-
-        # systemd service file
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.service
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/systemd/system/
-        )
-
-        # Default configuration file
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/vscpd.json
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
-
-        # Default encryption key
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/vscp.key
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/
-            PERMISSIONS OWNER_READ OWNER_WRITE
-        )
-
-        # README files for certificate directories
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-certs
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/certs/
-            PERMISSIONS OWNER_READ OWNER_WRITE
-        )
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/README-ca-certificates
-            DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/vscp/ca-certificates/
-            PERMISSIONS OWNER_READ OWNER_WRITE
-        )
-
-        # Event database
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/database/vscp_events.sqlite3
-            DESTINATION ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/vscp/vscpd/
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-        )
     endif()
 endif()
 

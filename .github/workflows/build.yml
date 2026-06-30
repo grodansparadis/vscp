@@ -42,9 +42,3 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --parallel $(nproc)
-
-    - name: Upload vscpd artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: vscpd-linux
-        path: ${{github.workspace}}/build/vscpd
