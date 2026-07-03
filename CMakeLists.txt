@@ -230,6 +230,7 @@ endfunction()
 # =====================================================================
 add_library(vscp_sockettcp STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/sockettcp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
 )
 target_include_directories(vscp_sockettcp
     PUBLIC
@@ -246,7 +247,8 @@ target_link_libraries(vscp_sockettcp
 )
 if(WIN32)
     target_include_directories(vscp_sockettcp PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows>
+        $<BUILD_INTERFACE:${VSCP_WINDOWS_PCH_INCLUDE_DIR}>)
     target_link_libraries(vscp_sockettcp PUBLIC ws2_32)
     if(VSCP_PTHREAD_TARGET)
         target_link_libraries(vscp_sockettcp PUBLIC ${VSCP_PTHREAD_TARGET})
@@ -258,7 +260,6 @@ endif()
 # =====================================================================
 add_library(vscp_util STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpbase64.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc8.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscp-aes.c
