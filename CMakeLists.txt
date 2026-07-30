@@ -28,13 +28,13 @@
 
 cmake_minimum_required(VERSION 3.16...3.31)
 project(vscp
-    VERSION 15.0.3
+    VERSION 15.1.1
     DESCRIPTION "VSCP common library"
     LANGUAGES CXX C)
 
 set(VSCP_VERSION_MAJOR 15)
-set(VSCP_VERSION_MINOR 0)
-set(VSCP_VERSION_PATCH 3)
+set(VSCP_VERSION_MINOR 1)
+set(VSCP_VERSION_PATCH 1)
 
 # ---- Build options ----
 option(VSCP_BUILD_TESTS "Build unit tests (use tests/ directory for standalone test builds)" OFF)
