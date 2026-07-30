@@ -186,15 +186,83 @@ if(UNIX)
 endif()
 
 # =====================================================================
+# Shared target setup for VSCP protocol/component libraries
+# =====================================================================
+function(vscp_setup_protocol_target target)
+    target_include_directories(${target}
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common>
+            $<BUILD_INTERFACE:${VSCP_NLOHMANN_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${VSCP_SPDLOG_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${VSCP_MUSTACHE_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${EXPAT_INCLUDE_DIRS}>
+            $<BUILD_INTERFACE:${MOSQUITTO_INCLUDE_DIRS}>
+            $<BUILD_INTERFACE:${CURL_INCLUDE_DIRS}>
+            $<INSTALL_INTERFACE:include/vscp>
+    )
+
+    if(VSCP_HAVE_MADDY)
+        target_include_directories(${target} PUBLIC
+            $<BUILD_INTERFACE:${VSCP_MADDY_INCLUDE_DIR}>)
+        target_compile_definitions(${target} PUBLIC VSCP_HAVE_MADDY)
+    endif()
+
+    if(APPLE AND CJSON_INCLUDE_DIR)
+        target_include_directories(${target} PUBLIC
+            $<BUILD_INTERFACE:${CJSON_INCLUDE_DIR}>)
+    endif()
+
+    if(WIN32)
+        target_include_directories(${target} PUBLIC
+            $<BUILD_INTERFACE:${VSCP_WINDOWS_PCH_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${VSCP_WINDOWS_HELPERS_INCLUDE_DIR}>)
+        target_link_libraries(${target} PUBLIC ws2_32)
+        if(TARGET dlfcn-win32::dl)
+            target_link_libraries(${target} PUBLIC dlfcn-win32::dl)
+        endif()
+    endif()
+
+    target_compile_definitions(${target} PUBLIC ${VSCP_OPENSSL_API_DEF})
+endfunction()
+
+# =====================================================================
+# vscp_sockettcp — isolated TCP socket utility library
+# =====================================================================
+add_library(vscp_sockettcp STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/sockettcp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
+)
+target_include_directories(vscp_sockettcp
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common>
+        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:include/vscp/util>
+)
+target_compile_definitions(vscp_sockettcp PUBLIC ${VSCP_OPENSSL_API_DEF})
+target_link_libraries(vscp_sockettcp
+    PUBLIC
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        Threads::Threads
+)
+if(WIN32)
+    target_include_directories(vscp_sockettcp PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows>
+        $<BUILD_INTERFACE:${VSCP_WINDOWS_PCH_INCLUDE_DIR}>)
+    target_link_libraries(vscp_sockettcp PUBLIC ws2_32)
+    if(VSCP_PTHREAD_TARGET)
+        target_link_libraries(vscp_sockettcp PUBLIC ${VSCP_PTHREAD_TARGET})
+    endif()
+endif()
+
+# =====================================================================
 # vscp_util — low-level platform utility library
 # =====================================================================
 add_library(vscp_util STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpbase64.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc8.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscp-aes.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/sockettcp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/randpassword.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/configfile.cpp
     $<$<BOOL:WIN32>:${VSCP_WINDOWS_GETOPT_SOURCE}>
@@ -208,6 +276,7 @@ target_include_directories(vscp_util
 target_compile_definitions(vscp_util PUBLIC ${VSCP_OPENSSL_API_DEF})
 target_link_libraries(vscp_util
     PUBLIC
+        vscp_sockettcp
         OpenSSL::SSL
         OpenSSL::Crypto
         Threads::Threads
@@ -225,94 +294,179 @@ if(WIN32)
 endif()
 
 # =====================================================================
-# vscp_common — VSCP protocol library
+# Split protocol/component libraries
 # =====================================================================
-set(VSCP_COMMON_SOURCES
+add_library(vscp_guid STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/guid.cpp
+)
+vscp_setup_protocol_target(vscp_guid)
+target_link_libraries(vscp_guid PUBLIC vscp_util)
+
+add_library(vscp_guidparser STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-guid-parser.c
+)
+vscp_setup_protocol_target(vscp_guidparser)
+target_link_libraries(vscp_guidparser PUBLIC vscp_util)
+
+add_library(vscp_mdf STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/mdf.cpp
+)
+vscp_setup_protocol_target(vscp_mdf)
+target_link_libraries(vscp_mdf
+    PUBLIC
+        vscp_util
+        vscp_guid
+        vscp_guidparser
+        ${EXPAT_LIBRARIES}
+        ${CURL_LIBRARIES}
+)
+
+# All non-connection protocol sources
+set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpdatetime.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpremotetcpif.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpcanaldeviceif.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/canal-xmlconfig.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-base.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-mqtt.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-tcp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-canal.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-udp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws1.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-multicast.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/mdf.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/register.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/userlist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/clientlist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/interfacelist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/hlo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpunit.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-guid-parser.c
 )
 
-# Linux-only: SocketCAN client
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    list(APPEND VSCP_COMMON_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-socketcan.cpp
-    )
-endif()
-
-add_library(vscp_common STATIC ${VSCP_COMMON_SOURCES})
-
-target_include_directories(vscp_common
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common>
-        $<BUILD_INTERFACE:${VSCP_NLOHMANN_INCLUDE_DIR}>
-        $<BUILD_INTERFACE:${VSCP_SPDLOG_INCLUDE_DIR}>
-        $<BUILD_INTERFACE:${VSCP_MUSTACHE_INCLUDE_DIR}>
-        $<BUILD_INTERFACE:${EXPAT_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${MOSQUITTO_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${CURL_INCLUDE_DIRS}>
-        $<INSTALL_INTERFACE:include/vscp>
-)
-if(VSCP_HAVE_MADDY)
-    target_include_directories(vscp_common PUBLIC
-        $<BUILD_INTERFACE:${VSCP_MADDY_INCLUDE_DIR}>)
-    target_compile_definitions(vscp_common PUBLIC VSCP_HAVE_MADDY)
-endif()
-if(APPLE AND CJSON_INCLUDE_DIR)
-    target_include_directories(vscp_common PUBLIC
-        $<BUILD_INTERFACE:${CJSON_INCLUDE_DIR}>)
-endif()
-if(WIN32)
-    target_include_directories(vscp_common PUBLIC
-    $<BUILD_INTERFACE:${VSCP_WINDOWS_PCH_INCLUDE_DIR}>
-    $<BUILD_INTERFACE:${VSCP_WINDOWS_HELPERS_INCLUDE_DIR}>)
-endif()
-
-target_compile_definitions(vscp_common PUBLIC ${VSCP_OPENSSL_API_DEF})
-
-target_link_libraries(vscp_common
+add_library(vscp_core STATIC ${VSCP_CORE_SOURCES})
+vscp_setup_protocol_target(vscp_core)
+target_link_libraries(vscp_core
     PUBLIC
         vscp_util
+        vscp_guid
+        vscp_guidparser
+        vscp_mdf
         ${EXPAT_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${CURL_LIBRARIES}
 )
 if(UNIX AND NOT APPLE)
-    target_link_libraries(vscp_common PUBLIC m dl)
-    target_compile_definitions(vscp_common PUBLIC WITH_SYSTEMD)
+    target_link_libraries(vscp_core PUBLIC m dl)
+    target_compile_definitions(vscp_core PUBLIC WITH_SYSTEMD)
 elseif(APPLE)
-    target_link_libraries(vscp_common PUBLIC m dl)
-elseif(WIN32)
-    target_link_libraries(vscp_common PUBLIC ws2_32)
-    if(TARGET dlfcn-win32::dl)
-        target_link_libraries(vscp_common PUBLIC dlfcn-win32::dl)
-    endif()
+    target_link_libraries(vscp_core PUBLIC m dl)
+endif()
+
+# Dedicated client connection libraries
+add_library(vscp_client_base STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-base.cpp
+)
+vscp_setup_protocol_target(vscp_client_base)
+target_link_libraries(vscp_client_base PUBLIC vscp_core)
+
+add_library(vscp_client_canal STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-canal.cpp
+)
+vscp_setup_protocol_target(vscp_client_canal)
+target_link_libraries(vscp_client_canal PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_tcp STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-tcp.cpp
+)
+vscp_setup_protocol_target(vscp_client_tcp)
+target_link_libraries(vscp_client_tcp PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_udp STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-udp.cpp
+)
+vscp_setup_protocol_target(vscp_client_udp)
+target_link_libraries(vscp_client_udp PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_ws1 STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws1.cpp
+)
+vscp_setup_protocol_target(vscp_client_ws1)
+target_link_libraries(vscp_client_ws1 PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_ws2 STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws2.cpp
+)
+vscp_setup_protocol_target(vscp_client_ws2)
+target_link_libraries(vscp_client_ws2 PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_multicast STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-multicast.cpp
+)
+vscp_setup_protocol_target(vscp_client_multicast)
+target_link_libraries(vscp_client_multicast PUBLIC vscp_client_base vscp_core)
+
+add_library(vscp_client_mqtt STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-mqtt.cpp
+)
+vscp_setup_protocol_target(vscp_client_mqtt)
+target_link_libraries(vscp_client_mqtt
+    PUBLIC
+        vscp_client_base
+        vscp_core
+        ${MOSQUITTO_LIBRARIES}
+)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_library(vscp_client_socketcan STATIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-socketcan.cpp
+    )
+    vscp_setup_protocol_target(vscp_client_socketcan)
+    target_link_libraries(vscp_client_socketcan PUBLIC vscp_client_base vscp_core)
+endif()
+
+# =====================================================================
+# vscp_common — compatibility aggregate library
+# =====================================================================
+add_library(vscp_common STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-common.cpp
+)
+vscp_setup_protocol_target(vscp_common)
+target_link_libraries(vscp_common
+    PUBLIC
+        vscp_core
+        vscp_client_base
+        vscp_client_canal
+        vscp_client_tcp
+        vscp_client_udp
+        vscp_client_ws1
+        vscp_client_ws2
+        vscp_client_multicast
+        vscp_client_mqtt
+)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(vscp_common PUBLIC vscp_client_socketcan)
 endif()
 
 # =====================================================================
 # CMake package config export (only when installing)
 # =====================================================================
 if(VSCP_INSTALL)
-    install(TARGETS vscp_common vscp_util vscp_sqlite3
+    set(VSCP_INSTALL_TARGETS
+        vscp_common
+        vscp_core
+        vscp_guid
+        vscp_guidparser
+        vscp_mdf
+        vscp_client_base
+        vscp_client_canal
+        vscp_client_tcp
+        vscp_client_udp
+        vscp_client_ws1
+        vscp_client_ws2
+        vscp_client_multicast
+        vscp_client_mqtt
+        vscp_sockettcp
+        vscp_util
+        vscp_sqlite3
+    )
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        list(APPEND VSCP_INSTALL_TARGETS vscp_client_socketcan)
+    endif()
+
+    install(TARGETS ${VSCP_INSTALL_TARGETS}
         EXPORT VSCPTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
