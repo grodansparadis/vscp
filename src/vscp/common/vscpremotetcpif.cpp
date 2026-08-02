@@ -639,7 +639,7 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
   }
 
   // Note that the caller must delete the event (if it should be deleted)
-
+  
   strBuf = "send " + strBuf;
   strBuf += "\r\n";
 
