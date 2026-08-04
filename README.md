@@ -1,12 +1,13 @@
 <h1>VSCP & Friends</h1>
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![C/C++ CI](https://github.com/grodansparadis/vscp/workflows/C/C++%20CI/badge.svg)
+[![Build VSCP library on Linux](https://github.com/grodansparadis/vscp/actions/workflows/build.yml/badge.svg)](https://github.com/grodansparadis/vscp/actions/workflows/build.yml)
+[![Build VSCP library on Windows](https://github.com/grodansparadis/vscp/actions/workflows/build-windows.yml/badge.svg)](https://github.com/grodansparadis/vscp/actions/workflows/build-windows.yml)
+[![Build VSCP library on macOS](https://github.com/grodansparadis/vscp/actions/workflows/build-macos.yml/badge.svg)](https://github.com/grodansparadis/vscp/actions/workflows/build-macos.yml)
 [![Release](https://img.shields.io/github/release/grodansparadis/vscp.svg)](https://github.com/grodansparadis/vscp/releases)
-[![Travis Build Status](https://api.travis-ci.org/grodansparadis/vscp.svg?branch=master)](https://travis-ci.org/grodansparadis/vscp)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-<img src="https://vscp.org/images/logo.png" width="100">
+![VSCP Logo](https://github.com/grodansparadis/vscp-logo/blob/master/logo_100.png)
 
 *You can look at device for device and create control software for each and one of them, we did it another way, we though of a black box device and created control software that works with everything that exists. __One to unite them all__.*
 
