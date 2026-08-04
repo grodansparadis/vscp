@@ -368,24 +368,14 @@ cguid::getFromArray(const uint8_t *pguid)
 void
 cguid::toString(std::string &strGUID)
 {
-    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
-                              "%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                              m_guid[0],
-                              m_guid[1],
-                              m_guid[2],
-                              m_guid[3],
-                              m_guid[4],
-                              m_guid[5],
-                              m_guid[6],
-                              m_guid[7],
-                              m_guid[8],
-                              m_guid[9],
-                              m_guid[10],
-                              m_guid[11],
-                              m_guid[12],
-                              m_guid[13],
-                              m_guid[14],
-                              m_guid[15]);
+    char buf[48];
+    snprintf(buf, sizeof(buf),
+             "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+             m_guid[0], m_guid[1], m_guid[2], m_guid[3],
+             m_guid[4], m_guid[5], m_guid[6], m_guid[7],
+             m_guid[8], m_guid[9], m_guid[10], m_guid[11],
+             m_guid[12], m_guid[13], m_guid[14], m_guid[15]);
+    strGUID = buf;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -458,12 +448,15 @@ cguid::toStringUUID(std::string &strGUID)
 {
     // Format: 8-4-4-4-12 hex digits with dashes
     // FFFFFFFF-FFFF-FFFF-0102-03AABB440130
-    strGUID = vscp_str_format("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                              m_guid[0], m_guid[1], m_guid[2], m_guid[3],
-                              m_guid[4], m_guid[5],
-                              m_guid[6], m_guid[7],
-                              m_guid[8], m_guid[9],
-                              m_guid[10], m_guid[11], m_guid[12], m_guid[13], m_guid[14], m_guid[15]);
+    char buf[37];
+    snprintf(buf, sizeof(buf),
+             "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+             m_guid[0], m_guid[1], m_guid[2], m_guid[3],
+             m_guid[4], m_guid[5],
+             m_guid[6], m_guid[7],
+             m_guid[8], m_guid[9],
+             m_guid[10], m_guid[11], m_guid[12], m_guid[13], m_guid[14], m_guid[15]);
+    strGUID = buf;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
