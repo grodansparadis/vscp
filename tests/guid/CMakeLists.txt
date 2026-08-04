@@ -17,7 +17,7 @@ find_package(GTest REQUIRED)
 add_executable(unittest_guid unittest.cpp)
 
 target_link_libraries(unittest_guid PRIVATE
-    vscp_guid
+    vscp_common
     GTest::GTest
     GTest::Main
 )
