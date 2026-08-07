@@ -69,9 +69,9 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc8.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.c
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.h
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.c
-    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/fastpbkdf2.h
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../../third-party/nlohmann/include/nlohmann/json.hpp
     )
 
 
@@ -82,9 +82,9 @@ if (WIN32)
   target_include_directories(unittest PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/
-    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.9.2/include/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/nlohmann/include/
+    ${PROJECT_SOURCE_DIR}/../../../src/common/third-party/spdlog-1.9.2/include/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
   )
@@ -92,9 +92,9 @@ else()
   target_include_directories(unittest PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/
-    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/
-    ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/spdlog-1.9.2/include/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/nlohmann/include/
+    ${PROJECT_SOURCE_DIR}/../../../src/common/third-party/spdlog-1.9.2/include/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
   )

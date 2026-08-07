@@ -10,7 +10,7 @@
 #
 # Usage in consuming project:
 #   find_package(VSCP REQUIRED)
-#   target_link_libraries(myapp PRIVATE VSCP::vscp_common VSCP::vscp_sqlite3)
+#   target_link_libraries(myapp PRIVATE VSCP::vscp_common)
 
 @PACKAGE_INIT@
 
@@ -29,4 +29,4 @@ find_dependency(Mosquitto REQUIRED)
 # Import the exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/VSCPTargets.cmake")
 
-check_required_components(vscp_common vscp_util vscp_sqlite3)
+check_required_components(vscp_common vscp_util)

@@ -70,9 +70,9 @@ target_include_directories(test PUBLIC
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party
-    ${PROJECT_SOURCE_DIR}/../../third_party/nlohmann/include/nlohmann
-    ${PROJECT_SOURCE_DIR}/../../third_party/spdlog/include/
-    ${PROJECT_SOURCE_DIR}/../../third_party/mustache/
+    ${PROJECT_SOURCE_DIR}/../../third-party/nlohmann/include/nlohmann
+    ${PROJECT_SOURCE_DIR}/../../third-party/spdlog/include/
+    ${PROJECT_SOURCE_DIR}/../../third-party/mustache/
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}

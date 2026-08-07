@@ -2,7 +2,7 @@
 #
 # VSCP common library — build instructions.
 #
-# Defines the vscp_common, vscp_util, and vscp_sqlite3 static library targets
+# Defines the vscp_common and vscp_util static library targets
 # for use as a subproject by the VSCP daemon and other consumers.
 #
 # Copyright (C) 2000-2026 Ake Hedman, the VSCP project
@@ -10,7 +10,7 @@
 #
 # Usage as a subproject (e.g. from the vscp-daemon repo):
 #   add_subdirectory(external/vscp)
-#   target_link_libraries(myapp PRIVATE vscp_common vscp_sqlite3)
+#   target_link_libraries(myapp PRIVATE vscp_common)
 #
 # Standalone library build:
 #   cmake -B build
@@ -57,22 +57,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 # ---- Third-party header roots ----
-set(VSCP_NLOHMANN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nlohmann/include)
+set(VSCP_NLOHMANN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/nlohmann/include)
 if(NOT EXISTS ${VSCP_NLOHMANN_INCLUDE_DIR}/nlohmann/json.hpp)
     set(VSCP_NLOHMANN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../json/include)
 endif()
 
-set(VSCP_SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog/include)
+set(VSCP_SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/spdlog/include)
 if(NOT EXISTS ${VSCP_SPDLOG_INCLUDE_DIR}/spdlog/spdlog.h)
     set(VSCP_SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../spdlog/include)
 endif()
 
-set(VSCP_MUSTACHE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/mustache)
+set(VSCP_MUSTACHE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mustache)
 if(NOT EXISTS ${VSCP_MUSTACHE_INCLUDE_DIR}/mustache.hpp)
     set(VSCP_MUSTACHE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Mustache)
 endif()
 
-set(VSCP_MADDY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/maddy/include)
+set(VSCP_MADDY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/maddy/include)
 set(VSCP_HAVE_MADDY OFF)
 if(EXISTS ${VSCP_MADDY_INCLUDE_DIR}/maddy/parser.h)
     set(VSCP_HAVE_MADDY ON)
@@ -167,22 +167,6 @@ elseif(APPLE)
 else()
     # Linux
     add_compile_options(-Wno-psabi)
-endif()
-
-# =====================================================================
-# vscp_sqlite3 — vendored SQLite3 static library
-# =====================================================================
-add_library(vscp_sqlite3 STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3/sqlite3.c
-)
-set_target_properties(vscp_sqlite3 PROPERTIES C_STANDARD 99)
-target_include_directories(vscp_sqlite3
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3>
-        $<INSTALL_INTERFACE:include/vscp/sqlite3>
-)
-if(UNIX)
-    target_link_libraries(vscp_sqlite3 PUBLIC dl m Threads::Threads)
 endif()
 
 # =====================================================================
@@ -460,7 +444,6 @@ if(VSCP_INSTALL)
         vscp_client_mqtt
         vscp_sockettcp
         vscp_util
-        vscp_sqlite3
     )
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         list(APPEND VSCP_INSTALL_TARGETS vscp_client_socketcan)
@@ -481,12 +464,9 @@ if(VSCP_INSTALL)
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/util
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
     )
-    install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3/sqlite3.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/sqlite3
-    )
+
     install(DIRECTORY ${VSCP_NLOHMANN_INCLUDE_DIR}/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third_party/nlohmann
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/nlohmann
         FILES_MATCHING PATTERN "*.hpp"
     )
 

@@ -1,18 +1,18 @@
-[submodule "third_party/spdlog"]
-	path = third_party/spdlog
+[submodule "third-party/spdlog"]
+	path = third-party/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "third_party/nlohmann"]
-	path = third_party/nlohmann
+[submodule "third-party/nlohmann"]
+	path = third-party/nlohmann
 	url = https://github.com/nlohmann/json.git
-[submodule "third_party/mustache"]
-	path = third_party/mustache
+[submodule "third-party/mustache"]
+	path = third-party/mustache
 	url = https://github.com/kainjow/Mustache.git
-[submodule "third_party/maddy"]
-	path = third_party/maddy
+[submodule "third-party/maddy"]
+	path = third-party/maddy
 	url = https://github.com/progsource/maddy.git
-[submodule "third_party/tiny-aes"]
-	path = third_party/tiny-aes
+[submodule "third-party/tiny-aes"]
+	path = third-party/tiny-aes
 	url = https://github.com/kokke/tiny-AES-c.git
-[submodule "third_party/mongoose"]
-	path = third_party/mongoose
+[submodule "third-party/mongoose"]
+	path = third-party/mongoose
 	url = https://github.com/cesanta/mongoose.git

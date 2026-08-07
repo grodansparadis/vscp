@@ -54,19 +54,19 @@ add_executable(vscp-mkpasswd
     ${PROJECT_SOURCE_DIR}/../../../src/common/crc8.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscp-aes.c
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.h
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/fastpbkdf2.c
-    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include/nlohmann/json.hpp
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/fastpbkdf2.h
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/fastpbkdf2.c
+    ${PROJECT_SOURCE_DIR}/../../../third-party/nlohmann/include/nlohmann/json.hpp
     )
 
 target_include_directories(vscp-mkpasswd PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party
-    ${PROJECT_SOURCE_DIR}/../../../third_party/nlohmann/include
-    ${PROJECT_SOURCE_DIR}/../../../third_party/spdlog/include
-    ${PROJECT_SOURCE_DIR}/../../../third_party/fastpbkdf2/
-    ${PROJECT_SOURCE_DIR}/../../../third_party/mustache/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/nlohmann/include
+    ${PROJECT_SOURCE_DIR}/../../../third-party/spdlog/include
+    ${PROJECT_SOURCE_DIR}/../../../third-party/fastpbkdf2/
+    ${PROJECT_SOURCE_DIR}/../../../third-party/mustache/
     ${PROJECT_SOURCE_DIR}/../../../googletest/googletest/include
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
