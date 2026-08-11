@@ -1,7 +1,0 @@
-vscpcmd
-
-vscpcmd is a console client that can communicate with a remote VSCP
-server and perform some helpful tasks
-
-Copyright (C) 2000-2026 Ake Hedman, the VSCP project, Sweden
-https://www.vscp.org
