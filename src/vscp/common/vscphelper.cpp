@@ -5306,8 +5306,8 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent)
 // {
 //    "head": 2,
 //    "obid": 123,
-//    "datetime": "2017-01-13T10:16:02Z",
-//    "timestamp":50817,
+//    "datetime": "2017-01-13T10:16:02Z", (not used anymore)
+//    "timestamp_ns":50817, (64-bit)
 //    "class": 10,
 //    "type": 8,
 //    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
@@ -5578,8 +5578,8 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx)
 // {
 //    "head": 2,
 //    "obid"; 123,
-//    "datetime": "2017-01-13T10:16:02Z",
-//    "timestamp":50817,
+//    "datetime": "2017-01-13T10:16:02Z", (not used anymore)
+//    "timestamp_ns":50817, (64-bit)
 //    "class": 10,
 //    "type": 8,
 //    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
@@ -5839,8 +5839,8 @@ vscp_convertEventToXML(std::string &strXML, vscpEvent *pEvent)
 // <event
 //     head = "2"
 //     obid = "123"
-//     datetime = "2017-01-13T10:16:02"
-//     timestamp = "50817"
+//     datetime = "2017-01-13T10:16:02", (not used anymore)
+//     timestamp = "50817" (64-bit)
 //     class = "10"
 //     type = "8"
 //     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
