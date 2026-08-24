@@ -73,11 +73,8 @@ typedef struct _vscp_event_t {
       Bit 14 - GUID type
       Bit 13 - GUID type
       Bit 12 - GUID type
-
       Bit 10-11 - Reserved
-
       Bit 8-9 - Frame version. (0 = original, 1 = frame with Unix ns timestamp, 2 = reserved, 3 = reserved)
-      Bit 10-11 = Reserved
       Bit 765 =  priority, Priority 0-7 where 0 is highest priority.
       Bit 4 = hard coded, true for a hard coded device.
       Bit 3 = Don't calculate CRC, false for CRC usage.
@@ -146,9 +143,7 @@ typedef struct _vscp_event_ex_t {
       Bit 14 - GUID type
       Bit 13 - GUID type
       Bit 12 - GUID type
-
       Bit 10-11 - Reserved
-
       Bit 8-9 - Frame version. (0 = original, 1 = frame with Unix ns timestamp, 2 = reserved, 3 = reserved)
       Bit 765 =  priority, Priority 0-7 where 0 is highest priority.
       Bit 4 = hard coded, true for a hard coded device.
