@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_mdf.a CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o
+/usr/bin/ranlib libvscp_mdf.a

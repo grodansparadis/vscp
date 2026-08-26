@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_canal.a "CMakeFiles/vscp_client_canal.dir/src/vscp/common/vscp-client-canal.cpp.o"
+/usr/bin/ranlib libvscp_client_canal.a

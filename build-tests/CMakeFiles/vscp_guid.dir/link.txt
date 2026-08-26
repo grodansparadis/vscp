@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_guid.a CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o
+/usr/bin/ranlib libvscp_guid.a

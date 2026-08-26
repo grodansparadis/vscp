@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_socketcan.a "CMakeFiles/vscp_client_socketcan.dir/src/vscp/common/vscp-client-socketcan.cpp.o"
+/usr/bin/ranlib libvscp_client_socketcan.a

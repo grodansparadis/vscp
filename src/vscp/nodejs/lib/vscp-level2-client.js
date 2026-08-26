@@ -272,15 +272,15 @@ class VscpLevel2Client extends EventEmitter {
      * @param {number} timeout - Response timeout in milliseconds
      * @returns {number} VSCP_ERROR_SUCCESS or error code
      */
-    init(interface, flags = 0, timeout = VSCP_CONSTANTS.DEFAULT_RESPONSE_TIMEOUT) {
+    init(interfaceName, flags = 0, timeout = VSCP_CONSTANTS.DEFAULT_RESPONSE_TIMEOUT) {
         try {
-            this.interface = interface;
+            this.interface = interfaceName;
             this.flags = flags;
             this.responseTimeout = timeout;
             this._debug = !!(flags & VSCP_CONSTANTS.FLAG_ENABLE_DEBUG);
             
             if (this._debug) {
-                console.log(`[VSCP] Initialized Level 2 client for interface: ${interface}`);
+                console.log(`[VSCP] Initialized Level 2 client for interface: ${interfaceName}`);
             }
             
             return VSCP_CONSTANTS.ERROR_SUCCESS;

@@ -63,6 +63,39 @@ export interface VscpConstants {
 
 export declare const VSCP_CONSTANTS: VscpConstants;
 
+export type VscpGuidValue = VscpGuid | ArrayLike<number> | string;
+
+export declare class VscpGuid {
+    constructor(value?: VscpGuidValue);
+    clear(): void;
+    getFromString(value: string): void;
+    getFromArray(value: ArrayLike<number>): void;
+    toString(): string;
+    toStringCompact(): string;
+    toStringUUID(): string;
+    getAsString(): string;
+    getGUID(): Uint8Array;
+    getGUID(position: number): number;
+    getAt(position: number): number;
+    setAt(position: number, value: number): void;
+    getLSB(): number;
+    setLSB(value: number): void;
+    getMSB(): number;
+    setMSB(value: number): void;
+    getNicknameID(): number;
+    getNickname(): number;
+    writeGUID(destination: ArrayLike<number>): void;
+    reverse(): void;
+    writeGUID_reverse(destination: ArrayLike<number>): void;
+    isSameGUID(value: ArrayLike<number> | null): boolean;
+    isNULL(): boolean;
+    setClientID(clientId: number): void;
+    getClientID(): number;
+    setNicknameID(nicknameId: number): void;
+    equals(other: VscpGuid): boolean;
+    notEquals(other: VscpGuid): boolean;
+}
+
 // VSCP Event interface
 export interface VscpEventOptions {
     crc?: number;
@@ -256,6 +289,7 @@ export interface LibraryInfo {
 export declare function createClient(options?: VscpLevel2ClientOptions): VscpLevel2Client;
 export declare function createEvent(options?: VscpEventOptions): VscpEvent;
 export declare function createFilter(options?: VscpEventFilterOptions): VscpEventFilter;
+export declare function createGuid(value?: VscpGuidValue): VscpGuid;
 
 // Aliases
 export declare const Client: typeof VscpLevel2Client;

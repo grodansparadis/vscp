@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_mqtt.a "CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o"
+/usr/bin/ranlib libvscp_client_mqtt.a

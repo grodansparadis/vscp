@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_udp.a "CMakeFiles/vscp_client_udp.dir/src/vscp/common/vscp-client-udp.cpp.o"
+/usr/bin/ranlib libvscp_client_udp.a

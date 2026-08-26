@@ -345,6 +345,20 @@ TEST(Cguid, GetFromArray)
     }
 }
 
+TEST(Cguid, Reverse)
+{
+    cguid guid("FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00");
+    uint8_t output[16] = {0};
+    
+    // Reverse local array
+    guid.reverse();
+    
+    // Reverse: index 0 gets guid[15], index 15 gets guid[0]
+    EXPECT_EQ(0x00, guid.getAt(0));
+    EXPECT_EQ(0x11, guid.getAt(1));
+    EXPECT_EQ(0xFF, guid.getAt(15));
+}
+
 TEST(Cguid, WriteGUID) 
 {
     cguid guid("FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00");
@@ -357,11 +371,14 @@ TEST(Cguid, WriteGUID)
     EXPECT_EQ(0x00, output[15]);
 }
 
+
+
 TEST(Cguid, WriteGUIDReverse) 
 {
     cguid guid("FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00");
     uint8_t output[16] = {0};
     
+    // Reverse output array
     guid.writeGUID_reverse(output);
     
     // Reverse: index 0 gets guid[15], index 15 gets guid[0]
@@ -573,7 +590,9 @@ TEST(Cguid, PartialString)
     EXPECT_EQ(0xEE, guid.getAt(1));
     EXPECT_EQ(0xDD, guid.getAt(2));
     // Rest remains 0 from clear()
-    EXPECT_EQ(0x00, guid.getAt(3));
+    for (int i = 3; i < 16; i++) {
+        EXPECT_EQ(0x00, guid.getAt(i));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -719,11 +738,72 @@ TEST(Cguid, BracesFormat)
 {
     // GUID with braces
     cguid guid;
-    guid.getFromString("{FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00}");
+    guid.getFromString("{::0102:03aa:44:01:30}");
     
     EXPECT_EQ(0xFF, guid.getAt(0));
-    EXPECT_EQ(0xEE, guid.getAt(1));
-    EXPECT_EQ(0x00, guid.getAt(15));
+    EXPECT_EQ(0xFF, guid.getAt(1));
+    EXPECT_EQ(0xFF, guid.getAt(2));
+    EXPECT_EQ(0xFF, guid.getAt(3));
+    EXPECT_EQ(0xFF, guid.getAt(4));
+    EXPECT_EQ(0xFF, guid.getAt(5));
+    EXPECT_EQ(0xFF, guid.getAt(6));
+    EXPECT_EQ(0xFF, guid.getAt(7));
+    EXPECT_EQ(0xFF, guid.getAt(8));
+    EXPECT_EQ(0x01, guid.getAt(9));
+    EXPECT_EQ(0x02, guid.getAt(10));
+    EXPECT_EQ(0x03, guid.getAt(11));
+    EXPECT_EQ(0xaa, guid.getAt(12));
+    EXPECT_EQ(0x44, guid.getAt(13));
+    EXPECT_EQ(0x01, guid.getAt(14));
+    EXPECT_EQ(0x30, guid.getAt(15));
+}
+
+TEST(Cguid, BracesFormat2) 
+{
+    // GUID with braces
+    cguid guid;
+    guid.getFromString("{::0102-03aa-44-01-30}");
+    
+    EXPECT_EQ(0xFF, guid.getAt(0));
+    EXPECT_EQ(0xFF, guid.getAt(1));
+    EXPECT_EQ(0xFF, guid.getAt(2));
+    EXPECT_EQ(0xFF, guid.getAt(3));
+    EXPECT_EQ(0xFF, guid.getAt(4));
+    EXPECT_EQ(0xFF, guid.getAt(5));
+    EXPECT_EQ(0xFF, guid.getAt(6));
+    EXPECT_EQ(0xFF, guid.getAt(7));
+    EXPECT_EQ(0xFF, guid.getAt(8));
+    EXPECT_EQ(0x01, guid.getAt(9));
+    EXPECT_EQ(0x02, guid.getAt(10));
+    EXPECT_EQ(0x03, guid.getAt(11));
+    EXPECT_EQ(0xaa, guid.getAt(12));
+    EXPECT_EQ(0x44, guid.getAt(13));
+    EXPECT_EQ(0x01, guid.getAt(14));
+    EXPECT_EQ(0x30, guid.getAt(15));
+}
+
+TEST(Cguid, UnBracesFormat) 
+{
+    // GUID with braces
+    cguid guid;
+    guid.getFromString("::0102:03aa:44:01:30");
+    
+    EXPECT_EQ(0xFF, guid.getAt(0));
+    EXPECT_EQ(0xFF, guid.getAt(1));
+    EXPECT_EQ(0xFF, guid.getAt(2));
+    EXPECT_EQ(0xFF, guid.getAt(3));
+    EXPECT_EQ(0xFF, guid.getAt(4));
+    EXPECT_EQ(0xFF, guid.getAt(5));
+    EXPECT_EQ(0xFF, guid.getAt(6));
+    EXPECT_EQ(0xFF, guid.getAt(7));
+    EXPECT_EQ(0xFF, guid.getAt(8));
+    EXPECT_EQ(0x01, guid.getAt(9));
+    EXPECT_EQ(0x02, guid.getAt(10));
+    EXPECT_EQ(0x03, guid.getAt(11));
+    EXPECT_EQ(0xaa, guid.getAt(12));
+    EXPECT_EQ(0x44, guid.getAt(13));
+    EXPECT_EQ(0x01, guid.getAt(14));
+    EXPECT_EQ(0x30, guid.getAt(15));
 }
 
 TEST(Cguid, BracesUUIDFormat) 
@@ -734,7 +814,80 @@ TEST(Cguid, BracesUUIDFormat)
     
     EXPECT_EQ(0xFF, guid.getAt(0));
     EXPECT_EQ(0xEE, guid.getAt(1));
+    EXPECT_EQ(0xDD, guid.getAt(2));
+    EXPECT_EQ(0xCC, guid.getAt(3));
+    EXPECT_EQ(0xBB, guid.getAt(4));
+    EXPECT_EQ(0xAA, guid.getAt(5));
+    EXPECT_EQ(0x99, guid.getAt(6));
+    EXPECT_EQ(0x88, guid.getAt(7));
+    EXPECT_EQ(0x77, guid.getAt(8));
+    EXPECT_EQ(0x66, guid.getAt(9));
+    EXPECT_EQ(0x55, guid.getAt(10));
+    EXPECT_EQ(0x44, guid.getAt(11));
+    EXPECT_EQ(0x33, guid.getAt(12));
+    EXPECT_EQ(0x22, guid.getAt(13));
+    EXPECT_EQ(0x11, guid.getAt(14));
     EXPECT_EQ(0x00, guid.getAt(15));
+}
+
+TEST(Cguid, VSCP_UUIDFormat1)
+{
+    // UUID format with braces
+    cguid guid;
+    guid.getFromString("{FFEEDDCC-BBAA-9988-7766-55443322-1100}");
+    
+    EXPECT_EQ(0xFF, guid.getAt(0));
+    EXPECT_EQ(0xEE, guid.getAt(1));
+    EXPECT_EQ(0xDD, guid.getAt(2));
+    EXPECT_EQ(0xCC, guid.getAt(3));
+    EXPECT_EQ(0xBB, guid.getAt(4));
+    EXPECT_EQ(0xAA, guid.getAt(5));
+    EXPECT_EQ(0x99, guid.getAt(6));
+    EXPECT_EQ(0x88, guid.getAt(7));
+    EXPECT_EQ(0x77, guid.getAt(8));
+    EXPECT_EQ(0x66, guid.getAt(9));
+    EXPECT_EQ(0x55, guid.getAt(10));
+    EXPECT_EQ(0x44, guid.getAt(11));
+    EXPECT_EQ(0x33, guid.getAt(12));
+    EXPECT_EQ(0x22, guid.getAt(13));
+    EXPECT_EQ(0x11, guid.getAt(14));
+    EXPECT_EQ(0x00, guid.getAt(15));
+}
+
+TEST(Cguid, VSCP_UUIDFormatStrangeGrouping)
+{
+    // UUID format with braces
+    cguid guid;
+    guid.getFromString("{FF-EE-DD-CC-BBAA-9988-7766-5544-3322-1100}");
+    
+    EXPECT_EQ(0xFF, guid.getAt(0));
+    EXPECT_EQ(0xEE, guid.getAt(1));
+    EXPECT_EQ(0xDD, guid.getAt(2));
+    EXPECT_EQ(0xCC, guid.getAt(3));
+    EXPECT_EQ(0xBB, guid.getAt(4));
+    EXPECT_EQ(0xAA, guid.getAt(5));
+    EXPECT_EQ(0x99, guid.getAt(6));
+    EXPECT_EQ(0x88, guid.getAt(7));
+    EXPECT_EQ(0x77, guid.getAt(8));
+    EXPECT_EQ(0x66, guid.getAt(9));
+    EXPECT_EQ(0x55, guid.getAt(10));
+    EXPECT_EQ(0x44, guid.getAt(11));
+    EXPECT_EQ(0x33, guid.getAt(12));
+    EXPECT_EQ(0x22, guid.getAt(13));
+    EXPECT_EQ(0x11, guid.getAt(14));
+    EXPECT_EQ(0x00, guid.getAt(15));
+}
+
+TEST(Cguid, FreelyGroupedHexFormat)
+{
+    cguid guid;
+    guid.getFromString("FFEEDD:CCBBAA99-8877,665544332211:00");
+
+    const uint8_t expected[16] = { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
+                                   0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00 };
+    for (int index = 0; index < 16; index++) {
+        EXPECT_EQ(expected[index], guid.getAt(index));
+    }
 }
 
 TEST(Cguid, MultiByteHexValues) 

@@ -53,22 +53,21 @@ extern "C" {
  *    ::0102:03aa:44:01:30
  *    ::0102:03aa:440130
  *
- * 4. Standard UUID format with dashes (8-4-4-4-12):
+ * 4. Freely grouped hex values using colon, dash, or comma separators:
  *    FFFFFFFF-FFFF-FFFF-0102-03AABB440130
- *
- * 5. UUID-like format with colons:
+ *    FFFFFFFF-FFFF-FFFF-0102-03AABB44-0130
  *    FFFFFFFF:FFFF:FFFF:0102:03AABB440130
  *
- * 6. Special values:
+ * 5. Special values:
  *    "-"  = All zeros (00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00)
  *    "::" = All 0xFF  (FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF)
  *
- * 7. Hyphen-colon prefix for leading zero bytes:
+ * 6. Hyphen-colon prefix for leading zero bytes:
  *    -:01:02:03:AA:BB:44:01:30
  *    (equivalent to 00:00:00:00:00:00:00:00:01:02:03:AA:BB:44:01:30)
  *    -:1,2,3  (comma separators also supported)
  *
- * 8. Brace-enclosed formats (any of the above can be enclosed in {}):
+ * 7. Brace-enclosed formats (any of the above can be enclosed in {}):
  *    {FF:FF:FF:FF:FF:FF:FF:FF:01:02:03:AA:BB:44:01:30}
  *    {FFFFFFFF-FFFF-FFFF-0102-03AABB440130}
  *    {::01:02:03:AA:BB:44:01:30}

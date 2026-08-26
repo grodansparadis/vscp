@@ -98,26 +98,6 @@ parse_hex_value(const char **pp, int max_digits)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Helper: Check if string looks like UUID format (8-4-4-4-12 or similar)
-//
-
-static int
-is_uuid_format(const char *p)
-{
-  // Count hex digits before first separator
-  int hex_count = count_hex_digits(p);
-
-  // UUID format typically starts with 8 hex digits
-  if (hex_count >= 8) {
-    const char *sep = p + hex_count;
-    if (*sep == '-' || *sep == ':') {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // vscp_guid_parse
 //
 
@@ -332,52 +312,7 @@ vscp_guid_parse(uint8_t *guid, const char *strguid, char **endptr)
     return VSCP_ERROR_SUCCESS;
   }
 
-  // Check if this looks like UUID format (e.g., FFFFFFFF-FFFF-FFFF-0102-03AABB440130)
-  if (is_uuid_format(p)) {
-    // Parse UUID format: 8-4-4-4-12 hex digits with - or : separators
-    int segments[]       = { 8, 4, 4, 4, 12 };
-    int byte_pos         = 0;
-    int num_segments     = sizeof(segments) / sizeof(segments[0]);
-
-    for (int seg = 0; seg < num_segments && byte_pos < 16; seg++) {
-      int expected_hex = segments[seg];
-      int hex_count    = count_hex_digits(p);
-
-      if (hex_count < expected_hex) {
-        // Not enough hex digits for this segment
-        return VSCP_ERROR_ERROR;
-      }
-
-      // Parse the segment
-      int bytes_in_segment = expected_hex / 2;
-      for (int i = 0; i < bytes_in_segment && byte_pos < 16; i++) {
-        uint8_t hi          = hex_to_val(*p++);
-        uint8_t lo          = hex_to_val(*p++);
-        guid[byte_pos++] = (hi << 4) | lo;
-      }
-
-      // Skip separator
-      if (*p == '-' || *p == ':' || *p == ',') {
-        p++;
-      }
-    }
-
-    // Skip closing brace if we had an opening one
-    if (has_braces) {
-      while (*p && (*p == ' ' || *p == '\t')) {
-        p++;
-      }
-      if (*p == '}') {
-        p++;
-      }
-    }
-
-    if (endptr)
-      *endptr = (char *) p;
-    return VSCP_ERROR_SUCCESS;
-  }
-
-  // Standard colon-separated format or mixed format
+  // Parse hex groups separated by ':', '-', or ','. Group sizes are unrestricted.
   // Parse bytes one group at a time
   while (*p && guid_idx < 16) {
     if (!is_hex_digit(*p)) {

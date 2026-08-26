@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_util.a CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o CMakeFiles/vscp_util.dir/src/common/crc.c.o CMakeFiles/vscp_util.dir/src/common/crc8.c.o "CMakeFiles/vscp_util.dir/src/common/vscp-aes.c.o" CMakeFiles/vscp_util.dir/src/common/randpassword.cpp.o CMakeFiles/vscp_util.dir/src/common/configfile.cpp.o
+/usr/bin/ranlib libvscp_util.a

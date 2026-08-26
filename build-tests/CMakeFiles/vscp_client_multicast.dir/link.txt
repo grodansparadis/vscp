@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_multicast.a "CMakeFiles/vscp_client_multicast.dir/src/vscp/common/vscp-client-multicast.cpp.o"
+/usr/bin/ranlib libvscp_client_multicast.a

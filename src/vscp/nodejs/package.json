@@ -6,6 +6,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "test": "node examples/test-level2.js",
+    "test:guid": "node test/guid.test.js",
     "example:basic": "node examples/basic-usage.js",
     "example:events": "node examples/event-handling.js",
     "example:filter": "node examples/filtering.js"

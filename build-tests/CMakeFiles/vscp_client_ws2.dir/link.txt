@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_ws2.a "CMakeFiles/vscp_client_ws2.dir/src/vscp/common/vscp-client-ws2.cpp.o"
+/usr/bin/ranlib libvscp_client_ws2.a

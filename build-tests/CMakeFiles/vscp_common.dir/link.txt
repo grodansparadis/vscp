@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_common.a "CMakeFiles/vscp_common.dir/src/vscp/common/vscp-common.cpp.o"
+/usr/bin/ranlib libvscp_common.a

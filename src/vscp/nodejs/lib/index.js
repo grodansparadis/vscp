@@ -15,6 +15,7 @@ const {
     VscpEventFilter,
     VSCP_CONSTANTS
 } = require('./vscp-level2-client');
+const { VscpGuid } = require('./vscp-guid');
 
 // Re-export everything for easy access
 module.exports = {
@@ -24,6 +25,7 @@ module.exports = {
     // Data structures
     VscpEvent,
     VscpEventFilter,
+    VscpGuid,
     
     // Constants
     VSCP_CONSTANTS,
@@ -32,6 +34,7 @@ module.exports = {
     Client: VscpLevel2Client,
     Event: VscpEvent,
     Filter: VscpEventFilter,
+    Guid: VscpGuid,
     Constants: VSCP_CONSTANTS,
     
     // Factory functions
@@ -45,6 +48,10 @@ module.exports = {
     
     createFilter: function(options) {
         return new VscpEventFilter(options);
+    },
+
+    createGuid: function(value) {
+        return new VscpGuid(value);
     },
     
     // Version information

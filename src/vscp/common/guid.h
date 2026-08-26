@@ -236,6 +236,11 @@ class cguid
     void writeGUID(uint8_t *pArray);
 
     /*!
+        Reverse object GUID, set GUID LSB first
+    */
+    void reverse(void);
+
+    /*!
         Fill array with GUID LSB first
     */
     void writeGUID_reverse(uint8_t *pArray);

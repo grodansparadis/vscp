@@ -20,7 +20,8 @@ find_package(Threads REQUIRED)
 add_executable(unittest_vscp_client_tcp unittest.cpp)
 
 target_link_libraries(unittest_vscp_client_tcp PRIVATE
-    vscp_common
+    vscp_client_tcp
+    vscp_core
     Threads::Threads
     GTest::GTest
     GTest::Main

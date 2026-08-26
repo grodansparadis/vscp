@@ -88,17 +88,6 @@ inline uint32_t parseHexValue(const char **pp, int maxDigits) {
     return value;
 }
 
-inline bool isUuidFormat(const char *p) {
-    int hexCount = countHexDigits(p);
-    if (hexCount >= 8) {
-        const char *sep = p + hexCount;
-        if (*sep == '-' || *sep == ':') {
-            return true;
-        }
-    }
-    return false;
-}
-
 } // anonymous namespace
 
 //////////////////////////////////////////////////////////////////////
@@ -292,26 +281,7 @@ cguid::getFromString(const std::string &strGUID)
         return;
     }
 
-    // Check for UUID format
-    if (isUuidFormat(p)) {
-        int segments[] = {8, 4, 4, 4, 12};
-        int bytePos = 0;
-        for (int seg = 0; seg < 5 && bytePos < 16; seg++) {
-            int expectedHex = segments[seg];
-            int hexCount = countHexDigits(p);
-            if (hexCount < expectedHex) return;
-            int bytesInSegment = expectedHex / 2;
-            for (int i = 0; i < bytesInSegment && bytePos < 16; i++) {
-                uint8_t hi = hexToVal(*p++);
-                uint8_t lo = hexToVal(*p++);
-                m_guid[bytePos++] = (hi << 4) | lo;
-            }
-            if (*p == '-' || *p == ':' || *p == ',') p++;
-        }
-        return;
-    }
-
-    // Standard colon-separated format
+    // Parse hex groups separated by ':', '-', or ','. Group sizes are unrestricted.
     while (*p && guidIdx < 16) {
         if (!isHexDigit(*p)) break;
         int hexLen = countHexDigits(p);
@@ -509,6 +479,20 @@ cguid::writeGUID(uint8_t *pArray)
     if (NULL == pArray) return;
 
     memcpy(pArray, m_guid, 16);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// reverse
+//
+
+void
+cguid::reverse(void)
+{
+    uint8_t tmp[16];
+    for (int i = 0; i < 16; i++) {
+        tmp[15 - i] = m_guid[i];
+    }
+    memcpy(m_guid, tmp, 16);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

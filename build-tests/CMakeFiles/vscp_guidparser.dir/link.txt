@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_guidparser.a "CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o"
+/usr/bin/ranlib libvscp_guidparser.a

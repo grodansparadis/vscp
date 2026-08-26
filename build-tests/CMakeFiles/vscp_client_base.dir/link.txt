@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_client_base.a "CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o"
+/usr/bin/ranlib libvscp_client_base.a

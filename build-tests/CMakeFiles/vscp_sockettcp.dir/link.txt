@@ -1,0 +1,2 @@
+/usr/bin/ar qc libvscp_sockettcp.a CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o
+/usr/bin/ranlib libvscp_sockettcp.a
