@@ -4,15 +4,23 @@
     "source": "remote",
     "provider": "gh",
     "organization": "grodansparadis",
-    "repositoryId": "847906",
-    "repositoryName": "vscp-doc-spec",
-    "createdAt": "2026-08-26T20:27:25.371Z",
-    "updatedAt": "2026-08-26T20:27:25.371Z",
+    "repositoryId": "847899",
+    "repositoryName": "vscp",
+    "createdAt": "2026-08-31T09:04:41.720Z",
+    "updatedAt": "2026-08-31T09:04:41.720Z",
     "languages": [
-      "CSS",
+      "C",
+      "CPP",
+      "CSharp",
       "HTML",
+      "Javascript",
       "JSON",
       "Markdown",
+      "PHP",
+      "Python",
+      "Shell",
+      "SQL",
+      "TypeScript",
       "XML",
       "YAML"
     ]
@@ -4287,25 +4295,308 @@
       ]
     },
     {
-      "toolId": "Agentlinter",
-      "patterns": []
-    },
-    {
-      "toolId": "markdownlint",
+      "toolId": "flawfinder",
       "patterns": [
         {
-          "patternId": "markdownlint_MD052",
-          "parameters": {
-            "shortcut_syntax": "false"
-          }
+          "patternId": "flawfinder_strcpyA"
         },
         {
-          "patternId": "markdownlint_MD051"
+          "patternId": "flawfinder_ulimit"
         },
         {
-          "patternId": "markdownlint_MD011"
+          "patternId": "flawfinder__snprintf"
+        },
+        {
+          "patternId": "flawfinder__gettc"
+        },
+        {
+          "patternId": "flawfinder_EVP_desx_cbc"
+        },
+        {
+          "patternId": "flawfinder_wcslen"
+        },
+        {
+          "patternId": "flawfinder__tscanf"
+        },
+        {
+          "patternId": "flawfinder_StrCatBuffA"
+        },
+        {
+          "patternId": "flawfinder__mbsnbcpy"
+        },
+        {
+          "patternId": "flawfinder__tcslen"
+        },
+        {
+          "patternId": "flawfinder_StrCatN"
+        },
+        {
+          "patternId": "flawfinder__tcsncat"
+        },
+        {
+          "patternId": "flawfinder_strcpyW"
+        },
+        {
+          "patternId": "flawfinder_getchar"
+        },
+        {
+          "patternId": "flawfinder_sscanf"
+        },
+        {
+          "patternId": "flawfinder_snprintf"
+        },
+        {
+          "patternId": "flawfinder_StrCpy"
+        },
+        {
+          "patternId": "flawfinder_strcpy"
+        },
+        {
+          "patternId": "flawfinder_wcscpy"
+        },
+        {
+          "patternId": "flawfinder__tcsncpy"
+        },
+        {
+          "patternId": "flawfinder_StrNCatA"
+        },
+        {
+          "patternId": "flawfinder_vwscanf"
+        },
+        {
+          "patternId": "flawfinder__ftcscpy"
+        },
+        {
+          "patternId": "flawfinder__mbsnbcat"
+        },
+        {
+          "patternId": "flawfinder_vfwscanf"
+        },
+        {
+          "patternId": "flawfinder_wprintf"
+        },
+        {
+          "patternId": "flawfinder_strCatBuff"
+        },
+        {
+          "patternId": "flawfinder_printf"
+        },
+        {
+          "patternId": "flawfinder_lstrcpyn"
+        },
+        {
+          "patternId": "flawfinder_lstrcat"
+        },
+        {
+          "patternId": "flawfinder_g_rand_int"
+        },
+        {
+          "patternId": "flawfinder_execl"
+        },
+        {
+          "patternId": "flawfinder_memcpy"
+        },
+        {
+          "patternId": "flawfinder_CopyMemory"
+        },
+        {
+          "patternId": "flawfinder_strlen"
+        },
+        {
+          "patternId": "flawfinder_lstrcpyA"
+        },
+        {
+          "patternId": "flawfinder_lstrcatnA"
+        },
+        {
+          "patternId": "flawfinder_getc"
+        },
+        {
+          "patternId": "flawfinder_wcsncpy"
+        },
+        {
+          "patternId": "flawfinder_fprintf"
+        },
+        {
+          "patternId": "flawfinder_memalign"
+        },
+        {
+          "patternId": "flawfinder_scanf"
+        },
+        {
+          "patternId": "flawfinder__mbslen"
+        },
+        {
+          "patternId": "flawfinder__getts"
+        },
+        {
+          "patternId": "flawfinder_vfprintf"
+        },
+        {
+          "patternId": "flawfinder_StrCat"
+        },
+        {
+          "patternId": "flawfinder_lstrcatA"
+        },
+        {
+          "patternId": "flawfinder_vscanf"
+        },
+        {
+          "patternId": "flawfinder_vsprintf"
+        },
+        {
+          "patternId": "flawfinder_g_rand_int_range"
+        },
+        {
+          "patternId": "flawfinder_strccpy"
+        },
+        {
+          "patternId": "flawfinder_vfwprintf"
+        },
+        {
+          "patternId": "flawfinder_sprintf"
+        },
+        {
+          "patternId": "flawfinder_lstrcpynA"
+        },
+        {
+          "patternId": "flawfinder_mktemp"
+        },
+        {
+          "patternId": "flawfinder__ftprintf"
+        },
+        {
+          "patternId": "flawfinder_strncpy"
+        },
+        {
+          "patternId": "flawfinder_StrNCpy"
+        },
+        {
+          "patternId": "flawfinder_fwprintf"
+        },
+        {
+          "patternId": "flawfinder_StrNCat"
+        },
+        {
+          "patternId": "flawfinder_strcat"
+        },
+        {
+          "patternId": "flawfinder_tmpnam"
+        },
+        {
+          "patternId": "flawfinder_wcscat"
+        },
+        {
+          "patternId": "flawfinder_CoImpersonateClient"
+        },
+        {
+          "patternId": "flawfinder_usleep"
+        },
+        {
+          "patternId": "flawfinder_strcadd"
+        },
+        {
+          "patternId": "flawfinder__mbccat"
+        },
+        {
+          "patternId": "flawfinder__vstprintf"
+        },
+        {
+          "patternId": "flawfinder__vtprintf"
+        },
+        {
+          "patternId": "flawfinder_umask"
+        },
+        {
+          "patternId": "flawfinder_CreateProcessWithLogon"
+        },
+        {
+          "patternId": "flawfinder_StrCpyA"
+        },
+        {
+          "patternId": "flawfinder_StrNCpyW"
+        },
+        {
+          "patternId": "flawfinder_SetSecurityDescriptorDacl"
+        },
+        {
+          "patternId": "flawfinder__sntprintf"
+        },
+        {
+          "patternId": "flawfinder_gets"
+        },
+        {
+          "patternId": "flawfinder_lstrcpyW"
+        },
+        {
+          "patternId": "flawfinder__tcscat"
+        },
+        {
+          "patternId": "flawfinder_wcsncat"
+        },
+        {
+          "patternId": "flawfinder_fscanf"
+        },
+        {
+          "patternId": "flawfinder_lstrcatn"
+        },
+        {
+          "patternId": "flawfinder_g_rand_double_range"
+        },
+        {
+          "patternId": "flawfinder_fgetc"
+        },
+        {
+          "patternId": "flawfinder__vftprintf"
+        },
+        {
+          "patternId": "flawfinder_lstrcpynW"
+        },
+        {
+          "patternId": "flawfinder_StrCatNA"
+        },
+        {
+          "patternId": "flawfinder_read"
+        },
+        {
+          "patternId": "flawfinder_strcpynA"
+        },
+        {
+          "patternId": "flawfinder_EVP_des_cfb"
+        },
+        {
+          "patternId": "flawfinder_strncat"
+        },
+        {
+          "patternId": "flawfinder_StrcatW"
+        },
+        {
+          "patternId": "flawfinder__mbccpy"
+        },
+        {
+          "patternId": "flawfinder_fvwprintf"
+        },
+        {
+          "patternId": "flawfinder_realpath"
+        },
+        {
+          "patternId": "flawfinder_vprintf"
+        },
+        {
+          "patternId": "flawfinder_popen"
+        },
+        {
+          "patternId": "flawfinder__mbsncpy"
+        },
+        {
+          "patternId": "flawfinder_syslog"
         }
       ]
+    },
+    {
+      "toolId": "Bandit",
+      "useLocalConfigurationFile": true,
+      "patterns": []
     },
     {
       "toolId": "PMD",
@@ -4511,6 +4802,1629 @@
       ]
     },
     {
+      "toolId": "PyLintPython3",
+      "patterns": [
+        {
+          "patternId": "PyLintPython3_E0203"
+        },
+        {
+          "patternId": "PyLintPython3_E0102"
+        },
+        {
+          "patternId": "PyLintPython3_E1102"
+        },
+        {
+          "patternId": "PyLintPython3_E1121"
+        },
+        {
+          "patternId": "PyLintPython3_W1301"
+        },
+        {
+          "patternId": "PyLintPython3_E0241"
+        },
+        {
+          "patternId": "PyLintPython3_W0101"
+        },
+        {
+          "patternId": "PyLintPython3_E0107"
+        },
+        {
+          "patternId": "PyLintPython3_E0202"
+        },
+        {
+          "patternId": "PyLintPython3_E1003"
+        },
+        {
+          "patternId": "PyLintPython3_E0302"
+        },
+        {
+          "patternId": "PyLintPython3_E1306"
+        },
+        {
+          "patternId": "PyLintPython3_E0113"
+        },
+        {
+          "patternId": "PyLintPython3_E0301"
+        },
+        {
+          "patternId": "PyLintPython3_W0711"
+        },
+        {
+          "patternId": "PyLintPython3_E0108"
+        },
+        {
+          "patternId": "PyLintPython3_E0604"
+        },
+        {
+          "patternId": "PyLintPython3_W0102"
+        },
+        {
+          "patternId": "PyLintPython3_E0603"
+        },
+        {
+          "patternId": "PyLintPython3_W0150"
+        },
+        {
+          "patternId": "PyLintPython3_E0240"
+        },
+        {
+          "patternId": "PyLintPython3_E0101"
+        },
+        {
+          "patternId": "PyLintPython3_E0110"
+        },
+        {
+          "patternId": "PyLintPython3_E0112"
+        },
+        {
+          "patternId": "PyLintPython3_E0117"
+        },
+        {
+          "patternId": "PyLintPython3_E0211"
+        },
+        {
+          "patternId": "PyLintPython3_E1303"
+        },
+        {
+          "patternId": "PyLintPython3_W0123"
+        },
+        {
+          "patternId": "PyLintPython3_E0106"
+        },
+        {
+          "patternId": "PyLintPython3_E1300"
+        },
+        {
+          "patternId": "PyLintPython3_W1305"
+        },
+        {
+          "patternId": "PyLintPython3_E0105"
+        },
+        {
+          "patternId": "PyLintPython3_E1200"
+        },
+        {
+          "patternId": "PyLintPython3_W0109"
+        },
+        {
+          "patternId": "PyLintPython3_W1306"
+        },
+        {
+          "patternId": "PyLintPython3_E0236"
+        },
+        {
+          "patternId": "PyLintPython3_E0712"
+        },
+        {
+          "patternId": "PyLintPython3_E0710"
+        },
+        {
+          "patternId": "PyLintPython3_E1301"
+        },
+        {
+          "patternId": "PyLintPython3_E0104"
+        },
+        {
+          "patternId": "PyLintPython3_E0702"
+        },
+        {
+          "patternId": "PyLintPython3_E1132"
+        },
+        {
+          "patternId": "PyLintPython3_W0221"
+        },
+        {
+          "patternId": "PyLintPython3_E0701"
+        },
+        {
+          "patternId": "PyLintPython3_E1206"
+        },
+        {
+          "patternId": "PyLintPython3_E0238"
+        },
+        {
+          "patternId": "PyLintPython3_E1126"
+        },
+        {
+          "patternId": "PyLintPython3_E0114"
+        },
+        {
+          "patternId": "PyLintPython3_W0702"
+        },
+        {
+          "patternId": "PyLintPython3_E0100"
+        },
+        {
+          "patternId": "PyLintPython3_W0106"
+        },
+        {
+          "patternId": "PyLintPython3_E0601"
+        },
+        {
+          "patternId": "PyLintPython3_W1307"
+        },
+        {
+          "patternId": "PyLintPython3_E1302"
+        },
+        {
+          "patternId": "PyLintPython3_E1125"
+        },
+        {
+          "patternId": "PyLintPython3_W0622"
+        },
+        {
+          "patternId": "PyLintPython3_E1111"
+        },
+        {
+          "patternId": "PyLintPython3_E1305"
+        },
+        {
+          "patternId": "PyLintPython3_E0103"
+        },
+        {
+          "patternId": "PyLintPython3_W0410"
+        },
+        {
+          "patternId": "PyLintPython3_E0115"
+        },
+        {
+          "patternId": "PyLintPython3_E1304"
+        },
+        {
+          "patternId": "PyLintPython3_E1123"
+        },
+        {
+          "patternId": "PyLintPython3_W0233"
+        },
+        {
+          "patternId": "PyLintPython3_W1303"
+        },
+        {
+          "patternId": "PyLintPython3_W0199"
+        },
+        {
+          "patternId": "PyLintPython3_W0705"
+        },
+        {
+          "patternId": "PyLintPython3_E1124"
+        },
+        {
+          "patternId": "PyLintPython3_E0704"
+        },
+        {
+          "patternId": "PyLintPython3_W0601"
+        },
+        {
+          "patternId": "PyLintPython3_E0239"
+        },
+        {
+          "patternId": "PyLintPython3_E1120"
+        },
+        {
+          "patternId": "PyLintPython3_W1302"
+        },
+        {
+          "patternId": "PyLintPython3_W0222"
+        },
+        {
+          "patternId": "PyLintPython3_E0711"
+        },
+        {
+          "patternId": "PyLintPython3_W1300"
+        },
+        {
+          "patternId": "PyLintPython3_E1205"
+        },
+        {
+          "patternId": "PyLintPython3_E1201"
+        },
+        {
+          "patternId": "PyLintPython3_W0122"
+        },
+        {
+          "patternId": "PyLintPython3_E1127"
+        }
+      ]
+    },
+    {
+      "toolId": "Lizard",
+      "patterns": []
+    },
+    {
+      "toolId": "SonarCSharp",
+      "patterns": [
+        {
+          "patternId": "SonarCSharp_S6781"
+        },
+        {
+          "patternId": "SonarCSharp_S6377"
+        },
+        {
+          "patternId": "SonarCSharp_S5344"
+        },
+        {
+          "patternId": "SonarCSharp_S4347"
+        },
+        {
+          "patternId": "SonarCSharp_S6444"
+        },
+        {
+          "patternId": "SonarCSharp_S4502"
+        },
+        {
+          "patternId": "SonarCSharp_S2115"
+        },
+        {
+          "patternId": "SonarCSharp_S5753"
+        },
+        {
+          "patternId": "SonarCSharp_S5332"
+        },
+        {
+          "patternId": "SonarCSharp_S4423"
+        },
+        {
+          "patternId": "SonarCSharp_S3329"
+        },
+        {
+          "patternId": "SonarCSharp_S2612"
+        },
+        {
+          "patternId": "SonarCSharp_S2257"
+        },
+        {
+          "patternId": "SonarCSharp_S2053"
+        },
+        {
+          "patternId": "SonarCSharp_S5773"
+        },
+        {
+          "patternId": "SonarCSharp_S5766"
+        },
+        {
+          "patternId": "SonarCSharp_S5659"
+        },
+        {
+          "patternId": "SonarCSharp_S2755"
+        },
+        {
+          "patternId": "SonarCSharp_S5542"
+        },
+        {
+          "patternId": "SonarCSharp_S4830"
+        },
+        {
+          "patternId": "SonarCSharp_S5547"
+        },
+        {
+          "patternId": "SonarCSharp_S2068",
+          "parameters": {
+            "credentialWords": "password, passwd, pwd, passphrase"
+          }
+        },
+        {
+          "patternId": "SonarCSharp_S2245"
+        },
+        {
+          "patternId": "SonarCSharp_S4790"
+        },
+        {
+          "patternId": "SonarCSharp_S5042"
+        },
+        {
+          "patternId": "SonarCSharp_S4426"
+        },
+        {
+          "patternId": "SonarCSharp_S4433"
+        },
+        {
+          "patternId": "SonarCSharp_S1215"
+        },
+        {
+          "patternId": "SonarCSharp_S3610"
+        },
+        {
+          "patternId": "SonarCSharp_S1764"
+        },
+        {
+          "patternId": "SonarCSharp_S2934"
+        },
+        {
+          "patternId": "SonarCSharp_S131"
+        },
+        {
+          "patternId": "SonarCSharp_S3217"
+        },
+        {
+          "patternId": "SonarCSharp_S3005"
+        },
+        {
+          "patternId": "SonarCSharp_S1226"
+        },
+        {
+          "patternId": "SonarCSharp_S112"
+        },
+        {
+          "patternId": "SonarCSharp_S2688"
+        },
+        {
+          "patternId": "SonarCSharp_S2743"
+        },
+        {
+          "patternId": "SonarCSharp_S3447"
+        },
+        {
+          "patternId": "SonarCSharp_S2551"
+        },
+        {
+          "patternId": "SonarCSharp_S3440"
+        },
+        {
+          "patternId": "SonarCSharp_S1699"
+        },
+        {
+          "patternId": "SonarCSharp_S2692"
+        },
+        {
+          "patternId": "SonarCSharp_S2674"
+        },
+        {
+          "patternId": "SonarCSharp_S2995"
+        },
+        {
+          "patternId": "SonarCSharp_S2190"
+        },
+        {
+          "patternId": "SonarCSharp_S3880"
+        },
+        {
+          "patternId": "SonarCSharp_S3600"
+        },
+        {
+          "patternId": "SonarCSharp_S3397"
+        },
+        {
+          "patternId": "SonarCSharp_S3251"
+        },
+        {
+          "patternId": "SonarCSharp_S3877"
+        },
+        {
+          "patternId": "SonarCSharp_S3466"
+        },
+        {
+          "patternId": "SonarCSharp_S2955"
+        },
+        {
+          "patternId": "SonarCSharp_S127"
+        },
+        {
+          "patternId": "SonarCSharp_S1210"
+        },
+        {
+          "patternId": "SonarCSharp_S3443"
+        },
+        {
+          "patternId": "SonarCSharp_S3216"
+        },
+        {
+          "patternId": "SonarCSharp_S2996"
+        },
+        {
+          "patternId": "SonarCSharp_S3263"
+        },
+        {
+          "patternId": "SonarCSharp_S3456"
+        },
+        {
+          "patternId": "SonarCSharp_S3449"
+        },
+        {
+          "patternId": "SonarCSharp_S2583"
+        },
+        {
+          "patternId": "SonarCSharp_S3898"
+        },
+        {
+          "patternId": "SonarCSharp_S2123"
+        },
+        {
+          "patternId": "SonarCSharp_S2681"
+        },
+        {
+          "patternId": "SonarCSharp_S3453"
+        },
+        {
+          "patternId": "SonarCSharp_S3220"
+        },
+        {
+          "patternId": "SonarCSharp_S1163"
+        },
+        {
+          "patternId": "SonarCSharp_S2997"
+        },
+        {
+          "patternId": "SonarCSharp_S2757"
+        },
+        {
+          "patternId": "SonarCSharp_S2184"
+        },
+        {
+          "patternId": "SonarCSharp_S2930"
+        },
+        {
+          "patternId": "SonarCSharp_S2275"
+        },
+        {
+          "patternId": "SonarCSharp_S2345"
+        },
+        {
+          "patternId": "SonarCSharp_S2178"
+        },
+        {
+          "patternId": "SonarCSharp_S3457"
+        },
+        {
+          "patternId": "SonarCSharp_S2328"
+        },
+        {
+          "patternId": "SonarCSharp_S3926"
+        },
+        {
+          "patternId": "SonarCSharp_S3168"
+        },
+        {
+          "patternId": "SonarCSharp_S3451"
+        },
+        {
+          "patternId": "SonarCSharp_S1643"
+        },
+        {
+          "patternId": "SonarCSharp_S1944"
+        },
+        {
+          "patternId": "SonarCSharp_S3869"
+        },
+        {
+          "patternId": "SonarCSharp_S1698"
+        },
+        {
+          "patternId": "SonarCSharp_S2223"
+        },
+        {
+          "patternId": "SonarCSharp_S3244"
+        },
+        {
+          "patternId": "SonarCSharp_S2952"
+        },
+        {
+          "patternId": "SonarCSharp_S1313"
+        },
+        {
+          "patternId": "SonarCSharp_S1206"
+        },
+        {
+          "patternId": "SonarCSharp_S3249"
+        },
+        {
+          "patternId": "SonarCSharp_S3237"
+        },
+        {
+          "patternId": "SonarCSharp_S3172"
+        },
+        {
+          "patternId": "SonarCSharp_S1854"
+        },
+        {
+          "patternId": "SonarCSharp_S2696"
+        },
+        {
+          "patternId": "SonarCSharp_S2760"
+        },
+        {
+          "patternId": "SonarCSharp_S2201"
+        },
+        {
+          "patternId": "SonarCSharp_S1449"
+        },
+        {
+          "patternId": "SonarCSharp_S2761"
+        },
+        {
+          "patternId": "SonarCSharp_S3603"
+        },
+        {
+          "patternId": "SonarCSharp_S3241"
+        },
+        {
+          "patternId": "SonarCSharp_S1862"
+        },
+        {
+          "patternId": "SonarCSharp_S3010"
+        },
+        {
+          "patternId": "SonarCSharp_S3444"
+        },
+        {
+          "patternId": "SonarCSharp_S3655"
+        },
+        {
+          "patternId": "SonarCSharp_S1656"
+        },
+        {
+          "patternId": "SonarCSharp_S3247"
+        },
+        {
+          "patternId": "SonarCSharp_S3597"
+        },
+        {
+          "patternId": "SonarCSharp_S3445"
+        },
+        {
+          "patternId": "SonarCSharp_S1244"
+        },
+        {
+          "patternId": "SonarCSharp_S2197"
+        },
+        {
+          "patternId": "SonarCSharp_S2330"
+        },
+        {
+          "patternId": "SonarCSharp_S2259"
+        },
+        {
+          "patternId": "SonarCSharp_S3169"
+        },
+        {
+          "patternId": "SonarCSharp_S3889"
+        },
+        {
+          "patternId": "SonarCSharp_S2931"
+        },
+        {
+          "patternId": "SonarCSharp_S2486"
+        },
+        {
+          "patternId": "SonarCSharp_S2225"
+        }
+      ]
+    },
+    {
+      "toolId": "Prospector",
+      "patterns": [
+        {
+          "patternId": "Prospector_pyflakes"
+        },
+        {
+          "patternId": "Prospector_dodgy"
+        }
+      ]
+    },
+    {
+      "toolId": "TSQLLint",
+      "patterns": [
+        {
+          "patternId": "TSQLLint_full-text"
+        },
+        {
+          "patternId": "TSQLLint_upper-lower"
+        },
+        {
+          "patternId": "TSQLLint_unicode-string"
+        },
+        {
+          "patternId": "TSQLLint_linked-server"
+        },
+        {
+          "patternId": "TSQLLint_data-compression"
+        },
+        {
+          "patternId": "TSQLLint_set-quoted-identifier"
+        },
+        {
+          "patternId": "TSQLLint_cross-database-transaction"
+        },
+        {
+          "patternId": "TSQLLint_non-sargable"
+        },
+        {
+          "patternId": "TSQLLint_disallow-cursors"
+        }
+      ]
+    },
+    {
+      "toolId": "Agentlinter",
+      "patterns": []
+    },
+    {
+      "toolId": "ESLint8",
+      "patterns": [
+        {
+          "patternId": "ESLint8_@typescript-eslint_prefer-promise-reject-errors"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-array-delete"
+        },
+        {
+          "patternId": "ESLint8_security-node_non-literal-reg-expr"
+        },
+        {
+          "patternId": "ESLint8_security-node_disable-ssl-across-node-server"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-unhandled-event-errors"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-unhandled-async-errors"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-sql-injection"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-security-missconfiguration-cookie"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-possible-timing-attacks"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-option-unsafe-in-serialize-javascript-npm-package"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-option-rejectunauthorized-in-nodejs-httpsrequest"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-nosql-injection"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-non-literal-require-calls"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-html-injection"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-eval-with-expr"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-dangerous-redirects"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-child-process"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-absence-of-name-option-in-exrpress-session"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_prefer-object-rule"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-useless-token-range"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-unused-placeholders"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-unused-message-ids"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-only-tests"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-missing-placeholders"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-missing-message-ids"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-identical-tests"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_no-deprecated-context-methods"
+        },
+        {
+          "patternId": "ESLint8_eslint-plugin_fixer-return"
+        },
+        {
+          "patternId": "ESLint8_security_detect-bidi-characters"
+        },
+        {
+          "patternId": "ESLint8_awscdk_no-s3-public-write"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-option-multiplestatements-in-mysql"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-duplicate-enum-values"
+        },
+        {
+          "patternId": "ESLint8_security-node_detect-improper-exception-handling"
+        },
+        {
+          "patternId": "ESLint8_xss_no-mixed-html"
+        },
+        {
+          "patternId": "ESLint8_xss_no-location-href-assign"
+        },
+        {
+          "patternId": "ESLint8_valid-typeof",
+          "parameters": {
+            "requireStringLiterals": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_use-isnan",
+          "parameters": {
+            "enforceForIndexOf": "false",
+            "enforceForSwitchCase": "true"
+          }
+        },
+        {
+          "patternId": "ESLint8_security_detect-unsafe-regex"
+        },
+        {
+          "patternId": "ESLint8_security_detect-pseudoRandomBytes"
+        },
+        {
+          "patternId": "ESLint8_security_detect-possible-timing-attacks"
+        },
+        {
+          "patternId": "ESLint8_security_detect-object-injection"
+        },
+        {
+          "patternId": "ESLint8_security_detect-non-literal-require"
+        },
+        {
+          "patternId": "ESLint8_security_detect-non-literal-regexp"
+        },
+        {
+          "patternId": "ESLint8_security_detect-non-literal-fs-filename"
+        },
+        {
+          "patternId": "ESLint8_security_detect-no-csrf-before-method-override"
+        },
+        {
+          "patternId": "ESLint8_security_detect-new-buffer"
+        },
+        {
+          "patternId": "ESLint8_security_detect-eval-with-expression"
+        },
+        {
+          "patternId": "ESLint8_security_detect-disable-mustache-escape"
+        },
+        {
+          "patternId": "ESLint8_security_detect-child-process"
+        },
+        {
+          "patternId": "ESLint8_security_detect-buffer-noassert"
+        },
+        {
+          "patternId": "ESLint8_no-useless-backreference"
+        },
+        {
+          "patternId": "ESLint8_no-unsanitized_property"
+        },
+        {
+          "patternId": "ESLint8_no-unsanitized_method"
+        },
+        {
+          "patternId": "ESLint8_no-unsafe-optional-chaining",
+          "parameters": {
+            "disallowArithmeticOperators": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-unsafe-negation",
+          "parameters": {
+            "enforceForOrderingRelations": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-unsafe-finally"
+        },
+        {
+          "patternId": "ESLint8_no-unreachable"
+        },
+        {
+          "patternId": "ESLint8_no-unexpected-multiline"
+        },
+        {
+          "patternId": "ESLint8_no-undef",
+          "parameters": {
+            "typeof": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-this-before-super"
+        },
+        {
+          "patternId": "ESLint8_no-sparse-arrays"
+        },
+        {
+          "patternId": "ESLint8_no-shadow-restricted-names"
+        },
+        {
+          "patternId": "ESLint8_no-setter-return"
+        },
+        {
+          "patternId": "ESLint8_no-self-assign",
+          "parameters": {
+            "props": "true"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-redeclare",
+          "parameters": {
+            "builtinGlobals": "true"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-prototype-builtins"
+        },
+        {
+          "patternId": "ESLint8_no-octal"
+        },
+        {
+          "patternId": "ESLint8_no-obj-calls"
+        },
+        {
+          "patternId": "ESLint8_no-new-symbol"
+        },
+        {
+          "patternId": "ESLint8_no-misleading-character-class"
+        },
+        {
+          "patternId": "ESLint8_no-loss-of-precision"
+        },
+        {
+          "patternId": "ESLint8_no-irregular-whitespace",
+          "parameters": {
+            "skipTemplates": "false",
+            "skipRegExps": "false",
+            "skipComments": "false",
+            "skipJSXText": "false",
+            "skipStrings": "true"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-invalid-regexp"
+        },
+        {
+          "patternId": "ESLint8_no-inner-declarations",
+          "parameters": {
+            "unnamedParam": "functions"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-import-assign"
+        },
+        {
+          "patternId": "ESLint8_no-global-assign"
+        },
+        {
+          "patternId": "ESLint8_no-func-assign"
+        },
+        {
+          "patternId": "ESLint8_no-fallthrough",
+          "parameters": {
+            "allowEmptyCase": "false",
+            "commentPattern": ""
+          }
+        },
+        {
+          "patternId": "ESLint8_no-ex-assign"
+        },
+        {
+          "patternId": "ESLint8_no-empty-pattern",
+          "parameters": {
+            "allowObjectPatternsAsParameters": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-empty-character-class"
+        },
+        {
+          "patternId": "ESLint8_no-duplicate-case"
+        },
+        {
+          "patternId": "ESLint8_no-dupe-keys"
+        },
+        {
+          "patternId": "ESLint8_no-dupe-else-if"
+        },
+        {
+          "patternId": "ESLint8_no-dupe-class-members"
+        },
+        {
+          "patternId": "ESLint8_no-dupe-args"
+        },
+        {
+          "patternId": "ESLint8_no-delete-var"
+        },
+        {
+          "patternId": "ESLint8_no-debugger"
+        },
+        {
+          "patternId": "ESLint8_no-control-regex"
+        },
+        {
+          "patternId": "ESLint8_no-constant-condition",
+          "parameters": {
+            "checkLoops": "true"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-const-assign"
+        },
+        {
+          "patternId": "ESLint8_no-cond-assign",
+          "parameters": {
+            "unnamedParam": "except-parens"
+          }
+        },
+        {
+          "patternId": "ESLint8_no-compare-neg-zero"
+        },
+        {
+          "patternId": "ESLint8_no-class-assign"
+        },
+        {
+          "patternId": "ESLint8_no-case-declarations"
+        },
+        {
+          "patternId": "ESLint8_no-async-promise-executor"
+        },
+        {
+          "patternId": "ESLint8_getter-return",
+          "parameters": {
+            "allowImplicit": "false"
+          }
+        },
+        {
+          "patternId": "ESLint8_for-direction"
+        },
+        {
+          "patternId": "ESLint8_constructor-super"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_unbound-method"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_restrict-template-expressions"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_restrict-plus-operands"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_prefer-literal-enum-member"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-unnecessary-condition"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-non-null-assertion"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-non-null-asserted-optional-chain"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-misused-promises"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-misused-new"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-loss-of-precision"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-invalid-void-type"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-implied-eval"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-for-in-array"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-floating-promises"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-explicit-any"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-dynamic-delete"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-confusing-void-expression"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_no-base-to-string"
+        },
+        {
+          "patternId": "ESLint8_@typescript-eslint_await-thenable"
+        }
+      ]
+    },
+    {
+      "toolId": "SQLint",
+      "patterns": [
+        {
+          "patternId": "SQLint_allIssues"
+        }
+      ]
+    },
+    {
+      "toolId": "cppcheck",
+      "patterns": [
+        {
+          "patternId": "cppcheck_y2038-type-bits-not-64"
+        },
+        {
+          "patternId": "cppcheck_stlSize"
+        },
+        {
+          "patternId": "cppcheck_useClosedFile"
+        },
+        {
+          "patternId": "cppcheck_writeReadOnlyFile"
+        },
+        {
+          "patternId": "cppcheck_memsetFloat"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_p"
+        },
+        {
+          "patternId": "cppcheck_invalidPointerCast"
+        },
+        {
+          "patternId": "cppcheck_thisSubtraction"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_s"
+        },
+        {
+          "patternId": "cppcheck_doubleFree"
+        },
+        {
+          "patternId": "cppcheck_unpreciseMathCall"
+        },
+        {
+          "patternId": "cppcheck_unusedAllocatedMemory"
+        },
+        {
+          "patternId": "cppcheck_unassignedVariable"
+        },
+        {
+          "patternId": "cppcheck_IOWithoutPositioning"
+        },
+        {
+          "patternId": "cppcheck_memleak"
+        },
+        {
+          "patternId": "cppcheck_wrongPrintfScanfParameterPositionError"
+        },
+        {
+          "patternId": "cppcheck_noConstructor"
+        },
+        {
+          "patternId": "cppcheck_sizeofDivisionMemfunc"
+        },
+        {
+          "patternId": "cppcheck_sizeofsizeof"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexThenCheck"
+        },
+        {
+          "patternId": "cppcheck_varFuncNullUB"
+        },
+        {
+          "patternId": "cppcheck_throwInNoexceptFunction"
+        },
+        {
+          "patternId": "cppcheck_assignBoolToPointer"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfBoolWithBoolError"
+        },
+        {
+          "patternId": "cppcheck_truncLongCastAssignment"
+        },
+        {
+          "patternId": "cppcheck_clarifyStatement"
+        },
+        {
+          "patternId": "cppcheck_nanInArithmeticExpression"
+        },
+        {
+          "patternId": "cppcheck_va_start_referencePassed"
+        },
+        {
+          "patternId": "cppcheck_selfInitialization"
+        },
+        {
+          "patternId": "cppcheck_compareBoolExpressionWithInt"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsEmpty"
+        },
+        {
+          "patternId": "cppcheck_signConversion"
+        },
+        {
+          "patternId": "cppcheck_multiCondition"
+        },
+        {
+          "patternId": "cppcheck_va_end_missing"
+        },
+        {
+          "patternId": "cppcheck_mismatchingBitAnd"
+        },
+        {
+          "patternId": "cppcheck_zerodivcond"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexOutOfBoundsCond"
+        },
+        {
+          "patternId": "cppcheck_postfixOperator"
+        },
+        {
+          "patternId": "cppcheck_invalidLengthModifierError"
+        },
+        {
+          "patternId": "cppcheck_stlcstrParam"
+        },
+        {
+          "patternId": "cppcheck_sizeofwithsilentarraypointer"
+        },
+        {
+          "patternId": "cppcheck_operatorEqMissingReturnStatement"
+        },
+        {
+          "patternId": "cppcheck_comparisonFunctionIsAlwaysTrueOrFalse"
+        },
+        {
+          "patternId": "cppcheck_operatorEqToSelf"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsCompare"
+        },
+        {
+          "patternId": "cppcheck_uselessAssignmentArg"
+        },
+        {
+          "patternId": "cppcheck_mallocOnClassError"
+        },
+        {
+          "patternId": "cppcheck_stlIfFind"
+        },
+        {
+          "patternId": "cppcheck_strPlusChar"
+        },
+        {
+          "patternId": "cppcheck_missingIncludeSystem"
+        },
+        {
+          "patternId": "cppcheck_pointerLessThanZero"
+        },
+        {
+          "patternId": "cppcheck_mismatchAllocDealloc"
+        },
+        {
+          "patternId": "cppcheck_checkCastIntToCharAndBack"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_n"
+        },
+        {
+          "patternId": "cppcheck_va_start_wrongParameter"
+        },
+        {
+          "patternId": "cppcheck_derefInvalidIterator"
+        },
+        {
+          "patternId": "cppcheck_passedByValue"
+        },
+        {
+          "patternId": "cppcheck_stlcstr"
+        },
+        {
+          "patternId": "cppcheck_copyCtorPointerCopying"
+        },
+        {
+          "patternId": "cppcheck_memsetZeroBytes"
+        },
+        {
+          "patternId": "cppcheck_shiftNegative"
+        },
+        {
+          "patternId": "cppcheck_sizeofwithnumericparameter"
+        },
+        {
+          "patternId": "cppcheck_sizeofVoid"
+        },
+        {
+          "patternId": "cppcheck_returnReference"
+        },
+        {
+          "patternId": "cppcheck_stlcstrReturn"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsSubstr"
+        },
+        {
+          "patternId": "cppcheck_nullPointer"
+        },
+        {
+          "patternId": "cppcheck_ignoredReturnValue"
+        },
+        {
+          "patternId": "cppcheck_oppositeInnerCondition"
+        },
+        {
+          "patternId": "cppcheck_argumentSize"
+        },
+        {
+          "patternId": "cppcheck_unusedScopedObject"
+        },
+        {
+          "patternId": "cppcheck_duplicateBreak"
+        },
+        {
+          "patternId": "cppcheck_zerodiv"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_leakNoVarFunctionCall"
+        },
+        {
+          "patternId": "cppcheck_comparisonError"
+        },
+        {
+          "patternId": "cppcheck_literalWithCharPtrCompare"
+        },
+        {
+          "patternId": "cppcheck_leakReturnValNotUsed"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_float"
+        },
+        {
+          "patternId": "cppcheck_mismatchingContainers"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsRemove"
+        },
+        {
+          "patternId": "cppcheck_noExplicitConstructor"
+        },
+        {
+          "patternId": "cppcheck_sizeofCalculation"
+        },
+        {
+          "patternId": "cppcheck_redundantPointerOp"
+        },
+        {
+          "patternId": "cppcheck_noCopyConstructor"
+        },
+        {
+          "patternId": "cppcheck_sprintfOverlappingData"
+        },
+        {
+          "patternId": "cppcheck_invalidIterator1"
+        },
+        {
+          "patternId": "cppcheck_invalidscanf"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_int"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfFuncReturningBoolError"
+        },
+        {
+          "patternId": "cppcheck_knownConditionTrueFalse"
+        },
+        {
+          "patternId": "cppcheck_shiftTooManyBits"
+        },
+        {
+          "patternId": "cppcheck_missingInclude"
+        },
+        {
+          "patternId": "cppcheck_stlBoundaries"
+        },
+        {
+          "patternId": "cppcheck_exceptThrowInDestructor"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfTwoFuncsReturningBoolError"
+        },
+        {
+          "patternId": "cppcheck_incorrectStringBooleanError"
+        },
+        {
+          "patternId": "cppcheck_truncLongCastReturn"
+        },
+        {
+          "patternId": "cppcheck_pointerSize"
+        },
+        {
+          "patternId": "cppcheck_assignIfError"
+        },
+        {
+          "patternId": "cppcheck_deallocuse"
+        },
+        {
+          "patternId": "cppcheck_AssignmentIntegerToAddress"
+        },
+        {
+          "patternId": "cppcheck_preprocessorErrorDirective"
+        },
+        {
+          "patternId": "cppcheck_StlMissingComparison"
+        },
+        {
+          "patternId": "cppcheck_returnTempReference"
+        },
+        {
+          "patternId": "cppcheck_deallocret"
+        },
+        {
+          "patternId": "cppcheck_stringLiteralWrite"
+        },
+        {
+          "patternId": "cppcheck_memleakOnRealloc"
+        },
+        {
+          "patternId": "cppcheck_mallocOnClassWarning"
+        },
+        {
+          "patternId": "cppcheck_readWriteOnlyFile"
+        },
+        {
+          "patternId": "cppcheck_wrongmathcall"
+        },
+        {
+          "patternId": "cppcheck_unsignedLessThanZero"
+        },
+        {
+          "patternId": "cppcheck_CastAddressToIntegerAtReturn"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_s"
+        },
+        {
+          "patternId": "cppcheck_charLiteralWithCharPtrCompare"
+        },
+        {
+          "patternId": "cppcheck_assertWithSideEffect"
+        },
+        {
+          "patternId": "cppcheck_stlOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_exceptDeallocThrow"
+        },
+        {
+          "patternId": "cppcheck_incorrectLogicOperator"
+        },
+        {
+          "patternId": "cppcheck_negativeIndex"
+        },
+        {
+          "patternId": "cppcheck_virtualDestructor"
+        },
+        {
+          "patternId": "cppcheck_AssignmentAddressToInteger"
+        },
+        {
+          "patternId": "cppcheck_autoVariables"
+        },
+        {
+          "patternId": "cppcheck_moduloAlwaysTrueFalse"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_sint"
+        },
+        {
+          "patternId": "cppcheck_uninitStructMember"
+        },
+        {
+          "patternId": "cppcheck_autovarInvalidDeallocation"
+        },
+        {
+          "patternId": "cppcheck_duplicateExpression"
+        },
+        {
+          "patternId": "cppcheck_va_list_usedBeforeStarted"
+        },
+        {
+          "patternId": "cppcheck_unsignedPositive"
+        },
+        {
+          "patternId": "cppcheck_nullPointerDefaultArg"
+        },
+        {
+          "patternId": "cppcheck_badBitmaskCheck"
+        },
+        {
+          "patternId": "cppcheck_invalidFunctionArgBool"
+        },
+        {
+          "patternId": "cppcheck_coutCerrMisusage"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsSwap"
+        },
+        {
+          "patternId": "cppcheck_pointerPositive"
+        },
+        {
+          "patternId": "cppcheck_sizeofDereferencedVoidPointer"
+        },
+        {
+          "patternId": "cppcheck_stringCompare"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_uint"
+        },
+        {
+          "patternId": "cppcheck_memsetValueOutOfRange"
+        },
+        {
+          "patternId": "cppcheck_eraseDereference"
+        },
+        {
+          "patternId": "cppcheck_uselessAssignmentPtrArg"
+        },
+        {
+          "patternId": "cppcheck_uninitdata"
+        },
+        {
+          "patternId": "cppcheck_stlIfStrFind"
+        },
+        {
+          "patternId": "cppcheck_charBitOp"
+        },
+        {
+          "patternId": "cppcheck_bufferAccessOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_catchExceptionByValue"
+        },
+        {
+          "patternId": "cppcheck_nullPointerRedundantCheck"
+        },
+        {
+          "patternId": "cppcheck_staticStringCompare"
+        },
+        {
+          "patternId": "cppcheck_seekOnAppendedFile"
+        },
+        {
+          "patternId": "cppcheck_CastIntegerToAddressAtReturn"
+        },
+        {
+          "patternId": "cppcheck_publicAllocationError"
+        },
+        {
+          "patternId": "cppcheck_unsafeClassCanLeak"
+        },
+        {
+          "patternId": "cppcheck_resourceLeak"
+        },
+        {
+          "patternId": "cppcheck_uninitMemberVar"
+        },
+        {
+          "patternId": "cppcheck_useInitializationList"
+        },
+        {
+          "patternId": "cppcheck_unreachableCode"
+        },
+        {
+          "patternId": "cppcheck_integerOverflow"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_float"
+        },
+        {
+          "patternId": "cppcheck_exceptRethrowCopy"
+        },
+        {
+          "patternId": "cppcheck_pointerArithBool"
+        },
+        {
+          "patternId": "cppcheck_pointerOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_invalidFunctionArg"
+        },
+        {
+          "patternId": "cppcheck_arithOperationsOnVoidPointer"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfFormatWidth"
+        },
+        {
+          "patternId": "cppcheck_memsetClassReference"
+        },
+        {
+          "patternId": "cppcheck_incorrectStringCompare"
+        },
+        {
+          "patternId": "cppcheck_redundantAssignInSwitch"
+        },
+        {
+          "patternId": "cppcheck_redundantCopy"
+        },
+        {
+          "patternId": "cppcheck_fflushOnInputStream"
+        },
+        {
+          "patternId": "cppcheck_raceAfterInterlockedDecrement"
+        },
+        {
+          "patternId": "cppcheck_memsetClassFloat"
+        },
+        {
+          "patternId": "cppcheck_memsetClass"
+        },
+        {
+          "patternId": "cppcheck_assignmentInAssert"
+        },
+        {
+          "patternId": "cppcheck_wrongPrintfScanfArgNum"
+        },
+        {
+          "patternId": "cppcheck_va_start_subsequentCalls"
+        },
+        {
+          "patternId": "cppcheck_operatorEqVarError"
+        }
+      ]
+    },
+    {
+      "toolId": "markdownlint",
+      "patterns": [
+        {
+          "patternId": "markdownlint_MD052",
+          "parameters": {
+            "shortcut_syntax": "false"
+          }
+        },
+        {
+          "patternId": "markdownlint_MD051"
+        },
+        {
+          "patternId": "markdownlint_MD011"
+        }
+      ]
+    },
+    {
       "toolId": "jackson",
       "patterns": [
         {
@@ -4545,34 +6459,306 @@
       ]
     },
     {
-      "toolId": "Stylelint",
+      "toolId": "shellcheck",
       "patterns": [
         {
-          "patternId": "Stylelint_selector-not-notation",
-          "parameters": {
-            "selector-not-notation": "complex"
-          }
+          "patternId": "shellcheck_SC2156"
         },
         {
-          "patternId": "Stylelint_function-url-scheme-disallowed-list",
-          "parameters": {
-            "function-url-scheme-disallowed-list": "null"
-          }
+          "patternId": "shellcheck_SC2115"
         },
         {
-          "patternId": "Stylelint_function-url-scheme-allowed-list",
-          "parameters": {
-            "function-url-scheme-allowed-list": "null"
-          }
+          "patternId": "shellcheck_SC2035"
         },
         {
-          "patternId": "Stylelint_selector-max-universal",
-          "parameters": {
-            "selector-max-universal": "null"
-          }
+          "patternId": "shellcheck_SC2025"
+        },
+        {
+          "patternId": "shellcheck_SC2029"
+        },
+        {
+          "patternId": "shellcheck_SC2001"
+        },
+        {
+          "patternId": "shellcheck_SC2024"
+        },
+        {
+          "patternId": "shellcheck_SC2004"
+        },
+        {
+          "patternId": "shellcheck_SC2002"
+        },
+        {
+          "patternId": "shellcheck_SC2026"
+        },
+        {
+          "patternId": "shellcheck_SC2033"
+        },
+        {
+          "patternId": "shellcheck_SC2015"
+        },
+        {
+          "patternId": "shellcheck_SC2034"
+        },
+        {
+          "patternId": "shellcheck_SC2020"
+        },
+        {
+          "patternId": "shellcheck_SC2027"
+        },
+        {
+          "patternId": "shellcheck_SC2036"
+        },
+        {
+          "patternId": "shellcheck_SC2031"
+        },
+        {
+          "patternId": "shellcheck_SC2022"
+        }
+      ]
+    },
+    {
+      "toolId": "PHPCS",
+      "patterns": [
+        {
+          "patternId": "PHPCS_Generic_PHP_DeprecatedFunctions"
+        },
+        {
+          "patternId": "PHPCS_Squiz_PHP_Eval"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Operators_ComparisonOperatorUsage"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Functions_ValidDefaultValue"
+        }
+      ]
+    },
+    {
+      "toolId": "phpmd",
+      "patterns": [
+        {
+          "patternId": "rulesets-design.xml-EmptyCatchBlock"
+        },
+        {
+          "patternId": "rulesets-design.xml-CountInLoopExpression"
+        },
+        {
+          "patternId": "rulesets-cleancode.xml-UndefinedVariable"
+        },
+        {
+          "patternId": "rulesets-design.xml-EvalExpression"
         }
       ]
     }
   ],
-  "exclude": []
+  "exclude": [
+    "contrib/samples/arduino/esp8266/dht11/dht.c",
+    "contrib/samples/arduino/esp8266/pir detector/sketch_pir_detector.ino",
+    "contrib/samples/autoself/autoself.cpp",
+    "contrib/samples/autoself/autoself.h",
+    "contrib/samples/autoself/dlgabout.cpp",
+    "contrib/samples/autoself/dlgabout.h",
+    "contrib/samples/autoself/dlgabout_symbols.h",
+    "contrib/samples/autoself/dlgmain.cpp",
+    "contrib/samples/autoself/dlgmain.h",
+    "contrib/samples/autoself/dlgnodeinfo.cpp",
+    "contrib/samples/autoself/dlgnodeinfo.h",
+    "contrib/samples/autoself/dlgnodeinfo_symbols.h",
+    "contrib/samples/autoself/dlgnodelist.cpp",
+    "contrib/samples/autoself/dlgnodelist.h",
+    "contrib/samples/autoself/dlgnodelist_symbols.h",
+    "contrib/samples/autoself/dlgselectunit.cpp",
+    "contrib/samples/autoself/dlgselectunit.h",
+    "contrib/samples/autoself/dlgselectunit_symbols.h",
+    "contrib/samples/autoself/dlgsettings.cpp",
+    "contrib/samples/autoself/dlgsettings.h",
+    "contrib/samples/autoself/dlgsettings_symbols.h",
+    "contrib/samples/autoself/frmmain.cpp",
+    "contrib/samples/autoself/frmmain.h",
+    "contrib/samples/autoself/frmmain_symbols.h",
+    "contrib/samples/autoself/frmmessagelog.cpp",
+    "contrib/samples/autoself/frmmessagelog.h",
+    "contrib/samples/autoself/frmmessagelog_symbols.h",
+    "contrib/samples/autoself/frmNode.cpp",
+    "contrib/samples/autoself/frmNode.h",
+    "contrib/samples/autoself/frmNode_symbols.h",
+    "contrib/samples/autoself/frmselectunit_symbols.h",
+    "contrib/samples/autoself/pictures.h",
+    "contrib/samples/autoself/platform.h",
+    "contrib/samples/autoself/threadvscpwork.cpp",
+    "contrib/samples/autoself/threadvscpwork.h",
+    "contrib/samples/esp8266/blinky/blinky.c",
+    "contrib/samples/esp8266/blinky/user_config.h",
+    "contrib/samples/esp8266/vscp_daemon_connect/user_config.h",
+    "contrib/samples/esp8266/vscp_daemon_connect/vscptest.c",
+    "contrib/samples/fli4lcid/fli4lcidapp.cpp",
+    "contrib/samples/fli4lcid/fli4lcidapp.h",
+    "contrib/samples/fli4lcid/fli4lcidtest.cpp",
+    "contrib/samples/fli4lcid/fli4lcidtest.h",
+    "contrib/samples/fli4lcid/fli4lcidtest_symbols.h",
+    "contrib/samples/html5/echotest/test.html",
+    "contrib/samples/multicast/multicast_listen.c",
+    "contrib/samples/multicast/multicast_send.c",
+    "contrib/samples/node_js/connect_tcpip_server.js",
+    "contrib/samples/node_js/node-red-node-vscp-events/node_events.html",
+    "contrib/samples/node_js/node-red-node-vscp-events/node_receive.js",
+    "contrib/samples/node_js/node-red-node-vscp-events/package.json",
+    "contrib/samples/node_js/node-red-node-vscp-events/README.md",
+    "contrib/samples/node_js/receive_tcpip_server.js",
+    "contrib/samples/python/client.py",
+    "contrib/samples/python/gettempfromyr.py",
+    "contrib/samples/python/page_read.py",
+    "contrib/samples/python/README.md",
+    "contrib/samples/python/read_register.py",
+    "contrib/samples/python/send1wvalues.py",
+    "contrib/samples/python/send_burst.py",
+    "contrib/samples/python/send_pi_cpu_temp.py",
+    "contrib/samples/python/send_pi_gpu_temp.py",
+    "contrib/samples/python/send_pi_onewire.py",
+    "contrib/samples/python/sendvalues.py",
+    "contrib/samples/python/smhi/smhi_parse.py",
+    "contrib/samples/python/test.py",
+    "contrib/samples/python/vscp_class.py",
+    "contrib/samples/python/vscpdif.py",
+    "contrib/samples/python/vscp_type.py",
+    "contrib/samples/python/whoisthere.py",
+    "contrib/samples/python/write_register.py",
+    "contrib/samples/rest/Linux/README.md",
+    "contrib/samples/rest/README.md",
+    "contrib/samples/rest/web/index.html",
+    "contrib/samples/rest/web/README.md",
+    "contrib/samples/rest/windows/README.md",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnostic.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticDoc.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticDoc.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnostic.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticView.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticView.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/ChildFrm.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/ChildFrm.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/DocumentProperties.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/DocumentProperties.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/MainFrm.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/MainFrm.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/NewDocument.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/NewDocument.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/resource.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/SendBurst.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/SendBurst.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/Splash.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/Splash.h",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/StdAfx.cpp",
+    "contrib/samples/samples/win32/mfc/CanalDiagnostic/StdAfx.h",
+    "contrib/samples/samples/win32/mfc/loggerwnd/dlgfilter.cpp",
+    "contrib/samples/samples/win32/mfc/loggerwnd/dlgfilter.h",
+    "contrib/samples/samples/win32/mfc/loggerwnd/loggerwnd.cpp",
+    "contrib/samples/samples/win32/mfc/loggerwnd/loggerwnddlg.cpp",
+    "contrib/samples/samples/win32/mfc/loggerwnd/loggerwnddlg.h",
+    "contrib/samples/samples/win32/mfc/loggerwnd/loggerwnd.h",
+    "contrib/samples/samples/win32/mfc/loggerwnd/resource.h",
+    "contrib/samples/samples/win32/mfc/loggerwnd/StdAfx.cpp",
+    "contrib/samples/samples/win32/mfc/loggerwnd/StdAfx.h",
+    "contrib/samples/server/resource.h",
+    "contrib/samples/server/server.cpp",
+    "contrib/samples/server/serverDlg.cpp",
+    "contrib/samples/server/serverDlg.h",
+    "contrib/samples/server/server.h",
+    "contrib/samples/server/StdAfx.cpp",
+    "contrib/samples/server/StdAfx.h",
+    "contrib/samples/smstools/doalarm.py",
+    "contrib/samples/smstools/README.md",
+    "contrib/samples/testinterface/testinterfaceapp.cpp",
+    "contrib/samples/testinterface/testinterfaceapp.h",
+    "contrib/samples/testinterface/testinterface.cpp",
+    "contrib/samples/testinterface/testinterface.h",
+    "contrib/samples/testsuite/simplebutton/OptionDialog.cpp",
+    "contrib/samples/testsuite/simplebutton/OptionDialog.h",
+    "contrib/samples/testsuite/simplebutton/resource.h",
+    "contrib/samples/testsuite/simplebutton/simplebutton.cpp",
+    "contrib/samples/testsuite/simplebutton/simplebutton.h",
+    "contrib/samples/testsuite/simpledimmer/OptionDialog.cpp",
+    "contrib/samples/testsuite/simpledimmer/OptionDialog.h",
+    "contrib/samples/testsuite/simpledimmer/resource.h",
+    "contrib/samples/testsuite/simpledimmer/simpledimmer.cpp",
+    "contrib/samples/testsuite/simpledimmer/simpledimmer.h",
+    "contrib/samples/testsuite/simplelamp/OptionDialog.cpp",
+    "contrib/samples/testsuite/simplelamp/OptionDialog.h",
+    "contrib/samples/testsuite/simplelamp/resource.h",
+    "contrib/samples/testsuite/simplelamp/simplelamp.cpp",
+    "contrib/samples/testsuite/simplelamp/simplelamp.h",
+    "contrib/samples/twilio/sendsms.sh",
+    "contrib/samples/vscpbutton/configuration.cpp",
+    "contrib/samples/vscpbutton/configuration.h",
+    "contrib/samples/vscpbutton/configuration_symbols.h",
+    "contrib/samples/vscpbutton/vscpbuttonapp.cpp",
+    "contrib/samples/vscpbutton/vscpbuttonapp.h",
+    "contrib/samples/vscpbutton/vscpbutton.cpp",
+    "contrib/samples/vscpbutton/vscpbutton.h",
+    "contrib/samples/vscpbutton/vscpbutton_symbols.h",
+    "contrib/samples/vscpsimnode/defaultsettings.cpp",
+    "contrib/samples/vscpsimnode/defaultsettings.h",
+    "contrib/samples/vscpsimnode/defaultsettings_symbols.h",
+    "contrib/samples/vscpsimnode/dlgsimulatedvscpnode.cpp",
+    "contrib/samples/vscpsimnode/dlgsimulatedvscpnode.h",
+    "contrib/samples/vscpsimnode/dlgsimulatedvscpnode_symbols.h",
+    "contrib/samples/vscpsimnode/vscpsimnodeapp.cpp",
+    "contrib/samples/vscpsimnode/vscpsimnodeapp.h",
+    "contrib/samples/websockets/testapplets.html",
+    "contrib/samples/websockets/vscp_testapplet.html",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnostic.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticDoc.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticDoc.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnostic.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticView.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/CanalDiagnosticView.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/ChildFrm.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/ChildFrm.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/DocumentProperties.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/DocumentProperties.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/MainFrm.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/MainFrm.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/NewDocument.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/NewDocument.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/resource.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/SendBurst.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/SendBurst.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/Splash.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/Splash.h",
+    "contrib/samples/win32/mfc/CanalDiagnostic/StdAfx.cpp",
+    "contrib/samples/win32/mfc/CanalDiagnostic/StdAfx.h",
+    "contrib/samples/win32/mfc/loggerwnd/dlgfilter.cpp",
+    "contrib/samples/win32/mfc/loggerwnd/dlgfilter.h",
+    "contrib/samples/win32/mfc/loggerwnd/loggerwnd.cpp",
+    "contrib/samples/win32/mfc/loggerwnd/loggerwnddlg.cpp",
+    "contrib/samples/win32/mfc/loggerwnd/loggerwnddlg.h",
+    "contrib/samples/win32/mfc/loggerwnd/loggerwnd.h",
+    "contrib/samples/win32/mfc/loggerwnd/resource.h",
+    "contrib/samples/win32/mfc/loggerwnd/StdAfx.cpp",
+    "contrib/samples/win32/mfc/loggerwnd/StdAfx.h",
+    "contrib/samples/win32/mfc/vc6_simple_button/resource.h",
+    "contrib/samples/win32/mfc/vc6_simple_button/StdAfx.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_button/StdAfx.h",
+    "contrib/samples/win32/mfc/vc6_simple_button/vc6_simple_button.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_button/vc6_simple_buttonDlg.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_button/vc6_simple_buttonDlg.h",
+    "contrib/samples/win32/mfc/vc6_simple_button/vc6_simple_button.h",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/resource.h",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/StdAfx.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/StdAfx.h",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/vc6_simple_lamp.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/vc6_simple_lampDlg.cpp",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/vc6_simple_lampDlg.h",
+    "contrib/samples/win32/mfc/vc6_simple_lamp/vc6_simple_lamp.h",
+    "contrib/vscp_analyzer_windows/vscp_analyzer/MainForm.Designer.cs",
+    "contrib/vscp_analyzer_windows/vscp_analyzer/Properties/Resources.Designer.cs",
+    "contrib/vscp_analyzer_windows/vscp_analyzer/Properties/Settings.Designer.cs",
+    "tests/tables-remote-class/test_tables_remote_class.cpp",
+    "tests/vscphelper/test_vscphelper.cpp",
+    "third-party/sqlite3/Replace.cs",
+    "third-party/sqlite3/sqlite3ext.h",
+    "third-party/sqlite3/sqlite3rc.h",
+    "third-party/sqlite3/tea/generic/tclsqlite3.c",
+    "third-party/sqlite3/tea/win/nmakehlp.c"
+  ]
 }

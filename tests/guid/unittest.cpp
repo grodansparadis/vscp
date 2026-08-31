@@ -910,6 +910,57 @@ TEST(Cguid, MultiByteHexValues)
     EXPECT_EQ(0x0C, guid.getAt(15));
 }
 
+TEST(Cguid, Compact) 
+{
+
+    cguid guid;
+    guid.getFromString("0102030405060708090A0B0C0D0E0F10");
+    
+    // Multi-byte values split into bytes
+    EXPECT_EQ(0x01, guid.getAt(0));
+    EXPECT_EQ(0x02, guid.getAt(1));
+    EXPECT_EQ(0x03, guid.getAt(2));
+    EXPECT_EQ(0x04, guid.getAt(3));
+    EXPECT_EQ(0x05, guid.getAt(4));
+    EXPECT_EQ(0x06, guid.getAt(5));
+    EXPECT_EQ(0x07, guid.getAt(6));
+    EXPECT_EQ(0x08, guid.getAt(7));
+    EXPECT_EQ(0x09, guid.getAt(8));
+    EXPECT_EQ(0x0A, guid.getAt(9));
+    EXPECT_EQ(0x0B, guid.getAt(10));
+    EXPECT_EQ(0x0C, guid.getAt(11));
+    EXPECT_EQ(0x0D, guid.getAt(12));
+    EXPECT_EQ(0x0E, guid.getAt(13));
+    EXPECT_EQ(0x0F, guid.getAt(14));
+    EXPECT_EQ(0x10, guid.getAt(15));
+}
+
+
+TEST(Cguid, CompactMinimized) 
+{
+    // Does not ned to be all digits
+    cguid guid;
+    guid.getFromString("112233");
+    
+    // Multi-byte values split into bytes
+    EXPECT_EQ(0x11, guid.getAt(0));
+    EXPECT_EQ(0x22, guid.getAt(1));
+    EXPECT_EQ(0x33, guid.getAt(2));
+    EXPECT_EQ(0x00, guid.getAt(3));
+    EXPECT_EQ(0x00, guid.getAt(4));
+    EXPECT_EQ(0x00, guid.getAt(5));
+    EXPECT_EQ(0x00, guid.getAt(6));
+    EXPECT_EQ(0x00, guid.getAt(7));
+    EXPECT_EQ(0x00, guid.getAt(8));
+    EXPECT_EQ(0x00, guid.getAt(9));
+    EXPECT_EQ(0x00, guid.getAt(10));
+    EXPECT_EQ(0x00, guid.getAt(11));
+    EXPECT_EQ(0x00, guid.getAt(12));
+    EXPECT_EQ(0x00, guid.getAt(13));
+    EXPECT_EQ(0x00, guid.getAt(14));
+    EXPECT_EQ(0x00, guid.getAt(15));
+}
+
 //-----------------------------------------------------------------------------
 // Main
 //-----------------------------------------------------------------------------
