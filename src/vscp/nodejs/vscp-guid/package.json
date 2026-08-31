@@ -1,0 +1,41 @@
+{
+  "name": "vscp-guid",
+  "version": "15.0.3",
+  "description": "VSCP GUID parsing and formatting for Node.js",
+  "main": "lib/vscp-guid.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "node test/guid.test.js"
+  },
+  "keywords": [
+    "vscp",
+    "guid",
+    "iot",
+    "m2m",
+    "protocol"
+  ],
+  "author": {
+    "name": "Ake Hedman, the VSCP project",
+    "email": "akhe@paradiseofthefrog.com",
+    "url": "https://www.vscp.org"
+  },
+  "license": "MIT",
+  "homepage": "https://www.vscp.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grodansparadis/vscp.git",
+    "directory": "src/vscp/nodejs/vscp-guid"
+  },
+  "bugs": {
+    "url": "https://github.com/grodansparadis/vscp/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "lib/",
+    "types/",
+    "README.md",
+    "LICENSE"
+  ]
+}
