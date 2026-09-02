@@ -72,7 +72,7 @@
   #define VSCP_UDP_LOG_UNLOCK() pthread_mutex_unlock(&vscp_udp_log_mutex)
 #endif
 
-#define VSCP_UDP_LOG_DEFAULT_IP   "192.168.1.7"
+#define VSCP_UDP_LOG_DEFAULT_IP   "127.0.0.1"
 #define VSCP_UDP_LOG_DEFAULT_PORT 9999
 #define VSCP_UDP_LOG_MAX_MSG      512
 

@@ -5,7 +5,7 @@ import argparse
 import socket
 import sys
 from typing import Tuple
-
+from datetime import datetime
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -58,7 +58,8 @@ def receive_loop(host: str, port: int, timeout: float, buffer_size: int) -> None
                 continue
 
             message = data.decode("utf-8", errors="replace").rstrip("\r\n")
-            print(f"[{addr[0]}:{addr[1]}] {message}")
+            now = datetime.now()
+            print(now.strftime("%Y-%m-%d %H:%M:%S"),f"[{addr[0]}:{addr[1]}] {message}")
     except KeyboardInterrupt:
         print("\nStopped.")
     finally:
