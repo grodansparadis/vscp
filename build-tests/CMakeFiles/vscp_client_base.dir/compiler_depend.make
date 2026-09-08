@@ -460,6 +460,53 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
   /usr/lib/linux/uapi/x86/asm/sockios.h \
   /usr/lib/linux/uapi/x86/asm/types.h
 
+libvscp_client_base.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libdl.a \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libcurl.so \
+  /usr/lib/x86_64-linux-gnu/libexpat.so \
+  /usr/lib/x86_64-linux-gnu/libmosquitto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o \
+  libvscp_core.so \
+  libvscp_guid.so \
+  libvscp_guidparser.so \
+  libvscp_mdf.so \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+libvscp_core.so:
+
+CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
+
+/usr/lib/x86_64-linux-gnu/libdl.a:
+
+/lib64/ld-linux-x86-64.so.2:
+
+/lib/x86_64-linux-gnu/libc.so.6:
 
 /usr/lib/linux/uapi/x86/asm/bitsperlong.h:
 
@@ -607,6 +654,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/strings.h:
 
+/lib/x86_64-linux-gnu/libmvec.so.1:
+
 /usr/include/stdlib.h:
 
 /usr/lib/linux/uapi/x86/asm/errno.h:
@@ -617,11 +666,15 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/sched.h:
 
+/usr/lib/x86_64-linux-gnu/libcurl.so:
+
 /usr/include/pthread.h:
 
 /usr/include/openssl/x509err.h:
 
 /usr/include/openssl/x509_vfy.h:
+
+libvscp_guidparser.so:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
 
@@ -799,6 +852,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/c++/14/bits/gslice.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
 /usr/include/c++/14/bit:
 
 /usr/include/c++/14/array:
@@ -823,6 +878,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/asm-generic/socket.h:
 
+/usr/lib/x86_64-linux-gnu/libm.so:
+
 /usr/include/c++/14/ios:
 
 /usr/include/asm-generic/int-ll64.h:
@@ -834,6 +891,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /home/akhe/development/VSCP/vscp/src/vscp/common/vscp-type.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/iterators/iter_impl.hpp:
+
+libvscp_sockettcp.so:
 
 /usr/include/openssl/ct.h:
 
@@ -861,6 +920,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/linux/posix_types.h:
 
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
 /usr/include/x86_64-linux-gnu/c++/14/bits/messages_members.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/output/serializer.hpp:
@@ -868,6 +929,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/linux/can.h:
 
 /usr/include/linux/types.h:
+
+/usr/lib/x86_64-linux-gnu/libexpat.so:
 
 /usr/include/openssl/dtls1.h:
 
@@ -891,6 +954,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/input/lexer.hpp:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/meta/logic.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
@@ -910,6 +975,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/c++/14/ext/alloc_traits.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/string_utils.hpp:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
 
 /usr/include/c++/14/algorithm:
 
@@ -940,6 +1007,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/c++/14/bits/exception.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/conversions/to_json.hpp:
+
+libvscp_util.so:
 
 /usr/include/openssl/async.h:
 
@@ -978,6 +1047,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/input/parser.hpp:
+
+/usr/lib/x86_64-linux-gnu/libmosquitto.so:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/conversions/from_json.hpp:
 
@@ -1071,6 +1142,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/string_escape.hpp:
 
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
 /usr/include/c++/14/bits/streambuf_iterator.h:
 
 /usr/include/openssl/ecerr.h:
@@ -1091,6 +1164,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/openssl/bio.h:
 
+libvscp_mdf.so:
+
 /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
 
 /usr/include/asm-generic/errno.h:
@@ -1102,6 +1177,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/alloca.h:
 
 /usr/include/c++/14/bits/list.tcc:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
 
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
@@ -1116,6 +1193,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/conversions/to_chars.hpp:
 
 /usr/include/c++/14/streambuf:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/ordered_map.hpp:
 
@@ -1158,6 +1237,8 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 /usr/include/c++/14/deque:
 
 /usr/include/c++/14/numeric:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
 
 /usr/include/c++/14/bits/stl_heap.h:
 
@@ -1357,11 +1438,15 @@ CMakeFiles/vscp_client_base.dir/src/vscp/common/vscp-client-base.cpp.o: /home/ak
 
 /usr/include/linux/socket.h:
 
+libvscp_guid.so:
+
 /usr/include/locale.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
 
 /usr/include/math.h:
+
+/lib/x86_64-linux-gnu/libm.so.6:
 
 /usr/include/c++/14/iosfwd:
 

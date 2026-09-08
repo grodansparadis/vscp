@@ -557,6 +557,78 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
   /usr/lib/linux/uapi/x86/asm/unistd.h \
   /usr/lib/linux/uapi/x86/asm/unistd_64.h
 
+libvscp_client_mqtt.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libdl.a \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libcurl.so \
+  /usr/lib/x86_64-linux-gnu/libexpat.so \
+  /usr/lib/x86_64-linux-gnu/libmosquitto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o \
+  libvscp_client_base.so \
+  libvscp_core.so \
+  libvscp_guid.so \
+  libvscp_guidparser.so \
+  libvscp_mdf.so \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+libvscp_util.so:
+
+libvscp_sockettcp.so:
+
+libvscp_mdf.so:
+
+libvscp_guidparser.so:
+
+libvscp_guid.so:
+
+libvscp_core.so:
+
+CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o:
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+/usr/lib/x86_64-linux-gnu/libmosquitto.so:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libm.so:
+
+/usr/lib/x86_64-linux-gnu/libdl.a:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
+
+/lib/x86_64-linux-gnu/libm.so.6:
+
+/usr/lib/x86_64-linux-gnu/libcurl.so:
+
+/lib/x86_64-linux-gnu/libc.so.6:
 
 /usr/lib/linux/uapi/x86/asm/unistd.h:
 
@@ -742,6 +814,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 
 /usr/include/c++/14/bits/basic_string.h:
 
+/usr/lib/x86_64-linux-gnu/crti.o:
+
 /usr/include/c++/14/bits/locale_facets.h:
 
 /usr/include/linux/limits.h:
@@ -821,6 +895,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/meta/identity_tag.hpp:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/output/binary_writer.hpp:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
 
 /usr/include/c++/14/bits/locale_classes.h:
 
@@ -919,6 +995,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 /usr/include/c++/14/chrono:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/meta/logic.hpp:
+
+/usr/lib/x86_64-linux-gnu/libexpat.so:
 
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
@@ -1089,6 +1167,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 /usr/include/c++/14/bits/nested_exception.h:
 
 /home/akhe/development/VSCP/vscp/third-party/spdlog/include/spdlog/details/log_msg_buffer.h:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
 
 /usr/include/c++/14/cstddef:
 
@@ -1266,6 +1346,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 
 /usr/include/c++/14/tuple:
 
+/lib64/ld-linux-x86-64.so.2:
+
 /usr/include/c++/14/type_traits:
 
 /usr/include/c++/14/typeinfo:
@@ -1367,6 +1449,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 
 /usr/include/x86_64-linux-gnu/c++/14/bits/cpu_defines.h:
+
+libvscp_client_base.so:
 
 /usr/include/c++/14/bits/unique_lock.h:
 
@@ -1568,6 +1652,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
 
+/lib/x86_64-linux-gnu/libmvec.so.1:
+
 /usr/include/c++/14/ctime:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
@@ -1657,6 +1743,8 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o: /home/ak
 /usr/include/x86_64-linux-gnu/c++/14/bits/os_defines.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 

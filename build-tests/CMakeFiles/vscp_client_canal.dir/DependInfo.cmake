@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-client-canal.cpp" "CMakeFiles/vscp_client_canal.dir/src/vscp/common/vscp-client-canal.cpp.o" "gcc" "CMakeFiles/vscp_client_canal.dir/src/vscp/common/vscp-client-canal.cpp.o.d"
+  "" "libvscp_client_canal.so" "gcc" "CMakeFiles/vscp_client_canal.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

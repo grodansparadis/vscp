@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,21 +32,21 @@
 */
 // I M P O T A N T ! ! ! Lines below must be located at line
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     15
-#define VSCPD_MINOR_VERSION     1
-#define VSCPD_RELEASE_VERSION   1
+#define VSCPD_MAJOR_VERSION     26
+#define VSCPD_MINOR_VERSION     9
+#define VSCPD_RELEASE_VERSION   3793
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "15.1.1-0 Phosphorus"
+#define VSCPD_DISPLAY_VERSION   "26.09.3793"
 
 #define VSCPD_COPYRIGHT                                                     \
-    "Copyright (C) 2000-2026 Ake Hedman, the VSCP project, "                \
+    "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \
     "https://www.vscp.org"
 #define VSCPD_COPYRIGHT_HTML                                                \
-    "Copyright (C) 2000-2026 Ake Hedman, <a "                               \
+    "Copyright (C) 2000-2026 Ake Hedman and contributors, <a "                               \
     "href=\"mailto:info@vscp.org\">the VSCP project</a>, <a "               \
     "href=\"https://www.vscp.org\">https://"                                \
-    "www.grodansparadis.com</a>"
+    "www.vscp.org</a>"
 
 #define VSCP_VERSION(major, minor, release)                                 \
     (((major) << 16) | ((minor) << 8) | (release))

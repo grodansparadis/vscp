@@ -7,7 +7,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 // <info@vscp.org>
 //
 
@@ -652,9 +652,7 @@ TEST(Cguid, DoubleColonLeading)
 
 TEST(Cguid, DoubleColonTrailing) 
 {
-    // Trailing "::" is NOT supported by vscp-guid-parser
-    // The parser only handles leading "::xx" format
-    // With "01:02:03::", it parses the first 3 bytes, then stops
+    // A trailing "::" is a zero-filled placeholder.
     cguid guid;
     guid.getFromString("01:02:03::");
     
@@ -662,7 +660,7 @@ TEST(Cguid, DoubleColonTrailing)
     EXPECT_EQ(0x01, guid.getAt(0));
     EXPECT_EQ(0x02, guid.getAt(1));
     EXPECT_EQ(0x03, guid.getAt(2));
-    // Remaining bytes stay 0x00 (not expanded to 0xFF)
+    // Remaining bytes are zero-filled.
     for (int i = 3; i < 16; i++) {
         EXPECT_EQ(0x00, guid.getAt(i)) << "Byte " << i << " should be 0x00";
     }
@@ -670,19 +668,28 @@ TEST(Cguid, DoubleColonTrailing)
 
 TEST(Cguid, DoubleColonMiddle) 
 {
-    // Middle "::" is NOT supported by vscp-guid-parser
-    // It only handles leading "::xx" format
-    // With "01:02::FE:FF", parsing stops after "::"
+    // A middle "::" represents the zero-filled bytes between both groups.
     cguid guid;
     guid.getFromString("01:02::FE:FF");
     
     // First 2 bytes parsed
     EXPECT_EQ(0x01, guid.getAt(0));
     EXPECT_EQ(0x02, guid.getAt(1));
-    // Remaining bytes stay 0x00 (middle :: doesn't work)
-    for (int i = 2; i < 16; i++) {
+    for (int i = 2; i < 14; i++) {
         EXPECT_EQ(0x00, guid.getAt(i)) << "Byte " << i << " should be 0x00";
     }
+    EXPECT_EQ(0xFE, guid.getAt(14));
+    EXPECT_EQ(0xFF, guid.getAt(15));
+}
+
+TEST(Cguid, StarPrefix)
+{
+    cguid guid("*:1");
+
+    for (int i = 0; i < 15; i++) {
+        EXPECT_EQ(0xFF, guid.getAt(i));
+    }
+    EXPECT_EQ(0x01, guid.getAt(15));
 }
 
 TEST(Cguid, HyphenColonLeadingZeros) 
@@ -694,6 +701,23 @@ TEST(Cguid, HyphenColonLeadingZeros)
     // Bytes 0-12 should be 0x00
     for (int i = 0; i < 13; i++) {
         EXPECT_EQ(0x00, guid.getAt(i)) << "Byte " << i << " should be 0x00";
+    }
+    // Last 3 bytes
+    EXPECT_EQ(0x01, guid.getAt(13));
+    EXPECT_EQ(0x02, guid.getAt(14));
+    EXPECT_EQ(0x03, guid.getAt(15));
+}
+
+
+TEST(Cguid, AsteriskColonLeadingFFs) 
+{
+    // "*:01:02:03" means leading bytes are 0xFF
+    cguid guid("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+    guid.getFromString("*:01:02:03");
+    
+    // Bytes 0-12 should be 0xFF
+    for (int i = 0; i < 13; i++) {
+        EXPECT_EQ(0xFF, guid.getAt(i)) << "Byte " << i << " should be 0xFF";
     }
     // Last 3 bytes
     EXPECT_EQ(0x01, guid.getAt(13));

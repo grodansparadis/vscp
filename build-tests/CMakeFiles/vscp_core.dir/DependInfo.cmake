@@ -19,6 +19,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/akhe/development/VSCP/vscp/src/vscp/common/vscphelper.cpp" "CMakeFiles/vscp_core.dir/src/vscp/common/vscphelper.cpp.o" "gcc" "CMakeFiles/vscp_core.dir/src/vscp/common/vscphelper.cpp.o.d"
   "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpremotetcpif.cpp" "CMakeFiles/vscp_core.dir/src/vscp/common/vscpremotetcpif.cpp.o" "gcc" "CMakeFiles/vscp_core.dir/src/vscp/common/vscpremotetcpif.cpp.o.d"
   "/home/akhe/development/VSCP/vscp/src/vscp/common/vscpunit.cpp" "CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o" "gcc" "CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o.d"
+  "" "libvscp_core.so" "gcc" "CMakeFiles/vscp_core.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

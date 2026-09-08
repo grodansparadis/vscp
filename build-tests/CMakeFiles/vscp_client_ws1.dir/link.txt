@@ -1,2 +1,1 @@
-/usr/bin/ar qc libvscp_client_ws1.a "CMakeFiles/vscp_client_ws1.dir/src/vscp/common/vscp-client-ws1.cpp.o"
-/usr/bin/ranlib libvscp_client_ws1.a
+/usr/bin/c++ -fPIC -g -Wl,--dependency-file=CMakeFiles/vscp_client_ws1.dir/link.d -shared -Wl,-soname,libvscp_client_ws1.so -o libvscp_client_ws1.so "CMakeFiles/vscp_client_ws1.dir/src/vscp/common/vscp-client-ws1.cpp.o"  -Wl,-rpath,/home/akhe/development/VSCP/vscp/build-tests: libvscp_client_base.so libvscp_core.so libvscp_mdf.so libvscp_guid.so libvscp_guidparser.so libvscp_util.so libvscp_sockettcp.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libexpat.so /usr/lib/x86_64-linux-gnu/libmosquitto.so /usr/lib/x86_64-linux-gnu/libcurl.so -lm -ldl

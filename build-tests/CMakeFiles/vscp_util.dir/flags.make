@@ -3,13 +3,13 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_DEFINES = -DOPENSSL_API_1_1
+C_DEFINES = -DOPENSSL_API_1_1 -Dvscp_util_EXPORTS
 
 C_INCLUDES = -I/home/akhe/development/VSCP/vscp/src/common
 
 C_FLAGS = -g -fPIC -Wno-psabi
 
-CXX_DEFINES = -DOPENSSL_API_1_1
+CXX_DEFINES = -DOPENSSL_API_1_1 -Dvscp_util_EXPORTS
 
 CXX_INCLUDES = -I/home/akhe/development/VSCP/vscp/src/common
 

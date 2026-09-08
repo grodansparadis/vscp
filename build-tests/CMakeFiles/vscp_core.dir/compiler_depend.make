@@ -4395,6 +4395,88 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h \
   /usr/lib/linux/uapi/x86/asm/errno.h
 
+libvscp_core.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libdl.a \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libcurl.so \
+  /usr/lib/x86_64-linux-gnu/libexpat.so \
+  /usr/lib/x86_64-linux-gnu/libmosquitto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_core.dir/src/vscp/common/canal-xmlconfig.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/clientlist.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/hlo.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/interfacelist.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/register.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/userlist.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/vscpcanaldeviceif.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/vscpdatetime.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/vscphelper.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/vscpremotetcpif.cpp.o \
+  CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o \
+  libvscp_guid.so \
+  libvscp_guidparser.so \
+  libvscp_mdf.so \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+libvscp_util.so:
+
+libvscp_sockettcp.so:
+
+libvscp_mdf.so:
+
+libvscp_guidparser.so:
+
+libvscp_guid.so:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/vscpdatetime.cpp.o:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/userlist.cpp.o:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/interfacelist.cpp.o:
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+/usr/lib/x86_64-linux-gnu/libmosquitto.so:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libm.so:
+
+/usr/lib/x86_64-linux-gnu/libdl.a:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
+
+/lib/x86_64-linux-gnu/libm.so.6:
+
+/usr/lib/x86_64-linux-gnu/libcurl.so:
+
+/lib/x86_64-linux-gnu/libc.so.6:
 
 /home/akhe/development/VSCP/vscp/src/vscp/common/vscpunit.h:
 
@@ -4610,6 +4692,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/openssl/cryptoerr.h:
 
+/usr/lib/x86_64-linux-gnu/libexpat.so:
+
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
 /usr/include/openssl/core.h:
@@ -4750,6 +4834,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/c++/14/bits/locale_classes.tcc:
 
+CMakeFiles/vscp_core.dir/src/vscp/common/clientlist.cpp.o:
+
 /usr/include/c++/14/bits/utility.h:
 
 /usr/include/c++/14/cstdio:
@@ -4776,7 +4862,11 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/c++/14/iostream:
 
+CMakeFiles/vscp_core.dir/src/vscp/common/vscpremotetcpif.cpp.o:
+
 /usr/include/c++/14/bits/functional_hash.h:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/register.cpp.o:
 
 /usr/include/openssl/dsa.h:
 
@@ -4878,6 +4968,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /home/akhe/development/VSCP/vscp/third-party/spdlog/include/spdlog/details/backtracer-inl.h:
 
+CMakeFiles/vscp_core.dir/src/vscp/common/hlo.cpp.o:
+
 /usr/include/c++/14/ios:
 
 /home/akhe/development/VSCP/vscp/third-party/spdlog/include/spdlog/sinks/rotating_file_sink-inl.h:
@@ -4967,6 +5059,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 /usr/include/c++/14/memory:
 
 /usr/include/c++/14/bits/basic_string.h:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
 
 /usr/include/c++/14/bits/locale_facets.h:
 
@@ -5120,6 +5214,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/openssl/cryptoerr_legacy.h:
 
+/usr/lib/x86_64-linux-gnu/libc.so:
+
 /usr/include/c++/14/bits/stl_uninitialized.h:
 
 /usr/include/c++/14/bits/locale_classes.h:
@@ -5260,6 +5356,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/x86_64-linux-gnu/bits/timex.h:
 
+CMakeFiles/vscp_core.dir/src/vscp/common/canal-xmlconfig.cpp.o:
+
 /usr/include/x86_64-linux-gnu/bits/semaphore.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
@@ -5276,6 +5374,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/x86_64-linux-gnu/bits/time64.h:
 
+CMakeFiles/vscp_core.dir/src/vscp/common/vscpcanaldeviceif.cpp.o:
+
 /usr/include/c++/14/algorithm:
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
@@ -5285,6 +5385,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 /usr/include/x86_64-linux-gnu/bits/signal_ext.h:
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
+
+/lib/x86_64-linux-gnu/libmvec.so.1:
 
 /usr/include/c++/14/ctime:
 
@@ -5406,6 +5508,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
+
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h:
@@ -5452,7 +5556,11 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 
 /usr/lib/linux/uapi/x86/asm/sockios.h:
 
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
 /usr/include/c++/14/cstddef:
+
+/lib64/ld-linux-x86-64.so.2:
 
 /usr/include/c++/14/type_traits:
 
@@ -5485,6 +5593,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/abi_macros.hpp:
 
 /usr/include/c++/14/condition_variable:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o:
 
 /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
 
@@ -5605,6 +5715,8 @@ CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o: /home/akhe/development/
 /usr/include/c++/14/backward/auto_ptr.h:
 
 /usr/include/c++/14/bits/atomic_base.h:
+
+CMakeFiles/vscp_core.dir/src/vscp/common/vscphelper.cpp.o:
 
 /usr/include/c++/14/utility:
 

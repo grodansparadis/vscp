@@ -421,7 +421,7 @@ if (response.error === VSCP_CONSTANTS.ERROR_TIMEOUT) {
 
 ## License
 
-MIT License - Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+MIT License - Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 
 ## Contributing
 

@@ -2,6 +2,9 @@
   * [Start](start.md)
   * [Introduction](introduction.md)
 
+* Library reference
+  * [Library reference](library_reference.md)
+
 * Setup
   * [Setting up the system](setting_up_the_system.md)
 

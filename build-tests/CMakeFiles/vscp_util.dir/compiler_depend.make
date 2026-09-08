@@ -272,12 +272,59 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stddef.h
 
+libvscp_util.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_util.dir/src/common/configfile.cpp.o \
+  CMakeFiles/vscp_util.dir/src/common/crc.c.o \
+  CMakeFiles/vscp_util.dir/src/common/crc8.c.o \
+  CMakeFiles/vscp_util.dir/src/common/randpassword.cpp.o \
+  CMakeFiles/vscp_util.dir/src/common/vscp-aes.c.o \
+  CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o \
+  libvscp_sockettcp.so
+
+
+CMakeFiles/vscp_util.dir/src/common/crc8.c.o:
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
+
+/lib/x86_64-linux-gnu/libmvec.so.1:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-least.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
 /usr/include/stdint.h:
+
+CMakeFiles/vscp_util.dir/src/common/vscp-aes.c.o:
 
 /home/akhe/development/VSCP/vscp/src/common/vscp-aes.h:
 
@@ -287,13 +334,19 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 
 /usr/include/x86_64-linux-gnu/bits/time.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
+
 /usr/include/time.h:
 
 /home/akhe/development/VSCP/vscp/src/common/randpassword.h:
 
 /home/akhe/development/VSCP/vscp/src/common/crc8.h:
 
+CMakeFiles/vscp_util.dir/src/common/configfile.cpp.o:
+
 /home/akhe/development/VSCP/vscp/src/common/crc.h:
+
+CMakeFiles/vscp_util.dir/src/common/crc.c.o:
 
 /home/akhe/development/VSCP/vscp/src/common/crc.c:
 
@@ -321,7 +374,11 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 
 /usr/include/c++/14/cstdlib:
 
+/usr/lib/x86_64-linux-gnu/crtn.o:
+
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
+
+CMakeFiles/vscp_util.dir/src/common/randpassword.cpp.o:
 
 /home/akhe/development/VSCP/vscp/src/common/vscpbase64.c:
 
@@ -343,9 +400,13 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 
 /home/akhe/development/VSCP/vscp/src/common/configfile.cpp:
 
+/lib64/ld-linux-x86-64.so.2:
+
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
 
@@ -369,6 +430,8 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 
 /usr/include/stdlib.h:
 
+/usr/lib/x86_64-linux-gnu/libc.so:
+
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/wordsize.h:
@@ -377,11 +440,19 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 
 /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
 
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
+
 /usr/include/x86_64-linux-gnu/bits/endian.h:
 
 /usr/include/string.h:
 
+/usr/lib/x86_64-linux-gnu/libm.so:
+
+/lib/x86_64-linux-gnu/libc.so.6:
+
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
+
+libvscp_sockettcp.so:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/include/stdarg.h:
 
@@ -424,6 +495,8 @@ CMakeFiles/vscp_util.dir/src/common/vscpbase64.c.o: /home/akhe/development/VSCP/
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
+/lib/x86_64-linux-gnu/libm.so.6:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 

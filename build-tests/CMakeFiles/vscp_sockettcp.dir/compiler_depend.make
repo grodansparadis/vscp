@@ -293,6 +293,42 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stddef.h
 
+libvscp_sockettcp.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o \
+  CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o
+
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
+
+/lib64/ld-linux-x86-64.so.2:
 
 /home/akhe/development/VSCP/vscp/src/common/vscpmd5.c:
 
@@ -305,6 +341,8 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
 /usr/lib/linux/uapi/x86/asm/posix_types.h:
 
 /usr/include/x86_64-linux-gnu/sys/select.h:
+
+CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
@@ -327,6 +365,8 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/openssl/srtp.h:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
 
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
@@ -523,6 +563,8 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
 /usr/include/rpc/netdb.h:
 
 /usr/include/openssl/macros.h:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/include/linux/close_range.h:
 
@@ -746,6 +788,8 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
 
 /usr/include/x86_64-linux-gnu/bits/types/siginfo_t.h:
 
+/lib/x86_64-linux-gnu/libc.so.6:
+
 /usr/include/x86_64-linux-gnu/bits/types/sigval_t.h:
 
 /usr/include/openssl/asyncerr.h:
@@ -757,6 +801,8 @@ CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o: /home/akhe/development/VSC
 /usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
+
+CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o:
 
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 

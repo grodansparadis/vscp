@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS VSCP::vscp_common VSCP::vscp_core VSCP::vscp_guid VSCP::vscp_guidparser VSCP::vscp_mdf VSCP::vscp_client_base VSCP::vscp_client_canal VSCP::vscp_client_tcp VSCP::vscp_client_udp VSCP::vscp_client_ws1 VSCP::vscp_client_ws2 VSCP::vscp_client_multicast VSCP::vscp_client_mqtt VSCP::vscp_sockettcp VSCP::vscp_util VSCP::vscp_client_socketcan)
+foreach(_cmake_expected_target IN ITEMS VSCP::vscp_all VSCP::vscp_common VSCP::vscp_core VSCP::vscp_guid VSCP::vscp_guidparser VSCP::vscp_mdf VSCP::vscp_client_base VSCP::vscp_client_canal VSCP::vscp_client_tcp VSCP::vscp_client_udp VSCP::vscp_client_ws1 VSCP::vscp_client_ws2 VSCP::vscp_client_multicast VSCP::vscp_client_mqtt VSCP::vscp_sockettcp VSCP::vscp_util VSCP::vscp_client_socketcan)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -55,8 +55,17 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
+# Create imported target VSCP::vscp_all
+add_library(VSCP::vscp_all SHARED IMPORTED)
+
+set_target_properties(VSCP::vscp_all PROPERTIES
+  INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/vscp"
+  INTERFACE_LINK_LIBRARIES "VSCP::vscp_common;VSCP::vscp_core;VSCP::vscp_guid;VSCP::vscp_guidparser;VSCP::vscp_mdf;VSCP::vscp_sockettcp;VSCP::vscp_util;VSCP::vscp_client_base;VSCP::vscp_client_canal;VSCP::vscp_client_tcp;VSCP::vscp_client_udp;VSCP::vscp_client_ws1;VSCP::vscp_client_ws2;VSCP::vscp_client_multicast;VSCP::vscp_client_mqtt;VSCP::vscp_client_socketcan"
+)
+
 # Create imported target VSCP::vscp_common
-add_library(VSCP::vscp_common STATIC IMPORTED)
+add_library(VSCP::vscp_common SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_common PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -65,7 +74,7 @@ set_target_properties(VSCP::vscp_common PROPERTIES
 )
 
 # Create imported target VSCP::vscp_core
-add_library(VSCP::vscp_core STATIC IMPORTED)
+add_library(VSCP::vscp_core SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_core PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1;WITH_SYSTEMD"
@@ -74,7 +83,7 @@ set_target_properties(VSCP::vscp_core PROPERTIES
 )
 
 # Create imported target VSCP::vscp_guid
-add_library(VSCP::vscp_guid STATIC IMPORTED)
+add_library(VSCP::vscp_guid SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_guid PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -83,7 +92,7 @@ set_target_properties(VSCP::vscp_guid PROPERTIES
 )
 
 # Create imported target VSCP::vscp_guidparser
-add_library(VSCP::vscp_guidparser STATIC IMPORTED)
+add_library(VSCP::vscp_guidparser SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_guidparser PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -92,7 +101,7 @@ set_target_properties(VSCP::vscp_guidparser PROPERTIES
 )
 
 # Create imported target VSCP::vscp_mdf
-add_library(VSCP::vscp_mdf STATIC IMPORTED)
+add_library(VSCP::vscp_mdf SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_mdf PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -101,7 +110,7 @@ set_target_properties(VSCP::vscp_mdf PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_base
-add_library(VSCP::vscp_client_base STATIC IMPORTED)
+add_library(VSCP::vscp_client_base SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_base PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -110,7 +119,7 @@ set_target_properties(VSCP::vscp_client_base PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_canal
-add_library(VSCP::vscp_client_canal STATIC IMPORTED)
+add_library(VSCP::vscp_client_canal SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_canal PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -119,7 +128,7 @@ set_target_properties(VSCP::vscp_client_canal PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_tcp
-add_library(VSCP::vscp_client_tcp STATIC IMPORTED)
+add_library(VSCP::vscp_client_tcp SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_tcp PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -128,7 +137,7 @@ set_target_properties(VSCP::vscp_client_tcp PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_udp
-add_library(VSCP::vscp_client_udp STATIC IMPORTED)
+add_library(VSCP::vscp_client_udp SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_udp PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -137,7 +146,7 @@ set_target_properties(VSCP::vscp_client_udp PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_ws1
-add_library(VSCP::vscp_client_ws1 STATIC IMPORTED)
+add_library(VSCP::vscp_client_ws1 SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_ws1 PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -146,7 +155,7 @@ set_target_properties(VSCP::vscp_client_ws1 PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_ws2
-add_library(VSCP::vscp_client_ws2 STATIC IMPORTED)
+add_library(VSCP::vscp_client_ws2 SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_ws2 PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -155,7 +164,7 @@ set_target_properties(VSCP::vscp_client_ws2 PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_multicast
-add_library(VSCP::vscp_client_multicast STATIC IMPORTED)
+add_library(VSCP::vscp_client_multicast SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_multicast PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -164,7 +173,7 @@ set_target_properties(VSCP::vscp_client_multicast PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_mqtt
-add_library(VSCP::vscp_client_mqtt STATIC IMPORTED)
+add_library(VSCP::vscp_client_mqtt SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_mqtt PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"
@@ -173,7 +182,7 @@ set_target_properties(VSCP::vscp_client_mqtt PROPERTIES
 )
 
 # Create imported target VSCP::vscp_sockettcp
-add_library(VSCP::vscp_sockettcp STATIC IMPORTED)
+add_library(VSCP::vscp_sockettcp SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_sockettcp PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "OPENSSL_API_1_1"
@@ -182,7 +191,7 @@ set_target_properties(VSCP::vscp_sockettcp PROPERTIES
 )
 
 # Create imported target VSCP::vscp_util
-add_library(VSCP::vscp_util STATIC IMPORTED)
+add_library(VSCP::vscp_util SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_util PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "OPENSSL_API_1_1"
@@ -191,7 +200,7 @@ set_target_properties(VSCP::vscp_util PROPERTIES
 )
 
 # Create imported target VSCP::vscp_client_socketcan
-add_library(VSCP::vscp_client_socketcan STATIC IMPORTED)
+add_library(VSCP::vscp_client_socketcan SHARED IMPORTED)
 
 set_target_properties(VSCP::vscp_client_socketcan PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "VSCP_HAVE_MADDY;OPENSSL_API_1_1"

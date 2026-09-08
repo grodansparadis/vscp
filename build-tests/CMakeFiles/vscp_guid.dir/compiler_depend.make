@@ -357,6 +357,43 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
   /usr/lib/linux/uapi/x86/asm/sockios.h \
   /usr/lib/linux/uapi/x86/asm/types.h
 
+libvscp_guid.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
+
+/lib64/ld-linux-x86-64.so.2:
+
+/lib/x86_64-linux-gnu/libc.so.6:
 
 /usr/lib/linux/uapi/x86/asm/sockios.h:
 
@@ -389,6 +426,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 /usr/include/x86_64-linux-gnu/c++/14/bits/time_members.h:
 
 /usr/include/x86_64-linux-gnu/c++/14/bits/os_defines.h:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
 
 /usr/include/x86_64-linux-gnu/c++/14/bits/messages_members.h:
 
@@ -542,6 +581,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/c++/14/tuple:
 
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
 /usr/include/c++/14/bits/streambuf_iterator.h:
 
 /usr/include/openssl/evp.h:
@@ -563,6 +604,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 /usr/include/c++/14/bits/stl_algobase.h:
 
 /usr/include/asm-generic/errno-base.h:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
 
 /usr/include/c++/14/bits/stl_heap.h:
 
@@ -666,6 +709,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/c++/14/bits/ios_base.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
 /usr/include/c++/14/bit:
 
 /usr/include/x86_64-linux-gnu/bits/poll.h:
@@ -734,6 +779,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/openssl/cryptoerr_legacy.h:
 
+/usr/lib/x86_64-linux-gnu/libm.so:
+
 /usr/include/asm-generic/int-ll64.h:
 
 /usr/include/x86_64-linux-gnu/bits/sockaddr.h:
@@ -758,7 +805,11 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/c++/14/bits/algorithmfwd.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
+
 /usr/include/c++/14/algorithm:
+
+/lib/x86_64-linux-gnu/libmvec.so.1:
 
 /usr/include/stdlib.h:
 
@@ -769,6 +820,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 /usr/include/openssl/pem.h:
 
 /usr/include/c++/14/bits/char_traits.h:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
 
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
@@ -850,6 +903,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/c++/14/bits/locale_facets.tcc:
 
+libvscp_sockettcp.so:
+
 /usr/include/openssl/ct.h:
 
 /usr/lib/linux/uapi/x86/asm/errno.h:
@@ -898,6 +953,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/linux/types.h:
 
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
+
 /usr/include/linux/close_range.h:
 
 /usr/include/linux/errno.h:
@@ -908,6 +965,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 
 /usr/include/netinet/in.h:
 
+/lib/x86_64-linux-gnu/libm.so.6:
+
 /usr/include/c++/14/iosfwd:
 
 /usr/include/openssl/asn1.h:
@@ -915,6 +974,8 @@ CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o: /home/akhe/development/VSCP
 /usr/include/x86_64-linux-gnu/c++/14/bits/c++locale.h:
 
 /usr/include/openssl/asn1err.h:
+
+libvscp_util.so:
 
 /usr/include/openssl/async.h:
 

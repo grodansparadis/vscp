@@ -71,3 +71,21 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o
  /usr/lib/gcc/x86_64-linux-gnu/14/include/stddef.h
  /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h
 
+libvscp_guidparser.so
+ /lib/x86_64-linux-gnu/libc.so.6
+ /lib64/ld-linux-x86-64.so.2
+ /usr/lib/x86_64-linux-gnu/crti.o
+ /usr/lib/x86_64-linux-gnu/crtn.o
+ /usr/lib/x86_64-linux-gnu/libc.so
+ /usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a
+ /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so
+ /usr/lib/x86_64-linux-gnu/libc_nonshared.a
+ /usr/lib/x86_64-linux-gnu/libcrypto.so
+ /usr/lib/x86_64-linux-gnu/libssl.so
+ /home/akhe/development/VSCP/vscp/build-tests/CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_sockettcp.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_util.so
+

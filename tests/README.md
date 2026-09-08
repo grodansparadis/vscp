@@ -5,7 +5,9 @@ tables-tcp - Tests for tables creating, logging, handling in the tcp/ip interfac
 
 
 Tests use GoogleTest which is part of this repository in the rootfoolder as googletest. 
-Googeltest must be configured and built before tests can be run.
+GoogleTest must be configured and built before tests can be run.
+
+
 
 To build
 
@@ -14,6 +16,9 @@ To build
 - Go to folder (**cd build**)
 - Do **cmake ..**
 - Do **make**
+- Do **make test**
+
+---
 
 For new tests link with  
 

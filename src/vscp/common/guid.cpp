@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+// Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 // <info@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -245,8 +245,8 @@ cguid::getFromString(const std::string &strGUID)
         }
     }
 
-    // Special case: "::" at start
-    if (p[0] == ':' && p[1] == ':') {
+    // Special case: "::" and "*:" at start
+    if ((p[0] == ':' && p[1] == ':') || (p[0] == '*' && p[1] == ':')) {
         if (!p[2] || !isHexDigit(p[2])) {
             memset(m_guid, 0xFF, 16);
             return;
@@ -278,6 +278,36 @@ cguid::getFromString(const std::string &strGUID)
         int ffCount = 16 - tempCount;
         if (ffCount > 0) memset(m_guid, 0xFF, ffCount);
         memcpy(m_guid + ffCount, tempBytes, tempCount);
+        return;
+    }
+
+    // A middle "::" is a zero-filled placeholder. The leading "::" form
+    // above is retained for its VSCP-specific 0xFF shorthand meaning.
+    const char *middle = strstr(p, "::");
+    if (middle != nullptr && middle != p) {
+        auto countParsedBytes = [](const char *value) {
+            int count = 0;
+            while (*value) {
+                if (!isHexDigit(*value)) {
+                    value++;
+                    continue;
+                }
+                int hexLen = countHexDigits(value);
+                count += (hexLen <= 2) ? 1 : (hexLen <= 4 ? 2 : (hexLen + 1) / 2);
+                value += hexLen;
+            }
+            return count;
+        };
+
+        std::string prefix(p, middle - p);
+        std::string suffix(middle + 2);
+        cguid prefixGuid(prefix);
+        cguid suffixGuid(suffix);
+        int prefixCount = std::min(countParsedBytes(prefix.c_str()), 16);
+        int suffixCount = std::min(countParsedBytes(suffix.c_str()), 16 - prefixCount);
+
+        memcpy(m_guid, prefixGuid.m_guid, prefixCount);
+        memcpy(m_guid + 16 - suffixCount, suffixGuid.m_guid, suffixCount);
         return;
     }
 

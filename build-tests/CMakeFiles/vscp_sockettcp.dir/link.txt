@@ -1,2 +1,1 @@
-/usr/bin/ar qc libvscp_sockettcp.a CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o
-/usr/bin/ranlib libvscp_sockettcp.a
+/usr/bin/cc -fPIC -g -Wl,--dependency-file=CMakeFiles/vscp_sockettcp.dir/link.d -shared -Wl,-soname,libvscp_sockettcp.so -o libvscp_sockettcp.so CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o  /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so

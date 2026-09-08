@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/akhe/development/VSCP/vscp/src/common/sockettcp.c" "CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o" "gcc" "CMakeFiles/vscp_sockettcp.dir/src/common/sockettcp.c.o.d"
   "/home/akhe/development/VSCP/vscp/src/common/vscpmd5.c" "CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o" "gcc" "CMakeFiles/vscp_sockettcp.dir/src/common/vscpmd5.c.o.d"
+  "" "libvscp_sockettcp.so" "gcc" "CMakeFiles/vscp_sockettcp.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

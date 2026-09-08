@@ -1,2 +1,1 @@
-/usr/bin/ar qc libvscp_client_mqtt.a "CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o"
-/usr/bin/ranlib libvscp_client_mqtt.a
+/usr/bin/c++ -fPIC -g -Wl,--dependency-file=CMakeFiles/vscp_client_mqtt.dir/link.d -shared -Wl,-soname,libvscp_client_mqtt.so -o libvscp_client_mqtt.so "CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o"  -Wl,-rpath,/home/akhe/development/VSCP/vscp/build-tests: libvscp_client_base.so libvscp_core.so /usr/lib/x86_64-linux-gnu/libmosquitto.so libvscp_mdf.so libvscp_guid.so libvscp_guidparser.so libvscp_util.so libvscp_sockettcp.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libexpat.so /usr/lib/x86_64-linux-gnu/libcurl.so -lm -ldl

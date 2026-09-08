@@ -1,2 +1,1 @@
-/usr/bin/ar qc libvscp_guid.a CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o
-/usr/bin/ranlib libvscp_guid.a
+/usr/bin/c++ -fPIC -g -Wl,--dependency-file=CMakeFiles/vscp_guid.dir/link.d -shared -Wl,-soname,libvscp_guid.so -o libvscp_guid.so CMakeFiles/vscp_guid.dir/src/vscp/common/guid.cpp.o  -Wl,-rpath,/home/akhe/development/VSCP/vscp/build-tests: libvscp_util.so libvscp_sockettcp.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so

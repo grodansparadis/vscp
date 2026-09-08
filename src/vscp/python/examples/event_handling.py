@@ -2,7 +2,7 @@
 Event Handling Example for VSCP Level 2 Client
 Demonstrates event sending, receiving, and handling
 
-Copyright (C) 2000-2026 Ake Hedman, the VSCP project <info@vscp.org>
+Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project <info@vscp.org>
 MIT License
 """
 

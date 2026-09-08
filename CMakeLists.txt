@@ -2,10 +2,10 @@
 #
 # VSCP common library — build instructions.
 #
-# Defines the vscp_common and vscp_util static library targets
+# Defines the VSCP shared library targets
 # for use as a subproject by the VSCP daemon and other consumers.
 #
-# Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+# Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 # SPDX-License-Identifier: MIT
 #
 # Usage as a subproject (e.g. from the vscp-daemon repo):
@@ -27,14 +27,28 @@
 #
 
 cmake_minimum_required(VERSION 3.16...3.31)
+
+# Version format: YY.MM.<commit-count>.
+string(TIMESTAMP VSCP_VERSION_YEAR "%y")
+string(TIMESTAMP VSCP_VERSION_MONTH "%m")
+execute_process(
+    COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-list --count HEAD
+    OUTPUT_VARIABLE VSCP_VERSION_PATCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE VSCP_GIT_RESULT)
+if(NOT VSCP_GIT_RESULT EQUAL 0 OR NOT VSCP_VERSION_PATCH MATCHES "^[0-9]+$")
+    set(VSCP_VERSION_PATCH 0)
+endif()
+
+set(VSCP_VERSION_MAJOR ${VSCP_VERSION_YEAR})
+set(VSCP_VERSION_MINOR ${VSCP_VERSION_MONTH})
 project(vscp
-    VERSION 15.1.1
+    VERSION ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_PATCH}
     DESCRIPTION "VSCP common library"
     LANGUAGES CXX C)
 
-set(VSCP_VERSION_MAJOR 15)
-set(VSCP_VERSION_MINOR 1)
-set(VSCP_VERSION_PATCH 1)
+message(STATUS "VSCP version: ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_PATCH}")
 
 # ---- Build options ----
 option(VSCP_BUILD_TESTS "Build unit tests (use tests/ directory for standalone test builds)" OFF)
@@ -52,6 +66,17 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+# Refresh documentation metadata when the project is configured or built.
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+set(VSCP_DOCS_METADATA_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tools/update_docs_metadata.py")
+if(EXISTS "${VSCP_DOCS_METADATA_SCRIPT}")
+    add_custom_target(update_docs_metadata
+        COMMAND ${Python3_EXECUTABLE} "${VSCP_DOCS_METADATA_SCRIPT}"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Updating docs metadata"
+    )
+endif()
 
 # ---- Module path ----
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
@@ -212,7 +237,7 @@ endfunction()
 # =====================================================================
 # vscp_sockettcp — isolated TCP socket utility library
 # =====================================================================
-add_library(vscp_sockettcp STATIC
+add_library(vscp_sockettcp SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/sockettcp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
 )
@@ -242,7 +267,7 @@ endif()
 # =====================================================================
 # vscp_util — low-level platform utility library
 # =====================================================================
-add_library(vscp_util STATIC
+add_library(vscp_util SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpbase64.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc8.c
@@ -280,19 +305,19 @@ endif()
 # =====================================================================
 # Split protocol/component libraries
 # =====================================================================
-add_library(vscp_guid STATIC
+add_library(vscp_guid SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/guid.cpp
 )
 vscp_setup_protocol_target(vscp_guid)
 target_link_libraries(vscp_guid PUBLIC vscp_util)
 
-add_library(vscp_guidparser STATIC
+add_library(vscp_guidparser SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-guid-parser.c
 )
 vscp_setup_protocol_target(vscp_guidparser)
 target_link_libraries(vscp_guidparser PUBLIC vscp_util)
 
-add_library(vscp_mdf STATIC
+add_library(vscp_mdf SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/mdf.cpp
 )
 vscp_setup_protocol_target(vscp_mdf)
@@ -320,7 +345,7 @@ set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpunit.cpp
 )
 
-add_library(vscp_core STATIC ${VSCP_CORE_SOURCES})
+add_library(vscp_core SHARED ${VSCP_CORE_SOURCES})
 vscp_setup_protocol_target(vscp_core)
 target_link_libraries(vscp_core
     PUBLIC
@@ -340,49 +365,49 @@ elseif(APPLE)
 endif()
 
 # Dedicated client connection libraries
-add_library(vscp_client_base STATIC
+add_library(vscp_client_base SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-base.cpp
 )
 vscp_setup_protocol_target(vscp_client_base)
 target_link_libraries(vscp_client_base PUBLIC vscp_core)
 
-add_library(vscp_client_canal STATIC
+add_library(vscp_client_canal SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-canal.cpp
 )
 vscp_setup_protocol_target(vscp_client_canal)
 target_link_libraries(vscp_client_canal PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_tcp STATIC
+add_library(vscp_client_tcp SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-tcp.cpp
 )
 vscp_setup_protocol_target(vscp_client_tcp)
 target_link_libraries(vscp_client_tcp PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_udp STATIC
+add_library(vscp_client_udp SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-udp.cpp
 )
 vscp_setup_protocol_target(vscp_client_udp)
 target_link_libraries(vscp_client_udp PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_ws1 STATIC
+add_library(vscp_client_ws1 SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws1.cpp
 )
 vscp_setup_protocol_target(vscp_client_ws1)
 target_link_libraries(vscp_client_ws1 PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_ws2 STATIC
+add_library(vscp_client_ws2 SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-ws2.cpp
 )
 vscp_setup_protocol_target(vscp_client_ws2)
 target_link_libraries(vscp_client_ws2 PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_multicast STATIC
+add_library(vscp_client_multicast SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-multicast.cpp
 )
 vscp_setup_protocol_target(vscp_client_multicast)
 target_link_libraries(vscp_client_multicast PUBLIC vscp_client_base vscp_core)
 
-add_library(vscp_client_mqtt STATIC
+add_library(vscp_client_mqtt SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-mqtt.cpp
 )
 vscp_setup_protocol_target(vscp_client_mqtt)
@@ -394,7 +419,7 @@ target_link_libraries(vscp_client_mqtt
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_library(vscp_client_socketcan STATIC
+    add_library(vscp_client_socketcan SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-socketcan.cpp
     )
     vscp_setup_protocol_target(vscp_client_socketcan)
@@ -404,7 +429,7 @@ endif()
 # =====================================================================
 # vscp_common — compatibility aggregate library
 # =====================================================================
-add_library(vscp_common STATIC
+add_library(vscp_common SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-common.cpp
 )
 vscp_setup_protocol_target(vscp_common)
@@ -425,10 +450,40 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 # =====================================================================
+# vscp_all — aggregate shared library linking all VSCP component libraries
+# =====================================================================
+add_library(vscp_all SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-all.cpp
+)
+vscp_setup_protocol_target(vscp_all)
+target_link_libraries(vscp_all
+    PUBLIC
+        vscp_common
+        vscp_core
+        vscp_guid
+        vscp_guidparser
+        vscp_mdf
+        vscp_sockettcp
+        vscp_util
+        vscp_client_base
+        vscp_client_canal
+        vscp_client_tcp
+        vscp_client_udp
+        vscp_client_ws1
+        vscp_client_ws2
+        vscp_client_multicast
+        vscp_client_mqtt
+)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(vscp_all PUBLIC vscp_client_socketcan)
+endif()
+
+# =====================================================================
 # CMake package config export (only when installing)
 # =====================================================================
 if(VSCP_INSTALL)
     set(VSCP_INSTALL_TARGETS
+        vscp_all
         vscp_common
         vscp_core
         vscp_guid

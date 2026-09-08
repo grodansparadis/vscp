@@ -599,6 +599,63 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
   /usr/lib/linux/uapi/x86/asm/unistd.h \
   /usr/lib/linux/uapi/x86/asm/unistd_64.h
 
+libvscp_mdf.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib/x86_64-linux-gnu/libm.so.6 \
+  /lib/x86_64-linux-gnu/libmvec.so.1 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/x86_64-linux-gnu/libm.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libcurl.so \
+  /usr/lib/x86_64-linux-gnu/libexpat.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o \
+  libvscp_guid.so \
+  libvscp_guidparser.so \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+libvscp_util.so:
+
+libvscp_sockettcp.so:
+
+libvscp_guidparser.so:
+
+libvscp_guid.so:
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/x86_64-linux-gnu/libm.so:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
+
+/lib/x86_64-linux-gnu/libm.so.6:
+
+/usr/lib/x86_64-linux-gnu/libcurl.so:
+
+/lib/x86_64-linux-gnu/libc.so.6:
 
 /usr/lib/linux/uapi/x86/asm/unistd.h:
 
@@ -635,6 +692,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 /usr/include/x86_64-linux-gnu/openssl/opensslconf.h:
 
 /usr/include/x86_64-linux-gnu/openssl/configuration.h:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
@@ -842,6 +901,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 
 /usr/include/c++/14/bits/basic_string.h:
 
+/usr/lib/x86_64-linux-gnu/crti.o:
+
 /usr/include/c++/14/bits/locale_facets.h:
 
 /usr/include/c++/14/bits/atomic_base.h:
@@ -910,11 +971,15 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 
 /home/akhe/development/VSCP/vscp/third-party/spdlog/include/spdlog/details/log_msg-inl.h:
 
+CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o:
+
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/string_utils.hpp:
 
 /home/akhe/development/VSCP/vscp/third-party/spdlog/include/spdlog/sinks/rotating_file_sink-inl.h:
 
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/input/json_sax.hpp:
+
+/usr/lib/x86_64-linux-gnu/libc.so:
 
 /usr/include/c++/14/bits/locale_classes.h:
 
@@ -1067,6 +1132,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 /usr/include/c++/14/ext/atomicity.h:
 
 /usr/include/openssl/macros.h:
+
+/usr/lib/x86_64-linux-gnu/libexpat.so:
 
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
@@ -1368,6 +1435,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 
 /usr/include/c++/14/clocale:
 
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
 /home/akhe/development/VSCP/vscp/third-party/maddy/include/maddy/quoteparser.h:
 
 /usr/include/c++/14/cstddef:
@@ -1445,6 +1514,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 /home/akhe/development/VSCP/vscp/third-party/nlohmann/include/nlohmann/detail/meta/type_traits.hpp:
 
 /usr/include/c++/14/tuple:
+
+/lib64/ld-linux-x86-64.so.2:
 
 /usr/include/c++/14/type_traits:
 
@@ -1731,6 +1802,8 @@ CMakeFiles/vscp_mdf.dir/src/vscp/common/mdf.cpp.o: /home/akhe/development/VSCP/v
 /usr/include/x86_64-linux-gnu/bits/timex.h:
 
 /usr/include/x86_64-linux-gnu/bits/syscall.h:
+
+/lib/x86_64-linux-gnu/libmvec.so.1:
 
 /usr/include/c++/14/ctime:
 

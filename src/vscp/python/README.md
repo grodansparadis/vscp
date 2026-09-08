@@ -530,7 +530,7 @@ pip install dist/vscp_level2_client-*.whl
 
 ## License
 
-MIT License - Copyright (C) 2000-2026 Ake Hedman, the VSCP project
+MIT License - Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project
 
 ## Contributing
 

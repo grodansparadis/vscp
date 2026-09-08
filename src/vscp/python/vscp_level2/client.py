@@ -5,7 +5,7 @@ This module provides a Python interface to VSCP Level 2 drivers and devices.
 It mirrors the functionality found in the C++ vscpClientLevel2 class and
 level2drvdef.h interface definitions.
 
-Copyright (C) 2000-2026 Ake Hedman, the VSCP project <info@vscp.org>
+Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project <info@vscp.org>
 MIT License
 """
 

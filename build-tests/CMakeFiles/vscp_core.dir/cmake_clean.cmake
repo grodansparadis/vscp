@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/vscp_core.dir/link.d"
   "CMakeFiles/vscp_core.dir/src/vscp/common/canal-xmlconfig.cpp.o"
   "CMakeFiles/vscp_core.dir/src/vscp/common/canal-xmlconfig.cpp.o.d"
   "CMakeFiles/vscp_core.dir/src/vscp/common/clientlist.cpp.o"
@@ -21,8 +22,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/vscp_core.dir/src/vscp/common/vscpremotetcpif.cpp.o.d"
   "CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o"
   "CMakeFiles/vscp_core.dir/src/vscp/common/vscpunit.cpp.o.d"
-  "libvscp_core.a"
   "libvscp_core.pdb"
+  "libvscp_core.so"
 )
 
 # Per-language clean rules from dependency scanning.

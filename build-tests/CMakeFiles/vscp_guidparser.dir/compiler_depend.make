@@ -70,6 +70,37 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h
 
+libvscp_guidparser.so: /lib/x86_64-linux-gnu/libc.so.6 \
+  /lib64/ld-linux-x86-64.so.2 \
+  /usr/lib/x86_64-linux-gnu/crti.o \
+  /usr/lib/x86_64-linux-gnu/crtn.o \
+  /usr/lib/x86_64-linux-gnu/libc.so \
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a \
+  /usr/lib/x86_64-linux-gnu/libcrypto.so \
+  /usr/lib/x86_64-linux-gnu/libssl.so \
+  CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o \
+  libvscp_sockettcp.so \
+  libvscp_util.so
+
+
+libvscp_util.so:
+
+/usr/lib/x86_64-linux-gnu/libssl.so:
+
+/usr/lib/x86_64-linux-gnu/libcrypto.so:
+
+/usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
+
+/usr/lib/x86_64-linux-gnu/crti.o:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h:
 
@@ -89,6 +120,8 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
 
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
+/lib/x86_64-linux-gnu/libc.so.6:
+
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
@@ -102,6 +135,8 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
+/usr/lib/x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/include/string.h:
 
@@ -125,6 +160,8 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
+
 /usr/include/stdint.h:
 
 /home/akhe/development/VSCP/vscp/src/vscp/common/vscp-guid-parser.h:
@@ -133,11 +170,19 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
 
 /usr/include/features-time64.h:
 
+CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o:
+
+/lib64/ld-linux-x86-64.so.2:
+
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
 /usr/include/stdlib.h:
 
+/usr/lib/x86_64-linux-gnu/libc.so:
+
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
+
+libvscp_sockettcp.so:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/include/stdarg.h:
 
@@ -163,9 +208,13 @@ CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o: /home/akhe/
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
 /usr/include/stdc-predef.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+
+/usr/lib/x86_64-linux-gnu/crtn.o:
 
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 

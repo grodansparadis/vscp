@@ -2,7 +2,7 @@
  * VSCP Node.js Level 2 Interface
  * Main entry point for the VSCP Level 2 client library
  * 
- * Copyright (C) 2000-2026 Ake Hedman, the VSCP project <info@vscp.org>
+ * Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project <info@vscp.org>
  * MIT License
  */
 

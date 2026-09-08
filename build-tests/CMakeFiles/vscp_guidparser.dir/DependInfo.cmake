@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/akhe/development/VSCP/vscp/src/vscp/common/vscp-guid-parser.c" "CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o" "gcc" "CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o.d"
+  "" "libvscp_guidparser.so" "gcc" "CMakeFiles/vscp_guidparser.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

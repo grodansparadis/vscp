@@ -558,3 +558,34 @@ CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o
  /usr/lib/linux/uapi/x86/asm/unistd.h
  /usr/lib/linux/uapi/x86/asm/unistd_64.h
 
+libvscp_client_mqtt.so
+ /lib/x86_64-linux-gnu/libc.so.6
+ /lib/x86_64-linux-gnu/libm.so.6
+ /lib/x86_64-linux-gnu/libmvec.so.1
+ /lib64/ld-linux-x86-64.so.2
+ /usr/lib/x86_64-linux-gnu/crti.o
+ /usr/lib/x86_64-linux-gnu/crtn.o
+ /usr/lib/x86_64-linux-gnu/libc.so
+ /usr/lib/x86_64-linux-gnu/libdl.a
+ /usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+ /usr/lib/x86_64-linux-gnu/libm.so
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a
+ /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so
+ /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so
+ /usr/lib/x86_64-linux-gnu/libc_nonshared.a
+ /usr/lib/x86_64-linux-gnu/libcrypto.so
+ /usr/lib/x86_64-linux-gnu/libcurl.so
+ /usr/lib/x86_64-linux-gnu/libexpat.so
+ /usr/lib/x86_64-linux-gnu/libmosquitto.so
+ /usr/lib/x86_64-linux-gnu/libssl.so
+ /home/akhe/development/VSCP/vscp/build-tests/CMakeFiles/vscp_client_mqtt.dir/src/vscp/common/vscp-client-mqtt.cpp.o
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_client_base.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_core.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_guid.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_guidparser.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_mdf.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_sockettcp.so
+ /home/akhe/development/VSCP/vscp/build-tests/libvscp_util.so
+

@@ -1,2 +1,1 @@
-/usr/bin/ar qc libvscp_guidparser.a "CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o"
-/usr/bin/ranlib libvscp_guidparser.a
+/usr/bin/cc -fPIC -g -Wl,--dependency-file=CMakeFiles/vscp_guidparser.dir/link.d -shared -Wl,-soname,libvscp_guidparser.so -o libvscp_guidparser.so "CMakeFiles/vscp_guidparser.dir/src/vscp/common/vscp-guid-parser.c.o"  -Wl,-rpath,/home/akhe/development/VSCP/vscp/build-tests: libvscp_util.so libvscp_sockettcp.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so

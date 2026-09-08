@@ -8,7 +8,7 @@
 
 Author Åke Hedman and [the VSCP project](https://www.vscp.org), [info@vscp.org](info@vscp.org)  
 
-The documentation for the VSCP daemon is available at [https://grodansparadis.github.io/vscp-daemon/#/](https://grodansparadis.github.io/vscp-daemon/#/). 
+The documentation for the VSCP MQTT daemon is available [here](https://github.com/grodansparadis/vscp-mqtt-daemon) and of the tcp/ip daemon [here](https://github.com/grodansparadis/vscp-tcpip-daemon). 
 
 # Abstract
 

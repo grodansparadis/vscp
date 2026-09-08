@@ -1,7 +1,7 @@
 /**
  * TypeScript definitions for the VSCP GUID library
  *
- * Copyright (C) 2000-2026 Ake Hedman, the VSCP project <info@vscp.org>
+ * Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project <info@vscp.org>
  * MIT License
  */
 

@@ -1,8 +1,9 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/vscp_client_tcp.dir/link.d"
   "CMakeFiles/vscp_client_tcp.dir/src/vscp/common/vscp-client-tcp.cpp.o"
   "CMakeFiles/vscp_client_tcp.dir/src/vscp/common/vscp-client-tcp.cpp.o.d"
-  "libvscp_client_tcp.a"
   "libvscp_client_tcp.pdb"
+  "libvscp_client_tcp.so"
 )
 
 # Per-language clean rules from dependency scanning.
