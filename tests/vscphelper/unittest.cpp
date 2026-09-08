@@ -570,6 +570,26 @@ TEST(VscpHelper, getGuidFromStringToArray)
     }
 }
 
+TEST(VscpHelper, parseGuid)
+{
+    uint8_t guid[16] = {};
+    std::string strGUID = "00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F";
+
+    EXPECT_TRUE(vscp_parseGuid(guid, strGUID));
+
+    for (int i = 0; i < 16; i++) {
+        EXPECT_EQ(i, guid[i]);
+    }
+}
+
+TEST(VscpHelper, parseGuid_InvalidInput)
+{
+    uint8_t guid[16] = {};
+
+    EXPECT_FALSE(vscp_parseGuid(guid, "not-a-guid"));
+    EXPECT_FALSE(vscp_parseGuid(nullptr, "00:01:02:03"));
+}
+
 TEST(VscpHelper, getGuidFromStringToArray_UUID)
 {
     uint8_t guid[16];

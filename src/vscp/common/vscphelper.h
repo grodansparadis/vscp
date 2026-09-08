@@ -1763,6 +1763,17 @@ bool
 vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID);
 
 /*!
+  @fn vscp_parseGuid
+  Parse a GUID string into a 16-byte array using the extended VSCP GUID parser.
+
+  @param pGUID Pointer to GUID array (must be at least 16 bytes)
+  @param strGUID String with GUID in a supported VSCP format
+  @return True on success, false on failure.
+*/
+bool
+vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID);
+
+/*!
   @fn vscp_writeGuidArrayToString
   Write out GUID array to string in specified format.
 
