@@ -274,6 +274,7 @@ add_library(vscp_util SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscp-aes.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/randpassword.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/configfile.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscphelper-common.cpp
     $<$<BOOL:WIN32>:${VSCP_WINDOWS_GETOPT_SOURCE}>
 )
 target_include_directories(vscp_util
@@ -281,6 +282,8 @@ target_include_directories(vscp_util
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common>
         $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:include/vscp/util>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common>
 )
 target_compile_definitions(vscp_util PUBLIC ${VSCP_OPENSSL_API_DEF})
 target_link_libraries(vscp_util
