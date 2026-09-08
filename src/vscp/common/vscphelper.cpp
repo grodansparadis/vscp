@@ -413,45 +413,6 @@ using json = nlohmann::json;
 //                              General Helpers
 // ***************************************************************************
 
-////////////////////////////////////////////////////////////////////////////////
-// vscp_readStringValue
-
-int64_t
-vscp_readStringValue(const std::string &strval)
-{
-  int64_t val     = 0;
-  std::string str = strval;
-  vscp_makeLower(str);
-  vscp_trim(str);
-
-  try {
-    std::size_t pos;
-    if (string::npos != (pos = str.find("0x"))) {
-      str = str.substr(2);
-      val = std::stoll(str, &pos, 16);
-    }
-    else if (string::npos != (pos = str.find("0o"))) {
-      str = str.substr(2);
-      val = std::stoll(str, &pos, 8);
-    }
-    else if (string::npos != (pos = str.find("0b"))) {
-      str = str.substr(2);
-      val = std::stoll(str, &pos, 2);
-    }
-    else {
-      val = std::stoll(str);
-    }
-  }
-  catch (std::invalid_argument &) {
-    val = 0;
-  }
-  catch (std::out_of_range &) {
-    val = 0;
-  }
-
-  return val;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_is64Bit
 //
@@ -1033,16 +994,6 @@ vscp_startsWith(const std::string &origstr, const std::string &searchstr, std::s
   }
 
   return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// vscp_fileExists
-//
-
-bool
-vscp_fileExists(const std::string &path)
-{
-  return access(path.c_str(), 0) == 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
