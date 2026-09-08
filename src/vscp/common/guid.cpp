@@ -303,8 +303,8 @@ cguid::getFromString(const std::string &strGUID)
         std::string suffix(middle + 2);
         cguid prefixGuid(prefix);
         cguid suffixGuid(suffix);
-        int prefixCount = std::min(countParsedBytes(prefix.c_str()), 16);
-        int suffixCount = std::min(countParsedBytes(suffix.c_str()), 16 - prefixCount);
+        int prefixCount = (std::min)(countParsedBytes(prefix.c_str()), 16);
+        int suffixCount = (std::min)(countParsedBytes(suffix.c_str()), 16 - prefixCount);
 
         memcpy(m_guid, prefixGuid.m_guid, prefixCount);
         memcpy(m_guid + 16 - suffixCount, suffixGuid.m_guid, suffixCount);
