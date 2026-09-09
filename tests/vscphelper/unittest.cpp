@@ -3554,7 +3554,7 @@ TEST(EventManagement, vscp_newEventEx_basic)
     // Create new eventEx with default frame version
     EXPECT_TRUE(vscp_newEventEx(&pEventEx));
     ASSERT_NE(nullptr, pEventEx);
-    EXPECT_EQ(0, pEventEx->head);
+    EXPECT_EQ(VSCP_HEADER16_FRAME_VERSION_UNIX_NS, pEventEx->head);
     EXPECT_EQ(0, pEventEx->sizeData);
     
     // Cleanup
