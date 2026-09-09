@@ -1543,11 +1543,10 @@ vscp_convertLevel1MeasurementToLevel2Float(vscpEvent *pev);
   event VSCP_CLASS2_MEASUREMENT_STRING
 
   @param pev Pointer to level I measurement event to be converted.
-  @param pev2 Pointer to resulting level II measurement event.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev, vscpEvent *pev2);
+vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev);
 
 /*!
   @fn vscp_convertLevel1MeasurementToLevel2StringEx

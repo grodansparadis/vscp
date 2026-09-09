@@ -3552,7 +3552,7 @@ TEST(EventManagement, vscp_newEventEx_basic)
     vscpEventEx *pEventEx = nullptr;
     
     // Create new eventEx with default frame version
-    EXPECT_TRUE(vscp_newEventEx(&pEventEx, 0));
+    EXPECT_TRUE(vscp_newEventEx(&pEventEx));
     ASSERT_NE(nullptr, pEventEx);
     EXPECT_EQ(0, pEventEx->head);
     EXPECT_EQ(0, pEventEx->sizeData);
