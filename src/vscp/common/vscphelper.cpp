@@ -1611,36 +1611,36 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
 // ***************************************************************************
 
 uint8_t
-vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
+vscp_getMeasurementDataCoding(const vscpEvent *pev)
 {
   uint8_t datacoding_byte = -1;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return -1;
   }
 
-  if (nullptr == pEvent->pdata) {
+  if (nullptr == pev->pdata) {
     return -1;
   }
 
   // Check datasize
-  if (pEvent->sizeData < 1) {
+  if (pev->sizeData < 1) {
     return -1;
   }
 
-  if (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) {
-    datacoding_byte = pEvent->pdata[0];
+  if (VSCP_CLASS1_MEASUREMENT == pev->vscp_class) {
+    datacoding_byte = pev->pdata[0];
   }
-  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) {
-    if (pEvent->sizeData >= 16) {
-      datacoding_byte = pEvent->pdata[16];
+  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) {
+    if (pev->sizeData >= 16) {
+      datacoding_byte = pev->pdata[16];
     }
   }
-  else if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) {
     datacoding_byte = 0x40; // string
   }
-  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
     datacoding_byte = 0xC0; // float
   }
 
@@ -1904,41 +1904,41 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
 //
 
 bool
-vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
+vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 {
   int i, j;
   int offset = 0;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr == pEvent->pdata) {
+  if (nullptr == pev->pdata) {
     return false;
   }
 
   strValue.clear();
 
-  if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
+  if (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) {
 
     char buf[512];
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata + 4, pEvent->sizeData - 4);
+    memcpy(buf, pev->pdata + 4, pev->sizeData - 4);
     strValue = std::string(buf);
   }
-  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
 
     uint8_t buf[8];
 
     // Must be correct data
-    if (12 != pEvent->sizeData) {
+    if (12 != pev->sizeData) {
       return false;
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata + 4, 8); // Double
+    memcpy(buf, pev->pdata + 4, 8); // Double
 
     // Take care of byte order on little endian
     if (vscp_isLittleEndian()) {
@@ -1949,95 +1949,95 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
 
     strValue = vscp_str_format("%f", *((double *) buf));
   }
-  else if (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) {
+  else if (VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) {
 
     uint8_t buf[4];
 
     // Must be correct data
-    if (4 != pEvent->sizeData)
+    if (4 != pev->sizeData)
       return false;
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata, 4); // float
+    memcpy(buf, pev->pdata, 4); // float
 
     strValue = vscp_str_format("%f", *((float *) buf));
   }
-  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class) {
     uint8_t buf[4];
 
     // Must be correct data
-    if ((16 + 4) != pEvent->sizeData) {
+    if ((16 + 4) != pev->sizeData) {
       return false;
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata + 16, 4); // float
+    memcpy(buf, pev->pdata + 16, 4); // float
 
     strValue = vscp_str_format("%f", *((float *) buf));
   }
-  else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
+  else if (VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) {
     uint8_t buf[8];
 
     // Must be correct data
-    if (8 != pEvent->sizeData) {
+    if (8 != pev->sizeData) {
       return false;
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata, 8); // Double
+    memcpy(buf, pev->pdata, 8); // Double
 
     strValue = vscp_str_format("%f", *((double *) buf));
   }
-  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class) {
 
     uint8_t buf[8];
 
     // Must be correct data
-    if ((16 + 8) != pEvent->sizeData) {
+    if ((16 + 8) != pev->sizeData) {
       return false;
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pEvent->pdata + 16, 8); // Double
+    memcpy(buf, pev->pdata + 16, 8); // Double
 
     strValue = vscp_str_format("%f", *((double *) buf));
   }
 
-  else if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
+           (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
     // If class >= 512 and class < 1024 we
     // have GUID in front of data.
-    if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)) {
+    if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)) {
       offset = 16;
     }
 
     // Must be at least two data bytes
-    if (pEvent->sizeData - offset < 2) {
+    if (pev->sizeData - offset < 2) {
       return false;
     }
 
     // Point past index,zone,subzone
-    if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-        (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+    if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+        (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
       offset += 3;
     }
 
-    unsigned short type = (0x07 & (pEvent->pdata[0 + offset] >> 5));
+    unsigned short type = (0x07 & (pev->pdata[0 + offset] >> 5));
 
     switch (type) {
 
       case 0: // series of bits
-        for (i = 1; i < (pEvent->sizeData - offset); i++) {
+        for (i = 1; i < (pev->sizeData - offset); i++) {
 
           for (j = 7; j >= 0; j--) {
 
-            if (pEvent->pdata[i + offset] & (1 << j)) {
+            if (pev->pdata[i + offset] & (1 << j)) {
               strValue += "1";
             }
             else {
@@ -2049,11 +2049,11 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
         break;
 
       case 1: // series of bytes
-        for (i = 1; i < (pEvent->sizeData - offset); i++) {
+        for (i = 1; i < (pev->sizeData - offset); i++) {
 
-          strValue += vscp_str_format("%d", pEvent->pdata[i + offset]);
+          strValue += vscp_str_format("%d", pev->pdata[i + offset]);
 
-          if (i != (pEvent->sizeData - 1 - offset)) {
+          if (i != (pev->sizeData - 1 - offset)) {
             strValue += ",";
           }
         }
@@ -2063,8 +2063,8 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
       {
         char strData[9];
         memset(strData, 0, sizeof(strData));
-        for (i = 1; i < (pEvent->sizeData - offset); i++) {
-          strData[i - 1] = pEvent->pdata[i + offset];
+        for (i = 1; i < (pev->sizeData - offset); i++) {
+          strData[i - 1] = pev->pdata[i + offset];
         }
 
         strValue = std::string(strData);
@@ -2073,19 +2073,19 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
 
       case 3: // integer
       {
-        double value = (double) vscp_getDataCodingInteger(pEvent->pdata + offset, pEvent->sizeData - offset);
+        double value = (double) vscp_getDataCodingInteger(pev->pdata + offset, pev->sizeData - offset);
         strValue     = vscp_str_format("%.0lf", value);
       } break;
 
       case 4: // normalized integer
       {
-        double value = vscp_getDataCodingNormalizedInteger(pEvent->pdata + offset, pEvent->sizeData - offset);
+        double value = vscp_getDataCodingNormalizedInteger(pev->pdata + offset, pev->sizeData - offset);
         strValue     = vscp_str_format("%lf", value);
       } break;
 
       case 5: // Floating point value
       {
-        float val = vscp_getMeasurementAsFloat(pEvent->pdata, (uint8_t) pEvent->sizeData);
+        float val = vscp_getMeasurementAsFloat(pev->pdata, (uint8_t) pev->sizeData);
         strValue  = vscp_str_format("%g", val);
       } break;
 
@@ -2109,12 +2109,12 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pEvent)
 //
 
 bool
-vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
+vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
 {
   std::string str;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -2122,11 +2122,11 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
     return false;
   }
 
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
+      (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class)) {
 
-    if (!vscp_getMeasurementAsString(str, pEvent)) {
+    if (!vscp_getMeasurementAsString(str, pev)) {
       return false;
     }
 
@@ -2137,9 +2137,9 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
       return false;
     }
   }
-  else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
+  else if (VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) {
 
-    if (!vscp_getMeasurementFloat64AsString(str, pEvent)) {
+    if (!vscp_getMeasurementFloat64AsString(str, pev)) {
       return false;
     }
     try {
@@ -2149,14 +2149,14 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
       return false;
     }
   }
-  else if (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) {
 
     char buf[512];
 
-    if (0 == pEvent->sizeData || nullptr == pEvent->pdata) {
+    if (0 == pev->sizeData || nullptr == pev->pdata) {
       return false;
     }
-    memcpy(buf, pEvent->pdata + 4, pEvent->sizeData - 4);
+    memcpy(buf, pev->pdata + 4, pev->sizeData - 4);
 
     try {
       *pvalue = std::stod(std::string(buf));
@@ -2165,11 +2165,11 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
       return false;
     }
   }
-  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class) {
+  else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
 
     char buf[8];
 
-    memcpy(buf, pEvent->pdata + 4, 8);
+    memcpy(buf, pev->pdata + 4, 8);
     *pvalue = *(double *) (buf);
   }
   else {
@@ -2185,9 +2185,10 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent)
 //
 
 bool
-vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pEventEx)
+vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
     return false;
   }
@@ -2195,7 +2196,7 @@ vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pEventEx)
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
     return false;
   }
@@ -2212,21 +2213,21 @@ vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pEventEx)
 //
 
 bool
-vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pEvent)
+vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
 {
   int offset = 0;
 
   // If class >= 512 and class <1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL)) {
     offset = 16;
   }
 
-  if (pEvent->sizeData - offset != 8) {
+  if (pev->sizeData - offset != 8) {
     return false;
   }
 
-  double *pfloat = (double *) (pEvent->pdata + offset);
+  double *pfloat = (double *) (pev->pdata + offset);
   strValue       = vscp_str_format("%lf", *pfloat);
 
   return true;
@@ -2238,18 +2239,18 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pEven
 //
 
 bool
-vscp_getMeasurementWithZoneAsString(const vscpEvent *pEvent, std::string & /*strValue*/)
+vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strValue*/)
 {
   int offset = 0;
 
   // If class >= 512 and class <1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pEvent->vscp_class < VSCP_CLASS2_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pev->vscp_class < VSCP_CLASS2_PROTOCOL)) {
     offset = 16;
   }
 
   // Must at least have index, zone, subzone, normaliser byte, one data byte
-  if (pEvent->sizeData - offset < 5) {
+  if (pev->sizeData - offset < 5) {
     return false;
   }
 
@@ -2257,11 +2258,11 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent *pEvent, std::string & /*str
   vscpEvent eventMimic;
   memset(&eventMimic, 0, sizeof(eventMimic));
 
-  eventMimic.pdata      = new uint8_t[pEvent->sizeData - offset - 3];
-  eventMimic.vscp_class = pEvent->vscp_class;
-  eventMimic.vscp_type  = pEvent->vscp_type;
-  eventMimic.sizeData   = pEvent->sizeData;
-  memcpy(eventMimic.pdata, pEvent->pdata + offset + 3, pEvent->sizeData - offset - 3);
+  eventMimic.pdata      = new uint8_t[pev->sizeData - offset - 3];
+  eventMimic.vscp_class = pev->vscp_class;
+  eventMimic.vscp_type  = pev->vscp_type;
+  eventMimic.sizeData   = pev->sizeData;
+  memcpy(eventMimic.pdata, pev->pdata + offset + 3, pev->sizeData - offset - 3);
 
   return true;
 }
@@ -2271,52 +2272,52 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent *pEvent, std::string & /*str
 //
 
 int
-vscp_getMeasurementUnit(const vscpEvent *pEvent)
+vscp_getMeasurementUnit(const vscpEvent *pev)
 {
   int offset = 0;
 
   // If class >= 512 and class < 1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pEvent->vscp_class < VSCP_CLASS2_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pev->vscp_class < VSCP_CLASS2_PROTOCOL)) {
     offset = 16;
   }
 
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
-      (VSCP_CLASS1_DATA == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) ||
+      (VSCP_CLASS1_DATA == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < (offset + 1))) {
+    if ((nullptr == pev->pdata) || (pev->sizeData < (offset + 1))) {
       return VSCP_ERROR_ERROR;
     }
 
-    return VSCP_DATACODING_UNIT(pEvent->pdata[offset + 0]);
+    return VSCP_DATACODING_UNIT(pev->pdata[offset + 0]);
   }
-  else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class)) {
     return 0; // Always default unit
   }
-  else if ((VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class)) {
     return 0; // Always default unit
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
+    if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[3];
+    return pev->pdata[3];
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
+    if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[3];
+    return pev->pdata[3];
   }
 
   return VSCP_ERROR_ERROR;
@@ -2327,9 +2328,10 @@ vscp_getMeasurementUnit(const vscpEvent *pEvent)
 //
 
 int
-vscp_getMeasurementUnitEx(const vscpEventEx *pEventEx)
+vscp_getMeasurementUnitEx(const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
     return false;
   }
@@ -2337,7 +2339,7 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pEventEx)
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
     return false;
   }
@@ -2353,61 +2355,61 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pEventEx)
 //
 
 int
-vscp_getMeasurementSensorIndex(const vscpEvent *pEvent)
+vscp_getMeasurementSensorIndex(const vscpEvent *pev)
 {
   int offset = 0;
 
   // Must have valid event and data
-  if ((nullptr == pEvent) || (nullptr == pEvent->pdata) || !pEvent->sizeData) {
+  if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
     return -1;
   }
 
   // If class >= 512 and class < 1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pEvent->vscp_class < VSCP_CLASS2_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pev->vscp_class < VSCP_CLASS2_PROTOCOL)) {
     offset = 16;
   }
 
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
 
-    return VSCP_DATACODING_INDEX(pEvent->pdata[offset + 0]);
+    return VSCP_DATACODING_INDEX(pev->pdata[offset + 0]);
   }
-  else if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+           (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData >= (offset + 3))) {
+    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 3))) {
       return -1;
     }
 
-    return pEvent->pdata[offset + 0];
+    return pev->pdata[offset + 0];
   }
-  else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
+    if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[0];
+    return pev->pdata[0];
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
+    if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[0];
+    return pev->pdata[0];
   }
 
   return VSCP_ERROR_ERROR;
@@ -2418,9 +2420,10 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pEvent)
 //
 
 int
-vscp_getMeasurementSensorIndexEx(const vscpEventEx *pEventEx)
+vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
     return false;
   }
@@ -2428,7 +2431,7 @@ vscp_getMeasurementSensorIndexEx(const vscpEventEx *pEventEx)
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
     return false;
   }
@@ -2444,61 +2447,61 @@ vscp_getMeasurementSensorIndexEx(const vscpEventEx *pEventEx)
 //
 
 int
-vscp_getMeasurementZone(const vscpEvent *pEvent)
+vscp_getMeasurementZone(const vscpEvent *pev)
 {
   int offset = 0;
 
   // Must have valid event and data
-  if ((nullptr == pEvent) || (nullptr == pEvent->pdata) || !pEvent->sizeData) {
+  if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
     return -1;
   }
 
   // If class >= 512 and class < 1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pEvent->vscp_class < VSCP_CLASS2_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pev->vscp_class < VSCP_CLASS2_PROTOCOL)) {
     offset = 16;
   }
 
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
 
     return 0; // Always zero
   }
-  else if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+           (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData >= (offset + 3))) {
+    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 3))) {
       return 0;
     }
 
-    return pEvent->pdata[offset + 1];
+    return pev->pdata[offset + 1];
   }
-  else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
+    if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[2];
+    return pev->pdata[2];
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
+    if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[2];
+    return pev->pdata[2];
   }
 
   return VSCP_ERROR_ERROR;
@@ -2509,18 +2512,19 @@ vscp_getMeasurementZone(const vscpEvent *pEvent)
 //
 
 int
-vscp_getMeasurementZoneEx(const vscpEventEx *pEventEx)
+vscp_getMeasurementZoneEx(const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
-    return false;
+    return -1;
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return -1;
   }
 
   int rv = vscp_getMeasurementZone(pev);
@@ -2534,57 +2538,57 @@ vscp_getMeasurementZoneEx(const vscpEventEx *pEventEx)
 //
 
 int
-vscp_getMeasurementSubZone(const vscpEvent *pEvent)
+vscp_getMeasurementSubZone(const vscpEvent *pev)
 {
   int offset = 0;
 
   // Must have valid event and data
-  if ((nullptr == pEvent) || (nullptr == pEvent->pdata) || !pEvent->sizeData) {
+  if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
     return -1;
   }
 
   // If class >= 512 and class < 1024 we
   // have GUID in front of data.
-  if ((pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pEvent->vscp_class < VSCP_CLASS2_PROTOCOL)) {
+  if ((pev->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (pev->vscp_class < VSCP_CLASS2_PROTOCOL)) {
     offset = 16;
   }
 
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData >= (offset + 1))) {
+    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 1))) {
       return 0;
     }
 
     return 0; // Always zero
   }
-  else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
-           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class)) {
     return 0; // Sensor index is always zero
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (pEvent->sizeData < 4)) {
+    if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[offset + 2];
+    return pev->pdata[offset + 2];
   }
-  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
+  else if ((VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class)) {
 
     // Check if data length is valid
-    if ((nullptr == pEvent->pdata) || (12 != pEvent->sizeData)) {
+    if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
       return VSCP_ERROR_ERROR;
     }
 
-    return pEvent->pdata[2];
+    return pev->pdata[2];
   }
 
   return VSCP_ERROR_ERROR;
@@ -2595,16 +2599,17 @@ vscp_getMeasurementSubZone(const vscpEvent *pEvent)
 //
 
 int
-vscp_getMeasurementSubZoneEx(const vscpEventEx *pEventEx)
+vscp_getMeasurementSubZoneEx(const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
     return false;
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
     return false;
   }
@@ -2620,45 +2625,45 @@ vscp_getMeasurementSubZoneEx(const vscpEventEx *pEventEx)
 //
 
 bool
-vscp_isMeasurement(const vscpEvent *pEvent)
+vscp_isMeasurement(const vscpEvent *pev)
 {
-  if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENTX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class) || (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENTX1 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENTX2 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENTX3 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENTX4 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREZONEX1 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONEX1 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONEX2 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONEX3 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONEX4 == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS1_SETVALUEZONEX1 == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX1 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX2 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX3 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX4 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENT32X1 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X2 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X1 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X2 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X3 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X4 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENT64X1 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X2 == pEvent->vscp_class) ||
-      (VSCP_CLASS1_MEASUREMENT64X3 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X4 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X1 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X2 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X3 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X4 == pEvent->vscp_class) ||
-      (VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class) || (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
+  if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENTX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENTX4 == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENTX1 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENTX2 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENTX3 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENTX4 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREZONEX1 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX2 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREZONEX3 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX4 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONEX1 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONEX2 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONEX3 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREZONEX4 == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+      (VSCP_CLASS1_SETVALUEZONEX1 == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX2 == pev->vscp_class) ||
+      (VSCP_CLASS1_SETVALUEZONEX3 == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX4 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX1 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX2 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX3 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_SETVALUEZONEX4 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENT32X1 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X2 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENT32X3 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X4 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X1 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X2 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X3 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT32X4 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENT64X1 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X2 == pev->vscp_class) ||
+      (VSCP_CLASS1_MEASUREMENT64X3 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X4 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X1 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X2 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X3 == pev->vscp_class) ||
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT64X4 == pev->vscp_class) ||
+      (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) || (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class)) {
     return true;
   }
 
@@ -2670,16 +2675,17 @@ vscp_isMeasurement(const vscpEvent *pEvent)
 //
 
 bool
-vscp_isMeasurementEx(const vscpEventEx *pEventEx)
+vscp_isMeasurementEx(const vscpEventEx *pex)
 {
-  vscpEvent *pev = new vscpEvent;
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
   if (nullptr == pev) {
     return false;
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pev, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
     return false;
   }
@@ -2885,20 +2891,20 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
 //
 
 bool
-vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit, uint8_t sensoridx)
+vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
   uint8_t data[8];
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr != pEvent->pdata) {
-    delete pEvent->pdata;
-    pEvent->pdata    = nullptr;
-    pEvent->sizeData = 0;
+  if (nullptr != pev->pdata) {
+    delete pev->pdata;
+    pev->pdata    = nullptr;
+    pev->sizeData = 0;
   }
 
   memset(data, 0, 8);
@@ -2906,10 +2912,10 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 
   if ((uint64_t) value <= 0xff) {
     data[1]          = (uint8_t) value;
-    pEvent->sizeData = 2;
+    pev->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
-    pEvent->sizeData = 3;
+    pev->sizeData = 3;
 #ifdef __BIG_ENDIAN__
     data[2] = *((uint8_t *) &value);
     data[1] = *((uint8_t *) &value + 1);
@@ -2919,7 +2925,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 #endif
   }
   else if ((uint64_t) value <= 0xffffff) {
-    pEvent->sizeData = 4;
+    pev->sizeData = 4;
 #ifdef __BIG_ENDIAN__
     data[3] = *((uint8_t *) &value);
     data[2] = *((uint8_t *) &value + 1);
@@ -2931,7 +2937,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 #endif
   }
   else if ((uint64_t) value <= 0xffffffff) {
-    pEvent->sizeData = 5;
+    pev->sizeData = 5;
 #ifdef __BIG_ENDIAN__
     data[4] = *((uint8_t *) &value);
     data[3] = *((uint8_t *) &value + 1);
@@ -2945,7 +2951,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffff) {
-    pEvent->sizeData = 6;
+    pev->sizeData = 6;
 #ifdef __BIG_ENDIAN__
     data[5] = *((uint8_t *) &value);
     data[4] = *((uint8_t *) &value + 1);
@@ -2961,7 +2967,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffff) {
-    pEvent->sizeData = 7;
+    pev->sizeData = 7;
 #ifdef __BIG_ENDIAN__
     data[6] = *((uint8_t *) &value);
     data[5] = *((uint8_t *) &value + 1);
@@ -2979,7 +2985,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffffff) {
-    pEvent->sizeData = 8;
+    pev->sizeData = 8;
 #ifdef __BIG_ENDIAN__
     data[7] = *((uint8_t *) &value);
     data[6] = *((uint8_t *) &value + 1);
@@ -3003,21 +3009,21 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
   }
 
   // Allocate data as needed
-  if ((nullptr == pEvent->pdata) && (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class)) {
+  if ((nullptr == pev->pdata) && (VSCP_CLASS1_MEASUREMENT == pev->vscp_class)) {
     offset        = 0;
-    pEvent->pdata = new uint8_t[pEvent->sizeData];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[pev->sizeData];
+    if (nullptr == pev->pdata) {
       return false;
     }
-    memcpy(pEvent->pdata, data, pEvent->sizeData);
+    memcpy(pev->pdata, data, pev->sizeData);
   }
-  else if ((nullptr == pEvent->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+  else if ((nullptr == pev->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
     offset        = 16;
-    pEvent->pdata = new uint8_t[16 + pEvent->sizeData];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[16 + pev->sizeData];
+    if (nullptr == pev->pdata) {
       return false;
     }
-    memcpy(pEvent->pdata + 16, data, pEvent->sizeData);
+    memcpy(pev->pdata + 16, data, pev->sizeData);
   }
   else {
     return false;
@@ -3031,119 +3037,119 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
 //
 
 bool
-vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t unit, uint8_t sensoridx)
+vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  if (VSCP_CLASS1_MEASUREMENT == pEventEx->vscp_class) {
+  if (VSCP_CLASS1_MEASUREMENT == pex->vscp_class) {
     offset = 0;
   }
-  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEventEx->vscp_class) {
+  else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pex->vscp_class) {
     offset = 16;
   }
   else {
     return false;
   }
 
-  pEventEx->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
+  pex->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
 
   if ((uint64_t) value <= 0xff) {
-    pEventEx->data[1]  = (uint8_t) value;
-    pEventEx->sizeData = 2;
+    pex->data[1]  = (uint8_t) value;
+    pex->sizeData = 2;
   }
   else if ((uint64_t) value <= 0xffff) {
-    pEventEx->sizeData = 3;
+    pex->sizeData = 3;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[2 + offset] = *((uint8_t *) &value);
-    pEventEx->data[1 + offset] = *((uint8_t *) &value + 1);
+    pex->data[2 + offset] = *((uint8_t *) &value);
+    pex->data[1 + offset] = *((uint8_t *) &value + 1);
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
 #endif
   }
   else if ((uint64_t) value <= 0xffffff) {
-    pEventEx->sizeData = 4;
+    pex->sizeData = 4;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[3 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[1 + offset] = *((uint8_t *) &value + 2);
+    pex->data[3 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[1 + offset] = *((uint8_t *) &value + 2);
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffff) {
-    pEventEx->sizeData = 5;
+    pex->sizeData = 5;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[4 + offset] = *((uint8_t *) &value);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[1+offset] = *((uint8_t *)&value + 3;
+    pex->data[4 + offset] = *((uint8_t *) &value);
+    pex->data[3 + offset] = *((uint8_t *) &value + 1);
+    pex->data[2 + offset] = *((uint8_t *) &value + 2);
+    pex->data[1+offset] = *((uint8_t *)&value + 3;
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[4 + offset] = *((uint8_t *) &value + 3);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffff) {
-    pEventEx->sizeData = 6;
+    pex->sizeData = 6;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[5 + offset] = *((uint8_t *) &value);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[1 + offset] = *((uint8_t *) &value + 4);
+    pex->data[5 + offset] = *((uint8_t *) &value);
+    pex->data[4 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[2 + offset] = *((uint8_t *) &value + 3);
+    pex->data[1 + offset] = *((uint8_t *) &value + 4);
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[4 + offset] = *((uint8_t *) &value + 3);
+    pex->data[5 + offset] = *((uint8_t *) &value + 4);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffff) {
-    pEventEx->sizeData = 7;
+    pex->sizeData = 7;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[6 + offset] = *((uint8_t *) &value);
-    pEventEx->data[5 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 4);
-    pEventEx->data[1 + offset] = *((uint8_t *) &value + 5);
+    pex->data[6 + offset] = *((uint8_t *) &value);
+    pex->data[5 + offset] = *((uint8_t *) &value + 1);
+    pex->data[4 + offset] = *((uint8_t *) &value + 2);
+    pex->data[3 + offset] = *((uint8_t *) &value + 3);
+    pex->data[2 + offset] = *((uint8_t *) &value + 4);
+    pex->data[1 + offset] = *((uint8_t *) &value + 5);
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
-    pEventEx->data[6 + offset] = *((uint8_t *) &value + 5);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[4 + offset] = *((uint8_t *) &value + 3);
+    pex->data[5 + offset] = *((uint8_t *) &value + 4);
+    pex->data[6 + offset] = *((uint8_t *) &value + 5);
 #endif
   }
   else if ((uint64_t) value <= 0xffffffffffffff) {
-    pEventEx->sizeData = 8;
+    pex->sizeData = 8;
 #ifdef __BIG_ENDIAN__
-    pEventEx->data[7 + offset] = *((uint8_t *) &value);
-    pEventEx->data[6 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[5 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 4);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 5);
-    pEventEx->data[1 + offset] = *((uint8_t *) &value + 6);
+    pex->data[7 + offset] = *((uint8_t *) &value);
+    pex->data[6 + offset] = *((uint8_t *) &value + 1);
+    pex->data[5 + offset] = *((uint8_t *) &value + 2);
+    pex->data[4 + offset] = *((uint8_t *) &value + 3);
+    pex->data[3 + offset] = *((uint8_t *) &value + 4);
+    pex->data[2 + offset] = *((uint8_t *) &value + 5);
+    pex->data[1 + offset] = *((uint8_t *) &value + 6);
 #else
-    pEventEx->data[1 + offset] = *((uint8_t *) &value);
-    pEventEx->data[2 + offset] = *((uint8_t *) &value + 1);
-    pEventEx->data[3 + offset] = *((uint8_t *) &value + 2);
-    pEventEx->data[4 + offset] = *((uint8_t *) &value + 3);
-    pEventEx->data[5 + offset] = *((uint8_t *) &value + 4);
-    pEventEx->data[6 + offset] = *((uint8_t *) &value + 5);
-    pEventEx->data[7 + offset] = *((uint8_t *) &value + 6);
+    pex->data[1 + offset] = *((uint8_t *) &value);
+    pex->data[2 + offset] = *((uint8_t *) &value + 1);
+    pex->data[3 + offset] = *((uint8_t *) &value + 2);
+    pex->data[4 + offset] = *((uint8_t *) &value + 3);
+    pex->data[5 + offset] = *((uint8_t *) &value + 4);
+    pex->data[6 + offset] = *((uint8_t *) &value + 5);
+    pex->data[7 + offset] = *((uint8_t *) &value + 6);
 #endif
   }
   else {
@@ -3158,27 +3164,27 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
 //
 
 bool
-vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uint8_t sensoridx)
+vscp_makeFloatMeasurementEvent(vscpEvent *pev, float value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Allocate data if needed
-  if ((nullptr == pEvent->pdata) && (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class)) {
+  if ((nullptr == pev->pdata) && (VSCP_CLASS1_MEASUREMENT == pev->vscp_class)) {
     offset        = 0;
-    pEvent->pdata = new uint8_t[5];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[5];
+    if (nullptr == pev->pdata) {
       return false;
     }
   }
-  else if ((nullptr == pEvent->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+  else if ((nullptr == pev->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
     offset        = 16;
-    pEvent->pdata = new uint8_t[16 + 5];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[16 + 5];
+    if (nullptr == pev->pdata) {
       return false;
     }
   }
@@ -3186,7 +3192,7 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uin
     return false;
   }
 
-  return vscp_convertFloatToFloatEventData(pEvent->pdata + offset, &pEvent->sizeData, value, unit, sensoridx);
+  return vscp_convertFloatToFloatEventData(pev->pdata + offset, &pev->sizeData, value, unit, sensoridx);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3194,40 +3200,41 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uin
 //
 
 bool
-vscp_makeFloatMeasurementEventEx(vscpEventEx *pEventEx, float value, uint8_t unit, uint8_t sensoridx)
+vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, uint8_t sensoridx)
 {
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
-  pEvent->head       = pEventEx->head;
-  pEvent->vscp_class = pEventEx->vscp_class;
-  pEvent->vscp_type  = pEventEx->vscp_type;
-  pEvent->obid       = pEventEx->obid;
-  pEvent->timestamp  = pEventEx->timestamp;
-  pEvent->year       = pEventEx->year;
-  pEvent->month      = pEventEx->month;
-  pEvent->day        = pEventEx->day;
-  pEvent->hour       = pEventEx->hour;
-  pEvent->minute     = pEventEx->minute;
-  pEvent->second     = pEventEx->second;
-  memcpy(pEvent->GUID, pEventEx->GUID, 16);
+  pev->head       = pex->head;
+  pev->vscp_class = pex->vscp_class;
+  pev->vscp_type  = pex->vscp_type;
+  pev->obid       = pex->obid;
+  pev->timestamp  = pex->timestamp;
+  pev->year       = pex->year;
+  pev->month      = pex->month;
+  pev->day        = pex->day;
+  pev->hour       = pex->hour;
+  pev->minute     = pex->minute;
+  pev->second     = pex->second;
+  memcpy(pev->GUID, pex->GUID, 16);
 
-  if (!vscp_makeFloatMeasurementEvent(pEvent, value, unit, sensoridx)) {
-    return false;
-  }
-
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_makeFloatMeasurementEvent(pev, value, unit, sensoridx)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_convertEventToEventEx(pex, pev)) {
+    return false;
+  }
+
+  vscp_deleteEvent_v2(&pev);
 
   return true;
 }
@@ -3237,7 +3244,7 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx *pEventEx, float value, uint8_t uni
 //
 
 bool
-vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, uint8_t sensoridx)
+vscp_makeStringMeasurementEvent(vscpEvent *pev, double value, uint8_t unit, uint8_t sensoridx)
 {
   uint8_t offset = 0;
   std::string strValue;
@@ -3248,20 +3255,20 @@ vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, u
   sensoridx &= 7; // Mask of invalid bits
 
   strValue         = vscp_str_format("%f", value);
-  pEvent->sizeData = (strValue.length() > 7) ? 8 : (uint16_t) (strValue.length() + 1);
+  pev->sizeData = (strValue.length() > 7) ? 8 : (uint16_t) (strValue.length() + 1);
 
   // Allocate data if needed
-  if ((nullptr == pEvent->pdata) && (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class)) {
+  if ((nullptr == pev->pdata) && (VSCP_CLASS1_MEASUREMENT == pev->vscp_class)) {
     offset        = 0;
-    pEvent->pdata = new uint8_t[pEvent->sizeData + 1];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[pev->sizeData + 1];
+    if (nullptr == pev->pdata) {
       return false;
     }
   }
-  else if ((nullptr == pEvent->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
+  else if ((nullptr == pev->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
     offset        = 16;
-    pEvent->pdata = new uint8_t[16 + pEvent->sizeData + 1];
-    if (nullptr == pEvent->pdata) {
+    pev->pdata = new uint8_t[16 + pev->sizeData + 1];
+    if (nullptr == pev->pdata) {
       return false;
     }
   }
@@ -3269,8 +3276,8 @@ vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, u
     return false;
   }
 
-  pEvent->pdata[offset + 0] = VSCP_DATACODING_STRING + unit + sensoridx; // float + unit + sensorindex
-  memcpy(pEvent->pdata + offset + 1, strValue.c_str(), pEvent->sizeData - 1);
+  pev->pdata[offset + 0] = VSCP_DATACODING_STRING + unit + sensoridx; // float + unit + sensorindex
+  memcpy(pev->pdata + offset + 1, strValue.c_str(), pev->sizeData - 1);
 
   return true;
 }
@@ -3280,32 +3287,33 @@ vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, u
 //
 
 bool
-vscp_makeStringMeasurementEventEx(vscpEventEx *pEventEx, double value, uint8_t unit, uint8_t sensoridx)
+vscp_makeStringMeasurementEventEx(vscpEventEx *pex, double value, uint8_t unit, uint8_t sensoridx)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
-    return false;
-  }
-
-  if (!vscp_makeStringMeasurementEvent(pEvent, value, unit, sensoridx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
 
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_makeStringMeasurementEvent(pev, value, unit, sensoridx)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_convertEventToEventEx(pex, pev)) {
+    return false;
+  }
+
+  vscp_deleteEvent_v2(&pev);
 
   return true;
 }
@@ -3315,7 +3323,7 @@ vscp_makeStringMeasurementEventEx(vscpEventEx *pEventEx, double value, uint8_t u
 //
 
 bool
-vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
+vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
                                      uint16_t vscp_type,
                                      double value,
                                      uint8_t unit,
@@ -3324,28 +3332,28 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
                                      uint8_t subzone)
 {
   // Event must have been created
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-  pEvent->vscp_type  = vscp_type;
-  pEvent->obid       = 0;
-  pEvent->timestamp  = 0;
+  pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+  pev->vscp_type  = vscp_type;
+  pev->obid       = 0;
+  pev->timestamp  = 0;
 
-  pEvent->sizeData = 12;
-  pEvent->pdata    = new uint8_t[pEvent->sizeData];
-  if (nullptr == pEvent->pdata) {
-    delete pEvent;
+  pev->sizeData = 12;
+  pev->pdata    = new uint8_t[pev->sizeData];
+  if (nullptr == pev->pdata) {
+    delete pev;
     return false;
   }
 
   // Copy in data
-  pEvent->pdata[0] = sensoridx;
-  pEvent->pdata[1] = zone;
-  pEvent->pdata[2] = subzone;
-  pEvent->pdata[3] = unit;
-  memcpy((pEvent->pdata + 4), (unsigned char *) &value, 8);
+  pev->pdata[0] = sensoridx;
+  pev->pdata[1] = zone;
+  pev->pdata[2] = subzone;
+  pev->pdata[3] = unit;
+  memcpy((pev->pdata + 4), (unsigned char *) &value, 8);
 
   return true;
 }
@@ -3355,7 +3363,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
 //
 
 bool
-vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
+vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pex,
                                        uint16_t vscp_type,
                                        double value,
                                        uint8_t unit,
@@ -3364,29 +3372,30 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
                                        uint8_t subzone)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
-    return false;
-  }
-
-  if (!vscp_makeLevel2FloatMeasurementEvent(pEvent, vscp_type, value, unit, sensoridx, zone, subzone)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
 
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_makeLevel2FloatMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_convertEventToEventEx(pex, pev)) {
+    return false;
+  }
+
+  vscp_deleteEvent_v2(&pev);
   return true;
 }
 
@@ -3395,7 +3404,7 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
 //
 
 bool
-vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
+vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
                                       uint16_t vscp_type,
                                       double value,
                                       uint8_t unit,
@@ -3404,34 +3413,34 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
                                       uint8_t subzone)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   std::string strData = vscp_str_format("%f", value);
 
-  pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-  pEvent->vscp_type  = vscp_type;
-  pEvent->obid       = 0;
-  pEvent->timestamp  = 0;
-  memset(pEvent->GUID, 0, 16);
-  pEvent->sizeData = 4 + (uint16_t) strlen(strData.c_str()) + 1; // Include null termination
+  pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+  pev->vscp_type  = vscp_type;
+  pev->obid       = 0;
+  pev->timestamp  = 0;
+  memset(pev->GUID, 0, 16);
+  pev->sizeData = 4 + (uint16_t) strlen(strData.c_str()) + 1; // Include null termination
 
-  pEvent->pdata = new uint8_t[pEvent->sizeData];
-  if (nullptr == pEvent->pdata) {
-    delete pEvent;
+  pev->pdata = new uint8_t[pev->sizeData];
+  if (nullptr == pev->pdata) {
+    delete pev;
     return false;
   }
 
   // Nill
-  memset(pEvent->pdata, 0, pEvent->sizeData);
+  memset(pev->pdata, 0, pev->sizeData);
 
   // Copy in data
-  pEvent->pdata[0] = sensoridx;
-  pEvent->pdata[1] = zone;
-  pEvent->pdata[2] = subzone;
-  pEvent->pdata[3] = unit;
-  memcpy((pEvent->pdata + 4), strData.c_str(), pEvent->sizeData);
+  pev->pdata[0] = sensoridx;
+  pev->pdata[1] = zone;
+  pev->pdata[2] = subzone;
+  pev->pdata[3] = unit;
+  memcpy((pev->pdata + 4), strData.c_str(), pev->sizeData);
 
   return true;
 }
@@ -3441,7 +3450,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
 //
 
 bool
-vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
+vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pex,
                                         uint16_t vscp_type,
                                         double value,
                                         uint8_t unit,
@@ -3450,31 +3459,32 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
                                         uint8_t subzone)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
 
-  pEvent->pdata    = nullptr;
-  pEvent->sizeData = 0;
+  pev->pdata    = nullptr;
+  pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
 
-  if (!vscp_makeLevel2StringMeasurementEvent(pEvent, vscp_type, value, unit, sensoridx, zone, subzone)) {
+  if (!vscp_makeLevel2StringMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
     return false;
   }
 
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_convertEventToEventEx(pex, pev)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  vscp_deleteEvent_v2(&pev);
   return true;
 }
 
@@ -3483,25 +3493,25 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
 //
 
 bool
-vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pEvent)
+vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
 {
   double val64;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr == pEvent->pdata) {
+  if (nullptr == pev->pdata) {
     return false;
   }
 
   // Must be a measurement event
-  if (!vscp_isMeasurement(pEvent)) {
+  if (!vscp_isMeasurement(pev)) {
     return false;
   }
 
-  if (vscp_getMeasurementAsDouble(&val64, pEvent)) {
+  if (vscp_getMeasurementAsDouble(&val64, pev)) {
 
     uint8_t *p = new uint8_t[12];
     if (nullptr != p) {
@@ -3515,110 +3525,110 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pEvent)
           4-11 	64-bit double precision floating point value
           stored MSB first.
        */
-      if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pEvent->vscp_class) ||
-          (VSCP_CLASS1_MEASUREMENTX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pEvent->vscp_class) ||
-          (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class)) {
+      if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pev->vscp_class) ||
+          (VSCP_CLASS1_MEASUREMENTX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pev->vscp_class) ||
+          (VSCP_CLASS1_MEASUREMENTX4 == pev->vscp_class)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-        pEvent->sizeData   = 4 + 8;
+        pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        pev->sizeData   = 4 + 8;
 
         // Sensor index
-        p[0] = pEvent->pdata[0] & VSCP_MASK_DATACODING_INDEX;
+        p[0] = pev->pdata[0] & VSCP_MASK_DATACODING_INDEX;
 
         // Zone + Subzone
         p[1] = p[2] = 0x00;
 
         // unit
-        p[3] = (pEvent->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
+        p[3] = (pev->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
 
         // Floating point value
         val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
         memcpy(p + 4, (uint8_t *) &val64, sizeof(val64));
 
-        delete[] pEvent->pdata;
+        delete[] pev->pdata;
 
-        pEvent->pdata = p;
+        pev->pdata = p;
       }
-      else if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+      else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREZONEX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREZONEX4 == pev->vscp_class)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-        pEvent->sizeData   = 4 + 8;
+        pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        pev->sizeData   = 4 + 8;
 
         // Index = 0, Unit = 0, Zone = 0, Subzone = 0
         // Floating point value
         val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
         memcpy(p + 4, &val64, sizeof(val64));
 
-        delete[] pEvent->pdata;
+        delete[] pev->pdata;
 
-        pEvent->pdata = p;
+        pev->pdata = p;
       }
-      else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREMENT32X1 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREMENT32X2 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class)) {
+      else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREMENT32X1 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREMENT32X2 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREMENT32X3 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREMENT32X4 == pev->vscp_class)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-        pEvent->sizeData   = 4 + 8;
+        pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        pev->sizeData   = 4 + 8;
 
         // Index = 0, Unit = 0, Zone = 0, Subzone = 0
         // Floating point value
         val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
         memcpy(p + 4, &val64, sizeof(val64));
 
-        delete[] pEvent->pdata;
+        delete[] pev->pdata;
 
-        pEvent->pdata = p;
+        pev->pdata = p;
       }
-      else if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+      else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREZONEX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pev->vscp_class) ||
+               (VSCP_CLASS1_MEASUREZONEX4 == pev->vscp_class)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-        pEvent->sizeData   = 4 + 8;
+        pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        pev->sizeData   = 4 + 8;
 
         // Sensor index
-        p[0] = pEvent->pdata[0];
+        p[0] = pev->pdata[0];
 
         // Zone
-        p[1] = pEvent->pdata[1];
+        p[1] = pev->pdata[1];
 
         // Subzone
-        p[2] = pEvent->pdata[2];
+        p[2] = pev->pdata[2];
 
         val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
         memcpy(p + 4, &val64, sizeof(val64));
 
-        delete[] pEvent->pdata;
+        delete[] pev->pdata;
 
-        pEvent->pdata = p;
+        pev->pdata = p;
       }
-      else if ((VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX1 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) ||
-               (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class)) {
+      else if ((VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX1 == pev->vscp_class) ||
+               (VSCP_CLASS1_SETVALUEZONEX2 == pev->vscp_class) ||
+               (VSCP_CLASS1_SETVALUEZONEX3 == pev->vscp_class) ||
+               (VSCP_CLASS1_SETVALUEZONEX4 == pev->vscp_class)) {
 
-        pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
-        pEvent->sizeData   = 4 + 8;
+        pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
+        pev->sizeData   = 4 + 8;
 
         // Sensor index
-        p[0] = pEvent->pdata[0];
+        p[0] = pev->pdata[0];
 
         // Zone
-        p[1] = pEvent->pdata[1];
+        p[1] = pev->pdata[1];
 
         // Subzone
-        p[2] = pEvent->pdata[2];
+        p[2] = pev->pdata[2];
 
         val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
         memcpy(p + 4, &val64, sizeof(val64));
 
-        delete[] pEvent->pdata;
+        delete[] pev->pdata;
 
-        pEvent->pdata = p;
+        pev->pdata = p;
       }
       else {
         delete[] p;
@@ -3642,31 +3652,32 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pEvent)
 //
 
 bool
-vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pEventEx)
+vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pex)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata    = nullptr;
-  pEvent->sizeData = 0;
+  pev->pdata    = nullptr;
+  pev->sizeData = 0;
 
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
-  if (!vscp_convertLevel1MeasurementToLevel2Double(pEvent)) {
+  if (!vscp_convertLevel1MeasurementToLevel2Double(pev)) {
     return false;
   }
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_convertEventToEventEx(pex, pev)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  vscp_deleteEvent_v2(&pev);
   return true;
 }
 
@@ -3675,25 +3686,25 @@ vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pEvent)
+vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev)
 {
   std::string strval;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr == pEvent->pdata) {
+  if (nullptr == pev->pdata) {
     return false;
   }
 
   // Must be a measurement event
-  if (!vscp_isMeasurement(pEvent)) {
+  if (!vscp_isMeasurement(pev)) {
     return false;
   }
 
-  if (vscp_getMeasurementAsString(strval, pEvent)) {
+  if (vscp_getMeasurementAsString(strval, pev)) {
 
     // Must be room for the number
     if ((4 + strval.length() + 1) > VSCP_MAX_DATA) {
@@ -3707,100 +3718,100 @@ vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pEvent)
 
     memset(p, 0, 4 + strval.length() + 1);
 
-    if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pEvent->vscp_class) ||
-        (VSCP_CLASS1_MEASUREMENTX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pEvent->vscp_class) ||
-        (VSCP_CLASS1_MEASUREMENTX4 == pEvent->vscp_class)) {
+    if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pev->vscp_class) ||
+        (VSCP_CLASS1_MEASUREMENTX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pev->vscp_class) ||
+        (VSCP_CLASS1_MEASUREMENTX4 == pev->vscp_class)) {
 
-      pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-      pEvent->sizeData   = 4 + (uint16_t) strval.length();
+      pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+      pev->sizeData   = 4 + (uint16_t) strval.length();
 
       // Sensor index
-      p[0] = pEvent->pdata[0] & VSCP_MASK_DATACODING_INDEX;
+      p[0] = pev->pdata[0] & VSCP_MASK_DATACODING_INDEX;
 
       // Zone + Subzone
       p[1] = p[2] = 0x00;
 
       // unit
-      p[3] = (pEvent->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
+      p[3] = (pev->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
 
       // Copy in the value string (without terminating zero)
       memcpy(p + 4, (const char *) strval.c_str(), strval.length());
 
-      delete[] pEvent->pdata; // Delete old data
+      delete[] pev->pdata; // Delete old data
 
-      pEvent->pdata = (uint8_t *) p;
+      pev->pdata = (uint8_t *) p;
     }
-    else if ((VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X1 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT64X2 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT64X3 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT64X4 == pEvent->vscp_class)) {
+    else if ((VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT64X1 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT64X2 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT64X3 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT64X4 == pev->vscp_class)) {
 
-      pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-      pEvent->sizeData   = 4 + (uint16_t) strval.length();
+      pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+      pev->sizeData   = 4 + (uint16_t) strval.length();
 
       // Index = 0, Unit = 0, Zone = 0, Subzone = 0
       // Floating point value
       // Copy in the value string
       strcpy(p + 4, (const char *) strval.c_str());
-      delete[] pEvent->pdata;
-      pEvent->pdata = (uint8_t *) p;
+      delete[] pev->pdata;
+      pev->pdata = (uint8_t *) p;
     }
-    else if ((VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X1 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT32X2 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT32X3 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREMENT32X4 == pEvent->vscp_class)) {
+    else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENT32X1 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT32X2 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT32X3 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREMENT32X4 == pev->vscp_class)) {
 
-      pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-      pEvent->sizeData   = 4 + (uint16_t) strval.length();
+      pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+      pev->sizeData   = 4 + (uint16_t) strval.length();
 
       // Index = 0, Unit = 0, Zone = 0, Subzone = 0
       // Floating point value
       // Copy in the value string
       strcpy(p + 4, (const char *) strval.c_str());
-      delete[] pEvent->pdata;
-      pEvent->pdata = (uint8_t *) p;
+      delete[] pev->pdata;
+      pev->pdata = (uint8_t *) p;
     }
-    else if ((VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREZONEX2 == pEvent->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_MEASUREZONEX4 == pEvent->vscp_class)) {
+    else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX1 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREZONEX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONEX3 == pev->vscp_class) ||
+             (VSCP_CLASS1_MEASUREZONEX4 == pev->vscp_class)) {
 
-      pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-      pEvent->sizeData   = 4 + (uint16_t) strval.length();
+      pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+      pev->sizeData   = 4 + (uint16_t) strval.length();
 
       // Sensor index
-      p[0] = pEvent->pdata[0];
+      p[0] = pev->pdata[0];
 
       // Zone
-      p[1] = pEvent->pdata[1];
+      p[1] = pev->pdata[1];
 
       // Subzone
-      p[2] = pEvent->pdata[2];
+      p[2] = pev->pdata[2];
 
       // Copy in the value string
       strcpy(p + 4, (const char *) strval.c_str());
-      delete[] pEvent->pdata;
-      pEvent->pdata = (uint8_t *) p;
+      delete[] pev->pdata;
+      pev->pdata = (uint8_t *) p;
     }
-    else if ((VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX1 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_SETVALUEZONEX2 == pEvent->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX3 == pEvent->vscp_class) ||
-             (VSCP_CLASS1_SETVALUEZONEX4 == pEvent->vscp_class)) {
+    else if ((VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX1 == pev->vscp_class) ||
+             (VSCP_CLASS1_SETVALUEZONEX2 == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONEX3 == pev->vscp_class) ||
+             (VSCP_CLASS1_SETVALUEZONEX4 == pev->vscp_class)) {
 
-      pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
-      pEvent->sizeData   = 4 + (uint16_t) strval.length();
+      pev->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+      pev->sizeData   = 4 + (uint16_t) strval.length();
 
       // Sensor index
-      p[0] = pEvent->pdata[0];
+      p[0] = pev->pdata[0];
 
       // Zone
-      p[1] = pEvent->pdata[1];
+      p[1] = pev->pdata[1];
 
       // Subzone
-      p[2] = pEvent->pdata[2];
+      p[2] = pev->pdata[2];
 
       // Copy in the value string
       strcpy(p + 4, (const char *) strval.c_str());
-      delete[] pEvent->pdata;
-      pEvent->pdata = (uint8_t *) p;
+      delete[] pev->pdata;
+      pev->pdata = (uint8_t *) p;
     }
     else {
       delete[] p;
@@ -3820,32 +3831,33 @@ vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pEvent)
 //
 
 bool
-vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pEventEx)
+vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pex)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
-    return false;
-  }
-
-  if (!vscp_convertLevel1MeasurementToLevel2String(pEvent)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
 
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
+  if (!vscp_convertLevel1MeasurementToLevel2String(pev)) {
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_convertEventToEventEx(pex, pev)) {
+    return false;
+  }
+
+  vscp_deleteEvent_v2(&pev);
   return true;
 }
 
@@ -3868,58 +3880,58 @@ vscp_replaceBackslash(std::string &str)
 // vscp_getEventPriority
 
 unsigned char
-vscp_getEventPriority(const vscpEvent *pEvent)
+vscp_getEventPriority(const vscpEvent *pev)
 {
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return 0;
   }
 
-  return ((pEvent->head >> 5) & 0x07);
+  return ((pev->head >> 5) & 0x07);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getEventExPriority
 
 unsigned char
-vscp_getEventExPriority(const vscpEventEx *pEvent)
+vscp_getEventExPriority(const vscpEventEx *pev)
 {
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return 0;
   }
 
-  return ((pEvent->head >> 5) & 0x07);
+  return ((pev->head >> 5) & 0x07);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventPriority
 
 void
-vscp_setEventPriority(vscpEvent *pEvent, unsigned char priority)
+vscp_setEventPriority(vscpEvent *pev, unsigned char priority)
 {
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return;
   }
 
-  pEvent->head &= ~VSCP_HEADER_PRIORITY_MASK;
-  pEvent->head |= (priority << 5);
+  pev->head &= ~VSCP_HEADER_PRIORITY_MASK;
+  pev->head |= (priority << 5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventExPriority
 
 void
-vscp_setEventExPriority(vscpEventEx *pEvent, unsigned char priority)
+vscp_setEventExPriority(vscpEventEx *pev, unsigned char priority)
 {
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return;
   }
 
-  pEvent->head &= ~VSCP_HEADER_PRIORITY_MASK;
-  pEvent->head |= (priority << 5);
+  pev->head &= ~VSCP_HEADER_PRIORITY_MASK;
+  pev->head |= (priority << 5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3986,10 +3998,10 @@ vscp_getCANALidFromData(unsigned char priority, const uint16_t vscp_class, const
 //
 
 uint32_t
-vscp_getCANALidFromEvent(const vscpEvent *pEvent)
+vscp_getCANALidFromEvent(const vscpEvent *pev)
 {
-  return (((unsigned long) vscp_getEventPriority(pEvent) << 26) | ((unsigned long) pEvent->vscp_class << 16) |
-          ((unsigned long) pEvent->vscp_type << 8) | 0);
+  return (((unsigned long) vscp_getEventPriority(pev) << 26) | ((unsigned long) pev->vscp_class << 16) |
+          ((unsigned long) pev->vscp_type << 8) | 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3997,10 +4009,10 @@ vscp_getCANALidFromEvent(const vscpEvent *pEvent)
 //
 
 uint32_t
-vscp_getCANALidFromEventEx(const vscpEventEx *pEvent)
+vscp_getCANALidFromEventEx(const vscpEventEx *pev)
 {
-  return (((unsigned long) vscp_getEventExPriority(pEvent) << 26) | ((unsigned long) pEvent->vscp_class << 16) |
-          ((unsigned long) pEvent->vscp_type << 8) | 0);
+  return (((unsigned long) vscp_getEventExPriority(pev) << 26) | ((unsigned long) pev->vscp_class << 16) |
+          ((unsigned long) pev->vscp_type << 8) | 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4011,45 +4023,45 @@ vscp_getCANALidFromEventEx(const vscpEventEx *pEvent)
 //
 
 unsigned short
-vscp_calc_crc_Event(vscpEvent *pEvent, short bSet)
+vscp_calc_crc_Event(vscpEvent *pev, short bSet)
 {
   unsigned short crc = 0;
   unsigned char *p;
   unsigned char *pbuf;
 
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return 0;
   }
 
   crcInit();
 
-  pbuf = (unsigned char *) malloc(23 + pEvent->sizeData);
+  pbuf = (unsigned char *) malloc(23 + pev->sizeData);
 
   if (nullptr != pbuf) {
     p = pbuf;
-    memcpy(p, (unsigned char *) &pEvent->head, 1);
+    memcpy(p, (unsigned char *) &pev->head, 1);
     p++;
 
-    memcpy(p, (unsigned char *) &pEvent->vscp_class, 2);
+    memcpy(p, (unsigned char *) &pev->vscp_class, 2);
     p += 2;
 
-    memcpy(p, (unsigned char *) &pEvent->vscp_type, 2);
+    memcpy(p, (unsigned char *) &pev->vscp_type, 2);
     p += 2;
 
-    memcpy(p, (unsigned char *) &pEvent->GUID, 16);
+    memcpy(p, (unsigned char *) &pev->GUID, 16);
     p += 16;
 
-    memcpy(p, pEvent->pdata, pEvent->sizeData);
-    p += pEvent->sizeData;
+    memcpy(p, pev->pdata, pev->sizeData);
+    p += pev->sizeData;
 
-    memcpy(p, (unsigned char *) &pEvent->sizeData, 2);
+    memcpy(p, (unsigned char *) &pev->sizeData, 2);
     p += 2;
 
     crc = crcFast(pbuf, sizeof(pbuf));
 
     if (bSet)
-      pEvent->crc = crc;
+      pev->crc = crc;
 
     free(pbuf);
   }
@@ -4065,45 +4077,45 @@ vscp_calc_crc_Event(vscpEvent *pEvent, short bSet)
 //
 
 unsigned short
-vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet)
+vscp_calc_crc_EventEx(vscpEventEx *pev, short bSet)
 {
   unsigned short crc = 0;
   unsigned char *p;
   unsigned char *pbuf;
 
   // Must be a valid message pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return 0;
   }
 
   crcInit();
 
-  pbuf = (unsigned char *) malloc(23 + pEvent->sizeData);
+  pbuf = (unsigned char *) malloc(23 + pev->sizeData);
 
   if (nullptr != pbuf) {
     p = pbuf;
-    memcpy(p, (unsigned char *) &pEvent->head, 1);
+    memcpy(p, (unsigned char *) &pev->head, 1);
     p++;
 
-    memcpy(p, (unsigned char *) &pEvent->vscp_class, 2);
+    memcpy(p, (unsigned char *) &pev->vscp_class, 2);
     p += 2;
 
-    memcpy(p, (unsigned char *) &pEvent->vscp_type, 2);
+    memcpy(p, (unsigned char *) &pev->vscp_type, 2);
     p += 2;
 
-    memcpy(p, (unsigned char *) &pEvent->GUID, 16);
+    memcpy(p, (unsigned char *) &pev->GUID, 16);
     p += 16;
 
-    memcpy(p, pEvent->data, pEvent->sizeData);
-    p += pEvent->sizeData;
+    memcpy(p, pev->data, pev->sizeData);
+    p += pev->sizeData;
 
-    memcpy(p, (unsigned char *) &pEvent->sizeData, 2);
+    memcpy(p, (unsigned char *) &pev->sizeData, 2);
     p += 2;
 
     crc = crcFast(pbuf, sizeof(pbuf));
 
     if (bSet) {
-      pEvent->crc = crc;
+      pev->crc = crc;
     }
 
     free(pbuf);
@@ -4155,17 +4167,17 @@ vscp_calcCRC4GUIDString(const std::string &strguid)
 //
 
 bool
-vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
+vscp_setEventGuidFromString(vscpEvent *pev, const std::string &strGUID)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   std::string str = strGUID;
   vscp_trim(str);
   if ((0 == str.length()) || (str == "-")) {
-    memset(pEvent->GUID, 0, 16);
+    memset(pev->GUID, 0, 16);
   }
   else {
     std::deque<std::string> tokens;
@@ -4173,10 +4185,10 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
     size_t cnt = tokens.size();
     for (int i = 0; i < (int) MIN(16, cnt); i++) {
       try {
-        pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
+        pev->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
       }
       catch (...) {
-        pEvent->GUID[i] = 0;
+        pev->GUID[i] = 0;
       }
       tokens.pop_front();
     }
@@ -4190,14 +4202,14 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
 //
 
 bool
-vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
+vscp_setEventExGuidFromString(vscpEventEx *pev, const std::string &strGUID)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  memset(pEvent->GUID, 0, 16);
+  memset(pev->GUID, 0, 16);
 
   if (strGUID == "-") {
     return true;
@@ -4206,7 +4218,7 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
     std::deque<std::string> tokens;
     vscp_split(tokens, strGUID, ":");
     for (int i = 0; i < 16; i++) {
-      pEvent->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
+      pev->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
       tokens.pop_front();
       // If no tokens left no use to continue
       if (tokens.size()) {
@@ -4265,10 +4277,10 @@ vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID)
 //
 
 bool
-vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_str_format format)
+vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pev, vscp_guid_str_format format)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -4276,7 +4288,7 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_
     case VSCP_GUID_STR_FORMAT_COMPACT: {
       // Count leading 0xFF bytes
       int ffCount = 0;
-      while (ffCount < 16 && pEvent->GUID[ffCount] == 0xFF) {
+      while (ffCount < 16 && pev->GUID[ffCount] == 0xFF) {
         ffCount++;
       }
       // All 0xFF
@@ -4288,22 +4300,22 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_
       if (ffCount == 0) {
         strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
                                   "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                                  pEvent->GUID[0],
-                                  pEvent->GUID[1],
-                                  pEvent->GUID[2],
-                                  pEvent->GUID[3],
-                                  pEvent->GUID[4],
-                                  pEvent->GUID[5],
-                                  pEvent->GUID[6],
-                                  pEvent->GUID[7],
-                                  pEvent->GUID[8],
-                                  pEvent->GUID[9],
-                                  pEvent->GUID[10],
-                                  pEvent->GUID[11],
-                                  pEvent->GUID[12],
-                                  pEvent->GUID[13],
-                                  pEvent->GUID[14],
-                                  pEvent->GUID[15]);
+                                  pev->GUID[0],
+                                  pev->GUID[1],
+                                  pev->GUID[2],
+                                  pev->GUID[3],
+                                  pev->GUID[4],
+                                  pev->GUID[5],
+                                  pev->GUID[6],
+                                  pev->GUID[7],
+                                  pev->GUID[8],
+                                  pev->GUID[9],
+                                  pev->GUID[10],
+                                  pev->GUID[11],
+                                  pev->GUID[12],
+                                  pev->GUID[13],
+                                  pev->GUID[14],
+                                  pev->GUID[15]);
         return true;
       }
       // Some leading 0xFF bytes - use :: notation
@@ -4312,7 +4324,7 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_
         if (i > ffCount) {
           strGUID += ":";
         }
-        strGUID += vscp_str_format("%02X", pEvent->GUID[i]);
+        strGUID += vscp_str_format("%02X", pev->GUID[i]);
       }
       return true;
     }
@@ -4320,44 +4332,44 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_
     case VSCP_GUID_STR_FORMAT_UUID:
       // Format: 8-4-4-4-12 hex digits with dashes
       strGUID = vscp_str_format("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                                pEvent->GUID[0],
-                                pEvent->GUID[1],
-                                pEvent->GUID[2],
-                                pEvent->GUID[3],
-                                pEvent->GUID[4],
-                                pEvent->GUID[5],
-                                pEvent->GUID[6],
-                                pEvent->GUID[7],
-                                pEvent->GUID[8],
-                                pEvent->GUID[9],
-                                pEvent->GUID[10],
-                                pEvent->GUID[11],
-                                pEvent->GUID[12],
-                                pEvent->GUID[13],
-                                pEvent->GUID[14],
-                                pEvent->GUID[15]);
+                                pev->GUID[0],
+                                pev->GUID[1],
+                                pev->GUID[2],
+                                pev->GUID[3],
+                                pev->GUID[4],
+                                pev->GUID[5],
+                                pev->GUID[6],
+                                pev->GUID[7],
+                                pev->GUID[8],
+                                pev->GUID[9],
+                                pev->GUID[10],
+                                pev->GUID[11],
+                                pev->GUID[12],
+                                pev->GUID[13],
+                                pev->GUID[14],
+                                pev->GUID[15]);
       return true;
 
     case VSCP_GUID_STR_FORMAT_NORMAL:
     default:
       strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
                                 "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                                pEvent->GUID[0],
-                                pEvent->GUID[1],
-                                pEvent->GUID[2],
-                                pEvent->GUID[3],
-                                pEvent->GUID[4],
-                                pEvent->GUID[5],
-                                pEvent->GUID[6],
-                                pEvent->GUID[7],
-                                pEvent->GUID[8],
-                                pEvent->GUID[9],
-                                pEvent->GUID[10],
-                                pEvent->GUID[11],
-                                pEvent->GUID[12],
-                                pEvent->GUID[13],
-                                pEvent->GUID[14],
-                                pEvent->GUID[15]);
+                                pev->GUID[0],
+                                pev->GUID[1],
+                                pev->GUID[2],
+                                pev->GUID[3],
+                                pev->GUID[4],
+                                pev->GUID[5],
+                                pev->GUID[6],
+                                pev->GUID[7],
+                                pev->GUID[8],
+                                pev->GUID[9],
+                                pev->GUID[10],
+                                pev->GUID[11],
+                                pev->GUID[12],
+                                pev->GUID[13],
+                                pev->GUID[14],
+                                pev->GUID[15]);
       return true;
   }
 }
@@ -4367,10 +4379,10 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pEvent, vscp_guid_
 //
 
 bool
-vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_guid_str_format format)
+vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pev, vscp_guid_str_format format)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -4378,7 +4390,7 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_g
     case VSCP_GUID_STR_FORMAT_COMPACT: {
       // Count leading 0xFF bytes
       int ffCount = 0;
-      while (ffCount < 16 && pEvent->GUID[ffCount] == 0xFF) {
+      while (ffCount < 16 && pev->GUID[ffCount] == 0xFF) {
         ffCount++;
       }
       // All 0xFF
@@ -4390,22 +4402,22 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_g
       if (ffCount == 0) {
         strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
                                   "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                                  pEvent->GUID[0],
-                                  pEvent->GUID[1],
-                                  pEvent->GUID[2],
-                                  pEvent->GUID[3],
-                                  pEvent->GUID[4],
-                                  pEvent->GUID[5],
-                                  pEvent->GUID[6],
-                                  pEvent->GUID[7],
-                                  pEvent->GUID[8],
-                                  pEvent->GUID[9],
-                                  pEvent->GUID[10],
-                                  pEvent->GUID[11],
-                                  pEvent->GUID[12],
-                                  pEvent->GUID[13],
-                                  pEvent->GUID[14],
-                                  pEvent->GUID[15]);
+                                  pev->GUID[0],
+                                  pev->GUID[1],
+                                  pev->GUID[2],
+                                  pev->GUID[3],
+                                  pev->GUID[4],
+                                  pev->GUID[5],
+                                  pev->GUID[6],
+                                  pev->GUID[7],
+                                  pev->GUID[8],
+                                  pev->GUID[9],
+                                  pev->GUID[10],
+                                  pev->GUID[11],
+                                  pev->GUID[12],
+                                  pev->GUID[13],
+                                  pev->GUID[14],
+                                  pev->GUID[15]);
         return true;
       }
       // Some leading 0xFF bytes - use :: notation
@@ -4414,7 +4426,7 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_g
         if (i > ffCount) {
           strGUID += ":";
         }
-        strGUID += vscp_str_format("%02X", pEvent->GUID[i]);
+        strGUID += vscp_str_format("%02X", pev->GUID[i]);
       }
       return true;
     }
@@ -4422,44 +4434,44 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_g
     case VSCP_GUID_STR_FORMAT_UUID:
       // Format: 8-4-4-4-12 hex digits with dashes
       strGUID = vscp_str_format("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                                pEvent->GUID[0],
-                                pEvent->GUID[1],
-                                pEvent->GUID[2],
-                                pEvent->GUID[3],
-                                pEvent->GUID[4],
-                                pEvent->GUID[5],
-                                pEvent->GUID[6],
-                                pEvent->GUID[7],
-                                pEvent->GUID[8],
-                                pEvent->GUID[9],
-                                pEvent->GUID[10],
-                                pEvent->GUID[11],
-                                pEvent->GUID[12],
-                                pEvent->GUID[13],
-                                pEvent->GUID[14],
-                                pEvent->GUID[15]);
+                                pev->GUID[0],
+                                pev->GUID[1],
+                                pev->GUID[2],
+                                pev->GUID[3],
+                                pev->GUID[4],
+                                pev->GUID[5],
+                                pev->GUID[6],
+                                pev->GUID[7],
+                                pev->GUID[8],
+                                pev->GUID[9],
+                                pev->GUID[10],
+                                pev->GUID[11],
+                                pev->GUID[12],
+                                pev->GUID[13],
+                                pev->GUID[14],
+                                pev->GUID[15]);
       return true;
 
     case VSCP_GUID_STR_FORMAT_NORMAL:
     default:
       strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
                                 "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-                                pEvent->GUID[0],
-                                pEvent->GUID[1],
-                                pEvent->GUID[2],
-                                pEvent->GUID[3],
-                                pEvent->GUID[4],
-                                pEvent->GUID[5],
-                                pEvent->GUID[6],
-                                pEvent->GUID[7],
-                                pEvent->GUID[8],
-                                pEvent->GUID[9],
-                                pEvent->GUID[10],
-                                pEvent->GUID[11],
-                                pEvent->GUID[12],
-                                pEvent->GUID[13],
-                                pEvent->GUID[14],
-                                pEvent->GUID[15]);
+                                pev->GUID[0],
+                                pev->GUID[1],
+                                pev->GUID[2],
+                                pev->GUID[3],
+                                pev->GUID[4],
+                                pev->GUID[5],
+                                pev->GUID[6],
+                                pev->GUID[7],
+                                pev->GUID[8],
+                                pev->GUID[9],
+                                pev->GUID[10],
+                                pev->GUID[11],
+                                pev->GUID[12],
+                                pev->GUID[13],
+                                pev->GUID[14],
+                                pev->GUID[15]);
       return true;
   }
 }
@@ -4469,31 +4481,31 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pEvent, vscp_g
 //
 
 bool
-vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pEvent)
+vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
                             "02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X",
-                            pEvent->GUID[0],
-                            pEvent->GUID[1],
-                            pEvent->GUID[2],
-                            pEvent->GUID[3],
-                            pEvent->GUID[4],
-                            pEvent->GUID[5],
-                            pEvent->GUID[6],
-                            pEvent->GUID[7],
-                            pEvent->GUID[8],
-                            pEvent->GUID[9],
-                            pEvent->GUID[10],
-                            pEvent->GUID[11],
-                            pEvent->GUID[12],
-                            pEvent->GUID[13],
-                            pEvent->GUID[14],
-                            pEvent->GUID[15]);
+                            pev->GUID[0],
+                            pev->GUID[1],
+                            pev->GUID[2],
+                            pev->GUID[3],
+                            pev->GUID[4],
+                            pev->GUID[5],
+                            pev->GUID[6],
+                            pev->GUID[7],
+                            pev->GUID[8],
+                            pev->GUID[9],
+                            pev->GUID[10],
+                            pev->GUID[11],
+                            pev->GUID[12],
+                            pev->GUID[13],
+                            pev->GUID[14],
+                            pev->GUID[15]);
 
   return true;
 }
@@ -4503,31 +4515,31 @@ vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pEvent)
 //
 
 bool
-vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pEvent)
+vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
                             "02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X",
-                            pEvent->GUID[0],
-                            pEvent->GUID[1],
-                            pEvent->GUID[2],
-                            pEvent->GUID[3],
-                            pEvent->GUID[4],
-                            pEvent->GUID[5],
-                            pEvent->GUID[6],
-                            pEvent->GUID[7],
-                            pEvent->GUID[8],
-                            pEvent->GUID[9],
-                            pEvent->GUID[10],
-                            pEvent->GUID[11],
-                            pEvent->GUID[12],
-                            pEvent->GUID[13],
-                            pEvent->GUID[14],
-                            pEvent->GUID[15]);
+                            pev->GUID[0],
+                            pev->GUID[1],
+                            pev->GUID[2],
+                            pev->GUID[3],
+                            pev->GUID[4],
+                            pev->GUID[5],
+                            pev->GUID[6],
+                            pev->GUID[7],
+                            pev->GUID[8],
+                            pev->GUID[9],
+                            pev->GUID[10],
+                            pev->GUID[11],
+                            pev->GUID[12],
+                            pev->GUID[13],
+                            pev->GUID[14],
+                            pev->GUID[15]);
 
   return true;
 }
@@ -4725,47 +4737,47 @@ vscp_reverseGUID(unsigned char *pGUID)
 // vscp_convertEventToEventEx
 
 bool
-vscp_convertEventToEventEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
+vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev)
 {
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  if (pEvent->sizeData > VSCP_LEVEL2_MAXDATA) {
+  if (pev->sizeData > VSCP_LEVEL2_MAXDATA) {
     return false;
   }
 
   // Convert
-  pEventEx->head = pEvent->head;
-  pEventEx->crc  = pEvent->crc;
-  pEventEx->obid = pEvent->obid;
-  if ((pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
-    pEventEx->timestamp_ns = pEvent->timestamp_ns;
-    pEventEx->year         = 0xffff;
-    pEventEx->month        = 0xff;
+  pex->head = pev->head;
+  pex->crc  = pev->crc;
+  pex->obid = pev->obid;
+  if ((pex->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    pex->timestamp_ns = pev->timestamp_ns;
+    pex->year         = 0xffff;
+    pex->month        = 0xff;
   }
   else {
-    pEventEx->year      = pEvent->year;
-    pEventEx->month     = pEvent->month;
-    pEventEx->day       = pEvent->day;
-    pEventEx->hour      = pEvent->hour;
-    pEventEx->minute    = pEvent->minute;
-    pEventEx->second    = pEvent->second;
-    pEventEx->timestamp = pEvent->timestamp;
+    pex->year      = pev->year;
+    pex->month     = pev->month;
+    pex->day       = pev->day;
+    pex->hour      = pev->hour;
+    pex->minute    = pev->minute;
+    pex->second    = pev->second;
+    pex->timestamp = pev->timestamp;
   }
 
-  pEventEx->obid       = pEvent->obid;
-  pEventEx->vscp_class = pEvent->vscp_class;
-  pEventEx->vscp_type  = pEvent->vscp_type;
-  pEventEx->sizeData   = pEvent->sizeData;
+  pex->obid       = pev->obid;
+  pex->vscp_class = pev->vscp_class;
+  pex->vscp_type  = pev->vscp_type;
+  pex->sizeData   = pev->sizeData;
 
-  memcpy(pEventEx->GUID, pEvent->GUID, 16);
-  memcpy(pEventEx->data, pEvent->pdata, pEvent->sizeData);
+  memcpy(pex->GUID, pev->GUID, 16);
+  memcpy(pex->data, pev->pdata, pev->sizeData);
 
   return true;
 }
@@ -4775,54 +4787,54 @@ vscp_convertEventToEventEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
 //
 
 bool
-vscp_convertEventExToEvent(vscpEvent *pEvent, const vscpEventEx *pEventEx)
+vscp_convertEventExToEvent(vscpEvent *pev, const vscpEventEx *pex)
 {
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  if (pEventEx->sizeData) {
+  if (pex->sizeData) {
     // Allocate memory for data
-    if (nullptr == (pEvent->pdata = new uint8_t[pEventEx->sizeData])) {
+    if (nullptr == (pev->pdata = new uint8_t[pex->sizeData])) {
       return false;
     }
-    memcpy(pEvent->pdata, pEventEx->data, pEventEx->sizeData);
+    memcpy(pev->pdata, pex->data, pex->sizeData);
   }
   else {
     // No data
-    pEvent->pdata = nullptr;
+    pev->pdata = nullptr;
   }
 
   // Convert
-  pEvent->head = pEventEx->head;
-  pEvent->crc  = pEventEx->crc;
-  pEvent->obid = pEventEx->obid;
+  pev->head = pex->head;
+  pev->crc  = pex->crc;
+  pev->obid = pex->obid;
 
-  if ((pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
-    pEvent->year         = 0xffff;
-    pEvent->month        = 0xff;
-    pEvent->timestamp_ns = pEventEx->timestamp_ns;
+  if ((pex->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    pev->year         = 0xffff;
+    pev->month        = 0xff;
+    pev->timestamp_ns = pex->timestamp_ns;
   }
   else {
-    pEvent->year      = pEventEx->year;
-    pEvent->month     = pEventEx->month;
-    pEvent->day       = pEventEx->day;
-    pEvent->hour      = pEventEx->hour;
-    pEvent->minute    = pEventEx->minute;
-    pEvent->second    = pEventEx->second;
-    pEvent->timestamp = pEventEx->timestamp;
+    pev->year      = pex->year;
+    pev->month     = pex->month;
+    pev->day       = pex->day;
+    pev->hour      = pex->hour;
+    pev->minute    = pex->minute;
+    pev->second    = pex->second;
+    pev->timestamp = pex->timestamp;
   }
 
-  pEvent->obid       = pEventEx->obid;
-  pEvent->vscp_class = pEventEx->vscp_class;
-  pEvent->vscp_type  = pEventEx->vscp_type;
-  pEvent->sizeData   = pEventEx->sizeData;
-  memcpy(pEvent->GUID, pEventEx->GUID, 16);
+  pev->obid       = pex->obid;
+  pev->vscp_class = pex->vscp_class;
+  pev->vscp_type  = pex->vscp_type;
+  pev->sizeData   = pex->sizeData;
+  memcpy(pev->GUID, pex->GUID, 16);
 
   return true;
 }
@@ -4831,61 +4843,61 @@ vscp_convertEventExToEvent(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 // copyEvent
 
 bool
-vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
+vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
 {
   // Check pointers
-  if (nullptr == pEventTo) {
+  if (nullptr == pevTo) {
     return false;
   }
 
-  if (nullptr == pEventFrom) {
+  if (nullptr == pevFrom) {
     return false;
   }
 
-  if (pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
+  if (pevFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
     return false;
   }
 
   // Convert
-  pEventTo->head  = pEventFrom->head;
-  pEventTo->crc   = pEventFrom->crc;
-  pEventTo->obid  = pEventFrom->obid;
-  pEventTo->year  = pEventFrom->year;
-  pEventTo->month = pEventFrom->month;
-  pEventTo->day   = pEventFrom->day;
-  if ((pEventFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
-    pEventTo->year         = 0xffff;
-    pEventTo->month        = 0xff;
-    pEventTo->timestamp_ns = pEventFrom->timestamp_ns;
+  pevTo->head  = pevFrom->head;
+  pevTo->crc   = pevFrom->crc;
+  pevTo->obid  = pevFrom->obid;
+  pevTo->year  = pevFrom->year;
+  pevTo->month = pevFrom->month;
+  pevTo->day   = pevFrom->day;
+  if ((pevFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    pevTo->year         = 0xffff;
+    pevTo->month        = 0xff;
+    pevTo->timestamp_ns = pevFrom->timestamp_ns;
   }
   else {
-    pEventTo->year      = pEventFrom->year;
-    pEventTo->month     = pEventFrom->month;
-    pEventTo->day       = pEventFrom->day;
-    pEventTo->hour      = pEventFrom->hour;
-    pEventTo->minute    = pEventFrom->minute;
-    pEventTo->second    = pEventFrom->second;
-    pEventTo->timestamp = pEventFrom->timestamp;
+    pevTo->year      = pevFrom->year;
+    pevTo->month     = pevFrom->month;
+    pevTo->day       = pevFrom->day;
+    pevTo->hour      = pevFrom->hour;
+    pevTo->minute    = pevFrom->minute;
+    pevTo->second    = pevFrom->second;
+    pevTo->timestamp = pevFrom->timestamp;
   }
 
-  pEventTo->obid       = pEventFrom->obid;
-  pEventTo->vscp_class = pEventFrom->vscp_class;
-  pEventTo->vscp_type  = pEventFrom->vscp_type;
-  pEventTo->sizeData   = pEventFrom->sizeData;
+  pevTo->obid       = pevFrom->obid;
+  pevTo->vscp_class = pevFrom->vscp_class;
+  pevTo->vscp_type  = pevFrom->vscp_type;
+  pevTo->sizeData   = pevFrom->sizeData;
 
-  memcpy(pEventTo->GUID, pEventFrom->GUID, 16);
+  memcpy(pevTo->GUID, pevFrom->GUID, 16);
 
-  if (pEventFrom->sizeData) {
+  if (pevFrom->sizeData) {
 
-    pEventTo->pdata = new unsigned char[pEventFrom->sizeData];
-    if (nullptr == pEventTo->pdata) {
+    pevTo->pdata = new unsigned char[pevFrom->sizeData];
+    if (nullptr == pevTo->pdata) {
       return false;
     }
 
-    memcpy(pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData);
+    memcpy(pevTo->pdata, pevFrom->pdata, pevFrom->sizeData);
   }
   else {
-    pEventTo->pdata = nullptr;
+    pevTo->pdata = nullptr;
   }
 
   return true;
@@ -4895,51 +4907,51 @@ vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 // copyEventEx
 
 bool
-vscp_copyEventEx(vscpEventEx *pEventExTo, const vscpEventEx *pEventExFrom)
+vscp_copyEventEx(vscpEventEx *pexTo, const vscpEventEx *pexFrom)
 {
   // Check pointers
-  if (nullptr == pEventExTo) {
+  if (nullptr == pexTo) {
     return false;
   }
 
-  if (nullptr == pEventExFrom) {
+  if (nullptr == pexFrom) {
     return false;
   }
 
-  if (pEventExFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
+  if (pexFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
     return false;
   }
 
   // Convert
-  pEventExTo->head = pEventExFrom->head;
-  pEventExTo->crc  = pEventExFrom->crc;
-  pEventExTo->obid = pEventExFrom->obid;
+  pexTo->head = pexFrom->head;
+  pexTo->crc  = pexFrom->crc;
+  pexTo->obid = pexFrom->obid;
 
-  if ((pEventExFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
-    pEventExTo->year         = 0xffff;
-    pEventExTo->month        = 0xff;
-    pEventExTo->timestamp_ns = pEventExFrom->timestamp_ns;
+  if ((pexFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    pexTo->year         = 0xffff;
+    pexTo->month        = 0xff;
+    pexTo->timestamp_ns = pexFrom->timestamp_ns;
   }
   else {
-    pEventExTo->year      = pEventExFrom->year;
-    pEventExTo->month     = pEventExFrom->month;
-    pEventExTo->day       = pEventExFrom->day;
-    pEventExTo->hour      = pEventExFrom->hour;
-    pEventExTo->minute    = pEventExFrom->minute;
-    pEventExTo->second    = pEventExFrom->second;
-    pEventExTo->timestamp = pEventExFrom->timestamp;
+    pexTo->year      = pexFrom->year;
+    pexTo->month     = pexFrom->month;
+    pexTo->day       = pexFrom->day;
+    pexTo->hour      = pexFrom->hour;
+    pexTo->minute    = pexFrom->minute;
+    pexTo->second    = pexFrom->second;
+    pexTo->timestamp = pexFrom->timestamp;
   }
 
-  pEventExTo->obid       = pEventExFrom->obid;
-  pEventExTo->vscp_class = pEventExFrom->vscp_class;
-  pEventExTo->vscp_type  = pEventExFrom->vscp_type;
-  pEventExTo->sizeData   = pEventExFrom->sizeData;
+  pexTo->obid       = pexFrom->obid;
+  pexTo->vscp_class = pexFrom->vscp_class;
+  pexTo->vscp_type  = pexFrom->vscp_type;
+  pexTo->sizeData   = pexFrom->sizeData;
 
-  memcpy(pEventExTo->GUID, pEventExFrom->GUID, 16);
-  memcpy(pEventExTo->data, pEventExFrom->data, pEventExFrom->sizeData);
+  memcpy(pexTo->GUID, pexFrom->GUID, 16);
+  memcpy(pexTo->data, pexFrom->data, pexFrom->sizeData);
 
-  if (pEventExFrom->sizeData) {
-    memcpy(pEventExTo->data, pEventExFrom->data, pEventExFrom->sizeData);
+  if (pexFrom->sizeData) {
+    memcpy(pexTo->data, pexFrom->data, pexFrom->sizeData);
   }
 
   return true;
@@ -4950,17 +4962,24 @@ vscp_copyEventEx(vscpEventEx *pEventExTo, const vscpEventEx *pEventExFrom)
 //
 
 bool
-vscp_newEvent(vscpEvent **ppEvent, uint16_t frameVersion)
+vscp_newEvent(vscpEvent **ppev, uint16_t version)
 {
-  *ppEvent = new vscpEvent;
-  if (nullptr == *ppEvent) {
+  *ppev = new vscpEvent;
+  if (nullptr == *ppev) {
     return false;
   }
 
   // No data allocated yet
-  (*ppEvent)->head     = frameVersion;
-  (*ppEvent)->sizeData = 0;
-  (*ppEvent)->pdata    = nullptr;
+  (*ppev)->head     = version;
+  (*ppev)->sizeData = 0;
+  (*ppev)->pdata    = nullptr;
+
+  // Default is to use unix 64-bit nanosecond timestamp,
+  // set year to 0xffff and to flag it
+  if ((version & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    (*ppev)->year  = 0xffff;
+    (*ppev)->month = 0xff;
+  }
 
   return true;
 }
@@ -4970,16 +4989,23 @@ vscp_newEvent(vscpEvent **ppEvent, uint16_t frameVersion)
 //
 
 bool
-vscp_newEventEx(vscpEventEx **ppEventEx, uint16_t version)
+vscp_newEventEx(vscpEventEx **ppex, uint16_t version)
 {
-  *ppEventEx = new vscpEventEx;
-  if (nullptr == *ppEventEx) {
+  *ppex = new vscpEventEx;
+  if (nullptr == *ppex) {
     return false;
   }
 
   // No data allocated yet
-  (*ppEventEx)->head     = version;
-  (*ppEventEx)->sizeData = 0;
+  (*ppex)->head     = version;
+  (*ppex)->sizeData = 0;
+
+  // Default is to use unix 64-bit nanosecond timestamp,
+  // set year to 0xffff and to flag it
+  if ((version & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
+    (*ppex)->year  = 0xffff;
+    (*ppex)->month = 0xff;
+  }
 
   return true;
 }
@@ -4989,16 +5015,16 @@ vscp_newEventEx(vscpEventEx **ppEventEx, uint16_t version)
 //
 
 void
-vscp_deleteEvent(vscpEvent *pEvent)
+vscp_deleteEvent(vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return;
   }
 
-  if (nullptr != pEvent->pdata) {
-    delete[] pEvent->pdata;
-    pEvent->pdata = nullptr;
+  if (nullptr != pev->pdata) {
+    delete[] pev->pdata;
+    pev->pdata = nullptr;
   }
 }
 
@@ -5043,9 +5069,9 @@ vscp_deleteEvent_v2(vscpEvent **ppEvent)
 //
 
 void
-vscp_deleteEventEx(vscpEventEx *pEventEx)
+vscp_deleteEventEx(vscpEventEx *pex)
 {
-  delete pEventEx;
+  delete pex;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -5053,17 +5079,17 @@ vscp_deleteEventEx(vscpEventEx *pEventEx)
 //
 
 bool
-setFrameVersion(vscpEvent *pEvent, uint16_t version)
+setFrameVersion(vscpEvent *pev, uint16_t version)
 {
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Clear existing frame version bits
-  pEvent->head &= ~VSCP_HEADER16_FRAME_VERSION_MASK;
+  pev->head &= ~VSCP_HEADER16_FRAME_VERSION_MASK;
 
   // Set new frame version
-  pEvent->head |= (version & VSCP_HEADER16_FRAME_VERSION_MASK);
+  pev->head |= (version & VSCP_HEADER16_FRAME_VERSION_MASK);
 
   return true;
 }
@@ -5073,17 +5099,17 @@ setFrameVersion(vscpEvent *pEvent, uint16_t version)
 //
 
 bool
-setFrameVersion(vscpEventEx *pEventEx, uint16_t version)
+setFrameVersion(vscpEventEx *pex, uint16_t version)
 {
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   // Clear existing frame version bits
-  pEventEx->head &= ~VSCP_HEADER16_FRAME_VERSION_MASK;
+  pex->head &= ~VSCP_HEADER16_FRAME_VERSION_MASK;
 
   // Set new frame version
-  pEventEx->head |= (version & VSCP_HEADER16_FRAME_VERSION_MASK);
+  pex->head |= (version & VSCP_HEADER16_FRAME_VERSION_MASK);
 
   return true;
 }
@@ -5093,10 +5119,10 @@ setFrameVersion(vscpEventEx *pEventEx, uint16_t version)
 //
 
 bool
-vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
+vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -5104,13 +5130,13 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
   dt.clear();
 
   // Check frame version
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: convert nanoseconds since epoch to ISO 8601 string
-    if (pEvent->timestamp_ns > 0) {
-      time_t secs        = static_cast<time_t>(pEvent->timestamp_ns / 1000000000ULL);
-      uint32_t nanos     = static_cast<uint32_t>(pEvent->timestamp_ns % 1000000000ULL);
+    if (pev->timestamp_ns > 0) {
+      time_t secs        = static_cast<time_t>(pev->timestamp_ns / 1000000000ULL);
+      uint32_t nanos     = static_cast<uint32_t>(pev->timestamp_ns % 1000000000ULL);
       struct tm *tm_info = gmtime(&secs);
       if (tm_info != nullptr) {
         dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02d.%09uZ",
@@ -5126,14 +5152,14 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
   }
   else {
     // ORIGINAL frame: use year/month/day/hour/minute/second fields
-    if (pEvent->year || pEvent->month || pEvent->day || pEvent->hour || pEvent->minute || pEvent->second) {
+    if (pev->year || pev->month || pev->day || pev->hour || pev->minute || pev->second) {
       dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
-                           (int) pEvent->year,
-                           (int) pEvent->month,
-                           (int) pEvent->day,
-                           (int) pEvent->hour,
-                           (int) pEvent->minute,
-                           (int) pEvent->second);
+                           (int) pev->year,
+                           (int) pev->month,
+                           (int) pev->day,
+                           (int) pev->hour,
+                           (int) pev->minute,
+                           (int) pev->second);
     }
   }
 
@@ -5145,23 +5171,23 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent)
 //
 
 bool
-vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx)
+vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pex)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   dt.clear();
 
   // Check frame version
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: convert nanoseconds since epoch to ISO 8601 string
-    if (pEventEx->timestamp_ns > 0) {
-      time_t secs        = static_cast<time_t>(pEventEx->timestamp_ns / 1000000000ULL);
-      uint32_t nanos     = static_cast<uint32_t>(pEventEx->timestamp_ns % 1000000000ULL);
+    if (pex->timestamp_ns > 0) {
+      time_t secs        = static_cast<time_t>(pex->timestamp_ns / 1000000000ULL);
+      uint32_t nanos     = static_cast<uint32_t>(pex->timestamp_ns % 1000000000ULL);
       struct tm *tm_info = gmtime(&secs);
       if (tm_info != nullptr) {
         dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02d.%09uZ",
@@ -5177,14 +5203,14 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx)
   }
   else {
     // ORIGINAL frame: use year/month/day/hour/minute/second fields
-    if (pEventEx->year || pEventEx->month || pEventEx->day || pEventEx->hour || pEventEx->minute || pEventEx->second) {
+    if (pex->year || pex->month || pex->day || pex->hour || pex->minute || pex->second) {
       dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
-                           (int) pEventEx->year,
-                           (int) pEventEx->month,
-                           (int) pEventEx->day,
-                           (int) pEventEx->hour,
-                           (int) pEventEx->minute,
-                           (int) pEventEx->second);
+                           (int) pex->year,
+                           (int) pex->month,
+                           (int) pex->day,
+                           (int) pex->hour,
+                           (int) pex->minute,
+                           (int) pex->second);
     }
   }
 
@@ -5199,47 +5225,47 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent)
+vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEvent->pdata, pEvent->sizeData, false, false, true);
+  vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pev->pdata, pev->sizeData, false, false, true);
 
   std::string dt;
-  vscp_getDateStringFromEvent(dt, pEvent);
+  vscp_getDateStringFromEvent(dt, pev);
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEvent->timestamp_ns;
+    timestamp_ns = pev->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEvent->year - 1900;
-    tm.tm_mon  = pEvent->month - 1;
-    tm.tm_mday = pEvent->day;
-    tm.tm_hour = pEvent->hour;
-    tm.tm_min  = pEvent->minute;
-    tm.tm_sec  = pEvent->second;
+    tm.tm_year = pev->year - 1900;
+    tm.tm_mon  = pev->month - 1;
+    tm.tm_mday = pev->day;
+    tm.tm_hour = pev->hour;
+    tm.tm_min  = pev->minute;
+    tm.tm_sec  = pev->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEvent->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pev->timestamp * 1000ULL;
   }
 
   // Set head with UNIX_NS frame version
-  uint16_t head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with timestamp_ns as hex string
   strJSON = vscp_str_format("{\n"
@@ -5254,11 +5280,11 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent)
                             "\"note\": \"%s\"\n"
                             "}",
                             (unsigned short int) head,
-                            (unsigned long) pEvent->obid,
+                            (unsigned long) pev->obid,
                             (const char *) dt.c_str(),
                             (unsigned long long) timestamp_ns,
-                            (unsigned short int) pEvent->vscp_class,
-                            (unsigned short int) pEvent->vscp_type,
+                            (unsigned short int) pev->vscp_class,
+                            (unsigned short int) pev->vscp_type,
                             (const char *) strguid.c_str(),
                             (const char *) strdata.c_str(),
                             "");
@@ -5286,17 +5312,17 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent)
 //
 
 bool
-vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
+vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
 {
   std::string strguid;
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Initialize event
-  memset(pEvent, 0, sizeof(vscpEvent));
+  memset(pev, 0, sizeof(vscpEvent));
 
   try {
     auto j = json::parse(strJSON);
@@ -5332,32 +5358,32 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
     };
 
     // head - read from JSON but we'll set frame version to UNIX_NS
-    pEvent->head = 0;
+    pev->head = 0;
     const char *head_key = get_numeric_key("head", "vscpHead");
     if ((nullptr != head_key) && j[head_key].is_number_unsigned()) {
-      pEvent->head = j.at(head_key).get<uint16_t>();
+      pev->head = j.at(head_key).get<uint16_t>();
     }
     // Always set frame version to UNIX_NS
-    pEvent->head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+    pev->head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
     // obid
-    pEvent->obid = 0;
+    pev->obid = 0;
     if (j.contains("obid") && j["obid"].is_number_unsigned()) {
-      pEvent->obid = j.at("obid").get<uint32_t>();
+      pev->obid = j.at("obid").get<uint32_t>();
     }
 
     // Always use nanosecond timestamp (frame type 1)
-    pEvent->timestamp_ns = 0;
+    pev->timestamp_ns = 0;
 
     // First check for timestamp_ns (preferred)
     if (j.contains("timestamp_ns")) {
       if (j["timestamp_ns"].is_string()) {
         // Parse hex string (preferred format)
         std::string tsStr    = j.at("timestamp_ns").get<std::string>();
-        pEvent->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
+        pev->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
       }
       else if (j["timestamp_ns"].is_number_unsigned()) {
-        pEvent->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
+        pev->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
       }
     }
     // If no timestamp_ns, check for datetime + timestamp (old format) and convert
@@ -5371,11 +5397,11 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
         memset(&tm, 0, sizeof(tm));
         if (vscp_parseISOCombined(&tm, dtStr)) {
           time_t t             = timegm(&tm);
-          pEvent->timestamp_ns = (uint64_t) t * 1000000000ULL;
+          pev->timestamp_ns = (uint64_t) t * 1000000000ULL;
           // Add microsecond timestamp if present
           if ((nullptr != timestamp_key) && j[timestamp_key].is_number_unsigned()) {
             uint32_t usTimestamp = j.at(timestamp_key).get<uint32_t>();
-            pEvent->timestamp_ns += (uint64_t) usTimestamp * 1000ULL;
+            pev->timestamp_ns += (uint64_t) usTimestamp * 1000ULL;
           }
         }
       }
@@ -5384,51 +5410,51 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
         uint64_t ts = j.at(timestamp_key).get<uint64_t>();
         // If > 10^12, assume it's nanoseconds; otherwise assume microseconds
         if (ts > 1000000000000ULL) {
-          pEvent->timestamp_ns = ts;
+          pev->timestamp_ns = ts;
         }
         else {
-          pEvent->timestamp_ns = ts * 1000ULL;
+          pev->timestamp_ns = ts * 1000ULL;
         }
       }
     }
 
     // If timestamp_ns is still zero, set current time in nanoseconds
-    if (!pEvent->timestamp_ns) {
+    if (!pev->timestamp_ns) {
       struct timespec ts;
       clock_gettime(CLOCK_REALTIME, &ts);
-      pEvent->timestamp_ns = (uint64_t) ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+      pev->timestamp_ns = (uint64_t) ts.tv_sec * 1000000000ULL + ts.tv_nsec;
     }
 
     // Mark as UNIX_NS frame
-    pEvent->year  = 0xffff;
-    pEvent->month = 0xff;
+    pev->year  = 0xffff;
+    pev->month = 0xff;
 
     // VSCP class
-    pEvent->vscp_class = 0;
+    pev->vscp_class = 0;
     const char *class_key = get_numeric_key("class", "vscpClass");
     if ((nullptr != class_key) && j[class_key].is_number_unsigned()) {
-      pEvent->vscp_class = j.at(class_key).get<uint16_t>();
+      pev->vscp_class = j.at(class_key).get<uint16_t>();
     }
 
     // VSCP type
-    pEvent->vscp_type = 0;
+    pev->vscp_type = 0;
     const char *type_key = get_numeric_key("type", "vscpType");
     if ((nullptr != type_key) && j[type_key].is_number_unsigned()) {
-      pEvent->vscp_type = j.at(type_key).get<uint16_t>();
+      pev->vscp_type = j.at(type_key).get<uint16_t>();
     }
 
     // GUID
-    memset(pEvent->GUID, 0, 16);
+    memset(pev->GUID, 0, 16);
     const char *guid_key = get_string_key("guid", "vscpGuid");
     if ((nullptr != guid_key) && j[guid_key].is_string()) {
       std::string guidStr = j.at(guid_key).get<std::string>();
       cguid guid;
       guid.getFromString(guidStr);
-      guid.writeGUID(pEvent->GUID);
+      guid.writeGUID(pev->GUID);
     }
 
-    pEvent->sizeData = 0;
-    pEvent->pdata    = nullptr;
+    pev->sizeData = 0;
+    pev->pdata    = nullptr;
     const char *data_key = get_array_key("data", "vscpData");
     if ((nullptr != data_key) && j[data_key].is_array()) {
       std::vector<std::uint8_t> data_array = j.at(data_key);
@@ -5437,16 +5463,16 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
         return false;
       }
 
-      pEvent->sizeData = (uint16_t) data_array.size();
-      if (0 == pEvent->sizeData) {
-        pEvent->pdata = nullptr;
+      pev->sizeData = (uint16_t) data_array.size();
+      if (0 == pev->sizeData) {
+        pev->pdata = nullptr;
       }
       else {
-        pEvent->pdata = new uint8_t[data_array.size()];
-        if (nullptr == pEvent->pdata) {
+        pev->pdata = new uint8_t[data_array.size()];
+        if (nullptr == pev->pdata) {
           return false;
         }
-        memcpy(pEvent->pdata, data_array.data(), data_array.size());
+        memcpy(pev->pdata, data_array.data(), data_array.size());
       }
     }
   }
@@ -5471,47 +5497,47 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON)
 //
 
 bool
-vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx)
+vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pex)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEventEx->data, pEventEx->sizeData, false, false, true);
+  vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pex->data, pex->sizeData, false, false, true);
 
   std::string dt;
-  vscp_getDateStringFromEventEx(dt, pEventEx);
+  vscp_getDateStringFromEventEx(dt, pex);
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEventEx->timestamp_ns;
+    timestamp_ns = pex->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEventEx->year - 1900;
-    tm.tm_mon  = pEventEx->month - 1;
-    tm.tm_mday = pEventEx->day;
-    tm.tm_hour = pEventEx->hour;
-    tm.tm_min  = pEventEx->minute;
-    tm.tm_sec  = pEventEx->second;
+    tm.tm_year = pex->year - 1900;
+    tm.tm_mon  = pex->month - 1;
+    tm.tm_mday = pex->day;
+    tm.tm_hour = pex->hour;
+    tm.tm_min  = pex->minute;
+    tm.tm_sec  = pex->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEventEx->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pex->timestamp * 1000ULL;
   }
 
   // Set head with UNIX_NS frame version
-  uint16_t head = (pEventEx->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pex->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with timestamp_ns as hex string
   strJSON = vscp_str_format("{\n"
@@ -5526,11 +5552,11 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx)
                             "\"note\": \"%s\"\n"
                             "}",
                             (unsigned short int) head,
-                            (unsigned long) pEventEx->obid,
+                            (unsigned long) pex->obid,
                             (const char *) dt.c_str(),
                             (unsigned long long) timestamp_ns,
-                            (unsigned short int) pEventEx->vscp_class,
-                            (unsigned short int) pEventEx->vscp_type,
+                            (unsigned short int) pex->vscp_class,
+                            (unsigned short int) pex->vscp_type,
                             (const char *) strguid.c_str(),
                             (const char *) strdata.c_str(),
                             "");
@@ -5553,17 +5579,17 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx)
 // }
 
 bool
-vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
+vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
 {
   std::string strguid;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   // Initialize event
-  memset(pEventEx, 0, sizeof(vscpEventEx));
+  memset(pex, 0, sizeof(vscpEventEx));
 
   try {
 
@@ -5600,32 +5626,32 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
     };
 
     // Head - read from JSON but we'll set frame version to UNIX_NS
-    pEventEx->head = 0;
+    pex->head = 0;
     const char *head_key = get_numeric_key("head", "vscpHead");
     if ((nullptr != head_key) && j[head_key].is_number_unsigned()) {
-      pEventEx->head = j.at(head_key).get<uint16_t>();
+      pex->head = j.at(head_key).get<uint16_t>();
     }
     // Always set frame version to UNIX_NS
-    pEventEx->head = (pEventEx->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+    pex->head = (pex->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
     // obid
-    pEventEx->obid = 0;
+    pex->obid = 0;
     if (j.contains("obid") && j["obid"].is_number_unsigned()) {
-      pEventEx->obid = j.at("obid").get<uint32_t>();
+      pex->obid = j.at("obid").get<uint32_t>();
     }
 
     // Always use nanosecond timestamp (frame type 1)
-    pEventEx->timestamp_ns = 0;
+    pex->timestamp_ns = 0;
 
     // First check for timestamp_ns (preferred)
     if (j.contains("timestamp_ns")) {
       if (j["timestamp_ns"].is_string()) {
         // Parse hex string (preferred format)
         std::string tsStr      = j.at("timestamp_ns").get<std::string>();
-        pEventEx->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
+        pex->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
       }
       else if (j["timestamp_ns"].is_number_unsigned()) {
-        pEventEx->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
+        pex->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
       }
     }
     // If no timestamp_ns, check for datetime + timestamp (old format) and convert
@@ -5639,11 +5665,11 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
         memset(&tm, 0, sizeof(tm));
         if (vscp_parseISOCombined(&tm, dtStr)) {
           time_t t               = timegm(&tm);
-          pEventEx->timestamp_ns = (uint64_t) t * 1000000000ULL;
+          pex->timestamp_ns = (uint64_t) t * 1000000000ULL;
           // Add microsecond timestamp if present
           if ((nullptr != timestamp_key) && j[timestamp_key].is_number_unsigned()) {
             uint32_t usTimestamp = j.at(timestamp_key).get<uint32_t>();
-            pEventEx->timestamp_ns += (uint64_t) usTimestamp * 1000ULL;
+            pex->timestamp_ns += (uint64_t) usTimestamp * 1000ULL;
           }
         }
       }
@@ -5652,50 +5678,50 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
         uint64_t ts = j.at(timestamp_key).get<uint64_t>();
         // If > 10^12, assume it's nanoseconds; otherwise assume microseconds
         if (ts > 1000000000000ULL) {
-          pEventEx->timestamp_ns = ts;
+          pex->timestamp_ns = ts;
         }
         else {
-          pEventEx->timestamp_ns = ts * 1000ULL;
+          pex->timestamp_ns = ts * 1000ULL;
         }
       }
     }
 
     // If timestamp_ns is still zero, set current time in nanoseconds
-    if (!pEventEx->timestamp_ns) {
+    if (!pex->timestamp_ns) {
       struct timespec ts;
       clock_gettime(CLOCK_REALTIME, &ts);
-      pEventEx->timestamp_ns = (uint64_t) ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+      pex->timestamp_ns = (uint64_t) ts.tv_sec * 1000000000ULL + ts.tv_nsec;
     }
 
     // Mark as UNIX_NS frame
-    pEventEx->year  = 0xffff;
-    pEventEx->month = 0xff;
+    pex->year  = 0xffff;
+    pex->month = 0xff;
 
     // VSCP class
-    pEventEx->vscp_class = 0;
+    pex->vscp_class = 0;
     const char *class_key = get_numeric_key("class", "vscpClass");
     if ((nullptr != class_key) && j[class_key].is_number_unsigned()) {
-      pEventEx->vscp_class = j.at(class_key).get<uint16_t>();
+      pex->vscp_class = j.at(class_key).get<uint16_t>();
     }
 
     // VSCP type
-    pEventEx->vscp_type = 0;
+    pex->vscp_type = 0;
     const char *type_key = get_numeric_key("type", "vscpType");
     if ((nullptr != type_key) && j[type_key].is_number_unsigned()) {
-      pEventEx->vscp_type = j.at(type_key).get<uint16_t>();
+      pex->vscp_type = j.at(type_key).get<uint16_t>();
     }
 
     // GUID
-    memset(pEventEx->GUID, 0, 16);
+    memset(pex->GUID, 0, 16);
     const char *guid_key = get_string_key("guid", "vscpGuid");
     if ((nullptr != guid_key) && j[guid_key].is_string()) {
       std::string guidStr = j.at(guid_key).get<std::string>();
       cguid guid;
       guid.getFromString(guidStr);
-      guid.writeGUID(pEventEx->GUID);
+      guid.writeGUID(pex->GUID);
     }
 
-    pEventEx->sizeData = 0;
+    pex->sizeData = 0;
     const char *data_key = get_array_key("data", "vscpData");
     if ((nullptr != data_key) && j[data_key].is_array()) {
       std::vector<std::uint8_t> data_array = j.at(data_key);
@@ -5705,12 +5731,12 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
         return false;
       }
 
-      pEventEx->sizeData = (uint16_t) data_array.size();
-      if (0 == pEventEx->sizeData) {
-        memset(pEventEx->data, 0, sizeof(pEventEx->data));
+      pex->sizeData = (uint16_t) data_array.size();
+      if (0 == pex->sizeData) {
+        memset(pex->data, 0, sizeof(pex->data));
       }
       else {
-        memcpy(pEventEx->data, data_array.data(), data_array.size());
+        memcpy(pex->data, data_array.data(), data_array.size());
       }
     }
   }
@@ -5733,48 +5759,48 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSON)
 //
 
 bool
-vscp_convertEventToXML(std::string &strXML, vscpEvent *pEvent)
+vscp_convertEventToXML(std::string &strXML, vscpEvent *pev)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEvent->pdata, pEvent->sizeData, false,
+  vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pev->pdata, pev->sizeData, false,
                                  false); // Event data to string
 
   std::string dt;
-  vscp_getDateStringFromEvent(dt, pEvent);
+  vscp_getDateStringFromEvent(dt, pev);
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEvent->timestamp_ns;
+    timestamp_ns = pev->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEvent->year - 1900;
-    tm.tm_mon  = pEvent->month - 1;
-    tm.tm_mday = pEvent->day;
-    tm.tm_hour = pEvent->hour;
-    tm.tm_min  = pEvent->minute;
-    tm.tm_sec  = pEvent->second;
+    tm.tm_year = pev->year - 1900;
+    tm.tm_mon  = pev->month - 1;
+    tm.tm_mday = pev->day;
+    tm.tm_hour = pev->hour;
+    tm.tm_min  = pev->minute;
+    tm.tm_sec  = pev->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEvent->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pev->timestamp * 1000ULL;
   }
 
   // Set head with UNIX_NS frame version
-  uint16_t head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with nanosecond timestamp
   strXML = vscp_str_format("<event "
@@ -5788,11 +5814,11 @@ vscp_convertEventToXML(std::string &strXML, vscpEvent *pEvent)
                            "data=\"%s\" "
                            "/>",
                            (unsigned short int) head,
-                           (unsigned long) pEvent->obid,
+                           (unsigned long) pev->obid,
                            (const char *) dt.c_str(),
                            (unsigned long long) timestamp_ns,
-                           (unsigned short int) pEvent->vscp_class,
-                           (unsigned short int) pEvent->vscp_type,
+                           (unsigned short int) pev->vscp_class,
+                           (unsigned short int) pev->vscp_type,
                            (const char *) strguid.c_str(),
                            (const char *) strdata.c_str());
 
@@ -5920,10 +5946,10 @@ endEventXMLParser(void * /*data*/, const char * /*name*/)
 }
 
 bool
-vscp_convertXMLToEvent(vscpEvent *pEvent, std::string &strXML)
+vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -5933,7 +5959,7 @@ vscp_convertXMLToEvent(vscpEvent *pEvent, std::string &strXML)
   }
 
   XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-  XML_SetUserData(xmlParser, pEvent);
+  XML_SetUserData(xmlParser, pev);
   XML_SetElementHandler(xmlParser, startEventXMLParser, endEventXMLParser);
 
   int bytes_read;
@@ -5959,48 +5985,48 @@ vscp_convertXMLToEvent(vscpEvent *pEvent, std::string &strXML)
 //
 
 bool
-vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pEventEx)
+vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pex)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEventEx->data, pEventEx->sizeData, false,
+  vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pex->data, pex->sizeData, false,
                                  false); // Event data to string
 
   std::string dt;
-  vscp_getDateStringFromEventEx(dt, pEventEx);
+  vscp_getDateStringFromEventEx(dt, pex);
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEventEx->timestamp_ns;
+    timestamp_ns = pex->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEventEx->year - 1900;
-    tm.tm_mon  = pEventEx->month - 1;
-    tm.tm_mday = pEventEx->day;
-    tm.tm_hour = pEventEx->hour;
-    tm.tm_min  = pEventEx->minute;
-    tm.tm_sec  = pEventEx->second;
+    tm.tm_year = pex->year - 1900;
+    tm.tm_mon  = pex->month - 1;
+    tm.tm_mday = pex->day;
+    tm.tm_hour = pex->hour;
+    tm.tm_min  = pex->minute;
+    tm.tm_sec  = pex->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEventEx->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pex->timestamp * 1000ULL;
   }
 
   // Set head with UNIX_NS frame version
-  uint16_t head = (pEventEx->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pex->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with nanosecond timestamp
   strXML = vscp_str_format("<event "
@@ -6014,11 +6040,11 @@ vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pEventEx)
                            "data=\"%s\" "
                            "/>",
                            (unsigned short int) head,
-                           (unsigned long) pEventEx->obid,
+                           (unsigned long) pex->obid,
                            (const char *) dt.c_str(),
                            (unsigned long long) timestamp_ns,
-                           (unsigned short int) pEventEx->vscp_class,
-                           (unsigned short int) pEventEx->vscp_type,
+                           (unsigned short int) pex->vscp_class,
+                           (unsigned short int) pex->vscp_type,
                            (const char *) strguid.c_str(),
                            (const char *) strdata.c_str());
 
@@ -6144,10 +6170,10 @@ endEventExXMLParser(void * /*data*/, const char * /*name*/)
 }
 
 bool
-vscp_convertXMLToEventEx(vscpEventEx *pEventEx, std::string &strXML)
+vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
@@ -6157,7 +6183,7 @@ vscp_convertXMLToEventEx(vscpEventEx *pEventEx, std::string &strXML)
   }
 
   XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-  XML_SetUserData(xmlParser, pEventEx);
+  XML_SetUserData(xmlParser, pex);
   XML_SetElementHandler(xmlParser, startEventExXMLParser, endEventExXMLParser);
 
   int bytes_read;
@@ -6180,25 +6206,25 @@ vscp_convertXMLToEventEx(vscpEventEx *pEventEx, std::string &strXML)
 //
 
 bool
-vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pEvent)
+vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pev)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEvent->pdata, pEvent->sizeData, false,
+  vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pev->pdata, pev->sizeData, false,
                                  false); // Event data to string
 
   std::string dt;
-  vscp_getDateStringFromEvent(dt, pEvent);
+  vscp_getDateStringFromEvent(dt, pev);
 
   // Check frame version for timestamp handling
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: use 64-bit nanosecond timestamp
@@ -6223,29 +6249,29 @@ vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pEvent)
                               "obid: %lu <br>"
                               "note: %s <br>"
                               "</p>",
-                              (unsigned short int) pEvent->vscp_class,
-                              (unsigned short int) pEvent->vscp_type,
-                              (unsigned short int) pEvent->sizeData,
+                              (unsigned short int) pev->vscp_class,
+                              (unsigned short int) pev->vscp_type,
+                              (unsigned short int) pev->sizeData,
                               (const char *) strdata.c_str(),
                               (const char *) strguid.c_str(),
-                              (unsigned short int) pEvent->head,
+                              (unsigned short int) pev->head,
                               (const char *) dt.c_str(),
-                              (unsigned long long) pEvent->timestamp_ns,
-                              (unsigned long) pEvent->obid,
+                              (unsigned long long) pev->timestamp_ns,
+                              (unsigned long) pev->obid,
                               "");
   }
   else {
     // ORIGINAL frame: use 32-bit timestamp
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
-                              (unsigned short int) pEvent->vscp_class,
-                              (unsigned short int) pEvent->vscp_type,
-                              (unsigned short int) pEvent->sizeData,
+                              (unsigned short int) pev->vscp_class,
+                              (unsigned short int) pev->vscp_type,
+                              (unsigned short int) pev->sizeData,
                               (const char *) strdata.c_str(),
                               (const char *) strguid.c_str(),
-                              (unsigned short int) pEvent->head,
+                              (unsigned short int) pev->head,
                               (const char *) dt.c_str(),
-                              (unsigned long) pEvent->timestamp,
-                              (unsigned long) pEvent->obid,
+                              (unsigned long) pev->timestamp,
+                              (unsigned long) pev->obid,
                               "");
   }
 
@@ -6257,25 +6283,25 @@ vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pEvent)
 //
 
 bool
-vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pEventEx)
+vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pex)
 {
   std::string strguid;
   std::string strdata;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-  vscp_writeDataWithSizeToString(strdata, pEventEx->data, pEventEx->sizeData, false,
+  vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
+  vscp_writeDataWithSizeToString(strdata, pex->data, pex->sizeData, false,
                                  false); // Event data to string
 
   std::string dt;
-  vscp_getDateStringFromEventEx(dt, pEventEx);
+  vscp_getDateStringFromEventEx(dt, pex);
 
   // Check frame version for timestamp handling
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: use 64-bit nanosecond timestamp
@@ -6300,29 +6326,29 @@ vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pEventEx)
                               "obid: %lu <br>"
                               "note: %s <br>"
                               "</p>",
-                              (unsigned short int) pEventEx->vscp_class,
-                              (unsigned short int) pEventEx->vscp_type,
-                              (unsigned short int) pEventEx->sizeData,
+                              (unsigned short int) pex->vscp_class,
+                              (unsigned short int) pex->vscp_type,
+                              (unsigned short int) pex->sizeData,
                               (const char *) strdata.c_str(),
                               (const char *) strguid.c_str(),
-                              (unsigned short int) pEventEx->head,
+                              (unsigned short int) pex->head,
                               (const char *) dt.c_str(),
-                              (unsigned long long) pEventEx->timestamp_ns,
-                              (unsigned long) pEventEx->obid,
+                              (unsigned long long) pex->timestamp_ns,
+                              (unsigned long) pex->obid,
                               "");
   }
   else {
     // ORIGINAL frame: use 32-bit timestamp
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
-                              (unsigned short int) pEventEx->vscp_class,
-                              (unsigned short int) pEventEx->vscp_type,
-                              (unsigned short int) pEventEx->sizeData,
+                              (unsigned short int) pex->vscp_class,
+                              (unsigned short int) pex->vscp_type,
+                              (unsigned short int) pex->sizeData,
                               (const char *) strdata.c_str(),
                               (const char *) strguid.c_str(),
-                              (unsigned short int) pEventEx->head,
+                              (unsigned short int) pex->head,
                               (const char *) dt.c_str(),
-                              (unsigned long) pEventEx->timestamp,
-                              (unsigned long) pEventEx->obid,
+                              (unsigned long) pex->timestamp,
+                              (unsigned long) pex->obid,
                               "");
   }
 
@@ -6423,9 +6449,9 @@ vscp_set_eventex_info_from_topic(vscpEventEx *pex, const char *topic)
 //
 
 bool
-vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm, uint32_t ns)
+vscp_setEventDateTime(vscpEvent *pev, struct tm *ptm, uint32_t ns)
 {
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -6439,23 +6465,23 @@ vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm, uint32_t ns)
   }
 
   // Check frame version
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: convert struct tm to nanoseconds since epoch + subsecond ns
     time_t t             = timegm(ptm);
-    pEvent->timestamp_ns = (uint64_t) t * 1000000000ULL + ns;
-    pEvent->year         = 0xffff;
-    pEvent->month        = 0xff;
+    pev->timestamp_ns = (uint64_t) t * 1000000000ULL + ns;
+    pev->year         = 0xffff;
+    pev->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields (no subsecond precision)
-    pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon + 1;
-    pEvent->day    = ptm->tm_mday;
-    pEvent->hour   = ptm->tm_hour;
-    pEvent->minute = ptm->tm_min;
-    pEvent->second = ptm->tm_sec;
+    pev->year   = ptm->tm_year + 1900;
+    pev->month  = ptm->tm_mon + 1;
+    pev->day    = ptm->tm_mday;
+    pev->hour   = ptm->tm_hour;
+    pev->minute = ptm->tm_min;
+    pev->second = ptm->tm_sec;
   }
 
   return true;
@@ -6466,9 +6492,9 @@ vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm, uint32_t ns)
 //
 
 bool
-vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm, uint32_t ns)
+vscp_setEventExDateTime(vscpEventEx *pex, struct tm *ptm, uint32_t ns)
 {
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
@@ -6482,23 +6508,23 @@ vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm, uint32_t ns)
   }
 
   // Check frame version
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: convert struct tm to nanoseconds since epoch + subsecond ns
     time_t t               = timegm(ptm);
-    pEventEx->timestamp_ns = (uint64_t) t * 1000000000ULL + ns;
-    pEventEx->year         = 0xffff;
-    pEventEx->month        = 0xff;
+    pex->timestamp_ns = (uint64_t) t * 1000000000ULL + ns;
+    pex->year         = 0xffff;
+    pex->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields (no subsecond precision)
-    pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon + 1;
-    pEventEx->day    = ptm->tm_mday;
-    pEventEx->hour   = ptm->tm_hour;
-    pEventEx->minute = ptm->tm_min;
-    pEventEx->second = ptm->tm_sec;
+    pex->year   = ptm->tm_year + 1900;
+    pex->month  = ptm->tm_mon + 1;
+    pex->day    = ptm->tm_mday;
+    pex->hour   = ptm->tm_hour;
+    pex->minute = ptm->tm_min;
+    pex->second = ptm->tm_sec;
   }
 
   return true;
@@ -6509,9 +6535,9 @@ vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm, uint32_t ns)
 //
 
 bool
-vscp_setEventToNow(vscpEvent *pEvent)
+vscp_setEventToNow(vscpEvent *pev)
 {
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -6527,22 +6553,22 @@ vscp_setEventToNow(vscpEvent *pEvent)
 #endif
 
   // Check frame version
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: set timestamp_ns (second precision only)
-    pEvent->timestamp_ns = (uint64_t) rawtime * 1000000000ULL;
-    pEvent->year         = 0xffff;
-    pEvent->month        = 0xff;
+    pev->timestamp_ns = (uint64_t) rawtime * 1000000000ULL;
+    pev->year         = 0xffff;
+    pev->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields
-    pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon + 1;
-    pEvent->day    = ptm->tm_mday;
-    pEvent->hour   = ptm->tm_hour;
-    pEvent->minute = ptm->tm_min;
-    pEvent->second = ptm->tm_sec;
+    pev->year   = ptm->tm_year + 1900;
+    pev->month  = ptm->tm_mon + 1;
+    pev->day    = ptm->tm_mday;
+    pev->hour   = ptm->tm_hour;
+    pev->minute = ptm->tm_min;
+    pev->second = ptm->tm_sec;
   }
 
   return true;
@@ -6553,9 +6579,9 @@ vscp_setEventToNow(vscpEvent *pEvent)
 //
 
 bool
-vscp_setEventExToNow(vscpEventEx *pEventEx)
+vscp_setEventExToNow(vscpEventEx *pex)
 {
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
@@ -6571,22 +6597,22 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
 #endif
 
   // Check frame version
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: set timestamp_ns (second precision only)
-    pEventEx->timestamp_ns = (uint64_t) rawtime * 1000000000ULL;
-    pEventEx->year         = 0xffff;
-    pEventEx->month        = 0xff;
+    pex->timestamp_ns = (uint64_t) rawtime * 1000000000ULL;
+    pex->year         = 0xffff;
+    pex->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields
-    pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon + 1;
-    pEventEx->day    = ptm->tm_mday;
-    pEventEx->hour   = ptm->tm_hour;
-    pEventEx->minute = ptm->tm_min;
-    pEventEx->second = ptm->tm_sec;
+    pex->year   = ptm->tm_year + 1900;
+    pex->month  = ptm->tm_mon + 1;
+    pex->day    = ptm->tm_mday;
+    pex->hour   = ptm->tm_hour;
+    pex->minute = ptm->tm_min;
+    pex->second = ptm->tm_sec;
   }
 
   return true;
@@ -6612,7 +6638,7 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
 //
 
 bool
-vscp_doLevel2Filter(const vscpEvent *pEvent, const vscpEventFilter *pFilter)
+vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pFilter)
 {
   // A nullptr filter is wildcard
   if (nullptr == pFilter) {
@@ -6620,28 +6646,28 @@ vscp_doLevel2Filter(const vscpEvent *pEvent, const vscpEventFilter *pFilter)
   }
 
   // Must be a valid message
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Test vscp_class
-  if (0xffff != (uint16_t) (~(pFilter->filter_class ^ pEvent->vscp_class) | ~pFilter->mask_class)) {
+  if (0xffff != (uint16_t) (~(pFilter->filter_class ^ pev->vscp_class) | ~pFilter->mask_class)) {
     return false;
   }
 
   // Test vscp_type
-  if (0xffff != (uint16_t) (~(pFilter->filter_type ^ pEvent->vscp_type) | ~pFilter->mask_type)) {
+  if (0xffff != (uint16_t) (~(pFilter->filter_type ^ pev->vscp_type) | ~pFilter->mask_type)) {
     return false;
   }
 
   // GUID
   for (int i = 0; i < 16; i++) {
-    if (0xff != (uint8_t) (~(pFilter->filter_GUID[i] ^ pEvent->GUID[i]) | ~pFilter->mask_GUID[i]))
+    if (0xff != (uint8_t) (~(pFilter->filter_GUID[i] ^ pev->GUID[i]) | ~pFilter->mask_GUID[i]))
       return false;
   }
 
   // Test priority
-  if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getEventPriority(pEvent)) | ~pFilter->mask_priority)) {
+  if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getEventPriority(pev)) | ~pFilter->mask_priority)) {
     return false;
   }
 
@@ -6653,7 +6679,7 @@ vscp_doLevel2Filter(const vscpEvent *pEvent, const vscpEventFilter *pFilter)
 //
 
 bool
-vscp_doLevel2FilterEx(const vscpEventEx *pEventEx, const vscpEventFilter *pFilter)
+vscp_doLevel2FilterEx(const vscpEventEx *pex, const vscpEventFilter *pFilter)
 {
   // Must be a valid client
   if (nullptr == pFilter) {
@@ -6661,29 +6687,29 @@ vscp_doLevel2FilterEx(const vscpEventEx *pEventEx, const vscpEventFilter *pFilte
   }
 
   // Must be a valid message
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   // Test vscp_class
-  if (0xffff != (uint16_t) (~(pFilter->filter_class ^ pEventEx->vscp_class) | ~pFilter->mask_class)) {
+  if (0xffff != (uint16_t) (~(pFilter->filter_class ^ pex->vscp_class) | ~pFilter->mask_class)) {
     return false;
   }
 
   // Test vscp_type
-  if (0xffff != (uint16_t) (~(pFilter->filter_type ^ pEventEx->vscp_type) | ~pFilter->mask_type)) {
+  if (0xffff != (uint16_t) (~(pFilter->filter_type ^ pex->vscp_type) | ~pFilter->mask_type)) {
     return false;
   }
 
   // GUID
   for (int i = 0; i < 16; i++) {
-    if (0xff != (uint8_t) (~(pFilter->filter_GUID[i] ^ pEventEx->GUID[i]) | ~pFilter->mask_GUID[i])) {
+    if (0xff != (uint8_t) (~(pFilter->filter_GUID[i] ^ pex->GUID[i]) | ~pFilter->mask_GUID[i])) {
       return false;
     }
   }
 
   // Test priority
-  if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getEventExPriority(pEventEx)) | ~pFilter->mask_priority)) {
+  if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getEventExPriority(pex)) | ~pFilter->mask_priority)) {
     return false;
   }
 
@@ -7231,7 +7257,7 @@ vscp_writeFilterMaskToJSON(vscpEventFilter *pFilter, std::string &strFilter)
 //
 
 bool
-vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsigned char *pGUID)
+vscp_convertCanalToEvent(vscpEvent *pev, const canalMsg *pcanalMsg, unsigned char *pGUID)
 {
   // Must be valid pointers
   if (nullptr == pGUID) {
@@ -7242,14 +7268,14 @@ vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsig
     return false;
   }
 
-  if (nullptr == pvscpEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Copy in i/f GUID
-  memcpy(pvscpEvent->GUID, pGUID, 16);
+  memcpy(pev->GUID, pGUID, 16);
 
-  pvscpEvent->head = 0;
+  pev->head = 0;
 
   if (pcanalMsg->sizeData > 8) {
     return false;
@@ -7258,40 +7284,40 @@ vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsig
   if (pcanalMsg->sizeData > 0) {
 
     // Allocate storage for data
-    pvscpEvent->pdata = new uint8_t[pcanalMsg->sizeData];
+    pev->pdata = new uint8_t[pcanalMsg->sizeData];
 
-    if (nullptr != pvscpEvent->pdata) {
+    if (nullptr != pev->pdata) {
       // Assign size (max 8 bytes it's CAN... )
-      pvscpEvent->sizeData = pcanalMsg->sizeData;
-      memcpy(pvscpEvent->pdata, pcanalMsg->data, pcanalMsg->sizeData);
+      pev->sizeData = pcanalMsg->sizeData;
+      memcpy(pev->pdata, pcanalMsg->data, pcanalMsg->sizeData);
     }
     else {
-      pvscpEvent->sizeData = 0;
+      pev->sizeData = 0;
     }
   }
   else {
-    pvscpEvent->pdata    = nullptr;
-    pvscpEvent->sizeData = 0;
+    pev->pdata    = nullptr;
+    pev->sizeData = 0;
   }
 
   // Build ID
-  pvscpEvent->head = vscp_getHeadFromCANALid(pcanalMsg->id);
+  pev->head = vscp_getHeadFromCANALid(pcanalMsg->id);
   if (pcanalMsg->id & 0x02000000) {
-    pvscpEvent->head |= VSCP_HEADER_HARD_CODED;
+    pev->head |= VSCP_HEADER_HARD_CODED;
   }
-  pvscpEvent->head |= VSCP_HEADER16_FRAME_VERSION_UNIX_NS; // Set frame type 2 (UNIX_NS)
-  pvscpEvent->vscp_class = vscp_getVscpClassFromCANALid(pcanalMsg->id);
-  pvscpEvent->vscp_type  = vscp_getVscpTypeFromCANALid(pcanalMsg->id);
+  pev->head |= VSCP_HEADER16_FRAME_VERSION_UNIX_NS; // Set frame type 2 (UNIX_NS)
+  pev->vscp_class = vscp_getVscpClassFromCANALid(pcanalMsg->id);
+  pev->vscp_type  = vscp_getVscpTypeFromCANALid(pcanalMsg->id);
 
   // Timestamp
-  vscp_setEventDateTimeBlockToNow(pvscpEvent);
-  pvscpEvent->timestamp = pcanalMsg->timestamp;
+  vscp_setEventDateTimeBlockToNow(pev);
+  pev->timestamp = pcanalMsg->timestamp;
 
   // Date/time block
-  vscp_setEventToNow(pvscpEvent);
+  vscp_setEventToNow(pev);
 
   // Set nickname id
-  pvscpEvent->GUID[15] = (unsigned char) (0xff & pcanalMsg->id);
+  pev->GUID[15] = (unsigned char) (0xff & pcanalMsg->id);
 
   return true;
 }
@@ -7301,14 +7327,15 @@ vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsig
 //
 
 bool
-vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx, const canalMsg *pcanalMsg, unsigned char *pGUID)
+vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned char *pGUID)
 {
-  vscpEvent *pEvent = new vscpEvent;
-  bool rv           = vscp_convertCanalToEvent(pEvent, pcanalMsg, pGUID);
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  bool rv           = vscp_convertCanalToEvent(pev, pcanalMsg, pGUID);
 
   if (rv) {
-    vscp_convertEventToEventEx(pvscpEventEx, pEvent);
-    vscp_deleteEvent(pEvent);
+    vscp_convertEventToEventEx(pex, pev);
+    vscp_deleteEvent(pev);
   }
 
   return rv;
@@ -7319,7 +7346,7 @@ vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx, const canalMsg *pcanalMsg,
 //
 
 bool
-vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8_t /*mode*/)
+vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mode*/)
 {
   unsigned char nodeid = 0;
   short sizeData       = 0;
@@ -7330,30 +7357,30 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
     return false;
   }
 
-  if (nullptr == pvscpEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
-  sizeData   = pvscpEvent->sizeData;
-  vscp_class = pvscpEvent->vscp_class;
-  nodeid     = pvscpEvent->GUID[15]; // Event hold node id
+  sizeData   = pev->sizeData;
+  vscp_class = pev->vscp_class;
+  nodeid     = pev->GUID[15]; // Event hold node id
 
-  pcanalMsg->obid  = pvscpEvent->obid;
+  pcanalMsg->obid  = pev->obid;
   pcanalMsg->flags = 0;
 
   // Level II events with class == 512-1023 is recognized by the daemon and
   // sent to the correct interface as Level I events if the interface
   // is addressed by the client.
-  if ((pvscpEvent->vscp_class >= 512) && (pvscpEvent->vscp_class < 1024) && (pvscpEvent->sizeData >= 16)) {
+  if ((pev->vscp_class >= 512) && (pev->vscp_class < 1024) && (pev->sizeData >= 16)) {
 
     // Destination guid (interface) is not needed anymore
-    sizeData = pvscpEvent->sizeData - 16;
+    sizeData = pev->sizeData - 16;
     if (sizeData) {
-      memcpy(pvscpEvent->pdata, pvscpEvent->pdata + 16, sizeData);
+      memcpy(pev->pdata, pev->pdata + 16, sizeData);
     }
 
     // Make level I class
-    vscp_class = pvscpEvent->vscp_class - 512;
+    vscp_class = pev->vscp_class - 512;
   }
 
   // Always extended
@@ -7366,24 +7393,24 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
     pcanalMsg->sizeData = 8;
   }
 
-  unsigned char priority = ((pvscpEvent->head & VSCP_MASK_PRIORITY) >> 5);
+  unsigned char priority = ((pev->head & VSCP_MASK_PRIORITY) >> 5);
 
   // unsigned long t1 = (unsigned long)priority << 20;
   // unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
   // unsigned long t3 = (unsigned long)pvscpMsg->vscp_type << 8;
   pcanalMsg->id = ((unsigned long) priority << 26) | ((unsigned long) vscp_class << 16) |
-                  ((unsigned long) pvscpEvent->vscp_type << 8) | nodeid;
+                  ((unsigned long) pev->vscp_type << 8) | nodeid;
 
   // Normally we are the host of hosts (nodeid = 0)
   // but for class=512-1023 events nodeid
   // is present in event GUID LSB
 
-  if (pvscpEvent->head & VSCP_HEADER_HARD_CODED) {
+  if (pev->head & VSCP_HEADER_HARD_CODED) {
     pcanalMsg->id |= VSCP_CAN_ID_HARD_CODED;
   }
 
-  if (nullptr != pvscpEvent->pdata) {
-    memcpy(pcanalMsg->data, pvscpEvent->pdata, pcanalMsg->sizeData);
+  if (nullptr != pev->pdata) {
+    memcpy(pcanalMsg->data, pev->pdata, pcanalMsg->sizeData);
   }
 
   return true;
@@ -7394,7 +7421,7 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
 //
 
 bool
-vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx, uint8_t /*mode*/)
+vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pex, uint8_t /*mode*/)
 {
   bool rv;
 
@@ -7402,22 +7429,23 @@ vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx,
     return false;
   }
 
-  if (nullptr == pvscpEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent();
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
 
-  if (!vscp_convertEventExToEvent(pEvent, pvscpEventEx)) {
-    vscp_deleteEvent(pEvent);
+  if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent(pev);
     return false;
   }
 
-  rv = vscp_convertEventToCanal(pcanalMsg, pEvent);
-  vscp_deleteEvent(pEvent);
+  rv = vscp_convertEventToCanal(pcanalMsg, pev);
+  vscp_deleteEvent(pev);
 
   return rv;
 }
@@ -7427,12 +7455,12 @@ vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx,
 //
 
 bool
-vscp_writeDataToString(std::string &str, const vscpEvent *pEvent, bool bUseHtmlBreak, bool bBreak)
+vscp_writeDataToString(std::string &str, const vscpEvent *pev, bool bUseHtmlBreak, bool bBreak)
 {
   std::string wrk, strBreak;
 
   // Check pointers
-  if (nullptr == pEvent->pdata) {
+  if (nullptr == pev->pdata) {
     return false;
   }
 
@@ -7445,11 +7473,11 @@ vscp_writeDataToString(std::string &str, const vscpEvent *pEvent, bool bUseHtmlB
     strBreak = "\r\n";
   }
 
-  for (int i = 0; i < pEvent->sizeData; i++) {
+  for (int i = 0; i < pev->sizeData; i++) {
 
-    wrk = vscp_str_format("0x%02X", pEvent->pdata[i]);
+    wrk = vscp_str_format("0x%02X", pev->pdata[i]);
 
-    if (i < (pEvent->sizeData - 1)) {
+    if (i < (pev->sizeData - 1)) {
       wrk += ",";
     }
 
@@ -7521,37 +7549,37 @@ vscp_writeDataWithSizeToString(std::string &str,
 //
 
 bool
-vscp_setEventDataFromString(vscpEvent *pEvent, const std::string &str)
+vscp_setEventDataFromString(vscpEvent *pev, const std::string &str)
 {
   std::deque<std::string> tokens;
 
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   vscp_split(tokens, str, ",");
 
   uint8_t data[VSCP_MAX_DATA];
-  pEvent->sizeData = 0;
+  pev->sizeData = 0;
 
   while (!tokens.empty()) {
     std::string token = tokens.front();
     tokens.pop_front();
-    data[pEvent->sizeData++] = vscp_readStringValue(token);
-    if (pEvent->sizeData >= VSCP_MAX_DATA) {
+    data[pev->sizeData++] = vscp_readStringValue(token);
+    if (pev->sizeData >= VSCP_MAX_DATA) {
       break;
     }
   }
 
-  if (pEvent->sizeData > 0) {
-    pEvent->pdata = new uint8_t[pEvent->sizeData];
-    if (nullptr != pEvent->pdata) {
-      memcpy(pEvent->pdata, &data, pEvent->sizeData);
+  if (pev->sizeData > 0) {
+    pev->pdata = new uint8_t[pev->sizeData];
+    if (nullptr != pev->pdata) {
+      memcpy(pev->pdata, &data, pev->sizeData);
     }
   }
   else {
-    pEvent->pdata = nullptr;
+    pev->pdata = nullptr;
   }
 
   return true;
@@ -7562,24 +7590,24 @@ vscp_setEventDataFromString(vscpEvent *pEvent, const std::string &str)
 //
 
 bool
-vscp_setEventExDataFromString(vscpEventEx *pEventEx, const std::string &str)
+vscp_setEventExDataFromString(vscpEventEx *pex, const std::string &str)
 {
   std::deque<std::string> tokens;
 
   // Check pointers
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   vscp_split(tokens, str, ",");
 
-  pEventEx->sizeData = 0;
+  pex->sizeData = 0;
   while (!tokens.empty()) {
     std::string token = tokens.front();
     tokens.pop_front();
-    pEventEx->data[pEventEx->sizeData] = vscp_readStringValue(token);
-    pEventEx->sizeData++;
-    if (pEventEx->sizeData >= VSCP_MAX_DATA) {
+    pex->data[pex->sizeData] = vscp_readStringValue(token);
+    pex->sizeData++;
+    if (pex->sizeData >= VSCP_MAX_DATA) {
       break;
     }
   }
@@ -7704,21 +7732,21 @@ vscp_makeTimeStampNs(void)
 //
 
 bool
-vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
+vscp_setEventDateTimeBlockToNow(vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Check frame version
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: set timestamp_ns to current time
-    pEvent->timestamp_ns = vscp_makeTimeStampNs();
-    pEvent->year         = 0xffff;
-    pEvent->month        = 0xff;
+    pev->timestamp_ns = vscp_makeTimeStampNs();
+    pev->year         = 0xffff;
+    pev->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields
@@ -7733,12 +7761,12 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
     ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
-    pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon + 1;
-    pEvent->day    = ptm->tm_mday;
-    pEvent->hour   = ptm->tm_hour;
-    pEvent->minute = ptm->tm_min;
-    pEvent->second = ptm->tm_sec;
+    pev->year   = ptm->tm_year + 1900;
+    pev->month  = ptm->tm_mon + 1;
+    pev->day    = ptm->tm_mday;
+    pev->hour   = ptm->tm_hour;
+    pev->minute = ptm->tm_min;
+    pev->second = ptm->tm_sec;
   }
 
   return true;
@@ -7749,21 +7777,21 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
 //
 
 bool
-vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
+vscp_setEventExDateTimeBlockToNow(vscpEventEx *pex)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   // Check frame version
-  uint16_t frameVersion = pEventEx->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pex->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // UNIX_NS frame: set timestamp_ns to current time
-    pEventEx->timestamp_ns = vscp_makeTimeStampNs();
-    pEventEx->year         = 0xffff;
-    pEventEx->month        = 0xff;
+    pex->timestamp_ns = vscp_makeTimeStampNs();
+    pex->year         = 0xffff;
+    pex->month        = 0xff;
   }
   else {
     // ORIGINAL frame: set individual date/time fields
@@ -7778,12 +7806,12 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
     ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
-    pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon + 1;
-    pEventEx->day    = ptm->tm_mday;
-    pEventEx->hour   = ptm->tm_hour;
-    pEventEx->minute = ptm->tm_min;
-    pEventEx->second = ptm->tm_sec;
+    pex->year   = ptm->tm_year + 1900;
+    pex->month  = ptm->tm_mon + 1;
+    pex->day    = ptm->tm_mday;
+    pex->hour   = ptm->tm_hour;
+    pex->minute = ptm->tm_min;
+    pex->second = ptm->tm_sec;
   }
 
   return true;
@@ -7799,55 +7827,55 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertEventToString(std::string &str, const vscpEvent *pEvent)
+vscp_convertEventToString(std::string &str, const vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEvent->timestamp_ns;
+    timestamp_ns = pev->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEvent->year - 1900;
-    tm.tm_mon  = pEvent->month - 1;
-    tm.tm_mday = pEvent->day;
-    tm.tm_hour = pEvent->hour;
-    tm.tm_min  = pEvent->minute;
-    tm.tm_sec  = pEvent->second;
+    tm.tm_year = pev->year - 1900;
+    tm.tm_mon  = pev->month - 1;
+    tm.tm_mday = pev->day;
+    tm.tm_hour = pev->hour;
+    tm.tm_min  = pev->minute;
+    tm.tm_sec  = pev->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEvent->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pev->timestamp * 1000ULL;
   }
 
   // Set head with UNIX_NS frame version
-  uint16_t head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Always output with nanosecond timestamp
   str = vscp_str_format("%hu,%hu,%hu,%lu,,%llu,",
                         (unsigned short) head,
-                        (unsigned short) pEvent->vscp_class,
-                        (unsigned short) pEvent->vscp_type,
-                        (unsigned long) pEvent->obid,
+                        (unsigned short) pev->vscp_class,
+                        (unsigned short) pev->vscp_type,
+                        (unsigned long) pev->obid,
                         (unsigned long long) timestamp_ns);
 
   std::string strGUID;
-  vscp_writeGuidToString(strGUID, pEvent);
+  vscp_writeGuidToString(strGUID, pev);
   str += strGUID;
-  if (pEvent->sizeData) {
+  if (pev->sizeData) {
     str += ",";
 
     std::string strData;
-    vscp_writeDataToString(strData, pEvent);
+    vscp_writeDataToString(strData, pev);
     str += strData;
   }
 
@@ -7859,10 +7887,10 @@ vscp_convertEventToString(std::string &str, const vscpEvent *pEvent)
 //
 
 std::string
-vscp_getEventAsString(const vscpEvent *pEvent)
+vscp_getEventAsString(const vscpEvent *pev)
 {
   std::string str;
-  vscp_convertEventToString(str, pEvent);
+  vscp_convertEventToString(str, pev);
   return str;
 }
 
@@ -7873,17 +7901,17 @@ vscp_getEventAsString(const vscpEvent *pEvent)
 //
 
 bool
-vscp_convertEventExToString(std::string &str, const vscpEventEx *pEventEx)
+vscp_convertEventExToString(std::string &str, const vscpEventEx *pex)
 {
   vscpEvent event;
   event.pdata = nullptr;
 
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscp_convertEventExToEvent(&event, pEventEx);
+  vscp_convertEventExToEvent(&event, pex);
   vscp_convertEventToString(str, &event);
   if (nullptr != event.pdata) {
     delete event.pdata;
@@ -7897,10 +7925,10 @@ vscp_convertEventExToString(std::string &str, const vscpEventEx *pEventEx)
 //
 
 std::string
-vscp_getEventExAsString(const vscpEventEx *pEventEx)
+vscp_getEventExAsString(const vscpEventEx *pex)
 {
   std::string str;
-  vscp_convertEventExToString(str, pEventEx);
+  vscp_convertEventExToString(str, pex);
   return str;
 }
 
@@ -7916,10 +7944,10 @@ vscp_getEventExAsString(const vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
+vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -7932,20 +7960,20 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
   if (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
-    pEvent->head = vscp_readStringValue(str);
+    pev->head = vscp_readStringValue(str);
   }
   else {
     return false;
   }
 
   // Always set UNIX_NS frame version (clear old frame version bits, set UNIX_NS)
-  pEvent->head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  pev->head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
 
   // Get Class
   if (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
-    pEvent->vscp_class = vscp_readStringValue(str);
+    pev->vscp_class = vscp_readStringValue(str);
   }
   else {
     return false;
@@ -7955,7 +7983,7 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
   if (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
-    pEvent->vscp_type = vscp_readStringValue(str);
+    pev->vscp_type = vscp_readStringValue(str);
   }
   else {
     return false;
@@ -7965,7 +7993,7 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
   if (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
-    pEvent->obid = vscp_readStringValue(str);
+    pev->obid = vscp_readStringValue(str);
   }
   else {
     return false;
@@ -8000,64 +8028,64 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
     memset(&tm, 0, sizeof(tm));
     vscp_parseISOCombined(&tm, strDatetime);
     time_t t             = timegm(&tm);
-    pEvent->timestamp_ns = (uint64_t) t * 1000000000ULL;
+    pev->timestamp_ns = (uint64_t) t * 1000000000ULL;
     // If timestamp field has a value, it may contain subsecond info
     // (microseconds from old format) - add it as nanoseconds
     if (timestampValue > 0 && timestampValue < 1000000000ULL) {
       // Looks like microseconds or less - treat as microseconds
-      pEvent->timestamp_ns += timestampValue * 1000ULL;
+      pev->timestamp_ns += timestampValue * 1000ULL;
     }
   }
   else {
     // No datetime: timestamp field is the nanosecond timestamp
     if (timestampValue > 0) {
-      pEvent->timestamp_ns = timestampValue;
+      pev->timestamp_ns = timestampValue;
     }
     else {
       // Generate current timestamp
-      pEvent->timestamp_ns = vscp_makeTimeStampNs();
+      pev->timestamp_ns = vscp_makeTimeStampNs();
     }
   }
 
   // Set UNIX_NS markers
-  pEvent->year  = 0xffff;
-  pEvent->month = 0xff;
+  pev->year  = 0xffff;
+  pev->month = 0xff;
 
   // Get GUID
   std::string strGUID;
   if (!tokens.empty()) {
     strGUID = tokens.front();
     tokens.pop_front();
-    vscp_setEventGuidFromString(pEvent, strGUID);
+    vscp_setEventGuidFromString(pev, strGUID);
   }
   else {
     return false;
   }
 
   // Handle data
-  pEvent->sizeData = 0;
+  pev->sizeData = 0;
 
   char data[512];
   while (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
-    data[pEvent->sizeData] = vscp_readStringValue(str);
-    pEvent->sizeData++;
+    data[pev->sizeData] = vscp_readStringValue(str);
+    pev->sizeData++;
   }
 
   // OK add in the data
-  if (pEvent->sizeData) {
-    uint8_t *pData = new uint8_t[pEvent->sizeData];
+  if (pev->sizeData) {
+    uint8_t *pData = new uint8_t[pev->sizeData];
     if (nullptr != pData) {
-      memcpy(pData, data, pEvent->sizeData);
-      pEvent->pdata = pData;
+      memcpy(pData, data, pev->sizeData);
+      pev->pdata = pData;
     }
     else {
       return false;
     }
   }
   else {
-    pEvent->pdata = nullptr;
+    pev->pdata = nullptr;
   }
 
   return true;
@@ -8071,14 +8099,14 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &strEvent)
 //
 
 bool
-vscp_convertStringToEventEx(vscpEventEx *pEventEx, const std::string &strEvent)
+vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &strEvent)
 {
   bool rv;
   vscpEvent event;
 
   // Parse the string data
   rv = vscp_convertStringToEvent(&event, strEvent);
-  vscp_convertEventToEventEx(pEventEx, &event);
+  vscp_convertEventToEventEx(pex, &event);
 
   // Remove possible data
   if (event.sizeData) {
@@ -8194,15 +8222,15 @@ vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token)
 //
 
 size_t
-vscp_getFrameSizeFromEvent(vscpEvent *pEvent)
+vscp_getFrameSizeFromEvent(vscpEvent *pev)
 {
   // Check pointer
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   size_t size = 1 +                                                             // Packet type
-                VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 2; // CRC
+                VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 2; // CRC
   return size;
 }
 
@@ -8211,15 +8239,15 @@ vscp_getFrameSizeFromEvent(vscpEvent *pEvent)
 //
 
 size_t
-vscp_getFrameSizeFromEventEx(vscpEventEx *pEventEx)
+vscp_getFrameSizeFromEventEx(vscpEventEx *pex)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   size_t size = 1 +                                                               // Packet type
-                VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEventEx->sizeData + 2; // CRC
+                VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pex->sizeData + 2; // CRC
   return size;
 }
 
@@ -8231,25 +8259,25 @@ vscp_getFrameSizeFromEventEx(vscpEventEx *pEventEx)
 //
 
 bool
-vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEvent *pEvent)
+vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEvent *pev)
 {
   // Check pointers
   if (nullptr == frame) {
     return false;
   }
 
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
   // Can't have data size with invalid data pointer
-  if (pEvent->sizeData && (nullptr == pEvent->pdata)) {
+  if (pev->sizeData && (nullptr == pev->pdata)) {
     return false;
   }
 
   // Always write packet format 1 - UNIX_NS nanosecond timestamp
   size_t calcSize = 1 +                                                             // Packet type
-                    VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 2; // CRC
+                    VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 2; // CRC
 
   if (len < calcSize) {
     return false;
@@ -8257,32 +8285,32 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
 
   // Determine the nanosecond timestamp to use
   uint64_t timestamp_ns;
-  uint16_t frameVersion = pEvent->head & VSCP_HEADER16_FRAME_VERSION_MASK;
+  uint16_t frameVersion = pev->head & VSCP_HEADER16_FRAME_VERSION_MASK;
 
   if (VSCP_HEADER16_FRAME_VERSION_UNIX_NS == frameVersion) {
     // Already has nanosecond timestamp
-    timestamp_ns = pEvent->timestamp_ns;
+    timestamp_ns = pev->timestamp_ns;
   }
   else {
     // Original frame format - convert date/time fields to nanoseconds
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
-    tm.tm_year = pEvent->year - 1900;
-    tm.tm_mon  = pEvent->month - 1;
-    tm.tm_mday = pEvent->day;
-    tm.tm_hour = pEvent->hour;
-    tm.tm_min  = pEvent->minute;
-    tm.tm_sec  = pEvent->second;
+    tm.tm_year = pev->year - 1900;
+    tm.tm_mon  = pev->month - 1;
+    tm.tm_mday = pev->day;
+    tm.tm_hour = pev->hour;
+    tm.tm_min  = pev->minute;
+    tm.tm_sec  = pev->second;
     time_t t   = timegm(&tm);
     // Convert to nanoseconds and add microsecond timestamp as microseconds
-    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pEvent->timestamp * 1000ULL;
+    timestamp_ns = (uint64_t) t * 1000000000ULL + (uint64_t) pev->timestamp * 1000ULL;
   }
 
   // Frame type - set packet type 1 in upper nibble
   frame[VSCP_BINARY_PACKET_FRAME0_POS_PKTTYPE] = (pkttype & 0x0f) | (VSCP_MULTICAST_TYPE_EVENT1 << 4);
 
   // Header - set frame version bit to UNIX_NS
-  uint16_t head = (pEvent->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  uint16_t head = (pev->head & ~VSCP_HEADER16_FRAME_VERSION_MASK) | VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
   frame[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_MSB] = (head >> 8) & 0xff;
   frame[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_LSB] = head & 0xff;
 
@@ -8302,42 +8330,42 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
   frame[VSCP_BINARY_PACKET_FRAME1_POS_RESERVED3] = 0;
 
   // Class
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_MSB] = (pEvent->vscp_class >> 8) & 0xff;
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_LSB] = pEvent->vscp_class & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_MSB] = (pev->vscp_class >> 8) & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_LSB] = pev->vscp_class & 0xff;
 
   // Type
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_MSB] = (pEvent->vscp_type >> 8) & 0xff;
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_LSB] = pEvent->vscp_type & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_MSB] = (pev->vscp_type >> 8) & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_LSB] = pev->vscp_type & 0xff;
 
   // GUID
-  memcpy(frame + VSCP_BINARY_PACKET_FRAME0_POS_GUID, pEvent->GUID, 16);
+  memcpy(frame + VSCP_BINARY_PACKET_FRAME0_POS_GUID, pev->GUID, 16);
 
   // Size
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_MSB] = (pEvent->sizeData >> 8) & 0xff;
-  frame[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB] = pEvent->sizeData & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_MSB] = (pev->sizeData >> 8) & 0xff;
+  frame[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB] = pev->sizeData & 0xff;
 
   // Data
-  if (pEvent->sizeData) {
-    memcpy(frame + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pEvent->pdata, pEvent->sizeData);
+  if (pev->sizeData) {
+    memcpy(frame + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pev->pdata, pev->sizeData);
   }
 
   // Calculate CRC
-  crc framecrc = crcFast((unsigned char const *) frame + 1, VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData);
+  crc framecrc = crcFast((unsigned char const *) frame + 1, VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData);
 
   // CRC
-  frame[1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData]     = (framecrc >> 8) & 0xff;
-  frame[1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 1] = framecrc & 0xff;
+  frame[1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData]     = (framecrc >> 8) & 0xff;
+  frame[1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 1] = framecrc & 0xff;
 
 #if 0
     printf("CRC1 %02X %02X\n",
-                frame[ 1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData ],
-                frame[ 1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 1 ] );
+                frame[ 1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData ],
+                frame[ 1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 1 ] );
     printf("CRC2 %02X %02X\n",
                 ( framecrc >> 8 ) & 0xff,
                 framecrc & 0xff );
     crc nnnn = crcFast( frame+1,
                             VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH +
-                            pEvent->sizeData );
+                            pev->sizeData );
     printf("CRC3 %02X %02X\n",
                 ( nnnn >> 8 ) & 0xff,
                 nnnn & 0xff );
@@ -8352,31 +8380,31 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
 //
 
 bool
-vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx)
+vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEventEx *pex)
 {
-  vscpEvent *pEvent;
+  vscpEvent *pev;
 
-  pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
 
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
   // Check pointer (rest is checked in vscp_convertEventExToEvent)
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
   // Convert eventEx to event
-  if (!vscp_convertEventExToEvent(pEvent, pEventEx)) {
+  if (!vscp_convertEventExToEvent(pev, pex)) {
     return false;
   }
 
-  if (!vscp_writeEventToFrame(frame, len, pkttype, pEvent)) {
+  if (!vscp_writeEventToFrame(frame, len, pkttype, pev)) {
     return false;
   }
-  vscp_deleteEvent_v2(&pEvent);
+  vscp_deleteEvent_v2(&pev);
 
   return true;
 }
@@ -8388,10 +8416,10 @@ vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscp
 //
 
 bool
-vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
+vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
 {
   // Check pointers
-  if (nullptr == pEvent) {
+  if (nullptr == pev) {
     return false;
   }
 
@@ -8444,33 +8472,33 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       }
     }
 
-    pEvent->sizeData =
+    pev->sizeData =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB];
 
     // Allocate data
-    if (pEvent->sizeData) {
-      if (nullptr == (pEvent->pdata = new uint8_t[pEvent->sizeData])) {
+    if (pev->sizeData) {
+      if (nullptr == (pev->pdata = new uint8_t[pev->sizeData])) {
         return false;
       }
       // copy in data
-      memcpy(pEvent->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pEvent->sizeData);
+      memcpy(pev->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pev->sizeData);
     }
     else {
-      pEvent->pdata = nullptr;
+      pev->pdata = nullptr;
     }
 
     // Head
-    pEvent->head =
+    pev->head =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_LSB];
 
     // Copy in GUID
-    memcpy(pEvent->GUID, buf + VSCP_BINARY_PACKET_FRAME0_POS_GUID, 16);
+    memcpy(pev->GUID, buf + VSCP_BINARY_PACKET_FRAME0_POS_GUID, 16);
 
     // Set CRC
-    pEvent->crc = crcFrame;
+    pev->crc = crcFrame;
 
     // Set nanosecond timestamp
-    pEvent->timestamp_ns = ((uint64_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP] << 56) +
+    pev->timestamp_ns = ((uint64_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP] << 56) +
                            ((uint64_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 1] << 48) +
                            ((uint64_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 2] << 40) +
                            ((uint64_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 3] << 32) +
@@ -8480,20 +8508,20 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
                            buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 7];
 
     // If timestamp is zero, set it
-    if (0 == pEvent->timestamp_ns) {
-      pEvent->timestamp_ns = vscp_makeTimeStampNs();
+    if (0 == pev->timestamp_ns) {
+      pev->timestamp_ns = vscp_makeTimeStampNs();
     }
 
     // Set UNIX_NS markers for year/month
-    pEvent->year  = 0xffff;
-    pEvent->month = 0xff;
+    pev->year  = 0xffff;
+    pev->month = 0xff;
 
     // VSCP Class
-    pEvent->vscp_class =
+    pev->vscp_class =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_LSB];
 
     // VSCP Type
-    pEvent->vscp_type =
+    pev->vscp_type =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_LSB];
   }
   else {
@@ -8548,54 +8576,54 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       }
     }
 
-    pEvent->sizeData =
+    pev->sizeData =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB];
 
     // Allocate data
-    if (pEvent->sizeData) {
-      if (nullptr == (pEvent->pdata = new uint8_t[pEvent->sizeData])) {
+    if (pev->sizeData) {
+      if (nullptr == (pev->pdata = new uint8_t[pev->sizeData])) {
         return false;
       }
       // copy in data
-      memcpy(pEvent->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pEvent->sizeData);
+      memcpy(pev->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pev->sizeData);
     }
     else {
-      pEvent->pdata = nullptr;
+      pev->pdata = nullptr;
     }
 
     // Head
-    pEvent->head =
+    pev->head =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_HEAD_LSB];
 
     // Copy in GUID
-    memcpy(pEvent->GUID, buf + VSCP_BINARY_PACKET_FRAME0_POS_GUID, 16);
+    memcpy(pev->GUID, buf + VSCP_BINARY_PACKET_FRAME0_POS_GUID, 16);
 
     // Set CRC
-    pEvent->crc = crcFrame;
+    pev->crc = crcFrame;
 
     // Set timestamp
-    pEvent->timestamp = ((uint32_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP] << 24) +
+    pev->timestamp = ((uint32_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP] << 24) +
                         ((uint32_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 1] << 16) +
                         ((uint32_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 2] << 8) +
                         buf[VSCP_BINARY_PACKET_FRAME0_POS_TIMESTAMP + 3];
 
     // If timestamp is zero, set it
-    if (0 == pEvent->timestamp) {
-      pEvent->timestamp = vscp_makeTimeStamp();
+    if (0 == pev->timestamp) {
+      pev->timestamp = vscp_makeTimeStamp();
     }
 
     // Date/time
-    pEvent->year =
+    pev->year =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_YEAR_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_YEAR_LSB];
-    pEvent->month  = buf[VSCP_BINARY_PACKET_FRAME0_POS_MONTH];
-    pEvent->day    = buf[VSCP_BINARY_PACKET_FRAME0_POS_DAY];
-    pEvent->hour   = buf[VSCP_BINARY_PACKET_FRAME0_POS_HOUR];
-    pEvent->minute = buf[VSCP_BINARY_PACKET_FRAME0_POS_MINUTE];
-    pEvent->second = buf[VSCP_BINARY_PACKET_FRAME0_POS_SECOND];
+    pev->month  = buf[VSCP_BINARY_PACKET_FRAME0_POS_MONTH];
+    pev->day    = buf[VSCP_BINARY_PACKET_FRAME0_POS_DAY];
+    pev->hour   = buf[VSCP_BINARY_PACKET_FRAME0_POS_HOUR];
+    pev->minute = buf[VSCP_BINARY_PACKET_FRAME0_POS_MINUTE];
+    pev->second = buf[VSCP_BINARY_PACKET_FRAME0_POS_SECOND];
 
     // If date/time field is zero set GMT now
-    if ((0 == pEvent->year) && (0 == pEvent->month) && (0 == pEvent->day) && (0 == pEvent->hour) &&
-        (0 == pEvent->minute) && (0 == pEvent->second)) {
+    if ((0 == pev->year) && (0 == pev->month) && (0 == pev->day) && (0 == pev->hour) &&
+        (0 == pev->minute) && (0 == pev->second)) {
 
       time_t rawtime;
       struct tm *ptm;
@@ -8608,25 +8636,25 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
       ptm = gmtime_r(&rawtime, &tbuf);
 #endif
 
-      pEvent->year   = ptm->tm_year + 1900;
-      pEvent->month  = ptm->tm_mon + 1;
-      pEvent->day    = ptm->tm_mday;
-      pEvent->hour   = ptm->tm_hour;
-      pEvent->minute = ptm->tm_min;
-      pEvent->second = ptm->tm_sec;
+      pev->year   = ptm->tm_year + 1900;
+      pev->month  = ptm->tm_mon + 1;
+      pev->day    = ptm->tm_mday;
+      pev->hour   = ptm->tm_hour;
+      pev->minute = ptm->tm_min;
+      pev->second = ptm->tm_sec;
     }
 
     // VSCP Class
-    pEvent->vscp_class =
+    pev->vscp_class =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_CLASS_LSB];
 
     // VSCP Type
-    pEvent->vscp_type =
+    pev->vscp_type =
       ((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_TYPE_LSB];
   }
 
   // obid - set to zero so interface fill it in
-  pEvent->obid = 0;
+  pev->obid = 0;
 
   return true;
 }
@@ -8638,31 +8666,32 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
 //
 
 bool
-vscp_getEventExFromFrame(vscpEventEx *pEventEx, const uint8_t *frame, size_t len)
+vscp_getEventExFromFrame(vscpEventEx *pex, const uint8_t *frame, size_t len)
 {
   // Check pointer
-  if (nullptr == pEventEx) {
+  if (nullptr == pex) {
     return false;
   }
 
-  vscpEvent *pEvent = new vscpEvent;
-  if (nullptr == pEvent) {
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev)) { return false; }
+  if (nullptr == pev) {
     return false;
   }
-  pEvent->pdata = nullptr;
+  pev->pdata = nullptr;
 
-  if (!vscp_getEventFromFrame(pEvent, frame, len)) {
-    vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_getEventFromFrame(pev, frame, len)) {
+    vscp_deleteEvent_v2(&pev);
     return false;
   }
 
   // Convert event to eventEx
-  if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
-    vscp_deleteEvent_v2(&pEvent);
+  if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return false;
   }
 
-  vscp_deleteEvent_v2(&pEvent);
+  vscp_deleteEvent_v2(&pev);
   return true;
 }
 

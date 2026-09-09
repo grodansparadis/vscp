@@ -129,8 +129,8 @@ ws2_client_data_handler(struct mg_connection *conn,
                 pClient->m_evcallback(pev, pClient->m_callbackObject);
             }
             else if (pClient->isExCallback()) {
-                vscpEventEx *pex = new vscpEventEx;
-                if ( NULL == pex ) return 0;
+              vscpEventEx *pex = NULL;
+              if ( !vscp_newEventEx(&pex, 0) ) return 0;
                 std::string str = j["event"].dump();
                 if ( !vscp_convertJSONToEventEx(pex, str) ) return 1;
                 pClient->m_excallback(pex, pClient->m_callbackObject);

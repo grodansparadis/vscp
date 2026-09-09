@@ -1036,12 +1036,12 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict);
 /*!
   @fn vscp_getMeasurementDataCoding
   Fetch data coding byte from measurement events
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @return Measurement data coding byte or zero if its not an
   event with a data coding.
 */
 uint8_t
-vscp_getMeasurementDataCoding(const vscpEvent *pEvent);
+vscp_getMeasurementDataCoding(const vscpEvent *pev);
 
 /*!
   @fn vscp_getDataCodingBitArray
@@ -1103,12 +1103,12 @@ vscp_getDataCodingString(std::string &strResult, const unsigned char *pCode, uns
   CLASS2_MEASUREMENT_STR
 
   @param str String that holds the result
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @return true on success, false on failure.
 */
 
 bool
-vscp_getMeasurementAsString(std::string &str, const vscpEvent *pEvent);
+vscp_getMeasurementAsString(std::string &str, const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementAsStringEx
@@ -1123,12 +1123,12 @@ vscp_getMeasurementAsString(std::string &str, const vscpEvent *pEvent);
   CLASS2_MEASUREMENT_FLOAT
   CLASS2_MEASUREMENT_STR
 
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @param pvalue Pointer to double that holds the result
   @return true on success, false on failure.
 */
 bool
-vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent);
+vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementAsDoubleEx
@@ -1143,121 +1143,121 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pEvent);
   CLASS2_MEASUREMENT_FLOAT
   CLASS2_MEASUREMENT_STR
 
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @param pvalue Pointer to double that holds the result
   @return true on success, false on failure.
 */
 bool
-vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pEventEx);
+vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex);
 
 /*!
   @fn vscp_getMeasurementUnit
   Get measurement unit for any of the valid measurement events.
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @return Measurement unit or -1 for error (event that is not a
   measurement).
  */
 int
-vscp_getMeasurementUnit(const vscpEvent *pEvent);
+vscp_getMeasurementUnit(const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementUnitEx
   Get measurement unit for any of the valid measurement events.
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @return Measurement unit or -1 for error (event that is not a
   measurement).
  */
 int
-vscp_getMeasurementUnitEx(const vscpEventEx *pEventEx);
+vscp_getMeasurementUnitEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_getMeasurementSensorIndex
   Get measurement sensor index for any of the valid measurement events.
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @return Measurement sensor index or -1 for error or for event that is not
   a measurement or measurement event that does not have a sensor index.
  */
 int
-vscp_getMeasurementSensorIndex(const vscpEvent *pEvent);
+vscp_getMeasurementSensorIndex(const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementSensorIndexEx
   Get measurement sensor index for any of the valid measurement events.
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @return Measurement sensor index or -1 for error or for event that is not
   a measurement or measurement event that does not have a sensor index.
  */
 int
-vscp_getMeasurementSensorIndexEx(const vscpEventEx *pEventEx);
+vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_getMeasurementUnit
   Get measurement zone for any of the valid measurement events.
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @return Measurement zone or 0 for error or event that is not a
   measurement or measurement event that does not have a zone.
  */
 int
-vscp_getMeasurementZone(const vscpEvent *pEvent);
+vscp_getMeasurementZone(const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementZoneEx
   Get measurement zone for any of the valid measurement events.
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @return Measurement zone or 0 for error or event that is not a
   measurement or measurement event that does not have a zone.
  */
 int
-vscp_getMeasurementZoneEx(const vscpEventEx *pEventEx);
+vscp_getMeasurementZoneEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_getMeasurementSubZone
   Get measurement subzone for any of the valid measurement events.
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @return Measurement subzone or -1 for error or for event that is not a
   measurement or measurement event that does not have a subzone.
  */
 int
-vscp_getMeasurementSubZone(const vscpEvent *pEvent);
+vscp_getMeasurementSubZone(const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementSubZoneEx
   Get measurement subzone for any of the valid measurement events.
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @return Measurement subzone or -1 for error or for event that is not a
   measurement or measurement event that does not have a subzone.
  */
 int
-vscp_getMeasurementSubZoneEx(const vscpEventEx *pEventEx);
+vscp_getMeasurementSubZoneEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_isMeasurement
  Check if event is a measurement
- * @param pEvent Pointer to VSCP event.
+ * @param pev Pointer to VSCP event.
  * @return Return true if the event is a measurement.
  */
 bool
-vscp_isMeasurement(const vscpEvent *pEvent);
+vscp_isMeasurement(const vscpEvent *pev);
 
 /*!
   @fn vscp_isMeasurementEx
   Check if event is a measurement
-  @param pEventEx Pointer to VSCP event ex.
+  @param pex Pointer to VSCP event ex.
   @return Return true if the event is a measurement.
  */
 bool
-vscp_isMeasurementEx(const vscpEventEx *pEventEx);
+vscp_isMeasurementEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_getMeasurementFloat64AsString
   Get data in the VSCP data coding format to a string. Works for
   CLASS1.MEASUREMENT64, CLASS2_LEVEL1.MEASUREMENT64
-  @param pEvent Pointer to VSCP event.
+  @param pev Pointer to VSCP event.
   @param str String that holds the result
   @return true on success, false on failure.
  */
 bool
-vscp_getMeasurementFloat64AsString(std::string &str, const vscpEvent *pEvent);
+vscp_getMeasurementFloat64AsString(std::string &str, const vscpEvent *pev);
 
 /*!
   @fn vscp_getMeasurementFloat64AsDouble
@@ -1311,7 +1311,7 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
 /*!
   @fn vscp_makeIntegerMeasurementEvent
   Make level I integer measurement event
-  @param pEvent Pointer to event with pdata set to NULL. VSCP_class and
+  @param pev Pointer to event with pdata set to NULL. VSCP_class and
     vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
   @param value Integer value to set
   @param unit Unit for the data. Zero is default.
@@ -1319,12 +1319,12 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
   @return true on success, false on failure.
 */
 bool
-vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit, uint8_t sensoridx);
+vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, uint8_t sensoridx);
 
 /*!
   @fn vscp_makeIntegerMeasurementEventEx
   Make level I integer measurement event ex
-  @param pEventEx Pointer to event with pdata set to NULL. VSCP_class and
+  @param pex Pointer to event with pdata set to NULL. VSCP_class and
     vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
   @param value Integer value to set
   @param unit Unit for the data. Zero is default.
@@ -1332,7 +1332,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pEvent, int64_t value, uint8_t unit,
   @return true on success, false on failure.
 */
 bool
-vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t unit, uint8_t sensoridx);
+vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit, uint8_t sensoridx);
 
 /*!
   @fn vscp_makeFloatMeasurementEvent
@@ -1340,7 +1340,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
   single precision float (32-bit) for
       CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
   @param value Floating point value to convert.
-  @param pEvent Pointer to event with pdata set to NULL. VSCP_class and
+  @param pev Pointer to event with pdata set to NULL. VSCP_class and
   vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
   @param psize Pointer to size for returned data.
   @param unit Unit for the data. Zero is default.
@@ -1348,7 +1348,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pEventEx, int64_t value, uint8_t
   @return true on success, false on failure.
 */
 bool
-vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uint8_t sensoridx);
+vscp_makeFloatMeasurementEvent(vscpEvent *pev, float value, uint8_t unit, uint8_t sensoridx);
 
 /*!
   @fn vscp_makeFloatMeasurementEvent
@@ -1356,7 +1356,7 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uin
   single precision float (32-bit) for
       CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
   @param value Floating point value to convert.
-  @param pEvent Pointer to event ex. VSCP_class and
+  @param pex Pointer to event ex. VSCP_class and
   vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
   @param psize Pointer to size for returned data.
   @param unit Unit for the data. Zero is default.
@@ -1365,14 +1365,13 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pEvent, float value, uint8_t unit, uin
 */
 
 bool
-vscp_makeFloatMeasurementEventEx(vscpEventEx *pEventEx, float value, uint8_t unit, uint8_t sensoridx);
-
+vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, uint8_t sensoridx);
 /*!
   @fn vscp_makeStringMeasurementEvent
   Convert a floating point measurement value into VSCP data as a
   string for CLASS1.MEASUREMENT or CLASS2_LEVEL1.MEASUREMENT
   @param value Floating point value to convert.
-  @param pEvent Pointer to event with pdata set to NULL. vscp_class and
+  @param pev Pointer to event with pdata set to NULL. vscp_class and
   vscp_type must be set to CLASS1.MEASUREMENT or
   CLASS2_LEVEL1.MEASUREMENT,
   @param psize Pointer to size for returned data.
@@ -1381,14 +1380,14 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx *pEventEx, float value, uint8_t uni
   @return true on success, false on failure.
 */
 bool
-vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, uint8_t sensoridx);
+vscp_makeStringMeasurementEvent(vscpEvent *pev, double value, uint8_t unit, uint8_t sensoridx);
 
 /*!
   @fn vscp_makeStringMeasurementEventEx
   Convert a floating point measurement value into VSCP data as a
   string for CLASS1.MEASUREMENT or CLASS2_LEVEL1.MEASUREMENT
   @param value Floating point value to convert.
-  @param pEvent Pointer to event ex. vscp_class and
+  @param pex Pointer to event ex. vscp_class and
   vscp_type must be set to CLASS1.MEASUREMENT or
   CLASS2_LEVEL1.MEASUREMENT,
   @param psize Pointer to size for returned data.
@@ -1397,13 +1396,13 @@ vscp_makeStringMeasurementEvent(vscpEvent *pEvent, double value, uint8_t unit, u
   @return true on success, false on failure.
 */
 bool
-vscp_makeStringMeasurementEventEx(vscpEventEx *pEventEx, double value, uint8_t unit, uint8_t sensoridx);
+vscp_makeStringMeasurementEventEx(vscpEventEx *pex, double value, uint8_t unit, uint8_t sensoridx);
 
 /*!
   @fn vscp_makeLevel2FloatMeasurementEvent
   Construct CLASS2.MEASUREMENT_FLOAT level II measurement event
 
-  @param pEvent Pointer to event that will be filled with data or NULL
+  @param pev Pointer to event that will be filled with data or NULL
             if event should be allocated.
   @param vscp_type Measurement type
   @param value Floating point value that event should be made from.
@@ -1415,7 +1414,7 @@ vscp_makeStringMeasurementEventEx(vscpEventEx *pEventEx, double value, uint8_t u
   @return True is returned on success, false if an error occurred.
  */
 bool
-vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
+vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
                                      uint16_t vscp_type,
                                      double value,
                                      uint8_t unit,
@@ -1427,8 +1426,8 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
   @fn vscp_makeLevel2FloatMeasurementEventEx
   Construct CLASS2.MEASUREMENT_FLOAT level II measurement event
 
-  @param pEvent Pointer to event that will be filled with data or NULL
-            if event should be allocated.
+  @param pex Pointer to event that will be filled with data or NULL
+            if event should be allocated. 
   @param vscp_type Measurement type
   @param value Floating point value that event should be made from.
   @param unit Unit for this measurement. 0-255. Default is zero.
@@ -1439,7 +1438,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
   @return True is returned on success, false if an error occurred.
  */
 bool
-vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
+vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pex,
                                        uint16_t vscp_type,
                                        double value,
                                        uint8_t unit,
@@ -1451,7 +1450,7 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
   @fn vscp_makeLevel2StringMeasurementEvent
   Construct CLASS2.MEASUREMENT_STRING level II measurement event
 
-  @param pEvent Pointer to event that will be filled with data or NULL
+  @param pev Pointer to event that will be filled with data or NULL
             if event should be allocated.
   @param vscp_type Measurement type
   @param value Floating point value that event should be made from.
@@ -1463,7 +1462,7 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pEventEx,
   @return True is returned on success, false if an error occurred.
  */
 bool
-vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
+vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
                                       uint16_t vscp_type,
                                       double value,
                                       uint8_t unit,
@@ -1475,7 +1474,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
   @fn vscp_makeLevel2StringMeasurementEventEx
   Construct CLASS2.MEASUREMENT_STRING level II measurement event
 
-  @param pEvent Pointer to event that will be filled with data or NULL
+  @param pex Pointer to event that will be filled with data or NULL
             if event should be allocated.
   @param vscp_type Measurement type
   @param value Floating point value that event should be made from.
@@ -1487,7 +1486,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
   @return True is returned on success, false if an error occurred.
  */
 bool
-vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pEventEx,
+vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pex,
                                         uint16_t vscp_type,
                                         double value,
                                         uint8_t unit,
@@ -1510,56 +1509,56 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, const unsigned char lengt
   Convert a Level I measurement event to a Level II double measurement
   event VSCP_CLASS2_MEASUREMENT_FLOAT
 
-  @param pEventLevel1 Pointer to level I measurement event to be converted.
+  @param pev Pointer to level I measurement event to be converted.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pEventLevel1);
+vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev);
 
 /*!
   @fn vscp_convertLevel1MeasurementToLevel2DoubleEx
   Convert a Level I measurement event to a Level II double measurement
   event VSCP_CLASS2_MEASUREMENT_FLOAT
 
-  @param pEventEx Pointer to level I measurement event to be converted.
+  @param pex Pointer to level I measurement event to be converted.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pEventEx);
+vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pex);
 
 /*!
   @fn vscp_convertLevel1MeasurementToLevel2Float
   Convert a Level I measurement event to a Level II float measurement
   event VSCP_CLASS2_MEASUREMENT_FLOAT
 
-  @param pEventLevel1 Pointer to level I measurement event to be converted.
+  @param pev Pointer to level I measurement event to be converted.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2Float(vscpEvent *pEventLevel1);
+vscp_convertLevel1MeasurementToLevel2Float(vscpEvent *pev);
 
 /*!
   @fn vscp_convertLevel1MeasurementToLevel2String
   Convert a Level I measurement event to a Level II string measurement
   event VSCP_CLASS2_MEASUREMENT_STRING
 
-  @param pEventLevel1 Pointer to level I measurement event to be converted.
-  @param pEventLevel2 Pointer to resulting level II measurement event.
+  @param pev Pointer to level I measurement event to be converted.
+  @param pev2 Pointer to resulting level II measurement event.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pEventLevel1);
+vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev, vscpEvent *pev2);
 
 /*!
   @fn vscp_convertLevel1MeasurementToLevel2StringEx
   Convert a Level I measurement event to a Level II string measurement
   event VSCP_CLASS2_MEASUREMENT_STRING
 
-  @param pEventEx Pointer to level I measurement event to be converted.
+  @param pex Pointer to level I measurement event to be converted.
   @return true on success, false otherwise.
  */
 bool
-vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pEventEx);
+vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pex);
 
 // -------------------------------------------------------------------------
 
@@ -1575,38 +1574,38 @@ vscp_replaceBackslash(std::string &strval);
 /*!
   @fn vscp_getEventPriority
   Get VSCP priority
-  @param pEvent Pointer to VSCP event to set priority for.
+  @param pev Pointer to VSCP event to set priority for.
   @return Priority (0-7) for event.
 */
 unsigned char
-vscp_getEventPriority(const vscpEvent *pEvent);
+vscp_getEventPriority(const vscpEvent *pev);
 
 /*!
   @fn vscp_getEventExPriority
   Get VSCP priority
-  @param pEvent Pointer to VSCP event to set priority for.
+  @param pex Pointer to VSCP event ex to set priority for.
   @return Priority (0-7) for event.
 */
 unsigned char
-vscp_getEventExPriority(const vscpEventEx *pEvent);
+vscp_getEventExPriority(const vscpEventEx *pex);
 
 /*!
   @fn vscp_setEventPriority
   Set VSCP priority
-  @param pEvent Pointer to VSCP event to set priority for.
+  @param pev Pointer to VSCP event to set priority for.
   @param priority Priority (0-7) to set.
 */
 void
-vscp_setEventPriority(vscpEvent *pEvent, unsigned char priority);
+vscp_setEventPriority(vscpEvent *pev, unsigned char priority);
 
 /*!
   @fn vscp_setEventExPriority
   Set VSCP priority Ex
-  @param pEvent Pointer to VSCP event to set priority for.
+  @param pex Pointer to VSCP event ex to set priority for.
   @param priority Priority (0-7) to set.
 */
 void
-vscp_setEventExPriority(vscpEventEx *pEvent, unsigned char priority);
+vscp_setEventExPriority(vscpEventEx *pex, unsigned char priority);
 
 /*!
   @fn vscp_getHeadFromCANALid
@@ -1657,44 +1656,44 @@ vscp_getCANALidFromData(unsigned char priority, const uint16_t vscp_class, const
 /*!
   @fn vscp_getCANALidFromEvent
   Get CANAL id from VSCP event
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @return CAN id with nickname == 0
 */
 uint32_t
-vscp_getCANALidFromEvent(const vscpEvent *pEvent);
+vscp_getCANALidFromEvent(const vscpEvent *pev);
 
 /*!
   @fn vscp_getCANALidFromEventEx
   Get CAN id from VSCP event
-  @param pEvent Pointer to VSCP event
+  @param pex Pointer to VSCP event
   @return CAN id with nickname == 0
 */
 uint32_t
-vscp_getCANALidFromEventEx(const vscpEventEx *pEvent);
+vscp_getCANALidFromEventEx(const vscpEventEx *pex);
 
 /*!
   @fn vscp_calc_crc_Event
   Calculate CRC for VSCP event
 
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @param bSet If true, the calculated CRC will be set in the event's crc field. If false, the CRC will be calculated but
   not set in the event.
   @return Calculated CRC value for the event.
 */
 unsigned short
-vscp_calc_crc_Event(vscpEvent *pEvent, short bSet);
+vscp_calc_crc_Event(vscpEvent *pev, short bSet);
 
 /*!
   @fn vscp_calc_crc_EventEx
   Calculate CRC for VSCP event Ex
 
-  @param pEvent Pointer to VSCP event
+  @param pex Pointer to VSCP event Ex
   @param bSet If true, the calculated CRC will be set in the event's crc field. If false, the CRC will be calculated but
   not set in the event.
   @return Calculated CRC value for the event.
 */
 unsigned short
-vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet);
+vscp_calc_crc_EventEx(vscpEventEx *pex, short bSet);
 
 // Helpers
 
@@ -1722,23 +1721,23 @@ vscp_calcCRC4GUIDString(const std::string &strguid);
   @fn vscp_setEventGuidFromString
   Get GUID from string
 
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @param strGUID String with GUID (xx:yy:zz....)
   @return True on success, false on failure.
 */
 bool
-vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID);
+vscp_setEventGuidFromString(vscpEvent *pev, const std::string &strGUID);
 
 /*!
   @fn vscp_setEventExGuidFromString
   Get GUID from string
 
-  @param pEvent Pointer to VSCP event
+  @param pex Pointer to VSCP event
   @param strGUID String with GUID (xx:yy:zz....)
   @return True on success, false on failure.
 */
 bool
-vscp_setEventExGuidFromString(vscpEventEx *pEventEx, const std::string &strGUID);
+vscp_setEventExGuidFromString(vscpEventEx *pex, const std::string &strGUID);
 
 /*!
   @fn vscp_getGuidFromStringToArray
@@ -1813,14 +1812,14 @@ vscp_writeGuidArrayToString(std::string &strGUID,
     "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
 
   @param strGUID Reference to string for written GUID
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @param format Output format (default: VSCP_GUID_STR_FORMAT_NORMAL)
   @return True on success, false on failure.
 */
 
 bool
 vscp_writeGuidToString(std::string &strGUID,
-                       const vscpEvent *pEvent,
+                       const vscpEvent *pev,
                        vscp_guid_str_format format = VSCP_GUID_STR_FORMAT_NORMAL);
 
 /*!
@@ -1836,14 +1835,14 @@ vscp_writeGuidToString(std::string &strGUID,
     "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
 
   @param strGUID Reference to string for written GUID
-  @param pEvent Pointer to VSCP event ex
+  @param pex Pointer to VSCP event ex
   @param format Output format (default: VSCP_GUID_STR_FORMAT_NORMAL)
   @return True on success, false on failure.
 */
 
 bool
 vscp_writeGuidToStringEx(std::string &strGUID,
-                         const vscpEventEx *pEvent,
+                         const vscpEventEx *pex,
                          vscp_guid_str_format format = VSCP_GUID_STR_FORMAT_NORMAL);
 
 /*!
@@ -1851,24 +1850,24 @@ vscp_writeGuidToStringEx(std::string &strGUID,
   Write out GUID to string as four rows
 
   @param strGUID Reference to string for written GUID
-  @param pEvent Pointer to VSCP event
+  @param pev Pointer to VSCP event
   @return True on success, false on failure.
 */
 
 bool
-vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pEvent);
+vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pev);
 
 /*!
   @fn vscp_writeGuidToString4RowsEx
   Write out GUID to string as four rows
 
   @param strGUID Reference to string for written GUID
-  @param pEvent Pointer to VSCP event
+  @param pex Pointer to VSCP event
   @return True on success, false on failure.
 */
 
 bool
-vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pEvent);
+vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pex);
 
 /*!
   @fn vscp_isGUIDEmpty
@@ -1901,91 +1900,91 @@ vscp_reverseGUID(unsigned char *pGUID);
 /*!
   @fn vscp_convertEventToEventEx
   Convert a standard VSCP event to the Ex version
-  @param pEventEx Pointer to VSCP eventEx to fill in.
-  @param pEvent Pointer to standard VSCP event to convert.
+  @param pex Pointer to VSCP eventEx to fill in.
+  @param pev Pointer to standard VSCP event to convert.
   @return True on success, false on failure.
 */
 bool
-vscp_convertEventToEventEx(vscpEventEx *pEventEx, const vscpEvent *pEvent);
+vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev);
 
 /*!
   @fn vscp_convertEventExToEvent
   Convert an Ex event to a standard VSCP event
 
-  @param pEvent Pointer to standard VSCP event to fill in.
-  @param pEventEx Pointer to VSCP eventEx to convert.
+  @param pev Pointer to standard VSCP event to fill in.
+  @param pex Pointer to VSCP eventEx to convert.
   @return True on success, false on failure.
 */
 bool
-vscp_convertEventExToEvent(vscpEvent *pEvent, const vscpEventEx *pEventEx);
+vscp_convertEventExToEvent(vscpEvent *pev, const vscpEventEx *pex);
 
 /*!
   @fn vscp_newEvent
   Create a standard VSCP event
-  @param ppEvent Pointer to a pointer toa standard VSCP event.
+  @param ppev Pointer to a pointer toa standard VSCP event.
   @param version Frame version for the new event (default: VSCP_HEADER16_FRAME_VERSION_ORIGINAL)
   @return True if the event was created successfully,
                 false otherwise.
  */
 bool
-vscp_newEvent(vscpEvent **ppEvent, uint16_t = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
+vscp_newEvent(vscpEvent **ppev, uint16_t = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
 
 /*!
   @fn vscp_newEventEx
   Create an Ex event
-  @param ppEventEx Pointer to a pointer to an Ex event.
+  @param ppex Pointer to a pointer to an Ex event.
   @return True if the event was created successfully, false otherwise.
  */
 bool
-vscp_newEventEx(vscpEventEx **ppEventEx, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
+vscp_newEventEx(vscpEventEx **ppex, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
 
 /*!
   @fn vscp_deleteEvent
   Delete a standard VSCP event
-  @param pEvent Pointer to standard VSCP event to delete.
+  @param pev Pointer to standard VSCP event to delete.
 */
 void
-vscp_deleteEvent(vscpEvent *pEvent);
+vscp_deleteEvent(vscpEvent *pev);
 
 /*!
-  @fn vscp_deleteEvent
-  Delete a standard VSCP event
-  @param pEvent Pointer to standard VSCP event to delete.
+  @fn vscp_deleteEventEx
+  Delete an Ex VSCP event
+  @param pex Pointer to Ex VSCP event to delete.
 */
 void
-vscp_deleteEventEx(vscpEventEx **pex);
+vscp_deleteEventEx(vscpEventEx *pex);
 
 /*!
   @fn vscp_deleteEvent_v2
   Delete standard VSCP event and NULL
-  @param pEvent Pointer to pointer to standard VSCP event.
+  @param ppev Pointer to pointer to standard VSCP event to delete and NULL after deletion.
  */
 void
-vscp_deleteEvent_v2(vscpEvent **pEvent);
+vscp_deleteEvent_v2(vscpEvent **ppev);
 
 
 
-/*
+/*!
   @fn vscp_setFrameVersion
   Set frame version for a standard VSCP event or Ex event
 
-  @param pEvent Pointer to standard VSCP event or Ex event to set frame version for.
+  @param pev Pointer to standard VSCP event or Ex event to set frame version for.
   @param version Frame version to set for the event.
   @return True on success, false on failure.
 */
 bool
-setFrameVersion(vscpEvent *pEvent, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
+setFrameVersion(vscpEvent *pev, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
 
 /*!
   @fn vscp_setFrameVersionEx
   Set frame version for a standard VSCP event or Ex event
 
-  @param pEventEx Pointer to standard VSCP event or Ex event to set frame version for.
+  @param pex Pointer to standard VSCP event or Ex event to set frame version for.
   @param version Frame version to set for the event.
   @return True on success, false on failure.
 */
 bool
-setFrameVersion(vscpEventEx *pEventEx, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
+setFrameVersion(vscpEventEx *pex, uint16_t version = VSCP_HEADER16_FRAME_VERSION_UNIX_NS);
 
 
 /*!
@@ -2024,11 +2023,11 @@ vscp_makeTimeStampNs(void);
   timestamp_ns to the current time in nanoseconds since Unix epoch.
   Also sets year=0xffff, month=0xff to indicate UNIX_NS frame.
 
-  @param pEvent Event to set date/time block in.
+  @param pev Event to set date/time block in.
   @return True on success.
 */
 bool
-vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent);
+vscp_setEventDateTimeBlockToNow(vscpEvent *pev);
 
 /*!
   @fn vscp_setEventExDateTimeBlockToNow
@@ -2041,11 +2040,11 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent);
   timestamp_ns to the current time in nanoseconds since Unix epoch.
   Also sets year=0xffff, month=0xff to indicate UNIX_NS frame.
 
-  @param pEventEx EventEx to set date/time block in.
+  @param pex EventEx to set date/time block in.
   @return True on success.
 */
 bool
-vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx);
+vscp_setEventExDateTimeBlockToNow(vscpEventEx *pex);
 
 /*!
   @fn vscp_getDateStringFromEvent
@@ -2060,11 +2059,11 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx);
   precision: "YYYY-MM-DDTHH:MM:SS.nnnnnnnnnZ". Returns empty string if timestamp_ns is zero.
 
   @param dt Reference to String that will get ISO datetime string
-  @param pEvent Event to get date/time info from
+  @param pev Event to get date/time info from
   @return True on success.
 */
 bool
-vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent);
+vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pev);
 
 /*!
   @fn vscp_getDateStringFromEventEx
@@ -2079,11 +2078,11 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pEvent);
   precision: "YYYY-MM-DDTHH:MM:SS.nnnnnnnnnZ". Returns empty string if timestamp_ns is zero.
 
   @param dt Reference to String that will get ISO datetime string
-  @param pEventEx EventEx to get date/time info from
+  @param pex EventEx to get date/time info from
   @return True on success.
 */
 bool
-vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx);
+vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pex);
 
 /*!
   @fn vscp_convertEventToJSON
@@ -2096,11 +2095,11 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pEventEx);
   the 64-bit timestamp_ns (nanoseconds since Unix epoch) in the JSON "timestamp" field.
 
   @param strJSON Reference to string that will get JSON formatted event
-  @param pEvent Event to convert to JSON
+  @param pev Event to convert to JSON
   @return True on success. False on failure.
  */
 bool
-vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent);
+vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev);
 
 /*!
     @fn vscp_convertEventExToJSON
@@ -2113,11 +2112,11 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pEvent);
     the 64-bit timestamp_ns (nanoseconds since Unix epoch) in the JSON "timestamp" field.
 
     @param strJSON Reference to string that will get JSON formatted event
-    @param pEventEx EventEx to convert to JSON
+    @param pex EventEx to convert to JSON
     @return True on success. False on failure.
  */
 bool
-vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx);
+vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pex);
 
 /*!
   @fn vscp_convertJSONToEvent
@@ -2130,7 +2129,7 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx);
     is parsed as a 64-bit nanoseconds-since-epoch value and stored in timestamp_ns.
     The year and month fields are set to 0xffff and 0xff respectively.
 
-  @param pEvent Pointer to event that will be filled with data from JSON string.
+  @param pev Pointer to event that will be filled with data from JSON string.
   @param strJSON Reference to string with JSON formatted event data.
   @return True on success. False on failure.
 
@@ -2142,7 +2141,7 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pEventEx);
   beforehand
  */
 bool
-vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON);
+vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON);
 
 /*!
   @fn vscp_convertJSONToEventEx
@@ -2155,7 +2154,7 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON);
     is parsed as a 64-bit nanoseconds-since-epoch value and stored in timestamp_ns.
     The year and month fields are set to 0xffff and 0xff respectively.
 
-  @param pEventEx Pointer to eventex that will be filled with data from JSON string.
+  @param pex Pointer to eventex that will be filled with data from JSON string.
   @param strJSON Reference to string with JSON formatted event data.
   @return True on success. False on failure.
 
@@ -2167,7 +2166,7 @@ vscp_convertJSONToEvent(vscpEvent *pEvent, std::string &strJSON);
   beforehand
  */
 bool
-vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSONx);
+vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSONx);
 
 /*!
   @fn vscp_convertEventToXML
@@ -2180,11 +2179,11 @@ vscp_convertJSONToEventEx(vscpEventEx *pEventEx, std::string &strJSONx);
   the 64-bit timestamp_ns (nanoseconds since Unix epoch) in the XML "timestamp" attribute.
 
   @param strXML Reference to string that will get XML formatted event
-  @param pEvent Event to convert to XML
+  @param pev Event to convert to XML
   @return True on success. False on failure.
  */
 bool
-vscp_convertEventToXML(std::string &strXML, vscpEvent *pEvent);
+vscp_convertEventToXML(std::string &strXML, vscpEvent *pev);
 
 /*!
   @fn vscp_convertXMLToEvent
@@ -2196,12 +2195,12 @@ vscp_convertEventToXML(std::string &strXML, vscpEvent *pEvent);
   For UNIX_NS frame version (head & VSCP_HEADER16_FRAME_VERSION_MASK == VSCP_HEADER16_FRAME_VERSION_UNIX_NS),
   parses the timestamp as a 64-bit nanosecond value and sets year=0xffff, month=0xff.
 
-  @param pEvent Pointer to event that will be filled with data from XML string.
+  @param pev Pointer to event that will be filled with data from XML string.
   @param strXML Reference to string with XML formatted event data.
   @return True on success. False on failure.
  */
 bool
-vscp_convertXMLToEvent(vscpEvent *pEvent, std::string &strXML);
+vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML);
 
 /*!
   @fn vscp_convertEventExToXML
@@ -2214,11 +2213,11 @@ vscp_convertXMLToEvent(vscpEvent *pEvent, std::string &strXML);
   the 64-bit timestamp_ns (nanoseconds since Unix epoch) in the XML "timestamp" attribute.
 
   @param strXML Reference to string that will get XML formatted event
-  @param pEventEx EventEx to convert to XML
+  @param pex EventEx to convert to XML
   @return True on success. False on failure.
  */
 bool
-vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pEventEx);
+vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pex);
 
 /*!
   @fn vscp_convertXMLToEventEx
@@ -2230,12 +2229,12 @@ vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pEventEx);
   For UNIX_NS frame version (head & VSCP_HEADER16_FRAME_VERSION_MASK == VSCP_HEADER16_FRAME_VERSION_UNIX_NS),
   parses the timestamp as a 64-bit nanosecond value and sets year=0xffff, month=0xff.
 
-  @param pEventEx Pointer to eventex that will be filled with data from XML string.
+  @param pex EventEx to convert to XML
   @param strXML Reference to string with XML formatted event data.
   @return True on success. False on failure.
  */
 bool
-vscp_convertXMLToEventEx(vscpEventEx *pEventEx, std::string &strXML);
+vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML);
 
 /*!
   @fn vscp_convertEventToHTML
@@ -2248,11 +2247,11 @@ vscp_convertXMLToEventEx(vscpEventEx *pEventEx, std::string &strXML);
   the 64-bit timestamp_ns (nanoseconds since Unix epoch).
 
   @param strHTML Reference to string that will get HTML formatted event
-  @param pEvent Event to convert to HTML
+  @param pev Event to convert to HTML
   @return True on success. False on failure.
  */
 bool
-vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pEvent);
+vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pev);
 
 /*!
   @fn vscp_convertEventExToHTML
@@ -2265,24 +2264,24 @@ vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pEvent);
   the 64-bit timestamp_ns (nanoseconds since Unix epoch).
 
   @param strHTML Reference to string that will get HTML formatted event
-  @param pEventEx EventEx to convert to HTML
+  @param pex EventEx to convert to HTML
   @return True on success. False on failure.
  */
 bool
-vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pEventEx);
+vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pex);
 
 /*!
   @fn vscp_parse_topic
   @brief Parse topic string to extract GUID, VSCP class, and VSCP type
 
   @param topic Null terminated string with topic data.
-  @param pGuid Array to store extracted GUID (16 bytes).
+  @param pguid Array to store extracted GUID (16 bytes).
   @param pVscpClass Pointer to store extracted VSCP class.
   @param pVscpType Pointer to store extracted VSCP type.
   @return int Returns VSCP_ERROR_SUCCESS on OK, error code else.
  */
 int
-vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, uint16_t *pVscpType);
+vscp_parse_topic(const char *topic, uint8_t *pguid, uint16_t *pVscpClass, uint16_t *pVscpType);
 
 /*!
   @fn vscp_set_event_info_from_topic
@@ -2308,7 +2307,7 @@ vscp_set_event_info_from_topic(vscpEvent *pev, const char *topic);
   @fn vscp_set_eventex_info_from_topic
   @brief Parse topic string and set event GUID, VSCP class, and VSCP type
 
-  @param pev Pointer to event to set data for.
+  @param pex Pointer to event to set data for.
   @param topic Null terminated string with topic data.
   @return int Returns VSCP_ERROR_SUCCESS on OK, error code else.
 
@@ -2337,14 +2336,14 @@ vscp_set_eventex_info_from_topic(vscpEventEx *pex, const char *topic);
   for subsecond precision. Also sets year=0xffff, month=0xff to indicate
   UNIX_NS frame.
 
-  @param pEvent Pointer to event that will have date set.
+  @param pev Pointer to event that will have date set.
   @param ptm Pointer to struct tm with date/time information to set in event.
   @param ns Optional nanoseconds within the second (0-999999999). Default is 0.
             Values > 999999999 are clamped. Only used for UNIX_NS frame.
   @return True on success, false on failure.
  */
 bool
-vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm, uint32_t ns = 0);
+vscp_setEventDateTime(vscpEvent *pev, struct tm *ptm, uint32_t ns = 0);
 
 /*!
   @fn vscp_setEventExDateTime
@@ -2359,14 +2358,14 @@ vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm, uint32_t ns = 0);
   for subsecond precision. Also sets year=0xffff, month=0xff to indicate
   UNIX_NS frame.
 
-  @param pEventEx Pointer to eventex that will have date set.
+  @param pex Pointer to eventex that will have date set.
   @param ptm Pointer to struct tm with date/time information to set in eventex.
   @param ns Optional nanoseconds within the second (0-999999999). Default is 0.
             Values > 999999999 are clamped. Only used for UNIX_NS frame.
   @return True on success, false on failure.
  */
 bool
-vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm, uint32_t ns = 0);
+vscp_setEventExDateTime(vscpEventEx *pex, struct tm *ptm, uint32_t ns = 0);
 
 /*!
   @fn vscp_setEventToNow
@@ -2379,11 +2378,11 @@ vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm, uint32_t ns = 0);
   timestamp_ns to the current time in nanoseconds since Unix epoch (second
   precision only). Also sets year=0xffff, month=0xff to indicate UNIX_NS frame.
 
-  @param pEvent Pointer to event that will have date set to now
+  @param pev Pointer to event that will have date set to now
   @return True on success, false on failure.
  */
 bool
-vscp_setEventToNow(vscpEvent *pEvent);
+vscp_setEventToNow(vscpEvent *pev);
 
 /*!
   @fn vscp_setEventExToNow
@@ -2396,28 +2395,28 @@ vscp_setEventToNow(vscpEvent *pEvent);
   timestamp_ns to the current time in nanoseconds since Unix epoch (second
   precision only). Also sets year=0xffff, month=0xff to indicate UNIX_NS frame.
 
-  @param pEventEx Pointer to eventex that will have date set to now
+  @param pex Pointer to eventex that will have date set to now
   @return True on success, false on failure.
  */
 bool
-vscp_setEventExToNow(vscpEventEx *pEventEx);
+vscp_setEventExToNow(vscpEventEx *pex);
 
 /*!
   @fn vscp_clearVSCPFilter
   Clear VSCP filter so it will allow all events to go through
-  @param pFilter Pointer to VSCP filter.
+  @param pfilter Pointer to VSCP filter.
 */
 void
-vscp_clearVSCPFilter(vscpEventFilter *pFilter);
+vscp_clearVSCPFilter(vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_copyVSCPFilter
   Copy filter from one filter to another
-  @param pToFilter Pointer to filter to copy data to
-  @param pFromFilter Pinter to filter to copy data from
+  @param ptofilter Pointer to filter to copy data to
+  @param pfromfilter Pinter to filter to copy data from
  */
 void
-vscp_copyVSCPFilter(vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter);
+vscp_copyVSCPFilter(vscpEventFilter *ptofilter, const vscpEventFilter *pfromfilter);
 
 /*!
   @fn vscp_doLevel2Filter
@@ -2440,12 +2439,12 @@ vscp_copyVSCPFilter(vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilt
 
   A filter pointer set to NULL will let every event through.
 
-  @param pEvent Pointer to event to check against filter
-  @param pFilter Pointer to filter to check with. If NULL, all events will
+  @param pev Pointer to event to check against filter
+  @param pfilter Pointer to filter to check with. If NULL, all events will
   @return true if message should be delivered false if not.
 */
 bool
-vscp_doLevel2Filter(const vscpEvent *pEvent, const vscpEventFilter *pFilter);
+vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_doLevel2FilterEx
@@ -2468,13 +2467,13 @@ vscp_doLevel2Filter(const vscpEvent *pEvent, const vscpEventFilter *pFilter);
 
   A filter pointer set to NULL will let every event through.
 
-  @param pEventEx Pointer to eventex to check against filter
-  @param pFilter Pointer to filter to check with. If NULL, all events will
+  @param pex Pointer to eventex to check against filter
+  @param pfilter Pointer to filter to check with. If NULL, all events will
                    be allowed through.
   @return true if message should be delivered false if not.
 */
 bool
-vscp_doLevel2FilterEx(const vscpEventEx *pEventEx, const vscpEventFilter *pFilter);
+vscp_doLevel2FilterEx(const vscpEventEx *pex, const vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_readFilterFromString
@@ -2482,25 +2481,25 @@ vscp_doLevel2FilterEx(const vscpEventEx *pEventEx, const vscpEventFilter *pFilte
   If strFilter is an empty string all elements in filter will be set to
   zero. Arguments is priority,class,type,GUID and all is optional but if
   given must be given in order.
-  @param pFilter Filter structure to write filter to.
+  @param pfilter Filter structure to write filter to.
   @param strFilter Filter in string form
           filter-priority, filter-class, filter-type, filter-GUID
   @return true on success, false on failure.
 */
 
 bool
-vscp_readFilterFromString(vscpEventFilter *pFilter, const std::string &strFilter);
+vscp_readFilterFromString(vscpEventFilter *pfilter, const std::string &strFilter);
 
 /*!
   @fn vscp_writeFilterToString
   @brief Write filter to string
   @param strFilter Filter in string form
           filter-priority, filter-class, filter-type, filter-GUID
-  @param pFilter Filter structure to write out to string.
+  @param pfilter Filter structure to write out to string.
   @return true on success, false on failure.
 */
 bool
-vscp_writeFilterToString(std::string &strFilter, const vscpEventFilter *pFilter);
+vscp_writeFilterToString(std::string &strFilter, const vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_readMaskFromString
@@ -2511,49 +2510,49 @@ vscp_writeFilterToString(std::string &strFilter, const vscpEventFilter *pFilter)
   "priority,class,type,GUID"
 
   and all is optional but if given must be given in order.
-  @param pFilter Filter structure to write mask to.
+  @param pfilter Filter structure to write mask to.
   @param strMask Mask in string form
           mask-priority, mask-class, mask-type, mask-GUID
   @return true on success, false on failure.
 */
 
 bool
-vscp_readMaskFromString(vscpEventFilter *pFilter, const std::string &strMask);
+vscp_readMaskFromString(vscpEventFilter *pfilter, const std::string &strMask);
 
 /*!
   @fn vscp_writeMaskToString
   @brief Write mask to string
   @param strMask Mask in string form
           mask-priority, mask-class, mask-type, mask-GUID
-  @param pFilter Filter structure to write out to string.
+  @param pfilter Filter structure to write out to string.
   @return true on success, false on failure.
 */
 bool
-vscp_writeMaskToString(std::string &strMask, const vscpEventFilter *pFilter);
+vscp_writeMaskToString(std::string &strMask, const vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_readFilterMaskFromString
   Read both filter and mask from string
 
-  @param pFilter Pointer to VSCP filter structure which will receive filter
+  @param pfilter Pointer to VSCP filter structure which will receive filter
                     mask data.
   @param strFilter Filter and mask in comma separated list
   @return true on success, false on failure.
  */
 bool
-vscp_readFilterMaskFromString(vscpEventFilter *pFilter, const std::string &strFilterMask);
+vscp_readFilterMaskFromString(vscpEventFilter *pfilter, const std::string &strFilterMask);
 
 /*!
     @fn vscp_writeFilterMaskToString
     Write both filter and mask to string
 
     @param strFilter Reference to string that will get filter and mask in comma separated list
-    @param pFilter Pointer to VSCP filter structure which contains filter
+    @param pfilter Pointer to VSCP filter structure which contains filter
                       mask data.
     @return true on success, false on failure.
  */
 bool
-vscp_writeFilterMaskToString(std::string &strFilter, const vscpEventFilter *pFilter);
+vscp_writeFilterMaskToString(std::string &strFilter, const vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_readFilterMaskFromXML
@@ -2570,23 +2569,23 @@ vscp_writeFilterMaskToString(std::string &strFilter, const vscpEventFilter *pFil
        filter_guid="GUID string"
   />
 
-  @param pFilter Pointer to filter structure that will get result.
+  @param pfilter Pointer to filter structure that will get result.
   @param strFilter Filter on XML format.
   @return True on success, false on failure.
  */
 bool
-vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilter);
+vscp_readFilterMaskFromXML(vscpEventFilter *pfilter, const std::string &strFilter);
 
 /*!
   @fn vscp_writeFilterMaskToXML
   Write filter to XML coded string
 
   @param strFilter String that will get XML coded filter
-  @param pFilter Pointer to filter structure
+  @param pfilter Pointer to filter structure
   @return True on success, false on failure.
  */
 bool
-vscp_writeFilterMaskToXML(std::string &strFilter, vscpEventFilter *pFilter);
+vscp_writeFilterMaskToXML(std::string &strFilter, vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_readFilterMaskFromJSON
@@ -2603,56 +2602,56 @@ vscp_writeFilterMaskToXML(std::string &strFilter, vscpEventFilter *pFilter);
     'filter_guid' 'string'
   }
 
-  @param pFilter Pointer to filter structure that will get result.
+  @param pfilter Pointer to filter structure that will get result.
   @param strFilter Filter on JSON format.
   @return True on success, false on failure.
  */
 bool
-vscp_readFilterMaskFromJSON(vscpEventFilter *pFilter, const std::string &strFilter);
+vscp_readFilterMaskFromJSON(vscpEventFilter *pfilter, const std::string &strFilter);
 
 /*!
   @fn vscp_writeFilterMaskToJSON
   Write filter to JSON coded string
 
   @param strFilter String that will get JSON coded filter
-  @param pFilter Pointer to VSCP filter structure
+  @param pfilter Pointer to VSCP filter structure
   @return True on success, false on failure.
  */
 bool
-vscp_writeFilterMaskToJSON(std::string &strFilter, vscpEventFilter *pFilter);
+vscp_writeFilterMaskToJSON(std::string &strFilter, vscpEventFilter *pfilter);
 
 /*!
   @fn vscp_convertCanalToEvent
   Convert a CANAL message to an event
-  @param pvscpEvent Pointer to VSCP event that get result
+  @param pev Pointer to VSCP event that get result
   @param pcanalMsg Pointer to CANAL message that should be converted
-  @param pGUID GUID to use for event
+  @param pguid GUID to use for event
   @return true on success
 */
 bool
-vscp_convertCanalToEvent(vscpEvent *pvscpEvent, const canalMsg *pcanalMsg, unsigned char *pGUID);
+vscp_convertCanalToEvent(vscpEvent *pev, const canalMsg *pcanalMsg, unsigned char *pguid);
 
 /*!
   @fn vscp_convertCanalToEventEx
   Convert a CANAL message to an event ex
-  @param pvscpEventEx Pointer to VSCP event ex that get result
+  @param pex Pointer to VSCP event ex that get result
   @param pcanalMsg Pointer to CANAL message that should be converted
-  @param pGUID GUID to use for event
+  @param pguid GUID to use for event
   @return true on success
 */
 bool
-vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx, const canalMsg *pcanalMsg, unsigned char *pGUID);
+vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned char *pguid = nullptr);
 
 /*!
   @fn vscp_convertEventToCanal
   Convert VSCP event to a CANAL message
-  @param pvscpEventEx Pointer to VSCP event that get result
+  @param pev Pointer to VSCP event that get result
   @param pcanalMsg Pointer to CANAL message that should be converted
   @param mode Size of CAN frame structure. Used to detect fd-mode
   @return true on success
 */
 bool
-vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8_t mode = CAN_MTU);
+vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t mode = CAN_MTU);
 
 /*!
   @fn vscp_convertEventExToCanal
@@ -2660,34 +2659,34 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent, uint8
 
   Convert VSCP event to a CANAL message
   @param pcanalMsg Pointer to CANAL message that get result
-  @param pvscpEventEx Pointer to VSCP event ex that should be converted
+  @param pex Pointer to VSCP event ex that should be converted
   @param mode Size of CAN frame structure. Used to detect fd-mode
   @return true on success
 */
 bool
-vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEvent, uint8_t mode = CAN_MTU);
+vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pex, uint8_t mode = CAN_MTU);
 
 /*!
   @fn vscp_copyEvent
   Copy one VSCP event to another
 
-  @param pEventTo Pointer to event to copy to.
-  @param pEventFrom Pointer to event to copy from.
+  @param pevTo Pointer to event to copy to.
+  @param pevFrom Pointer to event to copy from.
   @return true on success.
 */
 bool
-vscp_copyEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom);
+vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom);
 
 /*!
   @fn vscp_copyEventEx
   Copy one VSCP event ex to another
 
-  @param pEventTo Pointer to eventex to copy to.
-  @param pEventFrom Pointer to eventex to copy from.
+  @param pexTo Pointer to event ex to copy to.
+  @param pexFrom Pointer to event ex to copy from.
   @return True on success.
 */
 bool
-vscp_copyEventEx(vscpEventEx *pEventTo, const vscpEventEx *pEventFrom);
+vscp_copyEventEx(vscpEventEx *pexTo, const vscpEventEx *pexFrom);
 
 /*!
   @fn vscp_writeDataToString
@@ -2695,7 +2694,7 @@ vscp_copyEventEx(vscpEventEx *pEventTo, const vscpEventEx *pEventFrom);
   DEPRECATED USE: vscp_writeDataWithSizeToString
 
   @param str String that receive result.
-  @param pEvent Pointer to event where data is fetched from
+  @param pev Pointer to event where data is fetched from
   @param bUseHtmlBreak Set to true to use <br> instead of \\n as
           line break
   @param bBreak String gets formatted in groups of eight bytes with
@@ -2704,7 +2703,7 @@ vscp_copyEventEx(vscpEventEx *pEventTo, const vscpEventEx *pEventFrom);
 */
 
 bool
-vscp_writeDataToString(std::string &str, const vscpEvent *pEvent, bool bUseHtmlBreak = false, bool bBreak = false);
+vscp_writeDataToString(std::string &str, const vscpEvent *pev, bool bUseHtmlBreak = false, bool bBreak = false);
 
 /*!
   @fn vscp_writeDataWithSizeToString
@@ -2731,26 +2730,26 @@ vscp_writeDataWithSizeToString(std::string &str,
 /*!
   @fn vscp_setEventDataFromString
   Set VSCP Event data from a string
-  @param pEvent Pointer to a VSCP event to write parsed data to.
+  @param pev Pointer to a VSCP event to write parsed data to.
   @param str A string with comma or whitespace separated data in decimal
   or hexadecimal form. Data can span multiple lines.
   @return true on success, false on failure.
 */
 
 bool
-vscp_setEventDataFromString(vscpEvent *pEvent, const std::string &str);
+vscp_setEventDataFromString(vscpEvent *pev, const std::string &str);
 
 /*!
   @fn vscp_setEventExDataFromString
   Set VSCP EventEx data from a string
-  @param pEventEx Pointer to a VSCP event to write parsed data to.
+  @param pex Pointer to a VSCP event ex to write parsed data to.
   @param str A string with comma or whitespace separated data in decimal
   or hexadecimal form. Data can span multiple lines.
   @return true on success, false on failure.
 */
 
 bool
-vscp_setEventExDataFromString(vscpEventEx *pEventEx, const std::string &str);
+vscp_setEventExDataFromString(vscpEventEx *pex, const std::string &str);
 
 /*!
   @fn vscp_setDataArrayFromString
@@ -2777,21 +2776,21 @@ vscp_setDataArrayFromString(uint8_t *pData, uint16_t *psizeData, const std::stri
   the 64-bit timestamp_ns field.
 
   @param str String that receive the result
-  @param pEvent Event that should be presented
+  @param pev Event that should be presented
   @return true on success, false on failure.
 */
 
 bool
-vscp_convertEventToString(std::string &str, const vscpEvent *pEvent);
+vscp_convertEventToString(std::string &str, const vscpEvent *pev);
 
 /*!
   @fn vscp_getEventAsString
   Get Event as string
-  @param pEvent Pointer to event
+  @param pev Pointer to event
   @return String representation of event.
 */
 std::string
-vscp_getEventAsString(const vscpEvent *pEvent);
+vscp_getEventAsString(const vscpEvent *pev);
 
 /*!
   @fn vscp_convertEventExToString
@@ -2805,21 +2804,21 @@ vscp_getEventAsString(const vscpEvent *pEvent);
   the 64-bit timestamp_ns field.
 
   @param str String that receive the result
-  @param pEvent Event that should be presented
+  @param pex Event that should be presented
   @return true on success, false on failure.
 */
 
 bool
-vscp_convertEventExToString(std::string &str, const vscpEventEx *pEvent);
+vscp_convertEventExToString(std::string &str, const vscpEventEx *pex);
 
 /*!
   @fn vscp_getEventExAsString
   Get EventEx as string
-  @param pEvent Pointer to EventEx
+  @param pex Pointer to event ex
   @return String representation of event.
 */
 std::string
-vscp_getEventExAsString(const vscpEventEx *pEventEx);
+vscp_getEventExAsString(const vscpEventEx *pex);
 
 /*!
   @fn vscp_convertStringToEvent
@@ -2832,13 +2831,13 @@ vscp_getEventExAsString(const vscpEventEx *pEventEx);
   Unix epoch. If datetime is present, it is parsed and converted to nanoseconds.
   The head field will have VSCP_HEADER16_FRAME_VERSION_UNIX_NS set.
 
-  @param pEvent Event that will get data
-  @param str String that contain the event on string form
+  @param pev Event that will get data
+  @param str String that contains the event in string form
   @return true on success, false on failure.
 */
 
 bool
-vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &str);
+vscp_convertStringToEvent(vscpEvent *pev, const std::string &str);
 
 /*!
   @fn vscp_convertStringToEventEx
@@ -2851,13 +2850,13 @@ vscp_convertStringToEvent(vscpEvent *pEvent, const std::string &str);
   Unix epoch. If datetime is present, it is parsed and converted to nanoseconds.
   The head field will have VSCP_HEADER16_FRAME_VERSION_UNIX_NS set.
 
-  @param pEventEx Pointer to VSCP event that will get the parsed data
+  @param pex Pointer to VSCP event that will get the parsed data
   @param str String that contain the event on string form
   @return true on success, false on failure.
 */
 
 bool
-vscp_convertStringToEventEx(vscpEventEx *pEventEx, const std::string &str);
+vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &str);
 
 /*!
   @fn vscp_makeHtml
@@ -2904,20 +2903,20 @@ vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token);
   @fn vscp_getFrameSizeFromEvent
   Get UDP frame size from event
 
-  @param pEvent Pointer to event.
+  @param pev Pointer to event.
   @return Size of resulting UDP frame on success. Zero on failure.
  */
 size_t
-vscp_getFrameSizeFromEvent(vscpEvent *pEvent);
+vscp_getFrameSizeFromEvent(vscpEvent *pev);
 
 /*!
   @fn vscp_getFrameSizeFromEventEx
   Get UDP frame size from event ex
-  @param pEventEx Pointer to event ex.
+  @param pex Pointer to event ex.
   @return Size of resulting UDP frame on success. Zero on failure.
  */
 size_t
-vscp_getFrameSizeFromEventEx(vscpEventEx *pEventEx);
+vscp_getFrameSizeFromEventEx(vscpEventEx *pex);
 
 /*!
   @fn vscp_writeEventToFrame
@@ -2932,15 +2931,15 @@ vscp_getFrameSizeFromEventEx(vscpEventEx *pEventEx);
   @param len Size of the buffer.
   @param pkttype Is the first byte of binary type frames that holds
            type of packet and encryption (lower nibble for encryption).
-  @param pEvent Pointer to event that should be handled.
+  @param pev Pointer to event that should be written to the frame.
   @return True on success, false on failure.
  */
 bool
-vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEvent *pEvent);
+vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEvent *pev);
 
 /*!
   @fn vscp_writeEventExToFrame
-  Write event ex on binary frame format.
+  Write event ex to binary frame format.
 
   Uses packet format 0 (35-byte header with microsecond timestamp and datetime fields)
   for original frame version, and packet format 1 (35-byte header with 8-byte nanosecond
@@ -2951,11 +2950,11 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
   @param len Size of the buffer.
   @param pkttype Is the first byte of binary type frames that holds
            type of packet and encryption (lower nibble for encryption).
-  @param pEventEx Pointer to event that should be handled.
+  @param pex Pointer to event that should be written to the frame.
   @return True on success, false on failure.
  */
 bool
-vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEventEx *pEventEx);
+vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEventEx *pex);
 
 /*!
   @fn vscp_getEventFromFrame
@@ -2965,13 +2964,13 @@ vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscp
   and packet format 1 (UNIX_NS with 8-byte nanosecond timestamp). The format is
   determined from the packet type byte (upper nibble).
 
-  @param pEvent Pointer to VSCP event that will get data from the frame,
+  @param pev Pointer to VSCP event that will get data from the frame,
   @param buf A pointer to a buffer that will receive the event.
   @param len Size of the buffer.
   @return True on success, false on failure.
  */
 bool
-vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len);
+vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len);
 
 /*!
   @fn vscp_getEventExFromFrame
@@ -2981,14 +2980,14 @@ vscp_getEventFromFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len);
   and packet format 1 (UNIX_NS with 8-byte nanosecond timestamp). The format is
   determined from the packet type byte (upper nibble).
 
-  @param pEventEx Pointer to VSCP event ex that will get data from the
+  @param pex Pointer to VSCP event ex that will get data from the
   frame,
   @param buf A pointer to a buffer that will receive the event.
   @param len Size of the buffer.
   @return True on success, false on failure.
  */
 bool
-vscp_getEventExFromFrame(vscpEventEx *pEventEx, const uint8_t *buf, size_t len);
+vscp_getEventExFromFrame(vscpEventEx *pex, const uint8_t *buf, size_t len);
 
 /*!
   @fn vscp_writeCommandToFrame
