@@ -1955,6 +1955,14 @@ void
 vscp_deleteEventEx(vscpEventEx *pex);
 
 /*!
+  @fn vscp_deleteEventEx
+  Delete Ex VSCP event and NULL
+  @param ppex Pointer to pointer to Ex VSCP event to delete and NULL after deletion.
+ */
+void
+vscp_deleteEventEx(vscpEventEx **ppex);
+
+/*!
   @fn vscp_deleteEvent_v2
   Delete standard VSCP event and NULL
   @param ppev Pointer to pointer to standard VSCP event to delete and NULL after deletion.
