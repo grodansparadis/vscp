@@ -12,9 +12,11 @@ The documentation for the VSCP MQTT daemon is available [here](https://github.co
 
 # Abstract
 
-The VSCP common code is code that is used by different parts of the VSCP system. It is code that is used by both the core and the different modules. The common code is also used by the different tools that are used to develop and maintain the VSCP system.
+The VSCP common code is code that is used by different parts of the VSCP system and have origin back into 2000 when the VSCP project started. It is code that is used by both the core and the different modules. The common code is also used by the different tools that are used to develop and maintain the VSCP system. Much of this code is designed to be reusable and modular, providing a consistent foundation for the various components of the VSCP ecosystem.
 
-Documentation for the common code will be added as we go along. The common code is not a separate module, but rather a collection of code that is used by different parts of the system.
+This repository previously contained the VSCP daemon and other executables. This code has been lifted out to their respective own repositories. Documentation needed a new structure because of this. This will take some time to fully implement.
+
+Documentation for the common code will be added as we go along. The common code is not a separate module, but rather a collection of code that is used by different parts of the system. Often as a subproject for that project within the larger VSCP ecosystem, it provides essential functionality and shared resources that facilitate the development and maintenance of the entire VSCP system.
 
 [filename](./bottom_copyright.md ':include')
 
