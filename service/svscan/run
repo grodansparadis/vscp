@@ -1,3 +1,0 @@
-#!/bin/sh
-
-/usr/sbin/vscpd -c /etc/vscp/vscpd.json
