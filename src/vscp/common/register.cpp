@@ -32,6 +32,7 @@
 #endif
 
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <set>
 #include <sstream>
