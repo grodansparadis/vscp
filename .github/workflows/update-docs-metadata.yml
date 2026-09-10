@@ -1,0 +1,34 @@
+name: Update documentation metadata
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pushed revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refresh documentation metadata
+        run: python3 tools/update_docs_metadata.py
+
+      - name: Commit metadata update
+        run: |
+          if git diff --quiet -- docs/variables.xml; then
+            exit 0
+          fi
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/variables.xml
+          git commit -m "Update documentation metadata [skip ci]"
+          git push
