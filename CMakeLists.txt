@@ -159,7 +159,7 @@ if(WIN32)
     set(VSCP_PTHREAD_TARGET "")
     set(VSCP_WINDOWS_GETOPT_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows/getopt.c)
     set(VSCP_WINDOWS_GETOPT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows)
-    set(VSCP_WINDOWS_PCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/daemon)
+    set(VSCP_WINDOWS_PCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows)
     set(VSCP_WINDOWS_HELPERS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/win32helpers)
 
     # vcpkg path handling

@@ -79,7 +79,11 @@
 #endif
 
 #if defined(_WIN32)
+#if defined(__has_include)
+#if __has_include(<pch.h>)
 #include <pch.h>
+#endif
+#endif
 #if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
 #endif
