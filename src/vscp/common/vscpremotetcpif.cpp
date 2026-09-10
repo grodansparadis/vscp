@@ -99,10 +99,9 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
   m_registerOpMaxRetries    = TCPIP_REGISTER_READ_MAX_TRIES;
 
   // Set default version info
-  m_version_major   = VSCPD_MAJOR_VERSION;
-  m_version_minor   = VSCPD_MINOR_VERSION;
-  m_version_release = VSCPD_RELEASE_VERSION;
-  m_version_build   = VSCPD_BUILD_VERSION;
+  m_version_year   = VSCPD_MAJOR_VERSION;
+  m_version_month   = VSCPD_MINOR_VERSION;
+  m_version_patch = VSCPD_RELEASE_VERSION;
 }
 
 VscpRemoteTcpIf::~VscpRemoteTcpIf()
@@ -1428,7 +1427,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
   // Major version
   *pMajorVer = 0;
   if (!tokens.empty()) {
-    m_version_major = *pMajorVer = (uint8_t) vscp_readStringValue(tokens.front());
+    m_version_year = *pMajorVer = (uint8_t) vscp_readStringValue(tokens.front());
     tokens.pop_front();
   }
   else {
@@ -1438,7 +1437,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
   // Minor version
   *pMinorVer = 0;
   if (!tokens.empty()) {
-    m_version_minor = *pMinorVer = (uint8_t) vscp_readStringValue(tokens.front());
+    m_version_month = *pMinorVer = (uint8_t) vscp_readStringValue(tokens.front());
     tokens.pop_front();
   }
   else {
@@ -1448,17 +1447,11 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
   // Sub minor version
   *pSubMinorVer = 0;
   if (!tokens.empty()) {
-    m_version_release = *pSubMinorVer = (uint8_t) vscp_readStringValue(tokens.front());
+    m_version_patch = *pSubMinorVer = (uint8_t) vscp_readStringValue(tokens.front());
     tokens.pop_front();
   }
   else {
     return VSCP_ERROR_ERROR;
-  }
-
-  // Build version
-  m_version_build = VSCPD_BUILD_VERSION;
-  if (!tokens.empty()) {
-    m_version_build = (uint16_t) vscp_readStringValue(tokens.front());
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -1477,7 +1470,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
     return rv;
   }
 
-  *pBuildVer = m_version_build;
+  *pBuildVer = 0;
 
   return VSCP_ERROR_SUCCESS;
 }

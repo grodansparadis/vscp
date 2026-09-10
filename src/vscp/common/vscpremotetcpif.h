@@ -703,10 +703,9 @@ private:
       version command is used (always done when done on 'open').
       Initialized to the same version as this system on startup.
   */
-  uint8_t m_version_major;
-  uint8_t m_version_minor;
-  uint8_t m_version_release;
-  uint16_t m_version_build;
+  uint8_t m_version_year;
+  uint8_t m_version_month;
+  uint64_t m_version_patch;
 
   /*!
       Get input queue count
