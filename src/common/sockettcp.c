@@ -83,6 +83,8 @@
 #if __has_include(<pch.h>)
 #include <pch.h>
 #endif
+#else
+#include <pch.h>
 #endif
 #if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
