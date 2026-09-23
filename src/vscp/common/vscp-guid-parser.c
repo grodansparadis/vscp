@@ -357,9 +357,9 @@ vscp_guid_parse(uint8_t *guid, const char *strguid, char **endptr)
     }
   }
 
-  // If no bytes were parsed in standard format, return error
-  // (special cases like "-", "::", "-:", etc. return earlier)
-  if (guid_idx == 0) {
+  // Standard GUIDs must contain exactly 16 bytes. Special compact forms
+  // ("-", "::", "-:", etc.) return earlier.
+  if (guid_idx != 16) {
     return VSCP_ERROR_INVALID_SYNTAX;
   }
 
