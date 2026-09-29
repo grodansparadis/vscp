@@ -597,6 +597,8 @@ class vscpdatetime
 
     /*!
         Check if a date is the same as another date
+        @param dt The vscpdatetime object to compare with
+        @return True if the dates are the same
     */
     inline bool isSameDate(vscpdatetime& dt) const
     {
@@ -606,6 +608,8 @@ class vscpdatetime
 
     /*!
         Check if a time is the same as another time
+        @param dt The vscpdatetime object to compare with
+        @return True if the times are the same
     */
     inline bool isSameTime(vscpdatetime& dt) const
     {
@@ -613,13 +617,22 @@ class vscpdatetime
                 (dt.getSecond() == getSecond()));
     }
 
+    /*!
+        Get the difference in seconds between two vscpdatetime objects
+    */
     static double diffSeconds(vscpdatetime& t1, vscpdatetime& t2)
     {
         return difftime(t1.toSysTime(), t2.toSysTime());
     }
 
+    /*!
+        Get the time zone offset in seconds for the local time zone
+    */
     static int tzOffset2LocalTime(void);
 
+    /*!
+        Get the time zone offset in seconds for a given time_t value
+    */
     static long tz_offset_second(time_t t);
 
     //
@@ -642,6 +655,11 @@ class vscpdatetime
     // between them in days.
     //
 
+    /*!
+        Addition operator for vscpdatetime with long on the right
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     friend vscpdatetime operator+(const vscpdatetime& Left, const long Right)
     {
         vscpdatetime temp = Left;
@@ -650,6 +668,11 @@ class vscpdatetime
         return temp;
     }
 
+    /*!
+        Addition operator for vscpdatetime with long on the left
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     friend vscpdatetime operator+(const long Left, const vscpdatetime& Right)
     {
         vscpdatetime temp = Right;
@@ -658,6 +681,11 @@ class vscpdatetime
         return temp;
     }
 
+    /*!
+        Addition assignment operator for vscpdatetime with long on the right
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     vscpdatetime& operator+=(const long Right)
     {
         long newval = getJulian() + Right;
@@ -665,6 +693,11 @@ class vscpdatetime
         return *this;
     }
 
+    /*!
+        Subtraction assignment operator for vscpdatetime with long on the right
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     friend vscpdatetime operator-(const vscpdatetime& Left, const long Right)
     {
         vscpdatetime temp = Left;
@@ -673,6 +706,11 @@ class vscpdatetime
         return temp;
     }
 
+    /*!
+        Subtraction operator for vscpdatetime with long on the left
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     friend vscpdatetime operator-(const long Left, const vscpdatetime& Right)
     {
         vscpdatetime temp = Right;
@@ -681,6 +719,11 @@ class vscpdatetime
         return temp;
     }
 
+    /*!
+        Subtraction assignment operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     vscpdatetime& operator-=(const long Right)
     {
         long newval = getJulian() - Right;
@@ -688,6 +731,11 @@ class vscpdatetime
         return *this;
     }
 
+    /*!
+        Subtraction operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     long operator-(vscpdatetime& Right)
     {
         long newval = getJulian() - Right.getJulian();
@@ -709,6 +757,11 @@ class vscpdatetime
         return *this;
     }
 
+    /*!
+        Postfix increment operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     vscpdatetime operator++(int)
     {
         vscpdatetime Temp = *this;
@@ -718,6 +771,11 @@ class vscpdatetime
         return Temp;
     }
 
+    /*!
+        Prefix decrement operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     vscpdatetime& operator--()
     {
         long newval = getJulian();
@@ -726,6 +784,11 @@ class vscpdatetime
         return *this;
     }
 
+    /*!
+        Postfix decrement operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
     vscpdatetime operator--(int)
     {
         vscpdatetime Temp = *this;
@@ -733,6 +796,66 @@ class vscpdatetime
         newval--;
         setFromJulian(newval);
         return Temp;
+    }
+
+    /*!
+        Comparison operators for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.        
+    */
+    bool operator<(const vscpdatetime& Right) const
+    {
+        return getJulian() < Right.getJulian();
+    }
+
+    /*!
+        Less than or equal to operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
+    bool operator<=(const vscpdatetime& Right) const
+    {
+        return getJulian() <= Right.getJulian();
+    }
+
+    /*!
+        Greater than operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
+    bool operator>(const vscpdatetime& Right) const
+    {
+        return getJulian() > Right.getJulian();
+    }
+
+    /*!
+        Greater than or equal to operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
+    bool operator>=(const vscpdatetime& Right) const
+    {
+        return getJulian() >= Right.getJulian();
+    }
+
+    /*!
+        Equality operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
+    bool operator==(const vscpdatetime& Right) const
+    {
+        return getJulian() == Right.getJulian();
+    }
+
+    /*!
+        Inequality operator for vscpdatetime
+        These operators compare the Julian date values of two vscpdatetime objects.
+        The comparison is based solely on the Julian date, ignoring the time of day.
+    */
+    bool operator!=(const vscpdatetime& Right) const
+    {
+        return getJulian() != Right.getJulian();
     }
 
   private:
