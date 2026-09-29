@@ -487,21 +487,21 @@ class vscpdatetime
 
         @Return ISO date string.
     */
-    std::string getISODate(void);
+    std::string getISODate(void) const;
 
     /*!
         Get ISO time as standard string on format HH:MM:SS
 
         @Return ISO time string.
     */
-    std::string getISOTime(void);
+    std::string getISOTime(void) const;
 
     /*!
         Get julian day
 
         @return Julian day as long
     */
-    long getJulian(void);
+    long getJulian(void) const;
 
     /*!
         Get day of year

@@ -630,7 +630,7 @@ vscpdatetime::getISODateTime(bool bSeparator) const
 //
 
 std::string
-vscpdatetime::getISODate(void)
+vscpdatetime::getISODate(void) const
 {
     char buf[32];
     struct tm tm = getTimeStruct();
@@ -643,7 +643,7 @@ vscpdatetime::getISODate(void)
 //
 
 std::string
-vscpdatetime::getISOTime(void)
+vscpdatetime::getISOTime(void) const
 {
     char buf[32];
     struct tm tm = getTimeStruct();
@@ -727,7 +727,7 @@ ymdToJd(const int iYear, const int iMonth, const int iDay)
 //
 
 long
-vscpdatetime::getJulian(void)
+vscpdatetime::getJulian(void) const 
 {
     struct tm tm = getTimeStruct();
     // ymdToJd expects 1-based month (1-12)
