@@ -857,7 +857,7 @@ struct vscpMyNode {
     Template for VSCP XML event data
 
     data:
-datetime,head,obid,datetime,timestamp,class,type,guid,data,note
+datetime,head,obid,,timestamp_ns,class,type,guid,data,note
 
 <event
      head="3"
@@ -875,7 +875,7 @@ datetime,head,obid,datetime,timestamp,class,type,guid,data,note
   "head=\"%d\" "                                                                                                       \
   "obid=\"%lu\" "                                                                                                      \
   "datetime=\"%s\" "                                                                                                   \
-  "timestamp=\"%lu\" "                                                                                                 \
+  "timestamp_ns=\"%llu\" "                                                                                                 \
   "class=\"%d\" "                                                                                                      \
   "type=\"%d\" "                                                                                                       \
   "guid=\"%s\" "                                                                                                       \
@@ -891,7 +891,7 @@ datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     "head": 2,
     "obid": 123,
     "datetime": "2017-01-13T10:16:02Z",
-    "timestamp":50817,
+    "timestamp_ns":50817,
     "class": 10,
     "type": 8,
     "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
@@ -904,7 +904,7 @@ datetime,head,obid,datetime,timestamp,class,type,guid,data,note
   "\"head\": %d,\n"                                                                                                    \
   "\"obid\":  %lu,\n"                                                                                                  \
   "\"datetime\": \"%s\",\n"                                                                                            \
-  "\"timestamp\": %lu,\n"                                                                                              \
+  "\"timestamp_ns\": %llu,\n"                                                                                              \
   "\"class\": %d,\n"                                                                                                   \
   "\"type\": %d,\n"                                                                                                    \
   "\"guid\": \"%s\",\n"                                                                                                \
