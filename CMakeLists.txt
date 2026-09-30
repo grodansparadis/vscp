@@ -341,9 +341,6 @@ set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpcanaldeviceif.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/canal-xmlconfig.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/register.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/userlist.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/clientlist.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/interfacelist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/hlo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpunit.cpp
 )
