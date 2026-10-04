@@ -37,7 +37,6 @@ extern "C" {
 #endif
 
 /**
-/**
  * @brief Write GUID to string in standard colon-separated format
  *
  * Output format: FF:FF:FF:FF:FF:FF:FF:FF:01:02:03:AA:BB:44:01:30
