@@ -183,108 +183,100 @@ cguid::operator[](uint8_t pos)
 void
 cguid::getFromString(const std::string &strGUID)
 {
-    const char *p = strGUID.c_str();
-    int guidIdx = 0;
-    bool hasBraces = false;
+    (void)vscp_guid_parse(m_guid, strGUID.c_str(), nullptr);
+}
 
-    // Initialize GUID to zeros
-    memset(m_guid, 0, 16);
+///////////////////////////////////////////////////////////////////////////////
+// vscp_guid_parse
+//
 
-    // Skip leading whitespace
-    while (*p && (*p == ' ' || *p == '\t')) {
-        p++;
+int
+cguid::vscp_guid_parse(uint8_t *guid, const char *strguid, char **endptr)
+{
+    if (nullptr == guid || nullptr == strguid) {
+        return VSCP_ERROR_INVALID_POINTER;
     }
 
-    // Check for opening brace
+    memset(guid, 0, 16);
+    const char *p = strguid;
+    bool hasBraces = false;
+    int guidIdx = 0;
+
+    auto finish = [&]() {
+        if (hasBraces) {
+            while (*p == ' ' || *p == '\t') p++;
+            if (*p == '}') p++;
+        }
+        if (endptr) *endptr = const_cast<char *>(p);
+        return VSCP_ERROR_SUCCESS;
+    };
+
+    while (*p == ' ' || *p == '\t') p++;
     if (*p == '{') {
         hasBraces = true;
         p++;
-        while (*p && (*p == ' ' || *p == '\t')) {
-            p++;
-        }
+        while (*p == ' ' || *p == '\t') p++;
     }
+    if (!*p) return finish();
 
-    // Empty string
-    if (!*p) {
-        return;
-    }
-
-    // Special case: "-" means all zeros, "-:" means leading zeros with trailing values
-    if (*p == '-') {
-        if (*(p + 1) == ':') {
-            p += 2;
-            uint8_t tempBytes[16];
-            int tempCount = 0;
-
-            while (*p && tempCount < 16) {
-                if (!isHexDigit(*p)) break;
-                int hexLen = countHexDigits(p);
-
-                if (hexLen <= 2) {
-                    tempBytes[tempCount++] = (uint8_t)parseHexValue(&p, 2);
-                } else if (hexLen <= 4) {
-                    uint16_t val = (uint16_t)parseHexValue(&p, 4);
-                    tempBytes[tempCount++] = (val >> 8) & 0xFF;
-                    tempBytes[tempCount++] = val & 0xFF;
-                } else {
-                    int bytesToParse = (hexLen + 1) / 2;
-                    if (bytesToParse > 4) bytesToParse = 4;
-                    uint32_t val = (uint32_t)parseHexValue(&p, bytesToParse * 2);
-                    for (int i = bytesToParse - 1; i >= 0 && tempCount < 16; i--) {
-                        tempBytes[tempCount++] = (val >> (i * 8)) & 0xFF;
-                    }
-                }
-                if (*p == ':' || *p == '-' || *p == ',') p++;
+    auto parseGroups = [](const char *&input, uint8_t *output, int capacity) {
+        int count = 0;
+        while (*input && count < capacity && isHexDigit(*input)) {
+            int hexLen = countHexDigits(input);
+            if (hexLen <= 2) {
+                output[count++] = (uint8_t)parseHexValue(&input, 2);
             }
-            int zeroCount = 16 - tempCount;
-            memcpy(m_guid + zeroCount, tempBytes, tempCount);
-            return;
+            else if (hexLen <= 4) {
+                uint16_t value = (uint16_t)parseHexValue(&input, 4);
+                output[count++] = (value >> 8) & 0xFF;
+                if (count < capacity) output[count++] = value & 0xFF;
+            }
+            else {
+                int bytesToParse = (hexLen + 1) / 2;
+                if (bytesToParse > capacity - count) bytesToParse = capacity - count;
+                for (int i = 0; i < bytesToParse; i++) {
+                    uint8_t high = hexToVal(*input++);
+                    uint8_t low = isHexDigit(*input) ? hexToVal(*input++) : 0;
+                    output[count++] = (high << 4) | low;
+                }
+            }
+            if (count < capacity && (*input == ':' || *input == '-' || *input == ',')) input++;
         }
-        if (!*(p + 1) || !isHexDigit(*(p + 1))) {
-            return; // "-" alone means all zeros (already zeroed)
+        return count;
+    };
+
+    if (*p == '-') {
+        if (p[1] == ':') {
+            p += 2;
+            uint8_t trailing[16] = {};
+            int trailingCount = parseGroups(p, trailing, 16);
+            memcpy(guid + 16 - trailingCount, trailing, trailingCount);
+            return finish();
+        }
+        if (!p[1] || !isHexDigit(p[1])) {
+            p++;
+            return finish();
         }
     }
 
-    // Special case: "::" and "*:" at start
     if ((p[0] == ':' && p[1] == ':') || (p[0] == '*' && p[1] == ':')) {
-        if (!p[2] || !isHexDigit(p[2])) {
-            memset(m_guid, 0xFF, 16);
-            return;
+        bool allFF = !p[2] || !isHexDigit(p[2]);
+        if (allFF) {
+            memset(guid, 0xFF, 16);
+            p += 2;
+            return finish();
         }
         p += 2;
-        uint8_t tempBytes[16];
-        int tempCount = 0;
-
-        while (*p && tempCount < 16) {
-            if (!isHexDigit(*p)) break;
-            int hexLen = countHexDigits(p);
-
-            if (hexLen <= 2) {
-                tempBytes[tempCount++] = (uint8_t)parseHexValue(&p, 2);
-            } else if (hexLen <= 4) {
-                uint16_t val = (uint16_t)parseHexValue(&p, 4);
-                tempBytes[tempCount++] = (val >> 8) & 0xFF;
-                tempBytes[tempCount++] = val & 0xFF;
-            } else {
-                int bytesToParse = (hexLen + 1) / 2;
-                if (bytesToParse > 4) bytesToParse = 4;
-                uint32_t val = (uint32_t)parseHexValue(&p, bytesToParse * 2);
-                for (int i = bytesToParse - 1; i >= 0 && tempCount < 16; i--) {
-                    tempBytes[tempCount++] = (val >> (i * 8)) & 0xFF;
-                }
-            }
-            if (*p == ':' || *p == '-' || *p == ',') p++;
-        }
-        int ffCount = 16 - tempCount;
-        if (ffCount > 0) memset(m_guid, 0xFF, ffCount);
-        memcpy(m_guid + ffCount, tempBytes, tempCount);
-        return;
+        uint8_t trailing[16] = {};
+        int trailingCount = parseGroups(p, trailing, 16);
+        int ffCount = 16 - trailingCount;
+        memset(guid, 0xFF, ffCount);
+        memcpy(guid + ffCount, trailing, trailingCount);
+        return finish();
     }
 
-    // A middle "::" is a zero-filled placeholder. The leading "::" form
-    // above is retained for its VSCP-specific 0xFF shorthand meaning.
     const char *middle = strstr(p, "::");
-    if (middle != nullptr && middle != p) {
+    if (middle && middle != p) {
         auto countParsedBytes = [](const char *value) {
             int count = 0;
             while (*value) {
@@ -293,50 +285,53 @@ cguid::getFromString(const std::string &strGUID)
                     continue;
                 }
                 int hexLen = countHexDigits(value);
-                count += (hexLen <= 2) ? 1 : (hexLen <= 4 ? 2 : (hexLen + 1) / 2);
+                count += hexLen <= 2 ? 1 : (hexLen <= 4 ? 2 : (hexLen + 1) / 2);
                 value += hexLen;
             }
             return count;
         };
-
         std::string prefix(p, middle - p);
         std::string suffix(middle + 2);
-        cguid prefixGuid(prefix);
-        cguid suffixGuid(suffix);
+        uint8_t prefixGuid[16] = {};
+        uint8_t suffixGuid[16] = {};
+        (void)vscp_guid_parse(prefixGuid, prefix.c_str(), nullptr);
+        (void)vscp_guid_parse(suffixGuid, suffix.c_str(), nullptr);
         int prefixCount = (std::min)(countParsedBytes(prefix.c_str()), 16);
         int suffixCount = (std::min)(countParsedBytes(suffix.c_str()), 16 - prefixCount);
-
-        memcpy(m_guid, prefixGuid.m_guid, prefixCount);
-        memcpy(m_guid + 16 - suffixCount, suffixGuid.m_guid, suffixCount);
-        return;
+        memcpy(guid, prefixGuid, prefixCount);
+        memcpy(guid + 16 - suffixCount, suffixGuid, suffixCount);
+        return finish();
     }
 
-    // Parse hex groups separated by ':', '-', or ','. Group sizes are unrestricted.
-    while (*p && guidIdx < 16) {
-        if (!isHexDigit(*p)) break;
+    while (*p && guidIdx < 16 && isHexDigit(*p)) {
         int hexLen = countHexDigits(p);
-
         if (hexLen <= 2) {
-            m_guid[guidIdx++] = (uint8_t)parseHexValue(&p, 2);
-        } else if (hexLen <= 4) {
-            uint16_t val = (uint16_t)parseHexValue(&p, 4);
+            guid[guidIdx++] = (uint8_t)parseHexValue(&p, 2);
+        }
+        else if (hexLen <= 4) {
+            uint16_t value = (uint16_t)parseHexValue(&p, 4);
             if (guidIdx + 1 < 16) {
-                m_guid[guidIdx++] = (val >> 8) & 0xFF;
-                m_guid[guidIdx++] = val & 0xFF;
-            } else {
-                m_guid[guidIdx++] = val & 0xFF;
+                guid[guidIdx++] = (value >> 8) & 0xFF;
+                guid[guidIdx++] = value & 0xFF;
             }
-        } else {
+            else {
+                guid[guidIdx++] = value & 0xFF;
+            }
+        }
+        else {
             int bytesToParse = (hexLen + 1) / 2;
-            if (bytesToParse > (16 - guidIdx)) bytesToParse = 16 - guidIdx;
-            for (int i = 0; i < bytesToParse && guidIdx < 16; i++) {
-                uint8_t hi = hexToVal(*p++);
-                uint8_t lo = isHexDigit(*p) ? hexToVal(*p++) : 0;
-                m_guid[guidIdx++] = (hi << 4) | lo;
+            if (bytesToParse > 16 - guidIdx) bytesToParse = 16 - guidIdx;
+            for (int i = 0; i < bytesToParse; i++) {
+                uint8_t high = hexToVal(*p++);
+                uint8_t low = isHexDigit(*p) ? hexToVal(*p++) : 0;
+                guid[guidIdx++] = (high << 4) | low;
             }
         }
         if (guidIdx < 16 && (*p == ':' || *p == '-' || *p == ',')) p++;
     }
+
+    if (guidIdx != 16) return VSCP_ERROR_INVALID_SYNTAX;
+    return finish();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

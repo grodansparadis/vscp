@@ -108,6 +108,15 @@ class cguid
     void getFromString(const char *pszGUID);
 
     /*!
+        Parse a GUID string into a 16-byte array.
+        @param guid Pointer to 16-byte buffer to receive the parsed GUID
+        @param strguid Input string containing the GUID
+        @param endptr Optional pointer to receive the position after the parsed GUID
+        @return VSCP_ERROR_SUCCESS on success, or a VSCP error code
+    */
+    static int vscp_guid_parse(uint8_t *guid, const char *strguid, char **endptr);
+
+    /*!
         Set GUID from array
         @param pguid Pointer to array that holds 16 GUID bytes on
                 MSB->LSB form.
