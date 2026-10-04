@@ -595,6 +595,20 @@ TEST(Cguid, PartialString)
     }
 }
 
+TEST(Cguid, StaticGuidParser)
+{
+    uint8_t guid[16] = {};
+    const char input[] = "{01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F:10}tail";
+    char *endptr = nullptr;
+
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, cguid::vscp_guid_parse(guid, input, &endptr));
+    EXPECT_EQ(0x01, guid[0]);
+    EXPECT_EQ(0x10, guid[15]);
+    EXPECT_STREQ("tail", endptr);
+    EXPECT_EQ(VSCP_ERROR_INVALID_POINTER, cguid::vscp_guid_parse(nullptr, input, nullptr));
+    EXPECT_EQ(VSCP_ERROR_INVALID_POINTER, cguid::vscp_guid_parse(guid, nullptr, nullptr));
+}
+
 //-----------------------------------------------------------------------------
 // Extended GUID format tests (vscp-guid-parser formats)
 //-----------------------------------------------------------------------------

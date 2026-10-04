@@ -88,7 +88,6 @@ clock_gettime(int, struct timespec *ts)
 #include <vscpmd5.h>
 
 #include <guid.h>
-#include <vscp-guid-parser.h>
 // #include <mdf.h>
 #include <vscp.h>
 #include <vscphelper.h>
@@ -4270,7 +4269,7 @@ vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID)
     return false;
   }
 
-  return VSCP_ERROR_SUCCESS == vscp_guid_parse(pGUID, strGUID.c_str(), nullptr);
+  return VSCP_ERROR_SUCCESS == cguid::vscp_guid_parse(pGUID, strGUID.c_str(), nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
