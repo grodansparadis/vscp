@@ -33,11 +33,11 @@
 // I M P O T A N T ! ! ! Lines below must be located at line
 // 35/36/37/38/40/42/43 I M P O T A N T ! ! !
 #define VSCPD_MAJOR_VERSION     26
-#define VSCPD_MINOR_VERSION     9
-#define VSCPD_RELEASE_VERSION   3793
+#define VSCPD_MINOR_VERSION     10
+#define VSCPD_RELEASE_VERSION   0
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "26.09.3793"
+#define VSCPD_DISPLAY_VERSION   "26.10.0"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \
