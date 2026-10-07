@@ -74,19 +74,27 @@ client.setTLSOptions(true, "/etc/vscp/ca.pem");
 int result = client.doCmdOpen("stcp://daemon.example.org:9598", "admin", "secret");
 ```
 
-Peer verification is **off by default** for compatibility. Enable it in
-production using `setTLSOptions(true, ...)`: the CA file and/or directory is
-loaded, and the server hostname is verified. With neither CA option set,
+Certificate and hostname verification are **on by default** for TLS, including
+`stcp://` endpoints. Use `setTLSOptions(true, ...)` to configure a private CA
+file and/or directory. With neither CA option set,
 OpenSSL's default trust paths (including `SSL_CERT_FILE`/`SSL_CERT_DIR`) are
 used. Certificate directories contain PEM certificates. Client certificate
 and private-key paths enable mutual TLS; encrypted PEM keys use the supplied
 key password. Invalid TLS configuration and failed verification return a
 connection error; they never fall back to plain TCP.
 
+This intentionally changes the previous unverified TLS default. Deployments
+using private or self-signed certificates must configure their CA trust.
+Disabling verification requires an explicit `setTLSOptions(false, ...)` (or
+`"bverifypeer": false` in `vscpClientTcp` configuration) and is strongly
+discouraged outside controlled tests: it permits credential theft by an
+on-path attacker. Plain TCP selection is unchanged.
+
 The pinned Mongoose OpenSSL backend verifies names as DNS hostnames. Use the
 certificate's DNS hostname for verified TLS, rather than an IP-address endpoint.
-For compatibility with its unverified mode, no hostname/SNI is supplied when
-peer verification is disabled.
+Verified TLS supplies the hostname for SNI and verification. The explicitly
+insecure opt-out omits hostname/SNI because the pinned backend checks names
+even without a CA.
 
 Local integration tests generate temporary certificates and exercise actual
 TCP and TLS connections, including mutual TLS and verification failures:

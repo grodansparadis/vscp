@@ -59,7 +59,7 @@ vscpClientTcp::vscpClientTcp()
 
   m_bTLS        = false;
   m_tlsMode     = tls_mode::auto_select;
-  m_bVerifyPeer = false;
+  m_bVerifyPeer = true;
 
   vscp_clearVSCPFilter(&m_filterIn);  // Accept all events
   vscp_clearVSCPFilter(&m_filterOut); // Send all events
@@ -315,13 +315,13 @@ vscpClientTcp::connect(void)
   int rv;
 
   // Propagate TLS mode/settings to the remote tcp/ip interfaces
+  m_tcp.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
+                      m_certfile, m_keyfile, m_pwKeyfile);
+  m_tcpReceive.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
+                             m_certfile, m_keyfile, m_pwKeyfile);
   if (tls_mode::force_tls == m_tlsMode) {
     m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::force_tls);
     m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::force_tls);
-    m_tcp.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
-                        m_certfile, m_keyfile, m_pwKeyfile);
-    m_tcpReceive.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
-                               m_certfile, m_keyfile, m_pwKeyfile);
   }
   else if (tls_mode::force_plain == m_tlsMode) {
     m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::force_plain);

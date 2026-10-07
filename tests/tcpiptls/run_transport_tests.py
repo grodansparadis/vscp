@@ -3,6 +3,7 @@
 import contextlib
 import os
 from pathlib import Path
+import shutil
 import socketserver
 import ssl
 import subprocess
@@ -13,7 +14,10 @@ import time
 
 
 def openssl(*args):
-    subprocess.run(["openssl", *map(str, args)], check=True, capture_output=True)
+    executable = shutil.which("openssl")
+    if executable is None:
+        raise FileNotFoundError("The openssl command is required for TLS integration tests")
+    subprocess.run([str(Path(executable).resolve()), *map(str, args)], check=True, capture_output=True)
 
 
 class Handler(socketserver.BaseRequestHandler):
@@ -109,21 +113,29 @@ def main():
 
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(server_cert, server_key)
+        untrusted = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        untrusted.load_cert_chain(wrong_ca, root / "wrong.key")
         mtls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         mtls.load_cert_chain(server_cert, server_key)
         mtls.load_verify_locations(ca)
         mtls.verify_mode = ssl.CERT_REQUIRED
-        servers = [Server(), Server(tls), Server(mtls), Server(stall=True)]
+        servers = [Server(), Server(tls), Server(mtls), Server(stall=True), Server(untrusted)]
         for server in servers:
             stack.callback(server.close)
         environment = dict(os.environ, VSCP_TEST_PLAIN=servers[0].endpoint(),
                            VSCP_TEST_TLS=servers[1].endpoint(True),
                            VSCP_TEST_MTLS=servers[2].endpoint(True),
                            VSCP_TEST_STALL=servers[3].endpoint(True),
+                           VSCP_TEST_UNTRUSTED=servers[4].endpoint(True),
                            VSCP_TEST_CA=str(ca), VSCP_TEST_WRONG_CA=str(wrong_ca),
                            VSCP_TEST_CA_DIR=str(ca_dir), VSCP_TEST_CERT=str(client_cert),
                            VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca))
-        result = subprocess.run([sys.argv[1]], env=environment, timeout=60)
+        executable = Path(sys.argv[1]).resolve(strict=True)
+        if executable.name not in ("unittest_tcp_transport", "unittest_tcp_transport.exe"):
+            raise ValueError("Expected the CMake-built unittest_tcp_transport executable")
+        if not executable.is_file() or not os.access(executable, os.X_OK):
+            raise ValueError("The transport test executable is not runnable")
+        result = subprocess.run([str(executable)], env=environment, timeout=60)
         return result.returncode
 
 

@@ -758,7 +758,8 @@ public:
 
   /*!
       Set TLS/SSL options
-      @param bVerifyPeer If true, verify the server certificate.
+      @param bVerifyPeer Verify the server certificate and hostname (default
+          connection policy). False explicitly opts into insecure TLS.
       @param cafile Path to CA certificate file.
       @param capath Path to CA certificate directory.
       @param certfile Path to client certificate file.

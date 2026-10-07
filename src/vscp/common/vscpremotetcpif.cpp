@@ -180,10 +180,9 @@ bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std
     BIO *input = BIO_new_mem_buf(pem.data(), static_cast<int>(pem.size()));
     auto password = [](char *buffer, int size, int, void *arg) -> int {
       const auto &value = *static_cast<std::string *>(arg);
-      if (value.size() > static_cast<size_t>(size))
+      if (size <= 0 || value.size() > static_cast<size_t>(size))
         return 0;
-      memcpy(buffer, value.data(), value.size());
-      return static_cast<int>(value.size());
+      return static_cast<int>(value.copy(buffer, static_cast<size_t>(size)));
     };
     EVP_PKEY *privateKey = input ? PEM_read_bio_PrivateKey(input, nullptr, password, &client.m_pwKeyfile) : nullptr;
     BIO *output = BIO_new(BIO_s_mem());
@@ -304,7 +303,7 @@ VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
       return isConnected() ? 0 : -VSCP_ERROR_STOPPED;
   }
   size_t count = (std::min)(length, m_transport->received.size());
-  memcpy(buffer, m_transport->received.data(), count);
+  m_transport->received.copy(static_cast<char *>(buffer), count);
   m_transport->received.erase(0, count);
   return static_cast<int>(count);
 }
@@ -320,7 +319,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
 
   m_bTLS        = false;
   m_tlsMode     = tls_mode::auto_select;
-  m_bVerifyPeer = false;
+  m_bVerifyPeer = true;
 
   m_bModeReceiveLoop     = false;
   m_connectionTimeOut    = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS;

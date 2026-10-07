@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vscpremotetcpif.h>
+#include <vscp-client-tcp.h>
 
 #include <chrono>
 #include <cstdlib>
@@ -42,6 +43,8 @@ TEST_F(TcpTransport, PlainAndReconnect)
 
 TEST_F(TcpTransport, SecurePrefixAndUnverifiedCertificate)
 {
+  client.setTLSOptions(false);
+  client.setTLSAutoSelect();
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdOpen(setting("VSCP_TEST_TLS") + ";admin;secret"));
   ASSERT_TRUE(client.m_bTLS);
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdNOOP());
@@ -79,8 +82,41 @@ TEST_F(TcpTransport, CaDirectory)
 
 TEST_F(TcpTransport, DefaultTrustPaths)
 {
-  client.setTLSOptions(true);
+  ASSERT_TRUE(client.m_bVerifyPeer);
   open("VSCP_TEST_TLS");
+}
+
+TEST_F(TcpTransport, DefaultVerificationRejectsUntrustedCertificate)
+{
+  ASSERT_TRUE(client.m_bVerifyPeer);
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, client.doCmdOpen(setting("VSCP_TEST_UNTRUSTED"), "admin", "secret"));
+  ASSERT_FALSE(client.isConnected());
+}
+
+TEST_F(TcpTransport, DefaultVerificationRejectsWrongHostname)
+{
+  auto endpoint = setting("VSCP_TEST_TLS");
+  endpoint.replace(endpoint.find("localhost"), 9, "127.0.0.1");
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, client.doCmdOpen(endpoint, "admin", "secret"));
+  ASSERT_FALSE(client.isConnected());
+}
+
+TEST_F(TcpTransport, WrapperDefaultVerificationRejectsUntrustedCertificate)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_UNTRUSTED"), "admin", "secret", true));
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, wrapper.connect());
+  ASSERT_FALSE(wrapper.isConnected());
+}
+
+TEST_F(TcpTransport, WrapperAutoModePropagatesVerificationOptions)
+{
+  vscpClientTcp wrapper;
+  wrapper.setTLSOptions(true, setting("VSCP_TEST_WRONG_CA"));
+  wrapper.setTLSAutoSelect();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_TLS"), "admin", "secret", true));
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, wrapper.connect());
+  ASSERT_FALSE(wrapper.isConnected());
 }
 
 TEST_F(TcpTransport, RejectUntrustedCertificate)
