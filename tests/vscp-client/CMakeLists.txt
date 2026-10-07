@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 message(STATUS "Build dir: " ${PROJECT_SOURCE_DIR})
 
 find_package(OpenSSL REQUIRED)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/VSCPMongoose.cmake)
 
 # TODO Check SLL version and set variable accordingly
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DOPENSSL_API_1_1")
@@ -37,8 +38,6 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_tcp.h
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp_client_tcp.cpp
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/vscp.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/sockettcp.h
-    ${PROJECT_SOURCE_DIR}/../../src/common/sockettcp.c
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpbase64.c
     ${PROJECT_SOURCE_DIR}/../../src/common/vscpmd5.h
@@ -62,7 +61,7 @@ target_include_directories(test PUBLIC
     ${EXPAT_INCLUDE_DIRS}
     )
 
-target_link_libraries(test PRIVATE m
+target_link_libraries(test PRIVATE vscp_mongoose m
     dl
     pthread
     OpenSSL::SSL OpenSSL::Crypto
