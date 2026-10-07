@@ -51,7 +51,10 @@
 #include <math.h>
 #include <semaphore.h>
 #include <stdlib.h>
-#ifndef WIN32
+#ifdef WIN32
+#define VSCP_TLS_ERROR(args) mg_log args
+#else
+#define VSCP_TLS_ERROR(args) MG_ERROR(args)
 #include <unistd.h>
 #endif
 
@@ -87,16 +90,24 @@ win_usleep(__int64 usec)
 
 namespace {
 
+#ifdef WIN32
+bool isDirectory(const std::string &path)
+{
+  DWORD attributes = GetFileAttributesA(path.c_str());
+  return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
+}
+#endif
+
 bool readTlsFile(const std::string &path, std::string &contents)
 {
   std::ifstream file(path, std::ios::binary);
   if (!file) {
-    MG_ERROR(("Cannot read TLS file: %s", path.c_str()));
+    VSCP_TLS_ERROR(("Cannot read TLS file: %s", path.c_str()));
     return false;
   }
   contents.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
   if (file.bad() || contents.empty()) {
-    MG_ERROR(("Empty or unreadable TLS file: %s", path.c_str()));
+    VSCP_TLS_ERROR(("Empty or unreadable TLS file: %s", path.c_str()));
     return false;
   }
   return true;
@@ -111,7 +122,11 @@ void readCaEntry(const char *name, void *arg)
 {
   auto &directory = *static_cast<CaDirectory *>(arg);
   std::string path = directory.path + "/" + name;
+#ifdef WIN32
+  if (isDirectory(path))
+#else
   if (mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)
+#endif
     return;
   BIO *input = BIO_new_file(path.c_str(), "r");
   BIO *output = BIO_new(BIO_s_mem());
@@ -132,15 +147,34 @@ void readCaEntry(const char *name, void *arg)
 
 bool readCaDirectory(const std::string &path, std::string &certificates, bool allowEmpty = false)
 {
+#ifdef WIN32
+  if (!isDirectory(path)) {
+#else
   if (!(mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)) {
-    MG_ERROR(("Invalid TLS CA directory: %s", path.c_str()));
+#endif
+    VSCP_TLS_ERROR(("Invalid TLS CA directory: %s", path.c_str()));
     return false;
   }
   CaDirectory directory{path, ""};
+#ifdef WIN32
+  std::string pattern = path;
+  if (pattern.empty() || (pattern.back() != '/' && pattern.back() != '\\'))
+    pattern += '\\';
+  pattern += '*';
+  WIN32_FIND_DATAA entry;
+  HANDLE search = FindFirstFileA(pattern.c_str(), &entry);
+  if (search != INVALID_HANDLE_VALUE) {
+    do
+      readCaEntry(entry.cFileName, &directory);
+    while (FindNextFileA(search, &entry));
+    FindClose(search);
+  }
+#else
   mg_fs_posix.ls(path.c_str(), readCaEntry, &directory);
+#endif
   certificates += directory.certificates;
   if (directory.certificates.empty() && !allowEmpty) {
-    MG_ERROR(("No PEM certificates in TLS CA directory: %s", path.c_str()));
+    VSCP_TLS_ERROR(("No PEM certificates in TLS CA directory: %s", path.c_str()));
     return false;
   }
   return true;
@@ -158,7 +192,14 @@ bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std
       const char *file = getenv(X509_get_default_cert_file_env());
       const char *path = getenv(X509_get_default_cert_dir_env());
       std::string defaultFile = file ? file : X509_get_default_cert_file();
+#ifdef WIN32
+      std::ifstream defaultCertFile(defaultFile, std::ios::binary);
+      bool hasDefaultCertFile = defaultCertFile && !isDirectory(defaultFile);
+      defaultCertFile.close();
+      if (hasDefaultCertFile) {
+#else
       if (mg_fs_posix.st(defaultFile.c_str(), nullptr, nullptr) & MG_FS_READ) {
+#endif
         if (!readTlsFile(defaultFile, ca))
           return false;
       }
@@ -170,14 +211,18 @@ bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std
 #endif
       vscp_split(directories, path ? path : X509_get_default_cert_dir(), separator);
       for (const auto &directory : directories) {
+#ifdef WIN32
+        if (isDirectory(directory) && !readCaDirectory(directory, ca, true)) {
+#else
         if ((mg_fs_posix.st(directory.c_str(), nullptr, nullptr) & MG_FS_DIR) &&
             !readCaDirectory(directory, ca, true)) {
+#endif
           return false;
         }
       }
     }
     if (ca.empty()) {
-      MG_ERROR(("No TLS trust anchors loaded"));
+      VSCP_TLS_ERROR(("No TLS trust anchors loaded"));
       return false;
     }
   }
@@ -207,7 +252,7 @@ bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std
     BIO_free(output);
     EVP_PKEY_free(privateKey);
     if (!ok) {
-      MG_ERROR(("Cannot load TLS private key"));
+      VSCP_TLS_ERROR(("Cannot load TLS private key"));
       ERR_clear_error();
       return false;
     }
@@ -711,7 +756,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   m_transport.reset(new Transport(this));
   m_transport->host = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
   if (bSecure && !prepareTls(*this, m_transport->ca, m_transport->cert, m_transport->key)) {
-    MG_ERROR(("Invalid TLS configuration"));
+    VSCP_TLS_ERROR(("Invalid TLS configuration"));
     transportClose();
     return VSCP_ERROR_CONNECTION;
   }
