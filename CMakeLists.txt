@@ -235,6 +235,11 @@ function(vscp_setup_protocol_target target)
 endfunction()
 
 # =====================================================================
+# Mongoose transport (OpenSSL TLS backend)
+# =====================================================================
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/VSCPMongoose.cmake)
+
+# =====================================================================
 # vscp_sockettcp — isolated TCP socket utility library
 # =====================================================================
 add_library(vscp_sockettcp SHARED
@@ -349,6 +354,7 @@ add_library(vscp_core SHARED ${VSCP_CORE_SOURCES})
 vscp_setup_protocol_target(vscp_core)
 target_link_libraries(vscp_core
     PUBLIC
+        vscp_mongoose
         vscp_util
         vscp_guid
         vscp_guidparser
@@ -483,6 +489,7 @@ endif()
 # =====================================================================
 if(VSCP_INSTALL)
     set(VSCP_INSTALL_TARGETS
+        vscp_mongoose
         vscp_all
         vscp_common
         vscp_core

@@ -48,7 +48,7 @@ TEST(VscpRemoteTcpIfTLS, DefaultTLSDisabled)
 
   // TLS should be disabled by default
   ASSERT_FALSE(vscpif.m_bTLS);
-  ASSERT_FALSE(vscpif.m_bVerifyPeer);
+  ASSERT_TRUE(vscpif.m_bVerifyPeer);
   ASSERT_TRUE(vscpif.m_cafile.empty());
   ASSERT_TRUE(vscpif.m_capath.empty());
   ASSERT_TRUE(vscpif.m_certfile.empty());
@@ -193,6 +193,7 @@ TEST(VscpClientTcpTLS, DefaultTLSDisabled)
   nlohmann::json j = nlohmann::json::parse(config);
   ASSERT_TRUE(j.contains("btls"));
   ASSERT_FALSE(j["btls"].get<bool>());
+  ASSERT_TRUE(j["bverifypeer"].get<bool>());
 }
 
 //-----------------------------------------------------------------------------

@@ -30,6 +30,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
  find_package(spdlog REQUIRED)
 
 find_package(OpenSSL REQUIRED)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/VSCPMongoose.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -57,8 +58,6 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscpdatetime.h
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscphelper.cpp
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscp.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/sockettcp.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/sockettcp.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpbase64.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpmd5.h
@@ -99,7 +98,8 @@ else()
     ${EXPAT_INCLUDE_DIRS}
   )
 endif()  
-    
+
+target_link_libraries(unittest PRIVATE vscp_mongoose)
 if (WIN32)
   target_link_libraries(unittest PRIVATE
     PThreads4W::PThreads4W_CXXEXC
@@ -119,5 +119,4 @@ else()
     spdlog::spdlog
   )    
 endif()
-
 

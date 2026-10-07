@@ -25,3 +25,12 @@ target_link_libraries(unittest_tcpiptls PRIVATE
     GTest::GTest
     GTest::Main
 )
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+add_executable(unittest_tcp_transport transport.cpp)
+target_link_libraries(unittest_tcp_transport PRIVATE vscp_client_tcp GTest::GTest GTest::Main)
+add_custom_target(test_tcp_transport
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_transport_tests.py
+            $<TARGET_FILE:unittest_tcp_transport>
+    DEPENDS unittest_tcp_transport
+    USES_TERMINAL)
