@@ -110,6 +110,8 @@ def main():
         ca_dir = root / "ca-dir"
         ca_dir.mkdir()
         (ca_dir / "ca.pem").write_bytes(ca.read_bytes())
+        empty_ca_dir = root / "empty-ca-dir"
+        empty_ca_dir.mkdir()
 
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(server_cert, server_key)
@@ -129,13 +131,21 @@ def main():
                            VSCP_TEST_UNTRUSTED=servers[4].endpoint(True),
                            VSCP_TEST_CA=str(ca), VSCP_TEST_WRONG_CA=str(wrong_ca),
                            VSCP_TEST_CA_DIR=str(ca_dir), VSCP_TEST_CERT=str(client_cert),
-                           VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca))
+                           VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca),
+                           SSL_CERT_DIR=str(ca_dir))
         executable = Path(sys.argv[1]).resolve(strict=True)
         if executable.name not in ("unittest_tcp_transport", "unittest_tcp_transport.exe"):
             raise ValueError("Expected the CMake-built unittest_tcp_transport executable")
         if not executable.is_file() or not os.access(executable, os.X_OK):
             raise ValueError("The transport test executable is not runnable")
         result = subprocess.run([str(executable)], env=environment, timeout=60)
+        if result.returncode:
+            return result.returncode
+        # A present CA file must not shadow trust anchors supplied only by a directory.
+        directory_environment = dict(environment, SSL_CERT_FILE=str(wrong_ca),
+                                     SSL_CERT_DIR=os.pathsep.join((str(empty_ca_dir), str(ca_dir))))
+        result = subprocess.run([str(executable), "--gtest_filter=TcpTransport.DefaultTrustPaths"],
+                                env=directory_environment, timeout=60)
         return result.returncode
 
 

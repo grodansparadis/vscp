@@ -130,7 +130,7 @@ void readCaEntry(const char *name, void *arg)
   ERR_clear_error(); // Directory entries may include unrelated files.
 }
 
-bool readCaDirectory(const std::string &path, std::string &certificates)
+bool readCaDirectory(const std::string &path, std::string &certificates, bool allowEmpty = false)
 {
   if (!(mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)) {
     MG_ERROR(("Invalid TLS CA directory: %s", path.c_str()));
@@ -139,7 +139,7 @@ bool readCaDirectory(const std::string &path, std::string &certificates)
   CaDirectory directory{path, ""};
   mg_fs_posix.ls(path.c_str(), readCaEntry, &directory);
   certificates += directory.certificates;
-  if (directory.certificates.empty()) {
+  if (directory.certificates.empty() && !allowEmpty) {
     MG_ERROR(("No PEM certificates in TLS CA directory: %s", path.c_str()));
     return false;
   }
@@ -162,8 +162,18 @@ bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std
         if (!readTlsFile(defaultFile, ca))
           return false;
       }
-      else if (!readCaDirectory(path ? path : X509_get_default_cert_dir(), ca)) {
-        return false;
+      std::deque<std::string> directories;
+#ifdef WIN32
+      const char *separator = ";";
+#else
+      const char *separator = ":";
+#endif
+      vscp_split(directories, path ? path : X509_get_default_cert_dir(), separator);
+      for (const auto &directory : directories) {
+        if ((mg_fs_posix.st(directory.c_str(), nullptr, nullptr) & MG_FS_DIR) &&
+            !readCaDirectory(directory, ca, true)) {
+          return false;
+        }
       }
     }
     if (ca.empty()) {
