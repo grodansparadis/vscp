@@ -16,6 +16,11 @@ find_package(GTest REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# Standalone build: pull in the VSCP library targets from the repository root
+if(NOT TARGET vscp_client_tcp)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. ${CMAKE_CURRENT_BINARY_DIR}/vscp)
+endif()
+
 # add the executable
 add_executable(unittest_vscp_client_tcp unittest.cpp)
 

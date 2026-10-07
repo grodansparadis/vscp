@@ -15,6 +15,7 @@
 #include <math.h>
 
 #include <chrono>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -27,6 +28,7 @@
 // Standard connection (a VSCP daemon must be running here)
 #define INTERFACE1 	          "vscp2.vscp.org:9598;admin;secret"
 #define INTERFACE1_HOST 	    "vscp2.vscp.org:9598"
+#define INTERFACE1_NAME       "vscp2.vscp.org"
 #define INTERFACE1_PORT       9598
 #define INTERFACE1_USER 	    "admin"
 #define INTERFACE1_PASSWORD   "secret"
@@ -34,9 +36,39 @@
 // Standard connection (a VSCP daemon must be running here)
 #define INTERFACE2 	          "lynx:9598;admin;secret"
 #define INTERFACE2_HOST 	    "lynx:9598"
+#define INTERFACE2_NAME       "lynx"
 #define INTERFACE2_PORT       9598
 #define INTERFACE2_USER 	    "admin"
 #define INTERFACE2_PASSWORD   "secret"
+
+///////////////////////////////////////////////////////////////////////////////
+// Receive until count test events (CONTROL/TURNON, zone 0x55, subzone 0xAA)
+// are seen or timeout expires. Other traffic on the server is skipped.
+//
+
+int receiveTestEvents(VscpRemoteTcpIf &vscpif, int count, int timeout_ms = 10000)
+{
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms);
+  int found = 0;
+  while (found < count && std::chrono::steady_clock::now() < deadline) {
+    if (vscpif.doCmdDataAvailable() <= 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      continue;
+    }
+    vscpEvent ev = {};
+    if (VSCP_ERROR_SUCCESS != vscpif.doCmdReceive(&ev)) {
+      continue;
+    }
+    if ((VSCP_CLASS1_CONTROL == ev.vscp_class) &&
+        (VSCP_TYPE_CONTROL_TURNON == ev.vscp_type) &&
+        (3 == ev.sizeData) && (nullptr != ev.pdata) &&
+        (0x55 == ev.pdata[1]) && (0xAA == ev.pdata[2])) {
+      found++;
+    }
+    delete[] ev.pdata;
+  }
+  return found;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Open session to host and Send n events using ev
@@ -170,7 +202,7 @@ TEST(lynx, connect_vscp2_host_user_password)
 
 TEST(VscpRemoteTcpIf, ConnectVscp2HostPortUserPassword) 
 { 
-  const char *pHost = (char *)INTERFACE1_HOST;
+  const char *pHost = (char *)INTERFACE1_NAME;
   const char *pUser = (char *)INTERFACE1_USER;
   const char *pPassword = (char *)INTERFACE1_PASSWORD;
 
@@ -192,11 +224,12 @@ TEST(VscpRemoteTcpIf, ConnectVscp2UnknownHost)
 
   VscpRemoteTcpIf vscpif;
 
-  ASSERT_EQ(VSCP_ERROR_TIMEOUT, vscpif.doCmdOpen(pHost, INTERFACE1_PORT, pUser, pPassword));
+  // DNS lookup failure is reported as a connection error
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, vscpif.doCmdOpen(pHost, INTERFACE1_PORT, pUser, pPassword));
   // Should have ":port" so parameter error
   ASSERT_EQ(VSCP_ERROR_PARAMETER, vscpif.doCmdOpen(pHost, pUser, pPassword));
-  ASSERT_EQ(VSCP_ERROR_TIMEOUT, vscpif.doCmdOpen("test.host.no:9598", pUser, pPassword));
-  ASSERT_EQ(VSCP_ERROR_TIMEOUT, vscpif.doCmdOpen("tcp://test.host.no:9598;aaaa;bbbbb"));
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, vscpif.doCmdOpen("test.host.no:9598", pUser, pPassword));
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, vscpif.doCmdOpen("tcp://test.host.no:9598;aaaa;bbbbb"));
 }
 
 
@@ -206,7 +239,7 @@ TEST(VscpRemoteTcpIf, ConnectVscp2UnknownHost)
 #ifdef TEST_LOCAL
 TEST(lynx, ConnectVscp2HostPortUserPassword) 
 { 
-  const char *pHost = (char *)INTERFACE2_HOST;
+  const char *pHost = (char *)INTERFACE2_NAME;
   const char *pUser = (char *)INTERFACE2_USER;
   const char *pPassword = (char *)INTERFACE2_PASSWORD;
 
@@ -324,7 +357,7 @@ TEST(VscpRemoteTcpIf, cCnnectChkdataEv)
   VscpRemoteTcpIf vscpif;
 
   ASSERT_EQ(false, vscpif.isConnected());
-  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, INTERFACE1_PORT, pUser, pPassword));
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdOpen( INTERFACE1_NAME, INTERFACE1_PORT, pUser, pPassword));
   ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdNOOP());
   ASSERT_EQ(true, vscpif.isConnected());
   ASSERT_EQ(VSCP_LEVEL2, vscpif.doCmdGetLevel());
@@ -333,21 +366,7 @@ TEST(VscpRemoteTcpIf, cCnnectChkdataEv)
                                                               pPassword, 
                                                               10));                                                            
  
-  ASSERT_EQ(true, (vscpif.doCmdDataAvailable() >= 10));
-  do {
-    vscpEvent *pEvent = new vscpEvent;
-    ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdReceive(pEvent));
-    if ( (nullptr != pEvent) && 
-          (VSCP_CLASS1_CONTROL == pEvent->vscp_class) && 
-          (VSCP_TYPE_CONTROL_TURNON == pEvent->vscp_type) ) {
-      ASSERT_EQ(3, pEvent->sizeData);
-      ASSERT_NE(nullptr, pEvent->pdata);
-      ASSERT_EQ(0x55, pEvent->pdata[1]);
-      ASSERT_EQ(0xAA, pEvent->pdata[2]);
-    }
-    vscp_deleteEvent(pEvent);
-  } while (vscpif.doCmdDataAvailable() > 0);
-
+  ASSERT_EQ(10, receiveTestEvents(vscpif, 10));
 }
 
 //-----------------------------------------------------------------------------
@@ -360,7 +379,7 @@ TEST(VscpRemoteTcpIf, ConnectChkdataEx)
   VscpRemoteTcpIf vscpif;
 
   ASSERT_EQ(false, vscpif.isConnected());
-  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdOpen( pHost, INTERFACE1_PORT, pUser, pPassword));
+  ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdOpen( INTERFACE1_NAME, INTERFACE1_PORT, pUser, pPassword));
   ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdNOOP());
   ASSERT_EQ(true, vscpif.isConnected());
   ASSERT_EQ(VSCP_LEVEL2, vscpif.doCmdGetLevel());
@@ -368,21 +387,7 @@ TEST(VscpRemoteTcpIf, ConnectChkdataEx)
                                                               pUser, 
                                                               pPassword, 
                                                               10));                                                            
-  ASSERT_EQ(true, (vscpif.doCmdDataAvailable() >= 10));
-  do {
-    vscpEvent *pEvent = new vscpEvent;
-    ASSERT_EQ(CANAL_ERROR_SUCCESS, vscpif.doCmdReceive(pEvent));
-    if ( (nullptr != pEvent) && 
-          (VSCP_CLASS1_CONTROL == pEvent->vscp_class) && 
-          (VSCP_TYPE_CONTROL_TURNON == pEvent->vscp_type) ) {
-      ASSERT_EQ(3, pEvent->sizeData);
-      ASSERT_NE(nullptr, pEvent->pdata);
-      ASSERT_EQ(0x55, pEvent->pdata[1]);
-      ASSERT_EQ(0xAA, pEvent->pdata[2]);
-    }
-    vscp_deleteEvent(pEvent);
-  } while (vscpif.doCmdDataAvailable() > 0);
-
+  ASSERT_EQ(10, receiveTestEvents(vscpif, 10));
 }
 
 
