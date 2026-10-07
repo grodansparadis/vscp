@@ -37,7 +37,7 @@
 #define VSCPD_RELEASE_VERSION   0
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "26.10.0"
+#define VSCPD_DISPLAY_VERSION   "26.10.0.0"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \
