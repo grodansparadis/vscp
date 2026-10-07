@@ -25,6 +25,7 @@ message(STATUS "Build dir: " ${PROJECT_SOURCE_DIR})
 
 find_package(GTest CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/VSCPMongoose.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -52,8 +53,6 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscpdatetime.h
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscphelper.cpp
     ${PROJECT_SOURCE_DIR}/../../../src/vscp/common/vscp.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/sockettcp.h
-    ${PROJECT_SOURCE_DIR}/../../../src/common/sockettcp.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpbase64.h
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpbase64.c
     ${PROJECT_SOURCE_DIR}/../../../src/common/vscpmd5.h
@@ -69,6 +68,7 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../../src/common/third_party/nlohmann/json.hpp
     )
 
+target_link_libraries(unittest PRIVATE vscp_mongoose)
 
 if (WIN32)    
   find_package(pthreads REQUIRED)
@@ -114,5 +114,3 @@ else()
     GTest::gmock
   )    
 endif()
-
-

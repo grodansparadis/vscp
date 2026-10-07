@@ -17,6 +17,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(STATUS "Building VSCP common unit tests")
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 # Bootstrap: build the VSCP library targets when not provided by a parent
 if(NOT TARGET vscp_common)
@@ -51,6 +52,8 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscphelper/unittest_vscphelper
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/mdfparser ${CMAKE_CURRENT_BINARY_DIR}/mdfparser/unittest_mdfparser
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tcpiptls/unittest_tcpiptls
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tcpiptls/run_transport_tests.py
+            $<TARGET_FILE:unittest_tcp_transport>
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-base/unittest_vscp_client_base
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-canal/unittest_vscp_client_canal
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-mqtt/unittest_vscp_client_mqtt
@@ -59,7 +62,7 @@ set(TEST_COMMANDS
 )
 set(TEST_DEPENDS
     unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
-    unittest_tcpiptls unittest_vscp_client_base unittest_vscp_client_canal
+    unittest_tcpiptls unittest_tcp_transport unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
     unittest_vscp_client_tcp
 )

@@ -32,6 +32,7 @@ int main() {
 | Library | Purpose |
 | --- | --- |
 | vscp_sockettcp | Low-level socket and TCP support |
+| vscp_mongoose | Mongoose TCP transport with OpenSSL TLS |
 | vscp_util | Shared helper functions and crypto utilities |
 | vscp_guid | GUID storage, conversion and comparison |
 | vscp_guidparser | GUID string parsing helpers |
@@ -50,6 +51,54 @@ int main() {
 | vscp_all | Single all-in-one aggregate shared library |
 
 ---
+
+## TCP client transport and TLS
+
+`VscpRemoteTcpIf` (and `vscpClientTcp`, which uses it) communicates through
+Mongoose, not `sockettcp`. Initialize the declared submodules before building:
+
+```sh
+git submodule update --init --recursive
+```
+
+The synchronous command API is unchanged. `tcp://host:port` and `host:port`
+select plain TCP; `stcp://host:port` selects TLS. `enableTLS(true)` forces TLS,
+`enableTLS(false)` forces plain TCP, and `setTLSAutoSelect()` restores selection
+by prefix. TLS handshake time is included in the connection timeout. Each
+client owns a Mongoose manager, polled by its blocking operations; use a client
+from only one thread at a time. Connection objects are non-copyable.
+
+```cpp
+VscpRemoteTcpIf client;
+client.setTLSOptions(true, "/etc/vscp/ca.pem");
+int result = client.doCmdOpen("stcp://daemon.example.org:9598", "admin", "secret");
+```
+
+Peer verification is **off by default** for compatibility. Enable it in
+production using `setTLSOptions(true, ...)`: the CA file and/or directory is
+loaded, and the server hostname is verified. With neither CA option set,
+OpenSSL's default trust paths (including `SSL_CERT_FILE`/`SSL_CERT_DIR`) are
+used. Certificate directories contain PEM certificates. Client certificate
+and private-key paths enable mutual TLS; encrypted PEM keys use the supplied
+key password. Invalid TLS configuration and failed verification return a
+connection error; they never fall back to plain TCP.
+
+The pinned Mongoose OpenSSL backend verifies names as DNS hostnames. Use the
+certificate's DNS hostname for verified TLS, rather than an IP-address endpoint.
+For compatibility with its unverified mode, no hostname/SNI is supplied when
+peer verification is disabled.
+
+Local integration tests generate temporary certificates and exercise actual
+TCP and TLS connections, including mutual TLS and verification failures:
+
+```sh
+cmake -S . -B build -DVSCP_BUILD_TESTS=ON
+cmake --build build --target test_tcp_transport
+```
+
+These tests require Python 3 and the `openssl` command. Mongoose retains its
+upstream GPLv2/commercial licensing; consumers must use an appropriate license.
+The legacy `vscp_sockettcp` library remains available to other users.
 
 ## vscp_sockettcp
 

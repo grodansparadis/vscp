@@ -41,13 +41,12 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-#include <sockettcp.h>
-
 #ifndef WIN32
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <pthread.h>
 #include <semaphore.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -65,10 +64,10 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <memory>
 
 #include <canal.h>
 #include <guid.h>
-#include <sockettcp.h>
 #include <vscp.h>
 #include <vscpdatetime.h>
 #include <vscphelper.h>
@@ -121,6 +120,7 @@
 
 // Forward declarations
 class VscpRemoteTcpIf;
+struct mg_connection;
 
 /*!
     @brief Class for VSCP daemon tcp/ip interface
@@ -138,6 +138,9 @@ public:
 
   /// Destructor
   virtual ~VscpRemoteTcpIf();
+
+  VscpRemoteTcpIf(const VscpRemoteTcpIf &) = delete;
+  VscpRemoteTcpIf &operator=(const VscpRemoteTcpIf &) = delete;
 
 public:
   /*!
@@ -217,7 +220,7 @@ public:
   /*!
       Returns TRUE if we are connected false otherwise.
    */
-  bool isConnected(void) { return ((NULL != m_conn) && (STCP_CONN_STATE_CONNECTED == m_conn->conn_state)); };
+  bool isConnected(void);
 
   /*!
       checkReturnValue
@@ -720,8 +723,7 @@ public:
 
   /*!
       Enable TLS/SSL for the connection.
-      When set, doCmdOpen will use stcp_connect_remote_secure()
-      instead of stcp_connect_remote().
+      When set, doCmdOpen negotiates TLS through Mongoose before login.
   */
   void enableTLS(bool bEnable = true)
   {
@@ -808,7 +810,7 @@ public:
       The connection structure
       Not NULL if connected.
   */
-  struct stcp_connection *m_conn;
+  struct mg_connection *m_conn;
 
   /*!
    * This is the last response from a remote node.
@@ -817,6 +819,13 @@ public:
    * or -ERR if an error response was receved.
    */
   std::string m_strResponse;
+
+private:
+  struct Transport;
+  std::unique_ptr<Transport> m_transport;
+  static void transportHandler(struct mg_connection *conn, int event, void *data);
+  int transportRead(void *buffer, size_t length, int timeout);
+  void transportClose();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -38,6 +38,15 @@
 #include <deque>
 #include <list>
 #include <string>
+#include <algorithm>
+#include <chrono>
+#include <fstream>
+#include <iterator>
+#include <limits>
+
+#include <mongoose.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 
 #include <math.h>
 #include <semaphore.h>
@@ -76,13 +85,238 @@ win_usleep(__int64 usec)
 }
 #endif
 
+namespace {
+
+bool readTlsFile(const std::string &path, std::string &contents)
+{
+  std::ifstream file(path, std::ios::binary);
+  if (!file) {
+    MG_ERROR(("Cannot read TLS file: %s", path.c_str()));
+    return false;
+  }
+  contents.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+  if (file.bad() || contents.empty()) {
+    MG_ERROR(("Empty or unreadable TLS file: %s", path.c_str()));
+    return false;
+  }
+  return true;
+}
+
+struct CaDirectory {
+  std::string path;
+  std::string certificates;
+};
+
+void readCaEntry(const char *name, void *arg)
+{
+  auto &directory = *static_cast<CaDirectory *>(arg);
+  std::string path = directory.path + "/" + name;
+  if (mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)
+    return;
+  BIO *input = BIO_new_file(path.c_str(), "r");
+  BIO *output = BIO_new(BIO_s_mem());
+  X509 *cert;
+  while (input && output && (cert = PEM_read_bio_X509(input, nullptr, nullptr, nullptr))) {
+    if (PEM_write_bio_X509(output, cert) == 1) {
+      char *data = nullptr;
+      long length = BIO_get_mem_data(output, &data);
+      directory.certificates.append(data, static_cast<size_t>(length));
+      BIO_reset(output);
+    }
+    X509_free(cert);
+  }
+  BIO_free(input);
+  BIO_free(output);
+  ERR_clear_error(); // Directory entries may include unrelated files.
+}
+
+bool readCaDirectory(const std::string &path, std::string &certificates)
+{
+  if (!(mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)) {
+    MG_ERROR(("Invalid TLS CA directory: %s", path.c_str()));
+    return false;
+  }
+  CaDirectory directory{path, ""};
+  mg_fs_posix.ls(path.c_str(), readCaEntry, &directory);
+  certificates += directory.certificates;
+  if (directory.certificates.empty()) {
+    MG_ERROR(("No PEM certificates in TLS CA directory: %s", path.c_str()));
+    return false;
+  }
+  return true;
+}
+
+// Mongoose accepts PEM contents, not paths or encrypted private keys.
+bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std::string &key)
+{
+  if (client.m_bVerifyPeer) {
+    if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca))
+      return false;
+    if (!client.m_capath.empty() && !readCaDirectory(client.m_capath, ca))
+      return false;
+    if (client.m_cafile.empty() && client.m_capath.empty()) {
+      const char *file = getenv(X509_get_default_cert_file_env());
+      const char *path = getenv(X509_get_default_cert_dir_env());
+      std::string defaultFile = file ? file : X509_get_default_cert_file();
+      if (mg_fs_posix.st(defaultFile.c_str(), nullptr, nullptr) & MG_FS_READ) {
+        if (!readTlsFile(defaultFile, ca))
+          return false;
+      }
+      else if (!readCaDirectory(path ? path : X509_get_default_cert_dir(), ca)) {
+        return false;
+      }
+    }
+    if (ca.empty()) {
+      MG_ERROR(("No TLS trust anchors loaded"));
+      return false;
+    }
+  }
+  if (!client.m_certfile.empty() && !readTlsFile(client.m_certfile, cert))
+    return false;
+  if (!client.m_keyfile.empty() || !cert.empty()) {
+    std::string pem;
+    if (!readTlsFile(client.m_keyfile.empty() ? client.m_certfile : client.m_keyfile, pem))
+      return false;
+    BIO *input = BIO_new_mem_buf(pem.data(), static_cast<int>(pem.size()));
+    auto password = [](char *buffer, int size, int, void *arg) -> int {
+      const auto &value = *static_cast<std::string *>(arg);
+      if (value.size() > static_cast<size_t>(size))
+        return 0;
+      memcpy(buffer, value.data(), value.size());
+      return static_cast<int>(value.size());
+    };
+    EVP_PKEY *privateKey = input ? PEM_read_bio_PrivateKey(input, nullptr, password, &client.m_pwKeyfile) : nullptr;
+    BIO *output = BIO_new(BIO_s_mem());
+    bool ok = privateKey && output &&
+              PEM_write_bio_PrivateKey(output, privateKey, nullptr, nullptr, 0, nullptr, nullptr) == 1;
+    if (ok) {
+      char *data = nullptr;
+      long length = BIO_get_mem_data(output, &data);
+      key.assign(data, static_cast<size_t>(length));
+    }
+    BIO_free(input);
+    BIO_free(output);
+    EVP_PKEY_free(privateKey);
+    if (!ok) {
+      MG_ERROR(("Cannot load TLS private key"));
+      ERR_clear_error();
+      return false;
+    }
+  }
+  return true;
+}
+
+} // namespace
+
+struct VscpRemoteTcpIf::Transport {
+  mg_mgr manager;
+  VscpRemoteTcpIf *owner;
+  bool connected = false;
+  bool failed = false;
+  std::string received;
+  std::string host;
+  std::string ca;
+  std::string cert;
+  std::string key;
+
+  explicit Transport(VscpRemoteTcpIf *client) : owner(client) { mg_mgr_init(&manager); }
+  ~Transport()
+  {
+    mg_mgr_free(&manager);
+    if (!key.empty())
+      OPENSSL_cleanse(&key[0], key.size());
+  }
+};
+
+bool
+VscpRemoteTcpIf::isConnected(void)
+{
+  return m_transport && m_transport->connected && m_conn && !m_conn->is_closing;
+}
+
+void
+VscpRemoteTcpIf::transportHandler(mg_connection *conn, int event, void *data)
+{
+  auto &transport = *static_cast<Transport *>(conn->fn_data);
+  auto &client = *transport.owner;
+  if (event == MG_EV_CONNECT) {
+    if (client.m_bTLS) {
+      mg_tls_opts options = {};
+      options.ca = mg_str(transport.ca.c_str());
+      options.cert = mg_str(transport.cert.c_str());
+      options.key = mg_str(transport.key.c_str());
+      // The pinned OpenSSL backend checks name even without a CA.
+      if (client.m_bVerifyPeer)
+        options.name = mg_str(transport.host.c_str());
+      options.skip_verification = !client.m_bVerifyPeer;
+      mg_tls_init(conn, &options);
+    }
+    else {
+      transport.connected = true;
+    }
+  }
+  else if (event == MG_EV_TLS_HS) {
+    transport.connected = true;
+    if (!transport.key.empty()) {
+      OPENSSL_cleanse(&transport.key[0], transport.key.size());
+      transport.key.clear();
+    }
+  }
+  else if (event == MG_EV_READ) {
+    transport.received.append(reinterpret_cast<const char *>(conn->recv.buf), conn->recv.len);
+    mg_iobuf_del(&conn->recv, 0, conn->recv.len);
+  }
+  else if (event == MG_EV_ERROR) {
+    transport.failed = true;
+    transport.connected = false;
+    TCPIP_UNUSED(data); // Mongoose logs the error before dispatching it.
+  }
+  else if (event == MG_EV_CLOSE) {
+    transport.connected = false;
+    client.m_conn = nullptr;
+  }
+}
+
+void
+VscpRemoteTcpIf::transportClose()
+{
+  m_transport.reset();
+  m_conn = nullptr;
+}
+
+int
+VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
+{
+  if (!m_transport)
+    return -VSCP_ERROR_STOPPED;
+  if (timeout < 0)
+    timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
+  while (m_transport->received.empty()) {
+    if (!isConnected())
+      return -VSCP_ERROR_STOPPED;
+    auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       deadline - std::chrono::steady_clock::now()).count();
+    mg_mgr_poll(&m_transport->manager, static_cast<int>(std::max<int64_t>(0, std::min<int64_t>(remaining, 10))));
+    if (!m_transport->received.empty())
+      break;
+    if (std::chrono::steady_clock::now() >= deadline)
+      return isConnected() ? 0 : -VSCP_ERROR_STOPPED;
+  }
+  size_t count = (std::min)(length, m_transport->received.size());
+  memcpy(buffer, m_transport->received.data(), count);
+  m_transport->received.erase(0, count);
+  return static_cast<int>(count);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 VscpRemoteTcpIf::VscpRemoteTcpIf()
 {
-  m_conn = NULL; // Not yet used
+  m_conn = nullptr;
+  m_lastResponseTime = 0;
 
   m_bTLS        = false;
   m_tlsMode     = tls_mode::auto_select;
@@ -127,19 +361,25 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
   while (((vscp_getMsTimeStamp() - start) < m_responseTimeOut)) {
 
     memset(buf, 0, sizeof(buf));
-    int nRead = stcp_read(m_conn, buf, sizeof(buf), m_innerResponseTimeout);
+    uint32_t elapsed = vscp_getMsTimeStamp() - start;
+    if (elapsed >= m_responseTimeOut)
+      break;
+    int remaining = static_cast<int>(std::min<uint32_t>(m_responseTimeOut - elapsed,
+                                                       (std::numeric_limits<int>::max)()));
+    int nRead = transportRead(buf, sizeof(buf) - 1,
+                             m_innerResponseTimeout < 0 ? remaining : (std::min)(m_innerResponseTimeout, remaining));
 #ifdef DEBUG_INNER_COMMUNICATION
     if (nRead) {
       std::cout << "[" << buf << "]" << std::endl;
     }
 #endif
     if (nRead < 0) {
-      if (STCP_ERROR_TIMEOUT == nRead) {
+      if (-VSCP_ERROR_TIMEOUT == nRead) {
         // VSCP_ERROR_TIMEOUT;
         rv = false;
         break;
       }
-      else if (STCP_ERROR_STOPPED == nRead) {
+      else if (-VSCP_ERROR_STOPPED == nRead) {
         // VSCP_ERROR_STOPPED;
         rv = false;
         break;
@@ -155,7 +395,7 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
     }
 
     // if err abort
-    if (NULL != strstr(buf, "+ERR")) {
+    if (m_strResponse.npos != m_strResponse.find("+ERR")) {
       break;
     }
 
@@ -188,13 +428,13 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
   char buf[8192];
 
   memset(buf, 0, sizeof(buf));
-  int nRead = stcp_read(m_conn, buf, sizeof(buf), timeout);
+  int nRead = transportRead(buf, sizeof(buf), timeout);
 
   if (nRead < 0) {
-    if (STCP_ERROR_TIMEOUT == nRead) {
+    if (-VSCP_ERROR_TIMEOUT == nRead) {
       return VSCP_ERROR_TIMEOUT;
     }
-    else if (STCP_ERROR_STOPPED == nRead) {
+    else if (-VSCP_ERROR_STOPPED == nRead) {
       return VSCP_ERROR_STOPPED;
     }
     return VSCP_ERROR_ERROR;
@@ -202,6 +442,9 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
   else if (nRead > 0) {
     m_strResponse += std::string(buf, nRead);
     addInputStringArrayFromReply();
+  }
+  else {
+    return VSCP_ERROR_TIMEOUT;
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -226,12 +469,11 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
   doClrInputQueue();
 
   // Make sure we are connected
-  if (nullptr == m_conn) {
+  if (!isConnected()) {
     return VSCP_ERROR_CONNECTION;
   }
 
-  int n;
-  if (0 == (n = stcp_write(m_conn, (const char *)cmd.c_str(), cmd.length())) || n != (int) cmd.length()) {
+  if (!mg_send(m_conn, cmd.data(), cmd.length())) {
     return VSCP_ERROR_ERROR;
   }
 
@@ -405,8 +647,6 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
 {
   std::string buf;
   std::string str;
-  std::string host;
-  int port;
 
 #ifdef DEBUG_LIB_VSCP_HELPER
   std::cout << "============================================================" << std::endl;
@@ -437,47 +677,51 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   }
   m_bTLS = bSecure;
 
-  std::deque<std::string> tokens;
-  vscp_split(tokens, strHost, ":");
-  if (tokens.size() < 2) {
+  // Bracketed IPv6 endpoints must not be split on every colon.
+  size_t separator = strHost.rfind(':');
+  if (separator == std::string::npos || separator == 0 || separator + 1 == strHost.size()) {
     return VSCP_ERROR_PARAMETER;
   }
-  host = tokens.front();
-  tokens.pop_front();
-  port = (int) vscp_readStringValue(tokens.front());
-  tokens.pop_front();
-
-  if (bSecure) {
-    struct stcp_secure_options opts;
-    memset(&opts, 0, sizeof(opts));
-
-    if (!m_cafile.empty()) {
-      opts.ca_file = m_cafile.c_str();
-    }
-    if (!m_capath.empty()) {
-      opts.ca_path = m_capath.c_str();
-    }
-    if (!m_certfile.empty()) {
-      opts.client_cert_path = m_certfile.c_str();
-    }
-    if (!m_keyfile.empty()) {
-      opts.pem = m_keyfile.c_str();
-    }
-    opts.verify_peer = m_bVerifyPeer ? 1 : 0;
-
-    m_conn = stcp_connect_remote_secure(
-      (const char *)host.c_str(), port, &opts, m_connectionTimeOut);
-  } else {
-    m_conn = stcp_connect_remote(
-      (const char *)host.c_str(), port, m_connectionTimeOut);
+  std::string portString = strHost.substr(separator + 1);
+  if (portString.find_first_not_of("0123456789") != std::string::npos ||
+      portString.size() > 5 || vscp_readStringValue(portString) == 0 ||
+      vscp_readStringValue(portString) > 65535) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  std::string host = strHost.substr(0, separator);
+  if (host.find_first_of("/?#@; \t\r\n") != std::string::npos)
+    return VSCP_ERROR_PARAMETER;
+  if (host.front() == '[') {
+    if (host.size() < 3 || host.back() != ']')
+      return VSCP_ERROR_PARAMETER;
+  }
+  else if (host.find(':') != std::string::npos) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  doCmdClose();
+  m_transport.reset(new Transport(this));
+  m_transport->host = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
+  if (bSecure && !prepareTls(*this, m_transport->ca, m_transport->cert, m_transport->key)) {
+    MG_ERROR(("Invalid TLS configuration"));
+    transportClose();
+    return VSCP_ERROR_CONNECTION;
+  }
+  std::string url = "tcp://" + strHost;
+  m_conn = mg_connect(&m_transport->manager, url.c_str(), transportHandler, m_transport.get());
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(m_connectionTimeOut);
+  while (m_conn && !isConnected() && !m_transport->failed &&
+         std::chrono::steady_clock::now() < deadline) {
+    mg_mgr_poll(&m_transport->manager, 10);
   }
 
-  if (NULL == m_conn) {
+  if (!isConnected()) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER
     std::cout << "Connection failed." << strHostname << std::endl;
 #endif
-    return VSCP_ERROR_TIMEOUT;
+    bool failed = m_transport->failed;
+    transportClose();
+    return failed ? VSCP_ERROR_CONNECTION : VSCP_ERROR_TIMEOUT;
   }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
@@ -490,8 +734,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
     std::cout << "No +OK found " << strHostname << std::endl;
 #endif
 
-    stcp_close_connection(m_conn);
-    m_conn = NULL;
+    transportClose();
     return VSCP_ERROR_CONNECTION;
   }
 
@@ -502,8 +745,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   buf = std::string("USER ") + str + std::string("\r\n");
 
   if (VSCP_ERROR_SUCCESS != doCommand(buf)) {
-    stcp_close_connection(m_conn);
-    m_conn = NULL;
+    transportClose();
     return VSCP_ERROR_USER;
   }
 
@@ -512,8 +754,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   vscp_trim(str);
   buf = std::string("PASS ") + str + std::string("\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(buf)) {
-    stcp_close_connection(m_conn);
-    m_conn = NULL;
+    transportClose();
     return VSCP_ERROR_PASSWORD;
   }
 
@@ -554,14 +795,12 @@ VscpRemoteTcpIf::doCmdClose(void)
 
     // Try to behave
     doCommand("QUIT\r\n");
-
-    // Clean up and close physical connection
-    stcp_close_connection(m_conn);
-    m_conn = NULL;
   }
 
+  transportClose();
   m_bModeReceiveLoop = false;
   m_inputStrArray.clear();
+  m_strResponse.clear();
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -975,11 +1214,15 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
   while ((vscp_getMsTimeStamp() - startTime) < mstimeout) {
 
-    if ((nRead = stcp_read(m_conn, buf, sizeof(buf), m_innerResponseTimeout)) <= 0) {
+    uint32_t elapsed = vscp_getMsTimeStamp() - startTime;
+    if (elapsed >= mstimeout)
+      break;
+    int remaining = static_cast<int>(std::min<uint32_t>(mstimeout - elapsed, (std::numeric_limits<int>::max)()));
+    if ((nRead = transportRead(buf, sizeof(buf),
+                              m_innerResponseTimeout < 0 ? remaining : (std::min)(m_innerResponseTimeout, remaining))) <= 0) {
 
-      if (STCP_ERROR_STOPPED == nRead) {
-        stcp_close_connection(m_conn);
-        m_conn = NULL;
+      if (-VSCP_ERROR_STOPPED == nRead) {
+        transportClose();
         return VSCP_ERROR_STOPPED;
       }
 #ifndef WIN32
