@@ -389,7 +389,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
   // Set default version info
   m_version_year   = VSCPD_MAJOR_VERSION;
   m_version_month   = VSCPD_MINOR_VERSION;
-  m_version_patch = VSCPD_RELEASE_VERSION;
+  m_version_patch = VSCPD_PATCH_VERSION;
 }
 
 VscpRemoteTcpIf::~VscpRemoteTcpIf()

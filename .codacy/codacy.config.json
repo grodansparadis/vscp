@@ -1,2107 +1,31 @@
 {
   "version": 1,
   "metadata": {
-    "source": "remote",
-    "provider": "gh",
-    "organization": "nlohmann",
-    "repositoryId": "414248",
-    "repositoryName": "json",
-    "createdAt": "2026-10-07T15:06:12.870Z",
-    "updatedAt": "2026-10-07T15:06:12.870Z",
+    "source": "auto",
+    "provider": null,
+    "organization": null,
+    "repositoryId": null,
+    "repositoryName": null,
+    "createdAt": "2026-10-07T15:12:48.391Z",
+    "updatedAt": "2026-10-07T15:12:48.391Z",
     "languages": [
       "C",
       "CPP",
-      "CSS",
-      "Dockerfile",
+      "CSharp",
       "HTML",
-      "Javascript",
       "JSON",
-      "Lua",
+      "Javascript",
       "Markdown",
-      "PLSQL",
-      "Powershell",
+      "PHP",
       "Python",
-      "Shell",
       "SQL",
-      "Swift",
+      "Shell",
       "TypeScript",
+      "XML",
       "YAML"
     ]
   },
   "tools": [
-    {
-      "toolId": "Agentlinter",
-      "patterns": []
-    },
-    {
-      "toolId": "SQLint",
-      "patterns": [
-        {
-          "patternId": "SQLint_allIssues"
-        }
-      ]
-    },
-    {
-      "toolId": "PyLintPython3",
-      "patterns": [
-        {
-          "patternId": "PyLintPython3_E0203"
-        },
-        {
-          "patternId": "PyLintPython3_E0102"
-        },
-        {
-          "patternId": "PyLintPython3_E1102"
-        },
-        {
-          "patternId": "PyLintPython3_E1121"
-        },
-        {
-          "patternId": "PyLintPython3_W1301"
-        },
-        {
-          "patternId": "PyLintPython3_C0200"
-        },
-        {
-          "patternId": "PyLintPython3_E0241"
-        },
-        {
-          "patternId": "PyLintPython3_C0123"
-        },
-        {
-          "patternId": "PyLintPython3_W0101"
-        },
-        {
-          "patternId": "PyLintPython3_W0604"
-        },
-        {
-          "patternId": "PyLintPython3_E0107"
-        },
-        {
-          "patternId": "PyLintPython3_E0202"
-        },
-        {
-          "patternId": "PyLintPython3_E1003"
-        },
-        {
-          "patternId": "PyLintPython3_E0302"
-        },
-        {
-          "patternId": "PyLintPython3_E1306"
-        },
-        {
-          "patternId": "PyLintPython3_E0113"
-        },
-        {
-          "patternId": "PyLintPython3_E0301"
-        },
-        {
-          "patternId": "PyLintPython3_W0711"
-        },
-        {
-          "patternId": "PyLintPython3_E0108"
-        },
-        {
-          "patternId": "PyLintPython3_E0604"
-        },
-        {
-          "patternId": "PyLintPython3_W0102"
-        },
-        {
-          "patternId": "PyLintPython3_E0603"
-        },
-        {
-          "patternId": "PyLintPython3_W0150"
-        },
-        {
-          "patternId": "PyLintPython3_E0240"
-        },
-        {
-          "patternId": "PyLintPython3_E0101"
-        },
-        {
-          "patternId": "PyLintPython3_E0110"
-        },
-        {
-          "patternId": "PyLintPython3_E0112"
-        },
-        {
-          "patternId": "PyLintPython3_E0117"
-        },
-        {
-          "patternId": "PyLintPython3_E0211"
-        },
-        {
-          "patternId": "PyLintPython3_R0203"
-        },
-        {
-          "patternId": "PyLintPython3_C0201"
-        },
-        {
-          "patternId": "PyLintPython3_E1303"
-        },
-        {
-          "patternId": "PyLintPython3_E0106"
-        },
-        {
-          "patternId": "PyLintPython3_E1300"
-        },
-        {
-          "patternId": "PyLintPython3_W1305"
-        },
-        {
-          "patternId": "PyLintPython3_E0105"
-        },
-        {
-          "patternId": "PyLintPython3_E1200"
-        },
-        {
-          "patternId": "PyLintPython3_W0107"
-        },
-        {
-          "patternId": "PyLintPython3_W0109"
-        },
-        {
-          "patternId": "PyLintPython3_W1306"
-        },
-        {
-          "patternId": "PyLintPython3_E0236"
-        },
-        {
-          "patternId": "PyLintPython3_E0712"
-        },
-        {
-          "patternId": "PyLintPython3_E0710"
-        },
-        {
-          "patternId": "PyLintPython3_E1301"
-        },
-        {
-          "patternId": "PyLintPython3_W0105"
-        },
-        {
-          "patternId": "PyLintPython3_E0104"
-        },
-        {
-          "patternId": "PyLintPython3_E0702"
-        },
-        {
-          "patternId": "PyLintPython3_E1132"
-        },
-        {
-          "patternId": "PyLintPython3_W0221"
-        },
-        {
-          "patternId": "PyLintPython3_E0701"
-        },
-        {
-          "patternId": "PyLintPython3_E1206"
-        },
-        {
-          "patternId": "PyLintPython3_W0104"
-        },
-        {
-          "patternId": "PyLintPython3_E0238"
-        },
-        {
-          "patternId": "PyLintPython3_E1126"
-        },
-        {
-          "patternId": "PyLintPython3_E0114"
-        },
-        {
-          "patternId": "PyLintPython3_W0702"
-        },
-        {
-          "patternId": "PyLintPython3_E0100"
-        },
-        {
-          "patternId": "PyLintPython3_W0106"
-        },
-        {
-          "patternId": "PyLintPython3_E0601"
-        },
-        {
-          "patternId": "PyLintPython3_W1307"
-        },
-        {
-          "patternId": "PyLintPython3_E1302"
-        },
-        {
-          "patternId": "PyLintPython3_C0303"
-        },
-        {
-          "patternId": "PyLintPython3_W0120"
-        },
-        {
-          "patternId": "PyLintPython3_W0612"
-        },
-        {
-          "patternId": "PyLintPython3_E1125"
-        },
-        {
-          "patternId": "PyLintPython3_W0622"
-        },
-        {
-          "patternId": "PyLintPython3_E1111"
-        },
-        {
-          "patternId": "PyLintPython3_E1305"
-        },
-        {
-          "patternId": "PyLintPython3_R0202"
-        },
-        {
-          "patternId": "PyLintPython3_E0103"
-        },
-        {
-          "patternId": "PyLintPython3_W0124"
-        },
-        {
-          "patternId": "PyLintPython3_W0404"
-        },
-        {
-          "patternId": "PyLintPython3_W0410"
-        },
-        {
-          "patternId": "PyLintPython3_E0115"
-        },
-        {
-          "patternId": "PyLintPython3_W0611"
-        },
-        {
-          "patternId": "PyLintPython3_E1304"
-        },
-        {
-          "patternId": "PyLintPython3_E1123"
-        },
-        {
-          "patternId": "PyLintPython3_W0108"
-        },
-        {
-          "patternId": "PyLintPython3_W0233"
-        },
-        {
-          "patternId": "PyLintPython3_W1303"
-        },
-        {
-          "patternId": "PyLintPython3_W0199"
-        },
-        {
-          "patternId": "PyLintPython3_W0705"
-        },
-        {
-          "patternId": "PyLintPython3_E1124"
-        },
-        {
-          "patternId": "PyLintPython3_E0704"
-        },
-        {
-          "patternId": "PyLintPython3_W0601"
-        },
-        {
-          "patternId": "PyLintPython3_E0239"
-        },
-        {
-          "patternId": "PyLintPython3_E1120"
-        },
-        {
-          "patternId": "PyLintPython3_W1302"
-        },
-        {
-          "patternId": "PyLintPython3_W0222"
-        },
-        {
-          "patternId": "PyLintPython3_E0711"
-        },
-        {
-          "patternId": "PyLintPython3_W1300"
-        },
-        {
-          "patternId": "PyLintPython3_E1205"
-        },
-        {
-          "patternId": "PyLintPython3_E1201"
-        },
-        {
-          "patternId": "PyLintPython3_W0602"
-        },
-        {
-          "patternId": "PyLintPython3_W0122"
-        },
-        {
-          "patternId": "PyLintPython3_E1127"
-        }
-      ]
-    },
-    {
-      "toolId": "Semgrep",
-      "patterns": []
-    },
-    {
-      "toolId": "Checkov",
-      "patterns": [
-        {
-          "patternId": "Checkov_CKV_LIN_2"
-        },
-        {
-          "patternId": "Checkov_CKV_LIN_1"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_9"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_8"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_7"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_6"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_5"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_45"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_44"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_43"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_42"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_41"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_40"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_4"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_39"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_38"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_37"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_36"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_35"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_34"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_33"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_32"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_31"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_30"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_3"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_29"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_28"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_27"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_26"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_25"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_24"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_23"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_22"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_21"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_20"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_2"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_19"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_18"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_17"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_16"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_15"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_14"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_13"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_12"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_11"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_10"
-        },
-        {
-          "patternId": "Checkov_CKV_K8S_1"
-        },
-        {
-          "patternId": "Checkov_CKV_GIT_1"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_9"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_8"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_7"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_63"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_62"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_60"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_6"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_59"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_58"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_57"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_56"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_55"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_54"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_53"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_52"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_51"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_50"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_49"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_48"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_47"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_46"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_45"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_44"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_43"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_42"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_41"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_40"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_4"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_39"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_38"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_37"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_36"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_35"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_34"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_33"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_32"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_31"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_30"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_3"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_29"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_28"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_27"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_26"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_25"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_24"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_23"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_22"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_21"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_20"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_2"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_18"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_17"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_16"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_15"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_14"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_13"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_12"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_11"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_10"
-        },
-        {
-          "patternId": "Checkov_CKV_GCP_1"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_9"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_8"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_7"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_6"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_54"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_53"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_52"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_50"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_5"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_49"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_48"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_47"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_45"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_44"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_43"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_42"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_41"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_40"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_4"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_39"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_38"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_37"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_36"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_35"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_34"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_33"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_32"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_31"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_30"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_3"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_29"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_28"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_27"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_26"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_25"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_24"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_23"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_22"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_21"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_20"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_2"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_19"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_18"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_17"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_16"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_15"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_14"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_13"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_12"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_11"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_10"
-        },
-        {
-          "patternId": "Checkov_CKV_AZURE_1"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_99"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_98"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_97"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_96"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_95"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_94"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_93"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_92"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_91"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_90"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_9"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_89"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_88"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_87"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_86"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_85"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_84"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_83"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_82"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_81"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_80"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_8"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_79"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_78"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_77"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_76"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_75"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_74"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_73"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_72"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_71"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_70"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_7"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_69"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_68"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_67"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_66"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_65"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_64"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_63"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_62"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_61"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_60"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_6"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_59"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_58"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_57"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_56"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_55"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_54"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_53"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_51"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_50"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_5"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_49"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_48"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_47"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_46"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_45"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_44"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_43"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_42"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_41"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_40"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_39"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_38"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_37"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_36"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_35"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_34"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_33"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_32"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_31"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_30"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_3"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_29"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_28"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_27"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_26"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_25"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_24"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_23"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_22"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_21"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_20"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_2"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_19"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_18"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_17"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_16"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_15"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_14"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_13"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_12"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_11"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_105"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_104"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_103"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_102"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_101"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_100"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_10"
-        },
-        {
-          "patternId": "Checkov_CKV_AWS_1"
-        }
-      ]
-    },
-    {
-      "toolId": "shellcheck",
-      "patterns": [
-        {
-          "patternId": "shellcheck_SC2035"
-        },
-        {
-          "patternId": "shellcheck_SC2086"
-        },
-        {
-          "patternId": "shellcheck_SC2025"
-        },
-        {
-          "patternId": "shellcheck_SC2148"
-        },
-        {
-          "patternId": "shellcheck_SC2029"
-        },
-        {
-          "patternId": "shellcheck_SC2006"
-        },
-        {
-          "patternId": "shellcheck_SC2016"
-        },
-        {
-          "patternId": "shellcheck_SC2001"
-        },
-        {
-          "patternId": "shellcheck_SC2024"
-        },
-        {
-          "patternId": "shellcheck_SC2028"
-        },
-        {
-          "patternId": "shellcheck_SC2004"
-        },
-        {
-          "patternId": "shellcheck_SC2002"
-        },
-        {
-          "patternId": "shellcheck_SC2026"
-        },
-        {
-          "patternId": "shellcheck_SC2033"
-        },
-        {
-          "patternId": "shellcheck_SC2015"
-        },
-        {
-          "patternId": "shellcheck_SC2034"
-        },
-        {
-          "patternId": "shellcheck_SC2020"
-        },
-        {
-          "patternId": "shellcheck_SC2027"
-        },
-        {
-          "patternId": "shellcheck_SC2036"
-        },
-        {
-          "patternId": "shellcheck_SC2003"
-        },
-        {
-          "patternId": "shellcheck_SC2031"
-        },
-        {
-          "patternId": "shellcheck_SC2022"
-        }
-      ]
-    },
-    {
-      "toolId": "SwiftLint",
-      "patterns": [
-        {
-          "patternId": "SwiftLint_redundant_set_access_control"
-        },
-        {
-          "patternId": "SwiftLint_no_fallthrough_only"
-        },
-        {
-          "patternId": "SwiftLint_is_disjoint"
-        },
-        {
-          "patternId": "SwiftLint_for_where"
-        },
-        {
-          "patternId": "SwiftLint_shorthand_operator"
-        },
-        {
-          "patternId": "SwiftLint_closure_parameter_position"
-        },
-        {
-          "patternId": "SwiftLint_legacy_constant"
-        },
-        {
-          "patternId": "SwiftLint_compiler_protocol_init"
-        },
-        {
-          "patternId": "SwiftLint_private_unit_test"
-        },
-        {
-          "patternId": "SwiftLint_syntactic_sugar"
-        },
-        {
-          "patternId": "SwiftLint_multiple_closures_with_trailing_closure"
-        },
-        {
-          "patternId": "SwiftLint_legacy_constructor"
-        },
-        {
-          "patternId": "SwiftLint_return_arrow_whitespace"
-        },
-        {
-          "patternId": "SwiftLint_empty_parameters"
-        },
-        {
-          "patternId": "SwiftLint_nesting"
-        },
-        {
-          "patternId": "SwiftLint_leading_whitespace"
-        },
-        {
-          "patternId": "SwiftLint_block_based_kvo"
-        },
-        {
-          "patternId": "SwiftLint_comma"
-        },
-        {
-          "patternId": "SwiftLint_vertical_parameter_alignment"
-        },
-        {
-          "patternId": "SwiftLint_trailing_newline"
-        },
-        {
-          "patternId": "SwiftLint_empty_enum_arguments"
-        },
-        {
-          "patternId": "SwiftLint_line_length"
-        },
-        {
-          "patternId": "SwiftLint_force_cast"
-        },
-        {
-          "patternId": "SwiftLint_large_tuple"
-        },
-        {
-          "patternId": "SwiftLint_superfluous_disable_command"
-        },
-        {
-          "patternId": "SwiftLint_control_statement"
-        },
-        {
-          "patternId": "SwiftLint_force_try"
-        },
-        {
-          "patternId": "SwiftLint_opening_brace"
-        },
-        {
-          "patternId": "SwiftLint_closing_brace"
-        },
-        {
-          "patternId": "SwiftLint_valid_ibinspectable"
-        },
-        {
-          "patternId": "SwiftLint_mark"
-        },
-        {
-          "patternId": "SwiftLint_generic_type_name"
-        },
-        {
-          "patternId": "SwiftLint_identifier_name"
-        },
-        {
-          "patternId": "SwiftLint_void_return"
-        },
-        {
-          "patternId": "SwiftLint_redundant_void_return"
-        },
-        {
-          "patternId": "SwiftLint_switch_case_alignment"
-        },
-        {
-          "patternId": "SwiftLint_todo"
-        },
-        {
-          "patternId": "SwiftLint_weak_delegate"
-        },
-        {
-          "patternId": "SwiftLint_colon"
-        },
-        {
-          "patternId": "SwiftLint_private_over_fileprivate"
-        },
-        {
-          "patternId": "SwiftLint_dynamic_inline"
-        },
-        {
-          "patternId": "SwiftLint_function_body_length"
-        },
-        {
-          "patternId": "SwiftLint_protocol_property_accessors_order"
-        },
-        {
-          "patternId": "SwiftLint_custom_rules"
-        },
-        {
-          "patternId": "SwiftLint_function_parameter_count"
-        },
-        {
-          "patternId": "SwiftLint_discouraged_direct_init"
-        },
-        {
-          "patternId": "SwiftLint_trailing_whitespace"
-        },
-        {
-          "patternId": "SwiftLint_notification_center_detachment"
-        },
-        {
-          "patternId": "SwiftLint_xctfail_message"
-        },
-        {
-          "patternId": "SwiftLint_file_length"
-        },
-        {
-          "patternId": "SwiftLint_legacy_nsgeometry_functions"
-        },
-        {
-          "patternId": "SwiftLint_unused_closure_parameter"
-        },
-        {
-          "patternId": "SwiftLint_implicit_getter"
-        },
-        {
-          "patternId": "SwiftLint_trailing_semicolon"
-        },
-        {
-          "patternId": "SwiftLint_statement_position"
-        },
-        {
-          "patternId": "SwiftLint_trailing_comma"
-        },
-        {
-          "patternId": "SwiftLint_legacy_cggeometry_functions"
-        },
-        {
-          "patternId": "SwiftLint_unused_optional_binding"
-        },
-        {
-          "patternId": "SwiftLint_redundant_discardable_let"
-        },
-        {
-          "patternId": "SwiftLint_class_delegate_protocol"
-        },
-        {
-          "patternId": "SwiftLint_type_body_length"
-        },
-        {
-          "patternId": "SwiftLint_redundant_string_enum_value"
-        },
-        {
-          "patternId": "SwiftLint_unused_enumerated"
-        },
-        {
-          "patternId": "SwiftLint_cyclomatic_complexity"
-        },
-        {
-          "patternId": "SwiftLint_type_name"
-        },
-        {
-          "patternId": "SwiftLint_discarded_notification_center_observer"
-        },
-        {
-          "patternId": "SwiftLint_unneeded_break_in_switch"
-        },
-        {
-          "patternId": "SwiftLint_empty_parentheses_with_trailing_closure"
-        },
-        {
-          "patternId": "SwiftLint_vertical_whitespace"
-        }
-      ]
-    },
-    {
-      "toolId": "Prospector",
-      "patterns": [
-        {
-          "patternId": "Prospector_mccabe"
-        },
-        {
-          "patternId": "Prospector_pyflakes"
-        },
-        {
-          "patternId": "Prospector_dodgy"
-        }
-      ]
-    },
-    {
-      "toolId": "Lizard",
-      "patterns": []
-    },
-    {
-      "toolId": "PMD",
-      "patterns": [
-        {
-          "patternId": "PMD_category_java_bestpractices_JUnitTestsShouldIncludeAssert"
-        },
-        {
-          "patternId": "PMD_category_vm_errorprone_EmptyForeachStmt"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexBadCrypto"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_EmptyFinalizer"
-        },
-        {
-          "patternId": "PMD_category_java_design_AvoidThrowingRawExceptionTypes"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_UselessOperationOnImmutable"
-        },
-        {
-          "patternId": "PMD_category_plsql_bestpractices_TomKytesDespair"
-        },
-        {
-          "patternId": "PMD_category_java_design_NPathComplexity"
-        },
-        {
-          "patternId": "PMD_category_jsp_design_NoInlineStyleInformation"
-        },
-        {
-          "patternId": "PMD_category_vm_design_NoInlineStyles"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_UnnecessaryFullyQualifiedName"
-        },
-        {
-          "patternId": "PMD_category_xsl_codestyle_UseConcatOnce"
-        },
-        {
-          "patternId": "PMD_category_jsp_design_NoInlineScript"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_MethodWithSameNameAsEnclosingClass"
-        },
-        {
-          "patternId": "PMD_category_apex_design_ExcessiveParameterList"
-        },
-        {
-          "patternId": "PMD_category_vm_design_CollapsibleIfStatements"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_UnusedFormalParameter"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexXSSFromURLParam"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_EqualsNull"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_NoPackage"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexSOQLInjection"
-        },
-        {
-          "patternId": "PMD_category_apex_design_ExcessivePublicCount"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_MethodNamingConventions"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_JumbledIncrementer"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexXSSFromEscapeFalse"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_UnnecessaryBooleanAssertion"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexDangerousMethods"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_errorprone_InnaccurateNumericLiteral"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidDecimalLiteralsInBigDecimalConstructor"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidCallingFinalize"
-        },
-        {
-          "patternId": "PMD_category_jsp_bestpractices_DontNestJsfInJstlIteration"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_UnconditionalIfStatement"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_DontUseFloatTypeForLoopIndices"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_NonStaticInitializer"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexOpenRedirect"
-        },
-        {
-          "patternId": "PMD_category_jsp_bestpractices_NoJspForward"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_JUnitSpelling"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_GenericsNaming"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidInstanceofChecksInCatchClause"
-        },
-        {
-          "patternId": "PMD_category_vm_errorprone_EmptyIfStmt"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_OneDeclarationPerLine"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_JUnitStaticSuite"
-        },
-        {
-          "patternId": "PMD_category_java_multithreading_AvoidThreadGroup"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_UnnecessaryConstructor"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessivePackageBodyLength"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidBranchingStatementAsLastInLoop"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_ReturnFromFinallyBlock"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_UnnecessaryReturn"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AssignmentToNonFinalStatic"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_TooManyMethods"
-        },
-        {
-          "patternId": "PMD_category_jsp_codestyle_DuplicateJspImports"
-        },
-        {
-          "patternId": "PMD_category_plsql_errorprone_TO_TIMESTAMPWithoutDateFormat"
-        },
-        {
-          "patternId": "PMD_category_jsp_security_IframeMissingSrcAttribute"
-        },
-        {
-          "patternId": "PMD_category_apex_design_AvoidDeeplyNestedIfStmts"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidMultipleUnaryOperators"
-        },
-        {
-          "patternId": "PMD_category_vm_design_AvoidDeeplyNestedIfStmts"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexSuggestUsingNamedCred"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexInsecureEndpoint"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_CheckResultSet"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_UnnecessaryCaseChange"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexSharingViolations"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_UnusedPrivateMethod"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_codestyle_AssignmentInOperand"
-        },
-        {
-          "patternId": "PMD_category_vm_design_NoInlineJavaScript"
-        },
-        {
-          "patternId": "PMD_category_java_design_AvoidThrowingNullPointerException"
-        },
-        {
-          "patternId": "PMD_category_vm_bestpractices_UnusedMacroParameter"
-        },
-        {
-          "patternId": "PMD_category_java_design_SimplifyBooleanReturns"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_ExtendsObject"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_bestpractices_ConsistentReturn"
-        },
-        {
-          "patternId": "PMD_category_jsp_errorprone_JspEncoding"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessivePackageSpecificationLength"
-        },
-        {
-          "patternId": "PMD_category_pom_errorprone_InvalidDependencyTypes"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_errorprone_EqualComparison"
-        },
-        {
-          "patternId": "PMD_category_java_performance_UseStringBufferLength"
-        },
-        {
-          "patternId": "PMD_category_java_design_SingularField"
-        },
-        {
-          "patternId": "PMD_category_java_design_CollapsibleIfStatements"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_AvoidReassigningParameters"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_NonCaseLabelInSwitchStatement"
-        },
-        {
-          "patternId": "PMD_category_jsp_bestpractices_NoClassAttribute"
-        },
-        {
-          "patternId": "PMD_category_xml_errorprone_MistypedCDATASection"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_UnusedPrivateField"
-        },
-        {
-          "patternId": "PMD_category_jsp_bestpractices_NoHtmlComments"
-        },
-        {
-          "patternId": "PMD_category_vf_security_VfUnescapeEl"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_CheckSkipResult"
-        },
-        {
-          "patternId": "PMD_category_jsp_design_NoLongScripts"
-        },
-        {
-          "patternId": "PMD_category_vm_bestpractices_AvoidReassigningParameters"
-        },
-        {
-          "patternId": "PMD_category_jsp_security_NoUnsanitizedJSPExpression"
-        },
-        {
-          "patternId": "PMD_category_java_performance_StringInstantiation"
-        },
-        {
-          "patternId": "PMD_category_java_design_SimplifyBooleanExpressions"
-        },
-        {
-          "patternId": "PMD_category_apex_security_ApexCRUDViolation"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_PackageCase"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessiveParameterList"
-        },
-        {
-          "patternId": "PMD_category_java_multithreading_DontCallThreadRun"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_MisplacedNullCheck"
-        },
-        {
-          "patternId": "PMD_category_vf_security_VfCsrf"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_FieldDeclarationsShouldBeAtStartOfClass"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_codestyle_UnnecessaryBlock"
-        },
-        {
-          "patternId": "PMD_category_plsql_errorprone_TO_DATE_TO_CHAR"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_bestpractices_AvoidWithStatement"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_SwitchStmtsShouldHaveDefault"
-        },
-        {
-          "patternId": "PMD_category_ecmascript_bestpractices_UseBaseWithParseInt"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessiveObjectLength"
-        },
-        {
-          "patternId": "PMD_category_java_design_ExcessiveParameterList"
-        },
-        {
-          "patternId": "PMD_category_java_design_LogicInversion"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_DoNotHardCodeSDCard"
-        },
-        {
-          "patternId": "PMD_category_jsp_design_NoScriptlets"
-        },
-        {
-          "patternId": "PMD_category_java_codestyle_ClassNamingConventions"
-        },
-        {
-          "patternId": "PMD_category_vm_design_ExcessiveTemplateLength"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_AvoidAccessibilityAlteration"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_BrokenNullCheck"
-        },
-        {
-          "patternId": "PMD_category_java_bestpractices_UnusedLocalVariable"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessiveMethodLength"
-        },
-        {
-          "patternId": "PMD_category_xsl_performance_AvoidAxisNavigation"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_CompareObjectsWithEquals"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_MissingStaticMethodInNonInstantiatableClass"
-        },
-        {
-          "patternId": "PMD_category_java_errorprone_UseEqualsToCompareStrings"
-        },
-        {
-          "patternId": "PMD_category_pom_errorprone_ProjectVersionAsDependencyVersion"
-        },
-        {
-          "patternId": "PMD_category_java_documentation_UncommentedEmptyMethodBody"
-        },
-        {
-          "patternId": "PMD_category_plsql_errorprone_TO_DATEWithoutDateFormat"
-        },
-        {
-          "patternId": "PMD_category_plsql_codestyle_MisplacedPragma"
-        },
-        {
-          "patternId": "PMD_category_plsql_design_ExcessiveTypeLength"
-        },
-        {
-          "patternId": "PMD_category_java_performance_StringToString"
-        },
-        {
-          "patternId": "PMD_category_apex_design_ExcessiveClassLength"
-        }
-      ]
-    },
-    {
-      "toolId": "flawfinder",
-      "patterns": [
-        {
-          "patternId": "flawfinder_ulimit"
-        },
-        {
-          "patternId": "flawfinder__gettc"
-        },
-        {
-          "patternId": "flawfinder_wcslen"
-        },
-        {
-          "patternId": "flawfinder__mbsnbcpy"
-        },
-        {
-          "patternId": "flawfinder__tcslen"
-        },
-        {
-          "patternId": "flawfinder__tcsncat"
-        },
-        {
-          "patternId": "flawfinder_getchar"
-        },
-        {
-          "patternId": "flawfinder__tcsncpy"
-        },
-        {
-          "patternId": "flawfinder__mbsnbcat"
-        },
-        {
-          "patternId": "flawfinder_lstrcpyn"
-        },
-        {
-          "patternId": "flawfinder_strlen"
-        },
-        {
-          "patternId": "flawfinder_getc"
-        },
-        {
-          "patternId": "flawfinder_wcsncpy"
-        },
-        {
-          "patternId": "flawfinder_memalign"
-        },
-        {
-          "patternId": "flawfinder__mbslen"
-        },
-        {
-          "patternId": "flawfinder_strccpy"
-        },
-        {
-          "patternId": "flawfinder_strncpy"
-        },
-        {
-          "patternId": "flawfinder_usleep"
-        },
-        {
-          "patternId": "flawfinder_strcadd"
-        },
-        {
-          "patternId": "flawfinder_umask"
-        },
-        {
-          "patternId": "flawfinder_wcsncat"
-        },
-        {
-          "patternId": "flawfinder_lstrcatn"
-        },
-        {
-          "patternId": "flawfinder_fgetc"
-        },
-        {
-          "patternId": "flawfinder_read"
-        },
-        {
-          "patternId": "flawfinder_strncat"
-        }
-      ]
-    },
-    {
-      "toolId": "psscriptanalyzer",
-      "patterns": [
-        {
-          "patternId": "psscriptanalyzer_psavoidusingpositionalparameters"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoiddefaultvalueformandatoryparameter"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusinginvokeexpression"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusecompatiblecmdlets"
-        },
-        {
-          "patternId": "psscriptanalyzer_psmisleadingbacktick"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingdeprecatedmanifestfields"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingwritehost"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingwmicmdlet"
-        },
-        {
-          "patternId": "psscriptanalyzer_psuseliteralinitializerforhashtable"
-        },
-        {
-          "patternId": "psscriptanalyzer_pspossibleincorrectusageofredirectionoperator"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscreturncorrecttypesfordscfunctions"
-        },
-        {
-          "patternId": "psscriptanalyzer_psalignassignmentstatement"
-        },
-        {
-          "patternId": "psscriptanalyzer_pspossibleincorrectusageofassignmentoperator"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusebomforunicodeencodedfile"
-        },
-        {
-          "patternId": "psscriptanalyzer_psplaceopenbrace"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidglobalfunctions"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingusernameandpasswordparams"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidshouldcontinuewithoutforce"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscdsctestspresent"
-        },
-        {
-          "patternId": "psscriptanalyzer_psmissingmodulemanifestfield"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingemptycatchblock"
-        },
-        {
-          "patternId": "psscriptanalyzer_psreservedcmdletchar"
-        },
-        {
-          "patternId": "psscriptanalyzer_psuseapprovedverbs"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingconverttosecurestringwithplaintext"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscdscexamplespresent"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingcomputernamehardcoded"
-        },
-        {
-          "patternId": "psscriptanalyzer_pspossibleincorrectcomparisonwithnull"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusecmdletcorrectly"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusepscredentialtype"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscstandarddscfunctionsinresource"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidinvokingemptymembers"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscuseidenticalmandatoryparametersfordsc"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidglobalaliases"
-        },
-        {
-          "patternId": "psscriptanalyzer_psdscuseidenticalparametersfordsc"
-        },
-        {
-          "patternId": "psscriptanalyzer_psuseshouldprocessforstatechangingfunctions"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidglobalvars"
-        },
-        {
-          "patternId": "psscriptanalyzer_psuseoutputtypecorrectly"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusetoexportfieldsinmanifest"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidusingplaintextforpassword"
-        },
-        {
-          "patternId": "psscriptanalyzer_psusesupportsshouldprocess"
-        },
-        {
-          "patternId": "psscriptanalyzer_psreservedparams"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoiddefaultvalueswitchparameter"
-        },
-        {
-          "patternId": "psscriptanalyzer_psplaceclosebrace"
-        },
-        {
-          "patternId": "psscriptanalyzer_psavoidassignmenttoautomaticvariable"
-        }
-      ]
-    },
-    {
-      "toolId": "Trivy",
-      "patterns": []
-    },
-    {
-      "toolId": "TSQLLint",
-      "patterns": [
-        {
-          "patternId": "TSQLLint_information-schema"
-        },
-        {
-          "patternId": "TSQLLint_full-text"
-        },
-        {
-          "patternId": "TSQLLint_upper-lower"
-        },
-        {
-          "patternId": "TSQLLint_schema-qualify"
-        },
-        {
-          "patternId": "TSQLLint_unicode-string"
-        },
-        {
-          "patternId": "TSQLLint_data-type-length"
-        },
-        {
-          "patternId": "TSQLLint_linked-server"
-        },
-        {
-          "patternId": "TSQLLint_data-compression"
-        },
-        {
-          "patternId": "TSQLLint_multi-table-alias"
-        },
-        {
-          "patternId": "TSQLLint_keyword-capitalization"
-        },
-        {
-          "patternId": "TSQLLint_object-property"
-        },
-        {
-          "patternId": "TSQLLint_set-quoted-identifier"
-        },
-        {
-          "patternId": "TSQLLint_cross-database-transaction"
-        },
-        {
-          "patternId": "TSQLLint_conditional-begin-end"
-        },
-        {
-          "patternId": "TSQLLint_select-star"
-        },
-        {
-          "patternId": "TSQLLint_set-nocount"
-        },
-        {
-          "patternId": "TSQLLint_set-variable"
-        },
-        {
-          "patternId": "TSQLLint_non-sargable"
-        },
-        {
-          "patternId": "TSQLLint_set-ansi"
-        },
-        {
-          "patternId": "TSQLLint_set-transaction-isolation-level"
-        },
-        {
-          "patternId": "TSQLLint_semicolon-termination"
-        },
-        {
-          "patternId": "TSQLLint_print-statement"
-        },
-        {
-          "patternId": "TSQLLint_disallow-cursors"
-        }
-      ]
-    },
     {
       "toolId": "jackson",
       "patterns": [
@@ -2114,112 +38,2873 @@
       ]
     },
     {
-      "toolId": "Stylelint",
+      "toolId": "markdownlint",
       "patterns": [
         {
-          "patternId": "Stylelint_no-duplicate-at-import-rules"
+          "patternId": "markdownlint_MD001"
         },
         {
-          "patternId": "Stylelint_font-family-no-missing-generic-family-keyword"
+          "patternId": "markdownlint_MD003"
         },
         {
-          "patternId": "Stylelint_keyframe-declaration-no-important"
+          "patternId": "markdownlint_MD004"
         },
         {
-          "patternId": "Stylelint_no-invalid-double-slash-comments"
+          "patternId": "markdownlint_MD005"
         },
         {
-          "patternId": "Stylelint_at-rule-no-unknown"
+          "patternId": "markdownlint_MD007"
         },
         {
-          "patternId": "Stylelint_comment-no-empty"
+          "patternId": "markdownlint_MD010"
         },
         {
-          "patternId": "Stylelint_no-descending-specificity"
+          "patternId": "markdownlint_MD011"
         },
         {
-          "patternId": "Stylelint_rule-empty-line-before"
+          "patternId": "markdownlint_MD012"
         },
         {
-          "patternId": "Stylelint_color-no-invalid-hex"
+          "patternId": "markdownlint_MD014"
         },
         {
-          "patternId": "Stylelint_custom-property-empty-line-before"
+          "patternId": "markdownlint_MD018"
         },
         {
-          "patternId": "Stylelint_no-duplicate-selectors"
+          "patternId": "markdownlint_MD019"
         },
         {
-          "patternId": "Stylelint_function-calc-no-unspaced-operator"
+          "patternId": "markdownlint_MD020"
         },
         {
-          "patternId": "Stylelint_selector-pseudo-class-no-unknown"
+          "patternId": "markdownlint_MD021"
         },
         {
-          "patternId": "Stylelint_selector-type-case"
+          "patternId": "markdownlint_MD022"
         },
         {
-          "patternId": "Stylelint_unit-no-unknown"
+          "patternId": "markdownlint_MD023"
         },
         {
-          "patternId": "Stylelint_selector-pseudo-element-no-unknown"
+          "patternId": "markdownlint_MD024"
         },
         {
-          "patternId": "Stylelint_function-linear-gradient-no-nonstandard-direction"
+          "patternId": "markdownlint_MD025"
         },
         {
-          "patternId": "Stylelint_string-no-newline"
+          "patternId": "markdownlint_MD026"
         },
         {
-          "patternId": "Stylelint_declaration-block-no-shorthand-property-overrides"
+          "patternId": "markdownlint_MD027"
         },
         {
-          "patternId": "Stylelint_selector-type-no-unknown"
+          "patternId": "markdownlint_MD028"
         },
         {
-          "patternId": "Stylelint_property-no-unknown"
+          "patternId": "markdownlint_MD029"
         },
         {
-          "patternId": "Stylelint_length-zero-no-unit"
+          "patternId": "markdownlint_MD030"
         },
         {
-          "patternId": "Stylelint_color-hex-length"
+          "patternId": "markdownlint_MD032"
         },
         {
-          "patternId": "Stylelint_media-feature-name-no-unknown"
+          "patternId": "markdownlint_MD033"
         },
         {
-          "patternId": "Stylelint_font-family-no-duplicate-names"
+          "patternId": "markdownlint_MD034"
         },
         {
-          "patternId": "Stylelint_declaration-block-single-line-max-declarations"
+          "patternId": "markdownlint_MD035"
         },
         {
-          "patternId": "Stylelint_at-rule-empty-line-before"
+          "patternId": "markdownlint_MD036"
         },
         {
-          "patternId": "Stylelint_comment-whitespace-inside"
+          "patternId": "markdownlint_MD037"
         },
         {
-          "patternId": "Stylelint_function-name-case"
+          "patternId": "markdownlint_MD038"
         },
         {
-          "patternId": "Stylelint_block-no-empty"
+          "patternId": "markdownlint_MD039"
         },
         {
-          "patternId": "Stylelint_no-empty-source"
+          "patternId": "markdownlint_MD042"
         },
         {
-          "patternId": "Stylelint_comment-empty-line-before"
+          "patternId": "markdownlint_MD044"
         },
         {
-          "patternId": "Stylelint_declaration-empty-line-before"
+          "patternId": "markdownlint_MD045"
         },
         {
-          "patternId": "Stylelint_declaration-block-no-duplicate-properties"
+          "patternId": "markdownlint_MD046"
         },
         {
-          "patternId": "Stylelint_selector-pseudo-element-colon-notation"
+          "patternId": "markdownlint_MD048"
+        },
+        {
+          "patternId": "markdownlint_MD049"
+        },
+        {
+          "patternId": "markdownlint_MD050"
+        },
+        {
+          "patternId": "markdownlint_MD051"
+        },
+        {
+          "patternId": "markdownlint_MD052"
+        },
+        {
+          "patternId": "markdownlint_MD053"
+        },
+        {
+          "patternId": "markdownlint_MD054"
+        },
+        {
+          "patternId": "markdownlint_MD055"
+        },
+        {
+          "patternId": "markdownlint_MD056"
+        }
+      ]
+    },
+    {
+      "toolId": "shellcheck",
+      "patterns": [
+        {
+          "patternId": "shellcheck_SC2001"
+        },
+        {
+          "patternId": "shellcheck_SC2002"
+        },
+        {
+          "patternId": "shellcheck_SC2003"
+        },
+        {
+          "patternId": "shellcheck_SC2004"
+        },
+        {
+          "patternId": "shellcheck_SC2006"
+        },
+        {
+          "patternId": "shellcheck_SC2015"
+        },
+        {
+          "patternId": "shellcheck_SC2016"
+        },
+        {
+          "patternId": "shellcheck_SC2020"
+        },
+        {
+          "patternId": "shellcheck_SC2022"
+        },
+        {
+          "patternId": "shellcheck_SC2024"
+        },
+        {
+          "patternId": "shellcheck_SC2025"
+        },
+        {
+          "patternId": "shellcheck_SC2026"
+        },
+        {
+          "patternId": "shellcheck_SC2027"
+        },
+        {
+          "patternId": "shellcheck_SC2028"
+        },
+        {
+          "patternId": "shellcheck_SC2029"
+        },
+        {
+          "patternId": "shellcheck_SC2031"
+        },
+        {
+          "patternId": "shellcheck_SC2033"
+        },
+        {
+          "patternId": "shellcheck_SC2034"
+        },
+        {
+          "patternId": "shellcheck_SC2035"
+        },
+        {
+          "patternId": "shellcheck_SC2036"
+        },
+        {
+          "patternId": "shellcheck_SC2086"
+        },
+        {
+          "patternId": "shellcheck_SC2148"
+        }
+      ]
+    },
+    {
+      "toolId": "Ruff",
+      "patterns": [
+        {
+          "patternId": "Ruff_B002_unary-prefix-increment-decrement"
+        },
+        {
+          "patternId": "Ruff_B003_assignment-to-os-environ"
+        },
+        {
+          "patternId": "Ruff_B004_unreliable-callable-check"
+        },
+        {
+          "patternId": "Ruff_B005_strip-with-multi-characters"
+        },
+        {
+          "patternId": "Ruff_B006_mutable-argument-default"
+        },
+        {
+          "patternId": "Ruff_B007_unused-loop-control-variable"
+        },
+        {
+          "patternId": "Ruff_B008_function-call-in-default-argument"
+        },
+        {
+          "patternId": "Ruff_B009_get-attr-with-constant"
+        },
+        {
+          "patternId": "Ruff_B010_set-attr-with-constant"
+        },
+        {
+          "patternId": "Ruff_B011_assert-false"
+        },
+        {
+          "patternId": "Ruff_B012_jump-statement-in-finally"
+        },
+        {
+          "patternId": "Ruff_B013_redundant-tuple-in-exception-handler"
+        },
+        {
+          "patternId": "Ruff_B014_duplicate-handler-exception"
+        },
+        {
+          "patternId": "Ruff_B015_useless-comparison"
+        },
+        {
+          "patternId": "Ruff_B016_raise-literal"
+        },
+        {
+          "patternId": "Ruff_B017_assert-raises-exception"
+        },
+        {
+          "patternId": "Ruff_B018_useless-expression"
+        },
+        {
+          "patternId": "Ruff_B019_cached-instance-method"
+        },
+        {
+          "patternId": "Ruff_B020_loop-variable-overrides-iterator"
+        },
+        {
+          "patternId": "Ruff_B021_f-string-docstring"
+        },
+        {
+          "patternId": "Ruff_B022_useless-contextlib-suppress"
+        },
+        {
+          "patternId": "Ruff_B023_function-uses-loop-variable"
+        },
+        {
+          "patternId": "Ruff_B024_abstract-base-class-without-abstract-method"
+        },
+        {
+          "patternId": "Ruff_B025_duplicate-try-block-exception"
+        },
+        {
+          "patternId": "Ruff_B026_star-arg-unpacking-after-keyword-arg"
+        },
+        {
+          "patternId": "Ruff_B027_empty-method-without-abstract-decorator"
+        },
+        {
+          "patternId": "Ruff_B028_no-explicit-stacklevel"
+        },
+        {
+          "patternId": "Ruff_B029_except-with-empty-tuple"
+        },
+        {
+          "patternId": "Ruff_B030_except-with-non-exception-classes"
+        },
+        {
+          "patternId": "Ruff_B031_reuse-of-groupby-generator"
+        },
+        {
+          "patternId": "Ruff_B032_unintentional-type-annotation"
+        },
+        {
+          "patternId": "Ruff_B033_duplicate-value"
+        },
+        {
+          "patternId": "Ruff_B034_re-sub-positional-args"
+        },
+        {
+          "patternId": "Ruff_B035_static-key-dict-comprehension"
+        },
+        {
+          "patternId": "Ruff_B039_mutable-contextvar-default"
+        },
+        {
+          "patternId": "Ruff_B901_return-in-generator"
+        },
+        {
+          "patternId": "Ruff_B903_class-as-data-structure"
+        },
+        {
+          "patternId": "Ruff_B904_raise-without-from-inside-except"
+        },
+        {
+          "patternId": "Ruff_B905_zip-without-explicit-strict"
+        },
+        {
+          "patternId": "Ruff_B909_loop-iterator-mutation"
+        },
+        {
+          "patternId": "Ruff_B911_batched-without-explicit-strict"
+        },
+        {
+          "patternId": "Ruff_C901_complex-structure"
+        },
+        {
+          "patternId": "Ruff_E101_mixed-spaces-and-tabs"
+        },
+        {
+          "patternId": "Ruff_E111_indentation-with-invalid-multiple"
+        },
+        {
+          "patternId": "Ruff_E112_no-indented-block"
+        },
+        {
+          "patternId": "Ruff_E113_unexpected-indentation"
+        },
+        {
+          "patternId": "Ruff_E114_indentation-with-invalid-multiple-comment"
+        },
+        {
+          "patternId": "Ruff_E115_no-indented-block-comment"
+        },
+        {
+          "patternId": "Ruff_E116_unexpected-indentation-comment"
+        },
+        {
+          "patternId": "Ruff_E117_over-indented"
+        },
+        {
+          "patternId": "Ruff_E201_whitespace-after-open-bracket"
+        },
+        {
+          "patternId": "Ruff_E202_whitespace-before-close-bracket"
+        },
+        {
+          "patternId": "Ruff_E203_whitespace-before-punctuation"
+        },
+        {
+          "patternId": "Ruff_E204_whitespace-after-decorator"
+        },
+        {
+          "patternId": "Ruff_E211_whitespace-before-parameters"
+        },
+        {
+          "patternId": "Ruff_E221_multiple-spaces-before-operator"
+        },
+        {
+          "patternId": "Ruff_E222_multiple-spaces-after-operator"
+        },
+        {
+          "patternId": "Ruff_E223_tab-before-operator"
+        },
+        {
+          "patternId": "Ruff_E224_tab-after-operator"
+        },
+        {
+          "patternId": "Ruff_E225_missing-whitespace-around-operator"
+        },
+        {
+          "patternId": "Ruff_E226_missing-whitespace-around-arithmetic-operator"
+        },
+        {
+          "patternId": "Ruff_E227_missing-whitespace-around-bitwise-or-shift-operator"
+        },
+        {
+          "patternId": "Ruff_E228_missing-whitespace-around-modulo-operator"
+        },
+        {
+          "patternId": "Ruff_E231_missing-whitespace"
+        },
+        {
+          "patternId": "Ruff_E241_multiple-spaces-after-comma"
+        },
+        {
+          "patternId": "Ruff_E242_tab-after-comma"
+        },
+        {
+          "patternId": "Ruff_E251_unexpected-spaces-around-keyword-parameter-equals"
+        },
+        {
+          "patternId": "Ruff_E252_missing-whitespace-around-parameter-equals"
+        },
+        {
+          "patternId": "Ruff_E261_too-few-spaces-before-inline-comment"
+        },
+        {
+          "patternId": "Ruff_E262_no-space-after-inline-comment"
+        },
+        {
+          "patternId": "Ruff_E265_no-space-after-block-comment"
+        },
+        {
+          "patternId": "Ruff_E266_multiple-leading-hashes-for-block-comment"
+        },
+        {
+          "patternId": "Ruff_E271_multiple-spaces-after-keyword"
+        },
+        {
+          "patternId": "Ruff_E272_multiple-spaces-before-keyword"
+        },
+        {
+          "patternId": "Ruff_E273_tab-after-keyword"
+        },
+        {
+          "patternId": "Ruff_E274_tab-before-keyword"
+        },
+        {
+          "patternId": "Ruff_E275_missing-whitespace-after-keyword"
+        },
+        {
+          "patternId": "Ruff_E301_blank-line-between-methods"
+        },
+        {
+          "patternId": "Ruff_E302_blank-lines-top-level"
+        },
+        {
+          "patternId": "Ruff_E303_too-many-blank-lines"
+        },
+        {
+          "patternId": "Ruff_E304_blank-line-after-decorator"
+        },
+        {
+          "patternId": "Ruff_E305_blank-lines-after-function-or-class"
+        },
+        {
+          "patternId": "Ruff_E306_blank-lines-before-nested-definition"
+        },
+        {
+          "patternId": "Ruff_E401_multiple-imports-on-one-line"
+        },
+        {
+          "patternId": "Ruff_E402_module-import-not-at-top-of-file"
+        },
+        {
+          "patternId": "Ruff_E501_line-too-long"
+        },
+        {
+          "patternId": "Ruff_E502_redundant-backslash"
+        },
+        {
+          "patternId": "Ruff_E701_multiple-statements-on-one-line-colon"
+        },
+        {
+          "patternId": "Ruff_E702_multiple-statements-on-one-line-semicolon"
+        },
+        {
+          "patternId": "Ruff_E703_useless-semicolon"
+        },
+        {
+          "patternId": "Ruff_E711_none-comparison"
+        },
+        {
+          "patternId": "Ruff_E712_true-false-comparison"
+        },
+        {
+          "patternId": "Ruff_E713_not-in-test"
+        },
+        {
+          "patternId": "Ruff_E714_not-is-test"
+        },
+        {
+          "patternId": "Ruff_E721_type-comparison"
+        },
+        {
+          "patternId": "Ruff_E722_bare-except"
+        },
+        {
+          "patternId": "Ruff_E731_lambda-assignment"
+        },
+        {
+          "patternId": "Ruff_E741_ambiguous-variable-name"
+        },
+        {
+          "patternId": "Ruff_E742_ambiguous-class-name"
+        },
+        {
+          "patternId": "Ruff_E743_ambiguous-function-name"
+        },
+        {
+          "patternId": "Ruff_E902_io-error"
+        },
+        {
+          "patternId": "Ruff_FA100_future-rewritable-type-annotation"
+        },
+        {
+          "patternId": "Ruff_FA102_future-required-type-annotation"
+        },
+        {
+          "patternId": "Ruff_S101_assert"
+        },
+        {
+          "patternId": "Ruff_S102_exec-builtin"
+        },
+        {
+          "patternId": "Ruff_S103_bad-file-permissions"
+        },
+        {
+          "patternId": "Ruff_S104_hardcoded-bind-all-interfaces"
+        },
+        {
+          "patternId": "Ruff_S105_hardcoded-password-string"
+        },
+        {
+          "patternId": "Ruff_S106_hardcoded-password-func-arg"
+        },
+        {
+          "patternId": "Ruff_S107_hardcoded-password-default"
+        },
+        {
+          "patternId": "Ruff_S108_hardcoded-temp-file"
+        },
+        {
+          "patternId": "Ruff_S110_try-except-pass"
+        },
+        {
+          "patternId": "Ruff_S112_try-except-continue"
+        },
+        {
+          "patternId": "Ruff_S113_request-without-timeout"
+        },
+        {
+          "patternId": "Ruff_S201_flask-debug-true"
+        },
+        {
+          "patternId": "Ruff_S202_tarfile-unsafe-members"
+        },
+        {
+          "patternId": "Ruff_S301_suspicious-pickle-usage"
+        },
+        {
+          "patternId": "Ruff_S302_suspicious-marshal-usage"
+        },
+        {
+          "patternId": "Ruff_S303_suspicious-insecure-hash-usage"
+        },
+        {
+          "patternId": "Ruff_S304_suspicious-insecure-cipher-usage"
+        },
+        {
+          "patternId": "Ruff_S305_suspicious-insecure-cipher-mode-usage"
+        },
+        {
+          "patternId": "Ruff_S306_suspicious-mktemp-usage"
+        },
+        {
+          "patternId": "Ruff_S307_suspicious-eval-usage"
+        },
+        {
+          "patternId": "Ruff_S308_suspicious-mark-safe-usage"
+        },
+        {
+          "patternId": "Ruff_S310_suspicious-url-open-usage"
+        },
+        {
+          "patternId": "Ruff_S311_suspicious-non-cryptographic-random-usage"
+        },
+        {
+          "patternId": "Ruff_S312_suspicious-telnet-usage"
+        },
+        {
+          "patternId": "Ruff_S313_suspicious-xmlc-element-tree-usage"
+        },
+        {
+          "patternId": "Ruff_S314_suspicious-xml-element-tree-usage"
+        },
+        {
+          "patternId": "Ruff_S315_suspicious-xml-expat-reader-usage"
+        },
+        {
+          "patternId": "Ruff_S316_suspicious-xml-expat-builder-usage"
+        },
+        {
+          "patternId": "Ruff_S317_suspicious-xml-sax-usage"
+        },
+        {
+          "patternId": "Ruff_S318_suspicious-xml-mini-dom-usage"
+        },
+        {
+          "patternId": "Ruff_S319_suspicious-xml-pull-dom-usage"
+        },
+        {
+          "patternId": "Ruff_S321_suspicious-ftp-lib-usage"
+        },
+        {
+          "patternId": "Ruff_S323_suspicious-unverified-context-usage"
+        },
+        {
+          "patternId": "Ruff_S324_hashlib-insecure-hash-function"
+        },
+        {
+          "patternId": "Ruff_S401_suspicious-telnetlib-import"
+        },
+        {
+          "patternId": "Ruff_S402_suspicious-ftplib-import"
+        },
+        {
+          "patternId": "Ruff_S403_suspicious-pickle-import"
+        },
+        {
+          "patternId": "Ruff_S404_suspicious-subprocess-import"
+        },
+        {
+          "patternId": "Ruff_S405_suspicious-xml-etree-import"
+        },
+        {
+          "patternId": "Ruff_S406_suspicious-xml-sax-import"
+        },
+        {
+          "patternId": "Ruff_S407_suspicious-xml-expat-import"
+        },
+        {
+          "patternId": "Ruff_S408_suspicious-xml-minidom-import"
+        },
+        {
+          "patternId": "Ruff_S409_suspicious-xml-pulldom-import"
+        },
+        {
+          "patternId": "Ruff_S411_suspicious-xmlrpc-import"
+        },
+        {
+          "patternId": "Ruff_S412_suspicious-httpoxy-import"
+        },
+        {
+          "patternId": "Ruff_S413_suspicious-pycrypto-import"
+        },
+        {
+          "patternId": "Ruff_S415_suspicious-pyghmi-import"
+        },
+        {
+          "patternId": "Ruff_S501_request-with-no-cert-validation"
+        },
+        {
+          "patternId": "Ruff_S502_ssl-insecure-version"
+        },
+        {
+          "patternId": "Ruff_S503_ssl-with-bad-defaults"
+        },
+        {
+          "patternId": "Ruff_S504_ssl-with-no-version"
+        },
+        {
+          "patternId": "Ruff_S505_weak-cryptographic-key"
+        },
+        {
+          "patternId": "Ruff_S506_unsafe-yaml-load"
+        },
+        {
+          "patternId": "Ruff_S507_ssh-no-host-key-verification"
+        },
+        {
+          "patternId": "Ruff_S508_snmp-insecure-version"
+        },
+        {
+          "patternId": "Ruff_S509_snmp-weak-cryptography"
+        },
+        {
+          "patternId": "Ruff_S601_paramiko-call"
+        },
+        {
+          "patternId": "Ruff_S602_subprocess-popen-with-shell-equals-true"
+        },
+        {
+          "patternId": "Ruff_S603_subprocess-without-shell-equals-true"
+        },
+        {
+          "patternId": "Ruff_S604_call-with-shell-equals-true"
+        },
+        {
+          "patternId": "Ruff_S605_start-process-with-a-shell"
+        },
+        {
+          "patternId": "Ruff_S606_start-process-with-no-shell"
+        },
+        {
+          "patternId": "Ruff_S607_start-process-with-partial-path"
+        },
+        {
+          "patternId": "Ruff_S608_hardcoded-sql-expression"
+        },
+        {
+          "patternId": "Ruff_S609_unix-command-wildcard-injection"
+        },
+        {
+          "patternId": "Ruff_S610_django-extra"
+        },
+        {
+          "patternId": "Ruff_S611_django-raw-sql"
+        },
+        {
+          "patternId": "Ruff_S612_logging-config-insecure-listen"
+        },
+        {
+          "patternId": "Ruff_S701_jinja2-autoescape-false"
+        },
+        {
+          "patternId": "Ruff_S702_mako-templates"
+        },
+        {
+          "patternId": "Ruff_W191_tab-indentation"
+        },
+        {
+          "patternId": "Ruff_W292_missing-newline-at-end-of-file"
+        },
+        {
+          "patternId": "Ruff_W293_blank-line-with-whitespace"
+        },
+        {
+          "patternId": "Ruff_W391_too-many-newlines-at-end-of-file"
+        },
+        {
+          "patternId": "Ruff_W505_doc-line-too-long"
+        },
+        {
+          "patternId": "Ruff_W605_invalid-escape-sequence"
+        }
+      ]
+    },
+    {
+      "toolId": "cppcheck",
+      "patterns": [
+        {
+          "patternId": "cppcheck_arithOperationsOnVoidPointer"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexOutOfBoundsCond"
+        },
+        {
+          "patternId": "cppcheck_arrayIndexThenCheck"
+        },
+        {
+          "patternId": "cppcheck_assertWithSideEffect"
+        },
+        {
+          "patternId": "cppcheck_assignBoolToPointer"
+        },
+        {
+          "patternId": "cppcheck_assignIfError"
+        },
+        {
+          "patternId": "cppcheck_AssignmentAddressToInteger"
+        },
+        {
+          "patternId": "cppcheck_assignmentInAssert"
+        },
+        {
+          "patternId": "cppcheck_AssignmentIntegerToAddress"
+        },
+        {
+          "patternId": "cppcheck_autoVariables"
+        },
+        {
+          "patternId": "cppcheck_autovarInvalidDeallocation"
+        },
+        {
+          "patternId": "cppcheck_badBitmaskCheck"
+        },
+        {
+          "patternId": "cppcheck_bufferAccessOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_CastAddressToIntegerAtReturn"
+        },
+        {
+          "patternId": "cppcheck_CastIntegerToAddressAtReturn"
+        },
+        {
+          "patternId": "cppcheck_catchExceptionByValue"
+        },
+        {
+          "patternId": "cppcheck_charBitOp"
+        },
+        {
+          "patternId": "cppcheck_charLiteralWithCharPtrCompare"
+        },
+        {
+          "patternId": "cppcheck_checkCastIntToCharAndBack"
+        },
+        {
+          "patternId": "cppcheck_clarifyCalculation"
+        },
+        {
+          "patternId": "cppcheck_clarifyCondition"
+        },
+        {
+          "patternId": "cppcheck_clarifyStatement"
+        },
+        {
+          "patternId": "cppcheck_commaSeparatedReturn"
+        },
+        {
+          "patternId": "cppcheck_compareBoolExpressionWithInt"
+        },
+        {
+          "patternId": "cppcheck_comparisonError"
+        },
+        {
+          "patternId": "cppcheck_comparisonFunctionIsAlwaysTrueOrFalse"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfBoolWithBoolError"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfFuncReturningBoolError"
+        },
+        {
+          "patternId": "cppcheck_comparisonOfTwoFuncsReturningBoolError"
+        },
+        {
+          "patternId": "cppcheck_constStatement"
+        },
+        {
+          "patternId": "cppcheck_copyCtorPointerCopying"
+        },
+        {
+          "patternId": "cppcheck_coutCerrMisusage"
+        },
+        {
+          "patternId": "cppcheck_cstyleCast"
+        },
+        {
+          "patternId": "cppcheck_deallocret"
+        },
+        {
+          "patternId": "cppcheck_deallocuse"
+        },
+        {
+          "patternId": "cppcheck_derefInvalidIterator"
+        },
+        {
+          "patternId": "cppcheck_doubleFree"
+        },
+        {
+          "patternId": "cppcheck_duplicateBreak"
+        },
+        {
+          "patternId": "cppcheck_duplicateExpression"
+        },
+        {
+          "patternId": "cppcheck_duplicateExpressionTernary"
+        },
+        {
+          "patternId": "cppcheck_duplInheritedMember"
+        },
+        {
+          "patternId": "cppcheck_eraseDereference"
+        },
+        {
+          "patternId": "cppcheck_exceptDeallocThrow"
+        },
+        {
+          "patternId": "cppcheck_exceptRethrowCopy"
+        },
+        {
+          "patternId": "cppcheck_exceptThrowInDestructor"
+        },
+        {
+          "patternId": "cppcheck_fflushOnInputStream"
+        },
+        {
+          "patternId": "cppcheck_ignoredReturnValue"
+        },
+        {
+          "patternId": "cppcheck_incorrectLogicOperator"
+        },
+        {
+          "patternId": "cppcheck_incorrectStringBooleanError"
+        },
+        {
+          "patternId": "cppcheck_incorrectStringCompare"
+        },
+        {
+          "patternId": "cppcheck_incrementboolean"
+        },
+        {
+          "patternId": "cppcheck_integerOverflow"
+        },
+        {
+          "patternId": "cppcheck_invalidFunctionArg"
+        },
+        {
+          "patternId": "cppcheck_invalidFunctionArgBool"
+        },
+        {
+          "patternId": "cppcheck_invalidIterator1"
+        },
+        {
+          "patternId": "cppcheck_invalidLengthModifierError"
+        },
+        {
+          "patternId": "cppcheck_invalidPointerCast"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_float"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_n"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_p"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_s"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_sint"
+        },
+        {
+          "patternId": "cppcheck_invalidPrintfArgType_uint"
+        },
+        {
+          "patternId": "cppcheck_invalidscanf"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_float"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_int"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfArgType_s"
+        },
+        {
+          "patternId": "cppcheck_invalidScanfFormatWidth"
+        },
+        {
+          "patternId": "cppcheck_IOWithoutPositioning"
+        },
+        {
+          "patternId": "cppcheck_knownConditionTrueFalse"
+        },
+        {
+          "patternId": "cppcheck_leakNoVarFunctionCall"
+        },
+        {
+          "patternId": "cppcheck_leakReturnValNotUsed"
+        },
+        {
+          "patternId": "cppcheck_literalWithCharPtrCompare"
+        },
+        {
+          "patternId": "cppcheck_mallocOnClassError"
+        },
+        {
+          "patternId": "cppcheck_mallocOnClassWarning"
+        },
+        {
+          "patternId": "cppcheck_memleak"
+        },
+        {
+          "patternId": "cppcheck_memleakOnRealloc"
+        },
+        {
+          "patternId": "cppcheck_memsetClass"
+        },
+        {
+          "patternId": "cppcheck_memsetClassFloat"
+        },
+        {
+          "patternId": "cppcheck_memsetClassReference"
+        },
+        {
+          "patternId": "cppcheck_memsetFloat"
+        },
+        {
+          "patternId": "cppcheck_memsetValueOutOfRange"
+        },
+        {
+          "patternId": "cppcheck_memsetZeroBytes"
+        },
+        {
+          "patternId": "cppcheck_mismatchAllocDealloc"
+        },
+        {
+          "patternId": "cppcheck_mismatchingBitAnd"
+        },
+        {
+          "patternId": "cppcheck_mismatchingContainers"
+        },
+        {
+          "patternId": "cppcheck_missingInclude"
+        },
+        {
+          "patternId": "cppcheck_missingIncludeSystem"
+        },
+        {
+          "patternId": "cppcheck_moduloAlwaysTrueFalse"
+        },
+        {
+          "patternId": "cppcheck_multiCondition"
+        },
+        {
+          "patternId": "cppcheck_nanInArithmeticExpression"
+        },
+        {
+          "patternId": "cppcheck_negativeIndex"
+        },
+        {
+          "patternId": "cppcheck_noConstructor"
+        },
+        {
+          "patternId": "cppcheck_noCopyConstructor"
+        },
+        {
+          "patternId": "cppcheck_noExplicitConstructor"
+        },
+        {
+          "patternId": "cppcheck_nullPointer"
+        },
+        {
+          "patternId": "cppcheck_nullPointerDefaultArg"
+        },
+        {
+          "patternId": "cppcheck_nullPointerRedundantCheck"
+        },
+        {
+          "patternId": "cppcheck_operatorEqMissingReturnStatement"
+        },
+        {
+          "patternId": "cppcheck_operatorEqRetRefThis"
+        },
+        {
+          "patternId": "cppcheck_operatorEqShouldBeLeftUnimplemented"
+        },
+        {
+          "patternId": "cppcheck_operatorEqToSelf"
+        },
+        {
+          "patternId": "cppcheck_operatorEqVarError"
+        },
+        {
+          "patternId": "cppcheck_oppositeInnerCondition"
+        },
+        {
+          "patternId": "cppcheck_passedByValue"
+        },
+        {
+          "patternId": "cppcheck_pointerArithBool"
+        },
+        {
+          "patternId": "cppcheck_pointerLessThanZero"
+        },
+        {
+          "patternId": "cppcheck_pointerOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_pointerPositive"
+        },
+        {
+          "patternId": "cppcheck_pointerSize"
+        },
+        {
+          "patternId": "cppcheck_postfixOperator"
+        },
+        {
+          "patternId": "cppcheck_preprocessorErrorDirective"
+        },
+        {
+          "patternId": "cppcheck_publicAllocationError"
+        },
+        {
+          "patternId": "cppcheck_raceAfterInterlockedDecrement"
+        },
+        {
+          "patternId": "cppcheck_readWriteOnlyFile"
+        },
+        {
+          "patternId": "cppcheck_redundantAssignInSwitch"
+        },
+        {
+          "patternId": "cppcheck_redundantAssignment"
+        },
+        {
+          "patternId": "cppcheck_redundantCondition"
+        },
+        {
+          "patternId": "cppcheck_redundantCopy"
+        },
+        {
+          "patternId": "cppcheck_redundantIfRemove"
+        },
+        {
+          "patternId": "cppcheck_redundantPointerOp"
+        },
+        {
+          "patternId": "cppcheck_resourceLeak"
+        },
+        {
+          "patternId": "cppcheck_returnReference"
+        },
+        {
+          "patternId": "cppcheck_returnTempReference"
+        },
+        {
+          "patternId": "cppcheck_seekOnAppendedFile"
+        },
+        {
+          "patternId": "cppcheck_selfAssignment"
+        },
+        {
+          "patternId": "cppcheck_selfInitialization"
+        },
+        {
+          "patternId": "cppcheck_shiftNegative"
+        },
+        {
+          "patternId": "cppcheck_shiftTooManyBits"
+        },
+        {
+          "patternId": "cppcheck_signConversion"
+        },
+        {
+          "patternId": "cppcheck_sizeofCalculation"
+        },
+        {
+          "patternId": "cppcheck_sizeofDereferencedVoidPointer"
+        },
+        {
+          "patternId": "cppcheck_sizeofDivisionMemfunc"
+        },
+        {
+          "patternId": "cppcheck_sizeofsizeof"
+        },
+        {
+          "patternId": "cppcheck_sizeofVoid"
+        },
+        {
+          "patternId": "cppcheck_sizeofwithnumericparameter"
+        },
+        {
+          "patternId": "cppcheck_sizeofwithsilentarraypointer"
+        },
+        {
+          "patternId": "cppcheck_sprintfOverlappingData"
+        },
+        {
+          "patternId": "cppcheck_staticStringCompare"
+        },
+        {
+          "patternId": "cppcheck_stlBoundaries"
+        },
+        {
+          "patternId": "cppcheck_stlcstr"
+        },
+        {
+          "patternId": "cppcheck_stlcstrParam"
+        },
+        {
+          "patternId": "cppcheck_stlcstrReturn"
+        },
+        {
+          "patternId": "cppcheck_stlIfFind"
+        },
+        {
+          "patternId": "cppcheck_stlIfStrFind"
+        },
+        {
+          "patternId": "cppcheck_StlMissingComparison"
+        },
+        {
+          "patternId": "cppcheck_stlOutOfBounds"
+        },
+        {
+          "patternId": "cppcheck_stlSize"
+        },
+        {
+          "patternId": "cppcheck_stringCompare"
+        },
+        {
+          "patternId": "cppcheck_stringLiteralWrite"
+        },
+        {
+          "patternId": "cppcheck_strPlusChar"
+        },
+        {
+          "patternId": "cppcheck_thisSubtraction"
+        },
+        {
+          "patternId": "cppcheck_throwInNoexceptFunction"
+        },
+        {
+          "patternId": "cppcheck_toomanyconfigs"
+        },
+        {
+          "patternId": "cppcheck_truncLongCastAssignment"
+        },
+        {
+          "patternId": "cppcheck_truncLongCastReturn"
+        },
+        {
+          "patternId": "cppcheck_unassignedVariable"
+        },
+        {
+          "patternId": "cppcheck_uninitdata"
+        },
+        {
+          "patternId": "cppcheck_uninitMemberVar"
+        },
+        {
+          "patternId": "cppcheck_uninitStructMember"
+        },
+        {
+          "patternId": "cppcheck_unpreciseMathCall"
+        },
+        {
+          "patternId": "cppcheck_unreachableCode"
+        },
+        {
+          "patternId": "cppcheck_unreadVariable"
+        },
+        {
+          "patternId": "cppcheck_unsafeClassCanLeak"
+        },
+        {
+          "patternId": "cppcheck_unsignedLessThanZero"
+        },
+        {
+          "patternId": "cppcheck_unsignedPositive"
+        },
+        {
+          "patternId": "cppcheck_unusedAllocatedMemory"
+        },
+        {
+          "patternId": "cppcheck_unusedLabel"
+        },
+        {
+          "patternId": "cppcheck_unusedScopedObject"
+        },
+        {
+          "patternId": "cppcheck_unusedStructMember"
+        },
+        {
+          "patternId": "cppcheck_useClosedFile"
+        },
+        {
+          "patternId": "cppcheck_useInitializationList"
+        },
+        {
+          "patternId": "cppcheck_uselessAssignmentArg"
+        },
+        {
+          "patternId": "cppcheck_uselessAssignmentPtrArg"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsCompare"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsEmpty"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsRemove"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsSubstr"
+        },
+        {
+          "patternId": "cppcheck_uselessCallsSwap"
+        },
+        {
+          "patternId": "cppcheck_va_end_missing"
+        },
+        {
+          "patternId": "cppcheck_va_list_usedBeforeStarted"
+        },
+        {
+          "patternId": "cppcheck_varFuncNullUB"
+        },
+        {
+          "patternId": "cppcheck_variableScope"
+        },
+        {
+          "patternId": "cppcheck_va_start_referencePassed"
+        },
+        {
+          "patternId": "cppcheck_va_start_subsequentCalls"
+        },
+        {
+          "patternId": "cppcheck_va_start_wrongParameter"
+        },
+        {
+          "patternId": "cppcheck_virtualDestructor"
+        },
+        {
+          "patternId": "cppcheck_writeReadOnlyFile"
+        },
+        {
+          "patternId": "cppcheck_wrongmathcall"
+        },
+        {
+          "patternId": "cppcheck_wrongPrintfScanfArgNum"
+        },
+        {
+          "patternId": "cppcheck_wrongPrintfScanfParameterPositionError"
+        },
+        {
+          "patternId": "cppcheck_zerodiv"
+        },
+        {
+          "patternId": "cppcheck_zerodivcond"
+        }
+      ]
+    },
+    {
+      "toolId": "Trivy",
+      "patterns": [
+        {
+          "patternId": "Trivy_malicious_packages"
+        },
+        {
+          "patternId": "Trivy_secret"
+        },
+        {
+          "patternId": "Trivy_vulnerability_critical"
+        },
+        {
+          "patternId": "Trivy_vulnerability_high"
+        },
+        {
+          "patternId": "Trivy_vulnerability_medium"
+        },
+        {
+          "patternId": "Trivy_vulnerability_minor"
+        }
+      ]
+    },
+    {
+      "toolId": "Semgrep",
+      "patterns": [
+        {
+          "patternId": "Semgrep_bash.curl.security.curl-eval.curl-eval"
+        },
+        {
+          "patternId": "Semgrep_c.lang.security.insecure-use-gets-fn.insecure-use-gets-fn"
+        },
+        {
+          "patternId": "Semgrep_c.lang.security.random-fd-exhaustion.random-fd-exhaustion"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.audit.ldap-injection.ldap-injection"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.audit.mass-assignment.mass-assignment"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.audit.missing-or-broken-authorization.missing-or-broken-authorization"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.audit.open-directory-listing.open-directory-listing"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.audit.xpath-injection.xpath-injection"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.razor-template-injection.razor-template-injection"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.use_deprecated_cipher_algorithm.use_deprecated_cipher_algorithm"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.use_ecb_mode.use_ecb_mode"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.use_weak_rng_for_keygeneration.use_weak_rng_for_keygeneration"
+        },
+        {
+          "patternId": "Semgrep_csharp.dotnet.security.use_weak_rsa_encryption_padding.use_weak_rsa_encryption_padding"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.correctness.double.double-epsilon-equality.correctness-double-epsilon-equality"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.correctness.regioninfo.regioninfo-interop.correctness-regioninfo-interop"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.correctness.sslcertificatetrust.sslcertificatetrust-handshake-no-trust.correctness-sslcertificatetrust-handshake-no-trust"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.ad.jwt-tokenvalidationparameters-no-expiry-validation.jwt-tokenvalidationparameters-no-expiry-validation"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.cryptography.unsigned-security-token.unsigned-security-token"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.cryptography.x509-subject-name-validation.x509-subject-name-validation"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.filesystem.unsafe-path-combine.unsafe-path-combine"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.http.http-listener-wildcard-bindings.http-listener-wildcard-bindings"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.insecure-deserialization.binary-formatter.insecure-binaryformatter-deserialization"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.insecure-deserialization.fs-pickler.insecure-fspickler-deserialization"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.insecure-deserialization.los-formatter.insecure-losformatter-deserialization"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.insecure-deserialization.net-data-contract.insecure-netdatacontract-deserialization"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.insecure-deserialization.soap-formatter.insecure-soapformatter-deserialization"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.regular-expression-dos.regular-expression-dos-infinite-timeout.regular-expression-dos-infinite-timeout"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.regular-expression-dos.regular-expression-dos.regular-expression-dos"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.sqli.csharp-sqli.csharp-sqli"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.stacktrace-disclosure.stacktrace-disclosure"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.xxe.xmldocument-unsafe-parser-override.xmldocument-unsafe-parser-override"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.xxe.xmlreadersettings-unsafe-parser-override.xmlreadersettings-unsafe-parser-override"
+        },
+        {
+          "patternId": "Semgrep_csharp.lang.security.xxe.xmltextreader-unsafe-defaults.xmltextreader-unsafe-defaults"
+        },
+        {
+          "patternId": "Semgrep_dockerfile.security.dockerd-socket-mount.dockerfile-dockerd-socket-mount"
+        },
+        {
+          "patternId": "Semgrep_generic.secrets.security.detected-onfido-live-api-token.detected-onfido-live-api-token"
+        },
+        {
+          "patternId": "Semgrep_generic.secrets.security.detected-stripe-restricted-api-key.detected-stripe-restricted-api-key"
+        },
+        {
+          "patternId": "Semgrep_generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri"
+        },
+        {
+          "patternId": "Semgrep_generic.secrets.security.google-maps-apikeyleak.google-maps-apikeyleak"
+        },
+        {
+          "patternId": "Semgrep_javascript.argon2.security.unsafe-argon2-config.unsafe-argon2-config"
+        },
+        {
+          "patternId": "Semgrep_javascript.browser.security.open-redirect.js-open-redirect"
+        },
+        {
+          "patternId": "Semgrep_javascript.browser.security.raw-html-concat.raw-html-concat"
+        },
+        {
+          "patternId": "Semgrep_javascript.browser.security.wildcard-postmessage-configuration.wildcard-postmessage-configuration"
+        },
+        {
+          "patternId": "Semgrep_javascript.chrome-remote-interface.security.audit.chrome-remote-interface-compilescript-injection.chrome-remote-interface-compilescript-injection"
+        },
+        {
+          "patternId": "Semgrep_javascript.deno.security.audit.deno-dangerous-run.deno-dangerous-run"
+        },
+        {
+          "patternId": "Semgrep_javascript.intercom.security.audit.intercom-settings-user-identifier-without-user-hash.intercom-settings-user-identifier-without-user-hash"
+        },
+        {
+          "patternId": "Semgrep_javascript.jose.security.jwt-hardcode.hardcoded-jwt-secret"
+        },
+        {
+          "patternId": "Semgrep_javascript.jose.security.jwt-none-alg.jwt-none-alg"
+        },
+        {
+          "patternId": "Semgrep_javascript.jsonwebtoken.security.jwt-hardcode.hardcoded-jwt-secret"
+        },
+        {
+          "patternId": "Semgrep_javascript.jsonwebtoken.security.jwt-none-alg.jwt-none-alg"
+        },
+        {
+          "patternId": "Semgrep_javascript.jwt-simple.security.jwt-simple-noverify.jwt-simple-noverify"
+        },
+        {
+          "patternId": "Semgrep_javascript.lang.security.audit.code-string-concat.code-string-concat"
+        },
+        {
+          "patternId": "Semgrep_javascript.lang.security.audit.sqli.node-knex-sqli.node-knex-sqli"
+        },
+        {
+          "patternId": "Semgrep_javascript.lang.security.detect-eval-with-expression.detect-eval-with-expression"
+        },
+        {
+          "patternId": "Semgrep_javascript.node-crypto.security.aead-no-final.aead-no-final"
+        },
+        {
+          "patternId": "Semgrep_javascript.node-crypto.security.create-de-cipher-no-iv.create-de-cipher-no-iv"
+        },
+        {
+          "patternId": "Semgrep_javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length"
+        },
+        {
+          "patternId": "Semgrep_javascript.passport-jwt.security.passport-hardcode.hardcoded-passport-secret"
+        },
+        {
+          "patternId": "Semgrep_json.aws.security.public-s3-bucket.public-s3-bucket"
+        },
+        {
+          "patternId": "Semgrep_json.aws.security.public-s3-policy-statement.public-s3-policy-statement"
+        },
+        {
+          "patternId": "Semgrep_json.aws.security.wildcard-assume-role.wildcard-assume-role"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.assert-use.assert-use"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.base-convert-loses-precision.base-convert-loses-precision"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.curl-ssl-verifypeer-off.curl-ssl-verifypeer-off"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.deserialization.extract-user-data"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.echoed-request.echoed-request"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.printed-request.printed-request"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-callable.tainted-callable"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-exec.tainted-exec"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-filename.tainted-filename"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-object-instantiation.tainted-object-instantiation"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-session.tainted-session"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-sql-string.tainted-sql-string"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.injection.tainted-url-host.tainted-url-host"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.md5-used-as-password.md5-used-as-password"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.openssl-cbc-static-iv.openssl-cbc-static-iv"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.phpinfo-use.phpinfo-use"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.redirect-to-request-uri.redirect-to-request-uri"
+        },
+        {
+          "patternId": "Semgrep_php.lang.security.tainted-exec.tainted-exec"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.bypass-tls-verification.bypass-tls-verification"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.disallow-old-tls-versions1.disallow-old-tls-versions1"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.disallow-old-tls-versions2.disallow-old-tls-versions2"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.ftp-request.ftp-request"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.http-request.http-request"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.rest-http-client-support.rest-http-client-support"
+        },
+        {
+          "patternId": "Semgrep_problem-based-packs.insecure-transport.js-node.telnet-request.telnet-request"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.empty-aes-key.empty-aes-key"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-cipher-algorithms-arc4.insecure-cipher-algorithm-arc4"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-cipher-algorithms-blowfish.insecure-cipher-algorithm-blowfish"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-cipher-algorithms.insecure-cipher-algorithm-idea"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-cipher-mode-ecb.insecure-cipher-mode-ecb"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insufficient-dsa-key-size.insufficient-dsa-key-size"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insufficient-ec-key-size.insufficient-ec-key-size"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.insufficient-rsa-key-size.insufficient-rsa-key-size"
+        },
+        {
+          "patternId": "Semgrep_python.cryptography.security.mode-without-authentication.crypto-mode-without-authentication"
+        },
+        {
+          "patternId": "Semgrep_python_crypto_rule-HTTPConnectionPool"
+        },
+        {
+          "patternId": "Semgrep_python.distributed.security.require-encryption"
+        },
+        {
+          "patternId": "Semgrep_python_flask_rule-path-traversal-open"
+        },
+        {
+          "patternId": "Semgrep_python_jwt_rule-jwt-none-alg"
+        },
+        {
+          "patternId": "Semgrep_python.jwt.security.jwt-hardcode.jwt-python-hardcoded-secret"
+        },
+        {
+          "patternId": "Semgrep_python.jwt.security.jwt-none-alg.jwt-python-none-alg"
+        },
+        {
+          "patternId": "Semgrep_python.jwt.security.unverified-jwt-decode.unverified-jwt-decode"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-asyncio-exec-tainted-env-args.dangerous-asyncio-exec-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-asyncio-shell-tainted-env-args.dangerous-asyncio-shell-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-code-run-tainted-env-args.dangerous-interactive-code-run-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-os-exec-tainted-env-args.dangerous-os-exec-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-spawn-process-tainted-env-args.dangerous-spawn-process-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-subinterpreters-run-string-tainted-env-args.dangerous-subinterpreters-run-string-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-system-call-tainted-env-args.dangerous-system-call-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.dangerous-testcapi-run-in-subinterp-tainted-env-args.dangerous-testcapi-run-in-subinterp-tainted-env-args"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.insecure-file-permissions.insecure-file-permissions"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.insecure-transport.requests.request-session-http-in-with-context.request-session-http-in-with-context"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.insecure-transport.requests.request-session-with-http.request-session-with-http"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.md5-used-as-password.md5-used-as-password"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.network.bind.avoid-bind-to-all-interfaces"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.network.disabled-cert-validation.disabled-cert-validation"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.network.http-not-https-connection.http-not-https-connection"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.ssl-wrap-socket-is-deprecated.ssl-wrap-socket-is-deprecated"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.subprocess-shell-true.subprocess-shell-true"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.audit.weak-ssl-version.weak-ssl-version"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-code-run.dangerous-interactive-code-run"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-os-exec.dangerous-os-exec"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-spawn-process.dangerous-spawn-process"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-subinterpreters-run-string.dangerous-subinterpreters-run-string"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-system-call.dangerous-system-call"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.dangerous-testcapi-run-in-subinterp.dangerous-testcapi-run-in-subinterp"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.deserialization.avoid-pyyaml-load.avoid-pyyaml-load"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.deserialization.avoid-unsafe-ruamel.avoid-unsafe-ruamel"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.deserialization.pickle.avoid-shelve"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.insecure-hash-algorithms.insecure-hash-algorithm-sha1"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.insecure-hash-function.insecure-hash-function"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.insecure-uuid-version.insecure-uuid-version"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.unverified-ssl-context.unverified-ssl-context"
+        },
+        {
+          "patternId": "Semgrep_python.lang.security.use-defused-xml-parse.use-defused-xml-parse"
+        },
+        {
+          "patternId": "Semgrep_python_pyramid_rule-pyramid-csrf-origin-check"
+        },
+        {
+          "patternId": "Semgrep_yaml.argo.security.argo-workflow-parameter-command-injection.argo-workflow-parameter-command-injection"
+        },
+        {
+          "patternId": "Semgrep_yaml.docker-compose.security.privileged-service.privileged-service"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.allowed-unsecure-commands.allowed-unsecure-commands"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.audit.unsafe-add-mask-workflow-command.unsafe-add-mask-workflow-command"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.curl-eval.curl-eval"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.github-script-injection.github-script-injection"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.pull-request-target-code-checkout.pull-request-target-code-checkout"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.run-shell-injection.run-shell-injection"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout"
+        },
+        {
+          "patternId": "Semgrep_yaml.github-actions.semgrep-configuration.semgrep-github-action-push-without-branches.semgrep-github-action-push-without-branches"
+        },
+        {
+          "patternId": "Semgrep_yaml.openapi.security.openai-consequential-action-false.openai-consequential-action-false"
+        },
+        {
+          "patternId": "Semgrep_yaml.openapi.security.use-of-basic-authentication.use-of-basic-authentication"
+        },
+        {
+          "patternId": "Semgrep_yaml_spring_rule-SpringActuatorFullyEnabled"
+        }
+      ]
+    },
+    {
+      "toolId": "spectral",
+      "patterns": [
+        {
+          "patternId": "spectral_array-items"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-channel-no-empty-parameter"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-channel-no-query-nor-fragment"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-channel-no-trailing-slash"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-channel-servers"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-document-resolved"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-document-unresolved"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-headers-schema-type-object"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-operation-description"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-operation-security"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-payload-unsupported-schemaFormat"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-server-no-empty-variable"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-server-no-trailing-slash"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-tags"
+        },
+        {
+          "patternId": "spectral_asyncapi-3-tags-uniqueness"
+        },
+        {
+          "patternId": "spectral_asyncapi-channel-no-empty-parameter"
+        },
+        {
+          "patternId": "spectral_asyncapi-channel-no-query-nor-fragment"
+        },
+        {
+          "patternId": "spectral_asyncapi-channel-no-trailing-slash"
+        },
+        {
+          "patternId": "spectral_asyncapi-channel-parameters"
+        },
+        {
+          "patternId": "spectral_asyncapi-channel-servers"
+        },
+        {
+          "patternId": "spectral_asyncapi-headers-schema-type-object"
+        },
+        {
+          "patternId": "spectral_asyncapi-info-contact"
+        },
+        {
+          "patternId": "spectral_asyncapi-info-contact-properties"
+        },
+        {
+          "patternId": "spectral_asyncapi-info-description"
+        },
+        {
+          "patternId": "spectral_asyncapi-info-license"
+        },
+        {
+          "patternId": "spectral_asyncapi-latest-version"
+        },
+        {
+          "patternId": "spectral_asyncapi-message-examples"
+        },
+        {
+          "patternId": "spectral_asyncapi-message-messageId-uniqueness"
+        },
+        {
+          "patternId": "spectral_asyncapi-operation-description"
+        },
+        {
+          "patternId": "spectral_asyncapi-operation-operationId"
+        },
+        {
+          "patternId": "spectral_asyncapi-operation-operationId-uniqueness"
+        },
+        {
+          "patternId": "spectral_asyncapi-operation-security"
+        },
+        {
+          "patternId": "spectral_asyncapi-payload"
+        },
+        {
+          "patternId": "spectral_asyncapi-payload-default"
+        },
+        {
+          "patternId": "spectral_asyncapi-payload-examples"
+        },
+        {
+          "patternId": "spectral_asyncapi-payload-unsupported-schemaFormat"
+        },
+        {
+          "patternId": "spectral_asyncapi-schema"
+        },
+        {
+          "patternId": "spectral_asyncapi-schema-default"
+        },
+        {
+          "patternId": "spectral_asyncapi-schema-examples"
+        },
+        {
+          "patternId": "spectral_asyncapi-server-no-empty-variable"
+        },
+        {
+          "patternId": "spectral_asyncapi-server-no-trailing-slash"
+        },
+        {
+          "patternId": "spectral_asyncapi-servers"
+        },
+        {
+          "patternId": "spectral_asyncapi-server-security"
+        },
+        {
+          "patternId": "spectral_asyncapi-server-variables"
+        },
+        {
+          "patternId": "spectral_asyncapi-tags"
+        },
+        {
+          "patternId": "spectral_asyncapi-tags-uniqueness"
+        },
+        {
+          "patternId": "spectral_asyncapi-unused-components-schema"
+        },
+        {
+          "patternId": "spectral_asyncapi-unused-components-server"
+        },
+        {
+          "patternId": "spectral_duplicated-entry-in-enum"
+        },
+        {
+          "patternId": "spectral_info-contact"
+        },
+        {
+          "patternId": "spectral_info-description"
+        },
+        {
+          "patternId": "spectral_no-eval-in-markdown"
+        },
+        {
+          "patternId": "spectral_no-$ref-siblings"
+        },
+        {
+          "patternId": "spectral_no-script-tags-in-markdown"
+        },
+        {
+          "patternId": "spectral_oas2-anyOf"
+        },
+        {
+          "patternId": "spectral_oas2-api-host"
+        },
+        {
+          "patternId": "spectral_oas2-api-schemes"
+        },
+        {
+          "patternId": "spectral_oas2-discriminator"
+        },
+        {
+          "patternId": "spectral_oas2-host-trailing-slash"
+        },
+        {
+          "patternId": "spectral_oas2-oneOf"
+        },
+        {
+          "patternId": "spectral_oas2-operation-formData-consume-check"
+        },
+        {
+          "patternId": "spectral_oas2-operation-security-defined"
+        },
+        {
+          "patternId": "spectral_oas2-schema"
+        },
+        {
+          "patternId": "spectral_oas2-unused-definition"
+        },
+        {
+          "patternId": "spectral_oas2-valid-media-example"
+        },
+        {
+          "patternId": "spectral_oas2-valid-schema-example"
+        },
+        {
+          "patternId": "spectral_oas3_1-callbacks-in-webhook"
+        },
+        {
+          "patternId": "spectral_oas3_1-servers-in-webhook"
+        },
+        {
+          "patternId": "spectral_oas3-api-servers"
+        },
+        {
+          "patternId": "spectral_oas3-callbacks-in-callbacks"
+        },
+        {
+          "patternId": "spectral_oas3-examples-value-or-externalValue"
+        },
+        {
+          "patternId": "spectral_oas3-operation-security-defined"
+        },
+        {
+          "patternId": "spectral_oas3-schema"
+        },
+        {
+          "patternId": "spectral_oas3-server-trailing-slash"
+        },
+        {
+          "patternId": "spectral_oas3-server-variables"
+        },
+        {
+          "patternId": "spectral_oas3-unused-component"
+        },
+        {
+          "patternId": "spectral_oas3-valid-media-example"
+        },
+        {
+          "patternId": "spectral_oas3-valid-schema-example"
+        },
+        {
+          "patternId": "spectral_openapi-tags-uniqueness"
+        },
+        {
+          "patternId": "spectral_operation-description"
+        },
+        {
+          "patternId": "spectral_operation-operationId"
+        },
+        {
+          "patternId": "spectral_operation-operationId-unique"
+        },
+        {
+          "patternId": "spectral_operation-operationId-valid-in-url"
+        },
+        {
+          "patternId": "spectral_operation-parameters"
+        },
+        {
+          "patternId": "spectral_operation-success-response"
+        },
+        {
+          "patternId": "spectral_operation-tag-defined"
+        },
+        {
+          "patternId": "spectral_operation-tags"
+        },
+        {
+          "patternId": "spectral_path-declarations-must-exist"
+        },
+        {
+          "patternId": "spectral_path-keys-no-trailing-slash"
+        },
+        {
+          "patternId": "spectral_path-not-include-query"
+        },
+        {
+          "patternId": "spectral_path-params"
+        },
+        {
+          "patternId": "spectral_typed-enum"
+        }
+      ]
+    },
+    {
+      "toolId": "ESLint9",
+      "patterns": [
+        {
+          "patternId": "ESLint9_constructor-super"
+        },
+        {
+          "patternId": "ESLint9_for-direction"
+        },
+        {
+          "patternId": "ESLint9_getter-return"
+        },
+        {
+          "patternId": "ESLint9_no-async-promise-executor"
+        },
+        {
+          "patternId": "ESLint9_no-case-declarations"
+        },
+        {
+          "patternId": "ESLint9_no-class-assign"
+        },
+        {
+          "patternId": "ESLint9_no-compare-neg-zero"
+        },
+        {
+          "patternId": "ESLint9_no-cond-assign"
+        },
+        {
+          "patternId": "ESLint9_no-constant-binary-expression"
+        },
+        {
+          "patternId": "ESLint9_no-constant-condition"
+        },
+        {
+          "patternId": "ESLint9_no-const-assign"
+        },
+        {
+          "patternId": "ESLint9_no-control-regex"
+        },
+        {
+          "patternId": "ESLint9_no-debugger"
+        },
+        {
+          "patternId": "ESLint9_no-delete-var"
+        },
+        {
+          "patternId": "ESLint9_no-dupe-args"
+        },
+        {
+          "patternId": "ESLint9_no-dupe-class-members"
+        },
+        {
+          "patternId": "ESLint9_no-dupe-else-if"
+        },
+        {
+          "patternId": "ESLint9_no-dupe-keys"
+        },
+        {
+          "patternId": "ESLint9_no-duplicate-case"
+        },
+        {
+          "patternId": "ESLint9_no-empty"
+        },
+        {
+          "patternId": "ESLint9_no-empty-character-class"
+        },
+        {
+          "patternId": "ESLint9_no-empty-pattern"
+        },
+        {
+          "patternId": "ESLint9_no-empty-static-block"
+        },
+        {
+          "patternId": "ESLint9_no-ex-assign"
+        },
+        {
+          "patternId": "ESLint9_no-extra-boolean-cast"
+        },
+        {
+          "patternId": "ESLint9_no-fallthrough"
+        },
+        {
+          "patternId": "ESLint9_no-func-assign"
+        },
+        {
+          "patternId": "ESLint9_no-global-assign"
+        },
+        {
+          "patternId": "ESLint9_no-import-assign"
+        },
+        {
+          "patternId": "ESLint9_no-invalid-regexp"
+        },
+        {
+          "patternId": "ESLint9_no-irregular-whitespace"
+        },
+        {
+          "patternId": "ESLint9_no-loss-of-precision"
+        },
+        {
+          "patternId": "ESLint9_no-misleading-character-class"
+        },
+        {
+          "patternId": "ESLint9_no-new-native-nonconstructor"
+        },
+        {
+          "patternId": "ESLint9_no-nonoctal-decimal-escape"
+        },
+        {
+          "patternId": "ESLint9_no-obj-calls"
+        },
+        {
+          "patternId": "ESLint9_no-octal"
+        },
+        {
+          "patternId": "ESLint9_no-prototype-builtins"
+        },
+        {
+          "patternId": "ESLint9_no-redeclare"
+        },
+        {
+          "patternId": "ESLint9_no-regex-spaces"
+        },
+        {
+          "patternId": "ESLint9_no-self-assign"
+        },
+        {
+          "patternId": "ESLint9_no-setter-return"
+        },
+        {
+          "patternId": "ESLint9_no-shadow-restricted-names"
+        },
+        {
+          "patternId": "ESLint9_no-sparse-arrays"
+        },
+        {
+          "patternId": "ESLint9_no-this-before-super"
+        },
+        {
+          "patternId": "ESLint9_no-undef"
+        },
+        {
+          "patternId": "ESLint9_no-unexpected-multiline"
+        },
+        {
+          "patternId": "ESLint9_no-unreachable"
+        },
+        {
+          "patternId": "ESLint9_no-unsafe-finally"
+        },
+        {
+          "patternId": "ESLint9_no-unsafe-negation"
+        },
+        {
+          "patternId": "ESLint9_no-unsafe-optional-chaining"
+        },
+        {
+          "patternId": "ESLint9_no-unused-labels"
+        },
+        {
+          "patternId": "ESLint9_no-unused-private-class-members"
+        },
+        {
+          "patternId": "ESLint9_no-unused-vars"
+        },
+        {
+          "patternId": "ESLint9_no-useless-backreference"
+        },
+        {
+          "patternId": "ESLint9_no-useless-catch"
+        },
+        {
+          "patternId": "ESLint9_no-useless-escape"
+        },
+        {
+          "patternId": "ESLint9_no-with"
+        },
+        {
+          "patternId": "ESLint9_require-yield"
+        },
+        {
+          "patternId": "ESLint9_security_detect-bidi-characters"
+        },
+        {
+          "patternId": "ESLint9_security_detect-buffer-noassert"
+        },
+        {
+          "patternId": "ESLint9_security_detect-child-process"
+        },
+        {
+          "patternId": "ESLint9_security_detect-disable-mustache-escape"
+        },
+        {
+          "patternId": "ESLint9_security_detect-eval-with-expression"
+        },
+        {
+          "patternId": "ESLint9_security_detect-new-buffer"
+        },
+        {
+          "patternId": "ESLint9_security_detect-no-csrf-before-method-override"
+        },
+        {
+          "patternId": "ESLint9_security_detect-non-literal-fs-filename"
+        },
+        {
+          "patternId": "ESLint9_security_detect-non-literal-regexp"
+        },
+        {
+          "patternId": "ESLint9_security_detect-non-literal-require"
+        },
+        {
+          "patternId": "ESLint9_security_detect-object-injection"
+        },
+        {
+          "patternId": "ESLint9_security_detect-possible-timing-attacks"
+        },
+        {
+          "patternId": "ESLint9_security_detect-pseudoRandomBytes"
+        },
+        {
+          "patternId": "ESLint9_security_detect-unsafe-regex"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-absence-of-name-option-in-exrpress-session"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-child-process"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-dangerous-redirects"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-eval-with-expr"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-html-injection"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-improper-exception-handling"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-non-literal-require-calls"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-nosql-injection"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-option-multiplestatements-in-mysql"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-option-rejectunauthorized-in-nodejs-httpsrequest"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-option-unsafe-in-serialize-javascript-npm-package"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-possible-timing-attacks"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-security-missconfiguration-cookie"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-unhandled-async-errors"
+        },
+        {
+          "patternId": "ESLint9_security-node_detect-unhandled-event-errors"
+        },
+        {
+          "patternId": "ESLint9_security-node_disable-ssl-across-node-server"
+        },
+        {
+          "patternId": "ESLint9_security-node_non-literal-reg-expr"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_adjacent-overload-signatures"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_array-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_await-thenable"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_ban-ts-comment"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_ban-tslint-comment"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_class-literal-property-style"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_class-methods-use-this"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-generic-constructors"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-indexed-object-style"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-return"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-type-assertions"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-type-definitions"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_consistent-type-exports"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_default-param-last"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_dot-notation"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_explicit-function-return-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_explicit-member-accessibility"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_explicit-module-boundary-types"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_init-declarations"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_max-params"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_member-ordering"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_method-signature-style"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_naming-convention"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-array-constructor"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-array-delete"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-base-to-string"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-confusing-non-null-assertion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-confusing-void-expression"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-deprecated"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-dupe-class-members"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-duplicate-enum-values"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-duplicate-type-constituents"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-dynamic-delete"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-empty-function"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-empty-interface"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-empty-object-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-explicit-any"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-extraneous-class"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-extra-non-null-assertion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-floating-promises"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-for-in-array"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-implied-eval"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-import-type-side-effects"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-inferrable-types"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-invalid-this"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-invalid-void-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-loop-func"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-loss-of-precision"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-magic-numbers"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-meaningless-void-operator"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-misused-new"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-misused-promises"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-misused-spread"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-mixed-enums"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-namespace"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_non-nullable-type-assertion-style"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-non-null-asserted-nullish-coalescing"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-non-null-asserted-optional-chain"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-non-null-assertion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-redeclare"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-redundant-type-constituents"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-require-imports"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-restricted-imports"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-restricted-types"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-shadow"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-this-alias"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-type-alias"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-boolean-literal-compare"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-condition"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-parameter-property-assignment"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-qualifier"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-template-expression"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-type-arguments"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-type-assertion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-type-constraint"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-type-conversion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unnecessary-type-parameters"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-argument"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-assignment"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-call"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-declaration-merging"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-enum-comparison"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-function-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-member-access"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-return"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-type-assertion"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unsafe-unary-minus"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unused-expressions"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unused-private-class-members"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-unused-vars"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-use-before-define"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-useless-constructor"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-useless-default-assignment"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-useless-empty-export"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-var-requires"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_no-wrapper-object-types"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_only-throw-error"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_parameter-properties"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-as-const"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-destructuring"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-enum-initializers"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-find"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-for-of"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-function-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-includes"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-literal-enum-member"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-namespace-keyword"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-nullish-coalescing"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-optional-chain"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-promise-reject-errors"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-readonly"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-readonly-parameter-types"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-reduce-type-parameter"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-regexp-exec"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-return-this-type"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-string-starts-ends-with"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_prefer-ts-expect-error"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_promise-function-async"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_related-getter-setter-pairs"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_require-array-sort-compare"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_require-await"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_restrict-plus-operands"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_restrict-template-expressions"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_return-await"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_sort-type-constituents"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_strict-boolean-expressions"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_strict-void-return"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_switch-exhaustiveness-check"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_triple-slash-reference"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_typedef"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_unbound-method"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_unified-signatures"
+        },
+        {
+          "patternId": "ESLint9_@typescript-eslint_use-unknown-in-catch-callback-variable"
+        },
+        {
+          "patternId": "ESLint9_use-isnan"
+        },
+        {
+          "patternId": "ESLint9_valid-typeof"
+        },
+        {
+          "patternId": "ESLint9_xss_no-location-href-assign"
+        }
+      ]
+    },
+    {
+      "toolId": "flawfinder",
+      "patterns": [
+        {
+          "patternId": "flawfinder_fgetc"
+        },
+        {
+          "patternId": "flawfinder_getc"
+        },
+        {
+          "patternId": "flawfinder_getchar"
+        },
+        {
+          "patternId": "flawfinder__gettc"
+        },
+        {
+          "patternId": "flawfinder_lstrcatn"
+        },
+        {
+          "patternId": "flawfinder_lstrcpyn"
+        },
+        {
+          "patternId": "flawfinder__mbslen"
+        },
+        {
+          "patternId": "flawfinder__mbsnbcat"
+        },
+        {
+          "patternId": "flawfinder__mbsnbcpy"
+        },
+        {
+          "patternId": "flawfinder_memalign"
+        },
+        {
+          "patternId": "flawfinder_read"
+        },
+        {
+          "patternId": "flawfinder_strcadd"
+        },
+        {
+          "patternId": "flawfinder_strccpy"
+        },
+        {
+          "patternId": "flawfinder_strlen"
+        },
+        {
+          "patternId": "flawfinder_strncat"
+        },
+        {
+          "patternId": "flawfinder_strncpy"
+        },
+        {
+          "patternId": "flawfinder__tcslen"
+        },
+        {
+          "patternId": "flawfinder__tcsncat"
+        },
+        {
+          "patternId": "flawfinder__tcsncpy"
+        },
+        {
+          "patternId": "flawfinder_ulimit"
+        },
+        {
+          "patternId": "flawfinder_umask"
+        },
+        {
+          "patternId": "flawfinder_usleep"
+        },
+        {
+          "patternId": "flawfinder_wcslen"
+        },
+        {
+          "patternId": "flawfinder_wcsncat"
+        },
+        {
+          "patternId": "flawfinder_wcsncpy"
         }
       ]
     },
@@ -2227,160 +2912,145 @@
       "toolId": "Bandit",
       "patterns": [
         {
-          "patternId": "Bandit_B311"
-        },
-        {
-          "patternId": "Bandit_B301"
-        },
-        {
-          "patternId": "Bandit_B609"
-        },
-        {
-          "patternId": "Bandit_B506"
-        },
-        {
-          "patternId": "Bandit_B407"
-        },
-        {
-          "patternId": "Bandit_B317"
+          "patternId": "Bandit_B101"
         },
         {
           "patternId": "Bandit_B102"
         },
         {
-          "patternId": "Bandit_B505"
-        },
-        {
-          "patternId": "Bandit_B108"
-        },
-        {
-          "patternId": "Bandit_B608"
-        },
-        {
-          "patternId": "Bandit_B702"
-        },
-        {
-          "patternId": "Bandit_B401"
-        },
-        {
-          "patternId": "Bandit_B406"
-        },
-        {
-          "patternId": "Bandit_B315"
-        },
-        {
-          "patternId": "Bandit_B501"
-        },
-        {
-          "patternId": "Bandit_B107"
-        },
-        {
-          "patternId": "Bandit_B110"
-        },
-        {
-          "patternId": "Bandit_B603"
-        },
-        {
-          "patternId": "Bandit_B201"
+          "patternId": "Bandit_B103"
         },
         {
           "patternId": "Bandit_B104"
         },
         {
-          "patternId": "Bandit_B304"
-        },
-        {
-          "patternId": "Bandit_B601"
-        },
-        {
-          "patternId": "Bandit_B321"
-        },
-        {
-          "patternId": "Bandit_B309"
-        },
-        {
-          "patternId": "Bandit_B606"
-        },
-        {
-          "patternId": "Bandit_B310"
-        },
-        {
-          "patternId": "Bandit_B316"
-        },
-        {
           "patternId": "Bandit_B105"
         },
         {
-          "patternId": "Bandit_B318"
+          "patternId": "Bandit_B106"
+        },
+        {
+          "patternId": "Bandit_B107"
+        },
+        {
+          "patternId": "Bandit_B108"
+        },
+        {
+          "patternId": "Bandit_B110"
         },
         {
           "patternId": "Bandit_B112"
         },
         {
-          "patternId": "Bandit_B405"
+          "patternId": "Bandit_B202"
         },
         {
-          "patternId": "Bandit_B402"
-        },
-        {
-          "patternId": "Bandit_B313"
-        },
-        {
-          "patternId": "Bandit_B320"
-        },
-        {
-          "patternId": "Bandit_B409"
-        },
-        {
-          "patternId": "Bandit_B602"
-        },
-        {
-          "patternId": "Bandit_B307"
-        },
-        {
-          "patternId": "Bandit_B303"
-        },
-        {
-          "patternId": "Bandit_B701"
-        },
-        {
-          "patternId": "Bandit_B403"
-        },
-        {
-          "patternId": "Bandit_B604"
-        },
-        {
-          "patternId": "Bandit_B312"
-        },
-        {
-          "patternId": "Bandit_B502"
-        },
-        {
-          "patternId": "Bandit_B411"
-        },
-        {
-          "patternId": "Bandit_B408"
-        },
-        {
-          "patternId": "Bandit_B308"
-        },
-        {
-          "patternId": "Bandit_B306"
-        },
-        {
-          "patternId": "Bandit_B410"
-        },
-        {
-          "patternId": "Bandit_B314"
+          "patternId": "Bandit_B301"
         },
         {
           "patternId": "Bandit_B302"
         },
         {
-          "patternId": "Bandit_B103"
+          "patternId": "Bandit_B303"
+        },
+        {
+          "patternId": "Bandit_B304"
+        },
+        {
+          "patternId": "Bandit_B305"
+        },
+        {
+          "patternId": "Bandit_B306"
+        },
+        {
+          "patternId": "Bandit_B307"
+        },
+        {
+          "patternId": "Bandit_B309"
+        },
+        {
+          "patternId": "Bandit_B310"
+        },
+        {
+          "patternId": "Bandit_B311"
+        },
+        {
+          "patternId": "Bandit_B312"
+        },
+        {
+          "patternId": "Bandit_B313"
+        },
+        {
+          "patternId": "Bandit_B314"
+        },
+        {
+          "patternId": "Bandit_B315"
+        },
+        {
+          "patternId": "Bandit_B316"
+        },
+        {
+          "patternId": "Bandit_B317"
+        },
+        {
+          "patternId": "Bandit_B318"
         },
         {
           "patternId": "Bandit_B319"
+        },
+        {
+          "patternId": "Bandit_B321"
+        },
+        {
+          "patternId": "Bandit_B322"
+        },
+        {
+          "patternId": "Bandit_B323"
+        },
+        {
+          "patternId": "Bandit_B324"
+        },
+        {
+          "patternId": "Bandit_B325"
+        },
+        {
+          "patternId": "Bandit_B401"
+        },
+        {
+          "patternId": "Bandit_B402"
+        },
+        {
+          "patternId": "Bandit_B403"
+        },
+        {
+          "patternId": "Bandit_B404"
+        },
+        {
+          "patternId": "Bandit_B405"
+        },
+        {
+          "patternId": "Bandit_B406"
+        },
+        {
+          "patternId": "Bandit_B407"
+        },
+        {
+          "patternId": "Bandit_B408"
+        },
+        {
+          "patternId": "Bandit_B409"
+        },
+        {
+          "patternId": "Bandit_B411"
+        },
+        {
+          "patternId": "Bandit_B412"
+        },
+        {
+          "patternId": "Bandit_B415"
+        },
+        {
+          "patternId": "Bandit_B502"
         },
         {
           "patternId": "Bandit_B503"
@@ -2389,223 +3059,1873 @@
           "patternId": "Bandit_B504"
         },
         {
-          "patternId": "Bandit_B305"
+          "patternId": "Bandit_B505"
         },
         {
-          "patternId": "Bandit_B404"
+          "patternId": "Bandit_B602"
+        },
+        {
+          "patternId": "Bandit_B603"
+        },
+        {
+          "patternId": "Bandit_B604"
+        },
+        {
+          "patternId": "Bandit_B605"
+        },
+        {
+          "patternId": "Bandit_B606"
+        },
+        {
+          "patternId": "Bandit_B607"
+        },
+        {
+          "patternId": "Bandit_B608"
+        },
+        {
+          "patternId": "Bandit_B609"
+        },
+        {
+          "patternId": "Bandit_B612"
+        },
+        {
+          "patternId": "Bandit_B613"
+        },
+        {
+          "patternId": "Bandit_B614"
+        },
+        {
+          "patternId": "Bandit_B615"
+        },
+        {
+          "patternId": "Bandit_B704"
         }
       ]
     },
     {
-      "toolId": "ESLint8",
-      "patterns": []
-    },
-    {
-      "toolId": "Hadolint",
+      "toolId": "PyLintPython3",
       "patterns": [
         {
-          "patternId": "Hadolint_DL3021"
+          "patternId": "PyLintPython3_C0123"
         },
         {
-          "patternId": "Hadolint_DL3024"
+          "patternId": "PyLintPython3_C0200"
         },
         {
-          "patternId": "Hadolint_DL3023"
+          "patternId": "PyLintPython3_E0100"
         },
         {
-          "patternId": "Hadolint_DL3022"
+          "patternId": "PyLintPython3_E0101"
         },
         {
-          "patternId": "Hadolint_DL4003"
+          "patternId": "PyLintPython3_E0102"
         },
         {
-          "patternId": "Hadolint_DL3006"
+          "patternId": "PyLintPython3_E0103"
         },
         {
-          "patternId": "Hadolint_DL3007"
+          "patternId": "PyLintPython3_E0104"
         },
         {
-          "patternId": "Hadolint_SC1007"
+          "patternId": "PyLintPython3_E0105"
         },
         {
-          "patternId": "Hadolint_SC2164"
+          "patternId": "PyLintPython3_E0106"
         },
         {
-          "patternId": "Hadolint_SC1035"
+          "patternId": "PyLintPython3_E0107"
         },
         {
-          "patternId": "Hadolint_SC1065"
+          "patternId": "PyLintPython3_E0108"
         },
         {
-          "patternId": "Hadolint_SC1083"
+          "patternId": "PyLintPython3_E0110"
         },
         {
-          "patternId": "Hadolint_SC2140"
+          "patternId": "PyLintPython3_E0112"
         },
         {
-          "patternId": "Hadolint_SC1097"
+          "patternId": "PyLintPython3_E0113"
         },
         {
-          "patternId": "Hadolint_SC2015"
+          "patternId": "PyLintPython3_E0114"
         },
         {
-          "patternId": "Hadolint_SC2035"
+          "patternId": "PyLintPython3_E0115"
         },
         {
-          "patternId": "Hadolint_DL3014"
+          "patternId": "PyLintPython3_E0117"
         },
         {
-          "patternId": "Hadolint_DL3008"
+          "patternId": "PyLintPython3_E0202"
         },
         {
-          "patternId": "Hadolint_DL3010"
+          "patternId": "PyLintPython3_E0203"
         },
         {
-          "patternId": "Hadolint_SC1066"
+          "patternId": "PyLintPython3_E0211"
         },
         {
-          "patternId": "Hadolint_DL3012"
+          "patternId": "PyLintPython3_E0236"
         },
         {
-          "patternId": "Hadolint_DL3002"
+          "patternId": "PyLintPython3_E0238"
         },
         {
-          "patternId": "Hadolint_SC2026"
+          "patternId": "PyLintPython3_E0239"
         },
         {
-          "patternId": "Hadolint_DL3020"
+          "patternId": "PyLintPython3_E0240"
         },
         {
-          "patternId": "Hadolint_SC1045"
+          "patternId": "PyLintPython3_E0241"
         },
         {
-          "patternId": "Hadolint_SC1095"
+          "patternId": "PyLintPython3_E0301"
         },
         {
-          "patternId": "Hadolint_DL4004"
+          "patternId": "PyLintPython3_E0302"
         },
         {
-          "patternId": "Hadolint_SC1081"
+          "patternId": "PyLintPython3_E0601"
         },
         {
-          "patternId": "Hadolint_SC2028"
+          "patternId": "PyLintPython3_E0603"
         },
         {
-          "patternId": "Hadolint_SC1077"
+          "patternId": "PyLintPython3_E0604"
         },
         {
-          "patternId": "Hadolint_SC1087"
+          "patternId": "PyLintPython3_E0701"
         },
         {
-          "patternId": "Hadolint_SC1010"
+          "patternId": "PyLintPython3_E0702"
         },
         {
-          "patternId": "Hadolint_DL3001"
+          "patternId": "PyLintPython3_E0704"
         },
         {
-          "patternId": "Hadolint_DL4001"
+          "patternId": "PyLintPython3_E0710"
         },
         {
-          "patternId": "Hadolint_SC1079"
+          "patternId": "PyLintPython3_E0711"
         },
         {
-          "patternId": "Hadolint_DL3003"
+          "patternId": "PyLintPython3_E0712"
         },
         {
-          "patternId": "Hadolint_SC1001"
+          "patternId": "PyLintPython3_E1003"
         },
         {
-          "patternId": "Hadolint_SC2002"
+          "patternId": "PyLintPython3_E1102"
         },
         {
-          "patternId": "Hadolint_DL3004"
+          "patternId": "PyLintPython3_E1111"
         },
         {
-          "patternId": "Hadolint_SC1099"
+          "patternId": "PyLintPython3_E1120"
         },
         {
-          "patternId": "Hadolint_SC1068"
+          "patternId": "PyLintPython3_E1121"
         },
         {
-          "patternId": "Hadolint_SC1078"
+          "patternId": "PyLintPython3_E1123"
         },
         {
-          "patternId": "Hadolint_DL4000"
+          "patternId": "PyLintPython3_E1124"
         },
         {
-          "patternId": "Hadolint_DL3000"
+          "patternId": "PyLintPython3_E1125"
         },
         {
-          "patternId": "Hadolint_DL3009"
+          "patternId": "PyLintPython3_E1126"
         },
         {
-          "patternId": "Hadolint_DL3011"
+          "patternId": "PyLintPython3_E1127"
         },
         {
-          "patternId": "Hadolint_SC1098"
+          "patternId": "PyLintPython3_E1132"
         },
         {
-          "patternId": "Hadolint_SC1000"
+          "patternId": "PyLintPython3_E1200"
         },
         {
-          "patternId": "Hadolint_DL4005"
+          "patternId": "PyLintPython3_E1201"
         },
         {
-          "patternId": "Hadolint_SC2046"
+          "patternId": "PyLintPython3_E1205"
         },
         {
-          "patternId": "Hadolint_SC2086"
+          "patternId": "PyLintPython3_E1206"
         },
         {
-          "patternId": "Hadolint_SC1086"
+          "patternId": "PyLintPython3_E1300"
         },
         {
-          "patternId": "Hadolint_SC2154"
+          "patternId": "PyLintPython3_E1301"
         },
         {
-          "patternId": "Hadolint_SC1018"
+          "patternId": "PyLintPython3_E1302"
         },
         {
-          "patternId": "Hadolint_DL3013"
+          "patternId": "PyLintPython3_E1303"
         },
         {
-          "patternId": "Hadolint_DL3015"
+          "patternId": "PyLintPython3_E1304"
+        },
+        {
+          "patternId": "PyLintPython3_E1305"
+        },
+        {
+          "patternId": "PyLintPython3_E1306"
+        },
+        {
+          "patternId": "PyLintPython3_R0202"
+        },
+        {
+          "patternId": "PyLintPython3_R0203"
+        },
+        {
+          "patternId": "PyLintPython3_W0101"
+        },
+        {
+          "patternId": "PyLintPython3_W0102"
+        },
+        {
+          "patternId": "PyLintPython3_W0104"
+        },
+        {
+          "patternId": "PyLintPython3_W0105"
+        },
+        {
+          "patternId": "PyLintPython3_W0106"
+        },
+        {
+          "patternId": "PyLintPython3_W0107"
+        },
+        {
+          "patternId": "PyLintPython3_W0108"
+        },
+        {
+          "patternId": "PyLintPython3_W0109"
+        },
+        {
+          "patternId": "PyLintPython3_W0120"
+        },
+        {
+          "patternId": "PyLintPython3_W0122"
+        },
+        {
+          "patternId": "PyLintPython3_W0124"
+        },
+        {
+          "patternId": "PyLintPython3_W0150"
+        },
+        {
+          "patternId": "PyLintPython3_W0199"
+        },
+        {
+          "patternId": "PyLintPython3_W0221"
+        },
+        {
+          "patternId": "PyLintPython3_W0222"
+        },
+        {
+          "patternId": "PyLintPython3_W0233"
+        },
+        {
+          "patternId": "PyLintPython3_W0404"
+        },
+        {
+          "patternId": "PyLintPython3_W0410"
+        },
+        {
+          "patternId": "PyLintPython3_W0601"
+        },
+        {
+          "patternId": "PyLintPython3_W0602"
+        },
+        {
+          "patternId": "PyLintPython3_W0604"
+        },
+        {
+          "patternId": "PyLintPython3_W0611"
+        },
+        {
+          "patternId": "PyLintPython3_W0612"
+        },
+        {
+          "patternId": "PyLintPython3_W0622"
+        },
+        {
+          "patternId": "PyLintPython3_W0702"
+        },
+        {
+          "patternId": "PyLintPython3_W0705"
+        },
+        {
+          "patternId": "PyLintPython3_W0711"
+        },
+        {
+          "patternId": "PyLintPython3_W1300"
+        },
+        {
+          "patternId": "PyLintPython3_W1301"
+        },
+        {
+          "patternId": "PyLintPython3_W1302"
+        },
+        {
+          "patternId": "PyLintPython3_W1303"
+        },
+        {
+          "patternId": "PyLintPython3_W1305"
+        },
+        {
+          "patternId": "PyLintPython3_W1306"
+        },
+        {
+          "patternId": "PyLintPython3_W1307"
+        }
+      ]
+    },
+    {
+      "toolId": "Checkov",
+      "patterns": [
+        {
+          "patternId": "Checkov_CKV2_GHA_1"
+        },
+        {
+          "patternId": "Checkov_CKV_BITBUCKET_1"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_1"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_2"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_3"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_4"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_5"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_6"
+        },
+        {
+          "patternId": "Checkov_CKV_GHA_7"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_1"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_10"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_11"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_12"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_13"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_14"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_15"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_16"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_17"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_18"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_19"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_2"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_20"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_21"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_22"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_23"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_26"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_27"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_28"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_3"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_4"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_5"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_6"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_7"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_8"
+        },
+        {
+          "patternId": "Checkov_CKV_GITHUB_9"
+        },
+        {
+          "patternId": "Checkov_CKV_GITLAB_1"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_1"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_10"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_11"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_12"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_13"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_14"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_15"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_16"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_17"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_18"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_19"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_2"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_20"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_21"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_3"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_4"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_5"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_6"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_7"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_8"
+        },
+        {
+          "patternId": "Checkov_CKV_OPENAPI_9"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_1"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_11"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_12"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_13"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_14"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_15"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_16"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_17"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_18"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_19"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_2"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_3"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_4"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_5"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_6"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_7"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_8"
+        },
+        {
+          "patternId": "Checkov_CKV_SECRET_9"
+        }
+      ]
+    },
+    {
+      "toolId": "Lizard",
+      "patterns": [
+        {
+          "patternId": "Lizard_file-nloc-medium",
+          "parameters": {
+            "threshold": "1880"
+          }
+        },
+        {
+          "patternId": "Lizard_nloc-medium",
+          "parameters": {
+            "threshold": "80"
+          }
+        },
+        {
+          "patternId": "Lizard_parameter-count-medium"
+        },
+        {
+          "patternId": "Lizard_nloc-critical",
+          "parameters": {
+            "threshold": "3180"
+          }
+        },
+        {
+          "patternId": "Lizard_ccn-critical",
+          "parameters": {
+            "threshold": "1000"
+          }
+        },
+        {
+          "patternId": "Lizard_ccn-medium",
+          "parameters": {
+            "threshold": "19"
+          }
+        },
+        {
+          "patternId": "Lizard_parameter-count-critical",
+          "parameters": {
+            "threshold": "13"
+          }
+        },
+        {
+          "patternId": "Lizard_file-nloc-critical",
+          "parameters": {
+            "threshold": "149880"
+          }
+        }
+      ]
+    },
+    {
+      "toolId": "PMD7",
+      "patterns": [
+        {
+          "patternId": "PMD7_category_ecmascript_bestpractices_AvoidWithStatement"
+        },
+        {
+          "patternId": "PMD7_category_ecmascript_bestpractices_ConsistentReturn"
+        },
+        {
+          "patternId": "PMD7_category_ecmascript_bestpractices_UseBaseWithParseInt"
+        },
+        {
+          "patternId": "PMD7_category_ecmascript_codestyle_AssignmentInOperand"
+        },
+        {
+          "patternId": "PMD7_category_ecmascript_codestyle_UnnecessaryBlock"
+        },
+        {
+          "patternId": "PMD7_category_ecmascript_errorprone_EqualComparison"
+        },
+        {
+          "patternId": "PMD7_category_jsp_bestpractices_NoClassAttribute"
+        },
+        {
+          "patternId": "PMD7_category_jsp_design_NoInlineScript"
+        },
+        {
+          "patternId": "PMD7_category_pom_errorprone_InvalidDependencyTypes"
+        },
+        {
+          "patternId": "PMD7_category_pom_errorprone_ProjectVersionAsDependencyVersion"
+        },
+        {
+          "patternId": "PMD7_category_xml_errorprone_MistypedCDATASection"
+        },
+        {
+          "patternId": "PMD7_category_xsl_codestyle_UseConcatOnce"
+        },
+        {
+          "patternId": "PMD7_category_xsl_performance_AvoidAxisNavigation"
+        }
+      ]
+    },
+    {
+      "toolId": "SQLint",
+      "patterns": [
+        {
+          "patternId": "SQLint_allIssues"
+        }
+      ]
+    },
+    {
+      "toolId": "SQLFluff",
+      "patterns": [
+        {
+          "patternId": "SQLFluff_AL01_aliasing.table"
+        },
+        {
+          "patternId": "SQLFluff_AL02_aliasing.column"
+        },
+        {
+          "patternId": "SQLFluff_AM01_ambiguous.distinct"
+        },
+        {
+          "patternId": "SQLFluff_CP01_capitalisation.keywords"
+        },
+        {
+          "patternId": "SQLFluff_CP02_capitalisation.identifiers"
+        },
+        {
+          "patternId": "SQLFluff_LT01_layout.spacing"
+        },
+        {
+          "patternId": "SQLFluff_LT02_layout.indent"
+        },
+        {
+          "patternId": "SQLFluff_LT04_layout.commas"
+        },
+        {
+          "patternId": "SQLFluff_RF01_references.from"
+        },
+        {
+          "patternId": "SQLFluff_RF02_references.qualification"
+        },
+        {
+          "patternId": "SQLFluff_ST01_structure.else_null"
+        },
+        {
+          "patternId": "SQLFluff_ST03_structure.unused_cte"
+        },
+        {
+          "patternId": "SQLFluff_ST06_structure.column_order"
+        },
+        {
+          "patternId": "SQLFluff_ST07_structure.using"
+        }
+      ]
+    },
+    {
+      "toolId": "Agentlinter",
+      "patterns": [
+        {
+          "patternId": "Agentlinter_blueprint_constraints-defined"
+        },
+        {
+          "patternId": "Agentlinter_blueprint_coverage"
+        },
+        {
+          "patternId": "Agentlinter_blueprint_identity-defined"
+        },
+        {
+          "patternId": "Agentlinter_clarity_actionable-instructions"
+        },
+        {
+          "patternId": "Agentlinter_clarity_action-without-context"
+        },
+        {
+          "patternId": "Agentlinter_clarity_ambiguous-pronoun"
+        },
+        {
+          "patternId": "Agentlinter_clarity_compound-instruction"
+        },
+        {
+          "patternId": "Agentlinter_clarity_duplicate-content"
+        },
+        {
+          "patternId": "Agentlinter_clarity_english-config-files"
+        },
+        {
+          "patternId": "Agentlinter_clarity_escape-hatch-missing"
+        },
+        {
+          "patternId": "Agentlinter_clarity_has-examples"
+        },
+        {
+          "patternId": "Agentlinter_clarity_instruction-density"
+        },
+        {
+          "patternId": "Agentlinter_clarity_naked-conditional"
+        },
+        {
+          "patternId": "Agentlinter_clarity_no-contradictions"
+        },
+        {
+          "patternId": "Agentlinter_clarity_no-vague-instructions"
+        },
+        {
+          "patternId": "Agentlinter_clarity_obvious-statements"
+        },
+        {
+          "patternId": "Agentlinter_clarity_priority-signal-missing"
+        },
+        {
+          "patternId": "Agentlinter_clarity_sentence-complexity"
+        },
+        {
+          "patternId": "Agentlinter_clarity_token-budget-range"
+        },
+        {
+          "patternId": "Agentlinter_clarity_token-efficiency-score"
+        },
+        {
+          "patternId": "Agentlinter_clarity_undefined-term"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_agent-focus"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_descriptive-ratio"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_hooks-structure"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_instruction-count"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_progressive-disclosure"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_relevance-trap"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_skills-vs-commands"
+        },
+        {
+          "patternId": "Agentlinter_completeness_command-coverage"
+        },
+        {
+          "patternId": "Agentlinter_completeness_freshness-file-paths"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-boundaries"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-error-handling"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-identity"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-output-format"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-priorities"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-tools"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-user-context"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-workflow"
+        },
+        {
+          "patternId": "Agentlinter_completeness_session-learning-hooks"
+        },
+        {
+          "patternId": "Agentlinter_completeness_verification-criteria-required"
+        },
+        {
+          "patternId": "Agentlinter_consistency_circular-dependency"
+        },
+        {
+          "patternId": "Agentlinter_consistency_identity-alignment"
+        },
+        {
+          "patternId": "Agentlinter_consistency_language-mixing"
+        },
+        {
+          "patternId": "Agentlinter_consistency_naming-convention"
+        },
+        {
+          "patternId": "Agentlinter_consistency_no-duplicate-instructions"
+        },
+        {
+          "patternId": "Agentlinter_consistency_outdated-cross-references"
+        },
+        {
+          "patternId": "Agentlinter_consistency_permission-conflict"
+        },
+        {
+          "patternId": "Agentlinter_consistency_priority-conflict"
+        },
+        {
+          "patternId": "Agentlinter_consistency_referenced-files-exist"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-date"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-file-reference"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-package-reference"
+        },
+        {
+          "patternId": "Agentlinter_consistency_timezone-locale-drift"
+        },
+        {
+          "patternId": "Agentlinter_consistency_tone-voice-alignment"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-context-window-awareness"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-file-based-notes"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-handoff-protocol"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-learning-loop"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-memory-strategy"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-state-tracking"
+        },
+        {
+          "patternId": "Agentlinter_memory_no-mental-notes"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_env-vars-documented"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_model-settings-specified"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_workspace-path-specified"
+        },
+        {
+          "patternId": "Agentlinter_runtime_auth-mode"
+        },
+        {
+          "patternId": "Agentlinter_runtime_config-exists"
+        },
+        {
+          "patternId": "Agentlinter_runtime_config-secrets"
+        },
+        {
+          "patternId": "Agentlinter_runtime_dm-policy"
+        },
+        {
+          "patternId": "Agentlinter_runtime_gateway-bind"
+        },
+        {
+          "patternId": "Agentlinter_runtime_group-policy"
+        },
+        {
+          "patternId": "Agentlinter_runtime_token-strength"
+        },
+        {
+          "patternId": "Agentlinter_security_api-key-exposure"
+        },
+        {
+          "patternId": "Agentlinter_security_env-var-references"
+        },
+        {
+          "patternId": "Agentlinter_security_has-injection-defense"
+        },
+        {
+          "patternId": "Agentlinter_security_has-permission-boundaries"
+        },
+        {
+          "patternId": "Agentlinter_security_no-injection-defense"
+        },
+        {
+          "patternId": "Agentlinter_security_no-pii-exposure"
+        },
+        {
+          "patternId": "Agentlinter_security_no-secrets"
+        },
+        {
+          "patternId": "Agentlinter_security_prompt-injection-vulnerability"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_dangerous-commands"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_data-exfiltration"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_excessive-permissions"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_has-metadata"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_injection-vectors"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_sensitive-paths"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_skill-description-when-to-use"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_skill-name-match-dir"
+        },
+        {
+          "patternId": "Agentlinter_structure_circular-import"
+        },
+        {
+          "patternId": "Agentlinter_structure_dead-import"
+        },
+        {
+          "patternId": "Agentlinter_structure_file-size"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-file-map"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-main-file"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-sections"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-version-or-update-date"
+        },
+        {
+          "patternId": "Agentlinter_structure_heading-hierarchy"
+        },
+        {
+          "patternId": "Agentlinter_structure_modular-files"
+        },
+        {
+          "patternId": "Agentlinter_structure_no-empty-sections"
+        },
+        {
+          "patternId": "Agentlinter_structure_position-risk-warning"
+        },
+        {
+          "patternId": "Agentlinter_token-budget_compressible-padding"
+        },
+        {
+          "patternId": "Agentlinter_token-budget_section-weight"
+        },
+        {
+          "patternId": "Agentlinter_token-budget_total-tokens"
+        },
+        {
+          "patternId": "Agentlinter_token-budget_under-150-tokens"
+        }
+      ]
+    },
+    {
+      "toolId": "Prospector",
+      "patterns": [
+        {
+          "patternId": "Prospector_dodgy"
+        },
+        {
+          "patternId": "Prospector_mccabe"
+        },
+        {
+          "patternId": "Prospector_profile-validator"
+        },
+        {
+          "patternId": "Prospector_pycodestyle"
+        },
+        {
+          "patternId": "Prospector_pydocstyle"
+        },
+        {
+          "patternId": "Prospector_pyflakes"
+        }
+      ]
+    },
+    {
+      "toolId": "PHPCS",
+      "patterns": [
+        {
+          "patternId": "PHPCS_Generic_Arrays_DisallowLongArraySyntax"
+        },
+        {
+          "patternId": "PHPCS_Generic_Commenting_Todo"
+        },
+        {
+          "patternId": "PHPCS_Generic_ControlStructures_DisallowYodaConditions"
+        },
+        {
+          "patternId": "PHPCS_Generic_ControlStructures_InlineControlStructure"
+        },
+        {
+          "patternId": "PHPCS_Generic_Formatting_DisallowMultipleStatements"
+        },
+        {
+          "patternId": "PHPCS_Generic_Formatting_SpaceAfterCast"
+        },
+        {
+          "patternId": "PHPCS_Generic_NamingConventions_ConstructorName"
+        },
+        {
+          "patternId": "PHPCS_Generic_PHP_DeprecatedFunctions"
+        },
+        {
+          "patternId": "PHPCS_Generic_PHP_LowerCaseKeyword"
+        },
+        {
+          "patternId": "PHPCS_Generic_Strings_UnnecessaryStringConcat"
+        },
+        {
+          "patternId": "PHPCS_Generic_WhiteSpace_IncrementDecrementSpacing"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Classes_ClassDeclaration"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Commenting_FunctionComment"
+        },
+        {
+          "patternId": "PHPCS_PEAR_ControlStructures_ControlSignature"
+        },
+        {
+          "patternId": "PHPCS_PEAR_ControlStructures_MultiLineCondition"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Files_IncludingFile"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Formatting_MultiLineAssignment"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Functions_FunctionCallSignature"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Functions_FunctionDeclaration"
+        },
+        {
+          "patternId": "PHPCS_PEAR_Functions_ValidDefaultValue"
+        },
+        {
+          "patternId": "PHPCS_PEAR_NamingConventions_ValidClassName"
+        },
+        {
+          "patternId": "PHPCS_PEAR_WhiteSpace_ObjectOperatorIndent"
+        },
+        {
+          "patternId": "PHPCS_PEAR_WhiteSpace_ScopeClosingBrace"
+        },
+        {
+          "patternId": "PHPCS_PEAR_WhiteSpace_ScopeIndent"
+        },
+        {
+          "patternId": "PHPCS_PSR12_Files_OpenTag"
+        },
+        {
+          "patternId": "PHPCS_PSR2_Classes_PropertyDeclaration"
+        },
+        {
+          "patternId": "PHPCS_PSR2_Files_EndFileNewline"
+        },
+        {
+          "patternId": "PHPCS_PSR2_Methods_MethodDeclaration"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Arrays_ArrayBracketSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Arrays_ArrayDeclaration"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_BlockComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_ClosingDeclarationComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_DocCommentAlignment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_EmptyCatchComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_InlineComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_LongConditionClosingComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_PostStatementComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Commenting_VariableComment"
+        },
+        {
+          "patternId": "PHPCS_Squiz_ControlStructures_ControlSignature"
+        },
+        {
+          "patternId": "PHPCS_Squiz_ControlStructures_ElseIfDeclaration"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Formatting_OperatorBracket"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Functions_FunctionDeclarationArgumentSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Operators_ComparisonOperatorUsage"
+        },
+        {
+          "patternId": "PHPCS_Squiz_PHP_DisallowInlineIf"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Scope_MethodScope"
+        },
+        {
+          "patternId": "PHPCS_Squiz_Strings_ConcatenationSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_ControlStructureSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_FunctionClosingBraceSpace"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_FunctionSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_MemberVarSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_OperatorSpacing"
+        },
+        {
+          "patternId": "PHPCS_Squiz_WhiteSpace_SuperfluousWhitespace"
+        },
+        {
+          "patternId": "PHPCS_Zend_Files_ClosingTag"
+        }
+      ]
+    },
+    {
+      "toolId": "PHPCSFIXER",
+      "patterns": [
+        {
+          "patternId": "PHPCSFIXER_binary_operator_spaces"
+        },
+        {
+          "patternId": "PHPCSFIXER_blank_line_after_opening_tag"
+        },
+        {
+          "patternId": "PHPCSFIXER_blank_line_between_import_groups"
+        },
+        {
+          "patternId": "PHPCSFIXER_blank_lines_before_namespace"
+        },
+        {
+          "patternId": "PHPCSFIXER_braces_position"
+        },
+        {
+          "patternId": "PHPCSFIXER_class_definition"
+        },
+        {
+          "patternId": "PHPCSFIXER_compact_nullable_type_declaration"
+        },
+        {
+          "patternId": "PHPCSFIXER_declare_equal_normalize"
+        },
+        {
+          "patternId": "PHPCSFIXER_lowercase_cast"
+        },
+        {
+          "patternId": "PHPCSFIXER_lowercase_static_reference"
+        },
+        {
+          "patternId": "PHPCSFIXER_modifier_keywords"
+        },
+        {
+          "patternId": "PHPCSFIXER_new_with_parentheses"
+        },
+        {
+          "patternId": "PHPCSFIXER_no_blank_lines_after_class_opening"
+        },
+        {
+          "patternId": "PHPCSFIXER_no_extra_blank_lines"
+        },
+        {
+          "patternId": "PHPCSFIXER_no_leading_import_slash"
+        },
+        {
+          "patternId": "PHPCSFIXER_no_whitespace_in_blank_line"
+        },
+        {
+          "patternId": "PHPCSFIXER_ordered_class_elements"
+        },
+        {
+          "patternId": "PHPCSFIXER_ordered_imports"
+        },
+        {
+          "patternId": "PHPCSFIXER_return_type_declaration"
+        },
+        {
+          "patternId": "PHPCSFIXER_short_scalar_cast"
+        },
+        {
+          "patternId": "PHPCSFIXER_single_import_per_statement"
+        },
+        {
+          "patternId": "PHPCSFIXER_single_space_around_construct"
+        },
+        {
+          "patternId": "PHPCSFIXER_single_trait_insert_per_statement"
+        },
+        {
+          "patternId": "PHPCSFIXER_ternary_operator_spaces"
+        },
+        {
+          "patternId": "PHPCSFIXER_unary_operator_spaces"
+        }
+      ]
+    },
+    {
+      "toolId": "phpmd",
+      "patterns": [
+        {
+          "patternId": "rulesets-cleancode.xml-ElseExpression"
+        },
+        {
+          "patternId": "rulesets-cleancode.xml-StaticAccess"
+        },
+        {
+          "patternId": "rulesets-cleancode.xml-UndefinedVariable"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-CyclomaticComplexity"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-ExcessiveClassComplexity"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-ExcessiveClassLength"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-ExcessiveMethodLength"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-ExcessiveParameterList"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-ExcessivePublicCount"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-NPathComplexity"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-TooManyFields"
+        },
+        {
+          "patternId": "rulesets-codesize.xml-TooManyMethods"
+        },
+        {
+          "patternId": "rulesets-controversial.xml-Superglobals"
+        },
+        {
+          "patternId": "rulesets-design.xml-CountInLoopExpression"
+        },
+        {
+          "patternId": "rulesets-design.xml-CouplingBetweenObjects"
+        },
+        {
+          "patternId": "rulesets-design.xml-DepthOfInheritance"
+        },
+        {
+          "patternId": "rulesets-design.xml-EmptyCatchBlock"
+        },
+        {
+          "patternId": "rulesets-design.xml-EvalExpression"
+        },
+        {
+          "patternId": "rulesets-design.xml-ExitExpression"
+        },
+        {
+          "patternId": "rulesets-design.xml-GotoStatement"
+        },
+        {
+          "patternId": "rulesets-design.xml-NumberOfChildren"
+        },
+        {
+          "patternId": "rulesets-naming.xml-BooleanGetMethodName"
+        },
+        {
+          "patternId": "rulesets-naming.xml-ConstantNamingConventions"
+        },
+        {
+          "patternId": "rulesets-naming.xml-LongClassName"
+        },
+        {
+          "patternId": "rulesets-naming.xml-LongVariable"
+        },
+        {
+          "patternId": "rulesets-naming.xml-ShortClassName"
+        },
+        {
+          "patternId": "rulesets-naming.xml-ShortMethodName"
+        },
+        {
+          "patternId": "rulesets-naming.xml-ShortVariable"
+        },
+        {
+          "patternId": "rulesets-unusedcode.xml-UnusedFormalParameter"
+        },
+        {
+          "patternId": "rulesets-unusedcode.xml-UnusedLocalVariable"
+        },
+        {
+          "patternId": "rulesets-unusedcode.xml-UnusedPrivateField"
+        },
+        {
+          "patternId": "rulesets-unusedcode.xml-UnusedPrivateMethod"
+        }
+      ]
+    },
+    {
+      "toolId": "SonarCSharp",
+      "patterns": [
+        {
+          "patternId": "SonarCSharp_S1006"
+        },
+        {
+          "patternId": "SonarCSharp_S108"
+        },
+        {
+          "patternId": "SonarCSharp_S110"
+        },
+        {
+          "patternId": "SonarCSharp_S1104"
+        },
+        {
+          "patternId": "SonarCSharp_S1116"
+        },
+        {
+          "patternId": "SonarCSharp_S1117"
+        },
+        {
+          "patternId": "SonarCSharp_S1118"
+        },
+        {
+          "patternId": "SonarCSharp_S112"
+        },
+        {
+          "patternId": "SonarCSharp_S1121"
+        },
+        {
+          "patternId": "SonarCSharp_S1163"
+        },
+        {
+          "patternId": "SonarCSharp_S1172"
+        },
+        {
+          "patternId": "SonarCSharp_S1185"
+        },
+        {
+          "patternId": "SonarCSharp_S1186"
+        },
+        {
+          "patternId": "SonarCSharp_S1206"
+        },
+        {
+          "patternId": "SonarCSharp_S121"
+        },
+        {
+          "patternId": "SonarCSharp_S1210"
+        },
+        {
+          "patternId": "SonarCSharp_S1215"
+        },
+        {
+          "patternId": "SonarCSharp_S1226"
+        },
+        {
+          "patternId": "SonarCSharp_S1244"
+        },
+        {
+          "patternId": "SonarCSharp_S125"
+        },
+        {
+          "patternId": "SonarCSharp_S127"
+        },
+        {
+          "patternId": "SonarCSharp_S1301"
+        },
+        {
+          "patternId": "SonarCSharp_S131"
+        },
+        {
+          "patternId": "SonarCSharp_S1313"
+        },
+        {
+          "patternId": "SonarCSharp_S1449"
+        },
+        {
+          "patternId": "SonarCSharp_S1450"
+        },
+        {
+          "patternId": "SonarCSharp_S1481"
+        },
+        {
+          "patternId": "SonarCSharp_S1643"
+        },
+        {
+          "patternId": "SonarCSharp_S1656"
+        },
+        {
+          "patternId": "SonarCSharp_S1698"
+        },
+        {
+          "patternId": "SonarCSharp_S1699"
+        },
+        {
+          "patternId": "SonarCSharp_S1764"
+        },
+        {
+          "patternId": "SonarCSharp_S1854"
+        },
+        {
+          "patternId": "SonarCSharp_S1858"
+        },
+        {
+          "patternId": "SonarCSharp_S1862"
+        },
+        {
+          "patternId": "SonarCSharp_S1871"
+        },
+        {
+          "patternId": "SonarCSharp_S1905"
+        },
+        {
+          "patternId": "SonarCSharp_S1940"
+        },
+        {
+          "patternId": "SonarCSharp_S1944"
+        },
+        {
+          "patternId": "SonarCSharp_S1994"
+        },
+        {
+          "patternId": "SonarCSharp_S2123"
+        },
+        {
+          "patternId": "SonarCSharp_S2156"
+        },
+        {
+          "patternId": "SonarCSharp_S2178"
+        },
+        {
+          "patternId": "SonarCSharp_S2184"
+        },
+        {
+          "patternId": "SonarCSharp_S2190"
+        },
+        {
+          "patternId": "SonarCSharp_S2197"
+        },
+        {
+          "patternId": "SonarCSharp_S2201"
+        },
+        {
+          "patternId": "SonarCSharp_S2223"
+        },
+        {
+          "patternId": "SonarCSharp_S2225"
+        },
+        {
+          "patternId": "SonarCSharp_S2234"
+        },
+        {
+          "patternId": "SonarCSharp_S2259"
+        },
+        {
+          "patternId": "SonarCSharp_S2275"
+        },
+        {
+          "patternId": "SonarCSharp_S2291"
+        },
+        {
+          "patternId": "SonarCSharp_S2306"
+        },
+        {
+          "patternId": "SonarCSharp_S2326"
+        },
+        {
+          "patternId": "SonarCSharp_S2328"
+        },
+        {
+          "patternId": "SonarCSharp_S2330"
+        },
+        {
+          "patternId": "SonarCSharp_S2333"
+        },
+        {
+          "patternId": "SonarCSharp_S2339"
+        },
+        {
+          "patternId": "SonarCSharp_S2345"
+        },
+        {
+          "patternId": "SonarCSharp_S2357"
+        },
+        {
+          "patternId": "SonarCSharp_S2360"
+        },
+        {
+          "patternId": "SonarCSharp_S2368"
+        },
+        {
+          "patternId": "SonarCSharp_S2372"
+        },
+        {
+          "patternId": "SonarCSharp_S2376"
+        },
+        {
+          "patternId": "SonarCSharp_S2386"
+        },
+        {
+          "patternId": "SonarCSharp_S2387"
+        },
+        {
+          "patternId": "SonarCSharp_S2437"
+        },
+        {
+          "patternId": "SonarCSharp_S2486"
+        },
+        {
+          "patternId": "SonarCSharp_S2551"
+        },
+        {
+          "patternId": "SonarCSharp_S2583"
+        },
+        {
+          "patternId": "SonarCSharp_S2674"
+        },
+        {
+          "patternId": "SonarCSharp_S2681"
+        },
+        {
+          "patternId": "SonarCSharp_S2688"
+        },
+        {
+          "patternId": "SonarCSharp_S2692"
+        },
+        {
+          "patternId": "SonarCSharp_S2696"
+        },
+        {
+          "patternId": "SonarCSharp_S2737"
+        },
+        {
+          "patternId": "SonarCSharp_S2743"
+        },
+        {
+          "patternId": "SonarCSharp_S2757"
+        },
+        {
+          "patternId": "SonarCSharp_S2760"
+        },
+        {
+          "patternId": "SonarCSharp_S2761"
+        },
+        {
+          "patternId": "SonarCSharp_S2930"
+        },
+        {
+          "patternId": "SonarCSharp_S2931"
+        },
+        {
+          "patternId": "SonarCSharp_S2933"
+        },
+        {
+          "patternId": "SonarCSharp_S2934"
+        },
+        {
+          "patternId": "SonarCSharp_S2952"
+        },
+        {
+          "patternId": "SonarCSharp_S2953"
+        },
+        {
+          "patternId": "SonarCSharp_S2955"
+        },
+        {
+          "patternId": "SonarCSharp_S2995"
+        },
+        {
+          "patternId": "SonarCSharp_S2996"
+        },
+        {
+          "patternId": "SonarCSharp_S2997"
+        },
+        {
+          "patternId": "SonarCSharp_S3005"
+        },
+        {
+          "patternId": "SonarCSharp_S3010"
+        },
+        {
+          "patternId": "SonarCSharp_S3052"
+        },
+        {
+          "patternId": "SonarCSharp_S3168"
+        },
+        {
+          "patternId": "SonarCSharp_S3169"
+        },
+        {
+          "patternId": "SonarCSharp_S3172"
+        },
+        {
+          "patternId": "SonarCSharp_S3215"
+        },
+        {
+          "patternId": "SonarCSharp_S3216"
+        },
+        {
+          "patternId": "SonarCSharp_S3217"
+        },
+        {
+          "patternId": "SonarCSharp_S3218"
+        },
+        {
+          "patternId": "SonarCSharp_S3220"
+        },
+        {
+          "patternId": "SonarCSharp_S3234"
+        },
+        {
+          "patternId": "SonarCSharp_S3235"
+        },
+        {
+          "patternId": "SonarCSharp_S3236"
+        },
+        {
+          "patternId": "SonarCSharp_S3237"
+        },
+        {
+          "patternId": "SonarCSharp_S3241"
+        },
+        {
+          "patternId": "SonarCSharp_S3244"
+        },
+        {
+          "patternId": "SonarCSharp_S3246"
+        },
+        {
+          "patternId": "SonarCSharp_S3247"
+        },
+        {
+          "patternId": "SonarCSharp_S3249"
+        },
+        {
+          "patternId": "SonarCSharp_S3251"
+        },
+        {
+          "patternId": "SonarCSharp_S3253"
+        },
+        {
+          "patternId": "SonarCSharp_S3254"
+        },
+        {
+          "patternId": "SonarCSharp_S3257"
+        },
+        {
+          "patternId": "SonarCSharp_S3261"
+        },
+        {
+          "patternId": "SonarCSharp_S3262"
+        },
+        {
+          "patternId": "SonarCSharp_S3263"
+        },
+        {
+          "patternId": "SonarCSharp_S3264"
+        },
+        {
+          "patternId": "SonarCSharp_S3397"
+        },
+        {
+          "patternId": "SonarCSharp_S3427"
+        },
+        {
+          "patternId": "SonarCSharp_S3440"
+        },
+        {
+          "patternId": "SonarCSharp_S3441"
+        },
+        {
+          "patternId": "SonarCSharp_S3442"
+        },
+        {
+          "patternId": "SonarCSharp_S3443"
+        },
+        {
+          "patternId": "SonarCSharp_S3444"
+        },
+        {
+          "patternId": "SonarCSharp_S3445"
+        },
+        {
+          "patternId": "SonarCSharp_S3447"
+        },
+        {
+          "patternId": "SonarCSharp_S3449"
+        },
+        {
+          "patternId": "SonarCSharp_S3450"
+        },
+        {
+          "patternId": "SonarCSharp_S3451"
+        },
+        {
+          "patternId": "SonarCSharp_S3453"
+        },
+        {
+          "patternId": "SonarCSharp_S3456"
+        },
+        {
+          "patternId": "SonarCSharp_S3457"
+        },
+        {
+          "patternId": "SonarCSharp_S3458"
+        },
+        {
+          "patternId": "SonarCSharp_S3459"
+        },
+        {
+          "patternId": "SonarCSharp_S3466"
+        },
+        {
+          "patternId": "SonarCSharp_S3532"
+        },
+        {
+          "patternId": "SonarCSharp_S3597"
+        },
+        {
+          "patternId": "SonarCSharp_S3598"
+        },
+        {
+          "patternId": "SonarCSharp_S3600"
+        },
+        {
+          "patternId": "SonarCSharp_S3603"
+        },
+        {
+          "patternId": "SonarCSharp_S3610"
+        },
+        {
+          "patternId": "SonarCSharp_S3626"
+        },
+        {
+          "patternId": "SonarCSharp_S3655"
+        },
+        {
+          "patternId": "SonarCSharp_S3869"
+        },
+        {
+          "patternId": "SonarCSharp_S3871"
+        },
+        {
+          "patternId": "SonarCSharp_S3872"
+        },
+        {
+          "patternId": "SonarCSharp_S3874"
+        },
+        {
+          "patternId": "SonarCSharp_S3875"
+        },
+        {
+          "patternId": "SonarCSharp_S3876"
+        },
+        {
+          "patternId": "SonarCSharp_S3877"
+        },
+        {
+          "patternId": "SonarCSharp_S3880"
+        },
+        {
+          "patternId": "SonarCSharp_S3889"
+        },
+        {
+          "patternId": "SonarCSharp_S3897"
+        },
+        {
+          "patternId": "SonarCSharp_S3898"
+        },
+        {
+          "patternId": "SonarCSharp_S3926"
+        },
+        {
+          "patternId": "SonarCSharp_S927"
         }
       ]
     }
   ],
-  "exclude": [
-    ".github/CODE_OF_CONDUCT.md",
-    ".github/config.yml",
-    ".github/CONTRIBUTING.md",
-    ".github/dependabot.yml",
-    ".github/external_ci/appveyor.yml",
-    ".github/FUNDING.yml",
-    ".github/ISSUE_TEMPLATE/bug.yaml",
-    ".github/ISSUE_TEMPLATE/config.yml",
-    ".github/labeler.yml",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/SECURITY.md",
-    ".github/workflows/cancel_closed_pr_runs.yml",
-    ".github/workflows/check_amalgamation.yml",
-    ".github/workflows/check_docs_links.yml",
-    ".github/workflows/cifuzz.yml",
-    ".github/workflows/codeql-analysis.yml",
-    ".github/workflows/comment_check_amalgamation.yml",
-    ".github/workflows/dependency-review.yml",
-    ".github/workflows/flawfinder.yml",
-    ".github/workflows/labeler.yml",
-    ".github/workflows/macos.yml",
-    ".github/workflows/publish_documentation.yml",
-    ".github/workflows/scorecards.yml",
-    ".github/workflows/semgrep.yml",
-    ".github/workflows/stale.yml",
-    ".github/workflows/ubuntu.yml",
-    ".github/workflows/windows.yml",
-    "include/nlohmann/thirdparty/hedley/hedley.hpp",
-    "include/nlohmann/thirdparty/hedley/hedley_undef.hpp",
-    "tests/thirdparty/doctest/doctest_compatibility.h",
-    "tests/thirdparty/fifo_map/fifo_map.hpp",
-    "tests/thirdparty/imapdl/filterbr.py"
-  ]
+  "exclude": []
 }
