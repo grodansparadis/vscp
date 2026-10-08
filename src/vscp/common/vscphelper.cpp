@@ -4858,13 +4858,7 @@ vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
     return false;
   }
 
-  // Convert
-  pevTo->head  = pevFrom->head;
-  pevTo->crc   = pevFrom->crc;
-  pevTo->obid  = pevFrom->obid;
-  pevTo->year  = pevFrom->year;
-  pevTo->month = pevFrom->month;
-  pevTo->day   = pevFrom->day;
+  // Copy in data from old to new and take care of new frame format
   if ((pevFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
     pevTo->year         = 0xffff;
     pevTo->month        = 0xff;
@@ -4880,6 +4874,8 @@ vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
     pevTo->timestamp = pevFrom->timestamp;
   }
 
+  pevTo->head       = pevFrom->head;
+  pevTo->crc        = pevFrom->crc;
   pevTo->obid       = pevFrom->obid;
   pevTo->vscp_class = pevFrom->vscp_class;
   pevTo->vscp_type  = pevFrom->vscp_type;
