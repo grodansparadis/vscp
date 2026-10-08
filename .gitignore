@@ -324,6 +324,14 @@ src/vscp/relayd/relayd
 tests/helperlib/unittest
 googletest
 build
+build-tests/
+
+# Generated CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
 
 
 #Ignore vscode AI rules
