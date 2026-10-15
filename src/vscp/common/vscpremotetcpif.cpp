@@ -40,10 +40,12 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
+#include <climits>
 #include <fstream>
 #include <iterator>
 #include <limits>
 
+#include <crc.h>
 #include <mongoose.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -377,6 +379,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
   m_bVerifyPeer = true;
 
   m_bModeReceiveLoop     = false;
+  m_bBinaryMode          = false;
   m_connectionTimeOut    = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS;
   m_responseTimeOut      = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
   m_innerResponseTimeout = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT;
@@ -404,6 +407,9 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 bool
 VscpRemoteTcpIf::checkReturnValue(bool bClear)
 {
+  if (m_bBinaryMode) {
+    return false;
+  }
   bool rv = false;
   char buf[0x2000];
 
@@ -478,6 +484,9 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 int
 VscpRemoteTcpIf::rcvloopRead(int timeout)
 {
+  if (m_bBinaryMode) {
+    return VSCP_ERROR_PARAMETER;
+  }
   // bool rv = false;
   char buf[8192];
 
@@ -511,6 +520,9 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
 int
 VscpRemoteTcpIf::doCommand(const char *cmd)
 {
+  if (nullptr == cmd) {
+    return VSCP_ERROR_PARAMETER;
+  }
   std::string strCmd = cmd;
   return doCommand(strCmd);
 }
@@ -518,6 +530,15 @@ VscpRemoteTcpIf::doCommand(const char *cmd)
 int
 VscpRemoteTcpIf::doCommand(const std::string &cmd)
 {
+  if (m_bBinaryMode) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  std::string command = cmd;
+  vscp_trim(command);
+  vscp_makeUpper(command);
+  if (command == "BINARY") {
+    return doCmdBinary();
+  }
   bool ret = false;
 
   doClrInputQueue();
@@ -539,6 +560,200 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
   }
 
   return VSCP_ERROR_SUCCESS;
+}
+
+int
+VscpRemoteTcpIf::doCmdBinary(void)
+{
+  if (!isConnected()) {
+    return VSCP_ERROR_CONNECTION;
+  }
+  if (m_bBinaryMode) {
+    return VSCP_ERROR_SUCCESS;
+  }
+  if (m_bModeReceiveLoop) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  crcInit();
+  doClrInputQueue();
+  if (!mg_send(m_conn, "BINARY\r\n", 8)) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  // Read exactly through the response line: binary data may immediately
+  // follow it in the same TCP packet.
+  std::string response;
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(m_responseTimeOut);
+  while (response.size() < 8192) {
+    const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+      deadline - std::chrono::steady_clock::now()).count();
+    if (remaining <= 0) {
+      transportClose(); // The peer may already have switched modes.
+      return VSCP_ERROR_TIMEOUT;
+    }
+    char byte;
+    int count = transportRead(&byte, 1, static_cast<int>((std::min<int64_t>)(remaining, INT_MAX)));
+    if (count < 0) {
+      transportClose();
+      return VSCP_ERROR_STOPPED;
+    }
+    if (!count) {
+      continue;
+    }
+    m_lastResponseTime = vscp_getMsTimeStamp();
+    response += byte;
+    if (byte == '\n') {
+      vscp_trim(response);
+      if (response == "+OK" || response.compare(0, 4, "+OK ") == 0) {
+        m_bBinaryMode = true;
+        m_binaryInput.clear();
+        return VSCP_ERROR_SUCCESS;
+      }
+      if (response.compare(0, 3, "-OK") == 0 || response.compare(0, 4, "+ERR") == 0) {
+        return VSCP_ERROR_ERROR;
+      }
+      transportClose();
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+  }
+  transportClose();
+  return VSCP_ERROR_INVALID_FRAME;
+}
+
+int
+VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
+{
+  if (!isConnected()) {
+    return VSCP_ERROR_CONNECTION;
+  }
+  if (!m_bBinaryMode || frame.empty() || frame.size() > UINT16_MAX) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  std::vector<uint8_t> packet;
+  packet.reserve(frame.size() + 2);
+  packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
+  packet.push_back(static_cast<uint8_t>(frame.size()));
+  packet.insert(packet.end(), frame.begin(), frame.end());
+  if (!mg_send(m_conn, packet.data(), packet.size())) {
+    return VSCP_ERROR_ERROR;
+  }
+
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(m_responseTimeOut);
+  while (isConnected() && m_conn->send.len) {
+    if (std::chrono::steady_clock::now() >= deadline) {
+      transportClose(); // Do not retry a partially transmitted frame.
+      return VSCP_ERROR_TIMEOUT;
+    }
+    mg_mgr_poll(&m_transport->manager, 1);
+  }
+  return isConnected() ? VSCP_ERROR_SUCCESS : VSCP_ERROR_STOPPED;
+}
+
+int
+VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeout)
+{
+  if (!isConnected()) {
+    return VSCP_ERROR_CONNECTION;
+  }
+  if (!m_bBinaryMode) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
+  while (true) {
+    size_t needed = 2;
+    if (m_binaryInput.size() >= 2) {
+      const size_t length = (static_cast<size_t>(m_binaryInput[0]) << 8) | m_binaryInput[1];
+      if (!length) {
+        transportClose();
+        m_binaryInput.clear();
+        return VSCP_ERROR_INVALID_FRAME;
+      }
+      needed += length;
+      if (m_binaryInput.size() == needed) {
+        frame.assign(m_binaryInput.begin() + 2, m_binaryInput.end());
+        m_binaryInput.clear();
+        return VSCP_ERROR_SUCCESS;
+      }
+    }
+    const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+      deadline - std::chrono::steady_clock::now()).count();
+    uint8_t buffer[8192];
+    int count = transportRead(buffer, (std::min)(sizeof(buffer), needed - m_binaryInput.size()),
+                              static_cast<int>((std::max<int64_t>)(0, (std::min<int64_t>)(remaining, INT_MAX))));
+    if (count < 0) {
+      transportClose();
+      m_binaryInput.clear();
+      return VSCP_ERROR_STOPPED;
+    }
+    if (count > 0) {
+      m_binaryInput.insert(m_binaryInput.end(), buffer, buffer + count);
+      m_lastResponseTime = vscp_getMsTimeStamp();
+    }
+    else if (std::chrono::steady_clock::now() >= deadline) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+  }
+}
+
+int
+VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
+  while (true) {
+    const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+      deadline - std::chrono::steady_clock::now()).count();
+    std::vector<uint8_t> frame;
+    int result = receiveBinaryFrame(frame, static_cast<uint32_t>((std::max<int64_t>)(0, remaining)));
+    if (VSCP_ERROR_SUCCESS != result) {
+      return result;
+    }
+
+    // Raw frame APIs must be used for encrypted frames and command replies.
+    if ((frame[0] & 0x0f) || frame.size() < 5) {
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+    const uint8_t type = frame[0] >> 4;
+    if (type == 15 && frame.size() == 13 && frame[1] == 0xff && frame[2] == 0xff) {
+      if (crcFast(frame.data() + 1, static_cast<int>(frame.size() - 1))) {
+        return VSCP_ERROR_INVALID_FRAME;
+      }
+      const int error = (static_cast<int>(frame[3]) << 8) | frame[4];
+      if (error) {
+        return error;
+      }
+      if (std::chrono::steady_clock::now() >= deadline) {
+        return VSCP_ERROR_TIMEOUT;
+      }
+      continue;
+    }
+    if (type > 1 || frame.size() < 38) {
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+    const size_t sizeData = (static_cast<size_t>(frame[34]) << 8) | frame[35];
+    if (sizeData > VSCP_MAX_DATA || frame.size() != sizeData + 38) {
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+    if (!vscp_getEventFromFrame(event, frame.data(), frame.size())) {
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+
+    const uint8_t argument[] = {0, 0, frame[1], frame[2], frame[frame.size() - 2], frame.back()};
+    std::vector<uint8_t> confirmation(13);
+    result = vscp_writeReplyToFrame(confirmation.data(), confirmation.size(), 0xffff,
+                                    VSCP_ERROR_SUCCESS, argument, sizeof(argument));
+    if (VSCP_ERROR_SUCCESS == result) {
+      result = sendBinaryFrame(confirmation);
+    }
+    if (VSCP_ERROR_SUCCESS != result) {
+      delete[] event->pdata;
+      event->pdata = nullptr;
+      event->sizeData = 0;
+    }
+    return result;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -840,7 +1055,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
 int
 VscpRemoteTcpIf::doCmdClose(void)
 {
-  if (isConnected()) {
+  if (isConnected() && !m_bBinaryMode) {
 
     // If receive loop active - end it
     if (m_bModeReceiveLoop) {
@@ -853,6 +1068,8 @@ VscpRemoteTcpIf::doCmdClose(void)
 
   transportClose();
   m_bModeReceiveLoop = false;
+  m_bBinaryMode = false;
+  m_binaryInput.clear();
   m_inputStrArray.clear();
   m_strResponse.clear();
 
@@ -908,6 +1125,10 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
     return VSCP_ERROR_CONNECTION;
   }
 
+  if (nullptr == pEvent) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
     return VSCP_ERROR_PARAMETER;
@@ -923,6 +1144,14 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
   // Validate datasize
   if (pEvent->sizeData > VSCP_MAX_DATA) {
     return VSCP_ERROR_PARAMETER;
+  }
+
+  if (m_bBinaryMode) {
+    std::vector<uint8_t> frame(1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 2);
+    if (!vscp_writeEventToFrame(frame.data(), frame.size(), VSCP_ENCRYPTION_NONE, pEvent)) {
+      return VSCP_ERROR_INVALID_FRAME;
+    }
+    return sendBinaryFrame(frame);
   }
 
   // send head,class,type,obid,,timestamp,GUID,data1,data2,data3....
@@ -963,6 +1192,16 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
   // Validate datasize
   if (pEventEx->sizeData > VSCP_MAX_DATA) {
     return VSCP_ERROR_PARAMETER;
+  }
+
+  if (m_bBinaryMode) {
+    vscpEvent event = {};
+    if (!vscp_convertEventExToEvent(&event, pEventEx)) {
+      return VSCP_ERROR_PARAMETER;
+    }
+    int result = doCmdSend(&event);
+    delete[] event.pdata;
+    return result;
   }
 
   // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
@@ -1049,6 +1288,10 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
     return VSCP_ERROR_MEMORY;
   }
 
+  if (m_bBinaryMode) {
+    return receiveBinaryEvent(pEvent, m_responseTimeOut);
+  }
+
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
     return VSCP_ERROR_PARAMETER;
@@ -1082,6 +1325,10 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
 
   if (NULL == pEventEx) {
     return VSCP_ERROR_PARAMETER;
+  }
+
+  if (m_bBinaryMode) {
+    return doCmdBlockingReceive(pEventEx, m_responseTimeOut);
   }
 
   // If in receive loop terminate
@@ -1174,6 +1421,10 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
     return VSCP_ERROR_CONNECTION;
   }
 
+  if (m_bBinaryMode) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
     return VSCP_ERROR_SUCCESS;
@@ -1200,6 +1451,10 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 {
   if (!isConnected()) {
     return VSCP_ERROR_CONNECTION;
+  }
+
+  if (m_bBinaryMode) {
+    return VSCP_ERROR_PARAMETER;
   }
 
   // If **not** in receive loop terminate
@@ -1237,6 +1492,10 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
   // Must be connected
   if (!isConnected()) {
     return VSCP_ERROR_CONNECTION;
+  }
+
+  if (m_bBinaryMode) {
+    return receiveBinaryEvent(pEvent, mstimeout);
   }
 
   // If **not** in receive loop terminate
@@ -1339,6 +1598,17 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout)
   // Must be connected
   if (!isConnected()) {
     return VSCP_ERROR_CONNECTION;
+  }
+
+  if (m_bBinaryMode) {
+    vscpEvent event = {};
+    int result = receiveBinaryEvent(&event, timeout);
+    if (VSCP_ERROR_SUCCESS != result) {
+      return result;
+    }
+    bool converted = vscp_convertEventToEventEx(pEventEx, &event);
+    delete[] event.pdata;
+    return converted ? VSCP_ERROR_SUCCESS : VSCP_ERROR_INVALID_FRAME;
   }
 
   // If not receive loop active terminate

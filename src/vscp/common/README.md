@@ -23,6 +23,8 @@ Debugging macros and functions for VSCP.
 
 ## vscpremotetcpif.cpp  and vscpremotetcpif.h
 Implement the remote TCP/IP link interface for VSCP.
+See [binary TCP/IP client usage](../../../docs/vscpremotetcpif-binary.md) for
+the `BINARY` command, length-prefixed frames, event APIs, and encryption.
 
 ## canal.h
 Main header file for CANAL.

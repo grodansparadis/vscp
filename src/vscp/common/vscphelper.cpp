@@ -8835,7 +8835,7 @@ vscp_writeCommandToFrame(uint8_t *frame, size_t len, uint16_t command, const uin
   }
 
   // Calculate CRC
-  crc framecrc = crcFast((unsigned char const *) frame + 1, (int) calcSize - 1);
+  crc framecrc = crcFast((unsigned char const *) frame + 1, (int) calcSize - 3);
 
   // CRC
   frame[calcSize - 2] = (framecrc >> 8) & 0xff;
@@ -8894,7 +8894,7 @@ vscp_writeReplyToFrame(uint8_t *frame,
   }
 
   // Calculate CRC
-  crc framecrc = crcFast((unsigned char const *) frame + 1, (int) calcSize - 1);
+  crc framecrc = crcFast((unsigned char const *) frame + 1, (int) calcSize - 3);
 
   // CRC
   frame[calcSize - 2] = (framecrc >> 8) & 0xff;
