@@ -3058,9 +3058,10 @@ vscp_getBootLoaderDescription(uint8_t code);
   @fn vscp_encryptFrame
   Encrypt VSCP frame using the selected encryption algorithm. The iv
   (initialization vector) is appended to the end of the encrypted data.
+  The encrypted payload uses PKCS#7 padding.
 
   @param output Buffer that will receive the encrypted result. The buffer
-           should be at least 16 bytes larger than the frame.
+           should be at least 32 bytes larger than the frame.
   @param input This is the frame that should be encrypted. The first
            byte in the frame is the packet type which is not encrypted.
   @param len This is the length of the frame to be encrypted. This
@@ -3106,7 +3107,9 @@ vscp_encryptFrame(uint8_t *output,
   @return True on success, false on failure.
 
   NOTE: Note that VSCP packet type (first byte in UDP frame) is not
-  recognised here.
+  recognised here. PKCS#7 padding is validated and removed; the remaining
+  bytes in the decrypted block are zeroed to preserve the frame's
+  zero-filled tail.
  */
 bool
 vscp_decryptFrame(uint8_t *output,
