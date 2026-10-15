@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <string>
 #include <deque>
 #include <cstring>
@@ -4108,10 +4109,12 @@ TEST(VscpHelper, frameCryptoPkcs7PaddingAndValidation)
 
         uint8_t encrypted_internal[128] = {};
         uint8_t encrypted_openssl[128] = {};
+        uint8_t encrypted_legacy[128] = {};
         uint8_t decrypted[128] = {};
         const size_t frame_len = payload_len + 1;
         const size_t encrypted_payload_len = (payload_len / 16 + 1) * 16;
         const size_t expected_encrypted_len = 1 + encrypted_payload_len + 16;
+        const size_t legacy_payload_len = std::max((size_t)16, ((payload_len + 15) / 16) * 16);
 
         vscp_setFrameEncryptionUseOpenSSL(false);
         const size_t internal_len = vscp_encryptFrame(encrypted_internal,
@@ -4154,9 +4157,42 @@ TEST(VscpHelper, frameCryptoPkcs7PaddingAndValidation)
                                       VSCP_ENCRYPTION_FROM_TYPE_BYTE));
         EXPECT_EQ(0, memcmp(frame, decrypted, frame_len));
 
+        vscp_setFrameEncryptionUseOpenSSL(false);
+        const size_t legacy_len = vscp_encryptFrame(encrypted_legacy,
+                                                    frame,
+                                                    frame_len,
+                                                    key,
+                                                    iv,
+                                                    VSCP_ENCRYPTION_FROM_TYPE_BYTE,
+                                                    vscpFramePaddingMode::ZERO);
+        EXPECT_EQ(1 + legacy_payload_len + 16, legacy_len);
+
+        memset(decrypted, 0, sizeof(decrypted));
+        ASSERT_TRUE(vscp_decryptFrame(decrypted,
+                                      encrypted_legacy,
+                                      legacy_len,
+                                      key,
+                                      nullptr,
+                                      VSCP_ENCRYPTION_FROM_TYPE_BYTE,
+                                      vscpFramePaddingMode::ZERO));
+        EXPECT_EQ(0, memcmp(frame, decrypted, frame_len));
+        for (size_t i = frame_len; i < legacy_payload_len + 1; ++i) {
+            EXPECT_EQ(0, decrypted[i]);
+        }
+
+        EXPECT_FALSE(vscp_decryptFrame(decrypted,
+                                       encrypted_legacy,
+                                       legacy_len,
+                                       key,
+                                       nullptr,
+                                       VSCP_ENCRYPTION_FROM_TYPE_BYTE,
+                                       vscpFramePaddingMode::PKCS7));
+
         if (0 == payload_len) {
             uint8_t invalid_iv[16];
-            memcpy(invalid_iv, iv, sizeof(invalid_iv));
+            for (size_t i = 0; i < sizeof(invalid_iv); ++i) {
+                invalid_iv[i] = iv[i];
+            }
             invalid_iv[15] ^= 1;
 
             vscp_setFrameEncryptionUseOpenSSL(false);

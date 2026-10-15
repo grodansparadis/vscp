@@ -88,6 +88,7 @@ vscpClientMulticast::vscpClientMulticast()
   m_bRun               = true;
   m_bEncrypt           = false;
   m_encryptType        = VSCP_ENCRYPTION_NONE;
+  m_paddingMode        = vscpFramePaddingMode::PKCS7;
   memset(m_key, 0, sizeof(m_key));
   m_bActiveCallbackEv = false;
   m_bActiveCallbackEx = false;
@@ -159,6 +160,7 @@ vscpClientMulticast::getConfigAsJson(void)
   j["ip"]         = strGroup.c_str(); // addr:port
   j["ttl"]        = m_ttl;
   j["encryption"] = m_encryptType;
+  j["padding"]    = (vscpFramePaddingMode::ZERO == m_paddingMode) ? "zero" : "pkcs7";
   switch (m_encryptType) {
 
     case VSCP_ENCRYPTION_NONE:
@@ -245,6 +247,22 @@ vscpClientMulticast::initFromJson(const std::string &config)
 
     if (m_j_config.contains("encryption") && m_j_config["encryption"].is_number()) {
       m_encryptType = m_j_config["encryption"].get<uint8_t>();
+    }
+
+    if (m_j_config.contains("padding")) {
+      if (!m_j_config["padding"].is_string()) {
+        return false;
+      }
+      const std::string padding = m_j_config["padding"].get<std::string>();
+      if ("pkcs7" == padding) {
+        m_paddingMode = vscpFramePaddingMode::PKCS7;
+      }
+      else if ("zero" == padding) {
+        m_paddingMode = vscpFramePaddingMode::ZERO;
+      }
+      else {
+        return false;
+      }
     }
 
     if (m_j_config.contains("key") && m_j_config["key"].is_string()) {
@@ -493,7 +511,13 @@ vscpClientMulticast::send(vscpEvent &ev)
     uint16_t newlen             = 0;
     uint8_t encbuf[BUFFER_SIZE] = { 0 };
 
-    if (0 == (newlen = vscp_encryptFrame(encbuf, pframe, framelen, m_key, NULL, m_encryptType))) {
+    if (0 == (newlen = vscp_encryptFrame(encbuf,
+                                         pframe,
+                                         framelen,
+                                         m_key,
+                                         NULL,
+                                         m_encryptType,
+                                         m_paddingMode))) {
       fprintf(stderr, "Error encrypting frame. newlen = %d\n", newlen);
       exit(EXIT_FAILURE);
     }
@@ -943,12 +967,13 @@ workerThread(vscpClientMulticast *pClient)
             }
 
             uint8_t encbuf[BUFFER_SIZE] = { 0 };
-            if (VSCP_ERROR_SUCCESS != vscp_decryptFrame(encbuf,
-                                                        buf,
-                                                        nReceived - 16,
-                                                        pClient->m_key,
-                                                        buf + nReceived - 16,
-                                                        VSCP_ENCRYPTION_FROM_TYPE_BYTE)) {
+            if (!vscp_decryptFrame(encbuf,
+                                   buf,
+                                   nReceived - 16,
+                                   pClient->m_key,
+                                   buf + nReceived - 16,
+                                   VSCP_ENCRYPTION_FROM_TYPE_BYTE,
+                                   pClient->m_paddingMode)) {
               fprintf(stderr, "Error decrypting frame.\n");
               continue;
             }

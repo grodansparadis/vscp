@@ -30,6 +30,7 @@ TEST(VscpClientUdp, ConstructorDefaults)
   EXPECT_FALSE(client.isConnected());
   EXPECT_FALSE(client.m_bEncrypt);
   EXPECT_EQ(VSCP_ENCRYPTION_NONE, client.m_encryptType);
+  EXPECT_EQ(vscpFramePaddingMode::PKCS7, client.m_paddingMode);
   EXPECT_EQ(0, client.m_sock);
 }
 
@@ -331,6 +332,7 @@ TEST(VscpClientUdp, GetConfigAsJsonDefault)
   EXPECT_TRUE(j.contains("ip"));
   EXPECT_TRUE(j.contains("encryption"));
   EXPECT_TRUE(j.contains("key"));
+  EXPECT_TRUE(j.contains("padding"));
   EXPECT_TRUE(j.contains("interface"));
 
   // Default broadcast address
@@ -340,6 +342,7 @@ TEST(VscpClientUdp, GetConfigAsJsonDefault)
 
   // No encryption by default
   EXPECT_EQ(0, j["encryption"].get<int>());
+  EXPECT_EQ("pkcs7", j["padding"].get<std::string>());
 
   // Filter fields present
   EXPECT_TRUE(j.contains("priority-filter"));
@@ -397,8 +400,17 @@ TEST(VscpClientUdp, InitFromJsonBasic)
   j["interface"]  = "eth0";
   j["ip"]         = "udp://192.168.1.100:9999";
   j["encryption"] = 0;
+  j["padding"]    = "zero";
   // Note: omit "key" to avoid triggering filter parsing block
   EXPECT_TRUE(client.initFromJson(j.dump()));
+  EXPECT_EQ(vscpFramePaddingMode::ZERO, client.m_paddingMode);
+  EXPECT_EQ("zero", json::parse(client.getConfigAsJson())["padding"].get<std::string>());
+}
+
+TEST(VscpClientUdp, InitFromJsonRejectsUnknownPadding)
+{
+  vscpClientUdp client;
+  EXPECT_FALSE(client.initFromJson(R"({"padding":"auto"})"));
 }
 
 TEST(VscpClientUdp, InitFromJsonInvalidJson)

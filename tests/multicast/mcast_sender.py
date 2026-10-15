@@ -197,9 +197,10 @@ def encryptVscpFrame( frame, encryption ):
         print "Bad encryption argument - AES128 encryption used."
 
 
-    # Frame must be 16 byte aligned for encryption
-    while ( len( frame ) - 1 ) % 16:
-        frame.append(0)
+    # Pad the encrypted payload using PKCS#7.
+    padlen = 16 - ((len(frame) - 1) % 16)
+    for unused in range(padlen):
+        frame.append(padlen)
 
     # Get initialization vector
     iv = Random.new().read(16)

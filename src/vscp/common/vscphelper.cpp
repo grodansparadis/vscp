@@ -188,6 +188,23 @@ vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 }
 
 static bool
+vscp_zeroPad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
+{
+  constexpr size_t block_size = 16;
+  if ((nullptr == input) || (len > SIZE_MAX - block_size)) {
+    return false;
+  }
+
+  const size_t padded_len = std::max(block_size, ((len + block_size - 1) / block_size) * block_size);
+  padded.assign(padded_len, 0);
+  if (len) {
+    memcpy(padded.data(), input, len);
+  }
+
+  return true;
+}
+
+static bool
 vscp_pkcs7Unpad(uint8_t *plaintext, size_t len)
 {
   constexpr size_t block_size = 16;
@@ -210,6 +227,39 @@ vscp_pkcs7Unpad(uint8_t *plaintext, size_t len)
   // zero-filled tail after removing the PKCS#7 padding.
   memset(plaintext + len - padlen, 0, padlen);
   return true;
+}
+
+static bool
+vscp_padFramePayload(const uint8_t *input,
+                     size_t len,
+                     vscpFramePaddingMode paddingMode,
+                     std::vector<uint8_t> &padded)
+{
+  switch (paddingMode) {
+    case vscpFramePaddingMode::PKCS7:
+      return vscp_pkcs7Pad(input, len, padded);
+
+    case vscpFramePaddingMode::ZERO:
+      return vscp_zeroPad(input, len, padded);
+
+    default:
+      return false;
+  }
+}
+
+static bool
+vscp_unpadFramePayload(uint8_t *plaintext, size_t len, vscpFramePaddingMode paddingMode)
+{
+  switch (paddingMode) {
+    case vscpFramePaddingMode::PKCS7:
+      return vscp_pkcs7Unpad(plaintext, len);
+
+    case vscpFramePaddingMode::ZERO:
+      return (nullptr != plaintext) && len && !(len % 16);
+
+    default:
+      return false;
+  }
 }
 
 static uint8_t
@@ -357,7 +407,8 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
                          size_t len,
                          const uint8_t *key,
                          const uint8_t *iv,
-                         uint8_t nAlgorithm)
+                         uint8_t nAlgorithm,
+                         vscpFramePaddingMode paddingMode)
 {
   uint8_t generated_iv[16];
 
@@ -383,7 +434,7 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
   }
 
   std::vector<uint8_t> plaintext;
-  if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
+  if (!vscp_padFramePayload(input + 1, len - 1, paddingMode, plaintext)) {
     return 0;
   }
   size_t padlen = plaintext.size();
@@ -412,7 +463,8 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
                          size_t len,
                          const uint8_t *key,
                          const uint8_t *iv,
-                         uint8_t nAlgorithm)
+                         uint8_t nAlgorithm,
+                         vscpFramePaddingMode paddingMode)
 {
   uint8_t appended_iv[16];
   size_t real_len = len;
@@ -456,7 +508,7 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
     return false;
   }
 
-  return vscp_pkcs7Unpad(output + 1, real_len - 1);
+  return vscp_unpadFramePayload(output + 1, real_len - 1, paddingMode);
 }
 
 // https://github.com/nlohmann/json
@@ -8942,8 +8994,26 @@ vscp_encryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
+  return vscp_encryptFrame(output,
+                           input,
+                           len,
+                           key,
+                           iv,
+                           nAlgorithm,
+                           vscpFramePaddingMode::PKCS7);
+}
+
+size_t
+vscp_encryptFrame(uint8_t *output,
+                  uint8_t *input,
+                  size_t len,
+                  const uint8_t *key,
+                  const uint8_t *iv,
+                  uint8_t nAlgorithm,
+                  vscpFramePaddingMode paddingMode)
+{
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
+    return vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm, paddingMode);
   }
 
   uint8_t generated_iv[16];
@@ -8972,7 +9042,7 @@ vscp_encryptFrame(uint8_t *output,
   }
 
   std::vector<uint8_t> plaintext;
-  if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
+  if (!vscp_padFramePayload(input + 1, len - 1, paddingMode, plaintext)) {
     return 0;
   }
   size_t padlen = plaintext.size();
@@ -9058,8 +9128,26 @@ vscp_decryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
+  return vscp_decryptFrame(output,
+                           input,
+                           len,
+                           key,
+                           iv,
+                           nAlgorithm,
+                           vscpFramePaddingMode::PKCS7);
+}
+
+bool
+vscp_decryptFrame(uint8_t *output,
+                  uint8_t *input,
+                  size_t len,
+                  const uint8_t *key,
+                  const uint8_t *iv,
+                  uint8_t nAlgorithm,
+                  vscpFramePaddingMode paddingMode)
+{
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
+    return vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm, paddingMode);
   }
 
   uint8_t appended_iv[16];
@@ -9141,7 +9229,7 @@ vscp_decryptFrame(uint8_t *output,
       return false;
   }
 
-  return vscp_pkcs7Unpad(output + 1, real_len - 1);
+  return vscp_unpadFramePayload(output + 1, real_len - 1, paddingMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////

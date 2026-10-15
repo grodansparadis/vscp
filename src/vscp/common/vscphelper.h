@@ -3055,10 +3055,19 @@ const char *
 vscp_getBootLoaderDescription(uint8_t code);
 
 /*!
+  Padding format used for encrypted binary frames.
+ */
+enum class vscpFramePaddingMode : uint8_t {
+  PKCS7,
+  ZERO
+};
+
+/*!
   @fn vscp_encryptFrame
   Encrypt VSCP frame using the selected encryption algorithm. The iv
   (initialization vector) is appended to the end of the encrypted data.
-  The encrypted payload uses PKCS#7 padding.
+  The encrypted payload uses PKCS#7 padding unless an explicit padding mode
+  is selected with the overload below.
 
   @param output Buffer that will receive the encrypted result. The buffer
            should be at least 32 bytes larger than the frame.
@@ -3085,6 +3094,20 @@ vscp_encryptFrame(uint8_t *output,
                   const uint8_t *key,
                   const uint8_t *iv,
                   uint8_t nAlgorithm);
+
+/*!
+  Encrypt a VSCP frame using an explicitly selected payload padding format.
+  Use ZERO only when communicating with peers that still use legacy zero
+  padding. The six-argument overload selects PKCS#7.
+ */
+size_t
+vscp_encryptFrame(uint8_t *output,
+                  uint8_t *input,
+                  size_t len,
+                  const uint8_t *key,
+                  const uint8_t *iv,
+                  uint8_t nAlgorithm,
+                  vscpFramePaddingMode paddingMode);
 
 /*!
   @fn vscp_decryptFrame
@@ -3118,6 +3141,20 @@ vscp_decryptFrame(uint8_t *output,
                   const uint8_t *key,
                   const uint8_t *iv,
                   uint8_t nAlgorithm);
+
+/*!
+  Decrypt a VSCP frame using an explicitly selected payload padding format.
+  ZERO mode is a deliberate compatibility option for legacy peers and does
+  not validate padding bytes. The six-argument overload selects PKCS#7.
+ */
+bool
+vscp_decryptFrame(uint8_t *output,
+                  uint8_t *input,
+                  size_t len,
+                  const uint8_t *key,
+                  const uint8_t *iv,
+                  uint8_t nAlgorithm,
+                  vscpFramePaddingMode paddingMode);
 
 /*!
   @fn vscp_setFrameEncryptionUseOpenSSL
