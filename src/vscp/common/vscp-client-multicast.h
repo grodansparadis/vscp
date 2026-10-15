@@ -27,6 +27,7 @@
 #define VSCPCLIENTMULTICAST_H__INCLUDED_
 
 #include "vscp.h"
+#include "vscphelper.h"
 #include "vscp-client-base.h"
 
 #include <pthread.h>
@@ -214,6 +215,8 @@ public:
       3 = AES-256
   */
   uint8_t m_encryptType;
+
+  vscpFramePaddingMode m_paddingMode;
 
   /*!
     Encryption key

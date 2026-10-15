@@ -31,6 +31,7 @@
 
 #include <guid.h>
 #include <vscp.h>
+#include <vscphelper.h>
 
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -109,6 +110,11 @@ class udpRemoteClient {
             m_nEncryption = encryption;
     };
 
+    void setFramePaddingMode(vscpFramePaddingMode paddingMode)
+    {
+        m_paddingMode = paddingMode;
+    }
+
     uint8_t getEncryption(void) { return m_nEncryption; }
 
     void SetBroadcastBit(bool enable = true) { m_bSetBroadcast = enable; }
@@ -153,6 +159,7 @@ class udpRemoteClient {
     std::string m_password; // Password for user we act as
 
     uint8_t m_nEncryption; // Encryption algorithm
+    vscpFramePaddingMode m_paddingMode;
     bool m_bSetBroadcast;  // Set broadcast flag  MG_F_ENABLE_BROADCAST.
     uint8_t m_index;       // Rolling send index
                            // (only low tree bits used).
@@ -229,6 +236,7 @@ class udpSrvObj {
 
     bool m_bAllowUnsecure;    // Allow un encrypted datagrams
     bool m_bAck;              // ACK received datagram
+    vscpFramePaddingMode m_paddingMode;
     std::string m_user;       // User account to use for UDP
     std::string m_password;   // Password for user account
     cguid m_guid;             // GUID to use for server client object
@@ -239,6 +247,11 @@ class udpSrvObj {
 
     // The global control object
     CControlObject* m_pCtrlObj;
+
+    void setFramePaddingMode(vscpFramePaddingMode paddingMode)
+    {
+        m_paddingMode = paddingMode;
+    }
 };
 
 #endif
