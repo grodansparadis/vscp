@@ -30,6 +30,7 @@
 #include <climits>
 #include <cmath>
 #include <cstdint>
+#include <crc.h>
 
 #include "vscphelper.h"
 #include "vscp.h"
@@ -3782,8 +3783,9 @@ TEST(FrameVersion, setFrameVersion_switch_versions)
 
 TEST(VscpHelper, writeCommandToFrame_basic)
 {
+    crcInit();
     uint8_t frame[64];
-    memset(frame, 0, sizeof(frame));
+    memset(frame, 0xAB, sizeof(frame));
     uint8_t arg[] = {0xAA, 0xBB, 0xCC};
     uint16_t command = 0x1234;
 
@@ -3801,6 +3803,8 @@ TEST(VscpHelper, writeCommandToFrame_basic)
     EXPECT_EQ(0xAA, frame[3]);
     EXPECT_EQ(0xBB, frame[4]);
     EXPECT_EQ(0xCC, frame[5]);
+    EXPECT_EQ(0x17, frame[6]);
+    EXPECT_EQ(0xA7, frame[7]);
 }
 
 TEST(VscpHelper, writeCommandToFrame_no_args)
@@ -3866,8 +3870,9 @@ TEST(VscpHelper, writeCommandToFrame_command_zero)
 
 TEST(VscpHelper, writeReplyToFrame_basic)
 {
+    crcInit();
     uint8_t frame[64];
-    memset(frame, 0, sizeof(frame));
+    memset(frame, 0xAB, sizeof(frame));
     uint8_t arg[] = {0xDE, 0xAD};
     uint16_t command = 0x5678;
     uint16_t error   = 0x0001;
@@ -3889,6 +3894,8 @@ TEST(VscpHelper, writeReplyToFrame_basic)
     // Argument data
     EXPECT_EQ(0xDE, frame[5]);
     EXPECT_EQ(0xAD, frame[6]);
+    EXPECT_EQ(0x89, frame[7]);
+    EXPECT_EQ(0x91, frame[8]);
 }
 
 TEST(VscpHelper, writeReplyToFrame_no_args)

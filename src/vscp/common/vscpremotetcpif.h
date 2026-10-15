@@ -65,6 +65,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <memory>
+#include <vector>
 
 #include <canal.h>
 #include <guid.h>
@@ -266,6 +267,22 @@ public:
   int doCommand(const char *cmd);
 
   /*!
+      Switch to binary-only communication after a positive BINARY response.
+      Reconnect to return to text mode. Not allowed during RCVLOOP.
+   */
+  int doCmdBinary(void);
+  bool isBinaryMode(void) const { return m_bBinaryMode; }
+
+  /*!
+      Send/receive a complete VSCP-GBP frame, excluding its two-byte
+      big-endian TCP length prefix. Raw frames include their CRC and,
+      when encrypted, their padding and IV. Receive preserves partial
+      frames across timeouts. These methods do not interpret commands.
+   */
+  int sendBinaryFrame(const std::vector<uint8_t> &frame);
+  int receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT);
+
+  /*!
       Open communication interface.
       @param strInterface should contain "ip-addr:port;username;password" if
      used. All including port are optional and defaults to no
@@ -332,6 +349,8 @@ public:
       Send a VSCP Level II event through interface.
       If a GUID sent with all items set to zero the GUID of the
       interface ("-") will be used.
+      Binary mode writes an unencrypted format-1 event without waiting
+      for confirmation. Event receive methods consume confirmations.
       @param pEvent VSCP Level II event to send.
       @return CANAL_ERROR_SUCCESS on success and error code if failure.
    */
@@ -353,6 +372,8 @@ public:
 
   /*!
       Receive a VSCP event through the interface.
+      Binary mode waits for an asynchronous event using the response timeout
+      and sends an event-confirm reply after successful decoding.
       @return CANAL_ERROR_SUCCESS on success and error code if failure.
    */
   int doCmdReceive(vscpEvent *pEvent);
@@ -393,8 +414,8 @@ public:
 
   /*!
       Receive an event
-      The receiveloop command must have been issued for this method to work as
-      it sets up the ringbuffer used for the blocking receive.
+      Text mode requires the receiveloop command. Binary mode receives
+      asynchronous events directly, without RCVLOOP.
       @param pEvent Pointer to VSCP event.
       @param timeout Timout to wait for data. Default = 500 milliseconds.
       @return CANAL_ERROR_SUCCESS when event is received.
@@ -678,6 +699,10 @@ protected:
 private:
   /// Flag for active receive loop
   bool m_bModeReceiveLoop;
+  bool m_bBinaryMode;
+  std::vector<uint8_t> m_binaryInput;
+
+  int receiveBinaryEvent(vscpEvent *event, uint32_t timeout);
 
   /// Server connection timeout in **seconds**
   uint16_t m_connectionTimeOut;
