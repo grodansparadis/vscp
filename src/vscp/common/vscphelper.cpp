@@ -195,7 +195,7 @@ vscp_zeroPad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
     return false;
   }
 
-  const size_t padded_len = std::max(block_size, ((len + block_size - 1) / block_size) * block_size);
+  const size_t padded_len = (std::max)(block_size, ((len + block_size - 1) / block_size) * block_size);
   padded.assign(padded_len, 0);
   if (len) {
     memcpy(padded.data(), input, len);
