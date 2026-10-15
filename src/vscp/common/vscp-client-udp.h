@@ -216,7 +216,6 @@ public:
   */
   uint8_t m_encryptType;
 
-  vscpFramePaddingMode m_paddingMode;
 
   /*!
     Encryption key

@@ -165,12 +165,6 @@ vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
 }
 
 static bool
-vscp_validateFrameCryptoPointers(uint8_t *output, uint8_t *input, const uint8_t *key)
-{
-  return (nullptr != output) && (nullptr != input) && (nullptr != key);
-}
-
-static bool
 vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 {
   constexpr size_t block_size = 16;
@@ -188,24 +182,7 @@ vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 }
 
 static bool
-vscp_zeroPad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
-{
-  constexpr size_t block_size = 16;
-  if ((nullptr == input) || (len > SIZE_MAX - block_size)) {
-    return false;
-  }
-
-  const size_t padded_len = (std::max)(block_size, ((len + block_size - 1) / block_size) * block_size);
-  padded.assign(padded_len, 0);
-  if (len) {
-    memcpy(padded.data(), input, len);
-  }
-
-  return true;
-}
-
-static bool
-vscp_pkcs7Unpad(uint8_t *plaintext, size_t len)
+vscp_pkcs7Unpad(uint8_t *plaintext, size_t &len)
 {
   constexpr size_t block_size = 16;
   if ((nullptr == plaintext) || !len || (len % block_size)) {
@@ -226,40 +203,25 @@ vscp_pkcs7Unpad(uint8_t *plaintext, size_t len)
   // The frame format carries its own payload length, so keep the legacy
   // zero-filled tail after removing the PKCS#7 padding.
   memset(plaintext + len - padlen, 0, padlen);
+  len -= padlen;
   return true;
 }
 
 static bool
-vscp_padFramePayload(const uint8_t *input,
-                     size_t len,
-                     vscpFramePaddingMode paddingMode,
-                     std::vector<uint8_t> &padded)
+vscp_validFrameCrc(const uint8_t *frame, size_t len)
 {
-  switch (paddingMode) {
-    case vscpFramePaddingMode::PKCS7:
-      return vscp_pkcs7Pad(input, len, padded);
-
-    case vscpFramePaddingMode::ZERO:
-      return vscp_zeroPad(input, len, padded);
-
-    default:
-      return false;
+  if (len < 5 || len - 3 > INT_MAX) {
+    return false;
   }
+  const uint16_t expected = ((uint16_t) frame[len - 2] << 8) | frame[len - 1];
+  return crcSlow(frame + 1, (int) (len - 3)) == expected;
 }
 
 static bool
-vscp_unpadFramePayload(uint8_t *plaintext, size_t len, vscpFramePaddingMode paddingMode)
+vscp_validateDecryptedFrame(uint8_t *frame, size_t len)
 {
-  switch (paddingMode) {
-    case vscpFramePaddingMode::PKCS7:
-      return vscp_pkcs7Unpad(plaintext, len);
-
-    case vscpFramePaddingMode::ZERO:
-      return (nullptr != plaintext) && len && !(len % 16);
-
-    default:
-      return false;
-  }
+  size_t payload_len = len - 1;
+  return vscp_pkcs7Unpad(frame + 1, payload_len) && vscp_validFrameCrc(frame, payload_len + 1);
 }
 
 static uint8_t
@@ -407,40 +369,35 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
                          size_t len,
                          const uint8_t *key,
                          const uint8_t *iv,
-                         uint8_t nAlgorithm,
-                         vscpFramePaddingMode paddingMode)
+                         uint8_t nAlgorithm)
 {
   uint8_t generated_iv[16];
 
-  if (!vscp_validateFrameCryptoPointers(output, input, key)) {
+  if (nullptr == output || nullptr == input || !len) {
     return 0;
-  }
-
-  // If no encryption needed - return
-  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
-    memcpy(output, input, len);
-    return len;
   }
 
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
-
-  const EVP_CIPHER *pcipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
-  if (nullptr == pcipher) {
-    return 0;
+  // If no encryption needed - return
+  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
+    memmove(output, input, len);
+    output[0] &= 0xf0;
+    return len;
   }
 
-  if (!len) {
+  const EVP_CIPHER *pcipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
+  if (nullptr == pcipher || nullptr == key) {
     return 0;
   }
 
   std::vector<uint8_t> plaintext;
-  if (!vscp_padFramePayload(input + 1, len - 1, paddingMode, plaintext)) {
+  if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
     return 0;
   }
   size_t padlen = plaintext.size();
 
   // The packet type is always un-encrypted
-  output[0] = input[0];
+  output[0] = (input[0] & 0xf0) | nAlgorithm;
 
   if (!vscp_getEncryptionIv(generated_iv, iv)) {
     return 0;
@@ -463,19 +420,25 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
                          size_t len,
                          const uint8_t *key,
                          const uint8_t *iv,
-                         uint8_t nAlgorithm,
-                         vscpFramePaddingMode paddingMode)
+                         uint8_t nAlgorithm)
 {
   uint8_t appended_iv[16];
   size_t real_len = len;
 
-  if (!vscp_validateFrameCryptoPointers(output, input, key)) {
+  if (nullptr == output || nullptr == input || !len) {
     return false;
   }
 
-  if (VSCP_ENCRYPTION_NONE == GET_VSCP_BINARY_PACKET_ENCRYPTION(nAlgorithm)) {
-    memcpy(output, input, len);
+  nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
+  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
+    if (!vscp_validFrameCrc(input, len)) {
+      return false;
+    }
+    memmove(output, input, len);
     return true;
+  }
+  if (nullptr == key) {
+    return false;
   }
 
   // If iv is not given it should be fetched from the end of input
@@ -497,8 +460,6 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
   // Preserve packet type which always is un-encrypted
   output[0] = input[0];
 
-  nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
-
   const EVP_CIPHER *pcipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
   if (nullptr == pcipher) {
     return false;
@@ -508,7 +469,7 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
     return false;
   }
 
-  return vscp_unpadFramePayload(output + 1, real_len - 1, paddingMode);
+  return vscp_validateDecryptedFrame(output, real_len);
 }
 
 // https://github.com/nlohmann/json
@@ -8994,26 +8955,8 @@ vscp_encryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
-  return vscp_encryptFrame(output,
-                           input,
-                           len,
-                           key,
-                           iv,
-                           nAlgorithm,
-                           vscpFramePaddingMode::PKCS7);
-}
-
-size_t
-vscp_encryptFrame(uint8_t *output,
-                  uint8_t *input,
-                  size_t len,
-                  const uint8_t *key,
-                  const uint8_t *iv,
-                  uint8_t nAlgorithm,
-                  vscpFramePaddingMode paddingMode)
-{
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm, paddingMode);
+    return vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
   }
 
   uint8_t generated_iv[16];
@@ -9027,33 +8970,30 @@ vscp_encryptFrame(uint8_t *output,
     return 0;
   }
 
-  if (nullptr == key) {
-    return 0;
-  }
-
-  // If no encryption needed - return
-  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
-    memcpy(output, input, len);
-    return len;
-  }
-
   if (!len) {
     return 0;
   }
 
+  nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
+  // If no encryption needed - return
+  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
+    memmove(output, input, len);
+    output[0] &= 0xf0;
+    return len;
+  }
+
+  if (nullptr == key || nullptr == vscp_getOpenSslCipherFromAlgorithm(nAlgorithm)) {
+    return 0;
+  }
+
   std::vector<uint8_t> plaintext;
-  if (!vscp_padFramePayload(input + 1, len - 1, paddingMode, plaintext)) {
+  if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
     return 0;
   }
   size_t padlen = plaintext.size();
 
-  // The packet type s always un encrypted
-  output[0] = input[0];
-
-  // Should decryption algorithm be set by package
-  if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == (nAlgorithm & 0x0f)) {
-    nAlgorithm = input[0] & 0x0f;
-  }
+  // The packet type is always unencrypted.
+  output[0] = (input[0] & 0xf0) | nAlgorithm;
 
   // If iv is not give it should be generated
   if (nullptr == iv) {
@@ -9103,12 +9043,8 @@ vscp_encryptFrame(uint8_t *output,
       padlen += 16;
       break;
 
-    case VSCP_ENCRYPTION_NONE:
-      memcpy(output + 1, input + 1, padlen);
-      break;
-
     default:
-      return VSCP_ERROR_PARAMETER;
+      return 0;
   }
 
   padlen++; // Count packet type byte
@@ -9117,7 +9053,7 @@ vscp_encryptFrame(uint8_t *output,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_encryptFrame
+// vscp_decryptFrame
 //
 
 bool
@@ -9128,26 +9064,8 @@ vscp_decryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
-  return vscp_decryptFrame(output,
-                           input,
-                           len,
-                           key,
-                           iv,
-                           nAlgorithm,
-                           vscpFramePaddingMode::PKCS7);
-}
-
-bool
-vscp_decryptFrame(uint8_t *output,
-                  uint8_t *input,
-                  size_t len,
-                  const uint8_t *key,
-                  const uint8_t *iv,
-                  uint8_t nAlgorithm,
-                  vscpFramePaddingMode paddingMode)
-{
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm, paddingMode);
+    return vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
   }
 
   uint8_t appended_iv[16];
@@ -9162,13 +9080,20 @@ vscp_decryptFrame(uint8_t *output,
     return false;
   }
 
-  if (nullptr == key) {
+  if (!len) {
     return false;
   }
 
-  if (VSCP_ENCRYPTION_NONE == GET_VSCP_BINARY_PACKET_ENCRYPTION(nAlgorithm)) {
-    memcpy(output, input, len);
+  nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
+  if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
+    if (!vscp_validFrameCrc(input, len)) {
+      return false;
+    }
+    memmove(output, input, len);
     return true;
+  }
+  if (nullptr == key) {
+    return false;
   }
 
   // If iv is not given it should be fetched from the end of input (last 16
@@ -9191,9 +9116,12 @@ vscp_decryptFrame(uint8_t *output,
   // Preserve packet type which always is un-encrypted
   output[0] = input[0];
 
-  // Should decryption algorithm be set by package
-  if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == (nAlgorithm & 0x0f)) {
-    nAlgorithm = input[0] & 0x0f;
+  // The internal CBC implementation needs the previous ciphertext block intact.
+  std::vector<uint8_t> ciphertext;
+  uint8_t *encrypted = input + 1;
+  if (output == input) {
+    ciphertext.assign(input + 1, input + real_len);
+    encrypted = ciphertext.data();
   }
 
   switch (nAlgorithm) {
@@ -9201,7 +9129,7 @@ vscp_decryptFrame(uint8_t *output,
     case VSCP_ENCRYPTION_AES256:
       AES_CBC_decrypt_buffer(AES256,
                              output + 1,
-                             input + 1,
+                             encrypted,
                              (uint32_t) real_len - 1,
                              key,
                              (const uint8_t *) appended_iv);
@@ -9210,7 +9138,7 @@ vscp_decryptFrame(uint8_t *output,
     case VSCP_ENCRYPTION_AES192:
       AES_CBC_decrypt_buffer(AES192,
                              output + 1,
-                             input + 1,
+                             encrypted,
                              (uint32_t) real_len - 1,
                              key,
                              (const uint8_t *) appended_iv);
@@ -9219,7 +9147,7 @@ vscp_decryptFrame(uint8_t *output,
     case VSCP_ENCRYPTION_AES128:
       AES_CBC_decrypt_buffer(AES128,
                              output + 1,
-                             input + 1,
+                             encrypted,
                              (uint32_t) real_len - 1,
                              key,
                              (const uint8_t *) appended_iv);
@@ -9229,7 +9157,7 @@ vscp_decryptFrame(uint8_t *output,
       return false;
   }
 
-  return vscp_unpadFramePayload(output + 1, real_len - 1, paddingMode);
+  return vscp_validateDecryptedFrame(output, real_len);
 }
 
 ///////////////////////////////////////////////////////////////////////////

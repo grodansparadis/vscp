@@ -88,7 +88,6 @@ vscpClientMulticast::vscpClientMulticast()
   m_bRun               = true;
   m_bEncrypt           = false;
   m_encryptType        = VSCP_ENCRYPTION_NONE;
-  m_paddingMode        = vscpFramePaddingMode::PKCS7;
   memset(m_key, 0, sizeof(m_key));
   m_bActiveCallbackEv = false;
   m_bActiveCallbackEx = false;
@@ -160,7 +159,7 @@ vscpClientMulticast::getConfigAsJson(void)
   j["ip"]         = strGroup.c_str(); // addr:port
   j["ttl"]        = m_ttl;
   j["encryption"] = m_encryptType;
-  j["padding"]    = (vscpFramePaddingMode::ZERO == m_paddingMode) ? "zero" : "pkcs7";
+  j["padding"]    = "pkcs7";
   switch (m_encryptType) {
 
     case VSCP_ENCRYPTION_NONE:
@@ -253,14 +252,7 @@ vscpClientMulticast::initFromJson(const std::string &config)
       if (!m_j_config["padding"].is_string()) {
         return false;
       }
-      const std::string padding = m_j_config["padding"].get<std::string>();
-      if ("pkcs7" == padding) {
-        m_paddingMode = vscpFramePaddingMode::PKCS7;
-      }
-      else if ("zero" == padding) {
-        m_paddingMode = vscpFramePaddingMode::ZERO;
-      }
-      else {
+      if ("pkcs7" != m_j_config["padding"].get<std::string>()) {
         return false;
       }
     }
@@ -516,14 +508,12 @@ vscpClientMulticast::send(vscpEvent &ev)
                                          framelen,
                                          m_key,
                                          NULL,
-                                         m_encryptType,
-                                         m_paddingMode))) {
+                                         m_encryptType))) {
       fprintf(stderr, "Error encrypting frame. newlen = %d\n", newlen);
       exit(EXIT_FAILURE);
     }
 
     memcpy(pframe, encbuf, newlen);
-    pframe[0] = (pframe[0] & 0xF0) | (m_encryptType & 0x0F); // Set encryption type
     // Set the new length (may be padded to be modulo 16 + 1)
     framelen = newlen;
 
@@ -972,8 +962,7 @@ workerThread(vscpClientMulticast *pClient)
                                    nReceived - 16,
                                    pClient->m_key,
                                    buf + nReceived - 16,
-                                   VSCP_ENCRYPTION_FROM_TYPE_BYTE,
-                                   pClient->m_paddingMode)) {
+                                   VSCP_ENCRYPTION_FROM_TYPE_BYTE)) {
               fprintf(stderr, "Error decrypting frame.\n");
               continue;
             }

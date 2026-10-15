@@ -131,13 +131,15 @@ Use `vscp_writeReplyToFrame()` to construct replies. These helpers include
 the CRC in their output and calculate it over the body, excluding the type
 byte and CRC slots.
 
-For AES-CBC, set the frame type byte's encryption nibble and call
-`vscp_encryptFrame()` with the agreed key. Allocate at least 32 extra bytes,
+For AES-CBC, call `vscp_encryptFrame()` with the agreed key and encryption
+algorithm; it sets the frame type byte's encryption nibble. Allocate at least 32 extra bytes,
 resize to its returned length, and pass the result to `sendBinaryFrame()`.
-After receiving, call `vscp_decryptFrame()` and validate the decrypted frame's
-CRC and contents. The prefix remains outside the encrypted frame.
-PKCS#7 is the default padding; the explicit legacy zero-padding option is
-available only for peers configured to use it.
+After receiving, call `vscp_decryptFrame()`, which validates PKCS#7 padding
+and the decrypted frame's CRC, then validate its contents. With a null IV,
+pass the complete inner frame length, including the appended IV; with an
+explicit IV, exclude those 16 bytes from the length. The prefix remains
+outside the encrypted frame. PKCS#7 is the only supported padding; UDP and
+multicast configurations specifying `"padding": "zero"` are rejected.
 
 The event convenience methods reject encrypted frames or unrelated command
 replies. Use the raw API consistently when multiplexing commands and events
