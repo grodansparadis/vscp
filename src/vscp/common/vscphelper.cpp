@@ -214,7 +214,7 @@ vscp_validFrameCrc(const uint8_t *frame, size_t len)
     return false;
   }
   const uint16_t expected = ((uint16_t) frame[len - 2] << 8) | frame[len - 1];
-  return crcFast(frame + 1, (int) (len - 3)) == expected;
+  return crcSlow(frame + 1, (int) (len - 3)) == expected;
 }
 
 static bool

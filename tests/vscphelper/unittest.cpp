@@ -31,6 +31,7 @@
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <cstdlib>
 #include <vector>
 #include <crc.h>
 #include <openssl/evp.h>
@@ -4005,6 +4006,37 @@ TEST(VscpHelper, writeCommandToFrame_large_args)
     for (int i = 0; i < 256; i++) {
         EXPECT_EQ((uint8_t)(255 - i), frame[3 + i]);
     }
+}
+
+TEST(FrameCryptoDeathTest, ValidatesExternalCrcWithoutInitialization)
+{
+    // Re-exec so earlier tests cannot initialize the CRC table in this process.
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+    EXPECT_EXIT(([] {
+        const uint8_t key[32] = {};
+        const uint8_t iv[16] = {};
+        for (bool useOpenSSL : {false, true}) {
+            vscp_setFrameEncryptionUseOpenSSL(useOpenSSL);
+            for (uint8_t algorithm : {0, 1, 2, 3}) {
+                uint8_t valid[] = {0xe0, 0x00, 0x07, 0x6d, 0xe8};
+                uint8_t invalid[] = {0xe0, 0x00, 0x07, 0x00, 0x00};
+                uint8_t encrypted[64] = {};
+                uint8_t decrypted[64] = {};
+                size_t len = vscp_encryptFrame(encrypted, valid, sizeof(valid), key, iv, algorithm);
+                if (!len || !vscp_decryptFrame(decrypted, encrypted, len, key, nullptr,
+                                               VSCP_ENCRYPTION_FROM_TYPE_BYTE) ||
+                    memcmp(valid + 1, decrypted + 1, sizeof(valid) - 1)) {
+                    std::_Exit(1);
+                }
+                len = vscp_encryptFrame(encrypted, invalid, sizeof(invalid), key, iv, algorithm);
+                if (!len || vscp_decryptFrame(decrypted, encrypted, len, key, nullptr,
+                                              VSCP_ENCRYPTION_FROM_TYPE_BYTE)) {
+                    std::_Exit(2);
+                }
+            }
+        }
+        std::_Exit(0);
+    }()), ::testing::ExitedWithCode(0), "");
 }
 
 static void setFrameCryptoCrc(uint8_t *frame, size_t len)
