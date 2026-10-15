@@ -32,7 +32,6 @@ TEST(VscpClientMulticast, ConstructorDefaults)
   EXPECT_TRUE(client.m_bRun);
   EXPECT_FALSE(client.m_bEncrypt);
   EXPECT_EQ(client.m_encryptType, VSCP_ENCRYPTION_NONE);
-  EXPECT_EQ(vscpFramePaddingMode::PKCS7, client.m_paddingMode);
 }
 
 TEST(VscpClientMulticast, ConstructorNotConnected)
@@ -386,7 +385,7 @@ TEST(VscpClientMulticast, InitFromJsonBasic)
   j["ip"]              = "udp://239.1.2.3:5555";
   j["ttl"]             = 5;
   j["encryption"]      = 0;
-  j["padding"]         = "zero";
+  j["padding"]         = "pkcs7";
   j["key"]             = "";
   j["priority-filter"] = 0;
   j["priority-mask"]   = 0;
@@ -398,14 +397,15 @@ TEST(VscpClientMulticast, InitFromJsonBasic)
   j["guid-mask"]       = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
 
   EXPECT_TRUE(client.initFromJson(j.dump()));
-  EXPECT_EQ(vscpFramePaddingMode::ZERO, client.m_paddingMode);
-  EXPECT_EQ("zero", json::parse(client.getConfigAsJson())["padding"].get<std::string>());
+  EXPECT_EQ("pkcs7", json::parse(client.getConfigAsJson())["padding"].get<std::string>());
 }
 
 TEST(VscpClientMulticast, InitFromJsonRejectsUnknownPadding)
 {
   vscpClientMulticast client;
   EXPECT_FALSE(client.initFromJson(R"({"padding":"auto"})"));
+  EXPECT_FALSE(client.initFromJson(R"({"padding":"zero"})"));
+  EXPECT_FALSE(client.initFromJson(R"({"padding":1})"));
 }
 
 TEST(VscpClientMulticast, InitFromJsonIpWithPort)

@@ -86,7 +86,6 @@ udpRemoteClient::udpRemoteClient()
     m_sockfd        = 0;
     m_index         = 0;    // Rolling index starts at zero
     m_nEncryption   = VSCP_ENCRYPTION_NONE;
-    m_paddingMode   = vscpFramePaddingMode::PKCS7;
     m_bSetBroadcast = false;
     m_pClientItem   = NULL;
 }
@@ -220,8 +219,7 @@ udpRemoteClient::sendFrame(void)
                                           lenSend,
                                           m_pCtrlObj->getSystemKey(NULL),
                                           iv,
-                                        m_nEncryption,
-                                        m_paddingMode))) {
+                                        m_nEncryption))) {
         vscp_deleteEvent_v2(&pEvent);
         return VSCP_ERROR_OPERATION_FAILED;
     }
@@ -264,7 +262,6 @@ udpRemoteClient::sendFrame(void)
 udpSrvObj::udpSrvObj()
 {
     m_bQuit = false;
-    m_paddingMode = vscpFramePaddingMode::PKCS7;
 
     // Default server information
     m_servaddr.sin_family      = AF_INET;   // IPv4
@@ -374,8 +371,7 @@ udpSrvObj::receiveFrame(int sockfd, CClientItem* pClientItem)
                            rcvlen,  // actually len-16 but encrypt routine handle
                            m_pCtrlObj->getSystemKey(NULL),
                            NULL,    // Will be copied from the last 16-bytes
-                           GET_VSCP_MULTICAST_PACKET_ENCRYPTION(rcvbuf[0]),
-                           m_paddingMode)) {
+                           GET_VSCP_MULTICAST_PACKET_ENCRYPTION(rcvbuf[0]))) {
         syslog(LOG_ERR, "UDP receive server: Decryption of UDP frame failed");
         if (m_bAck) {
             replyNackFrame(

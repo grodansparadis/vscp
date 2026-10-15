@@ -3055,19 +3055,11 @@ const char *
 vscp_getBootLoaderDescription(uint8_t code);
 
 /*!
-  Padding format used for encrypted binary frames.
- */
-enum class vscpFramePaddingMode : uint8_t {
-  PKCS7,
-  ZERO
-};
-
-/*!
   @fn vscp_encryptFrame
   Encrypt VSCP frame using the selected encryption algorithm. The iv
   (initialization vector) is appended to the end of the encrypted data.
-  The encrypted payload uses PKCS#7 padding unless an explicit padding mode
-  is selected with the overload below.
+  The encrypted payload uses PKCS#7 padding. The output lead byte's encryption
+  nibble is set to the selected algorithm; its packet-type nibble is preserved.
 
   @param output Buffer that will receive the encrypted result. The buffer
            should be at least 32 bytes larger than the frame.
@@ -3077,7 +3069,7 @@ enum class vscpFramePaddingMode : uint8_t {
            length includes the packet tye in the first byte.
   @param key This is a pointer to the secret encryption key. This key
            should be 128 bits for AES128, 192 bits for AES192, 256 bits
-           for AES256.
+           for AES256. May be NULL when no encryption is selected.
   @param iv Pointer to the initialization vector. Should always point to a
              128 bit content. If NULL the iv will be created from random
              system data. In both cases the end result will have the iv
@@ -3096,20 +3088,6 @@ vscp_encryptFrame(uint8_t *output,
                   uint8_t nAlgorithm);
 
 /*!
-  Encrypt a VSCP frame using an explicitly selected payload padding format.
-  Use ZERO only when communicating with peers that still use legacy zero
-  padding. The six-argument overload selects PKCS#7.
- */
-size_t
-vscp_encryptFrame(uint8_t *output,
-                  uint8_t *input,
-                  size_t len,
-                  const uint8_t *key,
-                  const uint8_t *iv,
-                  uint8_t nAlgorithm,
-                  vscpFramePaddingMode paddingMode);
-
-/*!
   @fn vscp_decryptFrame
   Decrypt VSCP frame using the selected encryption algorithm. The iv
   (initialization vector) is appended to the end of the encrypted data.
@@ -3120,19 +3098,23 @@ vscp_encryptFrame(uint8_t *output,
   @param len This is the length of the frame to be decrypted.
   @param key This is a pointer to the secret encryption key. This key
              should be 128 bits for AES128, 192 bits for AES192,
-             256 bits for AES256.
+             256 bits for AES256. May be NULL for unencrypted frames.
   @param iv Pointer to the initialization vector. Should always point to a
              128 bit content. If NULL the iv is expected to be the last
-             16 bytes of the encrypted data.
+             16 bytes of the encrypted data. If provided explicitly, len must
+             exclude the appended IV.
   @param nAlgorithm The VSCP defined algorithm (0-15) to decrypt the frame
           with. (vscp.h) If set to 15 (VSCP_ENCRYPTION_FROM_TYPE_BYTE) the algorithm
           will be set from the four lower bits of the buffer to decrypt.
-  @return True on success, false on failure.
+  @return True if decryption, PKCS#7 padding and CRC validation succeed,
+          false otherwise. Unencrypted frames are also CRC-validated.
 
   NOTE: Note that VSCP packet type (first byte in UDP frame) is not
   recognised here. PKCS#7 padding is validated and removed; the remaining
   bytes in the decrypted block are zeroed to preserve the frame's
-  zero-filled tail.
+  zero-filled tail. CRC is checked at the unpadded frame's end, excluding
+  the lead byte from the calculation. This function does not return the
+  unpadded length; callers must use the frame's own length information.
  */
 bool
 vscp_decryptFrame(uint8_t *output,
@@ -3141,20 +3123,6 @@ vscp_decryptFrame(uint8_t *output,
                   const uint8_t *key,
                   const uint8_t *iv,
                   uint8_t nAlgorithm);
-
-/*!
-  Decrypt a VSCP frame using an explicitly selected payload padding format.
-  ZERO mode is a deliberate compatibility option for legacy peers and does
-  not validate padding bytes. The six-argument overload selects PKCS#7.
- */
-bool
-vscp_decryptFrame(uint8_t *output,
-                  uint8_t *input,
-                  size_t len,
-                  const uint8_t *key,
-                  const uint8_t *iv,
-                  uint8_t nAlgorithm,
-                  vscpFramePaddingMode paddingMode);
 
 /*!
   @fn vscp_setFrameEncryptionUseOpenSSL
