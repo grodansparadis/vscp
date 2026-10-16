@@ -11,5 +11,5 @@ From the repository root:
 ```sh
 cmake -S tests -B build-tests
 cmake --build build-tests --target unittest_vscphelper
-./build-tests/unittest_vscphelper --gtest_filter='VscpHelper.frameCrypto*:VscpHelper.binaryPacketVersions'
+./build-tests/vscphelper/unittest_vscphelper --gtest_filter='VscpHelper.frameCrypto*:VscpHelper.binaryPacketVersions'
 ```
