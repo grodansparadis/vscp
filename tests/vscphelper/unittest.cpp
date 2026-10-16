@@ -4478,6 +4478,70 @@ TEST(VscpHelper, frameCryptoV1RejectsInvalidInputWithoutReleasingPlaintext)
     EXPECT_EQ(unchanged, output);
 }
 
+TEST(VscpHelper, frameCryptoV1KnownAnswerAndTagConventions)
+{
+    uint8_t key[32], hmacKey[32], iv[16];
+    for (size_t i = 0; i < 32; ++i) {
+        key[i] = static_cast<uint8_t>(i);
+        hmacKey[i] = static_cast<uint8_t>(i + 32);
+    }
+    for (size_t i = 0; i < 16; ++i) {
+        iv[i] = static_cast<uint8_t>(i);
+    }
+    const uint8_t plain[] = {0xe0, 0x00, 0x07, 0x6d, 0xe8};
+    // Generated with openssl enc and Python's hmac, independently of these helpers.
+    const std::vector<uint8_t> expected = {
+        0x55, 0x20, 0x31, 0xe3,
+        0xb8, 0x65, 0xbc, 0xf5, 0x20, 0xd8, 0x3d, 0x27,
+        0x08, 0x50, 0x2a, 0xe7, 0x12, 0x63, 0x8a, 0xeb,
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+        0x27, 0x0f, 0xec, 0x51, 0xe9, 0x79, 0x45, 0x41,
+        0xf4, 0x7a, 0xab, 0x3d, 0xd9, 0xf9, 0x47, 0xce
+    };
+    std::vector<uint8_t> encrypted(49);
+    ASSERT_EQ(encrypted.size(), vscp_encryptFrameV1(encrypted.data(), encrypted.size(),
+                                                    plain, sizeof(plain), key, hmacKey, iv, 3));
+    EXPECT_TRUE(std::equal(encrypted.begin(), encrypted.end(), expected.begin() + 3));
+    size_t length = 0;
+    uint8_t version = 0;
+    ASSERT_TRUE(vscp_binary::parseHeader(expected.data(), length, version));
+    EXPECT_EQ(49U, length);
+    EXPECT_EQ(1, version);
+    std::vector<uint8_t> decoded;
+    ASSERT_TRUE(vscp_binary::decode(encrypted, key, decoded, version, hmacKey));
+    auto expectedPlain = std::vector<uint8_t>(plain, plain + sizeof(plain));
+    expectedPlain[0] = 0xe3;
+    EXPECT_EQ(expectedPlain, decoded);
+
+    // Reject the right half of the digest, reversed MAC order, and a missing prefix.
+    const std::vector<uint8_t> rightHalf = {
+        0xf3, 0x82, 0x04, 0x59, 0x53, 0xaf, 0x73, 0xb7,
+        0x39, 0x01, 0x75, 0x95, 0x5f, 0xf9, 0x93, 0xc7
+    };
+    std::vector<uint8_t> ivFirst(iv, iv + sizeof(iv));
+    ivFirst.insert(ivFirst.end(), encrypted.begin() + 1, encrypted.begin() + 17);
+    std::vector<uint8_t> noPrefix(encrypted.begin(), encrypted.end() - 16);
+    std::vector<std::vector<uint8_t>> invalidTags = {rightHalf};
+    for (const auto& input : {ivFirst, noPrefix}) {
+        uint8_t digest[32];
+        unsigned int digestLen = 0;
+        ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), input.data(),
+                                input.size(), digest, &digestLen));
+        invalidTags.emplace_back(digest, digest + 16);
+    }
+    for (const auto& tag : invalidTags) {
+        auto invalid = encrypted;
+        std::copy(tag.begin(), tag.end(), invalid.end() - 16);
+        EXPECT_FALSE(vscp_binary::decode(invalid, key, decoded, version, hmacKey));
+        EXPECT_EQ(expectedPlain, decoded);
+        const auto before = invalid;
+        EXPECT_EQ(0U, vscp_decryptFrameV1(invalid.data(), invalid.size(), invalid.data(),
+                                         invalid.size(), key, hmacKey));
+        EXPECT_EQ(before, invalid);
+    }
+}
+
 TEST(VscpHelper, frameCryptoV1RandomIv)
 {
     const uint8_t key[32] = { 1 };
