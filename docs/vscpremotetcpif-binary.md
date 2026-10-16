@@ -182,6 +182,10 @@ decryption returns the unpadded length. Decryption always consumes the appended
 IV and tag. These version 1 APIs use OpenSSL independently of the legacy AES
 backend selector.
 
+The HMAC backend is **OpenSSL**, not libsodium. The implementation calls
+`HMAC(EVP_sha256(), ...)` and compares the first 16 digest bytes using
+`CRYPTO_memcmp()`. No libsodium dependency is required.
+
 For prefixed frames, use
 `vscp_binary::encode(frame, encryption, aesKey, wire, 1, hmacKey)`.
 On receipt, use `parseHeader(data, length, version)` and pass that version to
@@ -194,6 +198,79 @@ HMAC key. The MAC authenticates the prefix, type byte, ciphertext and IV,
 but does not provide replay protection. Peers requiring authentication
 must enforce version 1 and the agreed type/encryption policy rather than
 silently accepting a downgrade to version 0.
+
+### Authenticated framing example
+
+The following functions operate on complete records, not arbitrary TCP chunks.
+The sender's input is an inner plaintext frame including its type byte and CRC.
+Keys must be provisioned independently; use a fresh random IV for each encryption
+(the encoder does this automatically).
+
+```cpp
+#include <vscp-binary-protocol.h>
+
+bool encodeAuthenticated(const std::vector<uint8_t>& plaintext,
+                         const uint8_t* aesKey,  // 32 bytes for AES-256
+                         const uint8_t* hmacKey, // independent 32-byte key
+                         std::vector<uint8_t>& record)
+{
+    return vscp_binary::encode(plaintext, VSCP_ENCRYPTION_AES256,
+                               aesKey, record, 1, hmacKey);
+}
+
+bool decodeAuthenticated(const std::vector<uint8_t>& record,
+                         const uint8_t* aesKey,
+                         const uint8_t* hmacKey,
+                         std::vector<uint8_t>& plaintext)
+{
+    if (record.size() < vscp_binary::headerSize + 1) return false;
+    size_t length = 0;
+    uint8_t version = 0;
+    if (!vscp_binary::parseHeader(record.data(), length, version) ||
+        version != 1 || record.size() != vscp_binary::headerSize + length ||
+        (record[vscp_binary::headerSize] & 0x0f) != VSCP_ENCRYPTION_AES256) {
+        return false;
+    }
+    std::vector<uint8_t> inner(record.begin() + vscp_binary::headerSize, record.end());
+    return vscp_binary::decode(inner, aesKey, plaintext, version, hmacKey);
+}
+```
+
+Validate the decoded packet type and contents before dispatching. For stream
+receivers, buffer exactly the indicated record length after validating the
+header; reject unsupported versions rather than falling back to legacy decoding.
+The returned plaintext retains the authenticated type/encryption byte.
+
+### Deterministic interoperability vector
+
+These public test keys and fixed IV are **only for testing**, not deployment.
+The vector uses AES-256-CBC and was generated independently with OpenSSL's
+`enc` command and Python's `hmac` module. Hex values are in wire byte order.
+
+| Field | Hex |
+| --- | --- |
+| AES key | `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` |
+| HMAC key | `202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f` |
+| Plain frame | `e000076de8` |
+| Prefix | `552031` |
+| Type/encryption | `e3` |
+| Ciphertext | `b865bcf520d83d2708502ae712638aeb` |
+| IV | `000102030405060708090a0b0c0d0e0f` |
+| Full HMAC-SHA-256 | `270fec51e9794541f47aab3dd9f947cef382045953af73b7390175955ff993c7` |
+| Appended tag | `270fec51e9794541f47aab3dd9f947ce` |
+
+The plain body is command `0007` followed by CRC-CCITT `6de8`; PKCS#7 adds
+twelve `0c` bytes before encryption. The prefix word `2031` means version 1,
+inner length 49 (including the 16-byte tag). The complete record is 52 bytes:
+
+```text
+552031e3b865bcf520d83d2708502ae712638aeb000102030405060708090a0b0c0d0e0f270fec51e9794541f47aab3dd9f947ce
+```
+
+The `frameCryptoV1KnownAnswerAndTagConventions` test checks this exact record
+and rejects the rightmost digest half, the former `IV || ciphertext` MAC order,
+and tags calculated without the prefix. It also verifies that failed in-place
+authentication leaves the encrypted input intact.
 
 ## Tests
 
