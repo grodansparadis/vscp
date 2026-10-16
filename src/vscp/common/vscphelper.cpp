@@ -114,6 +114,9 @@ clock_gettime(int, struct timespec *ts)
 #include <spdlog/spdlog.h>
 
 #include <openssl/evp.h>
+#include <openssl/crypto.h>
+#include <openssl/hmac.h>
+#include <openssl/rand.h>
 
 #define UNUSED(expr)                                                                                                   \
   do {                                                                                                                 \
@@ -9158,6 +9161,101 @@ vscp_decryptFrame(uint8_t *output,
   }
 
   return vscp_validateDecryptedFrame(output, real_len);
+}
+
+static bool
+vscp_frameHmac(uint8_t *digest, const uint8_t *frame, size_t len, const uint8_t *key)
+{
+  // Reconstruct the unique version 1 prefix; its length includes the tag.
+  const uint16_t word = 0x2000 | static_cast<uint16_t>(len + 16);
+  std::vector<uint8_t> authenticated = {0x55, static_cast<uint8_t>(word >> 8), static_cast<uint8_t>(word)};
+  authenticated.insert(authenticated.end(), frame, frame + len);
+  unsigned int digest_len = 0;
+  return HMAC(EVP_sha256(), key, 32, authenticated.data(), authenticated.size(), digest, &digest_len) &&
+         digest_len == 32;
+}
+
+size_t
+vscp_encryptFrameV1(uint8_t *output,
+                    size_t capacity,
+                    const uint8_t *input,
+                    size_t len,
+                    const uint8_t *key,
+                    const uint8_t *hmacKey,
+                    const uint8_t *iv,
+                    uint8_t nAlgorithm)
+{
+  if (!output || !input || !key || !hmacKey || len < 5 || len > 0x1fff) {
+    return 0;
+  }
+  nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
+  const EVP_CIPHER *cipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
+  if (!cipher) {
+    return 0;
+  }
+  const size_t ciphertext_len = ((len - 1) / 16 + 1) * 16;
+  const size_t wire_len = 1 + ciphertext_len + 32;
+  if (capacity < wire_len || wire_len > 0x1fff) {
+    return 0;
+  }
+  uint8_t generated_iv[16];
+  if (iv) {
+    memcpy(generated_iv, iv, sizeof(generated_iv));
+  }
+  else if (RAND_bytes(generated_iv, sizeof(generated_iv)) != 1) {
+    return 0;
+  }
+  std::vector<uint8_t> padded;
+  if (!vscp_pkcs7Pad(input + 1, len - 1, padded)) {
+    return 0;
+  }
+  std::vector<uint8_t> frame(wire_len);
+  frame[0] = (input[0] & 0xf0) | nAlgorithm;
+  if (!vscp_evpEncryptBuffer(cipher, frame.data() + 1, padded.data(), padded.size(), key, generated_iv)) {
+    return 0;
+  }
+  memcpy(frame.data() + 1 + ciphertext_len, generated_iv, 16);
+  uint8_t digest[32];
+  if (!vscp_frameHmac(digest, frame.data(), wire_len - 16, hmacKey)) {
+    return 0;
+  }
+  memcpy(frame.data() + wire_len - 16, digest, 16);
+  memmove(output, frame.data(), wire_len);
+  return wire_len;
+}
+
+size_t
+vscp_decryptFrameV1(uint8_t *output,
+                    size_t capacity,
+                    const uint8_t *input,
+                    size_t len,
+                    const uint8_t *key,
+                    const uint8_t *hmacKey)
+{
+  if (!output || !input || !key || !hmacKey || len < 49 || len > 0x1fff || (len - 33) % 16) {
+    return 0;
+  }
+  const EVP_CIPHER *cipher = vscp_getOpenSslCipherFromAlgorithm(input[0] & 0x0f);
+  if (!cipher) {
+    return 0;
+  }
+  uint8_t digest[32];
+  if (!vscp_frameHmac(digest, input, len - 16, hmacKey) ||
+      CRYPTO_memcmp(digest, input + len - 16, 16) != 0) {
+    return 0;
+  }
+  size_t payload_len = len - 33;
+  std::vector<uint8_t> plaintext(1 + payload_len);
+  plaintext[0] = input[0];
+  if (!vscp_evpDecryptBuffer(cipher, plaintext.data() + 1, input + 1, payload_len, key, input + len - 32) ||
+      !vscp_pkcs7Unpad(plaintext.data() + 1, payload_len) ||
+      !vscp_validFrameCrc(plaintext.data(), payload_len + 1) || capacity < payload_len + 1) {
+    OPENSSL_cleanse(plaintext.data(), plaintext.size());
+    return 0;
+  }
+  memmove(output, plaintext.data(), payload_len + 1);
+  OPENSSL_cleanse(plaintext.data(), plaintext.size());
+  return payload_len + 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -146,6 +146,55 @@ replies. Use the raw API consistently when multiplexing commands and events
 or handling encryption; route each received frame according to its type.
 Serialize operations on each client instance, as with the text-mode API.
 
+## Versioned binary frame helpers
+
+The helper-only framing API in `vscp-binary-protocol.h` supports a three-byte
+prefix: `[0x55][version:3 | length:13, big-endian]`. The length excludes this
+prefix and includes the entire inner frame. This is distinct from the raw
+client transport's two-byte length prefix described above; the raw transport
+does not negotiate or automatically enable authenticated framing.
+
+Packet version **0** retains the existing inner frame format and is the default.
+The existing `vscp_encryptFrame()` / `vscp_decryptFrame()` APIs are unchanged.
+Packet version **1** requires AES-CBC (128, 192 or 256 bits), PKCS#7 padding,
+and a separate 32-byte HMAC key. Its inner layout is:
+
+```text
+[type/encryption:1][ciphertext:N*16][IV:16][HMAC tag:16]
+```
+
+Encryption covers the body and CRC, not the type byte. After encryption,
+HMAC-SHA-256 is computed over
+`prefix || type/encryption || ciphertext || IV`; its leftmost 128 bits are
+appended immediately after the IV. The receiver compares the tag in constant
+time **before any decryption**, then validates padding and CRC. Failure leaves
+the caller's output unchanged. Version 1 does not allow unencrypted frames.
+
+`vscp_encryptFrameV1()` and `vscp_decryptFrameV1()` operate on inner frames,
+without a prefix in their input/output buffers. They reconstruct the canonical
+version 1 prefix for the MAC: `0x55` followed by the two-byte big-endian word
+`(1 << 13) | innerFrameLength`, where the length includes the tag.
+Inner frames must fit the 13-bit length. Callers must validate the received
+prefix and require version 1 before calling the decryption helper.
+They take a destination capacity and return the written
+length, or zero on failure. Encryption needs at most 48 extra bytes;
+decryption returns the unpadded length. Decryption always consumes the appended
+IV and tag. These version 1 APIs use OpenSSL independently of the legacy AES
+backend selector.
+
+For prefixed frames, use
+`vscp_binary::encode(frame, encryption, aesKey, wire, 1, hmacKey)`.
+On receipt, use `parseHeader(data, length, version)` and pass that version to
+`decode(innerFrame, aesKey, plaintext, version, hmacKey)`. The two-argument
+`parseHeader` accepts only legacy version 0, to prevent callers from losing
+the authenticated-format version. Unknown versions are rejected.
+
+Provision the AES and HMAC keys independently; never reuse the AES key as the
+HMAC key. The MAC authenticates the prefix, type byte, ciphertext and IV,
+but does not provide replay protection. Peers requiring authentication
+must enforce version 1 and the agreed type/encryption policy rather than
+silently accepting a downgrade to version 0.
+
 ## Tests
 
 From the repository root:

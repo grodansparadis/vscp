@@ -35,8 +35,10 @@
 #include <vector>
 #include <crc.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
 
 #include "vscphelper.h"
+#include "vscp-binary-protocol.h"
 #include "vscp.h"
 #include "guid.h"
 #include "canal.h"
@@ -4336,6 +4338,239 @@ TEST(VscpHelper, frameCryptoUnencryptedAndInvalidInput)
         EXPECT_FALSE(vscp_decryptFrame(output, plain, sizeof(plain), key, nullptr, 1));
     }
     vscp_setFrameEncryptionUseOpenSSL(false);
+}
+
+TEST(VscpHelper, frameCryptoV1Interoperability)
+{
+    const uint8_t key[32] = { 1, 2, 3 };
+    const uint8_t hmacKey[32] = { 4, 5, 6 };
+    const uint8_t iv[16] = { 7, 8, 9 };
+    for (uint8_t algorithm : {VSCP_ENCRYPTION_AES128, VSCP_ENCRYPTION_AES192, VSCP_ENCRYPTION_AES256}) {
+        for (size_t len : {5U, 16U, 17U, 18U, 32U, 33U, 34U, 550U}) {
+            SCOPED_TRACE(::testing::Message() << unsigned(algorithm) << "/" << len);
+            std::vector<uint8_t> plain(len, 0x42);
+            plain[0] = VSCP_BINARY_PACKET_TYPE_COMMAND | algorithm;
+            setFrameCryptoCrc(plain.data(), len);
+            std::vector<uint8_t> encrypted(len + 48, 0xa5);
+            const size_t wireLen = vscp_encryptFrameV1(encrypted.data(), encrypted.size(), plain.data(),
+                                                       len, key, hmacKey, iv, VSCP_ENCRYPTION_FROM_TYPE_BYTE);
+            ASSERT_EQ(1 + ((len - 1) / 16 + 1) * 16 + 32, wireLen);
+            EXPECT_EQ(0, memcmp(encrypted.data() + wireLen - 32, iv, 16));
+
+            // Independently authenticate the complete wire bytes preceding the tag.
+            std::vector<uint8_t> authenticated = {
+                0x55, static_cast<uint8_t>(0x20 | (wireLen >> 8)), static_cast<uint8_t>(wireLen)
+            };
+            authenticated.insert(authenticated.end(), encrypted.begin(), encrypted.begin() + wireLen - 16);
+            uint8_t digest[32];
+            unsigned int digestLen = 0;
+            ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), authenticated.data(),
+                                    authenticated.size(), digest, &digestLen));
+            ASSERT_EQ(32U, digestLen);
+            EXPECT_EQ(0, memcmp(encrypted.data() + wireLen - 16, digest, 16));
+
+            for (bool useOpenSSL : {false, true}) {
+                vscp_setFrameEncryptionUseOpenSSL(useOpenSSL);
+                std::vector<uint8_t> legacy(len + 32);
+                ASSERT_EQ(wireLen - 16, vscp_encryptFrame(legacy.data(), plain.data(), len, key, iv, algorithm));
+                EXPECT_EQ(0, memcmp(legacy.data(), encrypted.data(), wireLen - 16));
+                // The new format must never be accepted by the legacy decryptor.
+                std::vector<uint8_t> output(wireLen);
+                EXPECT_FALSE(vscp_decryptFrame(output.data(), encrypted.data(), wireLen, key, nullptr, algorithm));
+            }
+            std::vector<uint8_t> output(len + 1, 0xa5);
+            ASSERT_EQ(len, vscp_decryptFrameV1(output.data(), len, encrypted.data(), wireLen, key, hmacKey));
+            EXPECT_EQ(0, memcmp(plain.data(), output.data(), len));
+            EXPECT_EQ(0xa5, output[len]);
+            auto inPlace = encrypted;
+            ASSERT_EQ(len, vscp_decryptFrameV1(inPlace.data(), inPlace.size(), inPlace.data(), wireLen, key, hmacKey));
+            EXPECT_EQ(0, memcmp(plain.data(), inPlace.data(), len));
+            inPlace.assign(len + 48, 0);
+            std::copy(plain.begin(), plain.end(), inPlace.begin());
+            ASSERT_EQ(wireLen, vscp_encryptFrameV1(inPlace.data(), inPlace.size(), inPlace.data(),
+                                                   len, key, hmacKey, iv, algorithm));
+            EXPECT_EQ(0, memcmp(encrypted.data(), inPlace.data(), wireLen));
+        }
+    }
+    vscp_setFrameEncryptionUseOpenSSL(false);
+}
+
+TEST(VscpHelper, frameCryptoV1RejectsInvalidInputWithoutReleasingPlaintext)
+{
+    const uint8_t key[32] = { 1 };
+    const uint8_t hmacKey[32] = { 2 };
+    const uint8_t wrongKey[32] = { 3 };
+    const uint8_t iv[16] = { 4 };
+    uint8_t plain[17] = { VSCP_BINARY_PACKET_TYPE_COMMAND, 0, 7 };
+    setFrameCryptoCrc(plain, sizeof(plain));
+    std::vector<uint8_t> wire(sizeof(plain) + 48);
+    const size_t wireLen = vscp_encryptFrameV1(wire.data(), wire.size(), plain, sizeof(plain),
+                                               key, hmacKey, iv, VSCP_ENCRYPTION_AES256);
+    ASSERT_NE(0U, wireLen);
+    wire.resize(wireLen);
+    const std::vector<uint8_t> unchanged(wireLen, 0xa5);
+    auto output = unchanged;
+    // Every inner frame byte, including the clear type byte, is covered.
+    for (size_t i = 0; i < wireLen; ++i) {
+        wire[i] ^= 1;
+        EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, key, hmacKey));
+        EXPECT_EQ(unchanged, output);
+        wire[i] ^= 1;
+    }
+    for (size_t len = 0; len < wireLen; ++len) {
+        EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), len, key, hmacKey));
+        EXPECT_EQ(unchanged, output);
+    }
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, key, wrongKey));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, wrongKey, hmacKey));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), sizeof(plain) - 1, wire.data(), wireLen, key, hmacKey));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, key, nullptr));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, nullptr, hmacKey));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), nullptr, wireLen, key, hmacKey));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(nullptr, output.size(), wire.data(), wireLen, key, hmacKey));
+    EXPECT_EQ(unchanged, output);
+
+    EXPECT_EQ(0U, vscp_encryptFrameV1(output.data(), wireLen - 1, plain, sizeof(plain),
+                                      key, hmacKey, iv, VSCP_ENCRYPTION_AES256));
+    EXPECT_EQ(0U, vscp_encryptFrameV1(output.data(), output.size(), plain, sizeof(plain),
+                                      key, nullptr, iv, VSCP_ENCRYPTION_AES256));
+    for (uint8_t algorithm : {0, 4, 15}) {
+        EXPECT_EQ(0U, vscp_encryptFrameV1(output.data(), output.size(), plain, sizeof(plain),
+                                          key, hmacKey, iv, algorithm));
+    }
+    EXPECT_EQ(unchanged, output);
+
+    // Authenticate malformed PKCS#7 padding to exercise validation after MAC.
+    auto badPadding = wire;
+    badPadding[1] ^= 1;
+    std::vector<uint8_t> authenticated = {
+        0x55, static_cast<uint8_t>(0x20 | (wireLen >> 8)), static_cast<uint8_t>(wireLen)
+    };
+    authenticated.insert(authenticated.end(), badPadding.begin(), badPadding.begin() + wireLen - 16);
+    uint8_t digest[32];
+    unsigned int digestLen = 0;
+    ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), authenticated.data(),
+                            authenticated.size(), digest, &digestLen));
+    memcpy(badPadding.data() + wireLen - 16, digest, 16);
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), badPadding.data(), wireLen, key, hmacKey));
+    EXPECT_EQ(unchanged, output);
+
+    // A tag calculated with any changed prefix byte must fail verification.
+    auto changedPrefix = wire;
+    authenticated.assign({0x55, static_cast<uint8_t>(0x20 | (wireLen >> 8)), static_cast<uint8_t>(wireLen)});
+    authenticated.insert(authenticated.end(), wire.begin(), wire.end() - 16);
+    for (size_t i = 0; i < 3; ++i) {
+        authenticated[i] ^= 1;
+        ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), authenticated.data(),
+                                authenticated.size(), digest, &digestLen));
+        memcpy(changedPrefix.data() + wireLen - 16, digest, 16);
+        EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), changedPrefix.data(),
+                                         wireLen, key, hmacKey));
+        EXPECT_EQ(unchanged, output);
+        authenticated[i] ^= 1;
+    }
+
+    // Even a correctly authenticated encryption with a bad CRC is rejected.
+    plain[sizeof(plain) - 1] ^= 1;
+    ASSERT_EQ(wireLen, vscp_encryptFrameV1(wire.data(), wire.size(), plain, sizeof(plain),
+                                           key, hmacKey, iv, VSCP_ENCRYPTION_AES256));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(output.data(), output.size(), wire.data(), wireLen, key, hmacKey));
+    EXPECT_EQ(unchanged, output);
+}
+
+TEST(VscpHelper, frameCryptoV1RandomIv)
+{
+    const uint8_t key[32] = { 1 };
+    const uint8_t hmacKey[32] = { 2 };
+    uint8_t plain[5] = { VSCP_BINARY_PACKET_TYPE_COMMAND, 0, 7 };
+    setFrameCryptoCrc(plain, sizeof(plain));
+    uint8_t first[49], second[49], output[5];
+    ASSERT_EQ(sizeof(first), vscp_encryptFrameV1(first, sizeof(first), plain, sizeof(plain),
+                                                 key, hmacKey, nullptr, VSCP_ENCRYPTION_AES256));
+    ASSERT_EQ(sizeof(second), vscp_encryptFrameV1(second, sizeof(second), plain, sizeof(plain),
+                                                  key, hmacKey, nullptr, VSCP_ENCRYPTION_AES256));
+    EXPECT_NE(0, memcmp(first + 17, second + 17, 16));
+    ASSERT_EQ(sizeof(output), vscp_decryptFrameV1(output, sizeof(output), first, sizeof(first), key, hmacKey));
+    plain[0] |= VSCP_ENCRYPTION_AES256;
+    EXPECT_EQ(0, memcmp(plain, output, sizeof(plain)));
+}
+
+TEST(VscpHelper, binaryPacketVersions)
+{
+    const uint8_t key[32] = { 1 };
+    const uint8_t hmacKey[32] = { 2 };
+    std::vector<uint8_t> plain(17, 0x42);
+    plain[0] = VSCP_BINARY_PACKET_TYPE_COMMAND;
+    setFrameCryptoCrc(plain.data(), plain.size());
+    for (uint8_t version : {0, 1}) {
+        for (uint8_t encryption : {0, 1, 2, 3}) {
+            std::vector<uint8_t> wire;
+            if (version == 1 && encryption == 0) {
+                EXPECT_FALSE(vscp_binary::encode(plain, encryption, key, wire, version, hmacKey));
+                continue;
+            }
+            ASSERT_TRUE(vscp_binary::encode(plain, encryption, key, wire, version, hmacKey));
+            EXPECT_EQ(version, wire[1] >> 5);
+            size_t length = 0;
+            uint8_t parsedVersion = 7;
+            ASSERT_TRUE(vscp_binary::parseHeader(wire.data(), length, parsedVersion));
+            EXPECT_EQ(version, parsedVersion);
+            EXPECT_EQ(wire.size() - vscp_binary::headerSize, length);
+            EXPECT_EQ(version == 0, vscp_binary::parseHeader(wire.data(), length));
+            std::vector<uint8_t> inner(wire.begin() + vscp_binary::headerSize, wire.end());
+            std::vector<uint8_t> decoded;
+            ASSERT_TRUE(vscp_binary::decode(inner, key, decoded, parsedVersion, hmacKey));
+            auto expected = plain;
+            expected[0] |= encryption;
+            EXPECT_EQ(expected, decoded);
+            if (version == 1) {
+                EXPECT_FALSE(vscp_binary::decode(inner, key, decoded, version));
+                EXPECT_EQ(expected, decoded);
+                uint8_t digest[32];
+                unsigned int digestLen = 0;
+                ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), wire.data(),
+                                        wire.size() - 16, digest, &digestLen));
+                EXPECT_EQ(0, memcmp(digest, wire.data() + wire.size() - 16, 16));
+                // Every prefix bit is authenticated, including length and version.
+                for (size_t i = 0; i < vscp_binary::headerSize; ++i) {
+                    for (unsigned int bit = 0; bit < 8; ++bit) {
+                        wire[i] ^= 1U << bit;
+                        ASSERT_NE(nullptr, HMAC(EVP_sha256(), hmacKey, sizeof(hmacKey), wire.data(),
+                                                wire.size() - 16, digest, &digestLen));
+                        EXPECT_NE(0, memcmp(digest, wire.data() + wire.size() - 16, 16));
+                        wire[i] ^= 1U << bit;
+                    }
+                }
+            }
+            for (uint8_t unsupported = 2; unsupported < 8; ++unsupported) {
+                wire[1] = (wire[1] & 0x1f) | (unsupported << 5);
+                EXPECT_FALSE(vscp_binary::parseHeader(wire.data(), length, parsedVersion));
+            }
+        }
+    }
+    std::vector<uint8_t> wire;
+    EXPECT_FALSE(vscp_binary::encode(plain, 1, key, wire, 2, hmacKey));
+    EXPECT_FALSE(vscp_binary::encode(plain, 1, key, wire, 1));
+
+    // Largest authenticated ciphertext fitting the helper's 4096-byte limit.
+    plain.resize(4048, 0x42);
+    setFrameCryptoCrc(plain.data(), plain.size());
+    ASSERT_TRUE(vscp_binary::encode(plain, 3, key, wire, 1, hmacKey));
+    EXPECT_EQ(4081U + vscp_binary::headerSize, wire.size());
+    plain.resize(4049, 0x42);
+    setFrameCryptoCrc(plain.data(), plain.size());
+    const auto previous = wire;
+    EXPECT_FALSE(vscp_binary::encode(plain, 3, key, wire, 1, hmacKey));
+    EXPECT_EQ(previous, wire);
+
+    std::vector<uint8_t> oversized(8192, 0x42);
+    std::vector<uint8_t> oversizedOutput(8240, 0xa5);
+    EXPECT_EQ(0U, vscp_encryptFrameV1(oversizedOutput.data(), oversizedOutput.size(),
+                                      oversized.data(), oversized.size(), key, hmacKey, nullptr, 3));
+    EXPECT_EQ(0U, vscp_decryptFrameV1(oversizedOutput.data(), oversizedOutput.size(),
+                                      oversized.data(), oversized.size(), key, hmacKey));
+    EXPECT_TRUE(std::all_of(oversizedOutput.begin(), oversizedOutput.end(),
+                            [](uint8_t value) { return value == 0xa5; }));
 }
 
 // Entry point for Google Test
