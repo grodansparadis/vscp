@@ -3125,6 +3125,62 @@ vscp_decryptFrame(uint8_t *output,
                   uint8_t nAlgorithm);
 
 /*!
+  Encrypt a version 1 binary frame using AES-CBC and encrypt-then-MAC.
+  The inner wire layout is [type][PKCS#7 ciphertext][IV:16][tag:16].
+  The tag is the leftmost 128 bits of
+  HMAC-SHA-256(prefix || type || ciphertext || IV).
+  The authenticated prefix is [0x55][version:3 | length:13, big-endian],
+  with version 1 and length including type, ciphertext, IV and tag.
+  It is reconstructed for the MAC, but not written to output.
+  The complete inner wire length must fit in 13 bits.
+
+  @param output Destination, which may alias input.
+  @param capacity Destination size; at most len + 48 bytes are needed.
+  @param input Plain frame including type byte and CRC.
+  @param len Plain frame size.
+  @param key AES key of 16, 24 or 32 bytes according to nAlgorithm.
+  @param hmacKey Independent 32-byte authentication key. Do not reuse the AES key.
+  @param iv Optional 16-byte IV; NULL generates a cryptographically random IV.
+  @param nAlgorithm AES128, AES192, AES256 or FROM_TYPE_BYTE. NONE is rejected.
+  @return Complete inner frame length, or zero on failure. Output is unchanged
+          on failure. Version 1 uses OpenSSL for AES and HMAC.
+*/
+size_t
+vscp_encryptFrameV1(uint8_t *output,
+                    size_t capacity,
+                    const uint8_t *input,
+                    size_t len,
+                    const uint8_t *key,
+                    const uint8_t *hmacKey,
+                    const uint8_t *iv,
+                    uint8_t nAlgorithm);
+
+/*!
+  Authenticate and decrypt a complete version 1 inner frame (including IV/tag).
+  HMAC is compared in constant time before any CBC decryption. Padding and CRC
+  are then validated. No plaintext is released on any failure.
+  The version 1 prefix is reconstructed from len for authentication, as in
+  vscp_encryptFrameV1. Callers must validate the received prefix and enforce
+  version 1 before invoking this helper.
+
+  @param output Destination, which may alias input.
+  @param capacity Destination size; the unpadded plaintext must fit.
+  @param input Complete inner wire frame, without TCP prefix.
+  @param len Complete inner wire length, including IV and tag.
+  @param key AES key selected by the frame's encryption nibble.
+  @param hmacKey Independent 32-byte authentication key.
+  @return Unpadded frame length including type byte and CRC, or zero on failure.
+          Output is unchanged on failure. NONE is rejected.
+*/
+size_t
+vscp_decryptFrameV1(uint8_t *output,
+                    size_t capacity,
+                    const uint8_t *input,
+                    size_t len,
+                    const uint8_t *key,
+                    const uint8_t *hmacKey);
+
+/*!
   @fn vscp_setFrameEncryptionUseOpenSSL
   Select AES backend for vscp_encryptFrame/vscp_decryptFrame.
 
