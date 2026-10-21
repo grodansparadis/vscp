@@ -63,7 +63,7 @@
 #include <semaphore.h>
 
 #include <canal.h>
-#include <sockettcp.h>
+//#include <sockettcp.h>
 #include <vscp.h>
 #include <vscp-class.h>
 #include <vscp-type.h>
