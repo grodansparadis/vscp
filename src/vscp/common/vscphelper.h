@@ -63,7 +63,6 @@
 #include <semaphore.h>
 
 #include <canal.h>
-//#include <sockettcp.h>
 #include <vscp.h>
 #include <vscp-class.h>
 #include <vscp-type.h>
@@ -1022,7 +1021,7 @@ vscp_parse_ipv4_addr(const char *addr, uint32_t *net, uint32_t *mask);
   Parse IPv4/IPv6 address
   @param addr IPv4 (+a.b.c.d/x) or IPv6 (+fe80::/64) address plus net. Firts char should
       be plus or minus to indicate allow or diallow.
-  @param sa Structure holding address to check
+  @param sa Address to check (see vscp-socket-address.h for its definition)
   @param no_strict Set to zero to disable strict control for IPv6
   @return TRUE if addr is OK
 */

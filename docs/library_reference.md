@@ -31,7 +31,6 @@ int main() {
 
 | Library | Purpose |
 | --- | --- |
-| vscp_sockettcp | Low-level socket and TCP support |
 | vscp_mongoose | Mongoose TCP transport with OpenSSL TLS |
 | vscp_util | Shared helper functions and crypto utilities |
 | vscp_guid | GUID storage, conversion and comparison |
@@ -55,7 +54,7 @@ int main() {
 ## TCP client transport and TLS
 
 `VscpRemoteTcpIf` (and `vscpClientTcp`, which uses it) communicates through
-Mongoose, not `sockettcp`. Initialize the declared submodules before building:
+Mongoose. Initialize the declared submodules before building:
 
 ```sh
 git submodule update --init --recursive
@@ -106,30 +105,10 @@ cmake --build build --target test_tcp_transport
 
 These tests require Python 3 and the `openssl` command. Mongoose retains its
 upstream GPLv2/commercial licensing; consumers must use an appropriate license.
-The legacy `vscp_sockettcp` library remains available to other users.
-
-## vscp_sockettcp
-
-Purpose: portable TCP socket helper code used by the VSCP stack.
-
-Example:
-
-```cmake
-target_link_libraries(app PRIVATE vscp_sockettcp)
-```
-
-```cpp
-#include <vscp/sockettcp.h>
-
-int main() {
-    // Open a TCP connection or use the helper layer in your VSCP client.
-    return 0;
-}
-```
 
 ## vscp_util
 
-Purpose: shared utility functions such as base64, CRC, AES, config-file helpers, and password generation.
+Purpose: shared utility functions such as base64, CRC, AES, MD5, config-file helpers, and password generation.
 
 Example:
 
@@ -210,6 +189,9 @@ int main() {
 ## vscp_core
 
 Purpose: core protocol and event logic used across the stack.
+
+For network address matching, include `<vscp-socket-address.h>` to
+construct the `union usa` passed to `vscp_parse_match_net`.
 
 Example:
 

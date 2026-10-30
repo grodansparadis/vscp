@@ -22,6 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "vscp-socket-address.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <string>
@@ -42,6 +43,20 @@
 #include "vscp.h"
 #include "guid.h"
 #include "canal.h"
+#include "vscpmd5.h"
+
+TEST(VscpHelper, md5)
+{
+    const unsigned char data[] = {'a', 'b', 'c'};
+    char digest[33];
+    const char *expected = "900150983cd24fb0d6963f7d28e17f72";
+
+    vscp_md5(digest, data, sizeof(data));
+    EXPECT_STREQ(expected, digest);
+    EXPECT_STREQ(expected, vscpmd5_getDigestFromString(digest, data, sizeof(data)));
+    EXPECT_STREQ(expected, vscpmd5_getDigestFromMultiStrings(
+                               digest, "a", "bc", static_cast<const char *>(nullptr)));
+}
 
 // =============================================================================
 //                           String Value Parsing
@@ -2337,6 +2352,35 @@ TEST(VscpHelper, getHostFromInterface)
     EXPECT_EQ("localhost", vscp_getHostFromInterface("tcp://localhost:9598"));
     EXPECT_EQ("example.com", vscp_getHostFromInterface("http://example.com:80"));
     EXPECT_EQ("localhost", vscp_getHostFromInterface("tcp://localhost"));
+}
+
+TEST(VscpHelper, parseMatchNetIPv4)
+{
+    union usa addr = {};
+    addr.sin.sin_family = AF_INET;
+    addr.sin.sin_addr.s_addr = htonl(0xc0a80109u);
+
+    EXPECT_EQ(1, vscp_parse_match_net("192.168.1.0/24", &addr, 0));
+    EXPECT_EQ(1, vscp_parse_match_net("192.168.1.9", &addr, 0));
+    EXPECT_EQ(0, vscp_parse_match_net("192.168.2.0/24", &addr, 0));
+    EXPECT_EQ(0, vscp_parse_match_net("[::1]", &addr, 0));
+}
+
+TEST(VscpHelper, parseMatchNetIPv6)
+{
+    union usa addr = {};
+    addr.sin6.sin6_family = AF_INET6;
+    addr.sin6.sin6_addr.s6_addr[0] = 0x20;
+    addr.sin6.sin6_addr.s6_addr[1] = 0x01;
+    addr.sin6.sin6_addr.s6_addr[2] = 0x0d;
+    addr.sin6.sin6_addr.s6_addr[3] = 0xb8;
+    addr.sin6.sin6_addr.s6_addr[15] = 0x05;
+
+    EXPECT_EQ(1, vscp_parse_match_net("[2001:db8::]/32", &addr, 0));
+    EXPECT_EQ(0, vscp_parse_match_net("[2001:db9::]/32", &addr, 0));
+    EXPECT_EQ(1, vscp_parse_match_net("2001:db8::/32", &addr, 1));
+    EXPECT_EQ(-1, vscp_parse_match_net("2001:db8::/32", &addr, 0));
+    EXPECT_EQ(0, vscp_parse_match_net("192.168.1.0/24", &addr, 0));
 }
 
 // Note: vscp_getProtocolFromInterface is declared but not implemented

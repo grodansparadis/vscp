@@ -30,7 +30,7 @@ and set include path
 
 here with a test located in it's own folder under **tests**
 
-see tests/helperlib/Makefile.in for example
+See the `CMakeLists.txt` files under `tests/` for current test target definitions.
 
 Use 
 

@@ -240,40 +240,11 @@ endfunction()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/VSCPMongoose.cmake)
 
 # =====================================================================
-# vscp_sockettcp — isolated TCP socket utility library
-# =====================================================================
-add_library(vscp_sockettcp SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/sockettcp.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
-)
-target_include_directories(vscp_sockettcp
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common>
-        $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
-        $<INSTALL_INTERFACE:include/vscp/util>
-)
-target_compile_definitions(vscp_sockettcp PUBLIC ${VSCP_OPENSSL_API_DEF})
-target_link_libraries(vscp_sockettcp
-    PUBLIC
-        OpenSSL::SSL
-        OpenSSL::Crypto
-        Threads::Threads
-)
-if(WIN32)
-    target_include_directories(vscp_sockettcp PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common/windows>
-        $<BUILD_INTERFACE:${VSCP_WINDOWS_PCH_INCLUDE_DIR}>)
-    target_link_libraries(vscp_sockettcp PUBLIC ws2_32)
-    if(VSCP_PTHREAD_TARGET)
-        target_link_libraries(vscp_sockettcp PUBLIC ${VSCP_PTHREAD_TARGET})
-    endif()
-endif()
-
-# =====================================================================
 # vscp_util — low-level platform utility library
 # =====================================================================
 add_library(vscp_util SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpbase64.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscpmd5.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/crc8.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscp-aes.c
@@ -293,7 +264,6 @@ target_include_directories(vscp_util
 target_compile_definitions(vscp_util PUBLIC ${VSCP_OPENSSL_API_DEF})
 target_link_libraries(vscp_util
     PUBLIC
-        vscp_sockettcp
         OpenSSL::SSL
         OpenSSL::Crypto
         Threads::Threads
@@ -469,7 +439,6 @@ target_link_libraries(vscp_all
         vscp_guid
         vscp_guidparser
         vscp_mdf
-        vscp_sockettcp
         vscp_util
         vscp_client_base
         vscp_client_canal
@@ -504,7 +473,6 @@ if(VSCP_INSTALL)
         vscp_client_ws2
         vscp_client_multicast
         vscp_client_mqtt
-        vscp_sockettcp
         vscp_util
     )
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

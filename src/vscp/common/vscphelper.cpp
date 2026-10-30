@@ -90,6 +90,7 @@ clock_gettime(int, struct timespec *ts)
 #include <guid.h>
 // #include <mdf.h>
 #include <vscp.h>
+#include <vscp-socket-address.h>
 #include <vscphelper.h>
 
 #include <algorithm>
@@ -1646,7 +1647,7 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
           return 0;
         }
 
-        if (inet_pton(AF_INET6, ad, &sin6)) {
+        if (inet_pton(AF_INET6, ad, &sin6.sin6_addr)) {
           // IPv6 format
           for (i = 0; i < 16; i++) {
             uint8_t ip   = sa->sin6.sin6_addr.s6_addr[i];
