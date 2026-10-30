@@ -7000,8 +7000,13 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
     bytes_read = ifs.gcount();
     if (bytes_read > 0) {
       if (!XML_ParseBuffer(xmlParser, (int) bytes_read, bytes_read == 0)) {
+#if XML_MAJOR_VERSION > 2 || (XML_MAJOR_VERSION == 2 && XML_MINOR_VERSION >= 9)
+        const auto lineNumber = XML_GetCurrentLineNumber64(xmlParser);
+#else
+        const auto lineNumber = XML_GetCurrentLineNumber(xmlParser);
+#endif
         spdlog::error("ParseXML: Failed parse XML file at line {0} [{1}].",
-                      XML_GetCurrentLineNumber(xmlParser),
+                      lineNumber,
                       XML_ErrorString(XML_GetErrorCode(xmlParser)));
         rv = VSCP_ERROR_PARSING;
         break;
