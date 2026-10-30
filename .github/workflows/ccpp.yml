@@ -13,10 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
     - name: configure
       run: ./configure
     - name: googletest_build

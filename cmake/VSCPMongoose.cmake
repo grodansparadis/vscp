@@ -1,12 +1,10 @@
+include(${CMAKE_CURRENT_LIST_DIR}/VSCPDependencies.cmake)
+
 if(NOT TARGET vscp_mongoose)
-    set(_vscp_mongoose_dir "${CMAKE_CURRENT_LIST_DIR}/../third-party/mongoose")
-    if(NOT EXISTS "${_vscp_mongoose_dir}/mongoose.c")
-        message(FATAL_ERROR "Mongoose is missing. Run: git submodule update --init third-party/mongoose")
-    endif()
     find_package(OpenSSL REQUIRED)
-    add_library(vscp_mongoose SHARED "${_vscp_mongoose_dir}/mongoose.c")
+    add_library(vscp_mongoose SHARED "${VSCP_MONGOOSE_SOURCE_DIR}/mongoose.c")
     target_include_directories(vscp_mongoose PUBLIC
-        $<BUILD_INTERFACE:${_vscp_mongoose_dir}>
+        $<BUILD_INTERFACE:${VSCP_MONGOOSE_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include/vscp/third-party/mongoose>)
     target_compile_definitions(vscp_mongoose PUBLIC MG_TLS=MG_TLS_OPENSSL)
     target_link_libraries(vscp_mongoose PUBLIC OpenSSL::SSL OpenSSL::Crypto)
@@ -15,7 +13,7 @@ if(NOT TARGET vscp_mongoose)
         target_link_libraries(vscp_mongoose PUBLIC ws2_32)
     endif()
     if(VSCP_INSTALL)
-        install(FILES "${_vscp_mongoose_dir}/mongoose.h"
+        install(FILES "${VSCP_MONGOOSE_SOURCE_DIR}/mongoose.h"
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/mongoose)
     endif()
 endif()

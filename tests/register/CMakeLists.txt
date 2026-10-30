@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 # set the project name
 project(test LANGUAGES CXX C)
@@ -69,9 +69,9 @@ target_include_directories(test PUBLIC
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party
-    ${PROJECT_SOURCE_DIR}/../../third-party/nlohmann/include/nlohmann
-    ${PROJECT_SOURCE_DIR}/../../third-party/spdlog/include/
-    ${PROJECT_SOURCE_DIR}/../../third-party/mustache/
+    ${VSCP_NLOHMANN_INCLUDE_DIR}
+    ${VSCP_SPDLOG_INCLUDE_DIR}
+    ${VSCP_MUSTACHE_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${EXPAT_INCLUDE_DIRS}
     ${MOSQUITTO_INCLUDE_DIR}

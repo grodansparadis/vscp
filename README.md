@@ -25,7 +25,7 @@ The code in this repository is mainly used as a common library for different VSC
 Clone with:
 
 ```bash
-git clone -j4 --recurse-submodules https://github.com/grodansparadis/vscp.git
+git clone https://github.com/grodansparadis/vscp.git
 ```
 
 <p>A short introduction to VSCP is available
@@ -41,6 +41,13 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 ## Library build and docs
 
 The project builds a set of shared VSCP libraries. The aggregate target `vscp_all` links the full stack, while the individual component libraries can be linked separately for smaller builds.
+
+CMake fetches pinned Mongoose, nlohmann JSON, spdlog, Mustache and Maddy
+sources on the first configure. To use local sources instead, set the
+corresponding `FETCHCONTENT_SOURCE_DIR_VSCP_MONGOOSE`,
+`FETCHCONTENT_SOURCE_DIR_VSCP_NLOHMANN_JSON`, `FETCHCONTENT_SOURCE_DIR_VSCP_SPDLOG`,
+`FETCHCONTENT_SOURCE_DIR_VSCP_MUSTACHE`, and `FETCHCONTENT_SOURCE_DIR_VSCP_MADDY`
+CMake variables.
 
 ```bash
 cmake -S . -B build
@@ -74,4 +81,3 @@ We would also like to thank the following open-source projects on which much of 
 _Great things are built on the shoulders of giants. Thank you!_
 
 Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project — MIT license.
-

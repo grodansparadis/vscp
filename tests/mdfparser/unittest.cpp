@@ -48,6 +48,15 @@ TEST(parseMDF, Invalid_Tag)
 
 //-----------------------------------------------------------------------------
 
+TEST(parseMDF, FormatMarkdown)
+{
+  CMDF mdf;
+  std::string description = "# Some **test** markdown";
+  ASSERT_EQ("<h1>Some <strong>test</strong> markdown</h1>", mdf.format(description));
+}
+
+//-----------------------------------------------------------------------------
+
 TEST(parseMDF, Simple_XML_A)
 {
   CMDF mdf;

@@ -42,6 +42,22 @@ add_subdirectory(vscp-client-udp)
 add_subdirectory(vscp-client-ws1)
 add_subdirectory(vscp-client-ws2)
 
+include(FetchContent)
+set(_vscp_fetch_test_args "-DVSCP_SOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}/..")
+foreach(_vscp_dependency mongoose nlohmann_json spdlog mustache maddy)
+    FetchContent_GetProperties(vscp_${_vscp_dependency} SOURCE_DIR _vscp_source_dir)
+    string(TOUPPER "${_vscp_dependency}" _vscp_dependency_upper)
+    list(APPEND _vscp_fetch_test_args
+        "-DVSCP_TEST_${_vscp_dependency_upper}_SOURCE_DIR=${_vscp_source_dir}")
+endforeach()
+add_custom_target(test_fetchcontent
+    COMMAND ${CMAKE_COMMAND}
+        -S ${CMAKE_CURRENT_SOURCE_DIR}/fetchcontent
+        -B ${CMAKE_CURRENT_BINARY_DIR}/fetchcontent-validation
+        ${_vscp_fetch_test_args}
+    COMMENT "Checking FetchContent integration"
+    VERBATIM)
+
 # Custom target to run all tests
 # Note: mdfparser must run from its source directory for relative file paths
 
@@ -61,7 +77,7 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-tcp/unittest_vscp_client_tcp
 )
 set(TEST_DEPENDS
-    unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
+    test_fetchcontent unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
     unittest_tcpiptls unittest_tcp_transport unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
     unittest_vscp_client_tcp

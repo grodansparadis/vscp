@@ -81,27 +81,8 @@ endif()
 # ---- Module path ----
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
-# ---- Third-party header roots ----
-set(VSCP_NLOHMANN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/nlohmann/include)
-if(NOT EXISTS ${VSCP_NLOHMANN_INCLUDE_DIR}/nlohmann/json.hpp)
-    set(VSCP_NLOHMANN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../json/include)
-endif()
-
-set(VSCP_SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/spdlog/include)
-if(NOT EXISTS ${VSCP_SPDLOG_INCLUDE_DIR}/spdlog/spdlog.h)
-    set(VSCP_SPDLOG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../spdlog/include)
-endif()
-
-set(VSCP_MUSTACHE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/mustache)
-if(NOT EXISTS ${VSCP_MUSTACHE_INCLUDE_DIR}/mustache.hpp)
-    set(VSCP_MUSTACHE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Mustache)
-endif()
-
-set(VSCP_MADDY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party/maddy/include)
-set(VSCP_HAVE_MADDY OFF)
-if(EXISTS ${VSCP_MADDY_INCLUDE_DIR}/maddy/parser.h)
-    set(VSCP_HAVE_MADDY ON)
-endif()
+# ---- Third-party source dependencies ----
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/VSCPDependencies.cmake)
 
 # ---- System libraries ----
 include(GNUInstallDirs)
@@ -208,11 +189,15 @@ function(vscp_setup_protocol_target target)
             $<BUILD_INTERFACE:${MOSQUITTO_INCLUDE_DIRS}>
             $<BUILD_INTERFACE:${CURL_INCLUDE_DIRS}>
             $<INSTALL_INTERFACE:include/vscp>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/nlohmann>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/spdlog>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/mustache>
     )
 
     if(VSCP_HAVE_MADDY)
         target_include_directories(${target} PUBLIC
-            $<BUILD_INTERFACE:${VSCP_MADDY_INCLUDE_DIR}>)
+            $<BUILD_INTERFACE:${VSCP_MADDY_INCLUDE_DIR}>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/maddy>)
         target_compile_definitions(${target} PUBLIC VSCP_HAVE_MADDY)
     endif()
 
@@ -499,6 +484,28 @@ if(VSCP_INSTALL)
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/nlohmann
         FILES_MATCHING PATTERN "*.hpp"
     )
+    install(DIRECTORY ${VSCP_SPDLOG_INCLUDE_DIR}/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/spdlog
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+    )
+    install(FILES ${VSCP_MUSTACHE_INCLUDE_DIR}/mustache.hpp
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/mustache
+    )
+    install(DIRECTORY ${VSCP_MADDY_INCLUDE_DIR}/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vscp/third-party/maddy
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+    )
+
+    install(FILES ${vscp_mongoose_SOURCE_DIR}/LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/mongoose)
+    install(FILES ${vscp_nlohmann_json_SOURCE_DIR}/LICENSE.MIT
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/nlohmann-json)
+    install(FILES ${vscp_spdlog_SOURCE_DIR}/LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/spdlog)
+    install(FILES ${vscp_mustache_SOURCE_DIR}/LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/mustache)
+    install(FILES ${vscp_maddy_SOURCE_DIR}/LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/maddy)
 
     install(EXPORT VSCPTargets
         FILE VSCPTargets.cmake

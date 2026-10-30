@@ -15,8 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
      
     - name: Update package lists
       run: sudo apt-get update
@@ -51,6 +49,8 @@ jobs:
     - name: Run unit tests
       working-directory: ${{github.workspace}}/tests/build
       run: |
+        echo "Checking FetchContent integration..."
+        cmake --build . --target test_fetchcontent
         echo "Running GUID tests..."
         ./guid/unittest_guid
         echo "Running DateTime tests..."
@@ -83,8 +83,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
 
     - name: Install dependencies via Homebrew
       run: |
@@ -115,6 +113,8 @@ jobs:
     - name: Run unit tests
       working-directory: ${{github.workspace}}/tests/build
       run: |
+        echo "Checking FetchContent integration..."
+        cmake --build . --target test_fetchcontent
         echo "Running GUID tests..."
         ./guid/unittest_guid
         echo "Running DateTime tests..."

@@ -13,7 +13,7 @@ vscp/
 ├── README.md         - The top-level README file for the VSCP project.
 ├── LICENSE           - The license file for the VSCP project.
 ├── vcpkg.json        - The vcpkg manifest file for managing dependencies.
-├── build/            - The build output directory for the VSCP project.
+├── build/            - Build output, including fetched dependencies under _deps/.
 ├── build-tests/      - The build output directory for the test projects.
 ├── cmake/            - CMake modules and scripts used for building the project.
 ├── contrib/          - Contributed scripts, tools, or third-party integrations.
@@ -32,7 +32,6 @@ vscp/
 │   ├── testtools/    - Utility tools for testing purposes.
 │   ├── userlist/     - Code for managing user lists.
 │   └── vscp-client*/ - Code for testing the VSCP client.
-├── third-party/      - Third-party libraries and dependencies used by the VSCP project.
 ├── tools/           - Utility tools and scripts for the VSCP project.
 └── .github/         - GitHub-specific configuration files, workflows, and actions for the VSCP project.
 ```
@@ -41,4 +40,3 @@ This source tree is the development layout for the VSCP stack. The most importan
 
     
 [filename](./bottom_copyright.md ':include')
-

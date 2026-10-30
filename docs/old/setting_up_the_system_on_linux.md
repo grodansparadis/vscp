@@ -272,7 +272,6 @@ to start the service
 vscpd uses [Google test](https://github.com/google/googletest) for testing. If you want to build support for it do the following when in the VSCP root folder
 
 ```bash
-git submodule update --recursive --remote
 mkdir build
 cd build
 cmake ..

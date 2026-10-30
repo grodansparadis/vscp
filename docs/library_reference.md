@@ -54,11 +54,8 @@ int main() {
 ## TCP client transport and TLS
 
 `VscpRemoteTcpIf` (and `vscpClientTcp`, which uses it) communicates through
-Mongoose. Initialize the declared submodules before building:
-
-```sh
-git submodule update --init --recursive
-```
+Mongoose. CMake fetches the pinned Mongoose source during configuration;
+`FETCHCONTENT_SOURCE_DIR_VSCP_MONGOOSE` can point to an existing source tree.
 
 The synchronous command API is unchanged. `tcp://host:port` and `host:port`
 select plain TCP; `stcp://host:port` selects TLS. `enableTLS(true)` forces TLS,
