@@ -145,7 +145,7 @@ TCP/IP server functionality for VSCP.
 UDP server functionality for VSCP.
 
 ### multicastsrv.cpp and multicastsrv.h
-Multicast server functionality for VSCP.
+Legacy multicast server stub; it is not part of the CMake build.
 
 ## Bootdevice related files
 

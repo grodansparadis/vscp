@@ -93,6 +93,6 @@ int main(int argc, char* argv[])
     printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
     (void)getchar();
 
-    return 0;
+    return error_cnt ? EXIT_FAILURE : EXIT_SUCCESS;
 
 }

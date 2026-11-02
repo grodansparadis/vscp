@@ -30,6 +30,7 @@ add_subdirectory(vscpdatetime)
 add_subdirectory(vscphelper)
 add_subdirectory(mdfparser)
 add_subdirectory(tcpiptls)
+add_subdirectory(tables-remote-class)
 add_subdirectory(vscp-client-base)
 add_subdirectory(vscp-client-canal)
 add_subdirectory(vscp-client-mqtt)
@@ -77,7 +78,7 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-tcp/unittest_vscp_client_tcp
 )
 set(TEST_DEPENDS
-    test_fetchcontent unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
+    test_fetchcontent check_tables_remote_class unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
     unittest_tcpiptls unittest_tcp_transport unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
     unittest_vscp_client_tcp

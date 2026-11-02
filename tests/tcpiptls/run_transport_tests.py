@@ -163,7 +163,8 @@ class Handler(socketserver.BaseRequestHandler):
                             time.sleep(0.02)
                             connection.sendall(b"0,10,6,0,2026-10-07T00:00:00,0,-,1,2,3\r\n")
                         else:
-                            reply = b"+ERR - rejected\r\n" if command == b"ERROR" else b"+OK\r\n"
+                            rejected = command == b"ERROR" or (command == b"NOOP" and server.reject_noop)
+                            reply = b"+ERR - rejected\r\n" if rejected else b"+OK\r\n"
                             for fragment in (reply[:2], reply[2:-1], reply[-1:]):
                                 connection.sendall(fragment)
                                 time.sleep(0.01)
@@ -177,9 +178,10 @@ class Handler(socketserver.BaseRequestHandler):
 class Server(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
-    def __init__(self, context=None, stall=False, ipv6=False):
+    def __init__(self, context=None, stall=False, ipv6=False, reject_noop=False):
         self.context = context
         self.stall = stall
+        self.reject_noop = reject_noop
         self.address_family = socket.AF_INET6 if ipv6 else socket.AF_INET
         super().__init__(("::1" if ipv6 else "127.0.0.1", 0), Handler)
         self.thread = threading.Thread(target=self.serve_forever, daemon=True)

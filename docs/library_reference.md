@@ -72,6 +72,8 @@ The former public `VscpRemoteTcpIf::m_conn` Mongoose pointer has been removed.
 Consumers using that member must migrate to the client API, and applications
 using the C++ library should be rebuilt for the changed class layout.
 The `vscp_mongoose` CMake target is no longer provided.
+The unbuilt legacy multicast server's `receiveFrame` and `sendFrame` stubs were
+also removed; the `vscp_client_multicast` library is unchanged.
 
 ```cpp
 VscpRemoteTcpIf client;
