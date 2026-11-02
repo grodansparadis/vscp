@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <thread>
 #include <vector>
 #include <crc.h>
 
@@ -42,6 +43,30 @@ TEST_F(TcpTransport, PlainAndReconnect)
   open("VSCP_TEST_PLAIN");
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdClose());
   ASSERT_FALSE(client.isConnected());
+  open("VSCP_TEST_PLAIN");
+}
+
+TEST_F(TcpTransport, NumericIpv4Endpoint)
+{
+  auto endpoint = setting("VSCP_TEST_PLAIN");
+  endpoint.replace(endpoint.find("localhost"), 9, "127.0.0.1");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdOpen(endpoint, "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdNOOP());
+}
+
+TEST_F(TcpTransport, BracketedIpv6Endpoint)
+{
+  if (setting("VSCP_TEST_IPV6").empty())
+    GTEST_SKIP() << "IPv6 loopback is unavailable";
+  open("VSCP_TEST_IPV6");
+}
+
+TEST_F(TcpTransport, ZeroConnectTimeoutAndReconnect)
+{
+  client.setConnectTimeout(0);
+  ASSERT_EQ(VSCP_ERROR_TIMEOUT, client.doCmdOpen(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_FALSE(client.isConnected());
+  client.setConnectTimeout(1);
   open("VSCP_TEST_PLAIN");
 }
 
@@ -157,6 +182,8 @@ TEST_F(TcpTransport, RejectInvalidTlsFilesAndPassword)
 {
   client.setTLSOptions(true, setting("VSCP_TEST_CA") + ".missing");
   ASSERT_EQ(VSCP_ERROR_CONNECTION, client.doCmdOpen(setting("VSCP_TEST_TLS"), "admin", "secret"));
+  client.setTLSOptions(true, setting("VSCP_TEST_KEY"));
+  ASSERT_EQ(VSCP_ERROR_CONNECTION, client.doCmdOpen(setting("VSCP_TEST_TLS"), "admin", "secret"));
   client.setTLSOptions(true, setting("VSCP_TEST_CA"), "",
                        setting("VSCP_TEST_CERT"), setting("VSCP_TEST_KEY"), "wrong-password");
   ASSERT_EQ(VSCP_ERROR_CONNECTION, client.doCmdOpen(setting("VSCP_TEST_TLS"), "admin", "secret"));
@@ -198,6 +225,38 @@ TEST_F(TcpTransport, PeerDisconnectAndClose)
   ASSERT_FALSE(client.isConnected());
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdClose());
   open("VSCP_TEST_PLAIN");
+}
+
+TEST_F(TcpTransport, PeerResetBeforeSend)
+{
+  for (const auto *endpoint : {"VSCP_TEST_PLAIN", "VSCP_TEST_TLS"}) {
+    open(endpoint);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("RESET\r\n"));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    ASSERT_EQ(VSCP_ERROR_ERROR, client.doCmdNOOP());
+    ASSERT_FALSE(client.isConnected());
+  }
+}
+
+TEST_F(TcpTransport, BinaryWriteTimeoutClosesPartiallySentConnection)
+{
+  const std::vector<uint8_t> frame(65535, 0xaa);
+  for (const auto *endpoint : {"VSCP_TEST_PLAIN", "VSCP_TEST_TLS"}) {
+    open(endpoint);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO hold\r\n"));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBinary());
+    int result = VSCP_ERROR_SUCCESS;
+    std::chrono::steady_clock::duration elapsed;
+    for (size_t attempt = 0; attempt < 4096 && result == VSCP_ERROR_SUCCESS; ++attempt) {
+      auto start = std::chrono::steady_clock::now();
+      result = client.sendBinaryFrame(frame);
+      elapsed = std::chrono::steady_clock::now() - start;
+    }
+    ASSERT_EQ(VSCP_ERROR_TIMEOUT, result);
+    ASSERT_GE(elapsed, std::chrono::milliseconds(390));
+    ASSERT_LT(elapsed, std::chrono::milliseconds(1500));
+    ASSERT_FALSE(client.isConnected());
+  }
 }
 
 TEST_F(TcpTransport, TlsHandshakeTimeout)
@@ -291,17 +350,19 @@ TEST_F(TcpTransport, BinaryRawFramesOverTls)
 
 TEST_F(TcpTransport, BinaryCoalescedTransitionAndFrames)
 {
-  open("VSCP_TEST_PLAIN");
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO coalesced\r\n"));
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBinary());
-  std::vector<uint8_t> first, second;
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBinaryFrame(first, 500));
-  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBinaryFrame(second, 500));
-  ASSERT_EQ(first, second);
-  ASSERT_EQ(8u, first.size());
-  ASSERT_EQ(0, crcFast(first.data() + 1, first.size() - 1));
-  ASSERT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBinaryFrame(second, 30));
-  ASSERT_EQ(first, second);
+  for (const auto *endpoint : {"VSCP_TEST_PLAIN", "VSCP_TEST_TLS"}) {
+    open(endpoint);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO coalesced\r\n"));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBinary());
+    std::vector<uint8_t> first, second;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBinaryFrame(first, 500));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBinaryFrame(second, 500));
+    ASSERT_EQ(first, second);
+    ASSERT_EQ(8u, first.size());
+    ASSERT_EQ(0, crcFast(first.data() + 1, first.size() - 1));
+    ASSERT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBinaryFrame(second, 30));
+    ASSERT_EQ(first, second);
+  }
 }
 
 TEST_F(TcpTransport, BinaryPartialPrefixSurvivesTimeout)

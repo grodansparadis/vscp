@@ -121,7 +121,6 @@
 
 // Forward declarations
 class VscpRemoteTcpIf;
-struct mg_connection;
 
 /*!
     @brief Class for VSCP daemon tcp/ip interface
@@ -748,7 +747,7 @@ public:
 
   /*!
       Enable TLS/SSL for the connection.
-      When set, doCmdOpen negotiates TLS through Mongoose before login.
+      When set, doCmdOpen negotiates TLS before login.
   */
   void enableTLS(bool bEnable = true)
   {
@@ -833,24 +832,18 @@ public:
   std::string m_pwKeyfile;
 
   /*!
-      The connection structure
-      Not NULL if connected.
-  */
-  struct mg_connection *m_conn;
-
-  /*!
    * This is the last response from a remote node.
    * It can contain multiple response lines (separated
-   * with \r\n) and will end with a line containg +OK
-   * or -ERR if an error response was receved.
+   * with \r\n) and will end with a line containing +OK
+   * or -ERR if an error response was received.
    */
   std::string m_strResponse;
 
 private:
   struct Transport;
   std::unique_ptr<Transport> m_transport;
-  static void transportHandler(struct mg_connection *conn, int event, void *data);
   int transportRead(void *buffer, size_t length, int timeout);
+  int transportWrite(const void *buffer, size_t length, uint32_t timeout);
   void transportClose();
 };
 

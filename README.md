@@ -42,10 +42,9 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 
 The project builds a set of shared VSCP libraries. The aggregate target `vscp_all` links the full stack, while the individual component libraries can be linked separately for smaller builds.
 
-CMake fetches pinned Mongoose, nlohmann JSON, spdlog, Mustache and Maddy
+CMake fetches pinned nlohmann JSON, spdlog, Mustache and Maddy
 sources on the first configure. To use local sources instead, set the
-corresponding `FETCHCONTENT_SOURCE_DIR_VSCP_MONGOOSE`,
-`FETCHCONTENT_SOURCE_DIR_VSCP_NLOHMANN_JSON`, `FETCHCONTENT_SOURCE_DIR_VSCP_SPDLOG`,
+corresponding `FETCHCONTENT_SOURCE_DIR_VSCP_NLOHMANN_JSON`, `FETCHCONTENT_SOURCE_DIR_VSCP_SPDLOG`,
 `FETCHCONTENT_SOURCE_DIR_VSCP_MUSTACHE`, and `FETCHCONTENT_SOURCE_DIR_VSCP_MADDY`
 CMake variables.
 

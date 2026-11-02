@@ -220,11 +220,6 @@ function(vscp_setup_protocol_target target)
 endfunction()
 
 # =====================================================================
-# Mongoose transport (OpenSSL TLS backend)
-# =====================================================================
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/VSCPMongoose.cmake)
-
-# =====================================================================
 # vscp_util — low-level platform utility library
 # =====================================================================
 add_library(vscp_util SHARED
@@ -309,7 +304,6 @@ add_library(vscp_core SHARED ${VSCP_CORE_SOURCES})
 vscp_setup_protocol_target(vscp_core)
 target_link_libraries(vscp_core
     PUBLIC
-        vscp_mongoose
         vscp_util
         vscp_guid
         vscp_guidparser
@@ -317,6 +311,9 @@ target_link_libraries(vscp_core
         ${EXPAT_LIBRARIES}
         ${MOSQUITTO_LIBRARIES}
         ${CURL_LIBRARIES}
+    PRIVATE
+        OpenSSL::SSL
+        OpenSSL::Crypto
 )
 if(UNIX AND NOT APPLE)
     target_link_libraries(vscp_core PUBLIC m dl)
@@ -443,7 +440,6 @@ endif()
 # =====================================================================
 if(VSCP_INSTALL)
     set(VSCP_INSTALL_TARGETS
-        vscp_mongoose
         vscp_all
         vscp_common
         vscp_core
@@ -496,8 +492,6 @@ if(VSCP_INSTALL)
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
     )
 
-    install(FILES ${vscp_mongoose_SOURCE_DIR}/LICENSE
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/mongoose)
     install(FILES ${vscp_nlohmann_json_SOURCE_DIR}/LICENSE.MIT
         DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/vscp/nlohmann-json)
     install(FILES ${vscp_spdlog_SOURCE_DIR}/LICENSE

@@ -48,7 +48,6 @@
 #include <crc8.h>
 #include <dllist.h>
 #include <guid.h>
-#include <mongoose.h>
 #include <vscp-aes.h>
 #include <vscp_debug.h>
 
@@ -457,7 +456,6 @@ MulticastObj::replyNackFrame(MulticastObj *pMulticastClientThread,
 void *
 multicastClientThread(void *pData)
 {
-    struct mg_mgr mgr;
     struct mg_connection *nc;      // Receive connection
     struct ip_mreq group;          // Group
     struct ip_mreq_source mreqsrc; // Source block

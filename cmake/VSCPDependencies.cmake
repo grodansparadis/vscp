@@ -13,12 +13,6 @@ endif()
 # FetchContent names are global to the build, so keep these separate from
 # dependencies declared by a parent project.
 FetchContent_Declare(
-    vscp_mongoose
-    URL https://codeload.github.com/cesanta/mongoose/tar.gz/c13d5d7a569aade248983e6abb1c0b41b1899f9b
-    URL_HASH SHA256=4c28986a5dea2152e0959a3913b9327990658f0caf3826e284ffe13a9f058439
-    ${_VSCP_FETCH_OPTIONS}
-)
-FetchContent_Declare(
     vscp_nlohmann_json
     URL https://codeload.github.com/nlohmann/json/tar.gz/bfb07786cd7eb841a6d9030bcd822d3b1c4d3b56
     URL_HASH SHA256=46e944d2d2524ae702df4d44ee963bd6640ed9ee1319ac5a72030336c11c91de
@@ -43,7 +37,7 @@ FetchContent_Declare(
     ${_VSCP_FETCH_OPTIONS}
 )
 
-set(_VSCP_DEPENDENCIES vscp_mongoose vscp_nlohmann_json vscp_spdlog vscp_mustache vscp_maddy)
+set(_VSCP_DEPENDENCIES vscp_nlohmann_json vscp_spdlog vscp_mustache vscp_maddy)
 if(CMAKE_VERSION VERSION_LESS "3.18")
     foreach(_vscp_dependency IN LISTS _VSCP_DEPENDENCIES)
         FetchContent_GetProperties(${_vscp_dependency})
@@ -64,7 +58,6 @@ foreach(_vscp_dependency IN LISTS _VSCP_DEPENDENCIES)
     endif()
 endforeach()
 
-set(VSCP_MONGOOSE_SOURCE_DIR "${vscp_mongoose_SOURCE_DIR}")
 set(VSCP_NLOHMANN_INCLUDE_DIR "${vscp_nlohmann_json_SOURCE_DIR}/include")
 set(VSCP_SPDLOG_INCLUDE_DIR "${vscp_spdlog_SOURCE_DIR}/include")
 set(VSCP_MUSTACHE_INCLUDE_DIR "${vscp_mustache_SOURCE_DIR}")
@@ -72,8 +65,6 @@ set(VSCP_MADDY_INCLUDE_DIR "${vscp_maddy_SOURCE_DIR}/include")
 set(VSCP_HAVE_MADDY ON)
 
 foreach(_vscp_dependency_file
-        "${VSCP_MONGOOSE_SOURCE_DIR}/mongoose.c"
-        "${VSCP_MONGOOSE_SOURCE_DIR}/mongoose.h"
         "${VSCP_NLOHMANN_INCLUDE_DIR}/nlohmann/json.hpp"
         "${VSCP_SPDLOG_INCLUDE_DIR}/spdlog/spdlog.h"
         "${VSCP_MUSTACHE_INCLUDE_DIR}/mustache.hpp"

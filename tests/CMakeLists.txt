@@ -44,7 +44,7 @@ add_subdirectory(vscp-client-ws2)
 
 include(FetchContent)
 set(_vscp_fetch_test_args "-DVSCP_SOURCE_ROOT=${CMAKE_CURRENT_SOURCE_DIR}/..")
-foreach(_vscp_dependency mongoose nlohmann_json spdlog mustache maddy)
+foreach(_vscp_dependency nlohmann_json spdlog mustache maddy)
     FetchContent_GetProperties(vscp_${_vscp_dependency} SOURCE_DIR _vscp_source_dir)
     string(TOUPPER "${_vscp_dependency}" _vscp_dependency_upper)
     list(APPEND _vscp_fetch_test_args
@@ -83,6 +83,13 @@ set(TEST_DEPENDS
     unittest_vscp_client_tcp
 )
 
+if(TARGET unittest_tcp_dns)
+    list(APPEND TEST_COMMANDS
+        COMMAND $<TARGET_FILE:unittest_tcp_dns> --gtest_filter=TcpResolver.TimeoutAndShutdown
+        COMMAND $<TARGET_FILE:unittest_tcp_dns> --gtest_filter=TcpResolver.*-TcpResolver.TimeoutAndShutdown)
+    list(APPEND TEST_DEPENDS unittest_tcp_dns)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     list(APPEND TEST_COMMANDS COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-socketcan/unittest_vscp_client_socketcan)
     list(APPEND TEST_DEPENDS unittest_vscp_client_socketcan)
@@ -99,4 +106,5 @@ add_custom_target(test
     ${TEST_COMMANDS}
     DEPENDS ${TEST_DEPENDS}
     COMMENT "Running all unit tests"
+    VERBATIM
 )

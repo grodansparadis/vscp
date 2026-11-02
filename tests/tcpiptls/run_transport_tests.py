@@ -1,12 +1,14 @@
-"""Run the real Mongoose TCP/TLS client against ephemeral loopback servers."""
+"""Run the TCP/TLS client against ephemeral loopback servers."""
 
 import contextlib
 import binascii
 import os
 from pathlib import Path
 import shutil
+import socket
 import socketserver
 import ssl
+import struct
 import subprocess
 import sys
 import tempfile
@@ -48,6 +50,11 @@ class Handler(socketserver.BaseRequestHandler):
             connection.sendall(b"+OK\r\n\x00\x00")
         elif scenario == b"truncated":
             connection.sendall(b"+OK\r\n\x00\x08\xe0\x00")
+            return True
+        elif scenario == b"hold":
+            connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+            connection.sendall(b"+OK\r\n")
+            time.sleep(2)
             return True
         elif scenario == b"bad-event":
             connection.sendall(b"+OK\r\n" + self.packet(b"\x10" + b"\x00" * 37))
@@ -107,14 +114,17 @@ class Handler(socketserver.BaseRequestHandler):
                     time.sleep(0.01)
 
     def handle(self):
+        server = self.server
+        if not isinstance(server, Server):
+            raise TypeError("TCP transport handler requires a test server")
         connection = self.request
         connection.settimeout(3)
         try:
-            if self.server.stall:
+            if server.stall:
                 time.sleep(2)
                 return
-            if self.server.context:
-                connection = self.server.context.wrap_socket(connection, server_side=True)
+            if server.context:
+                connection = server.context.wrap_socket(connection, server_side=True)
             with connection:
                 connection.sendall(b"+OK - VSCP test server\r\n")
                 pending = b""
@@ -137,6 +147,12 @@ class Handler(socketserver.BaseRequestHandler):
                             pending = b""
                             continue
                         if command == b"DROP":
+                            return
+                        if command == b"RESET":
+                            connection.sendall(b"+OK\r\n")
+                            time.sleep(0.1)
+                            linger = struct.pack("HH" if os.name == "nt" else "ii", 1, 0)
+                            connection.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, linger)
                             return
                         if command == b"SILENT":
                             continue
@@ -161,10 +177,11 @@ class Handler(socketserver.BaseRequestHandler):
 class Server(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
-    def __init__(self, context=None, stall=False):
+    def __init__(self, context=None, stall=False, ipv6=False):
         self.context = context
         self.stall = stall
-        super().__init__(("127.0.0.1", 0), Handler)
+        self.address_family = socket.AF_INET6 if ipv6 else socket.AF_INET
+        super().__init__(("::1" if ipv6 else "127.0.0.1", 0), Handler)
         self.thread = threading.Thread(target=self.serve_forever, daemon=True)
         self.thread.start()
 
@@ -174,7 +191,8 @@ class Server(socketserver.ThreadingTCPServer):
         self.thread.join()
 
     def endpoint(self, secure=False):
-        return f"{'stcp' if secure else 'tcp'}://localhost:{self.server_address[1]}"
+        host = "[::1]" if self.address_family == socket.AF_INET6 else "localhost"
+        return f"{'stcp' if secure else 'tcp'}://{host}:{self.server_address[1]}"
 
 
 def main():
@@ -219,6 +237,13 @@ def main():
         servers = [Server(), Server(tls), Server(mtls), Server(stall=True), Server(untrusted)]
         for server in servers:
             stack.callback(server.close)
+        ipv6_server = None
+        if socket.has_ipv6:
+            try:
+                ipv6_server = Server(ipv6=True)
+                stack.callback(ipv6_server.close)
+            except OSError as error:
+                print(f"IPv6 loopback unavailable: {error}", file=sys.stderr)
         environment = dict(os.environ, VSCP_TEST_PLAIN=servers[0].endpoint(),
                            VSCP_TEST_TLS=servers[1].endpoint(True),
                            VSCP_TEST_MTLS=servers[2].endpoint(True),
@@ -228,6 +253,10 @@ def main():
                            VSCP_TEST_CA_DIR=str(ca_dir), VSCP_TEST_CERT=str(client_cert),
                            VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca),
                            SSL_CERT_DIR=str(ca_dir))
+        if ipv6_server is not None:
+            environment["VSCP_TEST_IPV6"] = ipv6_server.endpoint()
+        else:
+            environment.pop("VSCP_TEST_IPV6", None)
         executable = Path(sys.argv[1]).resolve(strict=True)
         if executable.name not in ("unittest_tcp_transport", "unittest_tcp_transport.exe"):
             raise ValueError("Expected the CMake-built unittest_tcp_transport executable")

@@ -29,8 +29,21 @@ target_link_libraries(unittest_tcpiptls PRIVATE
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 add_executable(unittest_tcp_transport transport.cpp)
 target_link_libraries(unittest_tcp_transport PRIVATE vscp_client_tcp GTest::GTest GTest::Main)
+
+set(_transport_extra_commands)
+set(_transport_extra_dependencies)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable(unittest_tcp_dns dns.cpp)
+    target_link_libraries(unittest_tcp_dns PRIVATE vscp_core vscp_client_base GTest::GTest GTest::Main)
+    list(APPEND _transport_extra_commands
+        COMMAND $<TARGET_FILE:unittest_tcp_dns> --gtest_filter=TcpResolver.TimeoutAndShutdown
+        COMMAND $<TARGET_FILE:unittest_tcp_dns> --gtest_filter=TcpResolver.*-TcpResolver.TimeoutAndShutdown)
+    list(APPEND _transport_extra_dependencies unittest_tcp_dns)
+endif()
 add_custom_target(test_tcp_transport
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_transport_tests.py
             $<TARGET_FILE:unittest_tcp_transport>
-    DEPENDS unittest_tcp_transport
-    USES_TERMINAL)
+    ${_transport_extra_commands}
+    DEPENDS unittest_tcp_transport ${_transport_extra_dependencies}
+    USES_TERMINAL
+    VERBATIM)

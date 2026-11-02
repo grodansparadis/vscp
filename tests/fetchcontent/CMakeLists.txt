@@ -14,7 +14,7 @@ if(NOT CMAKE_VERSION VERSION_LESS "3.18")
     list(APPEND _vscp_sources_only SOURCE_SUBDIR "__vscp_sources_only__")
 endif()
 
-foreach(_dependency mongoose nlohmann_json spdlog mustache maddy)
+foreach(_dependency nlohmann_json spdlog mustache maddy)
     string(TOUPPER "${_dependency}" _upper)
     set(_source_var "VSCP_TEST_${_upper}_SOURCE_DIR")
     if(NOT IS_DIRECTORY "${${_source_var}}")

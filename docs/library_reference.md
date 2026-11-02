@@ -31,7 +31,6 @@ int main() {
 
 | Library | Purpose |
 | --- | --- |
-| vscp_mongoose | Mongoose TCP transport with OpenSSL TLS |
 | vscp_util | Shared helper functions and crypto utilities |
 | vscp_guid | GUID storage, conversion and comparison |
 | vscp_guidparser | GUID string parsing helpers |
@@ -54,15 +53,25 @@ int main() {
 ## TCP client transport and TLS
 
 `VscpRemoteTcpIf` (and `vscpClientTcp`, which uses it) communicates through
-Mongoose. CMake fetches the pinned Mongoose source during configuration;
-`FETCHCONTENT_SOURCE_DIR_VSCP_MONGOOSE` can point to an existing source tree.
+native POSIX sockets or Windows Winsock. TLS uses the existing OpenSSL dependency.
 
 The synchronous command API is unchanged. `tcp://host:port` and `host:port`
 select plain TCP; `stcp://host:port` selects TLS. `enableTLS(true)` forces TLS,
 `enableTLS(false)` forces plain TCP, and `setTLSAutoSelect()` restores selection
-by prefix. TLS handshake time is included in the connection timeout. Each
-client owns a Mongoose manager, polled by its blocking operations; use a client
-from only one thread at a time. Connection objects are non-copyable.
+by prefix. Hostname resolution and TLS handshake time are included in the
+connection timeout. Use a client from only one thread at a time. Connection
+objects are non-copyable.
+
+When a hostname resolves to multiple addresses, connection attempts are
+staggered so that a stalled address does not block the others.
+
+If a system DNS lookup outlasts the timeout, it can finish in the background;
+unloading the library waits for outstanding lookups to finish.
+
+The former public `VscpRemoteTcpIf::m_conn` Mongoose pointer has been removed.
+Consumers using that member must migrate to the client API, and applications
+using the C++ library should be rebuilt for the changed class layout.
+The `vscp_mongoose` CMake target is no longer provided.
 
 ```cpp
 VscpRemoteTcpIf client;
@@ -86,11 +95,10 @@ Disabling verification requires an explicit `setTLSOptions(false, ...)` (or
 discouraged outside controlled tests: it permits credential theft by an
 on-path attacker. Plain TCP selection is unchanged.
 
-The pinned Mongoose OpenSSL backend verifies names as DNS hostnames. Use the
-certificate's DNS hostname for verified TLS, rather than an IP-address endpoint.
+TLS verifies names as DNS hostnames. Use the certificate's DNS hostname for
+verified TLS, rather than an IP-address endpoint.
 Verified TLS supplies the hostname for SNI and verification. The explicitly
-insecure opt-out omits hostname/SNI because the pinned backend checks names
-even without a CA.
+insecure opt-out omits hostname/SNI.
 
 Local integration tests generate temporary certificates and exercise actual
 TCP and TLS connections, including mutual TLS and verification failures:
@@ -100,8 +108,7 @@ cmake -S . -B build -DVSCP_BUILD_TESTS=ON
 cmake --build build --target test_tcp_transport
 ```
 
-These tests require Python 3 and the `openssl` command. Mongoose retains its
-upstream GPLv2/commercial licensing; consumers must use an appropriate license.
+These tests require Python 3 and the `openssl` command.
 
 ## vscp_util
 

@@ -186,7 +186,6 @@ vscpClientWs1::vscpClientWs1()
   setResponseTimeout();
 
   sem_init(&m_sem_msg, 0, 0);
-  // mg_init_library(MG_FEATURES_SSL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

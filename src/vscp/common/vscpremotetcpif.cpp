@@ -39,24 +39,34 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
 #include <climits>
+#include <condition_variable>
+#include <cstdarg>
+#include <cstdio>
 #include <fstream>
 #include <iterator>
 #include <limits>
+#include <mutex>
+#include <system_error>
+#include <thread>
+#include <utility>
 
 #include <crc.h>
-#include <mongoose.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
 
 #include <math.h>
-#include <semaphore.h>
 #include <stdlib.h>
 #ifdef WIN32
-#define VSCP_TLS_ERROR(args) mg_log args
+#include <ws2tcpip.h>
 #else
-#define VSCP_TLS_ERROR(args) MG_ERROR(args)
+#include <dirent.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -92,24 +102,429 @@ win_usleep(__int64 usec)
 
 namespace {
 
+using Clock = std::chrono::steady_clock;
+using Deadline = Clock::time_point;
+
 #ifdef WIN32
+using Socket = SOCKET;
+const Socket invalidSocket = INVALID_SOCKET;
+#else
+using Socket = int;
+const Socket invalidSocket = -1;
+#endif
+
+void transportError(const char *format, ...)
+{
+  va_list arguments;
+  va_start(arguments, format);
+  std::fputs("VSCP TCP: ", stderr);
+  std::vfprintf(stderr, format, arguments);
+  std::fputc('\n', stderr);
+  va_end(arguments);
+}
+
+void tlsError(const char *operation)
+{
+  unsigned long error = ERR_peek_last_error();
+  char detail[256] = {};
+  if (error)
+    ERR_error_string_n(error, detail, sizeof(detail));
+  transportError("%s: %s", operation, error ? detail : "TLS operation failed");
+  ERR_clear_error();
+}
+
+struct SocketRuntime {
+  int error = 0;
+
+#ifdef WIN32
+  SocketRuntime()
+  {
+    WSADATA data = {};
+    error = WSAStartup(MAKEWORD(2, 2), &data);
+  }
+  ~SocketRuntime()
+  {
+    if (!error)
+      WSACleanup();
+  }
+#endif
+};
+
+int socketError()
+{
+#ifdef WIN32
+  return WSAGetLastError();
+#else
+  return errno;
+#endif
+}
+
+bool socketInterrupted(int error)
+{
+#ifdef WIN32
+  return error == WSAEINTR;
+#else
+  return error == EINTR;
+#endif
+}
+
+bool socketWouldBlock(int error)
+{
+#ifdef WIN32
+  return error == WSAEWOULDBLOCK;
+#else
+  return error == EAGAIN || error == EWOULDBLOCK;
+#endif
+}
+
+bool socketConnecting(int error)
+{
+#ifdef WIN32
+  return error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == WSAEALREADY ||
+         error == WSAEINTR;
+#else
+  return error == EINPROGRESS || error == EALREADY || error == EINTR || socketWouldBlock(error);
+#endif
+}
+
+void closeSocket(Socket socket)
+{
+  if (socket == invalidSocket)
+    return;
+#ifdef WIN32
+  closesocket(socket);
+#else
+  close(socket);
+#endif
+}
+
+bool setNonBlocking(Socket socket)
+{
+#ifdef WIN32
+  u_long enabled = 1;
+  return ioctlsocket(socket, FIONBIO, &enabled) == 0;
+#else
+  int flags = fcntl(socket, F_GETFL, 0);
+  return flags >= 0 && fcntl(socket, F_SETFL, flags | O_NONBLOCK) == 0;
+#endif
+}
+
+int waitForSocket(Socket socket, bool write, Deadline deadline)
+{
+  while (true) {
+    auto now = Clock::now();
+    if (now >= deadline)
+      return 0;
+    auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count();
+    int timeout = static_cast<int>((std::min<int64_t>)(remaining + 1, INT_MAX));
+#ifdef WIN32
+    fd_set readSet, writeSet, errorSet;
+    FD_ZERO(&readSet);
+    FD_ZERO(&writeSet);
+    FD_ZERO(&errorSet);
+    if (write)
+      FD_SET(socket, &writeSet);
+    else
+      FD_SET(socket, &readSet);
+    FD_SET(socket, &errorSet);
+    timeval value = {timeout / 1000, (timeout % 1000) * 1000};
+    int result = select(0, write ? nullptr : &readSet, write ? &writeSet : nullptr, &errorSet, &value);
+#else
+    pollfd descriptor = {socket, static_cast<short>(write ? POLLOUT : POLLIN), 0};
+    int result = poll(&descriptor, 1, timeout);
+#endif
+    if (result > 0)
+      return 1;
+    if (!result)
+      continue;
+    int error = socketError();
+    if (!socketInterrupted(error)) {
+      transportError("socket wait failed (error %d)", error);
+      return -1;
+    }
+  }
+}
+
+int waitForConnections(const std::vector<Socket> &sockets, Deadline deadline, std::vector<size_t> &ready)
+{
+#ifndef WIN32
+  std::vector<pollfd> descriptors;
+  for (Socket socket : sockets)
+    descriptors.push_back({socket, POLLOUT, 0});
+#endif
+  while (true) {
+    auto now = Clock::now();
+    if (now >= deadline)
+      return 0;
+    auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count();
+    int timeout = static_cast<int>((std::min<int64_t>)(remaining + 1, INT_MAX));
+#ifdef WIN32
+    fd_set writeSet, errorSet;
+    FD_ZERO(&writeSet);
+    FD_ZERO(&errorSet);
+    for (Socket socket : sockets) {
+      FD_SET(socket, &writeSet);
+      FD_SET(socket, &errorSet);
+    }
+    timeval value = {timeout / 1000, (timeout % 1000) * 1000};
+    int result = select(0, nullptr, &writeSet, &errorSet, &value);
+#else
+    int result = poll(descriptors.data(), descriptors.size(), timeout);
+#endif
+    if (result > 0) {
+      ready.clear();
+      for (size_t i = 0; i < sockets.size(); ++i) {
+#ifdef WIN32
+        if (FD_ISSET(sockets[i], &writeSet) || FD_ISSET(sockets[i], &errorSet))
+#else
+        if (descriptors[i].revents)
+#endif
+          ready.push_back(i);
+      }
+      return 1;
+    }
+    if (!result)
+      continue;
+    int error = socketError();
+    if (!socketInterrupted(error)) {
+      transportError("socket wait failed (error %d)", error);
+      return -1;
+    }
+  }
+}
+
+struct ConnectionAttempts {
+  ~ConnectionAttempts()
+  {
+    closeAll();
+  }
+
+  void closeAll()
+  {
+    for (Socket socket : sockets)
+      closeSocket(socket);
+    sockets.clear();
+  }
+
+  Socket take(size_t index)
+  {
+    Socket socket = sockets[index];
+    sockets.erase(sockets.begin() + index);
+    return socket;
+  }
+
+  std::vector<Socket> sockets;
+};
+
+int socketRead(Socket socket, char *buffer, int length)
+{
+  int result;
+  do {
+    result = static_cast<int>(recv(socket, buffer, length, 0));
+  } while (result < 0 && socketInterrupted(socketError()));
+  return result;
+}
+
+int socketWrite(Socket socket, const char *buffer, int length)
+{
+#if !defined(WIN32) && defined(MSG_NOSIGNAL)
+  const int flags = MSG_NOSIGNAL;
+#else
+  const int flags = 0;
+#endif
+  int result;
+  do {
+    result = static_cast<int>(send(socket, buffer, length, flags));
+  } while (result < 0 && socketInterrupted(socketError()));
+  return result;
+}
+
+struct AddressResult {
+  explicit AddressResult(std::shared_ptr<SocketRuntime> runtime) : runtime(std::move(runtime)) {}
+  ~AddressResult()
+  {
+    if (addresses)
+      freeaddrinfo(addresses);
+  }
+
+  std::shared_ptr<SocketRuntime> runtime;
+  std::mutex mutex;
+  std::condition_variable ready;
+  bool done = false;
+  int error = 0;
+  addrinfo *addresses = nullptr;
+};
+
+struct ResolverTask {
+  explicit ResolverTask(std::shared_ptr<AddressResult> state) : state(std::move(state)) {}
+  ~ResolverTask()
+  {
+    if (worker.joinable())
+      worker.join();
+  }
+
+  std::shared_ptr<AddressResult> state;
+  std::thread worker;
+};
+
+class ResolverTasks {
+public:
+  void reap()
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    auto task = tasks.begin();
+    while (task != tasks.end()) {
+      bool done;
+      {
+        std::lock_guard<std::mutex> resultLock((*task)->state->mutex);
+        done = (*task)->state->done;
+      }
+      if (done)
+        task = tasks.erase(task);
+      else
+        ++task;
+    }
+  }
+
+  void keep(std::unique_ptr<ResolverTask> task)
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    tasks.push_back(std::move(task));
+  }
+
+private:
+  std::mutex mutex;
+  std::vector<std::unique_ptr<ResolverTask>> tasks;
+};
+
+ResolverTasks &resolverTasks()
+{
+  static ResolverTasks tasks;
+  return tasks;
+}
+
+std::shared_ptr<AddressResult> resolveAddress(const std::string &host,
+                                              const std::string &port,
+                                              const std::shared_ptr<SocketRuntime> &runtime,
+                                              Deadline deadline,
+                                              int &result)
+{
+  if (Clock::now() >= deadline) {
+    result = VSCP_ERROR_TIMEOUT;
+    return nullptr;
+  }
+  resolverTasks().reap();
+  auto state = std::make_shared<AddressResult>(runtime);
+  std::unique_ptr<ResolverTask> task(new ResolverTask(state));
+  try {
+    task->worker = std::thread([state, host, port]() {
+      addrinfo hints = {};
+      hints.ai_family = AF_UNSPEC;
+      hints.ai_socktype = SOCK_STREAM;
+      hints.ai_protocol = IPPROTO_TCP;
+      addrinfo *addresses = nullptr;
+      int error = getaddrinfo(host.c_str(), port.c_str(), &hints, &addresses);
+      {
+        std::lock_guard<std::mutex> lock(state->mutex);
+        state->addresses = addresses;
+        state->error = error;
+        state->done = true;
+      }
+      state->ready.notify_one();
+    });
+  }
+  catch (const std::system_error &error) {
+    transportError("cannot start hostname resolver: %s", error.what());
+    result = VSCP_ERROR_CONNECTION;
+    return nullptr;
+  }
+
+  std::unique_lock<std::mutex> lock(state->mutex);
+  if (!state->ready.wait_until(lock, deadline, [&state] { return state->done; })) {
+    lock.unlock();
+    // Keep timed-out lookups alive until they finish, including during library unload.
+    resolverTasks().keep(std::move(task));
+    result = VSCP_ERROR_TIMEOUT;
+    return nullptr;
+  }
+  lock.unlock();
+  task.reset();
+  if (state->error || !state->addresses) {
+    transportError("cannot resolve host %s (error %d)", host.c_str(), state->error);
+    result = VSCP_ERROR_CONNECTION;
+    return nullptr;
+  }
+  result = VSCP_ERROR_SUCCESS;
+  return state;
+}
+
+int socketBioCreate(BIO *bio)
+{
+  BIO_set_init(bio, 1);
+  BIO_set_data(bio, nullptr);
+  BIO_set_shutdown(bio, 0);
+  return 1;
+}
+
+int socketBioDestroy(BIO *bio)
+{
+  if (bio) {
+    BIO_set_data(bio, nullptr);
+    BIO_set_init(bio, 0);
+  }
+  return 1;
+}
+
+long socketBioControl(BIO *, int command, long, void *)
+{
+  return command == BIO_CTRL_FLUSH || command == BIO_C_SET_NBIO ? 1 : 0;
+}
+
+int socketBioRead(BIO *bio, char *buffer, int length)
+{
+  BIO_clear_retry_flags(bio);
+  auto socket = static_cast<Socket *>(BIO_get_data(bio));
+  if (!socket || !buffer || length <= 0)
+    return 0;
+  int result = socketRead(*socket, buffer, length);
+  if (result < 0 && socketWouldBlock(socketError()))
+    BIO_set_retry_read(bio);
+  return result;
+}
+
+int socketBioWrite(BIO *bio, const char *buffer, int length)
+{
+  BIO_clear_retry_flags(bio);
+  auto socket = static_cast<Socket *>(BIO_get_data(bio));
+  if (!socket || !buffer || length <= 0)
+    return 0;
+  int result = socketWrite(*socket, buffer, length);
+  if (result < 0 && socketWouldBlock(socketError()))
+    BIO_set_retry_write(bio);
+  return result;
+}
+
 bool isDirectory(const std::string &path)
 {
+#ifdef WIN32
   DWORD attributes = GetFileAttributesA(path.c_str());
   return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
-}
+#else
+  struct stat attributes = {};
+  return stat(path.c_str(), &attributes) == 0 && S_ISDIR(attributes.st_mode);
 #endif
+}
 
 bool readTlsFile(const std::string &path, std::string &contents)
 {
   std::ifstream file(path, std::ios::binary);
   if (!file) {
-    VSCP_TLS_ERROR(("Cannot read TLS file: %s", path.c_str()));
+    transportError("cannot read TLS file: %s", path.c_str());
     return false;
   }
   contents.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
   if (file.bad() || contents.empty()) {
-    VSCP_TLS_ERROR(("Empty or unreadable TLS file: %s", path.c_str()));
+    transportError("empty or unreadable TLS file: %s", path.c_str());
     return false;
   }
   return true;
@@ -118,46 +533,49 @@ bool readTlsFile(const std::string &path, std::string &contents)
 struct CaDirectory {
   std::string path;
   std::string certificates;
+  bool failed;
 };
 
 void readCaEntry(const char *name, void *arg)
 {
   auto &directory = *static_cast<CaDirectory *>(arg);
+  if (directory.failed)
+    return;
   std::string path = directory.path + "/" + name;
-#ifdef WIN32
   if (isDirectory(path))
-#else
-  if (mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)
-#endif
     return;
   BIO *input = BIO_new_file(path.c_str(), "r");
-  BIO *output = BIO_new(BIO_s_mem());
+  BIO *output = input ? BIO_new(BIO_s_mem()) : nullptr;
+  if (input && !output)
+    directory.failed = true;
   X509 *cert;
   while (input && output && (cert = PEM_read_bio_X509(input, nullptr, nullptr, nullptr))) {
-    if (PEM_write_bio_X509(output, cert) == 1) {
+    if (PEM_write_bio_X509(output, cert) != 1) {
+      directory.failed = true;
+    }
+    else {
       char *data = nullptr;
       long length = BIO_get_mem_data(output, &data);
       directory.certificates.append(data, static_cast<size_t>(length));
       BIO_reset(output);
     }
     X509_free(cert);
+    if (directory.failed)
+      break;
   }
   BIO_free(input);
   BIO_free(output);
-  ERR_clear_error(); // Directory entries may include unrelated files.
+  if (!directory.failed)
+    ERR_clear_error(); // Directory entries may include unrelated files.
 }
 
 bool readCaDirectory(const std::string &path, std::string &certificates, bool allowEmpty = false)
 {
-#ifdef WIN32
   if (!isDirectory(path)) {
-#else
-  if (!(mg_fs_posix.st(path.c_str(), nullptr, nullptr) & MG_FS_DIR)) {
-#endif
-    VSCP_TLS_ERROR(("Invalid TLS CA directory: %s", path.c_str()));
+    transportError("invalid TLS CA directory: %s", path.c_str());
     return false;
   }
-  CaDirectory directory{path, ""};
+  CaDirectory directory{path, "", false};
 #ifdef WIN32
   std::string pattern = path;
   if (pattern.empty() || (pattern.back() != '/' && pattern.back() != '\\'))
@@ -169,200 +587,466 @@ bool readCaDirectory(const std::string &path, std::string &certificates, bool al
     do
       readCaEntry(entry.cFileName, &directory);
     while (FindNextFileA(search, &entry));
+    DWORD error = GetLastError();
     FindClose(search);
+    if (error != ERROR_NO_MORE_FILES) {
+      transportError("cannot enumerate TLS CA directory: %s (error %lu)", path.c_str(), error);
+      return false;
+    }
+  }
+  else if (GetLastError() != ERROR_FILE_NOT_FOUND) {
+    transportError("cannot open TLS CA directory: %s (error %lu)", path.c_str(), GetLastError());
+    return false;
   }
 #else
-  mg_fs_posix.ls(path.c_str(), readCaEntry, &directory);
+  DIR *entries = opendir(path.c_str());
+  if (!entries) {
+    transportError("cannot open TLS CA directory: %s (error %d)", path.c_str(), errno);
+    return false;
+  }
+  while (true) {
+    errno = 0;
+    dirent *entry = readdir(entries);
+    if (!entry) {
+      int error = errno;
+      closedir(entries);
+      if (error) {
+        transportError("cannot enumerate TLS CA directory: %s (error %d)", path.c_str(), error);
+        return false;
+      }
+      break;
+    }
+    readCaEntry(entry->d_name, &directory);
+  }
 #endif
+  if (directory.failed) {
+    tlsError("cannot read certificates from TLS CA directory");
+    return false;
+  }
   certificates += directory.certificates;
   if (directory.certificates.empty() && !allowEmpty) {
-    VSCP_TLS_ERROR(("No PEM certificates in TLS CA directory: %s", path.c_str()));
+    transportError("no PEM certificates in TLS CA directory: %s", path.c_str());
     return false;
   }
   return true;
 }
 
-// Mongoose accepts PEM contents, not paths or encrypted private keys.
-bool prepareTls(VscpRemoteTcpIf &client, std::string &ca, std::string &cert, std::string &key)
+bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
 {
-  if (client.m_bVerifyPeer) {
-    if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca))
-      return false;
-    if (!client.m_capath.empty() && !readCaDirectory(client.m_capath, ca))
-      return false;
-    if (client.m_cafile.empty() && client.m_capath.empty()) {
-      const char *file = getenv(X509_get_default_cert_file_env());
-      const char *path = getenv(X509_get_default_cert_dir_env());
-      std::string defaultFile = file ? file : X509_get_default_cert_file();
+  if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca))
+    return false;
+  if (!client.m_capath.empty() && !readCaDirectory(client.m_capath, ca))
+    return false;
+  if (client.m_cafile.empty() && client.m_capath.empty()) {
+    const char *file = getenv(X509_get_default_cert_file_env());
+    const char *path = getenv(X509_get_default_cert_dir_env());
+    std::string defaultFile = file ? file : X509_get_default_cert_file();
 #ifdef WIN32
-      std::ifstream defaultCertFile(defaultFile, std::ios::binary);
-      bool hasDefaultCertFile = defaultCertFile && !isDirectory(defaultFile);
-      defaultCertFile.close();
-      if (hasDefaultCertFile) {
+    std::ifstream defaultCertFile(defaultFile, std::ios::binary);
+    bool hasDefaultCertFile = defaultCertFile && !isDirectory(defaultFile);
+    defaultCertFile.close();
 #else
-      if (mg_fs_posix.st(defaultFile.c_str(), nullptr, nullptr) & MG_FS_READ) {
+    struct stat attributes = {};
+    bool hasDefaultCertFile = stat(defaultFile.c_str(), &attributes) == 0 && !S_ISDIR(attributes.st_mode);
 #endif
-        if (!readTlsFile(defaultFile, ca))
-          return false;
-      }
-      std::deque<std::string> directories;
-#ifdef WIN32
-      const char *separator = ";";
-#else
-      const char *separator = ":";
-#endif
-      vscp_split(directories, path ? path : X509_get_default_cert_dir(), separator);
-      for (const auto &directory : directories) {
-#ifdef WIN32
-        if (isDirectory(directory) && !readCaDirectory(directory, ca, true)) {
-#else
-        if ((mg_fs_posix.st(directory.c_str(), nullptr, nullptr) & MG_FS_DIR) &&
-            !readCaDirectory(directory, ca, true)) {
-#endif
-          return false;
-        }
-      }
-    }
-    if (ca.empty()) {
-      VSCP_TLS_ERROR(("No TLS trust anchors loaded"));
+    if (hasDefaultCertFile && !readTlsFile(defaultFile, ca))
       return false;
+    std::deque<std::string> directories;
+#ifdef WIN32
+    const char *separator = ";";
+#else
+    const char *separator = ":";
+#endif
+    vscp_split(directories, path ? path : X509_get_default_cert_dir(), separator);
+    for (const auto &directory : directories) {
+      if (isDirectory(directory) && !readCaDirectory(directory, ca, true))
+        return false;
     }
   }
-  if (!client.m_certfile.empty() && !readTlsFile(client.m_certfile, cert))
+  if (ca.empty()) {
+    transportError("no TLS trust anchors loaded");
     return false;
-  if (!client.m_keyfile.empty() || !cert.empty()) {
-    std::string pem;
-    if (!readTlsFile(client.m_keyfile.empty() ? client.m_certfile : client.m_keyfile, pem))
-      return false;
-    BIO *input = BIO_new_mem_buf(pem.data(), static_cast<int>(pem.size()));
-    auto password = [](char *buffer, int size, int, void *arg) -> int {
-      const auto &value = *static_cast<std::string *>(arg);
-      if (size <= 0 || value.size() > static_cast<size_t>(size))
-        return 0;
-      return static_cast<int>(value.copy(buffer, static_cast<size_t>(size)));
-    };
-    EVP_PKEY *privateKey = input ? PEM_read_bio_PrivateKey(input, nullptr, password, &client.m_pwKeyfile) : nullptr;
-    BIO *output = BIO_new(BIO_s_mem());
-    bool ok = privateKey && output &&
-              PEM_write_bio_PrivateKey(output, privateKey, nullptr, nullptr, 0, nullptr, nullptr) == 1;
-    if (ok) {
-      char *data = nullptr;
-      long length = BIO_get_mem_data(output, &data);
-      key.assign(data, static_cast<size_t>(length));
-    }
-    BIO_free(input);
-    BIO_free(output);
-    EVP_PKEY_free(privateKey);
-    if (!ok) {
-      VSCP_TLS_ERROR(("Cannot load TLS private key"));
-      ERR_clear_error();
-      return false;
-    }
   }
   return true;
+}
+
+int rejectPassword(char *, int, int, void *)
+{
+  return 0;
+}
+
+bool loadTrustAnchors(SSL_CTX *context, VscpRemoteTcpIf &client)
+{
+  std::string ca;
+  if (!readTrustAnchors(client, ca))
+    return false;
+  if (ca.size() > INT_MAX) {
+    transportError("TLS trust bundle is too large");
+    return false;
+  }
+  BIO *input = BIO_new_mem_buf(ca.data(), static_cast<int>(ca.size()));
+  STACK_OF(X509_INFO) *certificates = input ? PEM_X509_INFO_read_bio(input, nullptr, rejectPassword, nullptr) : nullptr;
+  BIO_free(input);
+  if (!certificates) {
+    tlsError("cannot parse TLS trust anchors");
+    return false;
+  }
+  X509_STORE *store = SSL_CTX_get_cert_store(context);
+  bool valid = store != nullptr;
+  int count = 0;
+  for (int i = 0; valid && i < sk_X509_INFO_num(certificates); ++i) {
+    X509_INFO *info = sk_X509_INFO_value(certificates, i);
+    if (info->x509) {
+      valid = X509_STORE_add_cert(store, info->x509) == 1;
+      ++count;
+    }
+  }
+  sk_X509_INFO_pop_free(certificates, X509_INFO_free);
+  if (!valid || !count) {
+    tlsError("cannot load TLS trust anchors");
+    return false;
+  }
+  return true;
+}
+
+int tlsPassword(char *buffer, int size, int, void *arg)
+{
+  const auto &password = *static_cast<std::string *>(arg);
+  if (size <= 0 || password.size() > static_cast<size_t>(size))
+    return 0;
+  return static_cast<int>(password.copy(buffer, static_cast<size_t>(size)));
 }
 
 } // namespace
 
 struct VscpRemoteTcpIf::Transport {
-  mg_mgr manager;
-  VscpRemoteTcpIf *owner;
+  std::shared_ptr<SocketRuntime> runtime = std::make_shared<SocketRuntime>();
+  Socket socket = invalidSocket;
+  SSL_CTX *context = nullptr;
+  SSL *tls = nullptr;
+  BIO_METHOD *bioMethod = nullptr;
   bool connected = false;
-  bool failed = false;
-  std::string received;
-  std::string host;
-  std::string ca;
-  std::string cert;
-  std::string key;
 
-  explicit Transport(VscpRemoteTcpIf *client) : owner(client) { mg_mgr_init(&manager); }
   ~Transport()
   {
-    mg_mgr_free(&manager);
-    if (!key.empty())
-      OPENSSL_cleanse(&key[0], key.size());
+    SSL_free(tls);
+    BIO_meth_free(bioMethod);
+    SSL_CTX_free(context);
+    closeSocket(socket);
   }
+
+  bool configureTls(VscpRemoteTcpIf &client, const std::string &host);
+  int open(VscpRemoteTcpIf &client, const std::string &host, const std::string &port);
+  int read(void *buffer, size_t length, int timeout);
+  int write(const void *buffer, size_t length, uint32_t timeout);
 };
+
+bool
+VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::string &host)
+{
+  ERR_clear_error();
+  context = SSL_CTX_new(TLS_client_method());
+  if (!context) {
+    tlsError("cannot create TLS context");
+    return false;
+  }
+  SSL_CTX_set_options(context, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
+  SSL_CTX_set_verify(context, client.m_bVerifyPeer ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, nullptr);
+  if (client.m_bVerifyPeer && !loadTrustAnchors(context, client))
+    return false;
+
+  if (!client.m_certfile.empty() &&
+      SSL_CTX_use_certificate_chain_file(context, client.m_certfile.c_str()) != 1) {
+    ERR_clear_error();
+    if (SSL_CTX_use_certificate_file(context, client.m_certfile.c_str(), SSL_FILETYPE_ASN1) != 1) {
+      tlsError("cannot load TLS client certificate");
+      return false;
+    }
+  }
+  if (!client.m_keyfile.empty() || !client.m_certfile.empty()) {
+    SSL_CTX_set_default_passwd_cb(context, tlsPassword);
+    SSL_CTX_set_default_passwd_cb_userdata(context, &client.m_pwKeyfile);
+    const std::string &keyfile = client.m_keyfile.empty() ? client.m_certfile : client.m_keyfile;
+    if (SSL_CTX_use_PrivateKey_file(context, keyfile.c_str(), SSL_FILETYPE_PEM) != 1 ||
+        (!client.m_certfile.empty() && SSL_CTX_check_private_key(context) != 1)) {
+      tlsError("cannot load TLS client private key");
+      return false;
+    }
+  }
+  tls = SSL_new(context);
+  if (!tls) {
+    tlsError("cannot create TLS connection");
+    return false;
+  }
+  if (client.m_bVerifyPeer &&
+      (SSL_set1_host(tls, host.c_str()) != 1 || SSL_set_tlsext_host_name(tls, host.c_str()) != 1)) {
+    tlsError("cannot configure TLS hostname");
+    return false;
+  }
+  return true;
+}
+
+int
+VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &host, const std::string &port)
+{
+  if (runtime->error) {
+    transportError("cannot initialize sockets (error %d)", runtime->error);
+    return VSCP_ERROR_CONNECTION;
+  }
+  if (client.m_bTLS && !configureTls(client, host))
+    return VSCP_ERROR_CONNECTION;
+
+  const auto deadline = Clock::now() + std::chrono::seconds(client.m_connectionTimeOut);
+  int result = VSCP_ERROR_CONNECTION;
+  auto addresses = resolveAddress(host, port, runtime, deadline, result);
+  if (!addresses)
+    return result;
+  int lastError = 0;
+  addrinfo *address = addresses->addresses;
+  ConnectionAttempts attempts;
+  auto nextAttempt = Clock::now();
+#ifdef WIN32
+  const size_t maxPending = FD_SETSIZE;
+#else
+  const size_t maxPending = (std::numeric_limits<size_t>::max)();
+#endif
+  while (true) {
+    if (Clock::now() >= deadline)
+      return VSCP_ERROR_TIMEOUT;
+    if (address && attempts.sockets.size() < maxPending &&
+        (attempts.sockets.empty() || Clock::now() >= nextAttempt)) {
+      addrinfo *current = address;
+      address = address->ai_next;
+      Socket candidate = ::socket(current->ai_family, current->ai_socktype, current->ai_protocol);
+      if (candidate == invalidSocket) {
+        lastError = socketError();
+        continue;
+      }
+      if (!setNonBlocking(candidate)) {
+        lastError = socketError();
+        closeSocket(candidate);
+        continue;
+      }
+#ifdef SO_NOSIGPIPE
+      int noSigpipe = 1;
+      if (setsockopt(candidate, SOL_SOCKET, SO_NOSIGPIPE, &noSigpipe, sizeof(noSigpipe)) != 0) {
+        lastError = socketError();
+        closeSocket(candidate);
+        continue;
+      }
+#endif
+#ifdef WIN32
+      int connectedNow = ::connect(candidate, current->ai_addr, static_cast<int>(current->ai_addrlen));
+#else
+      int connectedNow = ::connect(candidate, current->ai_addr, static_cast<socklen_t>(current->ai_addrlen));
+#endif
+      if (connectedNow == 0) {
+        socket = candidate;
+        break;
+      }
+      lastError = socketError();
+      if (!socketConnecting(lastError)) {
+        closeSocket(candidate);
+        continue;
+      }
+      attempts.sockets.push_back(candidate);
+      nextAttempt = Clock::now() + std::chrono::milliseconds(250);
+    }
+    if (attempts.sockets.empty() && !address) {
+      transportError("cannot connect to %s:%s (error %d)", host.c_str(), port.c_str(), lastError);
+      return VSCP_ERROR_CONNECTION;
+    }
+    if (attempts.sockets.empty())
+      continue;
+
+    Deadline waitDeadline = deadline;
+    if (address && attempts.sockets.size() < maxPending)
+      waitDeadline = (std::min)(waitDeadline, nextAttempt);
+    std::vector<size_t> ready;
+    int waitResult = waitForConnections(attempts.sockets, waitDeadline, ready);
+    if (waitResult < 0)
+      return VSCP_ERROR_CONNECTION;
+    bool failed = false;
+    for (auto index = ready.rbegin(); index != ready.rend(); ++index) {
+      Socket candidate = attempts.sockets[*index];
+      int error = 0;
+#ifdef WIN32
+      int size = sizeof(error);
+      int status = getsockopt(candidate, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &size);
+#else
+      socklen_t size = sizeof(error);
+      int status = getsockopt(candidate, SOL_SOCKET, SO_ERROR, &error, &size);
+#endif
+      if (status != 0)
+        error = socketError();
+      if (!error) {
+        socket = attempts.take(*index);
+        break;
+      }
+      lastError = error;
+      closeSocket(attempts.take(*index));
+      failed = true;
+    }
+    if (socket != invalidSocket)
+      break;
+    if (failed)
+      nextAttempt = Clock::now();
+  }
+  attempts.closeAll();
+
+  if (tls) {
+    // Keep TLS writes on the same SIGPIPE-safe path as plain TCP writes.
+    static const int socketBioType = BIO_get_new_index() | BIO_TYPE_SOURCE_SINK;
+    bioMethod = BIO_meth_new(socketBioType, "vscp socket");
+    if (!bioMethod || !BIO_meth_set_create(bioMethod, socketBioCreate) ||
+        !BIO_meth_set_destroy(bioMethod, socketBioDestroy) ||
+        !BIO_meth_set_read(bioMethod, socketBioRead) ||
+        !BIO_meth_set_write(bioMethod, socketBioWrite) ||
+        !BIO_meth_set_ctrl(bioMethod, socketBioControl)) {
+      tlsError("cannot create TLS socket transport");
+      return VSCP_ERROR_CONNECTION;
+    }
+    BIO *bio = BIO_new(bioMethod);
+    if (!bio) {
+      tlsError("cannot create TLS socket");
+      return VSCP_ERROR_CONNECTION;
+    }
+    BIO_set_data(bio, &socket);
+    SSL_set_bio(tls, bio, bio);
+    while (true) {
+      ERR_clear_error();
+      int status = SSL_connect(tls);
+      if (status == 1)
+        break;
+      int error = SSL_get_error(tls, status);
+      if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
+        tlsError("TLS handshake failed");
+        return VSCP_ERROR_CONNECTION;
+      }
+      int ready = waitForSocket(socket, error == SSL_ERROR_WANT_WRITE, deadline);
+      if (ready <= 0)
+        return ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_CONNECTION;
+    }
+  }
+  connected = true;
+  return VSCP_ERROR_SUCCESS;
+}
+
+int
+VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
+{
+  if (!connected)
+    return -VSCP_ERROR_STOPPED;
+  if (timeout < 0)
+    timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+  const auto deadline = Clock::now() + std::chrono::milliseconds(timeout);
+  int size = static_cast<int>((std::min<size_t>)(length, INT_MAX));
+  while (true) {
+    bool waitWrite = false;
+    if (tls) {
+      ERR_clear_error();
+      int count = SSL_read(tls, buffer, size);
+      if (count > 0)
+        return count;
+      int error = SSL_get_error(tls, count);
+      if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
+        if (error != SSL_ERROR_ZERO_RETURN)
+          tlsError("TLS read failed");
+        connected = false;
+        return -VSCP_ERROR_STOPPED;
+      }
+      waitWrite = error == SSL_ERROR_WANT_WRITE;
+    }
+    else {
+      int count = socketRead(socket, static_cast<char *>(buffer), size);
+      if (count > 0)
+        return count;
+      if (!count || !socketWouldBlock(socketError())) {
+        connected = false;
+        return -VSCP_ERROR_STOPPED;
+      }
+    }
+    int ready = waitForSocket(socket, waitWrite, deadline);
+    if (ready == 0)
+      return 0;
+    if (ready < 0) {
+      connected = false;
+      return -VSCP_ERROR_STOPPED;
+    }
+  }
+}
+
+int
+VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t timeout)
+{
+  if (!connected)
+    return VSCP_ERROR_STOPPED;
+  const auto deadline = Clock::now() + std::chrono::milliseconds(timeout);
+  const char *data = static_cast<const char *>(buffer);
+  size_t written = 0;
+  while (written < length) {
+    int size = static_cast<int>((std::min<size_t>)(length - written, INT_MAX));
+    bool waitWrite = true;
+    if (tls) {
+      ERR_clear_error();
+      int count = SSL_write(tls, data + written, size);
+      if (count > 0) {
+        written += static_cast<size_t>(count);
+        continue;
+      }
+      int error = SSL_get_error(tls, count);
+      if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
+        tlsError("TLS write failed");
+        connected = false;
+        return VSCP_ERROR_STOPPED;
+      }
+      waitWrite = error == SSL_ERROR_WANT_WRITE;
+    }
+    else {
+      int count = socketWrite(socket, data + written, size);
+      if (count > 0) {
+        written += static_cast<size_t>(count);
+        continue;
+      }
+      if (!count || !socketWouldBlock(socketError())) {
+        connected = false;
+        return VSCP_ERROR_STOPPED;
+      }
+    }
+    int ready = waitForSocket(socket, waitWrite, deadline);
+    if (ready <= 0) {
+      connected = false;
+      return ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_STOPPED;
+    }
+  }
+  return VSCP_ERROR_SUCCESS;
+}
 
 bool
 VscpRemoteTcpIf::isConnected(void)
 {
-  return m_transport && m_transport->connected && m_conn && !m_conn->is_closing;
-}
-
-void
-VscpRemoteTcpIf::transportHandler(mg_connection *conn, int event, void *data)
-{
-  auto &transport = *static_cast<Transport *>(conn->fn_data);
-  auto &client = *transport.owner;
-  if (event == MG_EV_CONNECT) {
-    if (client.m_bTLS) {
-      mg_tls_opts options = {};
-      options.ca = mg_str(transport.ca.c_str());
-      options.cert = mg_str(transport.cert.c_str());
-      options.key = mg_str(transport.key.c_str());
-      // The pinned OpenSSL backend checks name even without a CA.
-      if (client.m_bVerifyPeer)
-        options.name = mg_str(transport.host.c_str());
-      options.skip_verification = !client.m_bVerifyPeer;
-      mg_tls_init(conn, &options);
-    }
-    else {
-      transport.connected = true;
-    }
-  }
-  else if (event == MG_EV_TLS_HS) {
-    transport.connected = true;
-    if (!transport.key.empty()) {
-      OPENSSL_cleanse(&transport.key[0], transport.key.size());
-      transport.key.clear();
-    }
-  }
-  else if (event == MG_EV_READ) {
-    transport.received.append(reinterpret_cast<const char *>(conn->recv.buf), conn->recv.len);
-    mg_iobuf_del(&conn->recv, 0, conn->recv.len);
-  }
-  else if (event == MG_EV_ERROR) {
-    transport.failed = true;
-    transport.connected = false;
-    TCPIP_UNUSED(data); // Mongoose logs the error before dispatching it.
-  }
-  else if (event == MG_EV_CLOSE) {
-    transport.connected = false;
-    client.m_conn = nullptr;
-  }
+  return m_transport && m_transport->connected;
 }
 
 void
 VscpRemoteTcpIf::transportClose()
 {
   m_transport.reset();
-  m_conn = nullptr;
 }
 
 int
 VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
 {
-  if (!m_transport)
-    return -VSCP_ERROR_STOPPED;
-  if (timeout < 0)
-    timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
-  auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
-  while (m_transport->received.empty()) {
-    if (!isConnected())
-      return -VSCP_ERROR_STOPPED;
-    auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       deadline - std::chrono::steady_clock::now()).count();
-    mg_mgr_poll(&m_transport->manager, static_cast<int>(std::max<int64_t>(0, std::min<int64_t>(remaining, 10))));
-    if (!m_transport->received.empty())
-      break;
-    if (std::chrono::steady_clock::now() >= deadline)
-      return isConnected() ? 0 : -VSCP_ERROR_STOPPED;
-  }
-  size_t count = (std::min)(length, m_transport->received.size());
-  m_transport->received.copy(static_cast<char *>(buffer), count);
-  m_transport->received.erase(0, count);
-  return static_cast<int>(count);
+  return m_transport ? m_transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
+}
+
+int
+VscpRemoteTcpIf::transportWrite(const void *buffer, size_t length, uint32_t timeout)
+{
+  int result = m_transport ? m_transport->write(buffer, length, timeout) : VSCP_ERROR_STOPPED;
+  if (result != VSCP_ERROR_SUCCESS)
+    transportClose();
+  return result;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -371,7 +1055,6 @@ VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
 
 VscpRemoteTcpIf::VscpRemoteTcpIf()
 {
-  m_conn = nullptr;
   m_lastResponseTime = 0;
 
   m_bTLS        = false;
@@ -548,7 +1231,7 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
     return VSCP_ERROR_CONNECTION;
   }
 
-  if (!mg_send(m_conn, cmd.data(), cmd.length())) {
+  if (VSCP_ERROR_SUCCESS != transportWrite(cmd.data(), cmd.length(), m_responseTimeOut)) {
     return VSCP_ERROR_ERROR;
   }
 
@@ -577,8 +1260,9 @@ VscpRemoteTcpIf::doCmdBinary(void)
 
   crcInit();
   doClrInputQueue();
-  if (!mg_send(m_conn, "BINARY\r\n", 8)) {
-    return VSCP_ERROR_ERROR;
+  int writeResult = transportWrite("BINARY\r\n", 8, m_responseTimeOut);
+  if (writeResult != VSCP_ERROR_SUCCESS) {
+    return writeResult == VSCP_ERROR_TIMEOUT ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_ERROR;
   }
 
   // Read exactly through the response line: binary data may immediately
@@ -636,19 +1320,7 @@ VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
   packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
   packet.push_back(static_cast<uint8_t>(frame.size()));
   packet.insert(packet.end(), frame.begin(), frame.end());
-  if (!mg_send(m_conn, packet.data(), packet.size())) {
-    return VSCP_ERROR_ERROR;
-  }
-
-  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(m_responseTimeOut);
-  while (isConnected() && m_conn->send.len) {
-    if (std::chrono::steady_clock::now() >= deadline) {
-      transportClose(); // Do not retry a partially transmitted frame.
-      return VSCP_ERROR_TIMEOUT;
-    }
-    mg_mgr_poll(&m_transport->manager, 1);
-  }
-  return isConnected() ? VSCP_ERROR_SUCCESS : VSCP_ERROR_STOPPED;
+  return transportWrite(packet.data(), packet.size(), m_responseTimeOut);
 }
 
 int
@@ -968,29 +1640,16 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
     return VSCP_ERROR_PARAMETER;
   }
   doCmdClose();
-  m_transport.reset(new Transport(this));
-  m_transport->host = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
-  if (bSecure && !prepareTls(*this, m_transport->ca, m_transport->cert, m_transport->key)) {
-    VSCP_TLS_ERROR(("Invalid TLS configuration"));
-    transportClose();
-    return VSCP_ERROR_CONNECTION;
-  }
-  std::string url = "tcp://" + strHost;
-  m_conn = mg_connect(&m_transport->manager, url.c_str(), transportHandler, m_transport.get());
-  auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(m_connectionTimeOut);
-  while (m_conn && !isConnected() && !m_transport->failed &&
-         std::chrono::steady_clock::now() < deadline) {
-    mg_mgr_poll(&m_transport->manager, 10);
-  }
-
-  if (!isConnected()) {
+  m_transport.reset(new Transport);
+  std::string socketHost = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
+  int openResult = m_transport->open(*this, socketHost, portString);
+  if (openResult != VSCP_ERROR_SUCCESS) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER
     std::cout << "Connection failed." << strHostname << std::endl;
 #endif
-    bool failed = m_transport->failed;
     transportClose();
-    return failed ? VSCP_ERROR_CONNECTION : VSCP_ERROR_TIMEOUT;
+    return openResult;
   }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
