@@ -51,7 +51,6 @@
 #include <openssl/err.h>
 
 #include <math.h>
-#include <semaphore.h>
 #include <stdlib.h>
 #ifdef WIN32
 #define VSCP_TLS_ERROR(args) mg_log args
