@@ -1028,6 +1028,14 @@ TEST(VscpHelper, eventToEventEx_Empty)
     EXPECT_EQ(0, eventEx.sizeData);
 }
 
+TEST(VscpHelper, eventToEventEx_RejectsMissingData)
+{
+    vscpEvent event{};
+    event.sizeData = 1;
+    vscpEventEx eventEx{};
+    EXPECT_FALSE(vscp_convertEventToEventEx(&eventEx, &event));
+}
+
 TEST(VscpHelper, eventToEventEx_OriginalFrame)
 {
     vscpEvent event;
@@ -1134,6 +1142,34 @@ TEST(VscpHelper, eventExToEvent)
     EXPECT_EQ(3, event.pdata[2]);
     
     vscp_deleteEvent(&event);
+}
+
+TEST(VscpHelper, eventExConversionRejectsOversizedData)
+{
+    vscpEventEx eventEx{};
+    eventEx.sizeData = VSCP_LEVEL2_MAXDATA + 1;
+    vscpEvent event{};
+    canalMsg message{};
+    EXPECT_FALSE(vscp_convertEventExToEvent(&event, &eventEx));
+    EXPECT_FALSE(vscp_convertEventExToCanal(&message, &eventEx));
+    EXPECT_EQ(nullptr, event.pdata);
+}
+
+TEST(VscpHelper, mirroredEventConvertsToCanalWithoutOverlappingCopy)
+{
+    vscpEventEx eventEx{};
+    eventEx.vscp_class = 512 + 10;
+    eventEx.vscp_type = 6;
+    eventEx.sizeData = 20;
+    for (uint8_t i = 0; i < eventEx.sizeData; ++i) {
+        eventEx.data[i] = i;
+    }
+    canalMsg message{};
+    ASSERT_TRUE(vscp_convertEventExToCanal(&message, &eventEx));
+    ASSERT_EQ(4, message.sizeData);
+    for (uint8_t i = 0; i < message.sizeData; ++i) {
+        EXPECT_EQ(16 + i, message.data[i]);
+    }
 }
 
 TEST(VscpHelper, eventExToEvent_OriginalFrame)

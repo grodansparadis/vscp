@@ -2,20 +2,24 @@
 //
 // Unit tests for vscpClientUdp
 //
-// These tests exercise the vscpClientUdp class without requiring
-// actual network communication. Constructor defaults, JSON config
-// serialization/parsing, getters/setters, filter, receive queue,
-// version, capabilities, and callbacks are all tested locally.
+// Tests include local configuration and loopback communication. Scoped
+// link-local exchange additionally requires the isolated test interfaces.
 //
 
 #include <gtest/gtest.h>
 
+#include <pthread.h>
 #include <semaphore.h>
 #include <vscp-client-udp.h>
 #include <vscphelper.h>
 
 #include <nlohmann/json.hpp>
+#include <atomic>
+#include <cstdlib>
 #include <string>
+#include <vector>
+
+#include "../datagram_test_helpers.h"
 
 using json = nlohmann::json;
 
@@ -478,7 +482,6 @@ TEST(VscpClientUdp, InitFromJsonEncryptionAES128)
   j["ip"]         = "udp://10.0.0.1:9598";
   j["encryption"] = VSCP_ENCRYPTION_AES128;
   j["key"]        = "A4A86F7D7E119BA3F0CD06881E371044";
-  // Need filter fields since they're parsed inside the key block
   j["priority-filter"] = 0;
   j["priority-mask"]   = 0;
   j["class-filter"]    = 0;
@@ -526,6 +529,11 @@ TEST(VscpClientUdp, ConfigRoundtrip)
 
   EXPECT_EQ(j1["encryption"], j2["encryption"]);
   EXPECT_EQ(j1["ip"], j2["ip"]);
+}
+
+TEST(VscpClientUdp, JsonOptionsAreValidatedAndTransactional)
+{
+  verifyDatagramJsonOptions<vscpClientUdp>("[::1]:40000");
 }
 
 // ---------------------------------------------------------------------------
@@ -609,3 +617,369 @@ TEST(VscpClientUdp, DisconnectClosesSocket)
   EXPECT_EQ(VSCP_ERROR_SUCCESS, rv);
   EXPECT_FALSE(client.isConnected());
 }
+
+TEST(VscpClientUdp, Ipv6EndpointAndPortRoundtrip)
+{
+  const std::vector<std::pair<std::string, std::string>> endpoints = {
+    {"::1", "udp://[::1]:33333"},
+    {"udp://[2001:db8::1]:65535", "udp://[2001:db8::1]:65535"},
+    {"[fe80::1234%eth0]:40000", "udp://[fe80::1234%25eth0]:40000"},
+    {"udp://[fe80::1234%251]:54321", "udp://[fe80::1234%251]:54321"}
+  };
+  for (const auto &entry : endpoints) {
+    vscpClientUdp client;
+    ASSERT_TRUE(client.initFromJson(json{{"ip", entry.first}}.dump())) << entry.first;
+    EXPECT_EQ(entry.second, json::parse(client.getConfigAsJson())["ip"]);
+    vscpClientUdp restored;
+    ASSERT_TRUE(restored.initFromJson(client.getConfigAsJson()));
+    EXPECT_EQ(entry.second, json::parse(restored.getConfigAsJson())["ip"]);
+  }
+  vscpClientUdp client;
+  EXPECT_EQ("udp://255.255.255.255:33333", json::parse(client.getConfigAsJson())["ip"]);
+  ASSERT_TRUE(client.initFromJson(R"({"ip":"::1","port":65535})"));
+  EXPECT_EQ("udp://[::1]:65535", json::parse(client.getConfigAsJson())["ip"]);
+}
+
+TEST(VscpClientUdp, RejectsInvalidDatagramEndpointsAndPorts)
+{
+  const std::vector<std::string> endpoints = {
+    "", "udp://[::1", "udp://[::1]junk", "[localhost]:1234", "[::1]:",
+    "[::1]:0", "[::1]:-1", "[::1]:65536", "127.0.0.1:bad",
+    "999.1.1.1:1234", "::1%", "udp://[::1%25]:1234", ":9598"
+  };
+  for (const auto &endpoint : endpoints) {
+    vscpClientUdp client;
+    EXPECT_FALSE(client.initFromJson(json{{"ip", endpoint}}.dump())) << endpoint;
+    EXPECT_EQ("udp://255.255.255.255:33333", json::parse(client.getConfigAsJson())["ip"]);
+    EXPECT_FALSE(client.isConnected());
+  }
+  for (const json &port : {json(0), json(-1), json(65536), json(1.5), json("1234")}) {
+    vscpClientUdp client;
+    EXPECT_FALSE(client.initFromJson(json{{"ip", "::1"}, {"port", port}}.dump())) << port;
+  }
+  for (const json &encryption : {json(-1), json(7), json(15), json(1.5), json("1")}) {
+    vscpClientUdp client;
+    EXPECT_FALSE(client.initFromJson(json{{"encryption", encryption}}.dump())) << encryption;
+  }
+}
+
+static void
+exerciseUdpLoopback(int family)
+{
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(family);
+  if (!port && family == AF_INET6) {
+    GTEST_SKIP() << "IPv6 loopback is not available";
+  }
+  ASSERT_NE(port, 0);
+  const std::string address = family == AF_INET6 ? "[::1]" : "127.0.0.1";
+  ASSERT_TRUE(client.initFromJson(json{{"ip", address + ":" + std::to_string(port)},
+                                       {"encryption", VSCP_ENCRYPTION_AES128},
+                                       {"key", "0102030405060708090A0B0C0D0E0F10"}}.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  EXPECT_FALSE(client.initFromJson(R"({"ip":"127.0.0.1:1234"})"));
+
+  uint8_t bytes[] = {0x12, 0x34, 0x56};
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.timestamp_ns = 123456789;
+  event.vscp_class = 10;
+  event.vscp_type = 6;
+  event.sizeData = sizeof(bytes);
+  event.pdata = bytes;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  vscpEvent received{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(received, 2000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  EXPECT_EQ(event.vscp_type, received.vscp_type);
+  ASSERT_EQ(sizeof(bytes), received.sizeData);
+  EXPECT_EQ(0, memcmp(bytes, received.pdata, sizeof(bytes)));
+  vscp_deleteEvent(&received);
+
+  vscpEventEx extended{};
+  extended.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  extended.vscp_class = 20;
+  extended.vscp_type = 3;
+  extended.sizeData = 2;
+  extended.data[0] = 0xa5;
+  extended.data[1] = 0x5a;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(extended));
+  ASSERT_TRUE(waitForDatagramCount(client, 1));
+  vscpEventEx receivedEx{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receive(receivedEx));
+  EXPECT_EQ(extended.vscp_class, receivedEx.vscp_class);
+  EXPECT_EQ(extended.sizeData, receivedEx.sizeData);
+  EXPECT_EQ(extended.data[0], receivedEx.data[0]);
+  EXPECT_EQ(extended.data[1], receivedEx.data[1]);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBlocking(receivedEx, 10));
+
+  client.m_encryptType = VSCP_ENCRYPTION_NONE;
+  canalMsg message{};
+  message.id = (10U << 16) | (6U << 8) | 42U;
+  message.sizeData = 2;
+  message.data[0] = 0x77;
+  message.data[1] = 0x88;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(message));
+  canalMsg receivedCanal{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(receivedCanal, 5000));
+  EXPECT_EQ(message.id, receivedCanal.id);
+  EXPECT_EQ(message.sizeData, receivedCanal.sizeData);
+  EXPECT_EQ(message.data[0], receivedCanal.data[0]);
+  EXPECT_EQ(message.data[1], receivedCanal.data[1]);
+
+  const uint8_t shortFrame[] = {0x10};
+  const uint8_t shortEncryptedFrame[] = {0x11, 0x00};
+  ASSERT_TRUE(sendRawLoopbackDatagram(family, port, shortFrame, sizeof(shortFrame)));
+  ASSERT_TRUE(sendRawLoopbackDatagram(family, port, shortEncryptedFrame, sizeof(shortEncryptedFrame)));
+  std::vector<uint8_t> oversized(1100, 0);
+  ASSERT_TRUE(vscp_writeEventToFrame(oversized.data(), oversized.size(), 0, &event));
+  ASSERT_TRUE(sendRawLoopbackDatagram(family, port, oversized.data(), oversized.size()));
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBlocking(receivedEx, 100));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  ASSERT_TRUE(waitForDatagramCount(client, 1));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.clear());
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBlocking(receivedEx, 10));
+
+  extended.sizeData = VSCP_LEVEL2_MAXDATA + 1;
+  EXPECT_EQ(VSCP_ERROR_INVALID_FRAME, client.send(extended));
+  client.m_encryptType = 7;
+  EXPECT_EQ(VSCP_ERROR_INVALID_FRAME, client.send(event));
+  client.m_encryptType = VSCP_ENCRYPTION_NONE;
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.disconnect());
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, client.send(event));
+  extended.sizeData = 0;
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, client.send(extended));
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, client.send(message));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(receivedEx, 2000));
+  EXPECT_EQ(event.vscp_class, receivedEx.vscp_class);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.disconnect());
+}
+
+TEST(VscpClientUdp, Ipv4LoopbackExchange)
+{
+  exerciseUdpLoopback(AF_INET);
+}
+
+TEST(VscpClientUdp, Ipv6LoopbackExchange)
+{
+  exerciseUdpLoopback(AF_INET6);
+}
+
+TEST(VscpClientUdp, Ipv4AndIpv6CanBindTheSamePort)
+{
+  vscpClientUdp ipv4;
+  vscpClientUdp ipv6;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  if (!port) {
+    GTEST_SKIP() << "IPv6 loopback is not available";
+  }
+  ASSERT_TRUE(ipv4.initFromJson(json{{"ip", "127.0.0.1:" + std::to_string(port)}}.dump()));
+  ASSERT_TRUE(ipv6.initFromJson(json{{"ip", "[::1]:" + std::to_string(port)}}.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ipv4.connect());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ipv6.connect());
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.vscp_class = 42;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ipv4.send(event));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ipv6.send(event));
+  vscpEventEx received{};
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, ipv4.receiveBlocking(received, 2000));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, ipv6.receiveBlocking(received, 2000));
+}
+
+TEST(VscpClientUdp, Ipv4MappedIpv6LoopbackExchange)
+{
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  if (!port) {
+    GTEST_SKIP() << "IPv6 loopback is not available";
+  }
+  ASSERT_TRUE(client.initFromJson(json{{"ip", "[::ffff:127.0.0.1]:" + std::to_string(port)}}.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.vscp_class = 53;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  vscpEventEx received{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(received, 2000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+}
+
+TEST(VscpClientUdp, ConcurrentDisconnectWithReceiveCallback)
+{
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(AF_INET);
+  ASSERT_NE(port, 0);
+  ASSERT_TRUE(client.initFromJson(json{{"ip", "127.0.0.1:" + std::to_string(port)}}.dump()));
+  std::atomic<bool> inCallback{false};
+  std::atomic<bool> proceed{false};
+  std::atomic<int> callbackResult{-999};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setCallbackEv([&](vscpEvent &, void *) {
+    inCallback.store(true);
+    while (!proceed.load()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    callbackResult.store(client.disconnect());
+  }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (!inCallback.load() && std::chrono::steady_clock::now() < deadline) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  if (!inCallback.load()) {
+    proceed.store(true);
+    FAIL() << "Receive callback did not run";
+  }
+  std::atomic<int> disconnectResult{-999};
+  std::thread stopper([&] { disconnectResult.store(client.disconnect()); });
+  const auto stopDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (client.isConnected() && std::chrono::steady_clock::now() < stopDeadline) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  const bool stopped = !client.isConnected();
+  proceed.store(true);
+  stopper.join();
+  EXPECT_TRUE(stopped);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, disconnectResult.load());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, callbackResult.load());
+}
+
+#ifndef WIN32
+TEST(VscpClientUdp, Ipv6ScopedInterfaceAndDisconnectFromCallback)
+{
+#ifdef __APPLE__
+  const char *loopback = "lo0";
+#else
+  const char *loopback = "lo";
+#endif
+  const unsigned int index = if_nametoindex(loopback);
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  if (!index || !port) {
+    GTEST_SKIP() << "IPv6 loopback interface is not available";
+  }
+  ASSERT_TRUE(client.initFromJson(json{{"ip", "[::1%" + std::string(loopback) + "]:" + std::to_string(port)},
+                                       {"interface", std::to_string(index)}}.dump()));
+  std::atomic<int> callbackResult{-999};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setCallbackEv([&](vscpEvent &, void *) {
+    callbackResult.store(client.disconnect());
+  }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (callbackResult.load() == -999 && std::chrono::steady_clock::now() < deadline) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+  }
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, callbackResult.load());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.disconnect());
+  EXPECT_FALSE(client.isConnected());
+}
+#endif
+
+#ifdef __linux__
+static void
+exerciseIpv6ExchangeOnSeparateInterfaces(const char *txInterface, const char *rxInterface,
+                                         const char *txAddress, const char *rxAddress, bool scoped)
+{
+  const unsigned int txIndex = if_nametoindex(txInterface);
+  const unsigned int rxIndex = if_nametoindex(rxInterface);
+  ASSERT_NE(txIndex, 0u);
+  ASSERT_NE(rxIndex, 0u);
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  ASSERT_NE(port, 0);
+  const std::string destination =
+    "[" + std::string(rxAddress) + (scoped ? "%" + std::string(txInterface) : "") +
+    "]:" + std::to_string(port);
+  ASSERT_TRUE(client.initFromJson(json{{"ip", destination}, {"interface", txInterface}}.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+
+  TestSocket peer = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+  ASSERT_NE(peer, invalidTestSocket);
+  const int reuse = 1;
+  ASSERT_EQ(0, setsockopt(peer, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)));
+  timeval timeout{2, 0};
+  ASSERT_EQ(0, setsockopt(peer, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)));
+  sockaddr_in6 peerAddress{};
+  peerAddress.sin6_family = AF_INET6;
+  peerAddress.sin6_port = htons(port);
+  peerAddress.sin6_scope_id = rxIndex;
+  ASSERT_EQ(1, inet_pton(AF_INET6, rxAddress, &peerAddress.sin6_addr));
+  ASSERT_EQ(0, bind(peer, reinterpret_cast<sockaddr *>(&peerAddress), sizeof(peerAddress)));
+
+  uint8_t bytes[] = {0x63, 0x64};
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.vscp_class = 75;
+  event.sizeData = sizeof(bytes);
+  event.pdata = bytes;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  uint8_t frame[1024]{};
+  const int receivedLength = static_cast<int>(recv(peer, frame, sizeof(frame), 0));
+  ASSERT_GT(receivedLength, 0);
+  vscpEvent received{};
+  ASSERT_TRUE(vscp_getEventFromFrame(&received, frame, receivedLength));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  ASSERT_EQ(sizeof(bytes), received.sizeData);
+  EXPECT_EQ(0, memcmp(bytes, received.pdata, sizeof(bytes)));
+  vscp_deleteEvent(&received);
+  closeTestSocket(peer);
+
+  peer = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+  ASSERT_NE(peer, invalidTestSocket);
+  if (!scoped) {
+    const unsigned int boundInterface = htonl(rxIndex);
+    ASSERT_EQ(0, setsockopt(peer, IPPROTO_IPV6, IPV6_UNICAST_IF, &boundInterface, sizeof(boundInterface)));
+  }
+  peerAddress.sin6_port = 0;
+  ASSERT_EQ(0, bind(peer, reinterpret_cast<sockaddr *>(&peerAddress), sizeof(peerAddress)));
+  sockaddr_in6 target{};
+  target.sin6_family = AF_INET6;
+  target.sin6_port = htons(port);
+  target.sin6_scope_id = rxIndex;
+  ASSERT_EQ(1, inet_pton(AF_INET6, txAddress, &target.sin6_addr));
+  ASSERT_TRUE(vscp_writeEventToFrame(frame, sizeof(frame), 0, &event));
+  const size_t frameLength = vscp_getFrameSizeFromEvent(&event);
+  ASSERT_EQ(static_cast<ssize_t>(frameLength),
+            sendto(peer, frame, frameLength, 0, reinterpret_cast<sockaddr *>(&target), sizeof(target)));
+  closeTestSocket(peer);
+  vscpEventEx receivedEx{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(receivedEx, 2000));
+  EXPECT_EQ(event.vscp_class, receivedEx.vscp_class);
+  EXPECT_EQ(event.sizeData, receivedEx.sizeData);
+  EXPECT_EQ(bytes[0], receivedEx.data[0]);
+  EXPECT_EQ(bytes[1], receivedEx.data[1]);
+}
+
+TEST(VscpClientUdp, Ipv6LinkLocalExchangeOnSeparateInterfaces)
+{
+  const char *txInterface = std::getenv("VSCP_TEST_MULTICAST_TX_INTERFACE");
+  const char *rxInterface = std::getenv("VSCP_TEST_MULTICAST_RX_INTERFACE");
+  const char *txAddress = std::getenv("VSCP_TEST_LINKLOCAL_ADDRESS_A");
+  const char *rxAddress = std::getenv("VSCP_TEST_LINKLOCAL_ADDRESS_B");
+  if (!txInterface || !rxInterface || !txAddress || !rxAddress) {
+    GTEST_SKIP() << "Set the isolated interface and link-local address test variables";
+  }
+  exerciseIpv6ExchangeOnSeparateInterfaces(txInterface, rxInterface, txAddress, rxAddress, true);
+}
+
+TEST(VscpClientUdp, Ipv6GlobalExchangeOnSeparateInterfaces)
+{
+  const char *txInterface = std::getenv("VSCP_TEST_MULTICAST_TX_INTERFACE");
+  const char *rxInterface = std::getenv("VSCP_TEST_MULTICAST_RX_INTERFACE");
+  const char *txAddress = std::getenv("VSCP_TEST_GLOBAL_ADDRESS_A");
+  const char *rxAddress = std::getenv("VSCP_TEST_GLOBAL_ADDRESS_B");
+  if (!txInterface || !rxInterface || !txAddress || !rxAddress) {
+    GTEST_SKIP() << "Set the isolated interface and global address test variables";
+  }
+  exerciseIpv6ExchangeOnSeparateInterfaces(txInterface, rxInterface, txAddress, rxAddress, false);
+}
+#endif

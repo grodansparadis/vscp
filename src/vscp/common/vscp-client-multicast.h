@@ -26,12 +26,15 @@
 #if !defined(VSCPCLIENTMULTICAST_H__INCLUDED_)
 #define VSCPCLIENTMULTICAST_H__INCLUDED_
 
+#include "vscp-socket-address.h"
+#include <pthread.h>
+
 #include "vscp.h"
 #include "vscphelper.h"
 #include "vscp-client-base.h"
 
-#include <pthread.h>
-
+#include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 
@@ -200,7 +203,7 @@ public:
   json m_j_config;
 
   /// Flag for worker thread run as long it's true
-  bool m_bRun;
+  std::atomic<bool> m_bRun;
 
   /*!
     True if sent frames should be encrypted
@@ -271,7 +274,7 @@ private:
       Set the multicast port. Default is 9598
       @param port Multicast port to set
   */
-  short m_multicastPort;
+  uint16_t m_multicastPort;
 
   /*!
     Time to live for multicast packets
@@ -280,6 +283,21 @@ private:
   uint8_t m_ttl;
 
   // ------------------------------------------------------------------------
+
+  friend void workerThread(vscpClientMulticast *pClient);
+
+  std::atomic<bool> m_connected;
+  bool m_socketOpen;
+  bool m_semReady;
+#ifdef WIN32
+  bool m_winsockReady;
+#endif
+  sockaddr_storage m_destination;
+  int m_destinationLength;
+  std::condition_variable_any m_receiveCondition;
+  std::mutex m_lifecycleMutex;
+  std::condition_variable m_lifecycleCondition;
+  bool m_joining;
 
   /// Workerthread
   std::thread *m_pworkerthread;

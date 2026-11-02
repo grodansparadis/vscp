@@ -57,3 +57,39 @@ to build the unittest.   Run the test with
 ```
 ./unittest
 ```
+
+## UDP and multicast IPv6 integration tests
+
+The UDP and multicast client tests exercise IPv4 and IPv6 loopback locally.
+The separate-interface link-local, global unicast, and multicast tests skip
+unless their test interface variables are set. On Linux, they can be run
+without using the host network in an isolated user/network namespace (requires
+`unshare` and `ip`):
+
+```sh
+cmake -S tests -B tests/build
+cmake --build tests/build --target unittest_vscp_client_udp unittest_vscp_client_multicast
+unshare -nUr sh -c '
+  set -e
+  ip link set lo up
+  ip link add vscp0 type veth peer name vscp1
+  ip link set vscp0 up
+  ip link set vscp1 up
+  ip -6 addr add fe80::1/64 dev vscp0 nodad
+  ip -6 addr add fe80::2/64 dev vscp1 nodad
+  ip -6 addr add 2001:db8:31::1/64 dev vscp0 nodad
+  ip -6 addr add 2001:db8:31::2/64 dev vscp1 nodad
+  ip -6 route add ff00::/8 dev vscp0
+  ip -6 route add ff00::/8 dev vscp1 metric 2000
+  export VSCP_TEST_MULTICAST_TX_INTERFACE=vscp0
+  export VSCP_TEST_MULTICAST_RX_INTERFACE=vscp1
+  export VSCP_TEST_LINKLOCAL_ADDRESS_A=fe80::1
+  export VSCP_TEST_LINKLOCAL_ADDRESS_B=fe80::2
+  export VSCP_TEST_GLOBAL_ADDRESS_A=2001:db8:31::1
+  export VSCP_TEST_GLOBAL_ADDRESS_B=2001:db8:31::2
+  tests/build/vscp-client-udp/unittest_vscp_client_udp \
+    --gtest_filter=VscpClientUdp.Ipv6LinkLocalExchangeOnSeparateInterfaces:VscpClientUdp.Ipv6GlobalExchangeOnSeparateInterfaces
+  tests/build/vscp-client-multicast/unittest_vscp_client_multicast \
+    --gtest_filter=VscpClientMulticast.Ipv6MulticastExchangeOnSeparateInterfaces
+'
+```

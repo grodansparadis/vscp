@@ -73,7 +73,7 @@ Consumers using that member must migrate to the client API, and applications
 using the C++ library should be rebuilt for the changed class layout.
 The `vscp_mongoose` CMake target is no longer provided.
 The unbuilt legacy multicast server's `receiveFrame` and `sendFrame` stubs were
-also removed; the `vscp_client_multicast` library is unchanged.
+also removed.
 
 ```cpp
 VscpRemoteTcpIf client;
@@ -111,6 +111,52 @@ cmake --build build --target test_tcp_transport
 ```
 
 These tests require Python 3 and the `openssl` command.
+
+## UDP and multicast addressing
+
+`vscpClientUdp` and `vscpClientMulticast` support IPv4 and IPv6 destinations.
+The existing defaults remain IPv4 broadcast `255.255.255.255:33333` for UDP and
+group `224.0.23.158:9598` for multicast. An IPv6 multicast group must be chosen
+explicitly.
+
+The JSON `ip` value accepts an IPv4 address or hostname, a bracketed IPv6
+address with an optional port, or an unbracketed IPv6 literal without a port.
+For example:
+
+```json
+{"ip":"udp://[2001:db8::1]:40000"}
+{"ip":"fe80::1234%eth0","port":40000}
+{"ip":"udp://[ff02::114%25eth0]:9598","interface":"eth0","ttl":1}
+```
+
+In a `udp://` URI, `%25` encodes the `%` introducing an IPv6 zone. Bare `%`
+zone identifiers are also accepted, and `getConfigAsJson()` returns bracketed
+IPv6 URIs with the zone delimiter encoded as `%25`. The `port` property, when
+present, overrides the port in `ip`; valid ports are 1 through 65535.
+
+`interface` accepts an interface name or numeric index; the historical
+`"name address"` form also uses its first token when the full name is not
+found. Link-local IPv6 destinations and link-local multicast groups require an
+interface, supplied either through `interface` or an address zone. If both are
+present, they must identify the same interface. IPv6 unicast uses the selected
+outgoing interface; multicast joins the group on it and uses it for outgoing
+traffic. The local socket binds the configured port on the wildcard address.
+
+For multicast, `ttl` specifies the IPv4 TTL or IPv6 hop limit (0-255). Local
+multicast loopback remains disabled, as in the previous IPv4 implementation.
+Invalid endpoints, ports, groups, interfaces, or conflicting zones fail
+configuration or connection instead of falling back to broadcast.
+Disconnect before changing a client's JSON configuration.
+
+For encrypted datagrams, `encryption` selects AES-128, AES-192, or AES-256
+and `key` contains exactly 32, 48, or 64 hexadecimal digits, respectively.
+Filter fields are optional and can be configured independently of the key.
+Invalid JSON settings are rejected without changing the existing configuration.
+
+The client classes' layouts changed and `m_bRun` is now an atomic boolean;
+C++ consumers should rebuild and should not bind that member to a `bool &`.
+Real link-local and multicast integration tests and their optional isolated
+Linux network setup are described in [tests/README.md](../tests/README.md).
 
 ## vscp_util
 

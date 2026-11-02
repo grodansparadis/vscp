@@ -26,12 +26,15 @@
 #if !defined(VSCPCLIENTUDP_H__INCLUDED_)
 #define VSCPCLIENTUDP_H__INCLUDED_
 
+#include "vscp-socket-address.h"
+#include <pthread.h>
+
 #include "vscp.h"
 #include "vscphelper.h"
 #include "vscp-client-base.h"
 
-#include <pthread.h>
-
+#include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 
@@ -200,7 +203,7 @@ public:
   json m_j_config;
 
   /// Flag for worker thread run as long it's true
-  bool m_bRun;
+  std::atomic<bool> m_bRun;
 
   /*!
     True if sent frames should be encrypted
@@ -262,18 +265,33 @@ private:
   std::string m_interface;
 
   /*!
-      Set the UDP destination address. Default is "255.255.255.255:9598" (broadcast)
+      Set the UDP destination address. Default is 255.255.255.255 (broadcast).
       @param addr UDP destination address to set
   */
   std::string m_udpAddr;
 
   /*!
-      Set the UDP port. Default is 9598
+      Set the UDP port. Default is VSCP_DEFAULT_UDP_PORT.
       @param port UDP port to set
   */
-  short m_udpPort;
+  uint16_t m_udpPort;
 
   // ------------------------------------------------------------------------
+
+  friend void workerThread(vscpClientUdp *pClient);
+
+  std::atomic<bool> m_connected;
+  bool m_socketOpen;
+  bool m_semReady;
+#ifdef WIN32
+  bool m_winsockReady;
+#endif
+  sockaddr_storage m_destination;
+  int m_destinationLength;
+  std::condition_variable_any m_receiveCondition;
+  std::mutex m_lifecycleMutex;
+  std::condition_variable m_lifecycleCondition;
+  bool m_joining;
 
   /// Workerthread
   std::thread *m_pworkerthread;

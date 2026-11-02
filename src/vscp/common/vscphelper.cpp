@@ -4817,7 +4817,7 @@ vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev)
     return false;
   }
 
-  if (pev->sizeData > VSCP_LEVEL2_MAXDATA) {
+  if (pev->sizeData > VSCP_LEVEL2_MAXDATA || (pev->sizeData && nullptr == pev->pdata)) {
     return false;
   }
 
@@ -4846,7 +4846,9 @@ vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev)
   pex->sizeData   = pev->sizeData;
 
   memcpy(pex->GUID, pev->GUID, 16);
-  memcpy(pex->data, pev->pdata, pev->sizeData);
+  if (pev->sizeData) {
+    memcpy(pex->data, pev->pdata, pev->sizeData);
+  }
 
   return true;
 }
@@ -4864,6 +4866,10 @@ vscp_convertEventExToEvent(vscpEvent *pev, const vscpEventEx *pex)
   }
 
   if (nullptr == pex) {
+    return false;
+  }
+
+  if (pex->sizeData > VSCP_LEVEL2_MAXDATA) {
     return false;
   }
 
@@ -7426,6 +7432,10 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mo
     return false;
   }
 
+  if (pev->sizeData && nullptr == pev->pdata) {
+    return false;
+  }
+
   sizeData   = pev->sizeData;
   vscp_class = pev->vscp_class;
   nodeid     = pev->GUID[15]; // Event hold node id
@@ -7441,7 +7451,7 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mo
     // Destination guid (interface) is not needed anymore
     sizeData = pev->sizeData - 16;
     if (sizeData) {
-      memcpy(pev->pdata, pev->pdata + 16, sizeData);
+      memmove(pev->pdata, pev->pdata + 16, sizeData);
     }
 
     // Make level I class
@@ -7505,12 +7515,12 @@ vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pex, uint8_t 
   }
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return false;
   }
 
   rv = vscp_convertEventToCanal(pcanalMsg, pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return rv;
 }

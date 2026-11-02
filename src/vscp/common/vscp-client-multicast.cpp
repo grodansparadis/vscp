@@ -27,6 +27,7 @@
 #include <pch.h>
 #endif
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,6 +59,7 @@
 
 #include "vscphelper.h"
 #include "vscp-client-multicast.h"
+#include "vscp-client-datagram.h"
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -78,14 +80,24 @@ workerThread(vscpClientMulticast *pClient);
 //
 
 vscpClientMulticast::vscpClientMulticast()
-  : CVscpClient()
+  : CVscpClient(),
+    m_bRun(true),
+    m_connected(false),
+    m_socketOpen(false),
+    m_semReady(false),
+#ifdef WIN32
+    m_winsockReady(false),
+#endif
+    m_destination{},
+    m_destinationLength(0),
+    m_joining(false),
+    m_pworkerthread(nullptr)
 {
   m_type               = CVscpClient::connType::MULTICAST;
   m_interface          = ""; // Default interface is all
   m_multicastGroupAddr = DEFAULT_MULTICAST_GROUP;
   m_multicastPort      = DEFAULT_MULTICAST_PORT;
   m_ttl                = 1;
-  m_bRun               = true;
   m_bEncrypt           = false;
   m_encryptType        = VSCP_ENCRYPTION_NONE;
   memset(m_key, 0, sizeof(m_key));
@@ -100,7 +112,8 @@ vscpClientMulticast::vscpClientMulticast()
 
 #ifdef WIN32
   // Initialize Winsock
-  if (WSAStartup(MAKEWORD(2, 2), &m_wsaData) != 0) {
+  m_winsockReady = WSAStartup(MAKEWORD(2, 2), &m_wsaData) == 0;
+  if (!m_winsockReady) {
     fprintf(stderr, "WSAStartup failed\n");
   }
 #endif
@@ -111,8 +124,14 @@ vscpClientMulticast::vscpClientMulticast()
 
 #ifdef WIN32
   m_semReceiveQueue = CreateSemaphore(NULL, 0, 0x7fffffff, NULL);
-#else
-  sem_init(&m_semReceiveQueue, 0, 0);
+  m_semReady = m_semReceiveQueue != NULL;
+#elif !defined(__APPLE__)
+  m_semReady = sem_init(&m_semReceiveQueue, 0, 0) == 0;
+#endif
+#ifndef __APPLE__
+  if (!m_semReady) {
+    fprintf(stderr, "Cannot initialize the multicast receive semaphore\n");
+  }
 #endif
 
   pthread_mutex_init(&m_mutexSocket, NULL);
@@ -125,15 +144,20 @@ vscpClientMulticast::vscpClientMulticast()
 
 vscpClientMulticast::~vscpClientMulticast()
 {
-  // Disconnect if connected
-  if (isConnected()) {
-    disconnect();
-  }
+  disconnect();
+  clear();
 
 #ifdef WIN32
-  CloseHandle(m_semReceiveQueue);
-#else
-  sem_destroy(&m_semReceiveQueue);
+  if (m_semReady) {
+    CloseHandle(m_semReceiveQueue);
+  }
+  if (m_winsockReady) {
+    WSACleanup();
+  }
+#elif !defined(__APPLE__)
+  if (m_semReady) {
+    sem_destroy(&m_semReceiveQueue);
+  }
 #endif
 
   pthread_mutex_destroy(&m_mutexSocket);
@@ -147,16 +171,15 @@ vscpClientMulticast::~vscpClientMulticast()
 std::string
 vscpClientMulticast::getConfigAsJson(void)
 {
+  std::lock_guard<std::mutex> lifecycle(m_lifecycleMutex);
+  vscp_datagram::PthreadMutex mutex{&m_mutexReceiveQueue};
+  std::lock_guard<vscp_datagram::PthreadMutex> queueLock(mutex);
   std::string str;
   char buf[65];
   json j;
 
   j["interface"]       = m_interface.c_str();
-  std::string strGroup = "udp://";
-  strGroup += m_multicastGroupAddr;
-  strGroup += ":";
-  strGroup += std::to_string(m_multicastPort);
-  j["ip"]         = strGroup.c_str(); // addr:port
+  j["ip"]         = vscp_datagram::formatEndpoint(m_multicastGroupAddr, m_multicastPort);
   j["ttl"]        = m_ttl;
   j["encryption"] = m_encryptType;
   j["padding"]    = "pkcs7";
@@ -209,97 +232,60 @@ vscpClientMulticast::getConfigAsJson(void)
 bool
 vscpClientMulticast::initFromJson(const std::string &config)
 {
-  try {
-    m_j_config = json::parse(config);
-
-    if (m_j_config.contains("interface") && m_j_config["interface"].is_string()) {
-      m_interface = m_j_config["interface"].get<std::string>();
-    }
-
-    // Can be of form [udp://]addr[:port]
-    if (m_j_config.contains("ip") && m_j_config["ip"].is_string()) {
-      std::string strAddr = m_j_config["ip"].get<std::string>();
-
-      if (strAddr.find("udp://") == 0) {
-        strAddr = strAddr.substr(6); // Remove "udp://"
-      }
-      size_t pos = strAddr.find(':');
-      if (pos != std::string::npos) {
-        // If there is a port number, split it off
-        std::string portStr = strAddr.substr(pos + 1);
-        if (vscp_isNumber(portStr)) {
-          m_multicastPort = vscp_readStringValue(portStr);
-        }
-        strAddr = strAddr.substr(0, pos); // Remove port from address
-      }
-
-      m_multicastGroupAddr = strAddr;
-    }
-
-    if (m_j_config.contains("port") && m_j_config["port"].is_number()) {
-      m_multicastPort = m_j_config["port"].get<uint16_t>();
-    }
-
-    if (m_j_config.contains("ttl") && m_j_config["ttl"].is_number()) {
-      m_ttl = m_j_config["ttl"].get<uint8_t>();
-    }
-
-    if (m_j_config.contains("encryption") && m_j_config["encryption"].is_number()) {
-      m_encryptType = m_j_config["encryption"].get<uint8_t>();
-    }
-
-    if (m_j_config.contains("padding")) {
-      if (!m_j_config["padding"].is_string()) {
-        return false;
-      }
-      if ("pkcs7" != m_j_config["padding"].get<std::string>()) {
-        return false;
-      }
-    }
-
-    if (m_j_config.contains("key") && m_j_config["key"].is_string()) {
-      switch (m_encryptType) {
-
-        case VSCP_ENCRYPTION_NONE:
-          memset(m_key, 0, sizeof(m_key));
-          break;
-
-        case VSCP_ENCRYPTION_AES128:
-          vscp_hexStr2ByteArray(m_key, 16, m_j_config["key"].get<std::string>().c_str());
-          break;
-
-        case VSCP_ENCRYPTION_AES192:
-          vscp_hexStr2ByteArray(m_key, 24, m_j_config["key"].get<std::string>().c_str());
-          break;
-
-        case VSCP_ENCRYPTION_AES256:
-          vscp_hexStr2ByteArray(m_key, 32, m_j_config["key"].get<std::string>().c_str());
-          break;
-
-        default:
-          memset(m_key, 0, sizeof(m_key));
-          break;
-      }
-
-      // Filter
-      try {
-        std::string str;
-        m_filter.filter_priority = m_j_config["priority-filter"].get<uint8_t>();
-        m_filter.mask_priority   = m_j_config["priority-mask"].get<uint8_t>();
-        m_filter.filter_class    = m_j_config["class-filter"].get<uint16_t>();
-        m_filter.mask_class      = m_j_config["class-mask"].get<uint16_t>();
-        m_filter.filter_type     = m_j_config["type-filter"].get<uint16_t>();
-        m_filter.mask_type       = m_j_config["type-mask"].get<uint16_t>();
-        vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
-        vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
-      }
-      catch (const std::exception &ex) {
-        // spdlog::error("SOCKETCAN client: Failed to read 'filter' Error='{}'", ex.what());
-        return false;
-      }
-    }
+  std::lock_guard<std::mutex> lifecycle(m_lifecycleMutex);
+  if (m_connected.load() || m_joining || m_pworkerthread) {
+    fprintf(stderr, "Disconnect the multicast client before changing its configuration\n");
+    return false;
   }
-  catch (...) {
+  vscp_datagram::PthreadMutex mutex{&m_mutexReceiveQueue};
+  std::lock_guard<vscp_datagram::PthreadMutex> queueLock(mutex);
+  try {
+    json nextConfig = json::parse(config);
+    if (!nextConfig.is_object()) {
+      fprintf(stderr, "Invalid multicast configuration object\n");
+      return false;
+    }
+    std::string interfaceName = m_interface;
+    std::string address = m_multicastGroupAddr;
+    uint16_t port = m_multicastPort;
+    uint8_t ttl = m_ttl;
+    uint8_t encryption = m_encryptType;
+    uint8_t key[sizeof(m_key)];
+    memcpy(key, m_key, sizeof(key));
+    vscpEventFilter filter = m_filter;
+    if (nextConfig.contains("interface")) {
+      if (!nextConfig["interface"].is_string()) {
+        fprintf(stderr, "Invalid multicast interface\n");
+        return false;
+      }
+      interfaceName = nextConfig["interface"].get<std::string>();
+    }
+    if (nextConfig.contains("ip")) {
+      if (!nextConfig["ip"].is_string() ||
+          !vscp_datagram::parseEndpoint(nextConfig["ip"].get<std::string>(), address, port)) {
+        fprintf(stderr, "Invalid multicast destination\n");
+        return false;
+      }
+    }
+    if (nextConfig.contains("port") && !vscp_datagram::jsonPort(nextConfig["port"], port)) {
+      fprintf(stderr, "Invalid multicast port\n");
+      return false;
+    }
+    if (!vscp_datagram::optionalUnsigned(nextConfig, "ttl", ttl) ||
+        !vscp_datagram::eventOptions(nextConfig, encryption, key, filter)) {
+      return false;
+    }
+    m_interface = interfaceName;
+    m_multicastGroupAddr = address;
+    m_multicastPort = port;
+    m_ttl = ttl;
+    m_encryptType = encryption;
+    memcpy(m_key, key, sizeof(m_key));
+    m_filter = filter;
+    m_j_config = std::move(nextConfig);
+  }
+  catch (const json::exception &ex) {
+    fprintf(stderr, "Invalid multicast configuration: %s\n", ex.what());
     return false;
   }
 
@@ -313,127 +299,77 @@ vscpClientMulticast::initFromJson(const std::string &config)
 int
 vscpClientMulticast::connect(void)
 {
-  if (isConnected()) {
-    // Already connected
+  std::unique_lock<std::mutex> lifecycle(m_lifecycleMutex);
+  if (m_connected.load()) {
     return VSCP_ERROR_SUCCESS;
   }
-
-  // Create a multicast socket
-  if ((m_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    perror("Socket creation failed");
+  while (m_joining) {
+    if (m_pworkerthread && m_pworkerthread->get_id() == std::this_thread::get_id()) {
+      fprintf(stderr, "Cannot reconnect multicast from its receive callback\n");
+      return VSCP_ERROR_OPERATION_FAILED;
+    }
+    m_lifecycleCondition.wait(lifecycle);
+    if (m_connected.load()) {
+      return VSCP_ERROR_SUCCESS;
+    }
+  }
+  if (m_pworkerthread) {
+    if (m_pworkerthread->get_id() == std::this_thread::get_id()) {
+      fprintf(stderr, "Cannot reconnect multicast from its receive callback\n");
+      return VSCP_ERROR_OPERATION_FAILED;
+    }
+    m_bRun.store(false);
+    m_joining = true;
+    std::thread *worker = m_pworkerthread;
+    lifecycle.unlock();
+    worker->join();
+    lifecycle.lock();
+    delete worker;
+    m_pworkerthread = nullptr;
+    vscp_datagram::closeClientSocket(*this, m_socketOpen);
+    m_joining = false;
+    m_lifecycleCondition.notify_all();
+  }
 #ifdef WIN32
-    WSACleanup();
-#endif
+  if (!m_winsockReady) {
     return VSCP_ERROR_CONNECTION;
   }
-
-  std::string interfaceName;
-  char interfaceAddress[INET_ADDRSTRLEN];
-
-  std::deque<std::string> interfaceSplit;
-  vscp_split(interfaceSplit, m_interface, " ");
-  if (interfaceSplit.empty()) {
-    // If no specific interface is set, use the default one
-    interfaceName = ""; // We use all interfaces
-  }
-  else {
-    // Use the first element ("interface ip")
-    interfaceName = interfaceSplit.front();
-#ifdef WIN32
-#else
-    struct ifreq ifr;
-    strncpy(ifr.ifr_name, interfaceName.c_str(), IFNAMSIZ);
-    ioctl(m_sock, SIOCGIFADDR, &ifr);
-    inet_ntop(AF_INET, &(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr), interfaceAddress, INET_ADDRSTRLEN);
-    printf("IP Address: %s %s\n", interfaceAddress, inet_ntoa(((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr));
 #endif
+  vscp_datagram::Socket sock;
+  sockaddr_storage destination{};
+  int destinationLength = 0;
+  const int result = vscp_datagram::openSocket(m_multicastGroupAddr, m_multicastPort, m_interface, true, m_ttl,
+                                                sock, destination, destinationLength);
+  if (result != VSCP_ERROR_SUCCESS) {
+    return result;
   }
-
-  // Set the outgoing interface (optional, for multi-homed hosts)
-  // https://github.com/bk138/Multicast-Client-Server-Example/blob/master/src/msock.c
-  struct in_addr localInterface;
-  if (interfaceName.empty()) {
-    // Use all interfaces
-    localInterface.s_addr = htonl(INADDR_ANY);
+  {
+    vscp_datagram::PthreadMutex mutex{&m_mutexSocket};
+    std::lock_guard<vscp_datagram::PthreadMutex> lock(mutex);
+    m_sock = sock;
+    m_socketOpen = true;
+    m_destination = destination;
+    m_destinationLength = destinationLength;
+    m_connected.store(true);
   }
-  else {
-#ifdef WIN32
-    // For Windows, we need to convert the interface name to an address
-#else
-    localInterface.s_addr = inet_addr(interfaceAddress);
-#endif
+  m_bRun.store(true);
+  try {
+    m_pworkerthread = new std::thread(workerThread, this);
   }
-
-  if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_IF, (char *) &localInterface, sizeof(localInterface)) < 0) {
-    perror("setsockopt (IP_MULTICAST_IF)");
-    close(m_sock);
-    return VSCP_ERROR_PARAMETER;
-  }
-
-  // Set TTL (time to live)
-  unsigned char ttl = m_ttl;
-  if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_TTL, reinterpret_cast<const char *>(&ttl), sizeof(ttl)) < 0) {
-    perror("setsockopt (IP_MULTICAST_TTL)");
-    close(m_sock);
-    return VSCP_ERROR_PARAMETER;
-  }
-
-  // Allow broadcast (for UDP)
-  int broadcastPermission = 1; // 0 = disable, 1 = enable
-  if (setsockopt(m_sock,
-                 SOL_SOCKET,
-                 SO_BROADCAST,
-                 reinterpret_cast<const char *>(&broadcastPermission),
-                 sizeof(broadcastPermission)) < 0) {
-    perror("setsockopt failed");
-    close(m_sock);
-    return VSCP_ERROR_PARAMETER;
-  }
-
-  /*
-    Disable multicast loopback
-    If disabled, multicast packets sent by the host will not be received by the host itself.
-    This is also true for other programs running on the host.
-  */
-  unsigned char loop = 0; // 0 = disable, 1 = enable
-  if (setsockopt(m_sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<const char *>(&loop), sizeof(loop)) < 0) {
-    perror("setsockopt IP_MULTICAST_LOOP failed");
-    close(m_sock);
-    return VSCP_ERROR_PARAMETER;
-  }
-
-  // Allow multiple sockets to use the same port
-  int reuse = 1; // 0 = disable, 1 = enable
-  if (setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) < 0) {
-    perror("Setting SO_REUSEADDR failed");
-    close(m_sock);
-    return VSCP_ERROR_PARAMETER;
-  }
-
-  struct sockaddr_in bind_addr;
-  bind_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  bind_addr.sin_port        = htons(m_multicastPort);
-  bind_addr.sin_family      = AF_INET;
-
-  // bind server address to socket descriptor
-  bind(m_sock, (struct sockaddr *) &bind_addr, sizeof(bind_addr));
-
-  // Join the multicast group
-  struct ip_mreq multicast_request;
-  multicast_request.imr_multiaddr.s_addr = inet_addr(m_multicastGroupAddr.c_str());
-  multicast_request.imr_interface.s_addr = htonl(INADDR_ANY);
-
-  if (setsockopt(m_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &multicast_request, sizeof(multicast_request)) < 0) {
-    perror("Adding multicast group failed");
-    close(m_sock);
+  catch (const std::system_error &ex) {
+    fprintf(stderr, "Cannot start multicast receive worker: %s\n", ex.what());
+    m_connected.store(false);
+    m_bRun.store(false);
+    vscp_datagram::closeClientSocket(*this, m_socketOpen);
     return VSCP_ERROR_OPERATION_FAILED;
   }
-
-  // Create and start receive worker thread
-  m_bRun          = true;
-  m_pworkerthread = new std::thread(workerThread, this);
-  m_bRun          = true;
-
+  catch (const std::bad_alloc &) {
+    fprintf(stderr, "Cannot allocate multicast receive worker\n");
+    m_connected.store(false);
+    m_bRun.store(false);
+    vscp_datagram::closeClientSocket(*this, m_socketOpen);
+    return VSCP_ERROR_MEMORY;
+  }
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -444,15 +380,32 @@ vscpClientMulticast::connect(void)
 int
 vscpClientMulticast::disconnect(void)
 {
-#ifdef WIN32
-  closesocket(m_sock);
-  WSACleanup();
-#else
-  close(m_sock);
-#endif
-
-  m_sock = 0;
-
+  std::unique_lock<std::mutex> lifecycle(m_lifecycleMutex);
+  if (m_pworkerthread && m_pworkerthread->get_id() == std::this_thread::get_id()) {
+    m_connected.store(false);
+    m_bRun.store(false);
+    vscp_datagram::closeClientSocket(*this, m_socketOpen);
+    return VSCP_ERROR_SUCCESS;
+  }
+  while (m_joining) {
+    m_lifecycleCondition.wait(lifecycle);
+  }
+  m_connected.store(false);
+  m_bRun.store(false);
+  if (m_pworkerthread) {
+    m_joining = true;
+    std::thread *worker = m_pworkerthread;
+    lifecycle.unlock();
+    worker->join();
+    lifecycle.lock();
+    delete worker;
+    m_pworkerthread = nullptr;
+    vscp_datagram::closeClientSocket(*this, m_socketOpen);
+    m_joining = false;
+    m_lifecycleCondition.notify_all();
+    return VSCP_ERROR_SUCCESS;
+  }
+  vscp_datagram::closeClientSocket(*this, m_socketOpen);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -463,10 +416,7 @@ vscpClientMulticast::disconnect(void)
 bool
 vscpClientMulticast::isConnected(void)
 {
-  if (m_sock <= 0) {
-    return false; // Not connected if socket is invalid
-  }
-  return true;
+  return m_connected.load();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -476,91 +426,8 @@ vscpClientMulticast::isConnected(void)
 int
 vscpClientMulticast::send(vscpEvent &ev)
 {
-  if (!isConnected()) {
-    return VSCP_ERROR_NOT_CONNECTED;
-  }
-
-  // Find the needed buffer length
-  size_t framelen = vscp_getFrameSizeFromEvent(&ev);
-
-  uint8_t *pframe = new uint8_t[BUFFER_SIZE];
-  if (NULL == pframe) {
-    return VSCP_ERROR_MEMORY;
-  }
-
-  memset(pframe, 0, BUFFER_SIZE);
-
-  // Write event to frame
-  if (!vscp_writeEventToFrame(pframe, BUFFER_SIZE, 0, &ev)) {
-    free(pframe);
-    fprintf(stderr, "Error writing event to frame.\n");
-    return VSCP_ERROR_INVALID_FRAME;
-  }
-
-  // Encrypt frame as needed
-  if (m_encryptType) {
-
-    uint16_t newlen             = 0;
-    uint8_t encbuf[BUFFER_SIZE] = { 0 };
-
-    if (0 == (newlen = vscp_encryptFrame(encbuf,
-                                         pframe,
-                                         framelen,
-                                         m_key,
-                                         NULL,
-                                         m_encryptType))) {
-      fprintf(stderr, "Error encrypting frame. newlen = %d\n", newlen);
-      exit(EXIT_FAILURE);
-    }
-
-    memcpy(pframe, encbuf, newlen);
-    // Set the new length (may be padded to be modulo 16 + 1)
-    framelen = newlen;
-
-    if (0) {
-      printf("Encrypted frame:\n");
-      for (int i = 0; i < framelen; i++) {
-        printf("%02x ", pframe[i]);
-      }
-      printf("\nNew length: %d\n", (int) framelen);
-    }
-  }
-
-  pthread_mutex_lock(&m_mutexSocket);
-
-  // Send the frame to the multicast group
-  struct sockaddr_in multicastAddr;
-  multicastAddr.sin_family      = AF_INET;
-  multicastAddr.sin_addr.s_addr = inet_addr(m_multicastGroupAddr.c_str());
-  multicastAddr.sin_port        = htons(m_multicastPort);
-
-  int nSent =
-    sendto(m_sock, (const char *) pframe, framelen, 0, (struct sockaddr *) &multicastAddr, sizeof(multicastAddr));
-
-  // Frame buffer not needed anymore
-  free(pframe);
-
-  if (nSent < 0) {
-    pthread_mutex_unlock(&m_mutexSocket);
-    perror("sendto failed."); // errno=%d", errno
-    return VSCP_ERROR_COMMUNICATION;
-  }
-  if (0 == nSent) {
-    pthread_mutex_unlock(&m_mutexSocket);
-    fprintf(stderr, "sendto returned 0 bytes sent.\n");
-    return VSCP_ERROR_COMMUNICATION;
-  }
-  if (nSent != (int) framelen) {
-    pthread_mutex_unlock(&m_mutexSocket);
-    fprintf(stderr, "sendto sent %d bytes but expected %zu bytes.\n", (int) nSent, framelen);
-    return VSCP_ERROR_COMMUNICATION;
-  }
-  if (0) {
-    printf("Sent %d bytes to multicast group %s:%d\n", (int) nSent, m_multicastGroupAddr.c_str(), m_multicastPort);
-  }
-  pthread_mutex_unlock(&m_mutexSocket);
-
-  return VSCP_ERROR_SUCCESS;
+  std::lock_guard<std::mutex> lifecycle(m_lifecycleMutex);
+  return vscp_datagram::sendEvent(*this, m_connected, m_destination, m_destinationLength, ev);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -570,16 +437,13 @@ vscpClientMulticast::send(vscpEvent &ev)
 int
 vscpClientMulticast::send(vscpEventEx &ex)
 {
-  vscpEvent ev;
-  memset(&ev, 0, sizeof(vscpEvent));
-
-  if (!vscp_convertEventExToEvent(&ev, &ex)) {
+  vscpEvent ev{};
+  if (ex.sizeData > VSCP_LEVEL2_MAXDATA || !vscp_convertEventExToEvent(&ev, &ex)) {
     return VSCP_ERROR_INVALID_FRAME;
   }
-
-  send(ev);
-
-  return VSCP_ERROR_SUCCESS;
+  const int result = send(ev);
+  vscp_deleteEvent(&ev);
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -589,14 +453,14 @@ vscpClientMulticast::send(vscpEventEx &ex)
 int
 vscpClientMulticast::send(canalMsg &msg)
 {
-  vscpEventEx ex;
-
-  uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+  vscpEvent ev{};
+  uint8_t guid[16]{};
+  if (!vscp_convertCanalToEvent(&ev, &msg, guid)) {
     return VSCP_ERROR_INVALID_FRAME;
   }
-
-  return send(ex);
+  const int result = send(ev);
+  vscp_deleteEvent(&ev);
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -606,27 +470,7 @@ vscpClientMulticast::send(canalMsg &msg)
 int
 vscpClientMulticast::receive(vscpEvent &ev)
 {
-  vscpEvent *pev = nullptr;
-
-  if (m_receiveQueue.size()) {
-
-    pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (nullptr == pev) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    if (!vscp_copyEvent(&ev, pev)) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    vscp_deleteEvent_v2(&pev);
-  }
-  else {
-    return VSCP_ERROR_FIFO_EMPTY;
-  }
-
-  return VSCP_ERROR_SUCCESS;
+  return vscp_datagram::receiveEvent(*this, m_receiveCondition, m_semReady, ev, false, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -636,26 +480,7 @@ vscpClientMulticast::receive(vscpEvent &ev)
 int
 vscpClientMulticast::receive(vscpEventEx &ex)
 {
-  vscpEvent *pev = nullptr;
-
-  if (m_receiveQueue.size()) {
-
-    pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (nullptr == pev)
-      return VSCP_ERROR_MEMORY;
-
-    if (!vscp_convertEventToEventEx(&ex, pev)) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    vscp_deleteEvent_v2(&pev);
-  }
-  else {
-    return VSCP_ERROR_FIFO_EMPTY;
-  }
-
-  return VSCP_ERROR_SUCCESS;
+  return vscp_datagram::receiveEvent(*this, m_receiveCondition, m_semReady, ex, false, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -686,16 +511,7 @@ vscpClientMulticast::receive(canalMsg &msg)
 int
 vscpClientMulticast::receiveBlocking(vscpEvent &ev, long timeout)
 {
-  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
-    if (errno == ETIMEDOUT) {
-      return VSCP_ERROR_TIMEOUT;
-    }
-    else {
-      return VSCP_ERROR_ERROR;
-    }
-  }
-
-  return receive(ev);
+  return vscp_datagram::receiveEvent(*this, m_receiveCondition, m_semReady, ev, true, timeout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -705,16 +521,7 @@ vscpClientMulticast::receiveBlocking(vscpEvent &ev, long timeout)
 int
 vscpClientMulticast::receiveBlocking(vscpEventEx &ex, long timeout)
 {
-  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
-    if (errno == ETIMEDOUT) {
-      return VSCP_ERROR_TIMEOUT;
-    }
-    else {
-      return VSCP_ERROR_ERROR;
-    }
-  }
-
-  return receive(ex);
+  return vscp_datagram::receiveEvent(*this, m_receiveCondition, m_semReady, ex, true, timeout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -724,16 +531,12 @@ vscpClientMulticast::receiveBlocking(vscpEventEx &ex, long timeout)
 int
 vscpClientMulticast::receiveBlocking(canalMsg &msg, long timeout)
 {
-  if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
-    if (errno == ETIMEDOUT) {
-      return VSCP_ERROR_TIMEOUT;
-    }
-    else {
-      return VSCP_ERROR_ERROR;
-    }
+  vscpEventEx ex{};
+  const int result = receiveBlocking(ex, timeout);
+  if (result != VSCP_ERROR_SUCCESS) {
+    return result;
   }
-
-  return receive(msg);
+  return vscp_convertEventExToCanal(&msg, &ex) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_INVALID_FRAME;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -743,6 +546,8 @@ vscpClientMulticast::receiveBlocking(canalMsg &msg, long timeout)
 int
 vscpClientMulticast::setfilter(vscpEventFilter &filter)
 {
+  vscp_datagram::PthreadMutex mutex{&m_mutexReceiveQueue};
+  std::lock_guard<vscp_datagram::PthreadMutex> lock(mutex);
   // Set filter
   m_filter.filter_priority = filter.filter_priority;
   m_filter.mask_priority   = filter.mask_priority;
@@ -783,16 +588,7 @@ vscpClientMulticast::getcount(uint16_t *pcount)
 int
 vscpClientMulticast::clear()
 {
-  pthread_mutex_lock(&m_mutexReceiveQueue);
-  while (!m_receiveQueue.empty()) {
-    vscpEvent *pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (NULL != pev) {
-      vscp_deleteEvent_v2(&pev);
-    }
-  }
-  pthread_mutex_unlock(&m_mutexReceiveQueue);
-  return VSCP_ERROR_SUCCESS;
+  return vscp_datagram::clearQueue(*this, m_semReady);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -898,131 +694,7 @@ vscpClientMulticast::getResponseTimeout(void)
 void
 workerThread(vscpClientMulticast *pClient)
 {
-  uint8_t buf[BUFFER_SIZE];
-  int rv = 0;
-  fd_set readfds;
-  struct timeval timeout;
-  struct sockaddr_in senderAddr;
-#ifdef WIN32
-  int addrLen = sizeof(senderAddr);
-#else
-  socklen_t addrLen = sizeof(senderAddr);
-#endif
-
-  // Check pointer
-  if (nullptr == pClient) {
-    return;
+  if (pClient) {
+    vscp_datagram::receiveLoop(*pClient, pClient->m_connected, pClient->m_receiveCondition, pClient->m_semReady);
   }
-
-  while (pClient->m_bRun) {
-
-    // Clear and set the file descriptor set
-    FD_ZERO(&readfds);
-    FD_SET(pClient->m_sock, &readfds);
-
-    // Set timeout (optional, e.g., 1 seconds)
-    timeout.tv_sec  = 1;
-    timeout.tv_usec = 0;
-
-    // Wait for data to be received
-    int activity = select(pClient->m_sock + 1, &readfds, NULL, NULL, &timeout);
-
-    if (activity < 0) {
-      perror("select failed");
-      break;
-    }
-    else if (activity == 0) {
-      // Timeout occurred, work on
-    }
-    else {
-      // Data is available to read
-      if (FD_ISSET(pClient->m_sock, &readfds)) {
-
-        pthread_mutex_lock(&pClient->m_mutexSocket);
-        int nReceived = recvfrom(pClient->m_sock,
-               reinterpret_cast<char *>(buf),
-               BUFFER_SIZE,
-               0,
-               (struct sockaddr *) &senderAddr,
-               &addrLen);
-        pthread_mutex_unlock(&pClient->m_mutexSocket);
-
-        if (nReceived > 0) {
-
-          // If encrypted frame decrypt it
-          if (buf[0] & 0x0F) {
-
-            if (0) {
-              printf("Encrypted frame detected. Type: %d\n", buf[0] & 0x0F);
-            }
-
-            uint8_t encbuf[BUFFER_SIZE] = { 0 };
-            if (!vscp_decryptFrame(encbuf,
-                                   buf,
-                                   nReceived - 16,
-                                   pClient->m_key,
-                                   buf + nReceived - 16,
-                                   VSCP_ENCRYPTION_FROM_TYPE_BYTE)) {
-              fprintf(stderr, "Error decrypting frame.\n");
-              continue;
-            }
-            if (0) {
-              printf("Decrypted frame:\n");
-              printf("Length: %d\n", nReceived);
-              for (int i = 0; i < nReceived; i++) {
-                printf("%02x ", encbuf[i]);
-              }
-              printf("\n");
-            }
-
-            // Copy decrypted frame back to buffer
-            memcpy(buf, encbuf, nReceived);
-
-          } // encrypted
-
-          vscpEvent ev;
-          memset(&ev, 0, sizeof(ev));
-
-          if (!vscp_getEventFromFrame(&ev, buf, nReceived)) {
-            fprintf(stderr, "Error reading event from frame. rv=%d\n", rv);
-            continue;
-          }
-
-          if (vscp_doLevel2Filter(&ev, &pClient->m_filter)) {
-
-            if (pClient->isCallbackEvActive()) {
-              pClient->m_callbackev(ev, pClient->getCallbackObj());
-            }
-
-            if (pClient->isCallbackExActive()) {
-              vscpEventEx ex;
-              if (vscp_convertEventToEventEx(&ex, &ev)) {
-                pClient->m_callbackex(ex, pClient->getCallbackObj());
-              }
-            }
-
-            // Add to input queue only if no callback set
-            if (!pClient->isCallbackEvActive() || !pClient->isCallbackExActive()) {
-              pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
-              pClient->m_receiveQueue.push_back(&ev);
-#ifdef WIN32
-              ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
-#else
-              sem_post(&pClient->m_semReceiveQueue);
-#endif
-              pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
-            }
-          } // filter
-
-          vscp_deleteEvent(&ev);
-
-        } // nReceived > 0
-      } // socket is set
-    } // data received
-
-    // Terminate if we are not connected
-    if (!pClient->isConnected()) {
-      pClient->m_bRun = false;
-    }
-  } // loop
 }

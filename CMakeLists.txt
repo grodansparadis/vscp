@@ -365,6 +365,11 @@ add_library(vscp_client_multicast SHARED
 vscp_setup_protocol_target(vscp_client_multicast)
 target_link_libraries(vscp_client_multicast PUBLIC vscp_client_base vscp_core)
 
+if(WIN32)
+    target_link_libraries(vscp_client_udp PRIVATE iphlpapi)
+    target_link_libraries(vscp_client_multicast PRIVATE iphlpapi)
+endif()
+
 add_library(vscp_client_mqtt SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-mqtt.cpp
 )
