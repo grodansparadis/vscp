@@ -25,6 +25,7 @@
 //
 
 #ifdef _WIN32
+#include <pch.h>
 #include <io.h>
 #define access _access_s
 #else
