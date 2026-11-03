@@ -55,6 +55,16 @@ cmake --build build --target vscp_all
 
 See the library reference at [docs/library_reference.md](docs/library_reference.md) for a library-by-library summary and usage examples.
 
+## Tests
+
+See the [test documentation](tests/README.md) for Linux and macOS build and
+run instructions.
+
+Documentation for the remote TCP/IP client integration tests is available for
+the [regular test suite](tests/vscpremotetcpip/alltest/README.md) and the
+[one-hour polling test](tests/vscpremotetcpip/longtest/README.md). Both suites
+require a reachable VSCP TCP/IP daemon.
+
 ## License
 
 The entire source code is published under the MIT license. Please also consider the licenses of any third-party libraries used by the project.
