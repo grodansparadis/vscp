@@ -77,6 +77,13 @@ cmake --build tests/build --target unittest_guid
 ./tests/build/guid/unittest_guid
 ```
 
+The push workflow also runs the metadata updater tests separately. They use
+temporary local Git repositories and can be run from the repository root:
+
+```sh
+python3 -B tests/test_update_docs_metadata.py
+```
+
 ## Windows
 
 For an individual standalone test project, create a build directory inside its
