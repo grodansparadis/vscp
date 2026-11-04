@@ -936,12 +936,12 @@ public:
   bool m_bFilterOwnTx;
 
   /*!
-      Send receive event instead of writing
-      event to RX queue.
-      m_pWnd must point to a valid window and
-      the id for that window must be in m_wndID
-      Also TX events will be activated if thread is
-      started.
+    Send receive event instead of writing
+    event to RX queue.
+    m_pWnd must point to a valid window and
+    the id for that window must be in m_wndID
+    Also TX events will be activated if thread is
+    started.
    */
   bool m_bUseRXTXEvents;
 

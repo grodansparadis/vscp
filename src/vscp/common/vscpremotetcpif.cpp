@@ -86,6 +86,13 @@
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
 
+///////////////////////////////////////////////////////////////////////////////
+// win_usleep
+// 
+// Function to sleep for a specified number of microseconds.
+// @param usec The number of microseconds to sleep.
+// @return None. Suspends the current thread for the specified duration.
+  
 #ifdef WIN32
 static void
 win_usleep(__int64 usec)
@@ -116,6 +123,14 @@ using Socket = int;
 const Socket invalidSocket = -1;
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+// transportError
+// 
+// Function to report transport errors.
+// @param format The format string for the error message.
+// @param ... Additional arguments for the format string.
+// @return None. Logs the transport error details.
+  
 void transportError(const char *format, ...)
 {
   va_list arguments;
@@ -130,6 +145,13 @@ void transportError(const char *format, ...)
   va_end(arguments);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// tlsError
+// 
+// Function to report TLS errors.
+// @param operation The operation that caused the error.
+// @return None. Logs the TLS error details.
+  
 void tlsError(const char *operation)
 {
   unsigned long error = ERR_peek_last_error();
@@ -140,8 +162,23 @@ void tlsError(const char *operation)
   ERR_clear_error();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// SocketRuntime
+// Structure to manage the socket runtime environment, including initialization
+// and cleanup for platforms that require it (e.g., Windows).
+// 
+///////////////////////////////////////////////////////////////////////////////
+
 struct SocketRuntime {
   int error = 0;
+
+///////////////////////////////////////////////////////////////////////////////
+// SocketRuntime
+// 
+// Function to initialize the socket runtime environment.
+// This is necessary for platforms like Windows that require explicit
+// initialization of the socket library.
+//
 
 #ifdef WIN32
   SocketRuntime()
@@ -157,6 +194,12 @@ struct SocketRuntime {
 #endif
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// socketError
+// 
+// Function to retrieve the last socket error code.
+// @return The error code of the last socket operation.
+
 int socketError()
 {
 #ifdef WIN32
@@ -165,6 +208,13 @@ int socketError()
   return errno;
 #endif
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// socketInterrupted
+//
+// Function to check if a socket was interrupted.
+// @param error The error code returned by the socket operation.
+// @return True if the socket was interrupted, false otherwise.
 
 bool socketInterrupted(int error)
 {
@@ -175,6 +225,14 @@ bool socketInterrupted(int error)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// socketWouldBlock
+// 
+// Function to check if a socket would block on the next operation.
+// @param error The error code returned by the socket operation.
+// @return True if the socket would block, false otherwise.
+//
+
 bool socketWouldBlock(int error)
 {
 #ifdef WIN32
@@ -183,6 +241,14 @@ bool socketWouldBlock(int error)
   return error == EAGAIN || error == EWOULDBLOCK;
 #endif
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// socketConnecting
+// 
+// Function to check if a socket is in the process of connecting.
+// @param error The error code returned by the socket operation.
+// @return True if the socket is connecting, false otherwise.
+// 
 
 bool socketConnecting(int error)
 {
@@ -193,6 +259,14 @@ bool socketConnecting(int error)
   return error == EINPROGRESS || error == EALREADY || error == EINTR || socketWouldBlock(error);
 #endif
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// closeSocket
+// 
+// Function to close a socket.
+// @param socket The socket to close.
+// @note The function will safely handle invalid sockets.
+// 
 
 void closeSocket(Socket socket)
 {
@@ -205,6 +279,14 @@ void closeSocket(Socket socket)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// setNonBlocking
+// 
+// Function to set a socket to non-blocking mode.
+// @param socket The socket to configure.
+// @return True if the operation was successful, false otherwise.
+//
+
 bool setNonBlocking(Socket socket)
 {
 #ifdef WIN32
@@ -216,6 +298,15 @@ bool setNonBlocking(Socket socket)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// waitForSocket
+// 
+// Function to wait for a socket to become ready for reading or writing.
+// @param socket The socket to monitor.
+// @param write True to wait for writability, false to wait for readability.
+// @param deadline The time point until which to wait.
+// @return 1 if the socket is ready, 0 if the deadline is reached, -1 on error.
+  
 int waitForSocket(Socket socket, bool write, Deadline deadline)
 {
   while (true) {
@@ -251,6 +342,15 @@ int waitForSocket(Socket socket, bool write, Deadline deadline)
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// waitForConnections
+// 
+// Function to wait for incoming connections on multiple sockets.
+// @param sockets A vector of sockets to monitor for incoming connections.
+// @param deadline The time point until which to wait for connections.
+// @param ready A vector to store the indices of sockets that are ready for connections.
+// @return 1 if one or more sockets are ready, 0 if the deadline is reached, -1 on error.
 
 int waitForConnections(const std::vector<Socket> &sockets, Deadline deadline, std::vector<size_t> &ready)
 {
@@ -300,19 +400,41 @@ int waitForConnections(const std::vector<Socket> &sockets, Deadline deadline, st
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ConnectionAttempts
+// 
+// Structure to manage multiple connection attempts.
+// @note The structure will automatically close all sockets upon destruction.
+// @note Individual sockets can be taken from the structure, removing them from management.
+
 struct ConnectionAttempts {
   ~ConnectionAttempts()
   {
     closeAll();
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+  // closeAll
+  // 
+  // Closes all sockets managed by the structure and clears the list.
+  // @note This will also be called automatically by the destructor.
+  // 
+
   void closeAll()
   {
-    for (Socket socket : sockets)
+    for (Socket socket : sockets) {
       closeSocket(socket);
+    }
     sockets.clear();
   }
 
+  ///////////////////////////////////////////////////////////////////////////////
+  // take
+  // 
+  // Takes ownership of the socket at the specified index, removing it from management.
+  // @param index The index of the socket to take.
+  // @return The socket that was taken.
+  //
   Socket take(size_t index)
   {
     Socket socket = sockets[index];
@@ -320,8 +442,21 @@ struct ConnectionAttempts {
     return socket;
   }
 
+  /// List of sockets managed by the structure.
   std::vector<Socket> sockets;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// socketRead
+// 
+// Function to read data from a socket.
+// @param socket The socket to read from.
+// @param buffer The buffer to store the read data.
+// @param length The number of bytes to read.
+// @return The number of bytes read, or a negative value if an error occurs.
+// @note The function will attempt to read the specified number of bytes, retrying if interrupted by signals.
+// @note The function will return the number of bytes read, or a negative value if an error occurs.
+// 
 
 int socketRead(Socket socket, char *buffer, int length)
 {
@@ -331,6 +466,17 @@ int socketRead(Socket socket, char *buffer, int length)
   } while (result < 0 && socketInterrupted(socketError()));
   return result;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// socketWrite
+// 
+// Function to write data to a socket.
+// @param socket The socket to write to.
+// @param buffer The buffer containing the data to send.
+// @param length The number of bytes to send.
+// @return The number of bytes written, or a negative value if an error occurs.
+// @note The function will attempt to send the entire buffer, retrying if interrupted by signals.
+// @note The function will respect the MSG_NOSIGNAL flag on platforms that support it to prevent SIGPIPE signals.
 
 int socketWrite(Socket socket, const char *buffer, int length)
 {
@@ -345,6 +491,14 @@ int socketWrite(Socket socket, const char *buffer, int length)
   } while (result < 0 && socketInterrupted(socketError()));
   return result;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// AddressResult
+// 
+// Structure to hold the result of an asynchronous address resolution.
+// @note The structure will be updated by the resolver task upon completion.
+// @note The structure contains synchronization primitives to safely access the result from multiple threads.
+// 
 
 struct AddressResult {
   explicit AddressResult(std::shared_ptr<SocketRuntime> runtime) : runtime(std::move(runtime)) {}
@@ -362,6 +516,13 @@ struct AddressResult {
   addrinfo *addresses = nullptr;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// ResolverTask
+// 
+// Task for resolving a hostname asynchronously.
+// @note The task will run in a separate thread and will update the associated AddressResult upon completion.ate the associated AddressResult upon completion.
+//
+  
 struct ResolverTask {
   explicit ResolverTask(std::shared_ptr<AddressResult> state) : state(std::move(state)) {}
   ~ResolverTask()
@@ -374,8 +535,18 @@ struct ResolverTask {
   std::thread worker;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// ResolverTasks
+// Class for managing multiple resolver tasks.
+// @note The class provides thread-safe methods to keep and reap resolver tasks.
+// 
+
 class ResolverTasks {
 public:
+
+  /// Updates the list of resolver tasks by removing completed ones.
+  /// Keeps a resolver task alive by adding it to the list of managed tasks.
+  /// @note Both methods are thread-safe and can be called from multiple threads concurrently.
   void reap()
   {
     std::lock_guard<std::mutex> lock(mutex);
@@ -393,6 +564,9 @@ public:
     }
   }
 
+  /// Adds a resolver task to the list of managed tasks.
+  /// @param task The resolver task to keep alive.
+  /// @note The method is thread-safe and can be called from multiple threads concurrently.
   void keep(std::unique_ptr<ResolverTask> task)
   {
     std::lock_guard<std::mutex> lock(mutex);
@@ -404,12 +578,40 @@ private:
   std::vector<std::unique_ptr<ResolverTask>> tasks;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// ResolverTasks
+// 
+// Global resolver tasks manager accessor.  
+//
+// Provides access to the global resolver tasks manager.
+// @return A reference to the global ResolverTasks instance.
+//
+
 ResolverTasks &resolverTasks()
 {
   static ResolverTasks tasks;
   return tasks;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// resolveAddress
+// 
+// Resolve a hostname to an address.
+// @param host The hostname to resolve.
+// @param port The port to resolve.
+// @param runtime The socket runtime context.
+// @param deadline The deadline for the resolution.
+// @param result The result code of the resolution.
+// @return A shared pointer to the address result on success, nullptr on failure.
+// @note The function will not modify the underlying socket.
+// @note The function will not block the calling thread indefinitely; it respects the provided deadline.  
+// @note The function will perform the resolution asynchronously and may return before the resolution is complete.
+// @note The function will keep timed-out lookups alive until they finish, including during library unload.
+// @note The function will notify the caller when the resolution is complete, even if it timed out.
+// @note The function will return nullptr if the resolution fails or times out.
+// @note The function will return a valid address result only if the resolution succeeds.
+// 
+  
 std::shared_ptr<AddressResult> resolveAddress(const std::string &host,
                                               const std::string &port,
                                               const std::shared_ptr<SocketRuntime> &runtime,
@@ -465,6 +667,14 @@ std::shared_ptr<AddressResult> resolveAddress(const std::string &host,
   return state;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// socketBioCreate
+// 
+// Initialize a socket BIO.
+// @param bio The BIO to initialize.
+// @return 1 on success, 0 on failure.
+// 
+  
 int socketBioCreate(BIO *bio)
 {
   BIO_set_init(bio, 1);
@@ -472,6 +682,14 @@ int socketBioCreate(BIO *bio)
   BIO_set_shutdown(bio, 0);
   return 1;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// socketBioDestroy
+//
+// Destroy a socket BIO.
+// @param bio The BIO to destroy.
+// @return 1 on success, 0 on failure.
+//
 
 int socketBioDestroy(BIO *bio)
 {
@@ -482,11 +700,32 @@ int socketBioDestroy(BIO *bio)
   return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// socketBioControl
+// 
+// Control a socket BIO.
+// @param bio The BIO to control.
+// @param command The control command.
+// @param arg1 The first argument for the command.
+// @param arg2 The second argument for the command.
+// @return 1 on success, 0 on failure.
+// 
+
 long socketBioControl(BIO *, int command, long, void *)
 {
   return command == BIO_CTRL_FLUSH || command == BIO_C_SET_NBIO ? 1 : 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// socketBioRead
+// 
+// Read data from a socket BIO.
+// @param bio The BIO to read from.
+// @param buffer The buffer to store the read data.
+// @param length The maximum number of bytes to read.
+// @return The number of bytes read, or 0 on failure.
+//
+  
 int socketBioRead(BIO *bio, char *buffer, int length)
 {
   BIO_clear_retry_flags(bio);
@@ -499,17 +738,39 @@ int socketBioRead(BIO *bio, char *buffer, int length)
   return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// socketBioWrite
+//
+// Write data to a socket BIO.
+// @param bio The BIO to write to.
+// @param buffer The buffer containing the data to write.
+// @param length The number of bytes to write.
+// @return The number of bytes written, or 0 on failure.
+// @note The function will not modify the original BIO structure.
+// @note The function will not modify the underlying socket.
+//
+
 int socketBioWrite(BIO *bio, const char *buffer, int length)
 {
   BIO_clear_retry_flags(bio);
   auto socket = static_cast<Socket *>(BIO_get_data(bio));
-  if (!socket || !buffer || length <= 0)
+  if (!socket || !buffer || length <= 0) {
     return 0;
+  }
   int result = socketWrite(*socket, buffer, length);
-  if (result < 0 && socketWouldBlock(socketError()))
+  if (result < 0 && socketWouldBlock(socketError())) {
     BIO_set_retry_write(bio);
+  }
   return result;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// isDirectory
+// 
+// Check if a given path is a directory.
+// @param path The path to check.
+// @return true if the path is a directory, false otherwise.
+// 
 
 bool isDirectory(const std::string &path)
 {
@@ -522,6 +783,16 @@ bool isDirectory(const std::string &path)
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// readTlsFile
+// Read the contents of a TLS file into a string.
+// @param path The path to the TLS file.
+// @param contents The string to store the file contents.
+// @return true if the file was successfully read, false otherwise.
+// @note The function will not modify the original file.
+// @note The function will handle errors internally and report them via transportError.
+// 
+  
 bool readTlsFile(const std::string &path, std::string &contents)
 {
   std::ifstream file(path, std::ios::binary);
@@ -537,24 +808,55 @@ bool readTlsFile(const std::string &path, std::string &contents)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// CaDirectory
+// Structure representing a TLS CA directory.
+// Contains the path to the directory, the concatenated certificates, and a failure flag.
+//
+
 struct CaDirectory {
   std::string path;
   std::string certificates;
   bool failed;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// readCaEntry
+// 
+// Read a single entry from a TLS CA directory.
+//
+// @param name The name of the directory entry.
+// @param arg A pointer to a CaDirectory structure.
+//
+// This function reads the certificate from the specified directory entry and appends it to the certificates string in the CaDirectory structure.
+// @note This function is intended to be used as a callback for iterating over directory entries.
+// @note The directory entry should be a PEM-encoded certificate file.
+// @note If reading the certificate fails, the failed flag in the CaDirectory structure will be set.
+// @note This function will skip over non-directory entries that are not valid PEM files.
+// @note The function will free any allocated BIO and X509 structures before returning.
+// @note This function does not recurse into subdirectories.
+// @note This function is platform-independent and works on both Windows and POSIX systems.
+// @note The function will not modify the original directory entry files.
+// @note The function will not throw exceptions and will handle errors internally.
+// @note The function will not modify the original directory entry files.
+// @return void.
+//
+  
 void readCaEntry(const char *name, void *arg)
 {
   auto &directory = *static_cast<CaDirectory *>(arg);
-  if (directory.failed)
+  if (directory.failed) {
     return;
+  }
   std::string path = directory.path + "/" + name;
-  if (isDirectory(path))
+  if (isDirectory(path)) {
     return;
+  }
   BIO *input = BIO_new_file(path.c_str(), "r");
   BIO *output = input ? BIO_new(BIO_s_mem()) : nullptr;
-  if (input && !output)
+  if (input && !output) {
     directory.failed = true;
+  }
   X509 *cert;
   while (input && output && (cert = PEM_read_bio_X509(input, nullptr, nullptr, nullptr))) {
     if (PEM_write_bio_X509(output, cert) != 1) {
@@ -572,10 +874,22 @@ void readCaEntry(const char *name, void *arg)
   }
   BIO_free(input);
   BIO_free(output);
-  if (!directory.failed)
+  if (!directory.failed) {
     ERR_clear_error(); // Directory entries may include unrelated files.
+  }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// readCaDirectory
+// 
+// Read all PEM certificates from a TLS CA directory.
+// Returns true on success, false on failure.
+// @param path The path to the TLS CA directory.
+// @param certificates A string to store the concatenated PEM certificates.
+// @param allowEmpty Whether to allow an empty directory without failing.
+// @return True if the certificates were successfully read, false otherwise.
+// 
+  
 bool readCaDirectory(const std::string &path, std::string &certificates, bool allowEmpty = false)
 {
   if (!isDirectory(path)) {
@@ -585,8 +899,9 @@ bool readCaDirectory(const std::string &path, std::string &certificates, bool al
   CaDirectory directory{path, "", false};
 #ifdef WIN32
   std::string pattern = path;
-  if (pattern.empty() || (pattern.back() != '/' && pattern.back() != '\\'))
+  if (pattern.empty() || (pattern.back() != '/' && pattern.back() != '\\')) {
     pattern += '\\';
+  }
   pattern += '*';
   WIN32_FIND_DATAA entry;
   HANDLE search = FindFirstFileA(pattern.c_str(), &entry);
@@ -638,12 +953,23 @@ bool readCaDirectory(const std::string &path, std::string &certificates, bool al
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// readTrustAnchors
+//
+// Read TLS trust anchors from the specified client configuration.
+// @param client The client configuration containing TLS trust anchor information.
+// @param ca A string to store the loaded TLS trust anchors.
+// @return True if the trust anchors were successfully read, false otherwise.
+// 
+
 bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
 {
-  if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca))
+  if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca)) {
     return false;
-  if (!client.m_capath.empty() && !readCaDirectory(client.m_capath, ca))
+  }
+  if (!client.m_capath.empty() && !readCaDirectory(client.m_capath, ca)) {
     return false;
+  }
   if (client.m_cafile.empty() && client.m_capath.empty()) {
     const char *file = getenv(X509_get_default_cert_file_env());
     const char *path = getenv(X509_get_default_cert_dir_env());
@@ -656,8 +982,9 @@ bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
     struct stat attributes = {};
     bool hasDefaultCertFile = stat(defaultFile.c_str(), &attributes) == 0 && !S_ISDIR(attributes.st_mode);
 #endif
-    if (hasDefaultCertFile && !readTlsFile(defaultFile, ca))
+    if (hasDefaultCertFile && !readTlsFile(defaultFile, ca)) {
       return false;
+    }
     std::deque<std::string> directories;
 #ifdef WIN32
     const char *separator = ";";
@@ -666,8 +993,9 @@ bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
 #endif
     vscp_split(directories, path ? path : X509_get_default_cert_dir(), separator);
     for (const auto &directory : directories) {
-      if (isDirectory(directory) && !readCaDirectory(directory, ca, true))
+      if (isDirectory(directory) && !readCaDirectory(directory, ca, true)) {
         return false;
+      }
     }
   }
   if (ca.empty()) {
@@ -677,10 +1005,31 @@ bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// rejectPassword
+//
+// Callback function to reject a password for TLS operations.
+// @return Always returns 0 to indicate rejection.
+//
+
 int rejectPassword(char *, int, int, void *)
 {
+  // Supply no PEM password when loading TLS trust anchors, avoiding prompts
+  // and preventing encrypted PEM content from being unlocked. This callback
+  // does not handle the remote client's login password.
   return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// rejectPassword
+//
+// Callback function to reject a password for TLS operations.
+// @param buffer Unused buffer for password input.
+// @param size Unused size of the buffer.
+// @param rwflag Unused read/write flag.
+// @param arg Unused argument.
+// @return Always returns 0 to indicate rejection.
+//
 
 bool loadTrustAnchors(SSL_CTX *context, VscpRemoteTcpIf &client)
 {
@@ -716,6 +1065,17 @@ bool loadTrustAnchors(SSL_CTX *context, VscpRemoteTcpIf &client)
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// tlsPassword
+//
+// Callback function to provide a password for TLS operations.
+// @param buffer Buffer to store the password.
+// @param size Size of the buffer.
+// @param rwflag Unused read/write flag.
+// @param arg Pointer to a std::string containing the password.
+// @return The number of characters copied to the buffer.
+//
+
 int tlsPassword(char *buffer, int size, int, void *arg)
 {
   const auto &password = *static_cast<std::string *>(arg);
@@ -726,6 +1086,23 @@ int tlsPassword(char *buffer, int size, int, void *arg)
 
 } // namespace
 
+///////////////////////////////////////////////////////////////////////////////
+// Transport
+//
+// Transport structure for managing socket and TLS state.
+// This structure encapsulates the necessary components for handling both
+// plain socket communication and TLS-encrypted communication, including
+// the SSL context, SSL object, and BIO method for custom I/O operations.
+// It provides a convenient abstraction for managing the lifecycle and configuration of the transport layer.
+// It abstracts the details of socket and TLS management, providing a unified interface for network communication.
+// It simplifies the integration of TLS into the transport layer by handling the necessary setup and teardown operations.
+// It ensures that both plain and encrypted communication can be handled seamlessly within the same transport abstraction.
+// It provides a consistent interface for reading from and writing to the transport, regardless of whether TLS is enabled.
+// It abstracts the complexity of managing TLS sessions, certificate verification, and secure communication channels.
+// It manages the underlying socket resource, ensuring proper cleanup and preventing resource leaks.
+// This structure is used internally by the VscpRemoteTcpIf class to manage network communication, providing a robust and secure transport layer for both plain and TLS-encrypted connections.
+//
+
 struct VscpRemoteTcpIf::Transport {
   std::shared_ptr<SocketRuntime> runtime = std::make_shared<SocketRuntime>();
   Socket socket = invalidSocket;
@@ -734,6 +1111,7 @@ struct VscpRemoteTcpIf::Transport {
   BIO_METHOD *bioMethod = nullptr;
   bool connected = false;
 
+  ///< Destructor to clean up TLS and socket resources.
   ~Transport()
   {
     SSL_free(tls);
@@ -747,6 +1125,14 @@ struct VscpRemoteTcpIf::Transport {
   int read(void *buffer, size_t length, int timeout);
   int write(const void *buffer, size_t length, uint32_t timeout);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// configureTls
+//
+// Configures the TLS context and SSL object for the transport.
+// It sets up certificate verification, loads client certificates and keys if provided,
+// and configures the hostname for TLS verification. Returns true on success, false on failure.
+//
 
 bool
 VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::string &host)
@@ -793,6 +1179,13 @@ VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::str
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// open
+//
+// Opens a connection to the specified host and port.
+// It initializes the socket, performs the connection handshake, and sets up TLS if required.
+// Returns VSCP_ERROR_CONNECTION on failure, or 0 on success.
+
 int
 VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &host, const std::string &port)
 {
@@ -800,14 +1193,17 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
     transportError("cannot initialize sockets (error %d)", runtime->error);
     return VSCP_ERROR_CONNECTION;
   }
-  if (client.m_bTLS && !configureTls(client, host))
+
+  if (client.m_bTLS && !configureTls(client, host)) {
     return VSCP_ERROR_CONNECTION;
+  }
 
   const auto deadline = Clock::now() + std::chrono::seconds(client.m_connectionTimeOut);
   int result = VSCP_ERROR_CONNECTION;
   auto addresses = resolveAddress(host, port, runtime, deadline, result);
-  if (!addresses)
+  if (!addresses) {
     return result;
+  }
   int lastError = 0;
   addrinfo *address = addresses->addresses;
   ConnectionAttempts attempts;
@@ -818,8 +1214,9 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
   const size_t maxPending = (std::numeric_limits<size_t>::max)();
 #endif
   while (true) {
-    if (Clock::now() >= deadline)
+    if (Clock::now() >= deadline) {
       return VSCP_ERROR_TIMEOUT;
+    }
     if (address && attempts.sockets.size() < maxPending &&
         (attempts.sockets.empty() || Clock::now() >= nextAttempt)) {
       addrinfo *current = address;
@@ -863,16 +1260,17 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
       transportError("cannot connect to %s:%s (error %d)", host.c_str(), port.c_str(), lastError);
       return VSCP_ERROR_CONNECTION;
     }
-    if (attempts.sockets.empty())
+    if (attempts.sockets.empty()) {
       continue;
-
+    }
     Deadline waitDeadline = deadline;
     if (address && attempts.sockets.size() < maxPending)
       waitDeadline = (std::min)(waitDeadline, nextAttempt);
     std::vector<size_t> ready;
     int waitResult = waitForConnections(attempts.sockets, waitDeadline, ready);
-    if (waitResult < 0)
+    if (waitResult < 0) {
       return VSCP_ERROR_CONNECTION;
+    }
     bool failed = false;
     for (auto index = ready.rbegin(); index != ready.rend(); ++index) {
       Socket candidate = attempts.sockets[*index];
@@ -884,8 +1282,9 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
       socklen_t size = sizeof(error);
       int status = getsockopt(candidate, SOL_SOCKET, SO_ERROR, &error, &size);
 #endif
-      if (status != 0)
+      if (status != 0) {
         error = socketError();
+      }
       if (!error) {
         socket = attempts.take(*index);
         break;
@@ -894,10 +1293,12 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
       closeSocket(attempts.take(*index));
       failed = true;
     }
-    if (socket != invalidSocket)
+    if (socket != invalidSocket) {
       break;
-    if (failed)
+    }
+    if (failed) {
       nextAttempt = Clock::now();
+    }
   }
   attempts.closeAll();
 
@@ -923,29 +1324,72 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
     while (true) {
       ERR_clear_error();
       int status = SSL_connect(tls);
-      if (status == 1)
+      if (status == 1) {
         break;
+      }
       int error = SSL_get_error(tls, status);
       if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
         tlsError("TLS handshake failed");
         return VSCP_ERROR_CONNECTION;
       }
       int ready = waitForSocket(socket, error == SSL_ERROR_WANT_WRITE, deadline);
-      if (ready <= 0)
+      if (ready <= 0) {
         return ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_CONNECTION;
+      }
     }
   }
   connected = true;
   return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// read
+//
+// Read data from the transport with a specified timeout. Returns the number of bytes read or a negative error code.
+// @param buffer Pointer to the buffer where the read data will be stored.
+// @param length Maximum number of bytes to read.
+// @param timeout Timeout in milliseconds for the read operation.
+// @return Number of bytes read or a negative error code.
+// @note If the connection is closed or an error occurs, a negative error code will be returned.
+// @see write() for the corresponding write operation.
+// @note This function will block until data is available, the timeout expires, or an error occurs.
+// @note The timeout is specified in milliseconds.
+// @note The buffer must be large enough to hold the requested number of bytes.
+// @note The function will return immediately if the connection is closed.
+// @note If a TLS connection is used, this function will handle the TLS handshake and decryption internally.
+// @note The function will internally manage the socket readiness and TLS state as needed.
+// @note The function will return the number of bytes read, or a negative error code if an error occurs.
+// @note The function will return 0 if the timeout expires before any data is read.
+// @note The function will return -VSCP_ERROR_STOPPED if the connection is closed or an error occurs.
+// @note The function will return -VSCP_ERROR_TIMEOUT if the timeout expires before any data is read.
+// @note The function will return -VSCP_ERROR_CONNECTION if a connection error occurs.
+// @note The function will return -VSCP_ERROR_WOULD_BLOCK if the operation would block and the timeout has not yet expired.
+// @note The function will return -VSCP_ERROR_INTERNAL if an internal error occurs.
+// @note The function will return -VSCP_ERROR_INVALID_ARGUMENT if an invalid argument is provided.
+// @note The function will return -VSCP_ERROR_NOT_IMPLEMENTED if the operation is not implemented.
+// @note The function will return -VSCP_ERROR_IO if an I/O error occurs.
+// @note The function will return -VSCP_ERROR_UNKNOWN if an unknown error occurs.
+// @note The function will return -VSCP_ERROR_TLS if a TLS error occurs.
+// @note The function will return -VSCP_ERROR_ABORTED if the operation is aborted.
+// @note The function will return -VSCP_ERROR_INTERRUPTED if the operation is interrupted by a signal.
+// @note The function will return -VSCP_ERROR_AGAIN if the operation should be retried.
+// @note The function will return -VSCP_ERROR_WOULDBLOCK if the operation would block and the timeout has not yet expired.
+// @note The function will return -VSCP_ERROR_INVALID_STATE if the connection is not in a valid state for reading.
+// @note The function will return -VSCP_ERROR_NOT_CONNECTED if the connection is not established.
+// @note The function will return -VSCP_ERROR_SHUTDOWN if the connection is being shut down.
+// @note The function will return -VSCP_ERROR_WOULDBLOCK if the operation would block and the timeout has not yet expired.
+// @note The function will return -VSCP_ERROR_UNKNOWN if an unknown error occurs.
+//
+
 int
 VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
 {
-  if (!connected)
+  if (!connected) {
     return -VSCP_ERROR_STOPPED;
-  if (timeout < 0)
+  }
+  if (timeout < 0) {
     timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+  }
   const auto deadline = Clock::now() + std::chrono::milliseconds(timeout);
   int size = static_cast<int>((std::min<size_t>)(length, INT_MAX));
   while (true) {
@@ -953,12 +1397,14 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
     if (tls) {
       ERR_clear_error();
       int count = SSL_read(tls, buffer, size);
-      if (count > 0)
+      if (count > 0) {
         return count;
+      }
       int error = SSL_get_error(tls, count);
       if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
-        if (error != SSL_ERROR_ZERO_RETURN)
+        if (error != SSL_ERROR_ZERO_RETURN) {
           tlsError("TLS read failed");
+        }
         connected = false;
         return -VSCP_ERROR_STOPPED;
       }
@@ -966,16 +1412,18 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
     }
     else {
       int count = socketRead(socket, static_cast<char *>(buffer), size);
-      if (count > 0)
+      if (count > 0) {
         return count;
+      }
       if (!count || !socketWouldBlock(socketError())) {
         connected = false;
         return -VSCP_ERROR_STOPPED;
       }
     }
     int ready = waitForSocket(socket, waitWrite, deadline);
-    if (ready == 0)
+    if (ready == 0) {
       return 0;
+    }
     if (ready < 0) {
       connected = false;
       return -VSCP_ERROR_STOPPED;
@@ -983,11 +1431,24 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// write
+//
+// @param buffer Pointer to the data to be written.
+// @param length Number of bytes to write.
+// @param timeout Timeout in milliseconds for the write operation.
+// @note The function will return -VSCP_ERROR_TIMEOUT if the write operation times out.
+// @note The function will return -VSCP_ERROR_STOPPED if the connection is stopped.
+// @note The function will return -VSCP_ERROR_SUCCESS if the write operation succeeds.
+// @note The function will return -VSCP_ERROR_UNKNOWN if an unknown error occurs.
+// 
+
 int
 VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t timeout)
 {
-  if (!connected)
-    return VSCP_ERROR_STOPPED;
+  if (!connected) {
+    return -VSCP_ERROR_STOPPED;
+  }
   const auto deadline = Clock::now() + std::chrono::milliseconds(timeout);
   const char *data = static_cast<const char *>(buffer);
   size_t written = 0;
@@ -1005,7 +1466,7 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
       if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
         tlsError("TLS write failed");
         connected = false;
-        return VSCP_ERROR_STOPPED;
+        return -VSCP_ERROR_STOPPED;
       }
       waitWrite = error == SSL_ERROR_WANT_WRITE;
     }
@@ -1017,17 +1478,23 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
       }
       if (!count || !socketWouldBlock(socketError())) {
         connected = false;
-        return VSCP_ERROR_STOPPED;
+        return -VSCP_ERROR_STOPPED;
       }
     }
     int ready = waitForSocket(socket, waitWrite, deadline);
     if (ready <= 0) {
       connected = false;
-      return ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_STOPPED;
+      return ready == 0 ? -VSCP_ERROR_TIMEOUT : -VSCP_ERROR_STOPPED;
     }
   }
   return VSCP_ERROR_SUCCESS;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// isConnected
+//
+// Returns whether a transport exists and is marked as connected.
+// @return true if a transport exists and is connected, false otherwise.
 
 bool
 VscpRemoteTcpIf::isConnected(void)
@@ -1035,11 +1502,26 @@ VscpRemoteTcpIf::isConnected(void)
   return m_transport && m_transport->connected;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// transportClose
+//
+// Releases the transport and its resources, if any.
+
 void
 VscpRemoteTcpIf::transportClose()
 {
   m_transport.reset();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// transportRead
+//
+// Reads data from the transport into the provided buffer.
+// @param buffer Pointer to the buffer where the read data will be stored.
+// @param length Maximum number of bytes to read.
+// @param timeout Timeout for the read operation in milliseconds.
+// @return Number of bytes read on success, or a negative error code on failure.
+//
 
 int
 VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
@@ -1047,10 +1529,21 @@ VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
   return m_transport ? m_transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// transportWrite
+//
+// Writes data to the transport from the provided buffer.
+// @param buffer Pointer to the buffer containing the data to write.
+// @param length Number of bytes to write.
+// @param timeout Timeout for the write operation in milliseconds.
+// @return VSCP_ERROR_SUCCESS on success, or a negative error code on failure.
+// @note If the write operation fails, the transport will be closed to maintain a consistent state.
+//
+
 int
 VscpRemoteTcpIf::transportWrite(const void *buffer, size_t length, uint32_t timeout)
 {
-  int result = m_transport ? m_transport->write(buffer, length, timeout) : VSCP_ERROR_STOPPED;
+  int result = m_transport ? m_transport->write(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
   if (result != VSCP_ERROR_SUCCESS)
     transportClose();
   return result;
