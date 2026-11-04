@@ -8646,8 +8646,11 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
 
   // Handle data
   pev->sizeData = 0;
+  if (tokens.size() > VSCP_MAX_DATA) {
+    return helperLogBoolResult(__func__, false);
+  }
 
-  char data[512];
+  char data[VSCP_MAX_DATA];
   while (!tokens.empty()) {
     str = tokens.front();
     tokens.pop_front();
@@ -8684,17 +8687,15 @@ bool
 vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &strEvent)
 {
   helperLogEntry(__func__);
-  bool rv;
-  vscpEvent event;
+  vscpEvent event = {};
 
   // Parse the string data
-  rv = vscp_convertStringToEvent(&event, strEvent);
-  vscp_convertEventToEventEx(pex, &event);
-
-  // Remove possible data
-  if (event.sizeData) {
-    delete[] event.pdata;
+  bool rv = vscp_convertStringToEvent(&event, strEvent);
+  if (rv) {
+    rv = vscp_convertEventToEventEx(pex, &event);
   }
+
+  vscp_deleteEvent(&event);
 
   return helperLogBoolResult(__func__, rv);
 }

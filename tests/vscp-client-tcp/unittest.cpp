@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 // unittest.cpp
 //
-// Unit tests for selectable TLS behavior in VscpRemoteTcpIf and vscpClientTcp.
+// Unit tests for TCP client configuration.
 //
 
 #include <gtest/gtest.h>
@@ -133,4 +133,45 @@ TEST(VscpClientTcpTlsSelect, InitFromJsonTlsModeParsing)
   json j2 = json::parse(client.getConfigAsJson());
   EXPECT_EQ("force-plain", j2["tls-mode"].get<std::string>());
   EXPECT_FALSE(j2["btls"].get<bool>());
+}
+
+TEST(VscpClientTcpSingleChannel, DefaultAndJsonRoundTrip)
+{
+  vscpClientTcp client;
+  EXPECT_FALSE(client.isSingleChannelReceiveLoopEnabled());
+  json initial = json::parse(client.getConfigAsJson());
+  EXPECT_FALSE(initial["single-channel"].get<bool>());
+  EXPECT_FALSE(initial["bpoll"].get<bool>());
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setSingleChannelReceiveLoop());
+  EXPECT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+  json configured = json::parse(client.getConfigAsJson());
+  EXPECT_TRUE(configured["single-channel"].get<bool>());
+
+  vscpClientTcp restored;
+  ASSERT_TRUE(restored.initFromJson(configured.dump()));
+  EXPECT_TRUE(restored.isSingleChannelReceiveLoopEnabled());
+  EXPECT_EQ(configured, json::parse(restored.getConfigAsJson()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, restored.setSingleChannelReceiveLoop(false));
+  EXPECT_FALSE(restored.isSingleChannelReceiveLoopEnabled());
+}
+
+TEST(VscpClientTcpSingleChannel, RejectsConflictingPollingConfiguration)
+{
+  vscpClientTcp client;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.init("tcp://localhost:9598", "admin", "secret", true));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, client.setSingleChannelReceiveLoop());
+  EXPECT_FALSE(client.isSingleChannelReceiveLoopEnabled());
+
+  ASSERT_TRUE(client.initFromJson(R"({"bpoll":false,"single-channel":true})"));
+  EXPECT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, client.init("tcp://localhost:9598", "admin", "secret", true));
+  EXPECT_FALSE(client.initFromJson(R"({"bpoll":true,"single-channel":true})"));
+  EXPECT_FALSE(client.initFromJson(R"({"single-channel":"true"})"));
+  EXPECT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+  EXPECT_FALSE(json::parse(client.getConfigAsJson())["bpoll"].get<bool>());
+
+  vscpClientTcp invalid;
+  EXPECT_FALSE(invalid.initFromJson(R"({"single-channel":true,"bfull-l2":"invalid"})"));
+  EXPECT_FALSE(invalid.isSingleChannelReceiveLoopEnabled());
 }

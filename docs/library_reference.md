@@ -112,8 +112,8 @@ The synchronous command API is unchanged. `tcp://host:port` and `host:port`
 select plain TCP; `stcp://host:port` selects TLS. `enableTLS(true)` forces TLS,
 `enableTLS(false)` forces plain TCP, and `setTLSAutoSelect()` restores selection
 by prefix. Hostname resolution and TLS handshake time are included in the
-connection timeout. Use a client from only one thread at a time. Connection
-objects are non-copyable.
+connection timeout. Except for the single-channel mode described below, use a
+client from only one thread at a time. Connection objects are non-copyable.
 
 When a hostname resolves to multiple addresses, connection attempts are
 staggered so that a stalled address does not block the others.
@@ -164,6 +164,113 @@ cmake --build build --target test_tcp_transport
 ```
 
 These tests require Python 3 and the `openssl` command.
+
+### Single-channel TCP receive loop
+
+`vscpClientTcp` offers three text-mode connection choices:
+
+| Mode | Configuration | Connections | Event reception |
+| --- | --- | --- | --- |
+| Default | `init(..., false)` | Two | Receive loop on a separate connection |
+| Polling | `init(..., true)` | One | Polls for events |
+| Single-channel receive loop | `init(..., false)` and `setSingleChannelReceiveLoop(true)` | One | Receives events asynchronously while sending commands |
+
+The new mode is opt-in. Configure it, TLS settings, timeouts, and callbacks
+before connecting. The receive-loop option cannot be combined with polling:
+conflicting `init`, setter, or JSON settings are rejected. Disconnect before
+changing the mode or other connection configuration. Applications must rebuild
+against the changed C++ class layouts.
+
+```cpp
+#include <vscp-client-tcp.h>
+
+int main()
+{
+    vscpClientTcp client;
+    client.setTLSOptions(true, "/etc/vscp/ca.pem");
+    client.setResponseTimeout(2000);
+    if (client.init("stcp://daemon.example.org:9598", "user", "password", false) != VSCP_ERROR_SUCCESS ||
+        client.setSingleChannelReceiveLoop() != VSCP_ERROR_SUCCESS ||
+        client.connect() != VSCP_ERROR_SUCCESS) {
+        return 1;
+    }
+
+    vscpEventEx outgoing = {};
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type = 6;
+    int sendResult = client.send(outgoing);
+
+    vscpEventEx incoming = {};
+    int receiveResult = client.receiveBlocking(incoming, 1000);
+    // An incoming event is not necessarily an echo of the event just sent.
+    int disconnectResult = client.disconnect();
+    return (sendResult == VSCP_ERROR_SUCCESS &&
+            (receiveResult == VSCP_ERROR_SUCCESS || receiveResult == VSCP_ERROR_TIMEOUT) &&
+            disconnectResult == VSCP_ERROR_SUCCESS) ? 0 : 1;
+}
+```
+
+The equivalent JSON settings can be passed to `initFromJson()` and are
+preserved by `getConfigAsJson()`:
+
+```json
+{
+  "host": "stcp://daemon.example.org:9598",
+  "user": "user",
+  "password": "password",
+  "bpoll": false,
+  "single-channel": true,
+  "bverifypeer": true,
+  "cafile": "/etc/vscp/ca.pem"
+}
+```
+
+The server must support `CHID`, `RCVLOOP`, and commands during the receive
+loop. In particular, command success replies must contain more than bare
+`+OK`, for example `+OK - Success`: bare `+OK` is indistinguishable from a
+receive-loop keepalive and is ignored. A command that receives no
+unambiguous reply before the response timeout fails and closes the
+connection to avoid matching a later reply to the wrong command. Call
+`disconnect()` before reconnecting. Use the default mode or polling with a
+server that cannot meet these requirements.
+
+In this mode `send()` may run concurrently with queued receives and may also
+be called from a receive callback; concurrent sends are serialized. Register
+callbacks before connecting and do not change callback registration or other
+connection configuration concurrently. Callbacks can begin before
+`connect()` returns and run on the client's receive worker: keep them short,
+and do not disconnect or destroy the client from a callback. `disconnect()`
+called there returns `VSCP_ERROR_NOT_SUPPORTED`.
+Registering or replacing a callback while this mode is active also returns
+`VSCP_ERROR_NOT_SUPPORTED`; do not change callback activation flags while it
+is running. Callbacks must not throw; a `std::exception` escaping a callback
+stops the worker and is logged.
+The shared interface returned by `getTcpReceive()` is for inspection only
+while the client is running; direct operations can interfere with the reader.
+
+With no callback active, `receive()` takes an event from a local queue and
+returns `VSCP_ERROR_RCV_EMPTY` when it is empty. `receiveBlocking()` waits
+for the supplied number of milliseconds, returns `VSCP_ERROR_TIMEOUT` on
+expiry, and rejects negative timeouts. Both return
+`VSCP_ERROR_NOT_SUPPORTED` while either callback is active. Events delivered
+to callbacks are not queued. For `vscpEvent` receives, initialize the event
+and release its data with `vscp_deleteEvent()` before reusing it.
+
+`setfilter()` applies a local filter to future events; it does not change the
+server-side filter. `getcount()` reports events already transferred to the
+local queue, not events still in transit or buffered by the server, and
+returns `VSCP_ERROR_OVERRUN` if the count cannot fit in `uint16_t`. The
+queue is not bounded, so applications should consume events promptly.
+An incoming event with more than `VSCP_MAX_DATA` (512) data bytes is
+rejected and stops the receive worker with a read error.
+`clear()` sends `CLRA` and discards locally buffered events after the server
+acknowledges it; events arriving concurrently may also be discarded and
+callbacks already in progress are not cancelled.
+
+Only `SEND`, `NOOP`, `CLRA`, and `QUITLOOP` are supported by the underlying
+connection during this receive loop. The wrapper's `getversion()`,
+`getinterfaces()`, and `getwcyd()` return `VSCP_ERROR_NOT_SUPPORTED` in
+single-channel mode. This is a text-mode feature; binary mode is separate.
 
 ## UDP and multicast addressing
 

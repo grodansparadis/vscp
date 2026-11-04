@@ -35,10 +35,56 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <chrono>
+#include <exception>
+#include <limits>
+#include <memory>
+#include <new>
+#include <system_error>
+#include <utility>
+
 #include "vscp-client-tcp.h"
+#include "vscphelperlogging.h"
 
 void workerThread(vscpClientTcp *pObj);
 void pollWorkerThread(vscpClientTcp *pObj);
+
+namespace {
+
+class SingleChannelPause {
+public:
+  SingleChannelPause(std::atomic<bool> &requested, std::mutex &mutex, std::condition_variable &condition)
+    : m_requested(requested), m_mutex(mutex), m_condition(condition)
+  {
+    m_requested = true;
+  }
+
+  ~SingleChannelPause()
+  {
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_requested = false;
+    }
+    m_condition.notify_all();
+  }
+
+  SingleChannelPause(const SingleChannelPause &) = delete;
+  SingleChannelPause &operator=(const SingleChannelPause &) = delete;
+
+private:
+  std::atomic<bool> &m_requested;
+  std::mutex &m_mutex;
+  std::condition_variable &m_condition;
+};
+
+int
+tcpClientFailure(const char *function, int error)
+{
+  vscphelper_logFunctionFailure("vscpClientTcp", function, error);
+  return error;
+}
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -48,14 +94,16 @@ vscpClientTcp::vscpClientTcp()
 {
   m_type          = CVscpClient::connType::TCPIP;
   m_pworkerthread = nullptr;
+  m_bRun          = false;
 
   // Default connect parameters
   m_strHostname = "tcp://localhost:9598";
   m_strUsername = "admin";
   m_strPassword = "secret";
   m_guidif.clear();
-  m_bPolling = false;
-  m_obid     = 0;
+  m_bPolling                  = false;
+  m_bSingleChannelReceiveLoop = false;
+  m_obid                      = 0;
 
   m_bTLS        = false;
   m_tlsMode     = tls_mode::auto_select;
@@ -109,11 +157,20 @@ vscpClientTcp::getConfigAsJson(void)
 {
   std::string str;
   json j;
+  vscpEventFilter filter;
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    filter = m_filterIn;
+  }
+  else {
+    filter = m_filterIn;
+  }
 
   j["host"]               = m_strHostname;
   j["user"]               = m_strUsername;
   j["password"]           = m_strPassword;
   j["bpoll"]              = m_bPolling;
+  j["single-channel"]     = m_bSingleChannelReceiveLoop;
   j["connection-timeout"] = 0;
   j["response-timeout"]   = 0;
   j["bfull-l2"]           = isFullLevel2();
@@ -134,15 +191,15 @@ vscpClientTcp::getConfigAsJson(void)
 
   // Filter In
 
-  j["priority-filter"] = m_filterIn.filter_priority;
-  j["priority-mask"]   = m_filterIn.mask_priority;
-  j["class-filter"]    = m_filterIn.filter_class;
-  j["class-mask"]      = m_filterIn.mask_class;
-  j["type-filter"]     = m_filterIn.filter_type;
-  j["type-mask"]       = m_filterIn.mask_type;
-  vscp_writeGuidArrayToString(str, m_filterIn.filter_GUID);
+  j["priority-filter"] = filter.filter_priority;
+  j["priority-mask"]   = filter.mask_priority;
+  j["class-filter"]    = filter.filter_class;
+  j["class-mask"]      = filter.mask_class;
+  j["type-filter"]     = filter.filter_type;
+  j["type-mask"]       = filter.mask_type;
+  vscp_writeGuidArrayToString(str, filter.filter_GUID);
   j["guid-filter"] = str;
-  vscp_writeGuidArrayToString(str, m_filterIn.mask_GUID);
+  vscp_writeGuidArrayToString(str, filter.mask_GUID);
   j["guid-mask"] = str;
 
   return j.dump();
@@ -161,6 +218,18 @@ vscpClientTcp::initFromJson(const std::string &config)
   try {
     j = json::parse(config);
 
+    const bool polling = j.value("bpoll", m_bPolling);
+    const bool singleChannel = j.value("single-channel", m_bSingleChannelReceiveLoop);
+    if ((polling && singleChannel) ||
+        (m_bSingleChannelReceiveLoop &&
+         (m_singleChannelRunning || m_singleChannelWorkerThread.joinable())) ||
+        (singleChannel != m_bSingleChannelReceiveLoop &&
+         (m_singleChannelWorkerThread.joinable() || nullptr != m_pworkerthread ||
+          m_tcp.isConnected() || m_tcpReceive.isConnected()))) {
+      tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
+      return false;
+    }
+
     if (j.contains("host")) {
       m_strHostname = j["host"].get<std::string>();
     }
@@ -171,10 +240,6 @@ vscpClientTcp::initFromJson(const std::string &config)
 
     if (j.contains("password")) {
       m_strPassword = j["password"].get<std::string>();
-    }
-
-    if (j.contains("bpoll")) {
-      m_bPolling = j["bpoll"].get<bool>();
     }
 
     if (j.contains("connection-timeout")) {
@@ -280,8 +345,12 @@ vscpClientTcp::initFromJson(const std::string &config)
       std::string str = j["guid-mask"].get<std::string>();
       vscp_getGuidFromStringToArray(m_filterIn.mask_GUID, str);
     }
+
+    m_bPolling = polling;
+    m_bSingleChannelReceiveLoop = singleChannel;
   }
-  catch (...) {
+  catch (const json::exception &) {
+    tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
     return false;
   }
 
@@ -298,11 +367,58 @@ vscpClientTcp::init(const std::string &strHostname,
                     const std::string &strPassword,
                     bool bPolling)
 {
+  if (m_bSingleChannelReceiveLoop &&
+      (bPolling || m_singleChannelRunning || m_singleChannelWorkerThread.joinable())) {
+    return tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
+  }
+
   m_strHostname = strHostname;
   m_strUsername = strUsername;
   m_strPassword = strPassword;
   m_bPolling    = bPolling;
   return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setSingleChannelReceiveLoop
+//
+
+int
+vscpClientTcp::setSingleChannelReceiveLoop(bool enable)
+{
+  if ((enable && m_bPolling) || m_singleChannelRunning || m_singleChannelWorkerThread.joinable() ||
+      nullptr != m_pworkerthread || m_tcp.isConnected() || m_tcpReceive.isConnected()) {
+    return tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  m_bSingleChannelReceiveLoop = enable;
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setCallbackEv
+//
+
+int
+vscpClientTcp::setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback, void *pData)
+{
+  if (m_bSingleChannelReceiveLoop && (m_singleChannelRunning || m_singleChannelWorkerThread.joinable())) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+  return CVscpClient::setCallbackEv(std::move(callback), pData);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setCallbackEx
+//
+
+int
+vscpClientTcp::setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback, void *pData)
+{
+  if (m_bSingleChannelReceiveLoop && (m_singleChannelRunning || m_singleChannelWorkerThread.joinable())) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+  return CVscpClient::setCallbackEx(std::move(callback), pData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -313,6 +429,12 @@ int
 vscpClientTcp::connect(void)
 {
   int rv;
+
+  if (m_bSingleChannelReceiveLoop &&
+      (m_singleChannelRunning || m_singleChannelWorkerThread.joinable() || nullptr != m_pworkerthread ||
+       m_tcp.isConnected() || m_tcpReceive.isConnected())) {
+    return tcpClientFailure(__func__, VSCP_ERROR_ALREADY_DEFINED);
+  }
 
   // Propagate TLS mode/settings to the remote tcp/ip interfaces
   m_tcp.setTLSOptions(m_bVerifyPeer, m_cafile, m_capath,
@@ -330,6 +452,45 @@ vscpClientTcp::connect(void)
   else {
     m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
     m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
+  }
+
+  if (VSCP_ERROR_SUCCESS != (rv = m_tcp.setSingleChannelReceiveLoop(m_bSingleChannelReceiveLoop))) {
+    return rv;
+  }
+
+  if (m_bSingleChannelReceiveLoop) {
+    if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdOpen(m_strHostname, m_strUsername, m_strPassword))) {
+      return rv;
+    }
+    if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdGetChannelID(&m_obid))) {
+      m_tcp.doCmdClose();
+      return rv;
+    }
+    if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdEnterReceiveLoop())) {
+      m_tcp.doCmdClose();
+      return rv;
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      m_singleChannelEvents.clear();
+      m_singleChannelError = VSCP_ERROR_SUCCESS;
+      m_singleChannelRunning = true;
+    }
+    try {
+      m_singleChannelWorkerThread = std::thread(&vscpClientTcp::singleChannelWorker, this);
+    }
+    catch (const std::system_error &) {
+      {
+        std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+        m_singleChannelError = VSCP_ERROR_ERROR;
+        m_singleChannelRunning = false;
+      }
+      m_singleChannelCondition.notify_all();
+      m_tcp.doCmdClose();
+      return tcpClientFailure(__func__, VSCP_ERROR_ERROR);
+    }
+    return VSCP_ERROR_SUCCESS;
   }
 
   if (m_bPolling) {
@@ -378,6 +539,32 @@ vscpClientTcp::disconnect(void)
 {
   int rv;
 
+  if (m_bSingleChannelReceiveLoop) {
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      if (m_singleChannelWorkerId == std::this_thread::get_id()) {
+        return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+      }
+      m_singleChannelRunning = false;
+      m_singleChannelError = VSCP_ERROR_NOT_CONNECTED;
+      m_singleChannelEvents.clear();
+    }
+    m_singleChannelCondition.notify_all();
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelDispatchMutex);
+      m_singleChannelDispatchCondition.notify_all();
+    }
+    if (m_singleChannelWorkerThread.joinable()) {
+      m_singleChannelWorkerThread.join();
+    }
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      m_singleChannelWorkerId = std::thread::id();
+    }
+    std::lock_guard<std::mutex> lock(m_singleChannelCommandMutex);
+    return m_tcp.doCmdClose();
+  }
+
   if (m_bPolling) {
     m_bRun = false;
     if (nullptr != m_pworkerthread) {
@@ -413,6 +600,10 @@ vscpClientTcp::disconnect(void)
 bool
 vscpClientTcp::isConnected(void)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return m_singleChannelRunning;
+  }
+
   if (m_bPolling) {
     return m_tcp.isConnected();
   }
@@ -428,6 +619,14 @@ vscpClientTcp::isConnected(void)
 int
 vscpClientTcp::send(vscpEvent &ev)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelCommandMutex);
+    if (!m_singleChannelRunning) {
+      return tcpClientFailure(__func__, VSCP_ERROR_NOT_CONNECTED);
+    }
+    return m_tcp.doCmdSend(&ev);
+  }
+
   if (m_bPolling) {
     pthread_mutex_lock(&m_mutexTcpIpObject);
     int rv = m_tcp.doCmdSend(&ev);
@@ -444,6 +643,14 @@ vscpClientTcp::send(vscpEvent &ev)
 int
 vscpClientTcp::send(vscpEventEx &ex)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelCommandMutex);
+    if (!m_singleChannelRunning) {
+      return tcpClientFailure(__func__, VSCP_ERROR_NOT_CONNECTED);
+    }
+    return m_tcp.doCmdSendEx(&ex);
+  }
+
   if (m_bPolling) {
     pthread_mutex_lock(&m_mutexTcpIpObject);
     int rv = m_tcp.doCmdSendEx(&ex);
@@ -460,20 +667,48 @@ vscpClientTcp::send(vscpEventEx &ex)
 int
 vscpClientTcp::send(canalMsg &msg)
 {
-  vscpEventEx ex;
+  vscpEvent event = {};
+  std::unique_ptr<vscpEvent, decltype(&vscp_deleteEvent)> cleanup(&event, vscp_deleteEvent);
 
   uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+  if (!vscp_convertCanalToEvent(&event, &msg, guid)) {
     return VSCP_ERROR_INVALID_FRAME;
   }
 
-  if (m_bPolling) {
-    pthread_mutex_lock(&m_mutexTcpIpObject);
-    int rv = m_tcp.doCmdSendEx(&ex);
-    pthread_mutex_unlock(&m_mutexTcpIpObject);
-    return rv;
+  return send(event);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveSingleChannel
+//
+
+int
+vscpClientTcp::receiveSingleChannel(vscpEventEx &event, long timeout, bool blocking)
+{
+  if (timeout < 0) {
+    return tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
   }
-  return m_tcp.doCmdSendEx(&ex);
+  if (isCallbackEvActive() || isCallbackExActive()) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+
+  std::unique_lock<std::mutex> lock(m_singleChannelMutex);
+  auto ready = [this]() { return !m_singleChannelEvents.empty() || !m_singleChannelRunning; };
+  if (!ready()) {
+    if (!blocking) {
+      return VSCP_ERROR_RCV_EMPTY;
+    }
+    if (!m_singleChannelCondition.wait_for(lock, std::chrono::milliseconds(timeout), ready)) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+  }
+  if (m_singleChannelEvents.empty()) {
+    return m_singleChannelError == VSCP_ERROR_SUCCESS ? VSCP_ERROR_NOT_CONNECTED : m_singleChannelError;
+  }
+
+  event = m_singleChannelEvents.front();
+  m_singleChannelEvents.pop_front();
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -483,6 +718,16 @@ vscpClientTcp::send(canalMsg &msg)
 int
 vscpClientTcp::receive(vscpEvent &ev)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    vscpEventEx event = {};
+    int rv = receiveSingleChannel(event, 0, false);
+    if (VSCP_ERROR_SUCCESS != rv) {
+      return rv;
+    }
+    return vscp_convertEventExToEvent(&ev, &event) ? VSCP_ERROR_SUCCESS :
+      tcpClientFailure(__func__, VSCP_ERROR_INVALID_FRAME);
+  }
+
   return m_tcp.doCmdReceive(&ev);
 }
 
@@ -493,6 +738,10 @@ vscpClientTcp::receive(vscpEvent &ev)
 int
 vscpClientTcp::receive(vscpEventEx &ex)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return receiveSingleChannel(ex, 0, false);
+  }
+
   return m_tcp.doCmdReceiveEx(&ex);
 }
 
@@ -506,7 +755,7 @@ vscpClientTcp::receive(canalMsg &msg)
   int rv;
   vscpEventEx ex;
 
-  if (VSCP_ERROR_SUCCESS != (rv = m_tcp.doCmdReceiveEx(&ex))) {
+  if (VSCP_ERROR_SUCCESS != (rv = receive(ex))) {
     return rv;
   }
 
@@ -524,6 +773,16 @@ vscpClientTcp::receive(canalMsg &msg)
 int
 vscpClientTcp::receiveBlocking(vscpEvent &ev, long timeout)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    vscpEventEx event = {};
+    int rv = receiveSingleChannel(event, timeout, true);
+    if (VSCP_ERROR_SUCCESS != rv) {
+      return rv;
+    }
+    return vscp_convertEventExToEvent(&ev, &event) ? VSCP_ERROR_SUCCESS :
+      tcpClientFailure(__func__, VSCP_ERROR_INVALID_FRAME);
+  }
+
   if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
     if (errno == ETIMEDOUT) {
       return VSCP_ERROR_TIMEOUT;
@@ -543,6 +802,10 @@ vscpClientTcp::receiveBlocking(vscpEvent &ev, long timeout)
 int
 vscpClientTcp::receiveBlocking(vscpEventEx &ex, long timeout)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return receiveSingleChannel(ex, timeout, true);
+  }
+
   if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
     if (errno == ETIMEDOUT) {
       return VSCP_ERROR_TIMEOUT;
@@ -562,6 +825,16 @@ vscpClientTcp::receiveBlocking(vscpEventEx &ex, long timeout)
 int
 vscpClientTcp::receiveBlocking(canalMsg &msg, long timeout)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    vscpEventEx event = {};
+    int rv = receiveSingleChannel(event, timeout, true);
+    if (VSCP_ERROR_SUCCESS != rv) {
+      return rv;
+    }
+    return vscp_convertEventExToCanal(&msg, &event) ? VSCP_ERROR_SUCCESS :
+      tcpClientFailure(__func__, VSCP_ERROR_INVALID_FRAME);
+  }
+
   if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
     if (errno == ETIMEDOUT) {
       return VSCP_ERROR_TIMEOUT;
@@ -581,6 +854,12 @@ vscpClientTcp::receiveBlocking(canalMsg &msg, long timeout)
 int
 vscpClientTcp::setfilter(vscpEventFilter &filter)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_filterIn = filter;
+    return VSCP_ERROR_SUCCESS;
+  }
+
   if (m_bPolling) {
     return m_tcp.doCmdFilter(&filter);
   }
@@ -601,6 +880,18 @@ vscpClientTcp::getcount(uint16_t *pcount)
   if (NULL == pcount) {
     return VSCP_ERROR_INVALID_POINTER;
   }
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (!m_singleChannelRunning && m_singleChannelEvents.empty()) {
+      return m_singleChannelError == VSCP_ERROR_SUCCESS ? VSCP_ERROR_NOT_CONNECTED : m_singleChannelError;
+    }
+    if (m_singleChannelEvents.size() > (std::numeric_limits<uint16_t>::max)()) {
+      return tcpClientFailure(__func__, VSCP_ERROR_OVERRUN);
+    }
+    *pcount = static_cast<uint16_t>(m_singleChannelEvents.size());
+    return VSCP_ERROR_SUCCESS;
+  }
+
   *pcount = m_tcp.doCmdDataAvailable();
   return VSCP_ERROR_SUCCESS;
 }
@@ -612,6 +903,26 @@ vscpClientTcp::getcount(uint16_t *pcount)
 int
 vscpClientTcp::clear(void)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> commandLock(m_singleChannelCommandMutex);
+    if (!m_singleChannelRunning) {
+      return tcpClientFailure(__func__, VSCP_ERROR_NOT_CONNECTED);
+    }
+    SingleChannelPause pause(m_singleChannelPauseRequested,
+                             m_singleChannelDispatchMutex,
+                             m_singleChannelDispatchCondition);
+    std::lock_guard<std::mutex> dispatchLock(m_singleChannelDispatchMutex);
+    if (!m_singleChannelRunning) {
+      return tcpClientFailure(__func__, VSCP_ERROR_NOT_CONNECTED);
+    }
+    int rv = m_tcp.doCmdClear();
+    if (VSCP_ERROR_SUCCESS == rv) {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      m_singleChannelEvents.clear();
+    }
+    return rv;
+  }
+
   return m_tcp.doCmdClear();
 }
 
@@ -622,6 +933,10 @@ vscpClientTcp::clear(void)
 int
 vscpClientTcp::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+
   *pbuild = 0;
   return m_tcp.doCmdVersion(pmajor, pminor, prelease);
 }
@@ -633,6 +948,10 @@ vscpClientTcp::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
 int
 vscpClientTcp::getinterfaces(std::deque<std::string> &iflist)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+
   return m_tcp.doCmdInterfaceList(iflist);
 }
 
@@ -643,6 +962,10 @@ vscpClientTcp::getinterfaces(std::deque<std::string> &iflist)
 int
 vscpClientTcp::getwcyd(uint64_t & /*wcyd*/)
 {
+  if (m_bSingleChannelReceiveLoop) {
+    return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
+  }
+
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -702,6 +1025,106 @@ vscpClientTcp::sendToCallbacks(vscpEvent *pev)
     vscp_convertEventToEventEx(&ex, pev);
     m_callbackex(ex, m_callbackObject);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// failSingleChannelWorker
+//
+
+void
+vscpClientTcp::failSingleChannelWorker(int error)
+{
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (!m_singleChannelRunning) {
+      return;
+    }
+    m_singleChannelError = error;
+    m_singleChannelRunning = false;
+  }
+  tcpClientFailure(__func__, error);
+  m_singleChannelCondition.notify_all();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// singleChannelWorker
+//
+
+void
+vscpClientTcp::singleChannelWorker(void)
+{
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelWorkerId = std::this_thread::get_id();
+  }
+
+  try {
+    while (m_singleChannelRunning) {
+      vscpEvent event = {};
+      std::unique_ptr<vscpEvent, decltype(&vscp_deleteEvent)> cleanup(&event, vscp_deleteEvent);
+      std::unique_lock<std::mutex> dispatchLock(m_singleChannelDispatchMutex);
+      m_singleChannelDispatchCondition.wait(dispatchLock, [this]() {
+        return !m_singleChannelPauseRequested || !m_singleChannelRunning;
+      });
+      if (!m_singleChannelRunning) {
+        break;
+      }
+
+      int rv = m_tcp.doCmdBlockingReceive(&event, 100);
+      if (!m_singleChannelRunning) {
+        break;
+      }
+      if (VSCP_ERROR_TIMEOUT == rv) {
+        continue;
+      }
+      if (VSCP_ERROR_SUCCESS != rv) {
+        dispatchLock.unlock();
+        failSingleChannelWorker(rv);
+        break;
+      }
+
+      bool callbacks = false;
+      bool queued = false;
+      int dispatchError = VSCP_ERROR_SUCCESS;
+      {
+        std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+        if (vscp_doLevel2Filter(&event, &m_filterIn)) {
+          callbacks = isCallbackEvActive() || isCallbackExActive();
+          if (!callbacks) {
+            vscpEventEx converted = {};
+            if (!vscp_convertEventToEventEx(&converted, &event)) {
+              dispatchError = VSCP_ERROR_INVALID_FRAME;
+            }
+            else {
+              m_singleChannelEvents.push_back(converted);
+              queued = true;
+            }
+          }
+        }
+      }
+      dispatchLock.unlock();
+
+      if (VSCP_ERROR_SUCCESS != dispatchError) {
+        failSingleChannelWorker(dispatchError);
+        break;
+      }
+      if (queued) {
+        m_singleChannelCondition.notify_one();
+      }
+      if (callbacks && m_singleChannelRunning) {
+        sendToCallbacks(&event);
+      }
+    }
+  }
+  catch (const std::bad_alloc &) {
+    failSingleChannelWorker(VSCP_ERROR_MEMORY);
+  }
+  catch (const std::exception &) {
+    failSingleChannelWorker(VSCP_ERROR_ERROR);
+  }
+
+  std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+  m_singleChannelWorkerId = std::thread::id();
 }
 
 // ----------------------------------------------------------------------------

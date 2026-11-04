@@ -29,6 +29,10 @@
 #include "vscp-client-base.h"
 #include <vscpremotetcpif.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <functional>
 #include <mutex>
 #include <thread>
 
@@ -53,14 +57,36 @@ public:
       @param strPassword Password used to login on remote host.
       @param bPolling If true only one connection will be opened to the remote server
           on which polling for events will be done. If false one connection will be opened
-          for send and one for receive. The polling is intended for low end devices which
-          only accepts one client at the time.
+          for send and one for receive, unless single-channel receive-loop mode is enabled.
+          Polling and single-channel receive-loop mode cannot be enabled together.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   int init(const std::string &strHostname = "tcp://localhost:9598",
            const std::string &strUsername = "vscp",
            const std::string &strPassword = "secret",
            bool bPolling                  = false);
+
+  /*!
+      Enable or disable the single-channel receive-loop mode. Configure it
+      while disconnected and with polling disabled. The default is disabled.
+      In this mode one connection is shared by SEND and asynchronous event
+      reception; server replies to commands must be distinguishable from bare
+      +OK receive-loop keepalives.
+      @return VSCP_ERROR_SUCCESS, or VSCP_ERROR_PARAMETER if the mode cannot
+          be changed or conflicts with polling.
+  */
+  int setSingleChannelReceiveLoop(bool enable = true);
+
+  bool isSingleChannelReceiveLoopEnabled(void) const { return m_bSingleChannelReceiveLoop; }
+
+  /*!
+      Set receive callbacks before connecting in single-channel mode.
+      Changing them while that mode is active returns VSCP_ERROR_NOT_SUPPORTED.
+  */
+  int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback,
+                    void *pData = nullptr) override;
+  int setCallbackEx(std::function<void(vscpEventEx &ex, void *pobj)> callback,
+                    void *pData = nullptr) override;
 
   /*!
       Connect to remote host
@@ -100,6 +126,9 @@ public:
 
   /*!
       Receive VSCP event from remote host
+      In single-channel mode this reads the local event queue and returns
+      VSCP_ERROR_RCV_EMPTY when no event is available. Queued receives are
+      unavailable while a receive callback is active.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEvent &ev);
@@ -108,12 +137,15 @@ public:
       Blocking receive of VSCP event ex from remote host
       @param ev VSCP event ex that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
+          In single-channel mode, zero does not wait and negative values
+          are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receiveBlocking(vscpEvent &ev, long timeout = 100);
 
   /*!
       Receive VSCP event ex from remote host
+      Single-channel mode uses the same local queue as receive(vscpEvent &).
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEventEx &ex);
@@ -122,12 +154,15 @@ public:
       Blocking receive of VSCP event ex from remote host
       @param ex VSCP event ex that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
+          In single-channel mode, zero does not wait and negative values
+          are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100);
 
   /*!
     Receive CAN(AL) message from remote host
+    Single-channel mode uses the same local queue as receive(vscpEvent &).
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
 */
   virtual int receive(canalMsg &msg);
@@ -136,12 +171,15 @@ public:
       Receive blocking CAN(AL) message from remote host
       @param msg CANAL message that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
+          In single-channel mode, zero does not wait and negative values
+          are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
 
   /*!
       Set interface filter
+      In single-channel mode the filter is applied locally to future events.
       @param filter VSCP Filter to set.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -149,20 +187,22 @@ public:
 
   /*!
       Get number of events waiting to be received on remote
-      interface
+      interface. In single-channel mode this is the local receive queue size.
       @param pcount Pointer to an unsigned integer that get the count of events.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int getcount(uint16_t *pcount);
 
   /*!
-      Clear the input queue
+      Clear the input queue. In single-channel mode this clears both the
+      server queue and events already buffered by this client.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int clear(void);
 
   /*!
       Get version from interface
+      This command is not available in single-channel receive-loop mode.
       @param pmajor Pointer to uint8_t that get major version of interface.
       @param pminor Pointer to uint8_t that get minor version of interface.
       @param prelease Pointer to uint8_t that get release version of interface.
@@ -173,6 +213,7 @@ public:
 
   /*!
       Get interfaces
+      This command is not available in single-channel receive-loop mode.
       @param iflist Get a list of available interfaces
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -180,6 +221,7 @@ public:
 
   /*!
       Get capabilities (wcyd) from remote interface
+      This command is not available in single-channel receive-loop mode.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int getwcyd(uint64_t &wcyd);
@@ -192,6 +234,8 @@ public:
 
   /*!
       Set member variables from JSON representation of connection
+      The optional boolean "single-channel" selects single-channel
+      receive-loop mode; it cannot be combined with "bpoll": true.
       @param config JSON representation as string
       @return True on success, false on failure.
   */
@@ -304,10 +348,11 @@ public:
   // ------------------------------------------------------------------------
 
   /*!
-      Get the tcp/ip receive object
+      Get the tcp/ip receive object. In single-channel mode this is the
+      shared connection. Do not operate on it directly while the client runs.
       @return Pointer to receive tcp/ip object or null if not defined
   */
-  VscpRemoteTcpIf *getTcpReceive(void) { return &m_tcpReceive; };
+  VscpRemoteTcpIf *getTcpReceive(void) { return m_bSingleChannelReceiveLoop ? &m_tcp : &m_tcpReceive; };
 
   /*!
       Send event to defined callbacks if any is defined
@@ -348,10 +393,9 @@ public:
 
 private:
   /*!
-      The main interface (sending) is always opened (both in poll and
-      standard mode). The Receive interface is opened only in normal mode
-      and do just connect - log in - enable receive loop. Received events
-      will be sent on the defined callbacks.
+      The main interface is always opened. The receive interface is opened
+      only in the default two-channel mode. Polling and single-channel
+      receive-loop modes use the main interface for both sending and receiving.
   */
 
   /// Sending interface
@@ -384,6 +428,25 @@ private:
 
   /// If true the remote host interface will be polled.
   bool m_bPolling;
+
+  /// If true the main interface runs an asynchronous single-channel receive loop.
+  bool m_bSingleChannelReceiveLoop;
+
+  void singleChannelWorker(void);
+  void failSingleChannelWorker(int error);
+  int receiveSingleChannel(vscpEventEx &event, long timeout, bool blocking);
+
+  std::atomic<bool> m_singleChannelRunning{false};
+  std::thread m_singleChannelWorkerThread;
+  std::mutex m_singleChannelCommandMutex;
+  std::mutex m_singleChannelDispatchMutex;
+  std::condition_variable m_singleChannelDispatchCondition;
+  std::atomic<bool> m_singleChannelPauseRequested{false};
+  std::mutex m_singleChannelMutex;
+  std::condition_variable m_singleChannelCondition;
+  std::deque<vscpEventEx> m_singleChannelEvents;
+  std::thread::id m_singleChannelWorkerId;
+  int m_singleChannelError = VSCP_ERROR_NOT_CONNECTED;
 
   // ------------------------------------------------------------------------
   //                                 TLS / SSL

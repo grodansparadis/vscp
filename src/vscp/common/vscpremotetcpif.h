@@ -445,8 +445,7 @@ public:
       It does nothing other then putting the interface in the loop mode and
       checking that it went there.
 
-      Note! The only way to terminate this receive loop is to close the
-     session with doCmdClose (or just close the socket).
+      Use doCmdQuitReceiveLoop() or doCmdClose() to leave the loop.
 
       @return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
    */
@@ -937,7 +936,7 @@ public:
 
 private:
   struct Transport;
-  std::unique_ptr<Transport> m_transport;
+  std::shared_ptr<Transport> m_transport;
   int transportRead(void *buffer, size_t length, int timeout);
   int transportWrite(const void *buffer, size_t length, uint32_t timeout);
   void transportClose();

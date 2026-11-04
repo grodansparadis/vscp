@@ -119,6 +119,11 @@ class Handler(socketserver.BaseRequestHandler):
             raise TypeError("TCP transport handler requires a test server")
         connection = self.request
         connection.settimeout(3)
+        acquired = False
+        if server.single_client:
+            acquired = server.client_slot.acquire(blocking=False)
+            if not acquired:
+                return
         try:
             if server.stall:
                 time.sleep(2)
@@ -159,43 +164,73 @@ class Handler(socketserver.BaseRequestHandler):
                             continue
                         if command == b"VERS":
                             connection.sendall(b"26,10,1\r\n+OK\r\n")
+                        elif command == b"CHID":
+                            connection.sendall(b"1\r\n+OK\r\n")
                         elif command in (b"RETR", b"OTHER") and scenario == b"empty":
                             connection.sendall(b"-OK - No event(s) available\r\n")
                         elif command == b"RETR" and scenario == b"reject-retr":
                             connection.sendall(b"-OK - No event(s) available\r\n+ERR - rejected\r\n")
+                        elif command == b"RETR":
+                            connection.sendall(b"-OK - No event(s) available\r\n")
                         elif command == b"RCVLOOP":
-                            receive_loop = True
-                            connection.sendall(b"+OK\r\n")
-                            time.sleep(0.02)
-                            connection.sendall(b"0,10,6,0,2026-10-07T00:00:00,0,-,1,2,3\r\n")
+                            if server.reject_receive_loop:
+                                connection.sendall(b"+ERR - Receive loop rejected\r\n")
+                            else:
+                                receive_loop = True
+                                event = b"0,10,6,0,2026-10-07T00:00:00,0,-,1,2,3\r\n"
+                                if scenario == b"oversized-text":
+                                    event = b"0,10,6,0,,0,-" + b",1" * 513 + b"\r\n"
+                                if server.coalesced_receive:
+                                    connection.sendall(b"+OK\r\n" + event)
+                                else:
+                                    connection.sendall(b"+OK\r\n")
+                                    time.sleep(0.02)
+                                    connection.sendall(event)
                         elif command == b"QUITLOOP":
                             receive_loop = False
                             connection.sendall(b"+OK - Success\r\n")
                         elif receive_loop and command == b"SEND":
-                            connection.sendall(b"+OK\r\n+OK - Success\r\n")
-                            connection.sendall(b"0,10,6,0,2026-10-07T00:00:01,0,-,4,5,6\r\n")
+                            if server.bare_receive_ack:
+                                connection.sendall(b"+OK\r\n")
+                            else:
+                                connection.sendall(b"+OK\r\n+OK - Success\r\n")
+                                connection.sendall(b"0,10,6,0,2026-10-07T00:00:01,0,-,4,5,6\r\n")
                         elif receive_loop and command in (b"NOOP", b"CLRA"):
                             connection.sendall(b"+OK\r\n+OK - Success\r\n")
+                        elif command == b"QUIT":
+                            if acquired:
+                                server.client_slot.release()
+                                acquired = False
+                            connection.sendall(b"+OK\r\n")
+                            return
                         else:
                             rejected = command == b"ERROR" or (command == b"NOOP" and server.reject_noop)
                             reply = b"+ERR - rejected\r\n" if rejected else b"+OK\r\n"
                             for fragment in (reply[:2], reply[2:-1], reply[-1:]):
                                 connection.sendall(fragment)
                                 time.sleep(0.01)
-                        if command == b"QUIT":
-                            return
         except (ssl.SSLError, ConnectionError, TimeoutError):
             # Rejected handshakes and client timeout tests deliberately disconnect.
             return
+        finally:
+            if acquired:
+                server.client_slot.release()
 
 
 class Server(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
-    def __init__(self, context=None, stall=False, ipv6=False, reject_noop=False):
+    def __init__(self, context=None, stall=False, ipv6=False, reject_noop=False,
+                 single_client=False, reject_receive_loop=False, bare_receive_ack=False,
+                 coalesced_receive=False):
         self.context = context
         self.stall = stall
         self.reject_noop = reject_noop
+        self.single_client = single_client
+        self.reject_receive_loop = reject_receive_loop
+        self.bare_receive_ack = bare_receive_ack
+        self.coalesced_receive = coalesced_receive
+        self.client_slot = threading.Lock()
         self.address_family = socket.AF_INET6 if ipv6 else socket.AF_INET
         super().__init__(("::1" if ipv6 else "127.0.0.1", 0), Handler)
         self.thread = threading.Thread(target=self.serve_forever, daemon=True)
@@ -251,6 +286,11 @@ def main():
         mtls.load_verify_locations(ca)
         mtls.verify_mode = ssl.CERT_REQUIRED
         servers = [Server(), Server(tls), Server(mtls), Server(stall=True), Server(untrusted)]
+        single = Server(single_client=True)
+        single_tls = Server(tls, single_client=True, coalesced_receive=True)
+        rejected_loop = Server(reject_receive_loop=True)
+        bare_ack = Server(bare_receive_ack=True)
+        servers.extend((single, single_tls, rejected_loop, bare_ack))
         for server in servers:
             stack.callback(server.close)
         ipv6_server = None
@@ -265,6 +305,10 @@ def main():
                            VSCP_TEST_MTLS=servers[2].endpoint(True),
                            VSCP_TEST_STALL=servers[3].endpoint(True),
                            VSCP_TEST_UNTRUSTED=servers[4].endpoint(True),
+                           VSCP_TEST_SINGLE=single.endpoint(),
+                           VSCP_TEST_SINGLE_TLS=single_tls.endpoint(True),
+                           VSCP_TEST_REJECT_LOOP=rejected_loop.endpoint(),
+                           VSCP_TEST_BARE_ACK=bare_ack.endpoint(),
                            VSCP_TEST_CA=str(ca), VSCP_TEST_WRONG_CA=str(wrong_ca),
                            VSCP_TEST_CA_DIR=str(ca_dir), VSCP_TEST_CERT=str(client_cert),
                            VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca),

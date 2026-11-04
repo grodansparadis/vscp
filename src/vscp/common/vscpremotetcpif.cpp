@@ -1277,7 +1277,8 @@ struct VscpRemoteTcpIf::Transport {
   SSL_CTX *context = nullptr;
   SSL *tls = nullptr;
   BIO_METHOD *bioMethod = nullptr;
-  bool connected = false;
+  std::atomic<bool> connected{false};
+  std::mutex tlsMutex;
 
   ///< Destructor to clean up TLS and socket resources.
   ~Transport()
@@ -1567,6 +1568,7 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
   while (true) {
     bool waitWrite = false;
     if (tls) {
+      std::lock_guard<std::mutex> lock(tlsMutex);
       ERR_clear_error();
       int count = SSL_read(tls, buffer, size);
       if (count > 0) {
@@ -1629,6 +1631,7 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
     int size = static_cast<int>((std::min<size_t>)(length - written, INT_MAX));
     bool waitWrite = true;
     if (tls) {
+      std::lock_guard<std::mutex> lock(tlsMutex);
       ERR_clear_error();
       int count = SSL_write(tls, data + written, size);
       if (count > 0) {
@@ -1673,7 +1676,8 @@ bool
 VscpRemoteTcpIf::isConnected(void)
 {
   logTcpEntry(__func__);
-  return m_transport && m_transport->connected;
+  auto transport = std::atomic_load(&m_transport);
+  return transport && transport->connected;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1698,7 +1702,7 @@ VscpRemoteTcpIf::transportClose()
     }
   }
   m_singleChannelCondition.notify_all();
-  m_transport.reset();
+  std::atomic_store(&m_transport, std::shared_ptr<Transport>());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1715,7 +1719,8 @@ int
 VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
 {
   logTcpEntry(__func__);
-  return logTcpReadResult(__func__, m_transport ? m_transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED);
+  auto transport = std::atomic_load(&m_transport);
+  return logTcpReadResult(__func__, transport ? transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1733,7 +1738,8 @@ int
 VscpRemoteTcpIf::transportWrite(const void *buffer, size_t length, uint32_t timeout)
 {
   logTcpEntry(__func__);
-  int result = m_transport ? m_transport->write(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
+  auto transport = std::atomic_load(&m_transport);
+  int result = transport ? transport->write(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
   if (result != VSCP_ERROR_SUCCESS)
     transportClose();
   return logTcpResult(__func__, result);
@@ -2654,9 +2660,10 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   doCmdClose();
-  m_transport.reset(new Transport);
+  auto transport = std::make_shared<Transport>();
+  std::atomic_store(&m_transport, transport);
   std::string socketHost = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
-  int openResult = m_transport->open(*this, socketHost, portString);
+  int openResult = transport->open(*this, socketHost, portString);
   if (openResult != VSCP_ERROR_SUCCESS) {
     transportClose();
     return logTcpResult(__func__, openResult);
@@ -2794,7 +2801,12 @@ VscpRemoteTcpIf::doCmdClear(void)
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
-  return logTcpResult(__func__, doCommand("CLRA\r\n"));
+  int result = doCommand("CLRA\r\n");
+  if (result == VSCP_ERROR_SUCCESS && m_bModeReceiveLoop && m_bSingleChannelReceiveLoop) {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelEventQueue.clear();
+  }
+  return logTcpResult(__func__, result);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

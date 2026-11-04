@@ -2867,6 +2867,7 @@ vscp_getEventExAsString(const vscpEventEx *pex);
   If datetime is empty, the timestamp field is treated as nanoseconds since
   Unix epoch. If datetime is present, it is parsed and converted to nanoseconds.
   The head field will have VSCP_HEADER16_FRAME_VERSION_UNIX_NS set.
+  At most VSCP_MAX_DATA data bytes are accepted.
 
   @param pev Event that will get data
   @param str String that contains the event in string form
@@ -2886,6 +2887,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &str);
   If datetime is empty, the timestamp field is treated as nanoseconds since
   Unix epoch. If datetime is present, it is parsed and converted to nanoseconds.
   The head field will have VSCP_HEADER16_FRAME_VERSION_UNIX_NS set.
+  At most VSCP_MAX_DATA data bytes are accepted.
 
   @param pex Pointer to VSCP event that will get the parsed data
   @param str String that contain the event on string form

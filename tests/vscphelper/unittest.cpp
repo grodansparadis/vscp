@@ -1664,6 +1664,34 @@ TEST(VscpHelper, convertStringToEvent)
     vscp_deleteEvent(&event);
 }
 
+TEST(VscpHelper, convertStringToEventDataLimit)
+{
+    std::string str = "0,10,6,0,,0,-";
+    for (size_t i = 0; i < VSCP_MAX_DATA; ++i) {
+        str += ",1";
+    }
+
+    vscpEvent event = {};
+    ASSERT_TRUE(vscp_convertStringToEvent(&event, str));
+    ASSERT_EQ(VSCP_MAX_DATA, event.sizeData);
+    EXPECT_EQ(1, event.pdata[VSCP_MAX_DATA - 1]);
+    vscp_deleteEvent(&event);
+
+    vscpEventEx eventEx = {};
+    ASSERT_TRUE(vscp_convertStringToEventEx(&eventEx, str));
+    EXPECT_EQ(VSCP_MAX_DATA, eventEx.sizeData);
+    EXPECT_EQ(1, eventEx.data[VSCP_MAX_DATA - 1]);
+    EXPECT_FALSE(vscp_convertStringToEventEx(nullptr, str));
+
+    str += ",1";
+    event = {};
+    EXPECT_FALSE(vscp_convertStringToEvent(&event, str));
+    vscp_deleteEvent(&event);
+
+    EXPECT_FALSE(vscp_convertStringToEventEx(&eventEx, str));
+    EXPECT_FALSE(vscp_convertStringToEventEx(&eventEx, "0,10"));
+}
+
 TEST(VscpHelper, convertEventExToString)
 {
     vscpEventEx eventEx;

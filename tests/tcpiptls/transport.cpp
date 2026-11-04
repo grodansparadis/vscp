@@ -4,13 +4,17 @@
 #include <vscphelperlogging.h>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <mutex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -41,6 +45,22 @@ protected:
     ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdNOOP());
   }
 };
+
+bool waitForCount(vscpClientTcp &client, uint16_t expected)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (std::chrono::steady_clock::now() < deadline) {
+    uint16_t count = 0;
+    if (client.getcount(&count) != VSCP_ERROR_SUCCESS) {
+      return false;
+    }
+    if (count == expected) {
+      return true;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return false;
+}
 }
 
 TEST_F(TcpTransport, PlainAndReconnect)
@@ -244,6 +264,412 @@ TEST_F(TcpTransport, SingleChannelReceiveLoopAllowsCommandsAndEvents)
 
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdQuitReceiveLoop());
   EXPECT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+}
+
+TEST_F(TcpTransport, SingleChannelClearDiscardsBufferedEvents)
+{
+  open("VSCP_TEST_PLAIN");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdEnterReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.rcvloopRead(1000));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdClear());
+
+  vscpEvent event = {};
+  int result = client.doCmdBlockingReceive(&event, 100);
+  vscp_deleteEvent(&event);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, result);
+}
+
+TEST_F(TcpTransport, SingleChannelRejectsOversizedEvents)
+{
+  open("VSCP_TEST_PLAIN");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO oversized-text\r\n"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdEnterReceiveLoop());
+  vscpEvent event = {};
+  EXPECT_EQ(VSCP_ERROR_READ, client.doCmdBlockingReceive(&event, 1000));
+  vscp_deleteEvent(&event);
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelUsesOneConnection)
+{
+  vscpClientTcp wrapper;
+  wrapper.setConnectionTimeout(1000);
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_SINGLE"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  ASSERT_TRUE(wrapper.isConnected());
+  EXPECT_EQ(1U, wrapper.m_obid);
+  EXPECT_TRUE(wrapper.getTcpReceive()->isSingleChannelReceiveLoopEnabled());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.setSingleChannelReceiveLoop(false));
+  EXPECT_EQ(VSCP_ERROR_ALREADY_DEFINED, wrapper.connect());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  EXPECT_FALSE(wrapper.initFromJson(R"({"single-channel":true})"));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.setCallbackEv([](vscpEvent &, void *) {}));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.setCallbackEx([](vscpEventEx &, void *) {}));
+
+  VscpRemoteTcpIf extra;
+  extra.setConnectTimeout(1);
+  extra.setResponseTimeout(300);
+  EXPECT_NE(VSCP_ERROR_SUCCESS, extra.doCmdOpen(setting("VSCP_TEST_SINGLE"), "admin", "secret"));
+  EXPECT_TRUE(wrapper.isConnected());
+
+  vscpEvent first = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(first, 1000));
+  EXPECT_EQ(10, first.vscp_class);
+  EXPECT_EQ(6, first.vscp_type);
+  EXPECT_EQ(0xffff, first.year);
+  EXPECT_GT(first.timestamp_ns, 0U);
+  ASSERT_EQ(3, first.sizeData);
+  EXPECT_EQ(1, first.pdata[0]);
+  vscp_deleteEvent(&first);
+
+  vscpEventEx received = {};
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receive(received));
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(received, 50));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.receiveBlocking(received, -1));
+
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  outgoing.sizeData = 3;
+  outgoing.data[0] = 4;
+  outgoing.data[1] = 5;
+  outgoing.data[2] = 6;
+  int sendResult = VSCP_ERROR_ERROR;
+  std::thread sender([&]() { sendResult = wrapper.send(outgoing); });
+  int receiveResult = wrapper.receiveBlocking(received, 1000);
+  sender.join();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, sendResult);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, receiveResult);
+  EXPECT_EQ(10, received.vscp_class);
+  ASSERT_EQ(3, received.sizeData);
+  EXPECT_EQ(4, received.data[0]);
+  EXPECT_GT(received.timestamp_ns, 0U);
+
+  canalMsg outgoingCanal = {};
+  outgoingCanal.id = (10U << 16) | (6U << 8) | 1U;
+  outgoingCanal.sizeData = 2;
+  outgoingCanal.data[0] = 7;
+  outgoingCanal.data[1] = 8;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoingCanal));
+  canalMsg receivedCanal = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(receivedCanal, 1000));
+  ASSERT_EQ(3, receivedCanal.sizeData);
+  EXPECT_EQ(4, receivedCanal.data[0]);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  EXPECT_FALSE(wrapper.isConnected());
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelFiltersCountsAndClears)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+
+  vscpEventFilter filter = {};
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_class = 20;
+  filter.mask_class = 0xffff;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setfilter(filter));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+
+  vscpEventEx received = {};
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(received, 150));
+  vscp_clearVSCPFilter(&filter);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setfilter(filter));
+
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_TRUE(waitForCount(wrapper, 2));
+  const auto clearStart = std::chrono::steady_clock::now();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.clear());
+  EXPECT_LT(std::chrono::steady_clock::now() - clearStart, std::chrono::seconds(1));
+  uint16_t count = 99;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.getcount(&count));
+  EXPECT_EQ(0, count);
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receive(received));
+
+  uint8_t major = 0, minor = 0, release = 0, build = 0;
+  std::deque<std::string> interfaces;
+  uint64_t wcyd = 0;
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getversion(&major, &minor, &release, &build));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getinterfaces(interfaces));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getwcyd(wcyd));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(received, 1000));
+  EXPECT_EQ(4, received.data[0]);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelTlsCallbacksCanSend)
+{
+  struct CallbackState {
+    std::mutex mutex;
+    std::condition_variable condition;
+    int eventCount = 0;
+    int exCount = 0;
+    int sendResult = VSCP_ERROR_ERROR;
+    int disconnectResult = VSCP_ERROR_ERROR;
+    bool invalid = false;
+  } state;
+
+  vscpClientTcp wrapper;
+  wrapper.setTLSOptions(true, setting("VSCP_TEST_CA"));
+  wrapper.setResponseTimeout(1000);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_SINGLE_TLS"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEv([&](vscpEvent &event, void *) {
+    int number;
+    {
+      std::lock_guard<std::mutex> lock(state.mutex);
+      state.invalid = state.invalid || event.vscp_class != 10 || event.sizeData != 3;
+      number = ++state.eventCount;
+    }
+    if (1 == number) {
+      int disconnectResult = wrapper.disconnect();
+      int result = wrapper.send(outgoing);
+      std::lock_guard<std::mutex> lock(state.mutex);
+      state.disconnectResult = disconnectResult;
+      state.sendResult = result;
+    }
+    state.condition.notify_all();
+  }, &state));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEx([&](vscpEventEx &event, void *) {
+    {
+      std::lock_guard<std::mutex> lock(state.mutex);
+      state.invalid = state.invalid || event.vscp_class != 10 || event.sizeData != 3;
+      ++state.exCount;
+    }
+    state.condition.notify_all();
+  }, &state));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+
+  constexpr int sends = 8;
+  for (int i = 0; i < sends; ++i) {
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  }
+  {
+    std::unique_lock<std::mutex> lock(state.mutex);
+    EXPECT_TRUE(state.condition.wait_for(lock, std::chrono::seconds(5), [&]() {
+      return state.eventCount >= sends + 2 && state.exCount >= sends + 2;
+    }));
+    EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, state.disconnectResult);
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, state.sendResult);
+    EXPECT_FALSE(state.invalid);
+  }
+  vscpEventEx received = {};
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.receive(received));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelJsonReconnects)
+{
+  vscpClientTcp configured;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, configured.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, configured.setSingleChannelReceiveLoop());
+  vscpClientTcp wrapper;
+  ASSERT_TRUE(wrapper.initFromJson(configured.getConfigAsJson()));
+
+  for (int i = 0; i < 2; ++i) {
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+    vscpEventEx received = {};
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(received, 1000));
+    EXPECT_EQ(1, received.data[0]);
+    vscpEventEx outgoing = {};
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type = 6;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(received, 1000));
+    EXPECT_EQ(4, received.data[0]);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+    EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, wrapper.receive(received));
+  }
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelMultipleReceivers)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  vscpEventEx first = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(first, 1000));
+
+  constexpr int count = 3;
+  std::atomic<int> started{0};
+  int results[count] = {};
+  std::vector<std::thread> receivers;
+  for (int i = 0; i < count; ++i) {
+    receivers.emplace_back([&, i]() {
+      ++started;
+      vscpEventEx event = {};
+      results[i] = wrapper.receiveBlocking(event, 2000);
+    });
+  }
+  while (started < count) {
+    std::this_thread::yield();
+  }
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  for (int i = 0; i < count; ++i) {
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  }
+  for (auto &receiver : receivers) {
+    receiver.join();
+  }
+  for (int result : results) {
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, result);
+  }
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receive(first));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperDefaultTwoChannelMode)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  std::atomic<int> callbacks{0};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEv([&](vscpEvent &, void *) { ++callbacks; }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEx([&](vscpEventEx &, void *) { ++callbacks; }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  EXPECT_FALSE(wrapper.isSingleChannelReceiveLoopEnabled());
+  EXPECT_TRUE(wrapper.isConnected());
+  EXPECT_TRUE(wrapper.getTcpReceive()->isConnected());
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (callbacks < 2 && std::chrono::steady_clock::now() < deadline) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  EXPECT_EQ(2, callbacks.load());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperPollingModeSendsCanal)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret", true));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  EXPECT_FALSE(wrapper.isSingleChannelReceiveLoopEnabled());
+  canalMsg outgoing = {};
+  outgoing.id = (10U << 16) | (6U << 8) | 1U;
+  outgoing.sizeData = 1;
+  outgoing.data[0] = 7;
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelHandlesReceiveLoopRejection)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_REJECT_LOOP"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  EXPECT_NE(VSCP_ERROR_SUCCESS, wrapper.connect());
+  EXPECT_FALSE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop(false));
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelCallbackExceptionStopsWorker)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  std::atomic<bool> invoked{false};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEv([&](vscpEvent &, void *) {
+    invoked = true;
+    throw std::runtime_error("callback failure");
+  }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (wrapper.isConnected() && std::chrono::steady_clock::now() < deadline) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  EXPECT_TRUE(invoked);
+  EXPECT_FALSE(wrapper.isConnected());
+  vscpEventEx outgoing = {};
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, wrapper.send(outgoing));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelDisconnectWakesReceiver)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(400);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+
+  std::atomic<bool> started{false};
+  int receiveResult = VSCP_ERROR_SUCCESS;
+  std::thread receiver([&]() {
+    started = true;
+    vscpEventEx next = {};
+    receiveResult = wrapper.receiveBlocking(next, 5000);
+  });
+  while (!started) {
+    std::this_thread::yield();
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  const auto start = std::chrono::steady_clock::now();
+  int disconnectResult = wrapper.disconnect();
+  receiver.join();
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, disconnectResult);
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, receiveResult);
+  EXPECT_LT(std::chrono::steady_clock::now() - start, std::chrono::seconds(2));
+}
+
+TEST_F(TcpTransport, WrapperSingleChannelBareAckClosesAndWakesReceiver)
+{
+  vscpClientTcp wrapper;
+  wrapper.setResponseTimeout(150);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_BARE_ACK"), "admin", "secret"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+
+  std::atomic<bool> started{false};
+  int receiveResult = VSCP_ERROR_SUCCESS;
+  std::thread receiver([&]() {
+    started = true;
+    vscpEventEx next = {};
+    receiveResult = wrapper.receiveBlocking(next, 2000);
+  });
+  while (!started) {
+    std::this_thread::yield();
+  }
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  const auto start = std::chrono::steady_clock::now();
+  int sendResult = wrapper.send(outgoing);
+  receiver.join();
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, sendResult);
+  EXPECT_NE(VSCP_ERROR_SUCCESS, receiveResult);
+  EXPECT_NE(VSCP_ERROR_TIMEOUT, receiveResult);
+  EXPECT_LT(std::chrono::steady_clock::now() - start, std::chrono::seconds(2));
+  EXPECT_FALSE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
 }
 
 TEST_F(TcpTransport, ReceiveTimeoutIsDebugAndDoesNotExposeData)
