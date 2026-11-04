@@ -61,6 +61,9 @@ void helperLogEntry(const char *function) noexcept;
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 #endif
+////////////////////////////////////////////////////////////////
+// clock_gettime
+//
 static inline int
 clock_gettime(int, struct timespec *ts)
 {
@@ -158,6 +161,9 @@ using namespace std;
 
 namespace {
 
+////////////////////////////////////////////////////////////////
+// helperLogEntry
+//
 void
 helperLogEntry(const char *function) noexcept
 {
@@ -168,6 +174,9 @@ helperLogEntry(const char *function) noexcept
 #endif
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogFailure
+//
 void
 helperLogFailure(const char *function, int error = 0) noexcept
 {
@@ -193,6 +202,9 @@ helperLogFailure(const char *function, int error = 0) noexcept
 #endif
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogBoolResult
+//
 bool
 helperLogBoolResult(const char *function, bool result) noexcept
 {
@@ -202,6 +214,9 @@ helperLogBoolResult(const char *function, bool result) noexcept
   return result;
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogStatusResult
+//
 int
 helperLogStatusResult(const char *function, int result) noexcept
 {
@@ -211,6 +226,9 @@ helperLogStatusResult(const char *function, int result) noexcept
   return result;
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogNegativeResult
+//
 int
 helperLogNegativeResult(const char *function, int result) noexcept
 {
@@ -220,6 +238,9 @@ helperLogNegativeResult(const char *function, int result) noexcept
   return result;
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogSizeResult
+//
 size_t
 helperLogSizeResult(const char *function, size_t result) noexcept
 {
@@ -229,6 +250,9 @@ helperLogSizeResult(const char *function, size_t result) noexcept
   return result;
 }
 
+////////////////////////////////////////////////////////////////
+// helperLogWaitResult
+//
 int
 helperLogWaitResult(const char *function, int result, int error) noexcept
 {
@@ -249,6 +273,9 @@ helperLogWaitResult(const char *function, int result, int error) noexcept
 
 static std::atomic<bool> g_vscp_use_openssl_frame_crypto(false);
 
+////////////////////////////////////////////////////////////////
+// vscp_getOpenSslCipherFromAlgorithm
+//
 static const EVP_CIPHER *
 vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
 {
@@ -270,6 +297,9 @@ vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
   }
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_pkcs7Pad
+//
 static bool
 vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 {
@@ -288,6 +318,9 @@ vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
   return true;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_pkcs7Unpad
+//
 static bool
 vscp_pkcs7Unpad(uint8_t *plaintext, size_t &len)
 {
@@ -315,6 +348,9 @@ vscp_pkcs7Unpad(uint8_t *plaintext, size_t &len)
   return true;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_validFrameCrc
+//
 static bool
 vscp_validFrameCrc(const uint8_t *frame, size_t len)
 {
@@ -326,6 +362,9 @@ vscp_validFrameCrc(const uint8_t *frame, size_t len)
   return helperLogBoolResult(__func__, crcSlow(frame + 1, (int) (len - 3)) == expected);
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_validateDecryptedFrame
+//
 static bool
 vscp_validateDecryptedFrame(uint8_t *frame, size_t len)
 {
@@ -334,6 +373,9 @@ vscp_validateDecryptedFrame(uint8_t *frame, size_t len)
   return helperLogBoolResult(__func__, vscp_pkcs7Unpad(frame + 1, payload_len) && vscp_validFrameCrc(frame, payload_len + 1));
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_resolveFrameCryptoAlgorithm
+//
 static uint8_t
 vscp_resolveFrameCryptoAlgorithm(uint8_t algorithm, const uint8_t *input)
 {
@@ -345,6 +387,9 @@ vscp_resolveFrameCryptoAlgorithm(uint8_t algorithm, const uint8_t *input)
   return algorithm;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_getEncryptionIv
+//
 static bool
 vscp_getEncryptionIv(uint8_t *target, const uint8_t *iv)
 {
@@ -357,6 +402,9 @@ vscp_getEncryptionIv(uint8_t *target, const uint8_t *iv)
   return true;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_validateEvpArgs
+//
 static bool
 vscp_validateEvpArgs(const EVP_CIPHER *pcipher,
                      uint8_t *output,
@@ -388,6 +436,9 @@ vscp_validateEvpArgs(const EVP_CIPHER *pcipher,
   return true;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_evpEncryptBuffer
+//
 static bool
 vscp_evpEncryptBuffer(const EVP_CIPHER *pcipher,
                       uint8_t *output,
@@ -433,6 +484,9 @@ vscp_evpEncryptBuffer(const EVP_CIPHER *pcipher,
   return helperLogBoolResult(__func__, (((size_t) outlen1 + (size_t) outlen2) == len));
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_evpDecryptBuffer
+//
 static bool
 vscp_evpDecryptBuffer(const EVP_CIPHER *pcipher,
                       uint8_t *output,
@@ -478,6 +532,9 @@ vscp_evpDecryptBuffer(const EVP_CIPHER *pcipher,
   return helperLogBoolResult(__func__, (0 == outlen2) && (((size_t) outlen1) == len));
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_encryptFrameOpenSSL
+//
 static size_t
 vscp_encryptFrameOpenSSL(uint8_t *output,
                          uint8_t *input,
@@ -530,6 +587,9 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
   return padlen + 1; // Count packet type byte
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_decryptFrameOpenSSL
+//
 static bool
 vscp_decryptFrameOpenSSL(uint8_t *output,
                          uint8_t *input,
@@ -687,6 +747,9 @@ vscp_mem_usage(double &vm_usage, double &resident_set)
 //
 
 #ifdef WIN32
+////////////////////////////////////////////////////////////////
+// vscp_sem_wait
+//
 int
 vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
 {
@@ -706,6 +769,9 @@ vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
   return helperLogWaitResult(__func__, rv, rv == ETIMEDOUT ? ETIMEDOUT : (rv ? static_cast<int>(GetLastError()) : 0));
 }
 #else
+////////////////////////////////////////////////////////////////
+// vscp_sem_wait
+//
 int
 vscp_sem_wait(sem_t *sem, uint32_t waitms)
 {
@@ -768,6 +834,9 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
 //
 
 #ifdef WIN32
+////////////////////////////////////////////////////////////////
+// vscp_sem_post
+//
 int
 vscp_sem_post(HANDLE *phHandle)
 {
@@ -778,6 +847,9 @@ vscp_sem_post(HANDLE *phHandle)
   return 0;
 }
 #else
+////////////////////////////////////////////////////////////////
+// vscp_sem_post
+//
 int
 vscp_sem_post(sem_t *sem)
 {
@@ -790,6 +862,9 @@ vscp_sem_post(sem_t *sem)
 #endif
 
 #ifdef WIN32
+////////////////////////////////////////////////////////////////
+// vscp_usleep
+//
 static void
 vscp_usleep(__int64 usec)
 {
@@ -839,14 +914,26 @@ vscp_almostEqualRelativeFloat(float A, float B, float maxRelDiff)
 }
 
 union Float_t {
+  ////////////////////////////////////////////////////////////////
+  // Float_t
+  //
   Float_t(float num = 0.0f)
     : f(num)
   {
     helperLogEntry(__func__);
   }
   // Portable extraction of components.
+  ////////////////////////////////////////////////////////////////
+  // Negative
+  //
   bool Negative() const { helperLogEntry(__func__); return i < 0; }
+  ////////////////////////////////////////////////////////////////
+  // RawMantissa
+  //
   int32_t RawMantissa() const { helperLogEntry(__func__); return i & ((1 << 23) - 1); }
+  ////////////////////////////////////////////////////////////////
+  // RawExponent
+  //
   int32_t RawExponent() const { helperLogEntry(__func__); return (i >> 23) & 0xFF; }
 
   int32_t i;
@@ -861,7 +948,7 @@ union Float_t {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_almostEqualUlpsAndAbs
+// vscp_almostEqualUlpsAndAbsFloat
 //
 
 bool
@@ -893,7 +980,7 @@ vscp_almostEqualUlpsAndAbsFloat(float A, float B, float maxDiff, int maxUlpsDiff
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_almostEqualRelativeAndAbs
+// vscp_almostEqualRelativeAndAbsFloat
 //
 
 bool
@@ -988,7 +1075,6 @@ vscp_strncasecmp(const char *s1, const char *s2, size_t len)
   return diff;
 }
 
-// ------- civet
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_strlcpy
@@ -1384,13 +1470,14 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_to_unix_ns
-//
 
 #define NS_PER_SEC   1000000000LL
 #define SECS_PER_DAY 86400LL
 
 // Convert civil date to days since 1970-01-01 (Unix epoch)
+////////////////////////////////////////////////////////////////
+// days_from_civil
+//
 static int64_t
 days_from_civil(int year, int month, int day)
 {
@@ -1403,6 +1490,9 @@ days_from_civil(int year, int month, int day)
   return era * 146097LL + (int64_t) doe - 719468LL;
 }
 
+////////////////////////////////////////////////////////////////
+// to_unix_ns_embedded
+//
 int64_t
 to_unix_ns_embedded(int year, int month, int day, int hour, int minute, int second, uint32_t timestamp)
 {
@@ -1413,6 +1503,9 @@ to_unix_ns_embedded(int year, int month, int day, int hour, int minute, int seco
   return sec * NS_PER_SEC + (int64_t) timestamp * 1000LL;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_to_unix_ns
+//
 int64_t
 vscp_to_unix_ns(int year, int month, int day, int hour, int minute, int second, uint32_t timestamp)
 {
@@ -1428,9 +1521,10 @@ vscp_to_unix_ns(int year, int month, int day, int hour, int minute, int second, 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_from_unix_ns
-//
 
+////////////////////////////////////////////////////////////////
+// civil_from_days
+//
 static void
 civil_from_days(int64_t z, int *y, int *m, int *d)
 {
@@ -1452,6 +1546,9 @@ civil_from_days(int64_t z, int *y, int *m, int *d)
   *d = (int) d_full;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_from_unix_ns
+//
 void
 vscp_from_unix_ns(int *year,
                   int *month,
@@ -1523,7 +1620,7 @@ vscp_safe_encode_str(const std::string &str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_toXMLEscape
+// vscp_XML_Escape
 //
 // Escape "invalid" XML characters for insert in XML file.
 // Note: Must be room in original buffer for result
@@ -1633,7 +1730,7 @@ vscp_base64_std_encode(std::string &str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// decodeBase64IfNeeded
+// vscp_std_decodeBase64IfNeeded
 //
 
 bool
@@ -1871,6 +1968,9 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
 //                              Data Coding Helpers
 // ***************************************************************************
 
+////////////////////////////////////////////////////////////////
+// vscp_getMeasurementDataCoding
+//
 uint8_t
 vscp_getMeasurementDataCoding(const vscpEvent *pev)
 {
@@ -3189,7 +3289,7 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_makeFloatMeasurementEvent
+// vscp_makeIntegerMeasurementEvent
 //
 
 bool
@@ -3336,7 +3436,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_makeFloatMeasurementEventEx
+// vscp_makeIntegerMeasurementEventEx
 //
 
 bool
@@ -4621,7 +4721,7 @@ vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeGuidToString
+// vscp_writeGuidToString
 //
 
 bool
@@ -4896,8 +4996,8 @@ vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pev)
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// writeGuidToString
+////////////////////////////////////////////////////////////////
+// vscp_writeGuidArrayToString
 //
 
 bool
@@ -5378,7 +5478,7 @@ vscp_newEventEx(vscpEventEx **ppex, uint16_t version)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// deleteVSCPevent
+// vscp_deleteEvent
 //
 
 void
@@ -5397,7 +5497,7 @@ vscp_deleteEvent(vscpEvent *pev)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// deleteVSCPevent
+// vscp_deleteEventEx
 //
 
 void
@@ -5415,7 +5515,7 @@ vscp_deleteEventEx(vscpEventEx **ppex)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// deleteVSCPevent_v2
+// vscp_deleteEvent_v2
 //
 
 void
@@ -5435,7 +5535,7 @@ vscp_deleteEvent_v2(vscpEvent **ppEvent)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// deleteVSCPevent
+// vscp_deleteEventEx
 //
 
 void
@@ -5687,6 +5787,9 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev)
 // Always produces frame type 1 (UNIX_NS) with nanosecond timestamp.
 //
 
+////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEvent
+//
 bool
 vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
 {
@@ -5953,6 +6056,9 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pex)
 //    "data": [1,2,3,4,5,6,7]
 // }
 
+////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEventEx
+//
 bool
 vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
 {
@@ -6221,6 +6327,9 @@ int depth_event_parser = 0;
 
 // Always produces frame type 1 (UNIX_NS) with nanosecond timestamp.
 // For original frame input, converts datetime + timestamp to nanoseconds.
+////////////////////////////////////////////////////////////////
+// startEventXMLParser
+//
 static void
 startEventXMLParser(void *data, const char *name, const char **attr)
 {
@@ -6316,6 +6425,9 @@ startEventXMLParser(void *data, const char *name, const char **attr)
   depth_event_parser++;
 }
 
+////////////////////////////////////////////////////////////////
+// endEventXMLParser
+//
 static void
 endEventXMLParser(void * /*data*/, const char * /*name*/)
 {
@@ -6323,6 +6435,9 @@ endEventXMLParser(void * /*data*/, const char * /*name*/)
   depth_event_parser--;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEvent
+//
 bool
 vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
 {
@@ -6451,6 +6566,9 @@ int depth_eventex_parser = 0;
 
 // Always produces frame type 1 (UNIX_NS) with nanosecond timestamp.
 // For original frame input, converts datetime + timestamp to nanoseconds.
+////////////////////////////////////////////////////////////////
+// startEventExXMLParser
+//
 static void
 startEventExXMLParser(void *data, const char *name, const char **attr)
 {
@@ -6544,6 +6662,9 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
   depth_eventex_parser++;
 }
 
+////////////////////////////////////////////////////////////////
+// endEventExXMLParser
+//
 static void
 endEventExXMLParser(void * /*data*/, const char * /*name*/)
 {
@@ -6551,6 +6672,9 @@ endEventExXMLParser(void * /*data*/, const char * /*name*/)
   depth_eventex_parser--;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEventEx
+//
 bool
 vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
 {
@@ -7029,6 +7153,9 @@ vscp_setEventExToNow(vscpEventEx *pex)
 // So a nill mask will let everything through
 //
 
+////////////////////////////////////////////////////////////////
+// vscp_doLevel2Filter
+//
 bool
 vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pFilter)
 {
@@ -7114,7 +7241,7 @@ vscp_doLevel2FilterEx(const vscpEventEx *pex, const vscpEventFilter *pFilter)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// ClearVSCPFilter
+// vscp_clearVSCPFilter
 //
 
 void
@@ -7442,6 +7569,9 @@ vscp_readFilterMaskFromString(vscpEventFilter *pFilter, const std::string &strFi
 
 int depth_filtermask_parser = 0;
 
+////////////////////////////////////////////////////////////////
+// startFilterMaskXMLParser
+//
 static void
 startFilterMaskXMLParser(void *data, const char *name, const char **attr)
 {
@@ -7488,6 +7618,9 @@ startFilterMaskXMLParser(void *data, const char *name, const char **attr)
   depth_filtermask_parser++;
 }
 
+////////////////////////////////////////////////////////////////
+// endFilterMaskXMLParser
+//
 static void
 endFilterMaskXMLParser(void * /*data*/, const char * /*name*/)
 {
@@ -7497,6 +7630,9 @@ endFilterMaskXMLParser(void * /*data*/, const char * /*name*/)
 
 // ----------------------------------------------------------------------------
 
+////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromXML
+//
 bool
 vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilter)
 {
@@ -9562,6 +9698,9 @@ vscp_decryptFrame(uint8_t *output,
   return helperLogBoolResult(__func__, vscp_validateDecryptedFrame(output, real_len));
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_frameHmac
+//
 static bool
 vscp_frameHmac(uint8_t *digest, const uint8_t *frame, size_t len, const uint8_t *key)
 {
@@ -9575,6 +9714,9 @@ vscp_frameHmac(uint8_t *digest, const uint8_t *frame, size_t len, const uint8_t 
          digest_len == 32);
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_encryptFrameV1
+//
 size_t
 vscp_encryptFrameV1(uint8_t *output,
                     size_t capacity,
@@ -9625,6 +9767,9 @@ vscp_encryptFrameV1(uint8_t *output,
   return wire_len;
 }
 
+////////////////////////////////////////////////////////////////
+// vscp_decryptFrameV1
+//
 size_t
 vscp_decryptFrameV1(uint8_t *output,
                     size_t capacity,
@@ -9705,6 +9850,9 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 
 // ----------------------------------------------------------------------------
 
+////////////////////////////////////////////////////////////////
+// readHexChar
+//
 static uint8_t
 readHexChar(char input)
 {
@@ -9860,6 +10008,9 @@ typedef struct ip_address_tag {
   uint16_t port;
 } ip_address_t;
 
+////////////////////////////////////////////////////////////////
+// parse_ipv4_address
+//
 bool
 parse_ipv4_address(const char *input, ip_address_t *result)
 {
@@ -9874,6 +10025,9 @@ parse_ipv4_address(const char *input, ip_address_t *result)
   return false;
 }
 
+////////////////////////////////////////////////////////////////
+// parse_ipv6_address
+//
 bool
 parse_ipv6_address(const char *input, ip_address_t *result)
 {
@@ -9888,6 +10042,9 @@ parse_ipv6_address(const char *input, ip_address_t *result)
   return false;
 }
 
+////////////////////////////////////////////////////////////////
+// parse_port_number
+//
 uint16_t
 parse_port_number(const char *str)
 {
@@ -9909,6 +10066,9 @@ parse_port_number(const char *str)
 // ipv4_address:port
 // ipv4_address
 // ipv6_address
+//
+////////////////////////////////////////////////////////////////
+// parse_address
 //
 bool
 parse_address(const char *input, ip_address_t *result)
