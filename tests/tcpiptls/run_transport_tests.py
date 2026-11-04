@@ -129,6 +129,7 @@ class Handler(socketserver.BaseRequestHandler):
                 connection.sendall(b"+OK - VSCP test server\r\n")
                 pending = b""
                 scenario = b""
+                receive_loop = False
                 while True:
                     data = connection.recv(8192)
                     if not data:
@@ -163,9 +164,18 @@ class Handler(socketserver.BaseRequestHandler):
                         elif command == b"RETR" and scenario == b"reject-retr":
                             connection.sendall(b"-OK - No event(s) available\r\n+ERR - rejected\r\n")
                         elif command == b"RCVLOOP":
+                            receive_loop = True
                             connection.sendall(b"+OK\r\n")
                             time.sleep(0.02)
                             connection.sendall(b"0,10,6,0,2026-10-07T00:00:00,0,-,1,2,3\r\n")
+                        elif command == b"QUITLOOP":
+                            receive_loop = False
+                            connection.sendall(b"+OK - Success\r\n")
+                        elif receive_loop and command == b"SEND":
+                            connection.sendall(b"+OK\r\n+OK - Success\r\n")
+                            connection.sendall(b"0,10,6,0,2026-10-07T00:00:01,0,-,4,5,6\r\n")
+                        elif receive_loop and command in (b"NOOP", b"CLRA"):
+                            connection.sendall(b"+OK\r\n+OK - Success\r\n")
                         else:
                             rejected = command == b"ERROR" or (command == b"NOOP" and server.reject_noop)
                             reply = b"+ERR - rejected\r\n" if rejected else b"+OK\r\n"

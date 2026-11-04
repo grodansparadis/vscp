@@ -64,7 +64,13 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
 #include <vector>
 
 #include <canal.h>
@@ -245,6 +251,7 @@ public:
   uint32_t getlastResponseTime(void)
   {
     logDebugEntry(__func__);
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
     return m_lastResponseTime;
   };
 
@@ -444,6 +451,22 @@ public:
       @return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
    */
   int doCmdEnterReceiveLoop(void);
+
+  /*!
+      Enable or disable single-channel text receive-loop mode.
+      When enabled, a dedicated reader demultiplexes events and command
+      replies on this connection. Configure before entering RCVLOOP.
+      Only NOOP, CLRA, SEND and QUITLOOP are supported while in the loop.
+      A bare +OK line is treated as a keepalive, not as a command reply.
+      @return VSCP_ERROR_SUCCESS on success, otherwise an error code.
+   */
+  int setSingleChannelReceiveLoop(bool enable = true);
+
+  bool isSingleChannelReceiveLoopEnabled(void) const
+  {
+    logDebugEntry(__func__);
+    return m_bSingleChannelReceiveLoop;
+  }
 
   /*!
       Quit the receive loop
@@ -740,11 +763,31 @@ protected:
 private:
   static void logDebugEntry(const char *function) noexcept;
   bool checkReturnValueForCommand(bool bClear, bool routineReceive);
+  int doSingleChannelCommand(const std::string &cmd, const std::string &command);
+  bool isSingleChannelCommandAllowed(const std::string &command) const;
+  int startSingleChannelReader(void);
+  void stopSingleChannelReader(void);
+  void singleChannelReaderLoop(void);
+  void processSingleChannelLine(const std::string &line);
 
   /// Flag for active receive loop
-  bool m_bModeReceiveLoop;
+  std::atomic<bool> m_bModeReceiveLoop;
+  bool m_bSingleChannelReceiveLoop;
   bool m_bBinaryMode;
   std::vector<uint8_t> m_binaryInput;
+
+  std::thread m_singleChannelReaderThread;
+  std::atomic<bool> m_singleChannelReaderStop;
+  std::mutex m_singleChannelMutex;
+  std::mutex m_singleChannelCommandMutex;
+  std::condition_variable m_singleChannelCondition;
+  std::deque<std::string> m_singleChannelEventQueue;
+  std::string m_singleChannelInputBuffer;
+  std::string m_singleChannelCommandResponse;
+  bool m_singleChannelCommandPending;
+  bool m_singleChannelCommandComplete;
+  int m_singleChannelCommandResult;
+  int m_singleChannelReaderError;
 
   int receiveBinaryEvent(vscpEvent *event, uint32_t timeout);
 

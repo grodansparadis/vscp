@@ -1685,6 +1685,19 @@ void
 VscpRemoteTcpIf::transportClose()
 {
   logTcpEntry(__func__);
+  stopSingleChannelReader();
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (m_singleChannelReaderError == VSCP_ERROR_SUCCESS) {
+      m_singleChannelReaderError = VSCP_ERROR_STOPPED;
+    }
+    if (m_singleChannelCommandPending) {
+      m_singleChannelCommandPending = false;
+      m_singleChannelCommandComplete = true;
+      m_singleChannelCommandResult = m_singleChannelReaderError;
+    }
+  }
+  m_singleChannelCondition.notify_all();
   m_transport.reset();
 }
 
@@ -1740,7 +1753,13 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
   m_bVerifyPeer = true;
 
   m_bModeReceiveLoop     = false;
+  m_bSingleChannelReceiveLoop = false;
   m_bBinaryMode          = false;
+  m_singleChannelReaderStop = false;
+  m_singleChannelCommandPending = false;
+  m_singleChannelCommandComplete = false;
+  m_singleChannelCommandResult = VSCP_ERROR_SUCCESS;
+  m_singleChannelReaderError = VSCP_ERROR_SUCCESS;
   m_connectionTimeOut    = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS;
   m_responseTimeOut      = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
   m_innerResponseTimeout = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT;
@@ -1760,6 +1779,286 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {
   logTcpEntry(__func__);
   doCmdClose();
+}
+
+bool
+VscpRemoteTcpIf::isSingleChannelCommandAllowed(const std::string &command) const
+{
+  logTcpEntry(__func__);
+  if (command.find_first_of("\r\n") != std::string::npos) {
+    return false;
+  }
+
+  if (command == "NOOP" || command == "CLRA" || command == "QUITLOOP") {
+    return true;
+  }
+
+  return command.size() > 5 && command.compare(0, 4, "SEND") == 0 &&
+         std::isspace(static_cast<unsigned char>(command[4]));
+}
+
+int
+VscpRemoteTcpIf::startSingleChannelReader(void)
+{
+  logTcpEntry(__func__);
+  if (m_singleChannelReaderThread.joinable()) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  std::deque<std::string> bufferedLines;
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelReaderStop = false;
+    m_singleChannelReaderError = VSCP_ERROR_SUCCESS;
+    m_singleChannelCommandPending = false;
+    m_singleChannelCommandComplete = false;
+    m_singleChannelCommandResult = VSCP_ERROR_SUCCESS;
+    m_singleChannelCommandResponse.clear();
+    m_singleChannelInputBuffer = std::move(m_strResponse);
+    m_strResponse.clear();
+    bufferedLines = std::move(m_inputStrArray);
+    m_inputStrArray.clear();
+  }
+
+  for (const auto &line : bufferedLines) {
+    processSingleChannelLine(line);
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (m_singleChannelReaderError != VSCP_ERROR_SUCCESS) {
+      return logTcpResult(__func__, m_singleChannelReaderError);
+    }
+  }
+
+  try {
+    m_singleChannelReaderThread = std::thread(&VscpRemoteTcpIf::singleChannelReaderLoop, this);
+  }
+  catch (const std::system_error &error) {
+    transportError("%s: cannot start single-channel reader: %s", __func__, error.what());
+    return VSCP_ERROR_ERROR;
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+void
+VscpRemoteTcpIf::stopSingleChannelReader(void)
+{
+  logTcpEntry(__func__);
+  m_singleChannelReaderStop = true;
+  m_singleChannelCondition.notify_all();
+  if (m_singleChannelReaderThread.joinable() &&
+      m_singleChannelReaderThread.get_id() != std::this_thread::get_id()) {
+    m_singleChannelReaderThread.join();
+  }
+}
+
+void
+VscpRemoteTcpIf::processSingleChannelLine(const std::string &line)
+{
+  logTcpEntry(__func__);
+  std::string responseLine = line;
+  vscp_trim(responseLine);
+  if (responseLine.empty() || responseLine == "+OK") {
+    return;
+  }
+
+  const bool successResponse = responseLine.compare(0, 4, "+OK ") == 0;
+  const bool errorResponse = responseLine.compare(0, 3, "-OK") == 0 ||
+                             responseLine.compare(0, 4, "+ERR") == 0;
+  if (successResponse || errorResponse) {
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      if (m_singleChannelCommandPending) {
+        m_singleChannelCommandResponse += responseLine + "\r\n";
+        m_singleChannelCommandPending = false;
+        m_singleChannelCommandComplete = true;
+        m_singleChannelCommandResult = successResponse ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+      }
+    }
+    m_singleChannelCondition.notify_all();
+    return;
+  }
+
+  vscpEvent event{};
+  if (vscp_convertStringToEvent(&event, responseLine)) {
+    vscp_deleteEvent(&event);
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      m_singleChannelEventQueue.push_back(std::move(responseLine));
+    }
+    m_singleChannelCondition.notify_all();
+    return;
+  }
+  vscp_deleteEvent(&event);
+
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelReaderError = VSCP_ERROR_READ;
+    m_singleChannelReaderStop = true;
+    if (m_singleChannelCommandPending) {
+      m_singleChannelCommandPending = false;
+      m_singleChannelCommandComplete = true;
+      m_singleChannelCommandResult = m_singleChannelReaderError;
+    }
+  }
+  transportError("%s: invalid line in single-channel receive loop", __func__);
+  m_singleChannelCondition.notify_all();
+}
+
+void
+VscpRemoteTcpIf::singleChannelReaderLoop(void)
+{
+  logTcpEntry(__func__);
+  char buffer[8192];
+  constexpr int readTimeout = 50;
+
+  while (!m_singleChannelReaderStop) {
+    int nRead = transportRead(buffer, sizeof(buffer), readTimeout);
+    if (nRead == -VSCP_ERROR_TIMEOUT || nRead == 0) {
+      continue;
+    }
+    if (nRead < 0) {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      if (m_singleChannelReaderError == VSCP_ERROR_SUCCESS) {
+        m_singleChannelReaderError =
+          nRead == -VSCP_ERROR_STOPPED ? VSCP_ERROR_STOPPED : VSCP_ERROR_ERROR;
+      }
+      if (m_singleChannelCommandPending) {
+        m_singleChannelCommandPending = false;
+        m_singleChannelCommandComplete = true;
+        m_singleChannelCommandResult = m_singleChannelReaderError;
+      }
+      m_singleChannelCondition.notify_all();
+      break;
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+      m_lastResponseTime = vscp_getMsTimeStamp();
+    }
+    m_singleChannelInputBuffer.append(buffer, static_cast<size_t>(nRead));
+    size_t newline;
+    while ((newline = m_singleChannelInputBuffer.find('\n')) != std::string::npos) {
+      std::string line = m_singleChannelInputBuffer.substr(0, newline);
+      m_singleChannelInputBuffer.erase(0, newline + 1);
+      processSingleChannelLine(line);
+      if (m_singleChannelReaderStop) {
+        break;
+      }
+    }
+
+    if (m_singleChannelInputBuffer.size() > 65536) {
+      {
+        std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+        m_singleChannelReaderError = VSCP_ERROR_INVALID_FRAME;
+        m_singleChannelReaderStop = true;
+        if (m_singleChannelCommandPending) {
+          m_singleChannelCommandPending = false;
+          m_singleChannelCommandComplete = true;
+          m_singleChannelCommandResult = m_singleChannelReaderError;
+        }
+      }
+      transportError("%s: oversized line in single-channel receive loop", __func__);
+      m_singleChannelCondition.notify_all();
+    }
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (m_singleChannelCommandPending) {
+      m_singleChannelCommandPending = false;
+      m_singleChannelCommandComplete = true;
+      m_singleChannelCommandResult =
+        m_singleChannelReaderError == VSCP_ERROR_SUCCESS ? VSCP_ERROR_STOPPED : m_singleChannelReaderError;
+    }
+  }
+  m_singleChannelCondition.notify_all();
+}
+
+int
+VscpRemoteTcpIf::doSingleChannelCommand(const std::string &cmd, const std::string &command)
+{
+  logTcpEntry(__func__);
+  if (!isSingleChannelCommandAllowed(command)) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  size_t terminator = cmd.find_first_of("\r\n");
+  if (terminator == std::string::npos ||
+      cmd.find_first_not_of("\r\n \t", terminator) != std::string::npos) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  std::lock_guard<std::mutex> commandLock(m_singleChannelCommandMutex);
+  if (!isConnected()) {
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    if (m_singleChannelReaderError != VSCP_ERROR_SUCCESS ||
+        m_singleChannelReaderStop || !m_singleChannelReaderThread.joinable()) {
+      return logTcpResult(__func__,
+                          m_singleChannelReaderError == VSCP_ERROR_SUCCESS ?
+                            VSCP_ERROR_STOPPED : m_singleChannelReaderError);
+    }
+    m_singleChannelCommandResponse.clear();
+    m_singleChannelCommandComplete = false;
+    m_singleChannelCommandPending = true;
+  }
+
+  if (VSCP_ERROR_SUCCESS != transportWrite(cmd.data(), cmd.length(), m_responseTimeOut)) {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelCommandPending = false;
+    m_singleChannelCommandComplete = false;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
+  }
+
+  std::string response;
+  int result = VSCP_ERROR_SUCCESS;
+  {
+    std::unique_lock<std::mutex> lock(m_singleChannelMutex);
+    const auto deadline = std::chrono::steady_clock::now() +
+                          std::chrono::milliseconds(m_responseTimeOut);
+    if (!m_singleChannelCondition.wait_until(lock, deadline, [this]() {
+          return m_singleChannelCommandComplete ||
+                 m_singleChannelReaderError != VSCP_ERROR_SUCCESS ||
+                 m_singleChannelReaderStop;
+        })) {
+      m_singleChannelCommandPending = false;
+      m_singleChannelCommandComplete = false;
+      m_singleChannelReaderError = VSCP_ERROR_TIMEOUT;
+      m_singleChannelReaderStop = true;
+      result = VSCP_ERROR_TIMEOUT;
+    }
+    else if (m_singleChannelCommandComplete) {
+      result = m_singleChannelCommandResult;
+      response = std::move(m_singleChannelCommandResponse);
+      m_singleChannelCommandComplete = false;
+    }
+    else {
+      result = m_singleChannelReaderError == VSCP_ERROR_SUCCESS ?
+                 VSCP_ERROR_STOPPED : m_singleChannelReaderError;
+    }
+  }
+
+  if (result == VSCP_ERROR_TIMEOUT) {
+    m_singleChannelCondition.notify_all();
+    stopSingleChannelReader();
+    transportClose();
+    m_bModeReceiveLoop = false;
+    return logTcpResult(__func__, result);
+  }
+
+  if (!response.empty()) {
+    m_strResponse = std::move(response);
+    m_inputStrArray.clear();
+    addInputStringArrayFromReply();
+  }
+
+  return logTcpResult(__func__, result);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1859,6 +2158,29 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
   if (m_bBinaryMode) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
+  if (m_bModeReceiveLoop && m_bSingleChannelReceiveLoop) {
+    std::unique_lock<std::mutex> lock(m_singleChannelMutex);
+    auto ready = [this]() {
+      return !m_singleChannelEventQueue.empty() ||
+             m_singleChannelCommandComplete ||
+             m_singleChannelReaderError != VSCP_ERROR_SUCCESS ||
+             m_singleChannelReaderStop;
+    };
+    if (timeout < 0) {
+      m_singleChannelCondition.wait(lock, ready);
+    }
+    else if (!m_singleChannelCondition.wait_for(lock, std::chrono::milliseconds(timeout), ready)) {
+      return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
+    }
+    if (m_singleChannelReaderError != VSCP_ERROR_SUCCESS) {
+      return logTcpResult(__func__, m_singleChannelReaderError, true);
+    }
+    if (m_singleChannelReaderStop) {
+      return logTcpResult(__func__, VSCP_ERROR_STOPPED, true);
+    }
+    return VSCP_ERROR_SUCCESS;
+  }
+
   // bool rv = false;
   char buf[8192];
 
@@ -1917,6 +2239,9 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
   vscp_makeUpper(command);
   if (command == "BINARY") {
     return logTcpResult(__func__, doCmdBinary());
+  }
+  if (m_bModeReceiveLoop && m_bSingleChannelReceiveLoop) {
+    return doSingleChannelCommand(cmd, command);
   }
   bool ret = false;
 
@@ -2397,7 +2722,16 @@ VscpRemoteTcpIf::doCmdClose(void)
 
     // If receive loop active - end it
     if (m_bModeReceiveLoop) {
-      doCommand("QUITLOOP\r\n");
+      if (m_bSingleChannelReceiveLoop) {
+        doCmdQuitReceiveLoop();
+        if (m_bModeReceiveLoop) {
+          m_bModeReceiveLoop = false;
+          stopSingleChannelReader();
+        }
+      }
+      else {
+        doCommand("QUITLOOP\r\n");
+      }
     }
 
     // Try to behave
@@ -2410,6 +2744,15 @@ VscpRemoteTcpIf::doCmdClose(void)
   m_binaryInput.clear();
   m_inputStrArray.clear();
   m_strResponse.clear();
+  {
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelEventQueue.clear();
+    m_singleChannelInputBuffer.clear();
+    m_singleChannelCommandResponse.clear();
+    m_singleChannelCommandPending = false;
+    m_singleChannelCommandComplete = false;
+    m_singleChannelReaderError = VSCP_ERROR_SUCCESS;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -2426,8 +2769,8 @@ VscpRemoteTcpIf::doCmdNOOP(void)
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
-  // If in receive loop terminate
-  if (m_bModeReceiveLoop) {
+  // Allow this command in the receive loop only with single-channel mode.
+  if (m_bModeReceiveLoop && !m_bSingleChannelReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
@@ -2446,8 +2789,8 @@ VscpRemoteTcpIf::doCmdClear(void)
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
-  // If in receive loop terminate
-  if (m_bModeReceiveLoop) {
+  // Allow this command in the receive loop only with single-channel mode.
+  if (m_bModeReceiveLoop && !m_bSingleChannelReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
@@ -2470,8 +2813,8 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
-  // If in receive loop terminate
-  if (m_bModeReceiveLoop) {
+  // Allow this command in the receive loop only with single-channel mode.
+  if (m_bModeReceiveLoop && !m_bSingleChannelReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
@@ -2522,8 +2865,8 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
-  // If in receive loop terminate
-  if (m_bModeReceiveLoop) {
+  // Allow this command in the receive loop only with single-channel mode.
+  if (m_bModeReceiveLoop && !m_bSingleChannelReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
@@ -2571,8 +2914,8 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg *pCanalMsg)
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
-  // If in receive loop terminate
-  if (m_bModeReceiveLoop) {
+  // Allow this command in the receive loop only with single-channel mode.
+  if (m_bModeReceiveLoop && !m_bSingleChannelReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
@@ -2803,7 +3146,27 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
   }
 
   m_bModeReceiveLoop = true;
+  if (m_bSingleChannelReceiveLoop) {
+    int result = startSingleChannelReader();
+    if (VSCP_ERROR_SUCCESS != result) {
+      m_bModeReceiveLoop = false;
+      doCommand("QUITLOOP\r\n");
+      return logTcpResult(__func__, result);
+    }
+  }
 
+  return VSCP_ERROR_SUCCESS;
+}
+
+int
+VscpRemoteTcpIf::setSingleChannelReceiveLoop(bool enable)
+{
+  logTcpEntry(__func__);
+  if (m_bModeReceiveLoop || m_singleChannelReaderThread.joinable()) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  m_bSingleChannelReceiveLoop = enable;
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -2828,11 +3191,30 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
     return VSCP_ERROR_SUCCESS;
   }
 
-  if (VSCP_ERROR_SUCCESS != doCommand("QUITLOOP\r\n")) {
+  int result = doCommand("QUITLOOP\r\n");
+  if (VSCP_ERROR_SUCCESS != result) {
+    if (m_bSingleChannelReceiveLoop) {
+      bool readerFailed;
+      {
+        std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+        readerFailed = m_singleChannelReaderError != VSCP_ERROR_SUCCESS;
+      }
+      if (readerFailed) {
+        m_bModeReceiveLoop = false;
+        stopSingleChannelReader();
+        transportClose();
+      }
+    }
     return logTcpResult(__func__, VSCP_ERROR_TIMEOUT);
   }
 
   m_bModeReceiveLoop = false;
+  if (m_bSingleChannelReceiveLoop) {
+    stopSingleChannelReader();
+    std::lock_guard<std::mutex> lock(m_singleChannelMutex);
+    m_singleChannelEventQueue.clear();
+    m_singleChannelInputBuffer.clear();
+  }
   m_inputStrArray.clear();
 
   return VSCP_ERROR_SUCCESS;
@@ -2868,6 +3250,37 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
   // If **not** in receive loop terminate
   if (!m_bModeReceiveLoop) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
+  }
+
+  if (m_bSingleChannelReceiveLoop) {
+    std::string eventLine;
+    {
+      std::unique_lock<std::mutex> lock(m_singleChannelMutex);
+      auto ready = [this]() {
+        return !m_singleChannelEventQueue.empty() ||
+               m_singleChannelReaderError != VSCP_ERROR_SUCCESS ||
+               m_singleChannelReaderStop ||
+               !m_bModeReceiveLoop;
+      };
+      if (!m_singleChannelCondition.wait_for(lock, std::chrono::milliseconds(mstimeout), ready)) {
+        return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
+      }
+
+      if (!m_singleChannelEventQueue.empty()) {
+        eventLine = std::move(m_singleChannelEventQueue.front());
+        m_singleChannelEventQueue.pop_front();
+      }
+      else if (m_singleChannelReaderError != VSCP_ERROR_SUCCESS) {
+        return logTcpResult(__func__, m_singleChannelReaderError, true);
+      }
+      else {
+        return logTcpResult(__func__, VSCP_ERROR_STOPPED, true);
+      }
+    }
+
+    return logTcpResult(__func__,
+                        getEventFromLine(pEvent, eventLine) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_READ,
+                        true);
   }
 
   // If array already contains lines check if one of them is an event

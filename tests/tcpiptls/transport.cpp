@@ -210,6 +210,42 @@ TEST_F(TcpTransport, ReceiveLoopAndTimeout)
   ASSERT_LT(elapsed, std::chrono::milliseconds(350));
 }
 
+TEST_F(TcpTransport, SingleChannelReceiveLoopAllowsCommandsAndEvents)
+{
+  open("VSCP_TEST_PLAIN");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setSingleChannelReceiveLoop());
+  ASSERT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdEnterReceiveLoop());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, client.doCommand("VERS\r\n"));
+
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  outgoing.sizeData = 3;
+  outgoing.data[0] = 4;
+  outgoing.data[1] = 5;
+  outgoing.data[2] = 6;
+
+  int sendResult = VSCP_ERROR_ERROR;
+  std::thread sender([&]() { sendResult = client.doCmdSendEx(&outgoing); });
+
+  vscpEventEx received = {};
+  int receiveResult1 = client.doCmdBlockingReceive(&received, 1000);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, receiveResult1);
+  EXPECT_EQ(10, received.vscp_class);
+  EXPECT_EQ(6, received.vscp_type);
+
+  int receiveResult2 = client.doCmdBlockingReceive(&received, 1000);
+  sender.join();
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, sendResult);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, receiveResult2);
+  EXPECT_EQ(10, received.vscp_class);
+  EXPECT_EQ(6, received.vscp_type);
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdQuitReceiveLoop());
+  EXPECT_TRUE(client.isSingleChannelReceiveLoopEnabled());
+}
+
 TEST_F(TcpTransport, ReceiveTimeoutIsDebugAndDoesNotExposeData)
 {
   namespace fs = std::filesystem;
