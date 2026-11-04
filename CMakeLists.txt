@@ -28,9 +28,25 @@
 
 cmake_minimum_required(VERSION 3.16...3.31)
 
-# Version format: YY.MM.<commit-count>.
+# Version format: YY.MM.<manual-revision>.<commit-count>.
 string(TIMESTAMP VSCP_VERSION_YEAR "%y")
 string(TIMESTAMP VSCP_VERSION_MONTH "%m")
+file(STRINGS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/version.h"
+    VSCP_VERSION_REVISION_LINE
+    REGEX "^[ \t]*#[ \t]*define[ \t]+VSCPD_REVISION_VERSION[ \t]+[0-9]+([ \t].*)?$")
+list(LENGTH VSCP_VERSION_REVISION_LINE VSCP_VERSION_REVISION_COUNT)
+if(NOT VSCP_VERSION_REVISION_COUNT EQUAL 1)
+    message(FATAL_ERROR "version.h must define VSCPD_REVISION_VERSION exactly once as an integer")
+endif()
+string(REGEX REPLACE
+    ".*VSCPD_REVISION_VERSION[ \t]+([0-9]+).*"
+    "\\1"
+    VSCP_VERSION_REVISION
+    "${VSCP_VERSION_REVISION_LINE}")
+if(VSCP_VERSION_REVISION GREATER 255)
+    message(FATAL_ERROR "VSCPD_REVISION_VERSION must be between 0 and 255")
+endif()
 execute_process(
     COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-list --count HEAD
     OUTPUT_VARIABLE VSCP_VERSION_PATCH
@@ -44,11 +60,11 @@ endif()
 set(VSCP_VERSION_MAJOR ${VSCP_VERSION_YEAR})
 set(VSCP_VERSION_MINOR ${VSCP_VERSION_MONTH})
 project(vscp
-    VERSION ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_PATCH}
+    VERSION ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_REVISION}.${VSCP_VERSION_PATCH}
     DESCRIPTION "VSCP common library"
     LANGUAGES CXX C)
 
-message(STATUS "VSCP version: ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_PATCH}")
+message(STATUS "VSCP version: ${VSCP_VERSION_MAJOR}.${VSCP_VERSION_MINOR}.${VSCP_VERSION_REVISION}.${VSCP_VERSION_PATCH}")
 
 # ---- Build options ----
 option(VSCP_BUILD_TESTS "Build unit tests (use tests/ directory for standalone test builds)" OFF)
@@ -291,6 +307,7 @@ target_link_libraries(vscp_mdf
 # All non-connection protocol sources
 set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpdatetime.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpremotetcpif.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpcanaldeviceif.cpp
@@ -302,6 +319,13 @@ set(VSCP_CORE_SOURCES
 
 add_library(vscp_core SHARED ${VSCP_CORE_SOURCES})
 vscp_setup_protocol_target(vscp_core)
+target_compile_definitions(vscp_core PRIVATE VSCP_ENABLE_HELPER_LOGGING VSCP_HELPER_LOGGING_EXPORTS)
+if(NOT WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Keep the logger's spdlog implementation private while exporting its C API.
+    set_source_files_properties(
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging.cpp
+        PROPERTIES COMPILE_OPTIONS "-fvisibility=hidden;-fvisibility-inlines-hidden")
+endif()
 target_link_libraries(vscp_core
     PUBLIC
         vscp_util

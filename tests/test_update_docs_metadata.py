@@ -72,7 +72,8 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
-        self.assertEqual(self.git("rev-list", "--count", "HEAD"), version.split(".")[2])
+        self.assertEqual(self.git("rev-list", "--count", "HEAD"), version.split(".")[3])
+        self.assertEqual("0", version.split(".")[2])
 
     def test_default_preserves_git_unavailable_fallback(self):
         original_header = self.header.read_text(encoding="utf-8")
@@ -82,6 +83,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
+        self.assertEqual("0", version.split(".")[3])
         self.assertEqual("0", version.split(".")[2])
 
     def test_prepared_commit_versions_match_resulting_head(self):
@@ -92,13 +94,20 @@ class UpdateMetadataTest(unittest.TestCase):
         root = ET.parse(self.variables).getroot()
         created = datetime.strptime(root.findtext("creation-time"), "%Y-%m-%d %H:%M")
         version = root.findtext("document-version")
+        revision = int(re.search(
+            r"(?m)^#define VSCPD_REVISION_VERSION\s+([0-9]+)$",
+            self.header.read_text(encoding="utf-8"),
+        ).group(1))
         expected_patch = int(self.git("rev-list", "--count", "HEAD")) + 1
-        self.assertEqual(f"{created:%y}.{created:%m}.{expected_patch}", version)
+        self.assertEqual(
+            f"{created:%y}.{created:%m}.{revision}.{expected_patch}", version
+        )
 
         header_lines = self.header.read_text(encoding="utf-8").splitlines()
         definitions = {
             "VSCPD_MAJOR_VERSION": str(created.year % 100),
             "VSCPD_MINOR_VERSION": str(created.month),
+            "VSCPD_REVISION_VERSION": str(revision),
             "VSCPD_PATCH_VERSION": str(expected_patch),
             "VSCPD_DISPLAY_VERSION": f'"{version}"',
         }
@@ -146,14 +155,15 @@ class UpdateMetadataTest(unittest.TestCase):
         header = self.git(
             "--git-dir", str(remote), "show", "main:src/vscp/common/version.h"
         )
-        self.assertEqual(remote_count, int(version.split(".")[2]))
+        self.assertEqual(remote_count, int(version.split(".")[3]))
         self.assertIn(f'#define VSCPD_DISPLAY_VERSION   "{version}"', header)
 
     def test_preseeded_metadata_still_needs_a_commit(self):
         module = runpy.run_path(str(self.script))
         now = datetime(2026, 9, 1, 12, 0)
         expected_patch = int(self.git("rev-list", "--count", "HEAD")) + 2
-        version = f"{now:%y}.{now:%m}.{expected_patch}"
+        revision = module["_manual_revision"](self.header.read_text(encoding="utf-8"))
+        version = f"{now:%y}.{now:%m}.{revision}.{expected_patch}"
         header = module["_update_version_header"](
             self.header.read_text(encoding="utf-8"), now, expected_patch
         )
@@ -184,11 +194,50 @@ class UpdateMetadataTest(unittest.TestCase):
             self.header.read_text(encoding="utf-8"), datetime(2026, 9, 1), 123
         )
         self.assertRegex(result, r"(?m)^#define VSCPD_MINOR_VERSION\s+9$")
-        self.assertRegex(result, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.123"$')
+        self.assertRegex(
+            result, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.0\.123"$'
+        )
+
+    def test_revision_is_manually_set_and_limited_to_one_byte(self):
+        module = runpy.run_path(str(self.script))
+        header = self.header.read_text(encoding="utf-8")
+        self.assertEqual(0, module["_manual_revision"](header))
+        manual_revision = re.sub(
+            r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
+            r"\g<1>255",
+            header,
+        )
+        self.assertEqual(255, module["_manual_revision"](manual_revision))
+        with self.assertRaisesRegex(ValueError, "between 0 and 255"):
+            module["_manual_revision"](
+                re.sub(
+                    r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
+                    r"\g<1>256",
+                    header,
+                )
+            )
+        updated = module["_update_version_header"](
+            manual_revision, datetime(2026, 9, 1), 3925
+        )
+        self.assertRegex(updated, r"(?m)^#define VSCPD_PATCH_VERSION\s+3925$")
+        self.assertRegex(
+            updated, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.255\.3925"$'
+        )
 
     def test_invalid_header_fails_without_writing_metadata(self):
         header = self.header.read_text(encoding="utf-8")
         invalid_headers = (
+            re.sub(r"(?m)^#define VSCPD_REVISION_VERSION[^\n]*\n", "", header),
+            re.sub(
+                r"(?m)^#define VSCPD_REVISION_VERSION[^\n]*\n",
+                "#define VSCPD_REVISION_VERSION invalid\n",
+                header,
+            ),
+            re.sub(
+                r"(?m)^#define VSCPD_REVISION_VERSION[^\n]*\n",
+                "#define VSCPD_REVISION_VERSION 256\n",
+                header,
+            ),
             re.sub(r"(?m)^#define VSCPD_PATCH_VERSION[^\n]*\n", "", header),
             header + "\n#define VSCPD_PATCH_VERSION 0\n",
             header + "\n#define VSCPD_PATCH_VERSION invalid\n",
@@ -199,7 +248,11 @@ class UpdateMetadataTest(unittest.TestCase):
                 original_variables = self.variables.read_text(encoding="utf-8")
                 result = self.update("--prepare-commit")
                 self.assertNotEqual(0, result.returncode)
-                self.assertIn("VSCPD_PATCH_VERSION", result.stderr)
+                self.assertTrue(
+                    "VSCPD_PATCH_VERSION" in result.stderr
+                    or "VSCPD_REVISION_VERSION" in result.stderr,
+                    result.stderr,
+                )
                 self.assertEqual(invalid_header, self.header.read_text(encoding="utf-8"))
                 self.assertEqual(original_variables, self.variables.read_text(encoding="utf-8"))
 

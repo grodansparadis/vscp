@@ -50,6 +50,45 @@ int main() {
 
 ---
 
+## Helper and TCP logging
+
+`vscp_core` contains a private, synchronous logger for `vscphelper.cpp` and
+`VscpRemoteTcpIf`. Before configuration, their errors continue to use stderr.
+Applications can configure independent stderr and rotating-file thresholds
+through the C-compatible `vscphelperlogging.h` interface without including or
+linking spdlog themselves:
+
+```c
+#include <vscp.h>
+#include <vscphelperlogging.h>
+
+int result = vscphelper_configureLogging(
+    VSCP_HELPER_LOG_LEVEL_WARN, VSCP_HELPER_LOG_LEVEL_DEBUG,
+    "/path/owned/by/application/vscp.log", 5u * 1024u * 1024u, 3);
+if (result != VSCP_ERROR_SUCCESS) {
+    /* vscphelper_getLastLoggingError() describes the failure. */
+}
+```
+
+Use `VSCP_HELPER_LOG_LEVEL_OFF` to disable either sink, and
+`vscphelper_flushLogging()` or `vscphelper_disableLogging()` to flush or disable
+both sinks. Logging and configuration are thread-safe. File rotation keeps the
+requested number of archives in addition to the active file; a single message
+may exceed the rotation size. File logging requires a nonempty path, positive
+size, and 1 through 200000 archives. Failures are reported to stderr and through
+the thread-local `vscphelper_getLastLoggingError()` result. Do not unload the
+library while it is in use, or share a rotating file between processes.
+
+The logger does not alter spdlog's global default or registry and passes no
+spdlog types through its C interface. Logging state belongs to each linked copy
+of VSCP, so a separate helper-library binary has its own configuration.
+Standalone builds that compile these underlying source files directly keep
+their original stderr behavior unless they define `VSCP_ENABLE_HELPER_LOGGING`
+and also compile `vscphelperlogging.cpp` with spdlog headers available.
+The optional `test_core_logging_host_compat` test can be enabled by setting
+`VSCP_TEST_HOST_SPDLOG_INCLUDE_DIR` to headers for a different spdlog version.
+See [Logging design](logging-design.md) for why VSCP uses this approach.
+
 ## TCP client transport and TLS
 
 `VscpRemoteTcpIf` (and `vscpClientTcp`, which uses it) communicates through

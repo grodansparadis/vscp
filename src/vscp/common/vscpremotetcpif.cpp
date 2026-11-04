@@ -74,6 +74,9 @@
 #include "vscp.h"
 #include "vscpdatetime.h"
 #include "vscpremotetcpif.h"
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+#include "vscphelperlogging.h"
+#endif
 
 #include <iostream>
 
@@ -117,9 +120,13 @@ void transportError(const char *format, ...)
 {
   va_list arguments;
   va_start(arguments, format);
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+  vscphelper_logTransportError(format, arguments);
+#else
   std::fputs("VSCP TCP: ", stderr);
   std::vfprintf(stderr, format, arguments);
   std::fputc('\n', stderr);
+#endif
   va_end(arguments);
 }
 

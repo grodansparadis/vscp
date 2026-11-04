@@ -2,8 +2,9 @@
 """Refresh docs metadata for the generated documentation site.
 
 By default this updates docs/variables.xml with the current timestamp and a
-version string in the format YY.MM.<commit-count>. With --prepare-commit, it
-also updates version.h using the count of the metadata commit being prepared.
+version string in the format YY.MM.<manual-revision>.<commit-count>. With
+--prepare-commit, it also updates version.h using the count of the metadata
+commit being prepared.
 """
 
 from __future__ import annotations
@@ -19,6 +20,23 @@ import xml.etree.ElementTree as ET
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VARIABLES_PATH = REPO_ROOT / "docs" / "variables.xml"
 VERSION_HEADER_PATH = REPO_ROOT / "src" / "vscp" / "common" / "version.h"
+
+
+def _manual_revision(header: str) -> int:
+    """Return the manually maintained revision component (0-255)."""
+    declaration = (
+        r"(?m)^[ \t]*#[ \t]*define[ \t]+VSCPD_REVISION_VERSION"
+        r"(?![a-zA-Z0-9_])[ \t]+([0-9]+)[ \t]*(?://.*)?$"
+    )
+    matches = re.findall(declaration, header)
+    if len(matches) != 1:
+        raise ValueError(
+            "Expected exactly one valid VSCPD_REVISION_VERSION definition in version.h"
+        )
+    revision = int(matches[0])
+    if revision > 255:
+        raise ValueError("VSCPD_REVISION_VERSION must be between 0 and 255")
+    return revision
 
 
 def _commit_count(*, strict: bool = False) -> int:
@@ -39,10 +57,12 @@ def _commit_count(*, strict: bool = False) -> int:
 
 def _update_version_header(header: str, now: datetime, commit_count: int) -> str:
     """Replace the existing version definitions without moving their lines."""
-    version = f"{now:%y}.{now:%m}.{commit_count}"
+    revision = _manual_revision(header)
+    version = f"{now:%y}.{now:%m}.{revision}.{commit_count}"
     definitions = {
         "VSCPD_MAJOR_VERSION": str(now.year % 100),
         "VSCPD_MINOR_VERSION": str(now.month),
+        "VSCPD_REVISION_VERSION": str(revision),
         "VSCPD_PATCH_VERSION": str(commit_count),
         "VSCPD_DISPLAY_VERSION": f'"{version}"',
     }
@@ -83,7 +103,9 @@ def main() -> None:
         if commit_count < 1:
             raise ValueError("A valid Git commit count is required to prepare metadata")
         commit_count += 1
-    version = f"{now:%y}.{now:%m}.{commit_count}"
+    version_header = VERSION_HEADER_PATH.read_text(encoding="utf-8")
+    revision = _manual_revision(version_header)
+    version = f"{now:%y}.{now:%m}.{revision}.{commit_count}"
 
     creation_node = root.find("creation-time")
     version_node = root.find("document-version")
@@ -93,9 +115,7 @@ def main() -> None:
 
     header = None
     if args.prepare_commit:
-        header = _update_version_header(
-            VERSION_HEADER_PATH.read_text(encoding="utf-8"), now, commit_count
-        )
+        header = _update_version_header(version_header, now, commit_count)
 
     creation_node.text = creation_time
     version_node.text = version

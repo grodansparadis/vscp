@@ -92,6 +92,9 @@ clock_gettime(int, struct timespec *ts)
 #include <vscp.h>
 #include <vscp-socket-address.h>
 #include <vscphelper.h>
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+#include "vscphelperlogging.h"
+#endif
 
 #include <algorithm>
 #include <atomic>
@@ -5812,7 +5815,11 @@ vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
     }
   }
   catch (json::parse_error) {
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+    VSCPHLP_LOG_ERROR("VSCP helper: Parse error");
+#else
     fprintf(stderr, "Parse error");
+#endif
     return false;
   }
   catch (...) {
