@@ -40,6 +40,13 @@ forward to that single backend. This avoids a dependency cycle between
 `vscp_core` and the lower-level libraries while keeping the core's existing
 logging symbols available.
 
+`vscphelperlogging-forward.cpp` implements the public C logging functions as
+thin forwarders to the shared backend functions. It is compiled into both
+libraries: `vscp_util` also contains the backend implementation, while
+`vscp_core` contains only the forwarders. This keeps the public logging API
+available to consumers of either library without creating a second logger
+instance or duplicating its configuration state.
+
 Standalone builds that use these inline functions without linking `vscp_util`
 can define `VSCP_DISABLE_HELPER_LOGGING` consistently for their translation
 units. Their inline debug traces are disabled; standalone helper failures
