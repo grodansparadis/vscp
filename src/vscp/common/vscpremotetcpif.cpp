@@ -2296,7 +2296,7 @@ VscpRemoteTcpIf::doCmdBinary(void)
   doClrInputQueue();
   int writeResult = transportWrite("BINARY\r\n", 8, m_responseTimeOut);
   if (writeResult != VSCP_ERROR_SUCCESS) {
-    return logTcpResult(__func__, writeResult == VSCP_ERROR_TIMEOUT ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_ERROR);
+    return logTcpResult(__func__, writeResult < 0 ? -writeResult : writeResult);
   }
 
   // Read exactly through the response line: binary data may immediately
@@ -2343,6 +2343,7 @@ int
 VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
 {
   logTcpEntry(__func__);
+  std::lock_guard<std::mutex> lock(m_binaryWriteMutex);
   if (!isConnected()) {
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
@@ -2355,7 +2356,8 @@ VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
   packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
   packet.push_back(static_cast<uint8_t>(frame.size()));
   packet.insert(packet.end(), frame.begin(), frame.end());
-  return logTcpResult(__func__, transportWrite(packet.data(), packet.size(), m_responseTimeOut));
+  int result = transportWrite(packet.data(), packet.size(), m_responseTimeOut);
+  return logTcpResult(__func__, result < 0 ? -result : result);
 }
 
 int
@@ -2407,6 +2409,41 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
 }
 
 int
+VscpRemoteTcpIf::processBinaryEventFrame(const std::vector<uint8_t> &frame,
+                                         vscpEvent *event,
+                                         bool acknowledge)
+{
+  logTcpEntry(__func__);
+  if (nullptr == event) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
+  }
+  if (frame.size() < 38 || (frame[0] & 0x0f) || (frame[0] >> 4) > 1) {
+    return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
+  }
+  const size_t sizeData = (static_cast<size_t>(frame[34]) << 8) | frame[35];
+  if (sizeData > VSCP_MAX_DATA || frame.size() != sizeData + 38 ||
+      !vscp_getEventFromFrame(event, frame.data(), frame.size())) {
+    return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
+  }
+  if (!acknowledge) {
+    return VSCP_ERROR_SUCCESS;
+  }
+
+  const uint8_t argument[] = {0, 0, frame[1], frame[2], frame[frame.size() - 2], frame.back()};
+  std::vector<uint8_t> confirmation(13);
+  int result = vscp_writeReplyToFrame(confirmation.data(), confirmation.size(), 0xffff,
+                                      VSCP_ERROR_SUCCESS, argument, sizeof(argument));
+  if (VSCP_ERROR_SUCCESS == result) {
+    result = sendBinaryFrame(confirmation);
+  }
+  if (VSCP_ERROR_SUCCESS != result) {
+    vscp_deleteEvent(event);
+    event->sizeData = 0;
+  }
+  return logTcpResult(__func__, result, true);
+}
+
+int
 VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
 {
   logTcpEntry(__func__);
@@ -2438,30 +2475,7 @@ VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
       }
       continue;
     }
-    if (type > 1 || frame.size() < 38) {
-      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
-    }
-    const size_t sizeData = (static_cast<size_t>(frame[34]) << 8) | frame[35];
-    if (sizeData > VSCP_MAX_DATA || frame.size() != sizeData + 38) {
-      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
-    }
-    if (!vscp_getEventFromFrame(event, frame.data(), frame.size())) {
-      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
-    }
-
-    const uint8_t argument[] = {0, 0, frame[1], frame[2], frame[frame.size() - 2], frame.back()};
-    std::vector<uint8_t> confirmation(13);
-    result = vscp_writeReplyToFrame(confirmation.data(), confirmation.size(), 0xffff,
-                                    VSCP_ERROR_SUCCESS, argument, sizeof(argument));
-    if (VSCP_ERROR_SUCCESS == result) {
-      result = sendBinaryFrame(confirmation);
-    }
-    if (VSCP_ERROR_SUCCESS != result) {
-      delete[] event->pdata;
-      event->pdata = nullptr;
-      event->sizeData = 0;
-    }
-    return logTcpResult(__func__, result, true);
+    return logTcpResult(__func__, processBinaryEventFrame(frame, event), true);
   }
 }
 

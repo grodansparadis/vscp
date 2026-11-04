@@ -112,8 +112,9 @@ The synchronous command API is unchanged. `tcp://host:port` and `host:port`
 select plain TCP; `stcp://host:port` selects TLS. `enableTLS(true)` forces TLS,
 `enableTLS(false)` forces plain TCP, and `setTLSAutoSelect()` restores selection
 by prefix. Hostname resolution and TLS handshake time are included in the
-connection timeout. Except for the single-channel mode described below, use a
-client from only one thread at a time. Connection objects are non-copyable.
+connection timeout. Except for the single-channel text and binary modes
+described below, use a client from only one thread at a time. Connection
+objects are non-copyable.
 
 When a hostname resolves to multiple addresses, connection attempts are
 staggered so that a stalled address does not block the others.
@@ -270,7 +271,154 @@ callbacks already in progress are not cancelled.
 Only `SEND`, `NOOP`, `CLRA`, and `QUITLOOP` are supported by the underlying
 connection during this receive loop. The wrapper's `getversion()`,
 `getinterfaces()`, and `getwcyd()` return `VSCP_ERROR_NOT_SUPPORTED` in
-single-channel mode. This is a text-mode feature; binary mode is separate.
+single-channel mode. These receive-loop command restrictions apply to text
+mode; binary mode is described separately below.
+
+### Binary TCP client mode
+
+`vscpClientTcp` can use VSCP-GBP binary frames over TCP or TLS. It is
+disabled by default, so existing text-mode applications retain their
+behavior. Call `setBinaryMode(true)` while disconnected, or use the
+`"binary-mode": true` JSON property. Configuration round-trips through
+`getConfigAsJson()`. Rebuild applications against the updated class layout.
+
+The existing connection choices also apply to binary mode:
+
+| `bpoll` | `single-channel` | Connections | Binary reception |
+| --- | --- | --- | --- |
+| `false` | `false` | Two | `OPEN` on the receive connection; both connections are read |
+| `false` | `true` | One | `OPEN` and full-duplex send/receive on the shared connection |
+| `true` | `false` | One | The worker issues single-event `RETR` requests |
+
+`bpoll` and `single-channel` cannot both be true. The server must support
+text login and `CHID`, the text `BINARY` transition, and binary `OPEN` or
+`RETR` as selected. It must use the **two-byte, big-endian frame-length
+prefix** described in [Binary TCP/IP client](vscpremotetcpif-binary.md#tcp-stream-framing);
+this is not the separate three-byte framing helper. Binary `OPEN` must
+receive a successful, CRC-valid response before `connect()` succeeds.
+Binary `RETR` treats `VSCP_ERROR_RCV_EMPTY` as an ordinary empty poll.
+
+```cpp
+#include <vscp-client-tcp.h>
+
+int main()
+{
+    vscpClientTcp client;
+    client.setTLSOptions(true, "/etc/vscp/ca.pem");
+    client.setResponseTimeout(2000);
+    if (client.init("stcp://daemon.example.org:9598", "user", "password", false) != VSCP_ERROR_SUCCESS ||
+        client.setSingleChannelReceiveLoop() != VSCP_ERROR_SUCCESS ||
+        client.setBinaryMode() != VSCP_ERROR_SUCCESS ||
+        client.connect() != VSCP_ERROR_SUCCESS) {
+        return 1;
+    }
+
+    vscpEventEx outgoing = {};
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type = 6;
+    int sendResult = client.send(outgoing);
+    vscpEventEx incoming = {};
+    int receiveResult = client.receiveBlocking(incoming, 1000);
+    // The incoming event is not necessarily an echo of outgoing.
+    int disconnectResult = client.disconnect();
+    return (sendResult == VSCP_ERROR_SUCCESS &&
+            (receiveResult == VSCP_ERROR_SUCCESS || receiveResult == VSCP_ERROR_TIMEOUT) &&
+            disconnectResult == VSCP_ERROR_SUCCESS) ? 0 : 1;
+}
+```
+
+Equivalent JSON, suitable for `initFromJson()`:
+
+```json
+{
+  "host": "stcp://daemon.example.org:9598",
+  "user": "user",
+  "password": "password",
+  "bpoll": false,
+  "single-channel": true,
+  "binary-mode": true,
+  "bverifypeer": true,
+  "cafile": "/etc/vscp/ca.pem"
+}
+```
+
+`send()` serializes unencrypted format-1 events and returns when they are
+written, not when the peer confirms them. Unencrypted received format-0 and
+format-1 events are size-checked and, unless disabled by the event header,
+CRC-checked before delivery to the usual
+`receive()`/`receiveBlocking()` APIs or callbacks. Asynchronous events are
+confirmed automatically; a `RETR` reply already carries its own response.
+Until a raw API is used, successful event confirmations are consumed
+internally and a nonzero confirmation error stops the receiver. Once a raw
+API is used, subsequent confirmations are placed in the raw queue, including
+errors, for the application to inspect.
+
+As in single-channel text mode, configure callbacks, TLS, and timeouts before
+connecting. Callbacks run on receive workers, may begin before `connect()`
+returns, and may call `send()`; callbacks are serialized in binary mode.
+Changing callbacks while connected, calling `disconnect()` or `clear()` from
+a callback, and destroying the client from a callback are unsupported.
+Queued receives are unavailable when a callback is active. `setfilter()`
+applies locally, and `getcount()` counts the local event queue. A successful
+`clear()` sends binary `CLEAR` on the receive connection and removes events
+already queued when the reply is processed. Events in flight or callbacks
+already running can still be delivered. A timeout or invalid internal reply
+stops the worker; call `disconnect()` before reconnecting. `getversion()`,
+`getinterfaces()`, and `getwcyd()` return `VSCP_ERROR_NOT_SUPPORTED` in
+binary mode.
+
+#### Raw commands and encrypted frames
+
+The binary wrapper has a separate raw queue. `sendBinaryFrame()` accepts a
+complete VSCP-GBP frame without the TCP length prefix, and
+`receiveBinaryFrame()` returns a frame without the prefix plus an optional
+source channel. In two-connection mode, select `binary_channel::send` or
+`binary_channel::receive` when sending. In one-connection modes both choices
+refer to the same connection and received frames are tagged `send`.
+Unencrypted events always go to the event API; commands, other replies, and
+encrypted frames go to the raw queue. Raw frames are not decrypted or
+CRC-validated by the wrapper.
+
+```cpp
+// client is connected in binary mode.
+std::vector<uint8_t> command(5);
+int result = vscp_writeCommandToFrame(command.data(), command.size(), 0x1234, nullptr, 0);
+if (result == VSCP_ERROR_SUCCESS) {
+    result = client.sendBinaryFrame(command, vscpClientTcp::binary_channel::send);
+}
+std::vector<uint8_t> frame;
+vscpClientTcp::binary_channel source;
+if (result == VSCP_ERROR_SUCCESS) {
+    result = client.receiveBinaryFrame(frame, 1000, &source);
+}
+// On success, dispatch by source, frame type, and command code; the first
+// raw frame is not necessarily this command's reply. Validate CRC and error
+// fields, or decrypt encrypted frames, before using their contents.
+```
+
+Use the existing encryption helpers and agreed keys to encrypt and decrypt
+raw frames; the wrapper does not manage keys. Encrypted commands are opaque,
+so peers must return encrypted replies when a plaintext reply could otherwise
+be confused with an internal `RETR` or `CLEAR` on the same connection.
+Avoid raw commands that change the peer's binary/receive mode while the
+wrapper owns the connection. A raw `RETR` or `CLEAR` conflicting with an
+internal request on that channel returns `VSCP_ERROR_ALREADY_DEFINED`;
+retry after the pending reply is received. Tracked raw commands require a
+valid CRC and a reply within the configured response timeout; on timeout the
+receiver stops and the client must disconnect before reconnecting. Raw
+`CLEAR` does not clear the wrapper's local event queue; use `clear()` for
+that. In polling mode, raw `RETR` requests for more than one event return
+`VSCP_ERROR_NOT_SUPPORTED` because their replies cannot be distinguished
+reliably from automatic polls.
+
+`receiveBinaryFrame()` with zero timeout returns `VSCP_ERROR_RCV_EMPTY`
+without waiting; positive timeouts return `VSCP_ERROR_TIMEOUT` on expiry.
+Both local event and raw queues are unbounded: drain them promptly.
+Using either raw API enables subsequent event-confirmation delivery to the
+raw queue for the lifetime of the connection, even if the application stops
+calling the raw API. The interface returned by `getTcpReceive()` is for
+inspection only while connected; direct reads or writes would interfere with
+the managed workers.
 
 ## UDP and multicast addressing
 

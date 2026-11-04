@@ -61,6 +61,30 @@ bool waitForCount(vscpClientTcp &client, uint16_t expected)
   }
   return false;
 }
+
+int connectBinary(vscpClientTcp &client, const char *endpoint, const char *scenario,
+                  bool polling, bool singleChannel)
+{
+  client.setConnectionTimeout(1000);
+  client.setResponseTimeout(500);
+  int result = client.init(setting(endpoint), scenario, "secret", polling);
+  if (result == VSCP_ERROR_SUCCESS) {
+    result = client.setBinaryMode();
+  }
+  if (result == VSCP_ERROR_SUCCESS && singleChannel) {
+    result = client.setSingleChannelReceiveLoop();
+  }
+  return result == VSCP_ERROR_SUCCESS ? client.connect() : result;
+}
+
+std::vector<uint8_t> binaryCommand(uint16_t code, const std::vector<uint8_t> &argument = {})
+{
+  std::vector<uint8_t> frame(5 + argument.size());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS,
+            vscp_writeCommandToFrame(frame.data(), frame.size(), code,
+                                     argument.empty() ? nullptr : argument.data(), argument.size()));
+  return frame;
+}
 }
 
 TEST_F(TcpTransport, PlainAndReconnect)
@@ -1084,4 +1108,619 @@ TEST_F(TcpTransport, BinaryMaximumFrameLength)
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.sendBinaryFrame(sent));
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBinaryFrame(received, 1000));
   ASSERT_EQ(sent, received);
+}
+
+TEST_F(TcpTransport, WrapperBinarySingleChannelMultiplexesEventsAndRawFrames)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_SINGLE", "wrap-open-early", false, true));
+  EXPECT_TRUE(wrapper.isConnected());
+  EXPECT_TRUE(wrapper.getTcpReceive()->isBinaryMode());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.setBinaryMode(false));
+  EXPECT_EQ(VSCP_ERROR_ALREADY_DEFINED, wrapper.connect());
+  EXPECT_FALSE(wrapper.initFromJson(R"({"binary-mode":false})"));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.setCallbackEx([](vscpEventEx &, void *) {}));
+  EXPECT_EQ(VSCP_ERROR_INVALID_POINTER, wrapper.getcount(nullptr));
+  uint8_t major = 0, minor = 0, release = 0, build = 0;
+  std::deque<std::string> interfaces;
+  uint64_t capabilities = 0;
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getversion(&major, &minor, &release, &build));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getinterfaces(interfaces));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.getwcyd(capabilities));
+
+  vscpEvent first = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(first, 1000));
+  EXPECT_EQ(10, first.vscp_class);
+  EXPECT_EQ(6, first.vscp_type);
+  EXPECT_EQ(123456789u, first.timestamp_ns);
+  EXPECT_EQ(27, first.GUID[15]);
+  ASSERT_EQ(3, first.sizeData);
+  EXPECT_EQ(1, first.pdata[0]);
+  vscp_deleteEvent(&first);
+
+  std::vector<uint8_t> raw = {42};
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receiveBinaryFrame(raw, 0));
+  EXPECT_EQ(std::vector<uint8_t>({42}), raw);
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.receiveBinaryFrame(raw, -1));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame({}));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame(std::vector<uint8_t>(65536)));
+
+  vscpEventEx outgoing = {};
+  outgoing.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  outgoing.timestamp_ns = 1792051200123456789ULL;
+  outgoing.vscp_class = 20;
+  outgoing.vscp_type = 3;
+  outgoing.sizeData = 2;
+  outgoing.data[0] = 4;
+  outgoing.data[1] = 5;
+  const auto command = binaryCommand(0x1234, {0, '\r', '\n', 0xff});
+  const std::vector<uint8_t> encrypted = {0xe1, 0, '\r', '\n', 0xff, 2};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(command));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(encrypted, vscpClientTcp::binary_channel::receive));
+
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_EQ(20, event.vscp_class);
+  EXPECT_EQ(outgoing.timestamp_ns, event.timestamp_ns);
+  ASSERT_EQ(2, event.sizeData);
+  EXPECT_EQ(4, event.data[0]);
+
+  bool confirmation = false, reply = false, encryptedEcho = false;
+  for (int i = 0; i < 3; ++i) {
+    vscpClientTcp::binary_channel channel = vscpClientTcp::binary_channel::receive;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(raw, 1000, &channel));
+    EXPECT_EQ(vscpClientTcp::binary_channel::send, channel);
+    if (raw == encrypted) {
+      encryptedEcho = true;
+    }
+    else if (raw.size() == 13 && raw[0] == 0xf0 && raw[1] == 0xff && raw[2] == 0xff) {
+      confirmation = true;
+      EXPECT_EQ(0, crcFast(raw.data() + 1, raw.size() - 1));
+    }
+    else if (raw.size() == 11 && raw[0] == 0xf0 && raw[1] == 0x12 && raw[2] == 0x34) {
+      reply = true;
+      EXPECT_EQ(0, crcFast(raw.data() + 1, raw.size() - 1));
+      EXPECT_TRUE(std::equal(raw.begin() + 5, raw.end() - 2, command.begin() + 3));
+    }
+    else {
+      ADD_FAILURE() << "Unexpected raw frame";
+    }
+  }
+  EXPECT_TRUE(confirmation);
+  EXPECT_TRUE(reply);
+  EXPECT_TRUE(encryptedEcho);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBinaryFrame(raw, 25));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryTwoChannelsRouteFramesByConnection)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-normal", false, false));
+  ASSERT_TRUE(wrapper.getTcpReceive()->isBinaryMode());
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+
+  const auto command = binaryCommand(0x1234, {1, 2, 3});
+  const std::vector<uint8_t> encrypted = {0x12, 0xaa, 0xbb, 0xcc};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(command, vscpClientTcp::binary_channel::receive));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(encrypted, vscpClientTcp::binary_channel::send));
+
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  outgoing.sizeData = 1;
+  outgoing.data[0] = 77;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_EQ(77, event.data[0]);
+
+  bool confirmation = false, reply = false, encryptedEcho = false;
+  for (int i = 0; i < 3; ++i) {
+    std::vector<uint8_t> frame;
+    vscpClientTcp::binary_channel channel = vscpClientTcp::binary_channel::send;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(frame, 1000, &channel));
+    if (frame == encrypted) {
+      encryptedEcho = true;
+      EXPECT_EQ(vscpClientTcp::binary_channel::send, channel);
+    }
+    else if (frame.size() == 13 && frame[1] == 0xff && frame[2] == 0xff) {
+      confirmation = true;
+      EXPECT_EQ(vscpClientTcp::binary_channel::send, channel);
+    }
+    else if (frame.size() == 10 && frame[1] == 0x12 && frame[2] == 0x34) {
+      reply = true;
+      EXPECT_EQ(vscpClientTcp::binary_channel::receive, channel);
+    }
+    else {
+      ADD_FAILURE() << "Unexpected raw frame";
+    }
+  }
+  EXPECT_TRUE(confirmation);
+  EXPECT_TRUE(reply);
+  EXPECT_TRUE(encryptedEcho);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryEncryptedCommandsAndEventsRemainOpaque)
+{
+  vscpClientTcp wrapper;
+  wrapper.setTLSOptions(true, setting("VSCP_TEST_CA"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_TLS", "wrap-normal", false, true));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+
+  const uint8_t key[32] = {};
+  const uint8_t iv[16] = {};
+  for (uint8_t algorithm : {VSCP_ENCRYPTION_AES128, VSCP_ENCRYPTION_AES192, VSCP_ENCRYPTION_AES256}) {
+    std::vector<uint8_t> command = binaryCommand(0x1234, {1, 2});
+    command[0] |= algorithm;
+    std::vector<uint8_t> eventFrame(38);
+    event.sizeData = 0;
+    ASSERT_TRUE(vscp_writeEventExToFrame(eventFrame.data(), eventFrame.size(), 0x10 | algorithm, &event));
+
+    for (auto plain : {command, eventFrame}) {
+      std::vector<uint8_t> encrypted(plain.size() + 32);
+      size_t length = vscp_encryptFrame(encrypted.data(), plain.data(), plain.size(), key, iv, algorithm);
+      ASSERT_GT(length, 0u);
+      encrypted.resize(length);
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(encrypted));
+      std::vector<uint8_t> received;
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(received, 1000));
+      ASSERT_EQ(encrypted, received);
+      std::vector<uint8_t> decrypted(received.size());
+      ASSERT_TRUE(vscp_decryptFrame(decrypted.data(), received.data(), received.size(), key, nullptr,
+                                   VSCP_ENCRYPTION_FROM_TYPE_BYTE));
+      EXPECT_TRUE(std::equal(plain.begin(), plain.end(), decrypted.begin()));
+    }
+  }
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(event, 50));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryPollingRetrievesFiltersAndClearsEvents)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-normal", true, false));
+  ASSERT_TRUE(wrapper.getTcpReceive()->isBinaryMode());
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_EQ(10, event.vscp_class);
+  EXPECT_EQ(123456789u, event.timestamp_ns);
+  EXPECT_EQ(27, event.GUID[15]);
+  ASSERT_EQ(3, event.sizeData);
+  EXPECT_EQ(3, event.data[2]);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(event, 120));
+
+  vscpEventFilter filter = {};
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_class = 20;
+  filter.mask_class = 0xffff;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setfilter(filter));
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(event, 200));
+
+  vscp_clearVSCPFilter(&filter);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setfilter(filter));
+  outgoing.sizeData = 1;
+  outgoing.data[0] = 99;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  ASSERT_TRUE(waitForCount(wrapper, 1));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.clear());
+  uint16_t count = 9;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.getcount(&count));
+  EXPECT_EQ(0, count);
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receive(event));
+
+  const auto command = binaryCommand(0x1234, {42});
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(command));
+  std::vector<uint8_t> raw;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(raw, 1000));
+  ASSERT_EQ(8u, raw.size());
+  EXPECT_EQ(0x12, raw[1]);
+  EXPECT_EQ(0x34, raw[2]);
+  EXPECT_EQ(42, raw[5]);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryPollingAcceptsSeparateEventAndReply)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-retr-separate", true, false));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_EQ(10, event.vscp_class);
+  EXPECT_EQ(123456789u, event.timestamp_ns);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBlocking(event, 150));
+  EXPECT_TRUE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryAcceptsMaximumEventDataInAllModes)
+{
+  for (const auto &mode : {std::make_pair(false, true), std::make_pair(false, false),
+                           std::make_pair(true, false)}) {
+    vscpClientTcp wrapper;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS,
+              connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-normal", mode.first, mode.second));
+    vscpEventEx received = {};
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(received, 1000));
+    vscpEventEx outgoing = {};
+    outgoing.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+    outgoing.timestamp_ns = 1792051200123456789ULL;
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type = 6;
+    outgoing.sizeData = VSCP_MAX_DATA;
+    for (size_t i = 0; i < outgoing.sizeData; ++i) {
+      outgoing.data[i] = static_cast<uint8_t>(i);
+    }
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(received, 1000));
+    EXPECT_EQ(VSCP_MAX_DATA, received.sizeData);
+    EXPECT_EQ(outgoing.timestamp_ns, received.timestamp_ns);
+    EXPECT_TRUE(std::equal(outgoing.data, outgoing.data + outgoing.sizeData, received.data));
+    outgoing.sizeData = VSCP_MAX_DATA + 1;
+    EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.send(outgoing));
+
+    canalMsg sentCanal = {};
+    sentCanal.id = (10U << 16) | (6U << 8) | 1U;
+    sentCanal.sizeData = 2;
+    sentCanal.data[0] = 7;
+    sentCanal.data[1] = 8;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(sentCanal));
+    canalMsg receivedCanal = {};
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(receivedCanal, 1000));
+    EXPECT_EQ(2, receivedCanal.sizeData);
+    EXPECT_EQ(7, receivedCanal.data[0]);
+    EXPECT_EQ(8, receivedCanal.data[1]);
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+}
+
+TEST_F(TcpTransport, WrapperBinaryTlsCallbacksCanSendButNotClearOrDisconnect)
+{
+  struct State {
+    std::mutex mutex;
+    std::condition_variable condition;
+    int calls = 0;
+    int sendResult = VSCP_ERROR_ERROR;
+    int clearResult = VSCP_ERROR_ERROR;
+    int disconnectResult = VSCP_ERROR_ERROR;
+  } state;
+
+  vscpClientTcp wrapper;
+  wrapper.setTLSOptions(true, setting("VSCP_TEST_CA"));
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEx([&](vscpEventEx &, void *) {
+    int call;
+    {
+      std::lock_guard<std::mutex> lock(state.mutex);
+      call = ++state.calls;
+    }
+    if (call == 1) {
+      int clearResult = wrapper.clear();
+      int disconnectResult = wrapper.disconnect();
+      int sendResult = wrapper.send(outgoing);
+      std::lock_guard<std::mutex> lock(state.mutex);
+      state.clearResult = clearResult;
+      state.disconnectResult = disconnectResult;
+      state.sendResult = sendResult;
+    }
+    state.condition.notify_all();
+  }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_SINGLE_TLS", "wrap-normal", false, true));
+  {
+    std::unique_lock<std::mutex> lock(state.mutex);
+    EXPECT_TRUE(state.condition.wait_for(lock, std::chrono::seconds(3), [&]() { return state.calls >= 2; }));
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, state.sendResult);
+    EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, state.clearResult);
+    EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, state.disconnectResult);
+  }
+  vscpEventEx event = {};
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.receive(event));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryOpenFailuresAndReconnect)
+{
+  vscpClientTcp wrapper;
+  wrapper.setConnectionTimeout(1000);
+  wrapper.setResponseTimeout(150);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setBinaryMode());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setSingleChannelReceiveLoop());
+  for (const auto &scenario : {
+         std::make_pair("wrap-open-reject", VSCP_ERROR_NOT_SUPPORTED),
+         std::make_pair("wrap-open-malformed", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-open-timeout", VSCP_ERROR_TIMEOUT)}) {
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), scenario.first, "secret"));
+    EXPECT_EQ(scenario.second, wrapper.connect()) << scenario.first;
+    EXPECT_FALSE(wrapper.isConnected());
+  }
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.init(setting("VSCP_TEST_PLAIN"), "wrap-normal", "secret"));
+  for (int i = 0; i < 2; ++i) {
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.connect());
+    vscpEventEx event = {};
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    EXPECT_EQ(10, event.vscp_class);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+}
+
+TEST_F(TcpTransport, WrapperBinaryReportsInvalidFramesAndConfirmationErrors)
+{
+  for (const auto &scenario : {
+         std::make_pair("wrap-bad-event", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-oversized-event", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-retr-malformed", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-retr-oversized", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-retr-short", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-retr-empty-success", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-retr-reject", VSCP_ERROR_NOT_SUPPORTED)}) {
+    vscpClientTcp wrapper;
+    const bool polling = std::string(scenario.first).find("wrap-retr-") == 0;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", scenario.first, polling, !polling));
+    vscpEventEx event = {};
+    EXPECT_EQ(scenario.second, wrapper.receiveBlocking(event, 1000)) << scenario.first;
+    EXPECT_FALSE(wrapper.isConnected());
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-confirm-error", false, true));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(event));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.receiveBlocking(event, 1000));
+  EXPECT_FALSE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryRawQueueReceivesConfirmationErrors)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-confirm-error", false, true));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  std::vector<uint8_t> frame;
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, wrapper.receiveBinaryFrame(frame, 0));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(event));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(frame, 1000));
+  ASSERT_EQ(13u, frame.size());
+  EXPECT_EQ(0xff, frame[1]);
+  EXPECT_EQ(0xff, frame[2]);
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, (frame[3] << 8) | frame[4]);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_TRUE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryClearReportsErrorsAndPreservesEventsOnRejection)
+{
+  {
+    vscpClientTcp wrapper;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-clear-reject", false, true));
+    ASSERT_TRUE(waitForCount(wrapper, 1));
+    EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.clear());
+    vscpEventEx event = {};
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.receive(event));
+    EXPECT_TRUE(wrapper.isConnected());
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+  for (const auto &scenario : {
+         std::make_pair("wrap-clear-malformed", VSCP_ERROR_INVALID_FRAME),
+         std::make_pair("wrap-clear-timeout", VSCP_ERROR_TIMEOUT)}) {
+    vscpClientTcp wrapper;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", scenario.first, false, true));
+    EXPECT_EQ(scenario.second, wrapper.clear()) << scenario.first;
+    EXPECT_FALSE(wrapper.isConnected());
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+}
+
+TEST_F(TcpTransport, WrapperBinaryClearRejectsConflictingRawCommands)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-clear-delay", false, true));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  const auto command = binaryCommand(10);
+  EXPECT_EQ(VSCP_ERROR_INVALID_FRAME, wrapper.sendBinaryFrame({0xe0, 0, 10, 0, 0}));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(command));
+  EXPECT_EQ(VSCP_ERROR_ALREADY_DEFINED, wrapper.clear());
+  std::vector<uint8_t> reply;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(reply, 1000));
+  ASSERT_EQ(7u, reply.size());
+  EXPECT_EQ(10, reply[2]);
+
+  int clearResult = VSCP_ERROR_ERROR;
+  std::thread clearer([&]() { clearResult = wrapper.clear(); });
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_EQ(VSCP_ERROR_ALREADY_DEFINED, wrapper.sendBinaryFrame(command));
+  clearer.join();
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, clearResult);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryTrackedRawCommandTimeoutStopsReceiver)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-clear-timeout", false, true));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.sendBinaryFrame(binaryCommand(10)));
+  std::vector<uint8_t> reply;
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, wrapper.receiveBinaryFrame(reply, 1500));
+  EXPECT_FALSE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryPollingRejectsConflictingRawRetr)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-retr-delay", true, false));
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_EQ(VSCP_ERROR_ALREADY_DEFINED, wrapper.sendBinaryFrame(binaryCommand(6)));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, wrapper.sendBinaryFrame(binaryCommand(6, {0, 2})));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame({0xe0, 0, 6}));
+  vscpEventEx event = {};
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryPollingRoutesNonconflictingRawRetr)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-normal", true, false));
+  vscpEventEx event = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+  const auto command = binaryCommand(6, {0, 1});
+  int result = VSCP_ERROR_ALREADY_DEFINED;
+  for (int attempt = 0; attempt < 50 && result == VSCP_ERROR_ALREADY_DEFINED; ++attempt) {
+    result = wrapper.sendBinaryFrame(command);
+    if (result == VSCP_ERROR_ALREADY_DEFINED) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+  }
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, result);
+  std::vector<uint8_t> reply;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(reply, 1000));
+  ASSERT_EQ(7u, reply.size());
+  EXPECT_EQ(0xf0, reply[0]);
+  EXPECT_EQ(6, reply[2]);
+  EXPECT_EQ(VSCP_ERROR_RCV_EMPTY, (reply[3] << 8) | reply[4]);
+  EXPECT_TRUE(wrapper.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryDisconnectWakesBlockingReceivers)
+{
+  vscpClientTcp wrapper;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-normal", true, false));
+  vscpEventEx initial = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(initial, 1000));
+  int eventResult = VSCP_ERROR_ERROR, rawResult = VSCP_ERROR_ERROR;
+  std::thread eventReceiver([&]() {
+    vscpEventEx event = {};
+    eventResult = wrapper.receiveBlocking(event, 5000);
+  });
+  std::thread rawReceiver([&]() {
+    std::vector<uint8_t> frame;
+    rawResult = wrapper.receiveBinaryFrame(frame, 5000);
+  });
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  eventReceiver.join();
+  rawReceiver.join();
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, eventResult);
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, rawResult);
+}
+
+TEST_F(TcpTransport, WrapperBinaryClearDoesNotBlockCallbackSends)
+{
+  struct State {
+    std::mutex mutex;
+    std::condition_variable condition;
+    int calls = 0;
+    int sendResult = VSCP_ERROR_ERROR;
+    bool clearing = false;
+  } state;
+  vscpClientTcp wrapper;
+  vscpEventEx outgoing = {};
+  outgoing.vscp_class = 10;
+  outgoing.vscp_type = 6;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.setCallbackEx([&](vscpEventEx &, void *) {
+    bool sendFromCallback;
+    {
+      std::lock_guard<std::mutex> lock(state.mutex);
+      ++state.calls;
+      sendFromCallback = state.clearing;
+      state.clearing = false;
+    }
+    if (sendFromCallback) {
+      int result = wrapper.send(outgoing);
+      std::lock_guard<std::mutex> lock(state.mutex);
+      state.sendResult = result;
+    }
+    state.condition.notify_all();
+  }));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_PLAIN", "wrap-clear-delay", false, false));
+  {
+    std::unique_lock<std::mutex> lock(state.mutex);
+    ASSERT_TRUE(state.condition.wait_for(lock, std::chrono::seconds(2), [&]() { return state.calls >= 1; }));
+    state.clearing = true;
+  }
+  int clearResult = VSCP_ERROR_ERROR;
+  std::thread clearer([&]() { clearResult = wrapper.clear(); });
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+  {
+    std::unique_lock<std::mutex> lock(state.mutex);
+    EXPECT_TRUE(state.condition.wait_for(lock, std::chrono::seconds(2), [&]() {
+      return state.sendResult != VSCP_ERROR_ERROR;
+    }));
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, state.sendResult);
+  }
+  clearer.join();
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, clearResult);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryTlsPollingAndPeerDisconnect)
+{
+  vscpEventEx event = {};
+  for (bool polling : {false, true}) {
+    vscpClientTcp wrapper;
+    wrapper.setTLSOptions(true, setting("VSCP_TEST_CA"));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(wrapper, "VSCP_TEST_TLS", "wrap-normal", polling, false));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    EXPECT_EQ(10, event.vscp_class);
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(event));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+
+  vscpClientTcp closing;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(closing, "VSCP_TEST_PLAIN", "wrap-close", false, true));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, closing.receiveBlocking(event, 1000));
+  EXPECT_EQ(VSCP_ERROR_STOPPED, closing.receiveBlocking(event, 1000));
+  EXPECT_FALSE(closing.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, closing.disconnect());
+}
+
+TEST_F(TcpTransport, WrapperBinaryConcurrentClientsAndWrites)
+{
+  vscpClientTcp first;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, connectBinary(first, "VSCP_TEST_PLAIN", "wrap-normal", false, true));
+  vscpEventEx initial = {};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, first.receiveBlocking(initial, 1000));
+  int writeResult = VSCP_ERROR_SUCCESS;
+  std::thread sender([&]() {
+    vscpEventEx outgoing = {};
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type = 6;
+    for (int i = 0; i < 80 && writeResult == VSCP_ERROR_SUCCESS; ++i) {
+      writeResult = first.send(outgoing);
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+  });
+  int connectResult = VSCP_ERROR_SUCCESS;
+  for (int i = 0; i < 4 && connectResult == VSCP_ERROR_SUCCESS; ++i) {
+    vscpClientTcp other;
+    connectResult = connectBinary(other, "VSCP_TEST_PLAIN", "wrap-normal", false, true);
+    if (connectResult == VSCP_ERROR_SUCCESS) {
+      vscpEventEx event = {};
+      connectResult = other.receiveBlocking(event, 1000);
+    }
+    other.disconnect();
+  }
+  sender.join();
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, connectResult);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, writeResult);
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, first.disconnect());
 }

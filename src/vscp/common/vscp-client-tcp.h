@@ -30,11 +30,15 @@
 #include <vscpremotetcpif.h>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <thread>
+#include <utility>
+#include <vector>
 
 class vscpClientTcp : public CVscpClient {
 
@@ -46,6 +50,13 @@ public:
     force_plain      // Never use TLS
   };
 
+  /// A physical binary connection; both values use send in one-connection modes.
+  enum class binary_channel
+  {
+    send,
+    receive
+  };
+
   vscpClientTcp();
   virtual ~vscpClientTcp();
 
@@ -55,10 +66,9 @@ public:
           tcp:// or stcp:// (SSL connection)
       @param strUsername Username used to login on remote host.
       @param strPassword Password used to login on remote host.
-      @param bPolling If true only one connection will be opened to the remote server
-          on which polling for events will be done. If false one connection will be opened
-          for send and one for receive, unless single-channel receive-loop mode is enabled.
-          Polling and single-channel receive-loop mode cannot be enabled together.
+      @param bPolling If true, use one connection and poll for events. If false,
+          use separate send and receive connections unless single-channel mode
+          is enabled. Polling and single-channel mode cannot be enabled together.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   int init(const std::string &strHostname = "tcp://localhost:9598",
@@ -67,11 +77,10 @@ public:
            bool bPolling                  = false);
 
   /*!
-      Enable or disable the single-channel receive-loop mode. Configure it
-      while disconnected and with polling disabled. The default is disabled.
-      In this mode one connection is shared by SEND and asynchronous event
-      reception; server replies to commands must be distinguishable from bare
-      +OK receive-loop keepalives.
+      Enable or disable asynchronous single-channel mode. Configure it while
+      disconnected and with polling disabled. The default is disabled.
+      In text mode, command replies must be distinguishable from bare +OK
+      receive-loop keepalives. Binary mode uses OPEN instead of RCVLOOP.
       @return VSCP_ERROR_SUCCESS, or VSCP_ERROR_PARAMETER if the mode cannot
           be changed or conflicts with polling.
   */
@@ -80,8 +89,51 @@ public:
   bool isSingleChannelReceiveLoopEnabled(void) const { return m_bSingleChannelReceiveLoop; }
 
   /*!
-      Set receive callbacks before connecting in single-channel mode.
-      Changing them while that mode is active returns VSCP_ERROR_NOT_SUPPORTED.
+      Enable or disable VSCP-GBP binary mode for event and raw-frame APIs.
+      Configure while disconnected; binary mode is disabled by default.
+      Asynchronous modes negotiate binary OPEN; polling uses binary RETR.
+      @return VSCP_ERROR_SUCCESS, or VSCP_ERROR_PARAMETER if active.
+  */
+  int setBinaryMode(bool enable = true);
+  bool isBinaryModeEnabled(void) const { return m_bBinaryMode; }
+
+  /*!
+      Send one complete VSCP-GBP frame (1-65535 bytes) without its TCP length
+      prefix. Binary mode adds the two-byte length prefix. In a single-connection
+      mode both channel values refer to the send connection. Encrypted frames
+      are opaque; this method does not encrypt, decrypt, or validate their CRC.
+      Calling either raw API enables delivery of subsequent event confirmations
+      to the raw queue, which the application must drain.
+
+      While binary polling is active, raw RETR may request at most one event.
+      A raw RETR or CLEAR that conflicts with an internal request returns
+      VSCP_ERROR_ALREADY_DEFINED. Such tracked commands require a valid CRC;
+      if their reply does not arrive before the response timeout, the receiver
+      stops to avoid misrouting a later reply. Encrypted replies to encrypted
+      commands must remain encrypted if their command code could conflict with
+      internal requests, since the client cannot identify an encrypted command.
+      @return VSCP_ERROR_SUCCESS or a VSCP error code.
+  */
+  int sendBinaryFrame(const std::vector<uint8_t> &frame, binary_channel channel = binary_channel::send);
+
+  /*!
+      Receive a raw command, reply, or encrypted frame without its TCP length
+      prefix. Unencrypted events are delivered through the event API; successful
+      event confirmations are delivered here only after a raw API is used.
+      The optional channel output identifies the source connection, or send
+      in one-connection modes. The raw queue is unbounded and must be drained.
+      A zero timeout returns VSCP_ERROR_RCV_EMPTY without waiting; a positive
+      timeout returns VSCP_ERROR_TIMEOUT on expiry. Negative values are rejected.
+      The output arguments remain unchanged when no frame is returned.
+      @return VSCP_ERROR_SUCCESS or a VSCP error code.
+  */
+  int receiveBinaryFrame(std::vector<uint8_t> &frame,
+                         long timeout = 100,
+                         binary_channel *channel = nullptr);
+
+  /*!
+      Set receive callbacks before connecting in single-channel or binary mode.
+      Changing them while either mode is active returns VSCP_ERROR_NOT_SUPPORTED.
   */
   int setCallbackEv(std::function<void(vscpEvent &ev, void *pobj)> callback,
                     void *pData = nullptr) override;
@@ -126,7 +178,7 @@ public:
 
   /*!
       Receive VSCP event from remote host
-      In single-channel mode this reads the local event queue and returns
+      In single-channel or binary mode this reads the local event queue and returns
       VSCP_ERROR_RCV_EMPTY when no event is available. Queued receives are
       unavailable while a receive callback is active.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -137,7 +189,7 @@ public:
       Blocking receive of VSCP event ex from remote host
       @param ev VSCP event ex that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
-          In single-channel mode, zero does not wait and negative values
+          In single-channel or binary mode, zero does not wait and negative values
           are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -145,7 +197,7 @@ public:
 
   /*!
       Receive VSCP event ex from remote host
-      Single-channel mode uses the same local queue as receive(vscpEvent &).
+      Single-channel and binary modes use the same local queue as receive(vscpEvent &).
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int receive(vscpEventEx &ex);
@@ -154,7 +206,7 @@ public:
       Blocking receive of VSCP event ex from remote host
       @param ex VSCP event ex that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
-          In single-channel mode, zero does not wait and negative values
+          In single-channel or binary mode, zero does not wait and negative values
           are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -162,7 +214,7 @@ public:
 
   /*!
     Receive CAN(AL) message from remote host
-    Single-channel mode uses the same local queue as receive(vscpEvent &).
+    Single-channel and binary modes use the same local queue as receive(vscpEvent &).
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
 */
   virtual int receive(canalMsg &msg);
@@ -171,7 +223,7 @@ public:
       Receive blocking CAN(AL) message from remote host
       @param msg CANAL message that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
-          In single-channel mode, zero does not wait and negative values
+          In single-channel or binary mode, zero does not wait and negative values
           are rejected. Blocking receives are unavailable with callbacks.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -179,7 +231,7 @@ public:
 
   /*!
       Set interface filter
-      In single-channel mode the filter is applied locally to future events.
+      In single-channel or binary mode the filter is applied locally to future events.
       @param filter VSCP Filter to set.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -187,22 +239,24 @@ public:
 
   /*!
       Get number of events waiting to be received on remote
-      interface. In single-channel mode this is the local receive queue size.
+      interface. In single-channel or binary mode this is the local receive queue size.
       @param pcount Pointer to an unsigned integer that get the count of events.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int getcount(uint16_t *pcount);
 
   /*!
-      Clear the input queue. In single-channel mode this clears both the
-      server queue and events already buffered by this client.
+      Clear the input queue. In single-channel or binary mode this requests a
+      server clear and discards locally queued events before its acknowledgement.
+      In-flight events and callbacks already running may still be delivered.
+      Synchronous binary clear from a receive callback is not supported.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int clear(void);
 
   /*!
       Get version from interface
-      This command is not available in single-channel receive-loop mode.
+      This command is not available in single-channel text or binary mode.
       @param pmajor Pointer to uint8_t that get major version of interface.
       @param pminor Pointer to uint8_t that get minor version of interface.
       @param prelease Pointer to uint8_t that get release version of interface.
@@ -213,7 +267,7 @@ public:
 
   /*!
       Get interfaces
-      This command is not available in single-channel receive-loop mode.
+      This command is not available in single-channel text or binary mode.
       @param iflist Get a list of available interfaces
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
@@ -221,7 +275,7 @@ public:
 
   /*!
       Get capabilities (wcyd) from remote interface
-      This command is not available in single-channel receive-loop mode.
+      This command is not available in single-channel text or binary mode.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int getwcyd(uint64_t &wcyd);
@@ -234,8 +288,8 @@ public:
 
   /*!
       Set member variables from JSON representation of connection
-      The optional boolean "single-channel" selects single-channel
-      receive-loop mode; it cannot be combined with "bpoll": true.
+      The optional booleans "single-channel" and "binary-mode" select the
+      corresponding modes. "single-channel" cannot be combined with "bpoll".
       @param config JSON representation as string
       @return True on success, false on failure.
   */
@@ -348,11 +402,14 @@ public:
   // ------------------------------------------------------------------------
 
   /*!
-      Get the tcp/ip receive object. In single-channel mode this is the
-      shared connection. Do not operate on it directly while the client runs.
+      Get the tcp/ip receive object. Single-channel mode and binary polling
+      return the shared connection. Do not operate on it while the client runs.
       @return Pointer to receive tcp/ip object or null if not defined
   */
-  VscpRemoteTcpIf *getTcpReceive(void) { return m_bSingleChannelReceiveLoop ? &m_tcp : &m_tcpReceive; };
+  VscpRemoteTcpIf *getTcpReceive(void)
+  {
+    return (m_bSingleChannelReceiveLoop || (m_bBinaryMode && m_bPolling)) ? &m_tcp : &m_tcpReceive;
+  };
 
   /*!
       Send event to defined callbacks if any is defined
@@ -394,8 +451,8 @@ public:
 private:
   /*!
       The main interface is always opened. The receive interface is opened
-      only in the default two-channel mode. Polling and single-channel
-      receive-loop modes use the main interface for both sending and receiving.
+      only in two-channel mode. Polling and single-channel modes use the main
+      interface for both sending and receiving.
   */
 
   /// Sending interface
@@ -432,6 +489,21 @@ private:
   /// If true the main interface runs an asynchronous single-channel receive loop.
   bool m_bSingleChannelReceiveLoop;
 
+  /// If true connections use VSCP-GBP binary frames.
+  bool m_bBinaryMode;
+
+  bool usesManagedReceive(void) const { return m_bSingleChannelReceiveLoop || m_bBinaryMode; }
+  bool binaryUsesTwoChannels(void) const { return !m_bPolling && !m_bSingleChannelReceiveLoop; }
+  binary_channel normalizeBinaryChannel(binary_channel channel) const;
+  VscpRemoteTcpIf &binaryInterface(binary_channel channel);
+  bool isReceiveWorkerThread(void);
+  int connectBinary(void);
+  int openBinaryReceiveChannel(VscpRemoteTcpIf &interface, std::deque<std::vector<uint8_t>> &buffered);
+  int binaryCommand(binary_channel channel, uint16_t command, std::vector<uint8_t> &reply);
+  int dispatchBinaryEvent(binary_channel channel, const std::vector<uint8_t> &frame, bool acknowledge);
+  int processBinaryFrame(binary_channel channel, const std::vector<uint8_t> &frame);
+  void binaryWorker(binary_channel channel, std::deque<std::vector<uint8_t>> buffered);
+
   void singleChannelWorker(void);
   void failSingleChannelWorker(int error);
   int receiveSingleChannel(vscpEventEx &event, long timeout, bool blocking);
@@ -447,6 +519,28 @@ private:
   std::deque<vscpEventEx> m_singleChannelEvents;
   std::thread::id m_singleChannelWorkerId;
   int m_singleChannelError = VSCP_ERROR_NOT_CONNECTED;
+
+  struct raw_binary_frame {
+    binary_channel channel;
+    std::vector<uint8_t> data;
+  };
+  std::thread m_binarySendWorkerThread;
+  std::thread::id m_binarySendWorkerId;
+  std::condition_variable m_binaryCondition;
+  std::mutex m_binaryControlMutex;
+  std::mutex m_binaryCallbackMutex;
+  std::deque<raw_binary_frame> m_binaryFrames;
+  std::map<std::pair<binary_channel, uint16_t>,
+           std::deque<std::chrono::steady_clock::time_point>> m_binaryRawPending;
+  bool m_binaryRawActive = false;
+  bool m_binaryPollPending = false;
+  bool m_binaryPollSawEvent = false;
+  std::chrono::steady_clock::time_point m_binaryPollDeadline;
+  bool m_binaryControlPending = false;
+  bool m_binaryControlComplete = false;
+  uint16_t m_binaryControlCode = 0;
+  binary_channel m_binaryControlChannel = binary_channel::send;
+  std::vector<uint8_t> m_binaryControlReply;
 
   // ------------------------------------------------------------------------
   //                                 TLS / SSL

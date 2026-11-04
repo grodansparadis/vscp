@@ -28,7 +28,154 @@ class Handler(socketserver.BaseRequestHandler):
     def packet(frame):
         return len(frame).to_bytes(2, "big") + frame
 
+    @staticmethod
+    def binary_reply(code, error=0, payload=b""):
+        frame = b"\xf0" + code.to_bytes(2, "big") + error.to_bytes(2, "big") + payload
+        return frame + binascii.crc_hqx(frame[1:], 0xffff).to_bytes(2, "big")
+
+    @staticmethod
+    def binary_event():
+        event = bytearray(41)
+        event[0] = 0x10
+        event[3:11] = (123456789).to_bytes(8, "big")
+        event[14:16] = (10).to_bytes(2, "big")
+        event[16:18] = (6).to_bytes(2, "big")
+        event[33] = 27
+        event[34:36] = (3).to_bytes(2, "big")
+        event[36:39] = b"\x01\x02\x03"
+        event[-2:] = binascii.crc_hqx(event[1:-2], 0xffff).to_bytes(2, "big")
+        return bytes(event)
+
+    def binary_client(self, connection, pending, scenario):
+        server = self.server
+        if not isinstance(server, Server):
+            raise TypeError("TCP binary handler requires a test server")
+        peer = (connection, threading.Lock())
+        events = [self.binary_event()]
+        if scenario in (b"wrap-oversized-event", b"wrap-retr-oversized"):
+            event = bytearray(events[0][:36] + b"\x00" * 513 + b"\x00\x00")
+            event[34:36] = (513).to_bytes(2, "big")
+            event[-2:] = binascii.crc_hqx(event[1:-2], 0xffff).to_bytes(2, "big")
+            events[0] = bytes(event)
+
+        def send(peer, *frames):
+            with peer[1]:
+                peer[0].sendall(b"".join(self.packet(frame) for frame in frames))
+
+        connection.sendall(b"+OK - Binary mode enabled\r\n")
+        try:
+            while True:
+                while len(pending) < 2:
+                    data = connection.recv(8192)
+                    if not data:
+                        return True
+                    pending += data
+                length = int.from_bytes(pending[:2], "big")
+                while len(pending) < length + 2:
+                    data = connection.recv(8192)
+                    if not data:
+                        return True
+                    pending += data
+                frame, pending = pending[2:length + 2], pending[length + 2:]
+                if not frame:
+                    raise ValueError("Empty binary frame received from client")
+
+                if frame[0] & 0x0f:
+                    send(peer, frame)
+                elif frame[0] >> 4 in (0, 1):
+                    if binascii.crc_hqx(frame[1:], 0xffff):
+                        raise ValueError("Invalid event CRC received from client")
+                    error = 34 if scenario == b"wrap-confirm-error" else 0
+                    confirmation = self.binary_reply(0xffff, error, b"\x00\x00" + frame[1:3] + frame[-2:])
+                    send(peer, confirmation)
+                    with server.binary_lock:
+                        recipients = list(server.binary_open_peers)
+                    if recipients:
+                        for recipient in recipients:
+                            try:
+                                send(recipient, frame)
+                            except (ConnectionError, TimeoutError, ssl.SSLError):
+                                with server.binary_lock:
+                                    if recipient in server.binary_open_peers:
+                                        server.binary_open_peers.remove(recipient)
+                    else:
+                        events.append(frame)
+                elif frame[0] == 0xf0 and frame[1:3] == b"\xff\xff":
+                    if binascii.crc_hqx(frame[1:], 0xffff):
+                        raise ValueError("Invalid event confirmation CRC")
+                elif frame[0] == 0xe0 and len(frame) >= 5:
+                    if binascii.crc_hqx(frame[1:], 0xffff):
+                        raise ValueError("Invalid binary command CRC")
+                    code = int.from_bytes(frame[1:3], "big")
+                    if code == 7:
+                        if scenario == b"wrap-open-timeout":
+                            time.sleep(0.7)
+                            return True
+                        if scenario == b"wrap-open-reject":
+                            send(peer, self.binary_reply(code, 17))
+                            continue
+                        if scenario == b"wrap-open-malformed":
+                            reply = bytearray(self.binary_reply(code))
+                            reply[-1] ^= 1
+                            send(peer, reply)
+                            continue
+                        with server.binary_lock:
+                            server.binary_open_peers.append(peer)
+                        event = events.pop(0)
+                        if scenario == b"wrap-bad-event":
+                            event = event[:-1] + bytes((event[-1] ^ 1,))
+                        if scenario == b"wrap-open-early":
+                            send(peer, event, self.binary_reply(code))
+                        else:
+                            send(peer, self.binary_reply(code), event)
+                        if scenario == b"wrap-close":
+                            return True
+                    elif code == 6:
+                        if scenario == b"wrap-retr-delay":
+                            time.sleep(0.2)
+                        if scenario == b"wrap-retr-reject":
+                            reply = self.binary_reply(code, 17)
+                        elif scenario == b"wrap-retr-short":
+                            reply = self.binary_reply(code, payload=b"\x00" * 10)
+                        elif scenario == b"wrap-retr-empty-success":
+                            reply = self.binary_reply(code)
+                        elif events:
+                            event = events.pop(0)
+                            if scenario == b"wrap-retr-separate":
+                                send(peer, event)
+                                reply = self.binary_reply(code)
+                            else:
+                                reply = self.binary_reply(code, payload=event[1:-2])
+                        else:
+                            reply = self.binary_reply(code, 19)
+                        if scenario == b"wrap-retr-malformed":
+                            reply = reply[:-1] + bytes((reply[-1] ^ 1,))
+                        send(peer, reply)
+                    elif code == 10:
+                        if scenario == b"wrap-clear-delay":
+                            time.sleep(0.2)
+                        if scenario == b"wrap-clear-timeout":
+                            time.sleep(0.7)
+                            return True
+                        error = 17 if scenario == b"wrap-clear-reject" else 0
+                        reply = self.binary_reply(code, error)
+                        if scenario == b"wrap-clear-malformed":
+                            reply = reply[:-1] + bytes((reply[-1] ^ 1,))
+                        if not error:
+                            events.clear()
+                        send(peer, reply)
+                    else:
+                        send(peer, self.binary_reply(code, payload=frame[3:-2]))
+                else:
+                    send(peer, frame)
+        finally:
+            with server.binary_lock:
+                if peer in server.binary_open_peers:
+                    server.binary_open_peers.remove(peer)
+
     def binary(self, connection, pending, scenario):
+        if scenario.startswith(b"wrap-"):
+            return self.binary_client(connection, pending, scenario)
         if scenario == b"reject":
             connection.sendall(b"-OK - Binary mode not supported\r\n")
             return False
@@ -147,6 +294,10 @@ class Handler(socketserver.BaseRequestHandler):
                             scenario = line.strip().split(b" ", 1)[1]
                             connection.sendall(b"+OK\r\n")
                             continue
+                        if command == b"USER":
+                            user = line.strip().split(b" ", 1)[-1]
+                            if user.startswith(b"wrap-"):
+                                scenario = user
                         if command == b"BINARY":
                             if self.binary(connection, pending, scenario):
                                 return
@@ -231,6 +382,8 @@ class Server(socketserver.ThreadingTCPServer):
         self.bare_receive_ack = bare_receive_ack
         self.coalesced_receive = coalesced_receive
         self.client_slot = threading.Lock()
+        self.binary_lock = threading.Lock()
+        self.binary_open_peers = []
         self.address_family = socket.AF_INET6 if ipv6 else socket.AF_INET
         super().__init__(("::1" if ipv6 else "127.0.0.1", 0), Handler)
         self.thread = threading.Thread(target=self.serve_forever, daemon=True)

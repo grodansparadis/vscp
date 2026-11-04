@@ -5,6 +5,9 @@
 and [VSCP general binary protocol (VSCP-GBP) frames](https://grodansparadis.github.io/vscp-doc-spec/#/./vscp_over_binary).
 Binary mode works over both TCP and TLS.
 
+For managed polling, one- or two-connection reception, and simultaneous raw
+frames with `vscpClientTcp`, see [Binary TCP client mode](library_reference.md#binary-tcp-client-mode).
+
 ## Entering binary mode
 
 Open and authenticate the connection normally, then call `doCmdBinary()`.

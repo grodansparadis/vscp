@@ -7,10 +7,24 @@
 #include <gtest/gtest.h>
 
 #include <nlohmann/json.hpp>
+#include <crc.h>
 #include <vscp-client-tcp.h>
 #include <vscpremotetcpif.h>
 
 using json = nlohmann::json;
+
+TEST(VscpClientTcpBinary, CrcTableMatchesSlowImplementation)
+{
+  crcInit();
+  unsigned char data[256] = {};
+  for (size_t i = 0; i < sizeof(data); ++i) {
+    data[i] = static_cast<unsigned char>(i);
+    EXPECT_EQ(crcSlow(&data[i], 1), crcFast(&data[i], 1)) << i;
+  }
+  EXPECT_EQ(crcSlow(data, sizeof(data)), crcFast(data, sizeof(data)));
+  const unsigned char check[] = "123456789";
+  EXPECT_EQ(CHECK_VALUE, crcFast(check, sizeof(check) - 1));
+}
 
 // ============================================================================
 //                      VscpRemoteTcpIf selectable TLS
@@ -174,4 +188,45 @@ TEST(VscpClientTcpSingleChannel, RejectsConflictingPollingConfiguration)
   vscpClientTcp invalid;
   EXPECT_FALSE(invalid.initFromJson(R"({"single-channel":true,"bfull-l2":"invalid"})"));
   EXPECT_FALSE(invalid.isSingleChannelReceiveLoopEnabled());
+}
+
+TEST(VscpClientTcpBinary, DefaultsAndJsonRoundTrip)
+{
+  vscpClientTcp client;
+  EXPECT_FALSE(client.isBinaryModeEnabled());
+  EXPECT_FALSE(json::parse(client.getConfigAsJson())["binary-mode"].get<bool>());
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setBinaryMode());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.setSingleChannelReceiveLoop());
+  json configured = json::parse(client.getConfigAsJson());
+  EXPECT_TRUE(configured["binary-mode"].get<bool>());
+  EXPECT_TRUE(configured["single-channel"].get<bool>());
+
+  vscpClientTcp restored;
+  ASSERT_TRUE(restored.initFromJson(configured.dump()));
+  EXPECT_TRUE(restored.isBinaryModeEnabled());
+  EXPECT_TRUE(restored.isSingleChannelReceiveLoopEnabled());
+  EXPECT_EQ(configured, json::parse(restored.getConfigAsJson()));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, restored.setBinaryMode(false));
+  EXPECT_FALSE(restored.isBinaryModeEnabled());
+}
+
+TEST(VscpClientTcpBinary, PollingAndInvalidConfiguration)
+{
+  vscpClientTcp client;
+  ASSERT_TRUE(client.initFromJson(R"({"bpoll":true,"binary-mode":true})"));
+  EXPECT_TRUE(client.isBinaryModeEnabled());
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, client.setSingleChannelReceiveLoop());
+  EXPECT_FALSE(client.initFromJson(R"({"bpoll":true,"single-channel":true,"binary-mode":true})"));
+  EXPECT_FALSE(client.initFromJson(R"({"binary-mode":"true"})"));
+  EXPECT_TRUE(client.isBinaryModeEnabled());
+  EXPECT_TRUE(json::parse(client.getConfigAsJson())["bpoll"].get<bool>());
+
+  std::vector<uint8_t> frame;
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, client.sendBinaryFrame({0xe0, 0, 1, 0, 0}));
+  EXPECT_EQ(VSCP_ERROR_NOT_CONNECTED, client.receiveBinaryFrame(frame));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, client.receiveBinaryFrame(frame, -1));
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.setBinaryMode(false));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, client.sendBinaryFrame({1}));
+  EXPECT_EQ(VSCP_ERROR_NOT_SUPPORTED, client.receiveBinaryFrame(frame));
 }

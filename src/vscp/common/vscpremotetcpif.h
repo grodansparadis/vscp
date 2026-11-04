@@ -324,6 +324,14 @@ public:
   int receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT);
 
   /*!
+      Decode and validate an unencrypted binary event frame. If acknowledge
+      is true, send the corresponding event-confirm reply on this connection.
+      Initialize event before calling and release its allocated data with
+      vscp_deleteEvent() before reusing it.
+   */
+  int processBinaryEventFrame(const std::vector<uint8_t> &frame, vscpEvent *event, bool acknowledge = true);
+
+  /*!
       Open communication interface.
       @param strInterface should contain "ip-addr:port;username;password" if
      used. All including port are optional and defaults to no
@@ -774,6 +782,7 @@ private:
   bool m_bSingleChannelReceiveLoop;
   bool m_bBinaryMode;
   std::vector<uint8_t> m_binaryInput;
+  std::mutex m_binaryWriteMutex;
 
   std::thread m_singleChannelReaderThread;
   std::atomic<bool> m_singleChannelReaderStop;
