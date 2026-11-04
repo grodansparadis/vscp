@@ -26,9 +26,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "vscphelperlogging.h"
+#include "vscphelperlogging-internal.h"
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
 
 #include <array>
+#include <atomic>
+#include <cerrno>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -52,6 +59,24 @@ static_assert(VSCP_HELPER_LOG_LEVEL_TRACE == static_cast<int>(spdlog::level::tra
               "VSCP and spdlog logging levels must match");
 
 thread_local std::array<char, 512> loggingError{};
+std::atomic<bool> debugEnabled{false};
+
+struct SavedErrorState {
+    int errorNumber = errno;
+#ifdef _WIN32
+    DWORD windowsError = GetLastError();
+    int socketError = WSAGetLastError();
+#endif
+
+    ~SavedErrorState() noexcept
+    {
+#ifdef _WIN32
+        WSASetLastError(socketError);
+        SetLastError(windowsError);
+#endif
+        errno = errorNumber;
+    }
+};
 
 void reportError(const char* message) noexcept
 {
@@ -72,6 +97,11 @@ struct LoggingState {
         logger->set_level(spdlog::level::err);
         logger->set_pattern("%v");
         logger->set_error_handler([](const std::string& message) { reportError(message.c_str()); });
+    }
+
+    ~LoggingState()
+    {
+        debugEnabled.store(false, std::memory_order_release);
     }
 };
 
@@ -105,11 +135,11 @@ std::shared_ptr<spdlog::logger> getLogger() noexcept
 } // namespace
 
 extern "C" int
-vscphelper_configureLogging(int consoleLevel,
-                            int fileLevel,
-                            const char* filePath,
-                            size_t maxFileSize,
-                            size_t maxFiles) noexcept
+vscphelper_shared_configureLogging(int consoleLevel,
+                                   int fileLevel,
+                                   const char* filePath,
+                                   size_t maxFileSize,
+                                   size_t maxFiles) noexcept
 {
     loggingError[0] = '\0';
     if (!validLevel(consoleLevel) || !validLevel(fileLevel) ||
@@ -119,7 +149,7 @@ vscphelper_configureLogging(int consoleLevel,
         return VSCP_ERROR_PARAMETER;
     }
     if (consoleLevel == VSCP_HELPER_LOG_LEVEL_OFF && fileLevel == VSCP_HELPER_LOG_LEVEL_OFF) {
-        return vscphelper_disableLogging();
+        return vscphelper_shared_disableLogging();
     }
 
     try {
@@ -151,6 +181,7 @@ vscphelper_configureLogging(int consoleLevel,
         logger->set_error_handler([](const std::string& message) { reportError(message.c_str()); });
         state.logger = std::move(logger);
         state.defaultStderr = false;
+        debugEnabled.store(state.logger->should_log(spdlog::level::debug), std::memory_order_release);
         return VSCP_ERROR_SUCCESS;
     }
     catch (const std::exception& error) {
@@ -164,12 +195,13 @@ vscphelper_configureLogging(int consoleLevel,
 }
 
 extern "C" int
-vscphelper_disableLogging(void) noexcept
+vscphelper_shared_disableLogging(void) noexcept
 {
     loggingError[0] = '\0';
     try {
         auto& state = loggingState();
         std::lock_guard<std::mutex> lock(state.mutex);
+        debugEnabled.store(false, std::memory_order_release);
         state.defaultStderr = false;
         if (state.logger) {
             state.logger->flush();
@@ -188,7 +220,7 @@ vscphelper_disableLogging(void) noexcept
 }
 
 extern "C" int
-vscphelper_flushLogging(void) noexcept
+vscphelper_shared_flushLogging(void) noexcept
 {
     loggingError[0] = '\0';
     try {
@@ -210,12 +242,12 @@ vscphelper_flushLogging(void) noexcept
 }
 
 extern "C" const char*
-vscphelper_getLastLoggingError(void) noexcept
+vscphelper_shared_getLastLoggingError(void) noexcept
 {
     return loggingError.data();
 }
 
-extern "C" void vscphelper_logTransportError(const char* format, va_list arguments) noexcept
+extern "C" void vscphelper_shared_logTransportError(const char* format, va_list arguments) noexcept
 {
     if (!format) {
         reportError("Invalid transport diagnostic format");
@@ -266,7 +298,7 @@ extern "C" void vscphelper_logTransportError(const char* format, va_list argumen
     }
 }
 
-extern "C" int vscphelper_isLoggingEnabled(int level) noexcept
+extern "C" int vscphelper_shared_isLoggingEnabled(int level) noexcept
 {
     if (!validLevel(level) || level == VSCP_HELPER_LOG_LEVEL_OFF) {
         reportError("Invalid logging message level");
@@ -276,7 +308,7 @@ extern "C" int vscphelper_isLoggingEnabled(int level) noexcept
     return logger && logger->should_log(static_cast<spdlog::level::level_enum>(level));
 }
 
-extern "C" void vscphelper_logMessage(int level, const char* message, size_t length) noexcept
+extern "C" void vscphelper_shared_logMessage(int level, const char* message, size_t length) noexcept
 {
     if (!validLevel(level) || level == VSCP_HELPER_LOG_LEVEL_OFF || !message) {
         reportError("Invalid logging message or level");
@@ -297,7 +329,83 @@ extern "C" void vscphelper_logMessage(int level, const char* message, size_t len
     }
 }
 
-extern "C" void vscphelper_reportLoggingFailure(const char* message) noexcept
+extern "C" void vscphelper_shared_reportLoggingFailure(const char* message) noexcept
 {
     reportError(message);
+}
+
+extern "C" void vscphelper_shared_logFunctionEntry(const char* component, const char* function) noexcept
+{
+    if (!debugEnabled.load(std::memory_order_acquire)) {
+        return;
+    }
+    SavedErrorState saved;
+    if (!component || !function) {
+        reportError("Invalid function-entry diagnostic");
+        return;
+    }
+    try {
+        auto logger = getLogger();
+        if (logger && logger->should_log(spdlog::level::debug)) {
+            logger->debug("VSCP {}: {}: entered", component, function);
+        }
+    }
+    catch (const std::exception& error) {
+        reportError(error.what());
+    }
+    catch (...) {
+        reportError("Unknown exception while logging a function entry");
+    }
+}
+
+extern "C" void
+vscphelper_shared_logFunctionStatus(const char* component, const char* function, int status) noexcept
+{
+    if (!debugEnabled.load(std::memory_order_acquire)) {
+        return;
+    }
+    SavedErrorState saved;
+    if (!component || !function) {
+        reportError("Invalid function-status diagnostic");
+        return;
+    }
+    try {
+        auto logger = getLogger();
+        if (logger && logger->should_log(spdlog::level::debug)) {
+            logger->debug("VSCP {}: {} returned {}", component, function, status);
+        }
+    }
+    catch (const std::exception& error) {
+        reportError(error.what());
+    }
+    catch (...) {
+        reportError("Unknown exception while logging a function status");
+    }
+}
+
+extern "C" void
+vscphelper_shared_logFunctionFailure(const char* component, const char* function, int errorCode) noexcept
+{
+    SavedErrorState saved;
+    if (!component || !function) {
+        reportError("Invalid function-failure diagnostic");
+        return;
+    }
+    try {
+        auto logger = getLogger();
+        if (logger && logger->should_log(spdlog::level::err)) {
+            if (errorCode) {
+                logger->error("VSCP {}: {} failed (error {})", component, function, errorCode);
+            }
+            else {
+                logger->error("VSCP {}: {} failed", component, function);
+            }
+        }
+    }
+    catch (const std::exception& error) {
+        reportError(error.what());
+    }
+    catch (...) {
+        reportError("Unknown exception while logging a function failure");
+    }
 }

@@ -70,6 +70,8 @@ set(TEST_COMMANDS
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscphelper/unittest_vscphelper
     COMMAND $<TARGET_FILE:unittest_core_logging>
     COMMAND $<TARGET_FILE:logging_core_c_host>
+    COMMAND $<TARGET_FILE:unittest_util_logging>
+    COMMAND $<TARGET_FILE:logging_header_standalone>
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}/mdfparser ${CMAKE_CURRENT_BINARY_DIR}/mdfparser/unittest_mdfparser
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tcpiptls/unittest_tcpiptls
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tcpiptls/run_transport_tests.py
@@ -82,7 +84,7 @@ set(TEST_COMMANDS
 )
 set(TEST_DEPENDS
     test_fetchcontent check_tables_remote_class unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
-    unittest_core_logging logging_core_c_host
+    unittest_core_logging logging_core_c_host unittest_util_logging logging_header_standalone
     unittest_tcpiptls unittest_tcp_transport unittest_vscp_client_base unittest_vscp_client_canal
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
     unittest_vscp_client_tcp

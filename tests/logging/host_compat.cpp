@@ -42,7 +42,7 @@ int main()
         std::ifstream stream(path);
         const std::string output{std::istreambuf_iterator<char>(stream), {}};
         host->info("host message");
-        success = output.find("VSCP helper: Parse error") != std::string::npos && success;
+        success = output.find("VSCP helper: vscp_convertJSONToEventEx failed") != std::string::npos && success;
         success = output.find("host message") == std::string::npos && success;
         success = hostOutput.str().find("host message") != std::string::npos && success;
         success = spdlog::default_logger() == host && spdlog::get("vscp-helper") == nullptr && success;

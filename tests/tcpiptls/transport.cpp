@@ -1,11 +1,16 @@
 #include <gtest/gtest.h>
 #include <vscpremotetcpif.h>
 #include <vscp-client-tcp.h>
+#include <vscphelperlogging.h>
 
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -203,6 +208,73 @@ TEST_F(TcpTransport, ReceiveLoopAndTimeout)
   auto elapsed = std::chrono::steady_clock::now() - start;
   ASSERT_GE(elapsed, std::chrono::milliseconds(90));
   ASSERT_LT(elapsed, std::chrono::milliseconds(350));
+}
+
+TEST_F(TcpTransport, ReceiveTimeoutIsDebugAndDoesNotExposeData)
+{
+  namespace fs = std::filesystem;
+  const fs::path directory = fs::temp_directory_path() /
+    ("vscp-tcp-logging-" + std::to_string(
+      std::chrono::steady_clock::now().time_since_epoch().count()));
+  ASSERT_TRUE(fs::create_directory(directory));
+  struct Cleanup {
+    fs::path directory;
+    ~Cleanup()
+    {
+      EXPECT_EQ(VSCP_ERROR_SUCCESS, vscphelper_disableLogging());
+      fs::remove_all(directory);
+    }
+  } cleanup{directory};
+  const std::string path = (directory / "tcp.log").string();
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscphelper_configureLogging(
+    VSCP_HELPER_LOG_LEVEL_OFF, VSCP_HELPER_LOG_LEVEL_DEBUG, path.c_str(), 16 * 1024 * 1024, 2));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS,
+            client.doCmdOpen(setting("VSCP_TEST_PLAIN"), "private-tcp-user", "private-tcp-password"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO empty\r\n"));
+  vscpEvent legacyEvent{};
+  vscpEventEx event{};
+  canalMsg canalEvent{};
+  EXPECT_EQ(VSCP_ERROR_ERROR, client.doCmdReceive(&legacyEvent));
+  EXPECT_EQ(VSCP_ERROR_ERROR, client.doCmdReceiveEx(&event));
+  EXPECT_EQ(VSCP_ERROR_GENERIC, client.doCmdReceiveLevel1(&canalEvent));
+  EXPECT_EQ(VSCP_ERROR_ERROR, client.doCommand(std::string("retr 1\r\n")));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdEnterReceiveLoop());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBlockingReceive(&event, 500));
+  ASSERT_EQ(VSCP_ERROR_TIMEOUT, client.doCmdBlockingReceive(&event, 100));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscphelper_flushLogging());
+
+  std::ifstream stream(path);
+  const std::string output{std::istreambuf_iterator<char>(stream), {}};
+  EXPECT_NE(std::string::npos,
+            output.find("[debug] VSCP TCP: doCmdBlockingReceive returned " + std::to_string(VSCP_ERROR_TIMEOUT)));
+  EXPECT_NE(std::string::npos, output.find("[debug] VSCP TCP: doCmdReceive: receive queue is empty"));
+  EXPECT_NE(std::string::npos, output.find("[debug] VSCP TCP: doCmdReceiveEx: receive queue is empty"));
+  EXPECT_NE(std::string::npos,
+            output.find("[debug] VSCP TCP: doCmdReceiveLevel1: receive queue is empty or timed out"));
+  EXPECT_EQ(std::string::npos, output.find("[error] VSCP TCP:"));
+  std::istringstream lines(output);
+  std::string line;
+  while (std::getline(lines, line)) {
+    if (line.find("error 32") != std::string::npos || line.find("error -32") != std::string::npos) {
+      EXPECT_EQ(std::string::npos, line.find("[error]")) << line;
+    }
+  }
+  EXPECT_EQ(std::string::npos, output.find("private-tcp-user"));
+  EXPECT_EQ(std::string::npos, output.find("private-tcp-password"));
+  EXPECT_EQ(std::string::npos, output.find("0,10,6,0,2026-10-07T00:00:00,0,-,1,2,3"));
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdQuitReceiveLoop());
+  EXPECT_EQ(VSCP_ERROR_ERROR, client.doCommand("OTHER\r\n"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscphelper_flushLogging());
+  std::ifstream otherStream(path);
+  const std::string otherOutput{std::istreambuf_iterator<char>(otherStream), {}};
+  EXPECT_NE(std::string::npos, otherOutput.find("[error] VSCP TCP: doCommand failed"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO reject-retr\r\n"));
+  EXPECT_EQ(VSCP_ERROR_ERROR, client.doCmdReceiveEx(&event));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, vscphelper_flushLogging());
+  std::ifstream rejectedStream(path);
+  const std::string rejectedOutput{std::istreambuf_iterator<char>(rejectedStream), {}};
+  EXPECT_NE(std::string::npos, rejectedOutput.find("[error] VSCP TCP: doCmdReceiveEx failed"));
 }
 
 TEST_F(TcpTransport, FragmentedErrorAndResponseTimeout)

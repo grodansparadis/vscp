@@ -67,6 +67,11 @@
 #include <vscp-class.h>
 #include <vscp-type.h>
 
+/* Standalone users may disable inline tracing if they do not link vscp_util. */
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+#include "vscphelperlogging.h"
+#endif
+
 // For windows
 #ifndef CAN_MTU
 #define CAN_MTU 8 // TODO
@@ -531,6 +536,12 @@ vscp_str_format(std::string fstr, ...);
 bool
 vscp_startsWith(const std::string &origstr, const std::string &searchstr, std::string *rest = NULL);
 
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+#define VSCP_HELPER_INLINE_DEBUG() vscphelper_logFunctionEntry("helper", __func__)
+#else
+#define VSCP_HELPER_INLINE_DEBUG() ((void) 0)
+#endif
+
 /*!
   @fn vscp_makeUpper
   String to upper case (in place)
@@ -540,6 +551,7 @@ vscp_startsWith(const std::string &origstr, const std::string &searchstr, std::s
 static inline void
 vscp_makeUpper(std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) -> unsigned char { return std::toupper(c); });
 }
 
@@ -552,6 +564,7 @@ vscp_makeUpper(std::string &s)
 static inline std::string
 vscp_makeUpper_copy(std::string s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_makeUpper(s);
   return s;
 }
@@ -565,6 +578,7 @@ vscp_makeUpper_copy(std::string s)
 static inline std::string
 vscp_upper(const std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   std::string newstr = s;
   vscp_makeUpper(newstr);
   return newstr;
@@ -578,6 +592,7 @@ vscp_upper(const std::string &s)
 static inline void
 vscp_makeLower(std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 }
 
@@ -590,6 +605,7 @@ vscp_makeLower(std::string &s)
 static inline std::string
 vscp_makeLower_copy(std::string s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_makeLower(s);
   return s;
 }
@@ -603,6 +619,7 @@ vscp_makeLower_copy(std::string s)
 static inline std::string
 vscp_lower(const std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   std::string newstr = s;
   vscp_makeLower(newstr);
   return newstr;
@@ -616,6 +633,7 @@ vscp_lower(const std::string &s)
 static inline void
 vscp_ltrim(std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
 }
 
@@ -627,6 +645,7 @@ vscp_ltrim(std::string &s)
 static inline void
 vscp_rtrim(std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
@@ -638,6 +657,7 @@ vscp_rtrim(std::string &s)
 static inline void
 vscp_trim(std::string &s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_ltrim(s);
   vscp_rtrim(s);
 }
@@ -651,6 +671,7 @@ vscp_trim(std::string &s)
 static inline std::string
 vscp_ltrim_copy(std::string s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_ltrim(s);
   return s;
 }
@@ -664,6 +685,7 @@ vscp_ltrim_copy(std::string s)
 static inline std::string
 vscp_rtrim_copy(std::string s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_rtrim(s);
   return s;
 }
@@ -677,6 +699,7 @@ vscp_rtrim_copy(std::string s)
 static inline std::string
 vscp_trim_copy(std::string s)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   vscp_trim(s);
   return s;
 }
@@ -691,6 +714,7 @@ vscp_trim_copy(std::string s)
 static inline void
 vscp_split(std::deque<std::string> &theStringVector, const std::string &theString, const std::string &theDelimiter)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   size_t start = 0, end = 0;
 
   std::string str = theString;
@@ -720,6 +744,7 @@ vscp_split(std::deque<std::string> &theStringVector, const std::string &theStrin
 static inline std::string
 vscp_str_left(const std::string &str, size_t length)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   if (0 == length)
     return std::string("");
   return str.substr(0, length);
@@ -735,6 +760,7 @@ vscp_str_left(const std::string &str, size_t length)
 static inline std::string
 vscp_str_right(const std::string &str, size_t length)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   if (0 == length)
     return std::string("");
   if (length > str.length())
@@ -753,6 +779,7 @@ vscp_str_right(const std::string &str, size_t length)
 static inline std::string
 vscp_str_before(const std::string &str, char c)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   size_t pos = str.find(c);
   if (str.npos == pos)
     return std::string();
@@ -771,6 +798,7 @@ vscp_str_before(const std::string &str, char c)
 static inline std::string
 vscp_str_after(const std::string &str, char c)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   size_t pos = str.find(c);
   if (str.npos == pos)
     return std::string();
@@ -801,6 +829,7 @@ vscp_safe_encode_str(const std::string &str);
 static inline bool
 vscp_isNumber(const std::string &strNumber)
 {
+  VSCP_HELPER_INLINE_DEBUG();
   std::string str = strNumber;
   vscp_trim(str);
   vscp_makeLower(str);
@@ -810,6 +839,8 @@ vscp_isNumber(const std::string &strNumber)
 
   return false;
 }
+
+#undef VSCP_HELPER_INLINE_DEBUG
 
 /*!
   @fn vscp_fileExists

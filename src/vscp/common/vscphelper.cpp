@@ -32,6 +32,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -41,6 +42,10 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+namespace {
+void helperLogEntry(const char *function) noexcept;
+}
 
 #ifdef _WIN32
 #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -59,6 +64,7 @@
 static inline int
 clock_gettime(int, struct timespec *ts)
 {
+  helperLogEntry(__func__);
   __int64 wintime;
   GetSystemTimeAsFileTime((FILETIME *) &wintime);
   wintime -= 116444736000000000LL; // 1601 to 1970 epoch
@@ -150,11 +156,103 @@ clock_gettime(int, struct timespec *ts)
 
 using namespace std;
 
+namespace {
+
+void
+helperLogEntry(const char *function) noexcept
+{
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+  vscphelper_logFunctionEntry("helper", function);
+#else
+  (void) function;
+#endif
+}
+
+void
+helperLogFailure(const char *function, int error = 0) noexcept
+{
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+  vscphelper_logFunctionFailure("helper", function, error);
+#else
+  int savedError = errno;
+#ifdef _WIN32
+  DWORD savedWindowsError = GetLastError();
+  int savedSocketError = WSAGetLastError();
+#endif
+  if (error) {
+    fprintf(stderr, "VSCP helper: %s failed (error %d)\n", function, error);
+  }
+  else {
+    fprintf(stderr, "VSCP helper: %s failed\n", function);
+  }
+#ifdef _WIN32
+  WSASetLastError(savedSocketError);
+  SetLastError(savedWindowsError);
+#endif
+  errno = savedError;
+#endif
+}
+
+bool
+helperLogBoolResult(const char *function, bool result) noexcept
+{
+  if (!result) {
+    helperLogFailure(function);
+  }
+  return result;
+}
+
+int
+helperLogStatusResult(const char *function, int result) noexcept
+{
+  if (result != VSCP_ERROR_SUCCESS) {
+    helperLogFailure(function, result);
+  }
+  return result;
+}
+
+int
+helperLogNegativeResult(const char *function, int result) noexcept
+{
+  if (result < 0) {
+    helperLogFailure(function, result);
+  }
+  return result;
+}
+
+size_t
+helperLogSizeResult(const char *function, size_t result) noexcept
+{
+  if (!result) {
+    helperLogFailure(function);
+  }
+  return result;
+}
+
+int
+helperLogWaitResult(const char *function, int result, int error) noexcept
+{
+  if (result) {
+    if (error == ETIMEDOUT) {
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+      vscphelper_logFunctionStatus("helper", function, error);
+#endif
+    }
+    else {
+      helperLogFailure(function, error);
+    }
+  }
+  return result;
+}
+
+} // namespace
+
 static std::atomic<bool> g_vscp_use_openssl_frame_crypto(false);
 
 static const EVP_CIPHER *
 vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
 {
+  helperLogEntry(__func__);
   switch (algorithm) {
 
     case VSCP_ENCRYPTION_AES128:
@@ -167,6 +265,7 @@ vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
       return EVP_aes_256_cbc();
 
     default:
+      helperLogFailure(__func__);
       return nullptr;
   }
 }
@@ -174,9 +273,10 @@ vscp_getOpenSslCipherFromAlgorithm(uint8_t algorithm)
 static bool
 vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 {
+  helperLogEntry(__func__);
   constexpr size_t block_size = 16;
   if ((nullptr == input) || (len > SIZE_MAX - block_size)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   const uint8_t padlen = (uint8_t) (block_size - (len % block_size));
@@ -191,19 +291,20 @@ vscp_pkcs7Pad(const uint8_t *input, size_t len, std::vector<uint8_t> &padded)
 static bool
 vscp_pkcs7Unpad(uint8_t *plaintext, size_t &len)
 {
+  helperLogEntry(__func__);
   constexpr size_t block_size = 16;
   if ((nullptr == plaintext) || !len || (len % block_size)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   const uint8_t padlen = plaintext[len - 1];
   if (!padlen || (padlen > block_size) || (padlen > len)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   for (size_t i = len - padlen; i < len; ++i) {
     if (plaintext[i] != padlen) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
 
@@ -217,23 +318,26 @@ vscp_pkcs7Unpad(uint8_t *plaintext, size_t &len)
 static bool
 vscp_validFrameCrc(const uint8_t *frame, size_t len)
 {
+  helperLogEntry(__func__);
   if (len < 5 || len - 3 > INT_MAX) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   const uint16_t expected = ((uint16_t) frame[len - 2] << 8) | frame[len - 1];
-  return crcSlow(frame + 1, (int) (len - 3)) == expected;
+  return helperLogBoolResult(__func__, crcSlow(frame + 1, (int) (len - 3)) == expected);
 }
 
 static bool
 vscp_validateDecryptedFrame(uint8_t *frame, size_t len)
 {
+  helperLogEntry(__func__);
   size_t payload_len = len - 1;
-  return vscp_pkcs7Unpad(frame + 1, payload_len) && vscp_validFrameCrc(frame, payload_len + 1);
+  return helperLogBoolResult(__func__, vscp_pkcs7Unpad(frame + 1, payload_len) && vscp_validFrameCrc(frame, payload_len + 1));
 }
 
 static uint8_t
 vscp_resolveFrameCryptoAlgorithm(uint8_t algorithm, const uint8_t *input)
 {
+  helperLogEntry(__func__);
   if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == (algorithm & 0x0f)) {
     return input[0] & 0x0f;
   }
@@ -244,8 +348,9 @@ vscp_resolveFrameCryptoAlgorithm(uint8_t algorithm, const uint8_t *input)
 static bool
 vscp_getEncryptionIv(uint8_t *target, const uint8_t *iv)
 {
+  helperLogEntry(__func__);
   if (nullptr == iv) {
-    return (16 == getRandomIV(target, 16));
+    return helperLogBoolResult(__func__, (16 == getRandomIV(target, 16)));
   }
 
   memcpy(target, iv, 16);
@@ -259,24 +364,25 @@ vscp_validateEvpArgs(const EVP_CIPHER *pcipher,
                      const uint8_t *key,
                      const uint8_t *iv)
 {
+  helperLogEntry(__func__);
   if (nullptr == pcipher) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == output) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == input) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == key) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == iv) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -290,40 +396,41 @@ vscp_evpEncryptBuffer(const EVP_CIPHER *pcipher,
                       const uint8_t *key,
                       const uint8_t *iv)
 {
+  helperLogEntry(__func__);
   if (!vscp_validateEvpArgs(pcipher, output, input, key, iv)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
   if (nullptr == ctx) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int outlen1 = 0;
   int outlen2 = 0;
   if (!EVP_EncryptInit_ex(ctx, pcipher, nullptr, key, iv)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_CIPHER_CTX_set_padding(ctx, 0)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_EncryptUpdate(ctx, output, &outlen1, input, (int) len)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_EncryptFinal_ex(ctx, output + outlen1, &outlen2)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   EVP_CIPHER_CTX_free(ctx);
 
-  return (((size_t) outlen1 + (size_t) outlen2) == len);
+  return helperLogBoolResult(__func__, (((size_t) outlen1 + (size_t) outlen2) == len));
 }
 
 static bool
@@ -334,40 +441,41 @@ vscp_evpDecryptBuffer(const EVP_CIPHER *pcipher,
                       const uint8_t *key,
                       const uint8_t *iv)
 {
+  helperLogEntry(__func__);
   if (!vscp_validateEvpArgs(pcipher, output, input, key, iv)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
   if (nullptr == ctx) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int outlen1 = 0;
   int outlen2 = 0;
   if (!EVP_DecryptInit_ex(ctx, pcipher, nullptr, key, iv)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_CIPHER_CTX_set_padding(ctx, 0)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_DecryptUpdate(ctx, output, &outlen1, input, (int) len)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!EVP_DecryptFinal_ex(ctx, output + outlen1, &outlen2)) {
     EVP_CIPHER_CTX_free(ctx);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   EVP_CIPHER_CTX_free(ctx);
 
-  return (0 == outlen2) && (((size_t) outlen1) == len);
+  return helperLogBoolResult(__func__, (0 == outlen2) && (((size_t) outlen1) == len));
 }
 
 static size_t
@@ -378,10 +486,11 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
                          const uint8_t *iv,
                          uint8_t nAlgorithm)
 {
+  helperLogEntry(__func__);
   uint8_t generated_iv[16];
 
   if (nullptr == output || nullptr == input || !len) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
@@ -394,12 +503,12 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
 
   const EVP_CIPHER *pcipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
   if (nullptr == pcipher || nullptr == key) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   std::vector<uint8_t> plaintext;
   if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   size_t padlen = plaintext.size();
 
@@ -407,11 +516,11 @@ vscp_encryptFrameOpenSSL(uint8_t *output,
   output[0] = (input[0] & 0xf0) | nAlgorithm;
 
   if (!vscp_getEncryptionIv(generated_iv, iv)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   if (!vscp_evpEncryptBuffer(pcipher, output + 1, plaintext.data(), padlen, key, generated_iv)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   // Append iv
@@ -429,29 +538,30 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
                          const uint8_t *iv,
                          uint8_t nAlgorithm)
 {
+  helperLogEntry(__func__);
   uint8_t appended_iv[16];
   size_t real_len = len;
 
   if (nullptr == output || nullptr == input || !len) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
   if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
     if (!vscp_validFrameCrc(input, len)) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memmove(output, input, len);
     return true;
   }
   if (nullptr == key) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // If iv is not given it should be fetched from the end of input
   if (nullptr == iv) {
     if (len < 1 + 16 + 16) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(appended_iv, (input + len - 16), 16);
     real_len -= 16;
@@ -461,7 +571,7 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
   }
 
   if ((real_len < 1 + 16) || ((real_len - 1) % 16)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Preserve packet type which always is un-encrypted
@@ -469,14 +579,14 @@ vscp_decryptFrameOpenSSL(uint8_t *output,
 
   const EVP_CIPHER *pcipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
   if (nullptr == pcipher) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_evpDecryptBuffer(pcipher, output + 1, input + 1, real_len - 1, key, appended_iv)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
-  return vscp_validateDecryptedFrame(output, real_len);
+  return helperLogBoolResult(__func__, vscp_validateDecryptedFrame(output, real_len));
 }
 
 // https://github.com/nlohmann/json
@@ -493,6 +603,7 @@ using json = nlohmann::json;
 int
 vscp_is64Bit()
 {
+  helperLogEntry(__func__);
 #ifdef ENVIRONMENT64
   return -1;
 #else
@@ -507,6 +618,7 @@ vscp_is64Bit()
 int
 vscp_is32Bit()
 {
+  helperLogEntry(__func__);
 #ifdef ENVIRONMENT32
   return -1;
 #else
@@ -521,6 +633,7 @@ vscp_is32Bit()
 int
 vscp_isLittleEndian(void)
 {
+  helperLogEntry(__func__);
   int x = 1;
   return (*(char *) &x);
 }
@@ -533,6 +646,7 @@ vscp_isLittleEndian(void)
 int
 vscp_isBigEndian(void)
 {
+  helperLogEntry(__func__);
   return ~vscp_isLittleEndian();
 }
 
@@ -545,6 +659,7 @@ vscp_isBigEndian(void)
 void
 vscp_mem_usage(double &vm_usage, double &resident_set)
 {
+  helperLogEntry(__func__);
   vm_usage     = 0.0;
   resident_set = 0.0;
 
@@ -575,6 +690,7 @@ vscp_mem_usage(double &vm_usage, double &resident_set)
 int
 vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
 {
+  helperLogEntry(__func__);
   int rv;
 
   DWORD dwrv = WaitForSingleObject(*phHandle, waitms);
@@ -587,14 +703,16 @@ vscp_sem_wait(HANDLE *phHandle, uint32_t waitms)
   else {
     rv = -1;
   }
-  return rv;
+  return helperLogWaitResult(__func__, rv, rv == ETIMEDOUT ? ETIMEDOUT : (rv ? static_cast<int>(GetLastError()) : 0));
 }
 #else
 int
 vscp_sem_wait(sem_t *sem, uint32_t waitms)
 {
+  helperLogEntry(__func__);
   // Wait time must be less than four seconds
   if (waitms >= 4000) {
+    helperLogFailure(__func__, VSCP_ERROR_PARAMETER);
     return -1;
   }
 
@@ -604,6 +722,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
   struct timespec ts;
 
   if (-1 == clock_gettime(CLOCK_REALTIME, &ts)) {
+    helperLogFailure(__func__, errno);
     return -1;
   }
 
@@ -611,13 +730,14 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
   ts.tv_sec += (ns / 1000000000);
   ts.tv_nsec = ns % 1000000000;
 
-  return sem_timedwait(sem, &ts);
+  int result = sem_timedwait(sem, &ts);
+  return helperLogWaitResult(__func__, result, result ? errno : 0);
 #elif defined(__APPLE__)
   // macOS does not support unnamed POSIX semaphores (sem_init returns ENOSYS).
   // Since the semaphore is non-functional, just sleep for the timeout period.
   usleep(waitms * 1000);
   errno = ETIMEDOUT;
-  return -1;
+  return helperLogWaitResult(__func__, -1, ETIMEDOUT);
 #else
   // Portable version using sem_trywait with polling (BSD, other Unix)
   uint32_t elapsed        = 0;
@@ -629,6 +749,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
     }
 
     if (errno != EAGAIN) {
+      helperLogFailure(__func__, errno);
       return -1; // Real error
     }
 
@@ -637,7 +758,7 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
   }
 
   errno = ETIMEDOUT;
-  return -1; // Timeout
+  return helperLogWaitResult(__func__, -1, ETIMEDOUT); // Timeout
 #endif
 }
 #endif
@@ -650,16 +771,20 @@ vscp_sem_wait(sem_t *sem, uint32_t waitms)
 int
 vscp_sem_post(HANDLE *phHandle)
 {
-  ReleaseSemaphore(*phHandle, // handle to semaphore
-                   1,         // increase count by one
-                   NULL);
+  helperLogEntry(__func__);
+  if (!ReleaseSemaphore(*phHandle, 1, NULL)) {
+    helperLogFailure(__func__, static_cast<int>(GetLastError()));
+  }
   return 0;
 }
 #else
 int
 vscp_sem_post(sem_t *sem)
 {
-  sem_post(sem);
+  helperLogEntry(__func__);
+  if (sem_post(sem) != 0) {
+    helperLogFailure(__func__, errno);
+  }
   return 0;
 }
 #endif
@@ -668,15 +793,25 @@ vscp_sem_post(sem_t *sem)
 static void
 vscp_usleep(__int64 usec)
 {
+  helperLogEntry(__func__);
   HANDLE timer;
   LARGE_INTEGER ft;
 
   ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
 
   timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
-  SetWaitableTimer(timer, &ft, 0, nullptr, nullptr, 0);
-  WaitForSingleObject(timer, INFINITE);
-  CloseHandle(timer);
+  if (!timer) {
+    helperLogFailure(__func__, static_cast<int>(GetLastError()));
+  }
+  if (!SetWaitableTimer(timer, &ft, 0, nullptr, nullptr, 0)) {
+    helperLogFailure(__func__, static_cast<int>(GetLastError()));
+  }
+  if (WaitForSingleObject(timer, INFINITE) == WAIT_FAILED) {
+    helperLogFailure(__func__, static_cast<int>(GetLastError()));
+  }
+  if (!CloseHandle(timer)) {
+    helperLogFailure(__func__, static_cast<int>(GetLastError()));
+  }
 }
 #endif
 
@@ -687,6 +822,7 @@ vscp_usleep(__int64 usec)
 bool
 vscp_almostEqualRelativeFloat(float A, float B, float maxRelDiff)
 {
+  helperLogEntry(__func__);
   // Calculate the difference.
   float diff = fabs(A - B);
   A          = fabs(A);
@@ -706,11 +842,12 @@ union Float_t {
   Float_t(float num = 0.0f)
     : f(num)
   {
+    helperLogEntry(__func__);
   }
   // Portable extraction of components.
-  bool Negative() const { return i < 0; }
-  int32_t RawMantissa() const { return i & ((1 << 23) - 1); }
-  int32_t RawExponent() const { return (i >> 23) & 0xFF; }
+  bool Negative() const { helperLogEntry(__func__); return i < 0; }
+  int32_t RawMantissa() const { helperLogEntry(__func__); return i & ((1 << 23) - 1); }
+  int32_t RawExponent() const { helperLogEntry(__func__); return (i >> 23) & 0xFF; }
 
   int32_t i;
   float f;
@@ -730,6 +867,7 @@ union Float_t {
 bool
 vscp_almostEqualUlpsAndAbsFloat(float A, float B, float maxDiff, int maxUlpsDiff)
 {
+  helperLogEntry(__func__);
   // Check if the numbers are really close -- needed
   // when comparing numbers near zero.
   float absDiff = fabs(A - B);
@@ -761,6 +899,7 @@ vscp_almostEqualUlpsAndAbsFloat(float A, float B, float maxDiff, int maxUlpsDiff
 bool
 vscp_almostEqualRelativeAndAbsFloat(float A, float B, float maxDiff, float maxRelDiff)
 {
+  helperLogEntry(__func__);
   // Check if the numbers are really close -- needed
   // when comparing numbers near zero.
   float diff = fabs(A - B);
@@ -786,6 +925,7 @@ vscp_almostEqualRelativeAndAbsFloat(float A, float B, float maxDiff, float maxRe
 bool
 vscp_almostEqualRelativeDouble(double A, double B, double maxRelDiff)
 {
+  helperLogEntry(__func__);
   // Calculate the difference.
   double diff = fabs(A - B);
   A           = fabs(A);
@@ -808,6 +948,7 @@ vscp_almostEqualRelativeDouble(double A, double B, double maxRelDiff)
 int
 vscp_lowercase(const char *s)
 {
+  helperLogEntry(__func__);
   return tolower(*(const unsigned char *) s);
 }
 
@@ -818,6 +959,7 @@ vscp_lowercase(const char *s)
 int
 vscp_strcasecmp(const char *s1, const char *s2)
 {
+  helperLogEntry(__func__);
   int diff = 0;
 
   do {
@@ -834,6 +976,7 @@ vscp_strcasecmp(const char *s1, const char *s2)
 int
 vscp_strncasecmp(const char *s1, const char *s2, size_t len)
 {
+  helperLogEntry(__func__);
   int diff = 0;
 
   if (len > 0) {
@@ -854,6 +997,7 @@ vscp_strncasecmp(const char *s1, const char *s2, size_t len)
 void
 vscp_strlcpy(char *dst, const char *src, size_t n)
 {
+  helperLogEntry(__func__);
   for (; *src != '\0' && n > 1; n--) {
     *dst++ = *src++;
   }
@@ -868,10 +1012,14 @@ vscp_strlcpy(char *dst, const char *src, size_t n)
 char *
 vscp_strndup(const char *ptr, size_t len)
 {
+  helperLogEntry(__func__);
   char *p;
 
   if ((p = (char *) malloc(len + 1)) != nullptr) {
     vscp_strlcpy(p, ptr, len + 1);
+  }
+  else {
+    helperLogFailure(__func__);
   }
 
   return p;
@@ -884,6 +1032,7 @@ vscp_strndup(const char *ptr, size_t len)
 char *
 vscp_strdup(const char *str)
 {
+  helperLogEntry(__func__);
   return vscp_strndup(str, strlen(str));
 }
 
@@ -894,6 +1043,7 @@ vscp_strdup(const char *str)
 const char *
 vscp_strcasestr(const char *big_str, const char *small_str)
 {
+  helperLogEntry(__func__);
   size_t i, big_len = strlen(big_str), small_len = strlen(small_str);
 
   if (big_len >= small_len) {
@@ -916,6 +1066,7 @@ vscp_strcasestr(const char *big_str, const char *small_str)
 char *
 vscp_stristr(char *str1, const char *str2)
 {
+  helperLogEntry(__func__);
   char *p1       = str1;
   const char *p2 = str2;
   char *r        = *p2 == 0 ? str1 : 0;
@@ -952,6 +1103,7 @@ vscp_stristr(char *str1, const char *str2)
 char *
 vscp_trimWhiteSpace(char *str)
 {
+  helperLogEntry(__func__);
   char *end;
 
   // Trim leading space
@@ -982,7 +1134,9 @@ vscp_trimWhiteSpace(char *str)
 char *
 vscp_reverse(const char *const s)
 {
+  helperLogEntry(__func__);
   if (nullptr == s) {
+    helperLogFailure(__func__);
     return nullptr;
   }
 
@@ -1004,6 +1158,7 @@ vscp_reverse(const char *const s)
 char *
 vscp_rstrstr(const char *s1, const char *s2)
 {
+  helperLogEntry(__func__);
   size_t s1len = strlen(s1);
   size_t s2len = strlen(s2);
   char *s;
@@ -1028,6 +1183,7 @@ vscp_rstrstr(const char *s1, const char *s2)
 std::string
 vscp_str_format(std::string fstr, ...)
 {
+  helperLogEntry(__func__);
   int final_n, n = ((int) fstr.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
   std::unique_ptr<char[]> formatted;
   va_list ap;
@@ -1037,6 +1193,9 @@ vscp_str_format(std::string fstr, ...)
     va_start(ap, fstr);
     final_n = vsnprintf(&formatted[0], n, fstr.c_str(), ap);
     va_end(ap);
+    if (final_n < 0) {
+      helperLogFailure(__func__, errno);
+    }
     if (final_n < 0 || final_n >= n) {
       n += abs(final_n - n + 1);
     }
@@ -1055,6 +1214,7 @@ vscp_str_format(std::string fstr, ...)
 bool
 vscp_startsWith(const std::string &origstr, const std::string &searchstr, std::string *rest)
 {
+  helperLogEntry(__func__);
   if (0 != origstr.find(searchstr)) {
     if (nullptr != rest) {
       *rest = origstr;
@@ -1076,6 +1236,7 @@ vscp_startsWith(const std::string &origstr, const std::string &searchstr, std::s
 int
 vscp_dirExists(const char *const path)
 {
+  helperLogEntry(__func__);
   struct stat info;
 
   int statRC = stat(path, &info);
@@ -1086,6 +1247,7 @@ vscp_dirExists(const char *const path)
     if (errno == ENOTDIR) {
       return 0;
     } // something in path prefix is not a dir
+    helperLogFailure(__func__, errno);
     return -1;
   }
 
@@ -1099,13 +1261,14 @@ vscp_dirExists(const char *const path)
 bool
 vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == buf) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == t) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
 #if !defined(REENTRANT_TIME)
@@ -1142,13 +1305,14 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
 bool
 vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == buf) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == t) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
 #ifdef WIN32
@@ -1168,18 +1332,19 @@ vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t)
 bool
 vscp_parseISOCombined(struct tm *ptm, std::string &dt)
 {
+  helperLogEntry(__func__);
   size_t pos;
   std::string isodt = dt.c_str();
 
   // If date is nilled no date/time to parse
   vscp_trim(dt);
   if (!dt.length()) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Check pointer
   if (nullptr == ptm) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   try {
@@ -1212,7 +1377,7 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
     ptm->tm_sec = stoi(isodt.c_str(), &pos);
   }
   catch (...) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -1229,6 +1394,7 @@ vscp_parseISOCombined(struct tm *ptm, std::string &dt)
 static int64_t
 days_from_civil(int year, int month, int day)
 {
+  helperLogEntry(__func__);
   year -= (month <= 2);
   int era      = (year >= 0 ? year : year - 399) / 400;
   unsigned yoe = (unsigned) (year - era * 400);                            // [0, 399]
@@ -1240,6 +1406,7 @@ days_from_civil(int year, int month, int day)
 int64_t
 to_unix_ns_embedded(int year, int month, int day, int hour, int minute, int second, uint32_t timestamp)
 {
+  helperLogEntry(__func__);
   int64_t days = days_from_civil(year, month, day);
   int64_t sec  = days * SECS_PER_DAY + hour * 3600LL + minute * 60LL + second;
 
@@ -1249,6 +1416,7 @@ to_unix_ns_embedded(int year, int month, int day, int hour, int minute, int seco
 int64_t
 vscp_to_unix_ns(int year, int month, int day, int hour, int minute, int second, uint32_t timestamp)
 {
+  helperLogEntry(__func__);
   // Convert date to days since epoch
   int64_t days = days_from_civil(year, month, day);
 
@@ -1266,6 +1434,7 @@ vscp_to_unix_ns(int year, int month, int day, int hour, int minute, int second, 
 static void
 civil_from_days(int64_t z, int *y, int *m, int *d)
 {
+  helperLogEntry(__func__);
   // z = days since 1970-01-01
   z += 719468; // shift to civil 0000-03-01 base
 
@@ -1293,6 +1462,7 @@ vscp_from_unix_ns(int *year,
                   uint32_t *timestamp,
                   int64_t unix_ns)
 {
+  helperLogEntry(__func__);
   // --- Split seconds and nanoseconds safely ---
   int64_t sec  = unix_ns / NS_PER_SEC;
   int64_t nsec = unix_ns % NS_PER_SEC;
@@ -1331,6 +1501,7 @@ vscp_from_unix_ns(int *year,
 std::string
 vscp_safe_encode_str(const std::string &str)
 {
+  helperLogEntry(__func__);
   std::string retstr = "";
 
   for (auto it = str.cbegin(); it != str.cend(); ++it) {
@@ -1361,6 +1532,7 @@ vscp_safe_encode_str(const std::string &str)
 bool
 vscp_XML_Escape(char * /*dst*/, size_t /*dst_len*/, const char * /*src*/)
 {
+  helperLogEntry(__func__);
   /*const char escapeCharTbl[6]      = { '&', '\'', '\"', '>', '<', '\0' };
   const char *const escapeSeqTbl[] = {
       "&amp;", "&apos;", "&quot;", "&gt;", "&lt;",
@@ -1413,6 +1585,7 @@ vscp_XML_Escape(char * /*dst*/, size_t /*dst_len*/, const char * /*src*/)
 bool
 vscp_base64_std_decode(std::string &str)
 {
+  helperLogEntry(__func__);
   size_t dest_len   = 0;
   size_t bufferSize = 2 * str.length();
   if (0 == str.length()) {
@@ -1421,7 +1594,7 @@ vscp_base64_std_decode(std::string &str)
 
   char *pbuf = new char[bufferSize];
   if (nullptr == pbuf) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   memset(pbuf, 0, bufferSize);
 
@@ -1439,11 +1612,12 @@ vscp_base64_std_decode(std::string &str)
 bool
 vscp_base64_std_encode(std::string &str)
 {
+  helperLogEntry(__func__);
   size_t bufferSize = 2 * strlen((const char *) str.c_str());
   char *pbuf        = new char[bufferSize];
 
   if (nullptr == pbuf) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   memset(pbuf, 0, bufferSize);
@@ -1465,6 +1639,7 @@ vscp_base64_std_encode(std::string &str)
 bool
 vscp_std_decodeBase64IfNeeded(const std::string &str, std::string &strResult)
 {
+  helperLogEntry(__func__);
   // If BASE64 encoded then decode
   strResult = str;
   vscp_trim(strResult);
@@ -1492,7 +1667,12 @@ vscp_std_decodeBase64IfNeeded(const std::string &str, std::string &strResult)
 std::string
 vscp_convertToBase64(std::string str)
 {
-  return (vscp_base64_std_encode(str) ? str : std::string(""));
+  helperLogEntry(__func__);
+  if (!vscp_base64_std_encode(str)) {
+    helperLogFailure(__func__);
+    return std::string("");
+  }
+  return str;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1502,6 +1682,7 @@ vscp_convertToBase64(std::string str)
 static int
 isbyte(int n)
 {
+  helperLogEntry(__func__);
   return (n >= 0) && (n <= 255);
 }
 
@@ -1512,12 +1693,13 @@ isbyte(int n)
 int
 vscp_hostname_to_ip(char *ip, const char *hostname)
 {
+  helperLogEntry(__func__);
   struct hostent *he;
   struct in_addr **addr_list;
 
   if (nullptr == (he = gethostbyname(hostname))) {
     // get the host info
-    return VSCP_ERROR_ERROR;
+    return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
   }
 
   addr_list = (struct in_addr **) he->h_addr_list;
@@ -1528,7 +1710,7 @@ vscp_hostname_to_ip(char *ip, const char *hostname)
     return VSCP_ERROR_SUCCESS;
   }
 
-  return VSCP_ERROR_ERROR;
+  return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1538,6 +1720,7 @@ vscp_hostname_to_ip(char *ip, const char *hostname)
 int
 vscp_getPortFromInterface(const std::string &iface)
 {
+  helperLogEntry(__func__);
   int port = 0;
   size_t pos;
   std::string str = iface;
@@ -1559,6 +1742,7 @@ vscp_getPortFromInterface(const std::string &iface)
 int
 vscp_parse_ipv4_addr(const char *addr, uint32_t *net, uint32_t *mask)
 {
+  helperLogEntry(__func__);
   int n, a, b, c, d, slash = 32, len = 0;
 
   if (((5 == sscanf(addr, "%d.%d.%d.%d/%d%n", &a, &b, &c, &d, &slash, &n)) ||
@@ -1570,6 +1754,9 @@ vscp_parse_ipv4_addr(const char *addr, uint32_t *net, uint32_t *mask)
     *mask = slash ? (0xffffffffU << (32 - slash)) : 0;
   }
 
+  if (!len) {
+    helperLogFailure(__func__);
+  }
   return len;
 }
 
@@ -1580,6 +1767,7 @@ vscp_parse_ipv4_addr(const char *addr, uint32_t *net, uint32_t *mask)
 int
 vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
 {
+  helperLogEntry(__func__);
   int n;
   unsigned int a, b, c, d, slash;
 
@@ -1675,6 +1863,7 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
   }
 
   /* malformed */
+  helperLogFailure(__func__);
   return -1;
 }
 
@@ -1685,19 +1874,23 @@ vscp_parse_match_net(const char *addr, const union usa *sa, int no_strict)
 uint8_t
 vscp_getMeasurementDataCoding(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   uint8_t datacoding_byte = -1;
 
   // Check pointers
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return -1;
   }
 
   if (nullptr == pev->pdata) {
+    helperLogFailure(__func__);
     return -1;
   }
 
   // Check datasize
   if (pev->sizeData < 1) {
+    helperLogFailure(__func__);
     return -1;
   }
 
@@ -1726,14 +1919,17 @@ vscp_getMeasurementDataCoding(const vscpEvent *pev)
 uint64_t
 vscp_getDataCodingBitArray(const uint8_t *pCode, const uint8_t length)
 {
+  helperLogEntry(__func__);
   uint64_t bitArray = 0;
 
   // Check pointer
   if (nullptr == pCode) {
+    helperLogFailure(__func__);
     return 0;
   }
 
   if ((length > 7) || (length <= 1)) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -1752,14 +1948,17 @@ vscp_getDataCodingBitArray(const uint8_t *pCode, const uint8_t length)
 int64_t
 vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length)
 {
+  helperLogEntry(__func__);
   int64_t value64 = 0;
 
   // Check pointer
   if (nullptr == pCode) {
+    helperLogFailure(__func__);
     return 0;
   }
 
   if (length < 2) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -1785,6 +1984,7 @@ vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length)
 double
 vscp_getDataCodingNormalizedInteger(const uint8_t *pCode, uint8_t length)
 {
+  helperLogEntry(__func__);
   uint8_t valarray[8];
   uint8_t normbyte;
   uint8_t decibyte;
@@ -1796,11 +1996,13 @@ vscp_getDataCodingNormalizedInteger(const uint8_t *pCode, uint8_t length)
 
   // Check pointer
   if (nullptr == pCode) {
+    helperLogFailure(__func__);
     return 0;
   }
 
   // Check character count
   if ((length > 8) || (length < 2)) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -1900,6 +2102,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t *pCode, uint8_t length)
 std::string &
 vscp_getDataCodingString(const unsigned char *pCode, unsigned char length)
 {
+  helperLogEntry(__func__);
 
   static std::string str;
   char buf[20];
@@ -1910,6 +2113,9 @@ vscp_getDataCodingString(const unsigned char *pCode, unsigned char length)
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pCode + 1, length - 1);
     str = std::string(buf);
+  }
+  else {
+    helperLogFailure(__func__);
   }
 
   return str;
@@ -1922,11 +2128,12 @@ vscp_getDataCodingString(const unsigned char *pCode, unsigned char length)
 bool
 vscp_getDataCodingString(std::string &strResult, const unsigned char *pCode, unsigned char dataSize)
 {
+  helperLogEntry(__func__);
   char buf[20];
 
   // Check pointer
   if (nullptr == pCode) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   strResult.clear();
@@ -1947,11 +2154,13 @@ vscp_getDataCodingString(std::string &strResult, const unsigned char *pCode, uns
 float
 vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
 {
+  helperLogEntry(__func__);
   float *pfloat = nullptr;
   float value   = 0.0f;
 
   // Check pointer
   if (nullptr == pNorm) {
+    helperLogFailure(__func__);
     return false;
   }
 
@@ -1966,6 +2175,9 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
 
     // TODO: please insert test for (!NaN || !INF)
   }
+  else {
+    helperLogFailure(__func__);
+  }
 
   return value;
 }
@@ -1978,16 +2190,17 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
 bool
 vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int i, j;
   int offset = 0;
 
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev->pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   strValue.clear();
@@ -2006,7 +2219,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be correct data
     if (12 != pev->sizeData) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     memset(buf, 0, sizeof(buf));
@@ -2027,7 +2240,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be correct data
     if (4 != pev->sizeData)
-      return false;
+      return helperLogBoolResult(__func__, false);
 
     memset(buf, 0, sizeof(buf));
     memcpy(buf, pev->pdata, 4); // float
@@ -2039,7 +2252,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be correct data
     if ((16 + 4) != pev->sizeData) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     memset(buf, 0, sizeof(buf));
@@ -2052,7 +2265,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be correct data
     if (8 != pev->sizeData) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     memset(buf, 0, sizeof(buf));
@@ -2066,7 +2279,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be correct data
     if ((16 + 8) != pev->sizeData) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     memset(buf, 0, sizeof(buf));
@@ -2089,7 +2302,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
     // Must be at least two data bytes
     if (pev->sizeData - offset < 2) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     // Point past index,zone,subzone
@@ -2169,7 +2382,7 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
     }
   }
   else {
-    return false; // Measurement type is not supported
+    return helperLogBoolResult(__func__, false); // Measurement type is not supported
   }
 
   return true;
@@ -2183,15 +2396,16 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 bool
 vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string str;
 
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pvalue) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
@@ -2199,26 +2413,26 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
       (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class)) {
 
     if (!vscp_getMeasurementAsString(str, pev)) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     try {
       *pvalue = std::stod(str);
     }
     catch (...) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else if (VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) {
 
     if (!vscp_getMeasurementFloat64AsString(str, pev)) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     try {
       *pvalue = stod(str);
     }
     catch (...) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else if (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) {
@@ -2226,7 +2440,7 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
     char buf[512];
 
     if (0 == pev->sizeData || nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(buf, pev->pdata + 4, pev->sizeData - 4);
 
@@ -2234,7 +2448,7 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
       *pvalue = std::stod(std::string(buf));
     }
     catch (...) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
@@ -2245,7 +2459,7 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
     *pvalue = *(double *) (buf);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -2259,10 +2473,11 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
 bool
 vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata    = nullptr;
@@ -2270,13 +2485,13 @@ vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex)
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementAsDouble(pvalue, pev);
   vscp_deleteEvent(pev);
 
-  return rv;
+  return helperLogBoolResult(__func__, rv);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2287,6 +2502,7 @@ vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex)
 bool
 vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // If class >= 512 and class <1024 we
@@ -2296,7 +2512,7 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
   }
 
   if (pev->sizeData - offset != 8) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   double *pfloat = (double *) (pev->pdata + offset);
@@ -2313,6 +2529,7 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
 bool
 vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strValue*/)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // If class >= 512 and class <1024 we
@@ -2323,7 +2540,7 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strVal
 
   // Must at least have index, zone, subzone, normaliser byte, one data byte
   if (pev->sizeData - offset < 5) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // We mimic a standard measurement
@@ -2346,6 +2563,7 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strVal
 int
 vscp_getMeasurementUnit(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // If class >= 512 and class < 1024 we
@@ -2360,7 +2578,7 @@ vscp_getMeasurementUnit(const vscpEvent *pev)
       (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
     if ((nullptr == pev->pdata) || (pev->sizeData < (offset + 1))) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return VSCP_DATACODING_UNIT(pev->pdata[offset + 0]);
@@ -2377,7 +2595,7 @@ vscp_getMeasurementUnit(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[3];
@@ -2386,13 +2604,13 @@ vscp_getMeasurementUnit(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[3];
   }
 
-  return VSCP_ERROR_ERROR;
+  return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2402,10 +2620,11 @@ vscp_getMeasurementUnit(const vscpEvent *pev)
 int
 vscp_getMeasurementUnitEx(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata    = nullptr;
@@ -2413,13 +2632,13 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pex)
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementUnit(pev);
   vscp_deleteEvent(pev);
 
-  return rv;
+  return helperLogNegativeResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2429,11 +2648,12 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pex)
 int
 vscp_getMeasurementSensorIndex(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // Must have valid event and data
   if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
-    return -1;
+    return helperLogNegativeResult(__func__, -1);
   }
 
   // If class >= 512 and class < 1024 we
@@ -2452,7 +2672,7 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pev)
            (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
     if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 3))) {
-      return -1;
+      return helperLogNegativeResult(__func__, -1);
     }
 
     return pev->pdata[offset + 0];
@@ -2469,7 +2689,7 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[0];
@@ -2478,13 +2698,13 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[0];
   }
 
-  return VSCP_ERROR_ERROR;
+  return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2494,10 +2714,11 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pev)
 int
 vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata    = nullptr;
@@ -2505,13 +2726,13 @@ vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex)
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementSensorIndex(pev);
   vscp_deleteEvent(pev);
 
-  return rv;
+  return helperLogNegativeResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2521,11 +2742,12 @@ vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex)
 int
 vscp_getMeasurementZone(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // Must have valid event and data
   if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
-    return -1;
+    return helperLogNegativeResult(__func__, -1);
   }
 
   // If class >= 512 and class < 1024 we
@@ -2561,7 +2783,7 @@ vscp_getMeasurementZone(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[2];
@@ -2570,13 +2792,13 @@ vscp_getMeasurementZone(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[2];
   }
 
-  return VSCP_ERROR_ERROR;
+  return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2586,23 +2808,24 @@ vscp_getMeasurementZone(const vscpEvent *pev)
 int
 vscp_getMeasurementZoneEx(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return -1;
+    return helperLogNegativeResult(__func__, -1);
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return -1;
+    return helperLogNegativeResult(__func__, -1);
   }
 
   int rv = vscp_getMeasurementZone(pev);
   vscp_deleteEvent(pev);
 
-  return rv;
+  return helperLogNegativeResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2612,11 +2835,12 @@ vscp_getMeasurementZoneEx(const vscpEventEx *pex)
 int
 vscp_getMeasurementSubZone(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   int offset = 0;
 
   // Must have valid event and data
   if ((nullptr == pev) || (nullptr == pev->pdata) || !pev->sizeData) {
-    return -1;
+    return helperLogNegativeResult(__func__, -1);
   }
 
   // If class >= 512 and class < 1024 we
@@ -2648,7 +2872,7 @@ vscp_getMeasurementSubZone(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (pev->sizeData < 4)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[offset + 2];
@@ -2657,13 +2881,13 @@ vscp_getMeasurementSubZone(const vscpEvent *pev)
 
     // Check if data length is valid
     if ((nullptr == pev->pdata) || (12 != pev->sizeData)) {
-      return VSCP_ERROR_ERROR;
+      return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
     }
 
     return pev->pdata[2];
   }
 
-  return VSCP_ERROR_ERROR;
+  return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2673,23 +2897,24 @@ vscp_getMeasurementSubZone(const vscpEvent *pev)
 int
 vscp_getMeasurementSubZoneEx(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementSubZone(pev);
   vscp_deleteEvent(pev);
 
-  return rv;
+  return helperLogNegativeResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2699,6 +2924,7 @@ vscp_getMeasurementSubZoneEx(const vscpEventEx *pex)
 bool
 vscp_isMeasurement(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pev->vscp_class) ||
       (VSCP_CLASS1_MEASUREMENTX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pev->vscp_class) ||
       (VSCP_CLASS1_MEASUREMENTX4 == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
@@ -2749,17 +2975,18 @@ vscp_isMeasurement(const vscpEvent *pev)
 bool
 vscp_isMeasurementEx(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent(pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   bool rv = vscp_isMeasurement(pev);
@@ -2775,13 +3002,14 @@ vscp_isMeasurementEx(const vscpEventEx *pex)
 bool
 vscp_convertFloatToNormalizedEventData(uint8_t *pdata, uint16_t *psize, double value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == psize) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // No data assigned yet
@@ -2860,7 +3088,7 @@ vscp_convertFloatToNormalizedEventData(uint8_t *pdata, uint16_t *psize, double v
     pdata[7] = val64 & 0xff;
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pdata[0] = VSCP_DATACODING_NORMALIZED + unit + sensoridx; // Normalised integer + unit + sensor index
@@ -2876,30 +3104,31 @@ vscp_convertFloatToNormalizedEventData(uint8_t *pdata, uint16_t *psize, double v
 bool
 vscp_convertFloatToFloatEventData(uint8_t *pdata, uint16_t *psize, float value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   // Max and min for Single-precision floating-point IEEE 754-1985
   double float_max = 3.4e38;
   double float_min = -3.4e38;
 
   // Check pointer
   if (nullptr == pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == psize) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (value > float_max) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (value < float_min) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // We must make sure
   if (4 != sizeof(float)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   void *p = (void *) &value;
@@ -2926,6 +3155,7 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
                                          uint8_t /*unit*/,
                                          uint8_t /*sensoridx*/)
 {
+  helperLogEntry(__func__);
   uint8_t i;
   uint8_t data[8];
 
@@ -2965,12 +3195,13 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
 bool
 vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   uint8_t offset = 0;
   uint8_t data[8];
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr != pev->pdata) {
@@ -3077,7 +3308,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
 #endif
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Allocate data as needed
@@ -3085,7 +3316,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
     offset        = 0;
     pev->pdata = new uint8_t[pev->sizeData];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(pev->pdata, data, pev->sizeData);
   }
@@ -3093,12 +3324,12 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
     offset        = 16;
     pev->pdata = new uint8_t[16 + pev->sizeData];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(pev->pdata + 16, data, pev->sizeData);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -3111,11 +3342,12 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
 bool
 vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   uint8_t offset = 0;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (VSCP_CLASS1_MEASUREMENT == pex->vscp_class) {
@@ -3125,7 +3357,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit
     offset = 16;
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pex->data[0] = VSCP_DATACODING_INTEGER + (unit << 3) + sensoridx;
@@ -3225,7 +3457,7 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit
 #endif
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -3238,11 +3470,12 @@ vscp_makeIntegerMeasurementEventEx(vscpEventEx *pex, int64_t value, uint8_t unit
 bool
 vscp_makeFloatMeasurementEvent(vscpEvent *pev, float value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   uint8_t offset = 0;
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Allocate data if needed
@@ -3250,21 +3483,21 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pev, float value, uint8_t unit, uint8_
     offset        = 0;
     pev->pdata = new uint8_t[5];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else if ((nullptr == pev->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
     offset        = 16;
     pev->pdata = new uint8_t[16 + 5];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
-  return vscp_convertFloatToFloatEventData(pev->pdata + offset, &pev->sizeData, value, unit, sensoridx);
+  return helperLogBoolResult(__func__, vscp_convertFloatToFloatEventData(pev->pdata + offset, &pev->sizeData, value, unit, sensoridx));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3274,14 +3507,15 @@ vscp_makeFloatMeasurementEvent(vscpEvent *pev, float value, uint8_t unit, uint8_
 bool
 vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata = nullptr;
 
@@ -3299,11 +3533,11 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, ui
   memcpy(pev->GUID, pex->GUID, 16);
 
   if (!vscp_makeFloatMeasurementEvent(pev, value, unit, sensoridx)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3318,6 +3552,7 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, ui
 bool
 vscp_makeStringMeasurementEvent(vscpEvent *pev, double value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   uint8_t offset = 0;
   std::string strValue;
 
@@ -3334,18 +3569,18 @@ vscp_makeStringMeasurementEvent(vscpEvent *pev, double value, uint8_t unit, uint
     offset        = 0;
     pev->pdata = new uint8_t[pev->sizeData + 1];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else if ((nullptr == pev->pdata) && (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
     offset        = 16;
     pev->pdata = new uint8_t[16 + pev->sizeData + 1];
     if (nullptr == pev->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata[offset + 0] = VSCP_DATACODING_STRING + unit + sensoridx; // float + unit + sensorindex
@@ -3361,28 +3596,29 @@ vscp_makeStringMeasurementEvent(vscpEvent *pev, double value, uint8_t unit, uint
 bool
 vscp_makeStringMeasurementEventEx(vscpEventEx *pex, double value, uint8_t unit, uint8_t sensoridx)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_makeStringMeasurementEvent(pev, value, unit, sensoridx)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3403,9 +3639,10 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
                                      uint8_t zone,
                                      uint8_t subzone)
 {
+  helperLogEntry(__func__);
   // Event must have been created
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
@@ -3417,7 +3654,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
   pev->pdata    = new uint8_t[pev->sizeData];
   if (nullptr == pev->pdata) {
     delete pev;
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Copy in data
@@ -3443,28 +3680,29 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pex,
                                        uint8_t zone,
                                        uint8_t subzone)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_makeLevel2FloatMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3484,9 +3722,10 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
                                       uint8_t zone,
                                       uint8_t subzone)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   std::string strData = vscp_str_format("%f", value);
@@ -3501,7 +3740,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
   pev->pdata = new uint8_t[pev->sizeData];
   if (nullptr == pev->pdata) {
     delete pev;
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Nill
@@ -3530,30 +3769,31 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pex,
                                         uint8_t zone,
                                         uint8_t subzone)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_makeLevel2StringMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3567,20 +3807,21 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pex,
 bool
 vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   double val64;
 
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev->pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Must be a measurement event
   if (!vscp_isMeasurement(pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (vscp_getMeasurementAsDouble(&val64, pev)) {
@@ -3705,15 +3946,15 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
       else {
         delete[] p;
         p = nullptr;
-        return false; // Not a measurement event, hmmmm.... strange
+        return helperLogBoolResult(__func__, false); // Not a measurement event, hmmmm.... strange
       }
     }
     else {
-      return false; // Unable to allocate data
+      return helperLogBoolResult(__func__, false); // Unable to allocate data
     }
   }
   else {
-    return false; // Could not get value
+    return helperLogBoolResult(__func__, false); // Could not get value
   }
 
   return true;
@@ -3726,27 +3967,28 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
 bool
 vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata    = nullptr;
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   if (!vscp_convertLevel1MeasurementToLevel2Double(pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3760,32 +4002,33 @@ vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pex)
 bool
 vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string strval;
 
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev->pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Must be a measurement event
   if (!vscp_isMeasurement(pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (vscp_getMeasurementAsString(strval, pev)) {
 
     // Must be room for the number
     if ((4 + strval.length() + 1) > VSCP_MAX_DATA) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     char *p = new char[4 + strval.length() + 1];
     if (nullptr == p) {
-      return false; // Unable to allocate data
+      return helperLogBoolResult(__func__, false); // Unable to allocate data
     }
 
     memset(p, 0, 4 + strval.length() + 1);
@@ -3888,11 +4131,11 @@ vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev)
     else {
       delete[] p;
       p = nullptr;
-      return false; // Not a measurement.... hmm.... strange
+      return helperLogBoolResult(__func__, false); // Not a measurement.... hmm.... strange
     }
   }
   else {
-    return false; // Could not get value
+    return helperLogBoolResult(__func__, false); // Could not get value
   }
 
   return true;
@@ -3905,28 +4148,29 @@ vscp_convertLevel1MeasurementToLevel2String(vscpEvent *pev)
 bool
 vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertLevel1MeasurementToLevel2String(pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -3940,6 +4184,7 @@ vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pex)
 std::string &
 vscp_replaceBackslash(std::string &str)
 {
+  helperLogEntry(__func__);
   size_t pos;
   while (str.npos != (pos = str.find('\\'))) {
     str[pos] = '/';
@@ -3954,8 +4199,10 @@ vscp_replaceBackslash(std::string &str)
 unsigned char
 vscp_getEventPriority(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -3968,8 +4215,10 @@ vscp_getEventPriority(const vscpEvent *pev)
 unsigned char
 vscp_getEventExPriority(const vscpEventEx *pev)
 {
+  helperLogEntry(__func__);
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -3982,8 +4231,10 @@ vscp_getEventExPriority(const vscpEventEx *pev)
 void
 vscp_setEventPriority(vscpEvent *pev, unsigned char priority)
 {
+  helperLogEntry(__func__);
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return;
   }
 
@@ -3997,8 +4248,10 @@ vscp_setEventPriority(vscpEvent *pev, unsigned char priority)
 void
 vscp_setEventExPriority(vscpEventEx *pev, unsigned char priority)
 {
+  helperLogEntry(__func__);
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return;
   }
 
@@ -4013,6 +4266,7 @@ vscp_setEventExPriority(vscpEventEx *pev, unsigned char priority)
 unsigned char
 vscp_getHeadFromCANALid(uint32_t id)
 {
+  helperLogEntry(__func__);
   uint8_t hardcoded = 0;
   uint8_t priority  = (0x07 & (id >> 26));
   if (id & (1 << 25)) {
@@ -4029,6 +4283,7 @@ vscp_getHeadFromCANALid(uint32_t id)
 uint16_t
 vscp_getVscpClassFromCANALid(uint32_t id)
 {
+  helperLogEntry(__func__);
   return (uint16_t) (0x1ff & (id >> 16));
 }
 
@@ -4039,6 +4294,7 @@ vscp_getVscpClassFromCANALid(uint32_t id)
 uint16_t
 vscp_getVscpTypeFromCANALid(uint32_t id)
 {
+  helperLogEntry(__func__);
   return (uint16_t) (0xff & (id >> 8));
 }
 
@@ -4049,6 +4305,7 @@ vscp_getVscpTypeFromCANALid(uint32_t id)
 uint8_t
 vscp_getNicknameFromCANALid(uint32_t id)
 {
+  helperLogEntry(__func__);
   return (id & 0xff);
 }
 
@@ -4059,6 +4316,7 @@ vscp_getNicknameFromCANALid(uint32_t id)
 uint32_t
 vscp_getCANALidFromData(unsigned char priority, const uint16_t vscp_class, const uint16_t vscp_type)
 {
+  helperLogEntry(__func__);
   // unsigned long t1 = (unsigned long)priority << 20;
   // unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
   // unsigned long t3 = (unsigned long)pvscpMsg->vscp_type << 8;
@@ -4072,6 +4330,7 @@ vscp_getCANALidFromData(unsigned char priority, const uint16_t vscp_class, const
 uint32_t
 vscp_getCANALidFromEvent(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   return (((unsigned long) vscp_getEventPriority(pev) << 26) | ((unsigned long) pev->vscp_class << 16) |
           ((unsigned long) pev->vscp_type << 8) | 0);
 }
@@ -4083,6 +4342,7 @@ vscp_getCANALidFromEvent(const vscpEvent *pev)
 uint32_t
 vscp_getCANALidFromEventEx(const vscpEventEx *pev)
 {
+  helperLogEntry(__func__);
   return (((unsigned long) vscp_getEventExPriority(pev) << 26) | ((unsigned long) pev->vscp_class << 16) |
           ((unsigned long) pev->vscp_type << 8) | 0);
 }
@@ -4097,12 +4357,14 @@ vscp_getCANALidFromEventEx(const vscpEventEx *pev)
 unsigned short
 vscp_calc_crc_Event(vscpEvent *pev, short bSet)
 {
+  helperLogEntry(__func__);
   unsigned short crc = 0;
   unsigned char *p;
   unsigned char *pbuf;
 
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -4137,6 +4399,9 @@ vscp_calc_crc_Event(vscpEvent *pev, short bSet)
 
     free(pbuf);
   }
+  else {
+    helperLogFailure(__func__);
+  }
 
   return crc;
 }
@@ -4151,12 +4416,14 @@ vscp_calc_crc_Event(vscpEvent *pev, short bSet)
 unsigned short
 vscp_calc_crc_EventEx(vscpEventEx *pev, short bSet)
 {
+  helperLogEntry(__func__);
   unsigned short crc = 0;
   unsigned char *p;
   unsigned char *pbuf;
 
   // Must be a valid message pointer
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return 0;
   }
 
@@ -4192,6 +4459,9 @@ vscp_calc_crc_EventEx(vscpEventEx *pev, short bSet)
 
     free(pbuf);
   }
+  else {
+    helperLogFailure(__func__);
+  }
 
   return crc;
 }
@@ -4203,6 +4473,7 @@ vscp_calc_crc_EventEx(vscpEventEx *pev, short bSet)
 uint8_t
 vscp_calcCRC4GUIDArray(const uint8_t *pguid)
 {
+  helperLogEntry(__func__);
   uint8_t crc = 0;
 
   init_crc8();
@@ -4220,6 +4491,7 @@ vscp_calcCRC4GUIDArray(const uint8_t *pguid)
 uint8_t
 vscp_calcCRC4GUIDString(const std::string &strguid)
 {
+  helperLogEntry(__func__);
   uint8_t crc = 0;
   uint8_t guid[16];
 
@@ -4241,9 +4513,10 @@ vscp_calcCRC4GUIDString(const std::string &strguid)
 bool
 vscp_setEventGuidFromString(vscpEvent *pev, const std::string &strGUID)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   std::string str = strGUID;
@@ -4276,9 +4549,10 @@ vscp_setEventGuidFromString(vscpEvent *pev, const std::string &strGUID)
 bool
 vscp_setEventExGuidFromString(vscpEventEx *pev, const std::string &strGUID)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   memset(pev->GUID, 0, 16);
@@ -4318,8 +4592,9 @@ vscp_setEventExGuidFromString(vscpEventEx *pev, const std::string &strGUID)
 bool
 vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
 {
+  helperLogEntry(__func__);
   if (nullptr == pGUID) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Use cguid class which handles all GUID string formats
@@ -4337,11 +4612,12 @@ vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
 bool
 vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID)
 {
+  helperLogEntry(__func__);
   if (nullptr == pGUID) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
-  return VSCP_ERROR_SUCCESS == cguid::vscp_guid_parse(pGUID, strGUID.c_str(), nullptr);
+  return helperLogBoolResult(__func__, VSCP_ERROR_SUCCESS == cguid::vscp_guid_parse(pGUID, strGUID.c_str(), nullptr));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4351,9 +4627,10 @@ vscp_parseGuid(uint8_t *pGUID, const std::string &strGUID)
 bool
 vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pev, vscp_guid_str_format format)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   switch (format) {
@@ -4453,9 +4730,10 @@ vscp_writeGuidToString(std::string &strGUID, const vscpEvent *pev, vscp_guid_str
 bool
 vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pev, vscp_guid_str_format format)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   switch (format) {
@@ -4555,9 +4833,10 @@ vscp_writeGuidToStringEx(std::string &strGUID, const vscpEventEx *pev, vscp_guid
 bool
 vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
@@ -4589,9 +4868,10 @@ vscp_writeGuidToString4Rows(std::string &strGUID, const vscpEvent *pev)
 bool
 vscp_writeGuidToString4RowsEx(std::string &strGUID, const vscpEventEx *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
@@ -4626,9 +4906,10 @@ vscp_writeGuidArrayToString(std::string &strGUID,
                             bool bUseComma,
                             vscp_guid_str_format format)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pGUID) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   switch (format) {
@@ -4750,8 +5031,10 @@ vscp_writeGuidArrayToString(std::string &strGUID,
 bool
 vscp_isGUIDEmpty(const unsigned char *pGUID)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pGUID) {
+    helperLogFailure(__func__);
     return false;
   }
 
@@ -4766,12 +5049,15 @@ vscp_isGUIDEmpty(const unsigned char *pGUID)
 bool
 vscp_isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2)
 {
+  helperLogEntry(__func__);
   // First check pointers
   if (nullptr == pGUID1) {
+    helperLogFailure(__func__);
     return false;
   }
 
   if (nullptr == pGUID2) {
+    helperLogFailure(__func__);
     return false;
   }
 
@@ -4789,11 +5075,12 @@ vscp_isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2)
 bool
 vscp_reverseGUID(unsigned char *pGUID)
 {
+  helperLogEntry(__func__);
   uint8_t copyGUID[16];
 
   // First check pointers
   if (nullptr == pGUID) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   for (int i = 0; i < 16; i++) {
@@ -4811,17 +5098,18 @@ vscp_reverseGUID(unsigned char *pGUID)
 bool
 vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pev->sizeData > VSCP_LEVEL2_MAXDATA || (pev->sizeData && nullptr == pev->pdata)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Convert
@@ -4863,23 +5151,24 @@ vscp_convertEventToEventEx(vscpEventEx *pex, const vscpEvent *pev)
 bool
 vscp_convertEventExToEvent(vscpEvent *pev, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pex->sizeData > VSCP_LEVEL2_MAXDATA) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pex->sizeData) {
     // Allocate memory for data
     if (nullptr == (pev->pdata = new uint8_t[pex->sizeData])) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(pev->pdata, pex->data, pex->sizeData);
   }
@@ -4923,17 +5212,18 @@ vscp_convertEventExToEvent(vscpEvent *pev, const vscpEventEx *pex)
 bool
 vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pevTo) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pevFrom) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pevFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Copy in data from old to new and take care of new frame format
@@ -4965,7 +5255,7 @@ vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
 
     pevTo->pdata = new unsigned char[pevFrom->sizeData];
     if (nullptr == pevTo->pdata) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     memcpy(pevTo->pdata, pevFrom->pdata, pevFrom->sizeData);
@@ -4983,17 +5273,18 @@ vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
 bool
 vscp_copyEventEx(vscpEventEx *pexTo, const vscpEventEx *pexFrom)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pexTo) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pexFrom) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pexFrom->sizeData > VSCP_LEVEL2_MAXDATA) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Convert
@@ -5038,9 +5329,10 @@ vscp_copyEventEx(vscpEventEx *pexTo, const vscpEventEx *pexFrom)
 bool
 vscp_newEvent(vscpEvent **ppev, uint16_t version)
 {
+  helperLogEntry(__func__);
   *ppev = new vscpEvent;
   if (nullptr == *ppev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // No data allocated yet
@@ -5065,9 +5357,10 @@ vscp_newEvent(vscpEvent **ppev, uint16_t version)
 bool
 vscp_newEventEx(vscpEventEx **ppex, uint16_t version)
 {
+  helperLogEntry(__func__);
   *ppex = new vscpEventEx;
   if (nullptr == *ppex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // No data allocated yet
@@ -5091,6 +5384,7 @@ vscp_newEventEx(vscpEventEx **ppex, uint16_t version)
 void
 vscp_deleteEvent(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
     return;
@@ -5109,6 +5403,7 @@ vscp_deleteEvent(vscpEvent *pev)
 void
 vscp_deleteEventEx(vscpEventEx **ppex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == *ppex) {
     return;
@@ -5126,6 +5421,7 @@ vscp_deleteEventEx(vscpEventEx **ppex)
 void
 vscp_deleteEvent_v2(vscpEvent **ppEvent)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == *ppEvent) {
     return;
@@ -5145,6 +5441,7 @@ vscp_deleteEvent_v2(vscpEvent **ppEvent)
 void
 vscp_deleteEventEx(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   delete pex;
 }
 
@@ -5155,8 +5452,9 @@ vscp_deleteEventEx(vscpEventEx *pex)
 bool
 setFrameVersion(vscpEvent *pev, uint16_t version)
 {
+  helperLogEntry(__func__);
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Clear existing frame version bits
@@ -5175,8 +5473,9 @@ setFrameVersion(vscpEvent *pev, uint16_t version)
 bool
 setFrameVersion(vscpEventEx *pex, uint16_t version)
 {
+  helperLogEntry(__func__);
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Clear existing frame version bits
@@ -5195,9 +5494,10 @@ setFrameVersion(vscpEventEx *pex, uint16_t version)
 bool
 vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Return empty string if all date/time values is zero
@@ -5247,9 +5547,10 @@ vscp_getDateStringFromEvent(std::string &dt, const vscpEvent *pev)
 bool
 vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   dt.clear();
@@ -5301,12 +5602,13 @@ vscp_getDateStringFromEventEx(std::string &dt, const vscpEventEx *pex)
 bool
 vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
@@ -5388,11 +5690,12 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev)
 bool
 vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
 {
+  helperLogEntry(__func__);
   std::string strguid;
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Initialize event
@@ -5534,7 +5837,7 @@ vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
       std::vector<std::uint8_t> data_array = j.at(data_key);
       // Check size
       if (data_array.size() > VSCP_MAX_DATA) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
 
       pev->sizeData = (uint16_t) data_array.size();
@@ -5544,20 +5847,17 @@ vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
       else {
         pev->pdata = new uint8_t[data_array.size()];
         if (nullptr == pev->pdata) {
-          return false;
+          return helperLogBoolResult(__func__, false);
         }
         memcpy(pev->pdata, data_array.data(), data_array.size());
       }
     }
   }
-  catch (json::parse_error &e) {
-    // output exception information
-    std::cout << "message: " << e.what() << '\n'
-              << "exception id: " << e.id << '\n'
-              << "byte position of error: " << e.byte << std::endl;
+  catch (const json::parse_error &) {
+    helperLogFailure(__func__);
   }
   catch (...) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -5573,12 +5873,13 @@ vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
 bool
 vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
@@ -5655,11 +5956,12 @@ vscp_convertEventExToJSON(std::string &strJSON, const vscpEventEx *pex)
 bool
 vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
 {
+  helperLogEntry(__func__);
   std::string strguid;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Initialize event
@@ -5802,7 +6104,7 @@ vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
 
       // Check size
       if (data_array.size() > VSCP_MAX_DATA) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
 
       pex->sizeData = (uint16_t) data_array.size();
@@ -5814,16 +6116,11 @@ vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
       }
     }
   }
-  catch (json::parse_error) {
-#ifdef VSCP_ENABLE_HELPER_LOGGING
-    VSCPHLP_LOG_ERROR("VSCP helper: Parse error");
-#else
-    fprintf(stderr, "Parse error");
-#endif
-    return false;
+  catch (const json::parse_error &) {
+    return helperLogBoolResult(__func__, false);
   }
   catch (...) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -5839,12 +6136,13 @@ vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
 bool
 vscp_convertEventToXML(std::string &strXML, vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
@@ -5926,6 +6224,7 @@ int depth_event_parser = 0;
 static void
 startEventXMLParser(void *data, const char *name, const char **attr)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = (vscpEvent *) data;
   if (nullptr == pev) {
     return;
@@ -6020,20 +6319,22 @@ startEventXMLParser(void *data, const char *name, const char **attr)
 static void
 endEventXMLParser(void * /*data*/, const char * /*name*/)
 {
+  helperLogEntry(__func__);
   depth_event_parser--;
 }
 
 bool
 vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Must have some XML data
   if (0 == strXML.length()) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_Parser xmlParser = XML_ParserCreate("UTF-8");
@@ -6047,7 +6348,7 @@ vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
 
   bytes_read = (int) strXML.length();
   if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_ParserFree(xmlParser);
@@ -6065,12 +6366,13 @@ vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
 bool
 vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
@@ -6152,6 +6454,7 @@ int depth_eventex_parser = 0;
 static void
 startEventExXMLParser(void *data, const char *name, const char **attr)
 {
+  helperLogEntry(__func__);
   vscpEventEx *pex = (vscpEventEx *) data;
   if (nullptr == pex) {
     return;
@@ -6244,20 +6547,22 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
 static void
 endEventExXMLParser(void * /*data*/, const char * /*name*/)
 {
+  helperLogEntry(__func__);
   depth_eventex_parser--;
 }
 
 bool
 vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Must have some XML data
   if (0 == strXML.length()) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_Parser xmlParser = XML_ParserCreate("UTF-8");
@@ -6271,7 +6576,7 @@ vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
 
   bytes_read = (int) strXML.length();
   if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_ParserFree(xmlParser);
@@ -6286,12 +6591,13 @@ vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
 bool
 vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pev->GUID); // GUID to string
@@ -6363,12 +6669,13 @@ vscp_convertEventToHTML(std::string &strHTML, vscpEvent *pev)
 bool
 vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   std::string strguid;
   std::string strdata;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strguid, pex->GUID); // GUID to string
@@ -6440,21 +6747,22 @@ vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pex)
 int
 vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, uint16_t *pVscpType)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == topic) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   if (nullptr == pGuid) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   if (nullptr == pVscpClass) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   if (nullptr == pVscpType) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   // Topic format is:
@@ -6465,7 +6773,7 @@ vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, ui
 
   vscp_split(tokens, topicStr, "/");
   if (tokens.size() != 4) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   *pVscpClass = (uint16_t) vscp_readStringValue(tokens[1]);
@@ -6485,12 +6793,13 @@ vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, ui
 int
 vscp_set_event_info_from_topic(vscpEvent *pev, const char *topic)
 {
+  helperLogEntry(__func__);
   uint8_t *pGuid[16];
   uint16_t vscpClass;
   uint16_t vscpType;
 
   if (vscp_parse_topic(topic, pGuid, &vscpClass, &vscpType)) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   pev->vscp_class = vscpClass;
@@ -6507,12 +6816,13 @@ vscp_set_event_info_from_topic(vscpEvent *pev, const char *topic)
 int
 vscp_set_eventex_info_from_topic(vscpEventEx *pex, const char *topic)
 {
+  helperLogEntry(__func__);
   uint8_t *pGuid[16];
   uint16_t vscpClass;
   uint16_t vscpType;
 
   if (vscp_parse_topic(topic, pGuid, &vscpClass, &vscpType)) {
-    return -1;
+    return helperLogStatusResult(__func__, -1);
   }
 
   pex->vscp_class = vscpClass;
@@ -6529,12 +6839,13 @@ vscp_set_eventex_info_from_topic(vscpEventEx *pex, const char *topic)
 bool
 vscp_setEventDateTime(vscpEvent *pev, struct tm *ptm, uint32_t ns)
 {
+  helperLogEntry(__func__);
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == ptm) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Clamp nanoseconds to valid range (0-999999999)
@@ -6572,12 +6883,13 @@ vscp_setEventDateTime(vscpEvent *pev, struct tm *ptm, uint32_t ns)
 bool
 vscp_setEventExDateTime(vscpEventEx *pex, struct tm *ptm, uint32_t ns)
 {
+  helperLogEntry(__func__);
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == ptm) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Clamp nanoseconds to valid range (0-999999999)
@@ -6615,8 +6927,9 @@ vscp_setEventExDateTime(vscpEventEx *pex, struct tm *ptm, uint32_t ns)
 bool
 vscp_setEventToNow(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   time_t rawtime;
@@ -6659,8 +6972,9 @@ vscp_setEventToNow(vscpEvent *pev)
 bool
 vscp_setEventExToNow(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   time_t rawtime;
@@ -6718,6 +7032,7 @@ vscp_setEventExToNow(vscpEventEx *pex)
 bool
 vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   // A nullptr filter is wildcard
   if (nullptr == pFilter) {
     return true;
@@ -6725,6 +7040,7 @@ vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pFilter)
 
   // Must be a valid message
   if (nullptr == pev) {
+    helperLogFailure(__func__);
     return false;
   }
 
@@ -6759,13 +7075,16 @@ vscp_doLevel2Filter(const vscpEvent *pev, const vscpEventFilter *pFilter)
 bool
 vscp_doLevel2FilterEx(const vscpEventEx *pex, const vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   // Must be a valid client
   if (nullptr == pFilter) {
+    helperLogFailure(__func__);
     return false;
   }
 
   // Must be a valid message
   if (nullptr == pex) {
+    helperLogFailure(__func__);
     return false;
   }
 
@@ -6801,8 +7120,10 @@ vscp_doLevel2FilterEx(const vscpEventEx *pex, const vscpEventFilter *pFilter)
 void
 vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   // Validate pointer
   if (nullptr == pFilter) {
+    helperLogFailure(__func__);
     return;
   }
 
@@ -6816,12 +7137,15 @@ vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 void
 vscp_copyVSCPFilter(vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter)
 {
+  helperLogEntry(__func__);
   // Validate pointers
   if (nullptr == pToFilter) {
+    helperLogFailure(__func__);
     return;
   }
 
   if (nullptr == pFromFilter) {
+    helperLogFailure(__func__);
     return;
   }
 
@@ -6842,11 +7166,12 @@ vscp_copyVSCPFilter(vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilt
 bool
 vscp_readFilterFromString(vscpEventFilter *pFilter, const std::string &strFilter)
 {
+  helperLogEntry(__func__);
   std::deque<std::string> tokens;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pFilter->filter_priority = 0;
@@ -6899,11 +7224,12 @@ vscp_readFilterFromString(vscpEventFilter *pFilter, const std::string &strFilter
 bool
 vscp_writeFilterToString(std::string &strFilter, const vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   cguid guid;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   guid.getFromArray(pFilter->filter_GUID);
@@ -6924,11 +7250,12 @@ vscp_writeFilterToString(std::string &strFilter, const vscpEventFilter *pFilter)
 bool
 vscp_readMaskFromString(vscpEventFilter *pFilter, const std::string &strMask)
 {
+  helperLogEntry(__func__);
   std::deque<std::string> tokens;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pFilter->mask_priority = 0;
@@ -6981,11 +7308,12 @@ vscp_readMaskFromString(vscpEventFilter *pFilter, const std::string &strMask)
 bool
 vscp_writeMaskToString(std::string &strFilter, const vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   cguid guid;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   guid.getFromArray(pFilter->mask_GUID);
@@ -7006,11 +7334,12 @@ vscp_writeMaskToString(std::string &strFilter, const vscpEventFilter *pFilter)
 bool
 vscp_readFilterMaskFromString(vscpEventFilter *pFilter, const std::string &strFilterMask)
 {
+  helperLogEntry(__func__);
   std::string strTok;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Clear filter and mask
@@ -7116,6 +7445,7 @@ int depth_filtermask_parser = 0;
 static void
 startFilterMaskXMLParser(void *data, const char *name, const char **attr)
 {
+  helperLogEntry(__func__);
   vscpEventFilter *pFilter = (vscpEventFilter *) data;
   if (nullptr == pFilter) {
     return;
@@ -7161,6 +7491,7 @@ startFilterMaskXMLParser(void *data, const char *name, const char **attr)
 static void
 endFilterMaskXMLParser(void * /*data*/, const char * /*name*/)
 {
+  helperLogEntry(__func__);
   depth_filtermask_parser--;
 }
 
@@ -7169,14 +7500,15 @@ endFilterMaskXMLParser(void * /*data*/, const char * /*name*/)
 bool
 vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilter)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Must be some XML to parse
   if (0 == strFilter.length()) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_Parser xmlParser = XML_ParserCreate("UTF-8");
@@ -7190,7 +7522,7 @@ vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilte
 
   bytes_read = (int) strFilter.length();
   if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   XML_ParserFree(xmlParser);
@@ -7205,12 +7537,13 @@ vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilte
 bool
 vscp_writeFilterMaskToXML(std::string &strFilter, vscpEventFilter *pFilter)
 {
+  helperLogEntry(__func__);
   std::string strmaskguid;
   std::string strfilterguid;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strmaskguid, pFilter->mask_GUID);
@@ -7235,11 +7568,12 @@ vscp_writeFilterMaskToXML(std::string &strFilter, vscpEventFilter *pFilter)
 bool
 vscp_readFilterMaskFromJSON(vscpEventFilter *pFilter, const std::string &strFilter)
 {
+  helperLogEntry(__func__);
   std::string strguid;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   try {
@@ -7293,7 +7627,7 @@ vscp_readFilterMaskFromJSON(vscpEventFilter *pFilter, const std::string &strFilt
     }
   }
   catch (...) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   return true;
@@ -7306,12 +7640,13 @@ vscp_readFilterMaskFromJSON(vscpEventFilter *pFilter, const std::string &strFilt
 bool
 vscp_writeFilterMaskToJSON(vscpEventFilter *pFilter, std::string &strFilter)
 {
+  helperLogEntry(__func__);
   std::string strmaskguid;
   std::string strfilterguid;
 
   // Check pointer
   if (nullptr == pFilter) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_writeGuidArrayToString(strmaskguid, pFilter->mask_GUID);
@@ -7337,17 +7672,18 @@ vscp_writeFilterMaskToJSON(vscpEventFilter *pFilter, std::string &strFilter)
 bool
 vscp_convertCanalToEvent(vscpEvent *pev, const canalMsg *pcanalMsg, unsigned char *pGUID)
 {
+  helperLogEntry(__func__);
   // Must be valid pointers
   if (nullptr == pGUID) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pcanalMsg) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Copy in i/f GUID
@@ -7356,7 +7692,7 @@ vscp_convertCanalToEvent(vscpEvent *pev, const canalMsg *pcanalMsg, unsigned cha
   pev->head = 0;
 
   if (pcanalMsg->sizeData > 8) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pcanalMsg->sizeData > 0) {
@@ -7407,8 +7743,9 @@ vscp_convertCanalToEvent(vscpEvent *pev, const canalMsg *pcanalMsg, unsigned cha
 bool
 vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned char *pGUID)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   bool rv           = vscp_convertCanalToEvent(pev, pcanalMsg, pGUID);
 
   if (rv) {
@@ -7416,7 +7753,7 @@ vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned
     vscp_deleteEvent(pev);
   }
 
-  return rv;
+  return helperLogBoolResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -7426,21 +7763,22 @@ vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned
 bool
 vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mode*/)
 {
+  helperLogEntry(__func__);
   unsigned char nodeid = 0;
   short sizeData       = 0;
   uint16_t vscp_class  = 0;
 
   // Check pointers
   if (nullptr == pcanalMsg) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (pev->sizeData && nullptr == pev->pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   sizeData   = pev->sizeData;
@@ -7505,31 +7843,32 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mo
 bool
 vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pex, uint8_t /*mode*/)
 {
+  helperLogEntry(__func__);
   bool rv;
 
   if (nullptr == pcanalMsg) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
     vscp_deleteEvent_v2(&pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   rv = vscp_convertEventToCanal(pcanalMsg, pev);
   vscp_deleteEvent_v2(&pev);
 
-  return rv;
+  return helperLogBoolResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -7539,11 +7878,12 @@ vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pex, uint8_t 
 bool
 vscp_writeDataToString(std::string &str, const vscpEvent *pev, bool bUseHtmlBreak, bool bBreak)
 {
+  helperLogEntry(__func__);
   std::string wrk, strBreak;
 
   // Check pointers
   if (nullptr == pev->pdata) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   str.clear();
@@ -7586,11 +7926,12 @@ vscp_writeDataWithSizeToString(std::string &str,
                                bool bBreak,
                                bool bDecimal)
 {
+  helperLogEntry(__func__);
   std::string wrk, strBreak;
 
   // Check pointers
   if (nullptr == pData) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   str.clear();
@@ -7633,11 +7974,12 @@ vscp_writeDataWithSizeToString(std::string &str,
 bool
 vscp_setEventDataFromString(vscpEvent *pev, const std::string &str)
 {
+  helperLogEntry(__func__);
   std::deque<std::string> tokens;
 
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_split(tokens, str, ",");
@@ -7674,11 +8016,12 @@ vscp_setEventDataFromString(vscpEvent *pev, const std::string &str)
 bool
 vscp_setEventExDataFromString(vscpEventEx *pex, const std::string &str)
 {
+  helperLogEntry(__func__);
   std::deque<std::string> tokens;
 
   // Check pointers
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_split(tokens, str, ",");
@@ -7704,13 +8047,14 @@ vscp_setEventExDataFromString(vscpEventEx *pex, const std::string &str)
 bool
 vscp_setDataArrayFromString(uint8_t *pData, uint16_t *psizeData, const std::string &str)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pData) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == psizeData) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   *psizeData = 0;
@@ -7742,6 +8086,7 @@ vscp_setDataArrayFromString(uint8_t *pData, uint16_t *psizeData, const std::stri
 unsigned long
 vscp_makeTimeStamp(void)
 {
+  helperLogEntry(__func__);
   uint32_t us; // Microseconds
 
 #ifdef WIN32
@@ -7753,7 +8098,9 @@ vscp_makeTimeStamp(void)
   time_t s; // Seconds
   struct timespec spec;
 
-  clock_gettime(CLOCK_REALTIME, &spec);
+  if (clock_gettime(CLOCK_REALTIME, &spec) != 0) {
+    helperLogFailure(__func__, errno);
+  }
 
   s  = spec.tv_sec;
   us = round(s * 1000 + spec.tv_nsec / 1000); // Convert to microseconds
@@ -7768,6 +8115,7 @@ vscp_makeTimeStamp(void)
 uint32_t
 vscp_getMsTimeStamp(void)
 {
+  helperLogEntry(__func__);
 #ifdef WIN32
   return GetTickCount();
 #else
@@ -7780,7 +8128,9 @@ vscp_getMsTimeStamp(void)
   time_t s;    // Seconds
   struct timespec spec;
 
-  clock_gettime(CLOCK_REALTIME, &spec);
+  if (clock_gettime(CLOCK_REALTIME, &spec) != 0) {
+    helperLogFailure(__func__, errno);
+  }
 
   s  = spec.tv_sec;
   ms = round(s * 1000 + spec.tv_nsec / 1.0e6); // Convert to milliseconds
@@ -7797,6 +8147,7 @@ vscp_getMsTimeStamp(void)
 uint64_t
 vscp_makeTimeStampNs(void)
 {
+  helperLogEntry(__func__);
 #ifdef WIN32
   // Windows: Use high-resolution timer
   auto now      = std::chrono::system_clock::now();
@@ -7804,7 +8155,9 @@ vscp_makeTimeStampNs(void)
   return (uint64_t) std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
 #else
   struct timespec spec;
-  clock_gettime(CLOCK_REALTIME, &spec);
+  if (clock_gettime(CLOCK_REALTIME, &spec) != 0) {
+    helperLogFailure(__func__, errno);
+  }
   return (uint64_t) spec.tv_sec * 1000000000ULL + (uint64_t) spec.tv_nsec;
 #endif
 }
@@ -7816,9 +8169,10 @@ vscp_makeTimeStampNs(void)
 bool
 vscp_setEventDateTimeBlockToNow(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Check frame version
@@ -7861,9 +8215,10 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pev)
 bool
 vscp_setEventExDateTimeBlockToNow(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Check frame version
@@ -7911,9 +8266,10 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pex)
 bool
 vscp_convertEventToString(std::string &str, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Determine the nanosecond timestamp to use
@@ -7971,8 +8327,11 @@ vscp_convertEventToString(std::string &str, const vscpEvent *pev)
 std::string
 vscp_getEventAsString(const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   std::string str;
-  vscp_convertEventToString(str, pev);
+  if (!vscp_convertEventToString(str, pev)) {
+    helperLogFailure(__func__);
+  }
   return str;
 }
 
@@ -7985,12 +8344,13 @@ vscp_getEventAsString(const vscpEvent *pev)
 bool
 vscp_convertEventExToString(std::string &str, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent event;
   event.pdata = nullptr;
 
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_convertEventExToEvent(&event, pex);
@@ -8009,8 +8369,11 @@ vscp_convertEventExToString(std::string &str, const vscpEventEx *pex)
 std::string
 vscp_getEventExAsString(const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   std::string str;
-  vscp_convertEventExToString(str, pex);
+  if (!vscp_convertEventExToString(str, pex)) {
+    helperLogFailure(__func__);
+  }
   return str;
 }
 
@@ -8028,9 +8391,10 @@ vscp_getEventExAsString(const vscpEventEx *pex)
 bool
 vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   std::string str = strEvent;
@@ -8045,7 +8409,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     pev->head = vscp_readStringValue(str);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Always set UNIX_NS frame version (clear old frame version bits, set UNIX_NS)
@@ -8058,7 +8422,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     pev->vscp_class = vscp_readStringValue(str);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Get Type
@@ -8068,7 +8432,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     pev->vscp_type = vscp_readStringValue(str);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Get OBID  -  Kept here to be compatible with receive
@@ -8078,7 +8442,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     pev->obid = vscp_readStringValue(str);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Get datetime
@@ -8100,7 +8464,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     }
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Process datetime and timestamp for UNIX_NS frame
@@ -8141,7 +8505,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
     vscp_setEventGuidFromString(pev, strGUID);
   }
   else {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Handle data
@@ -8163,7 +8527,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
       pev->pdata = pData;
     }
     else {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
   }
   else {
@@ -8183,6 +8547,7 @@ vscp_convertStringToEvent(vscpEvent *pev, const std::string &strEvent)
 bool
 vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &strEvent)
 {
+  helperLogEntry(__func__);
   bool rv;
   vscpEvent event;
 
@@ -8195,7 +8560,7 @@ vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &strEvent)
     delete[] event.pdata;
   }
 
-  return rv;
+  return helperLogBoolResult(__func__, rv);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8206,6 +8571,7 @@ vscp_convertStringToEventEx(vscpEventEx *pex, const std::string &strEvent)
 void
 vscp_makeHtml(std::string &str)
 {
+  helperLogEntry(__func__);
   std::string strOriginal = str;
 
   str.clear();
@@ -8246,6 +8612,7 @@ vscp_makeHtml(std::string &str)
 uint8_t
 vscp_getEncryptionCodeFromToken(std::string &token)
 {
+  helperLogEntry(__func__);
   uint8_t code    = 0;
   std::string str = token;
   vscp_makeUpper(str);
@@ -8274,6 +8641,7 @@ vscp_getEncryptionCodeFromToken(std::string &token)
 void
 vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token)
 {
+  helperLogEntry(__func__);
   switch (code) {
 
     case VSCP_ENCRYPTION_NONE:
@@ -8306,14 +8674,15 @@ vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token)
 size_t
 vscp_getFrameSizeFromEvent(vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pev) {
-    return false;
+    return helperLogSizeResult(__func__, false);
   }
 
   size_t size = 1 +                                                             // Packet type
                 VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 2; // CRC
-  return size;
+  return helperLogSizeResult(__func__, size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8323,14 +8692,15 @@ vscp_getFrameSizeFromEvent(vscpEvent *pev)
 size_t
 vscp_getFrameSizeFromEventEx(vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogSizeResult(__func__, false);
   }
 
   size_t size = 1 +                                                               // Packet type
                 VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pex->sizeData + 2; // CRC
-  return size;
+  return helperLogSizeResult(__func__, size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -8343,18 +8713,19 @@ vscp_getFrameSizeFromEventEx(vscpEventEx *pex)
 bool
 vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEvent *pev)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == frame) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Can't have data size with invalid data pointer
   if (pev->sizeData && (nullptr == pev->pdata)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Always write packet format 1 - UNIX_NS nanosecond timestamp
@@ -8362,7 +8733,7 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
                     VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pev->sizeData + 2; // CRC
 
   if (len < calcSize) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Determine the nanosecond timestamp to use
@@ -8464,27 +8835,28 @@ vscp_writeEventToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEv
 bool
 vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscpEventEx *pex)
 {
+  helperLogEntry(__func__);
   vscpEvent *pev;
 
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   pev->pdata = nullptr;
 
   // Check pointer (rest is checked in vscp_convertEventExToEvent)
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Convert eventEx to event
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_writeEventToFrame(frame, len, pkttype, pev)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   vscp_deleteEvent_v2(&pev);
 
@@ -8500,13 +8872,14 @@ vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscp
 bool
 vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == buf) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Get packet type from upper nibble
@@ -8538,7 +8911,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
 
     // The buffer must hold a frame
     if (len < calcFrameSize)
-      return false;
+      return helperLogBoolResult(__func__, false);
 
     crc crcFrame = ((uint16_t) buf[calcFrameSize - 2] << 8) + buf[calcFrameSize - 1];
 
@@ -8550,7 +8923,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
       crcnew = crcFast((unsigned char const *) buf + 1, (int) calcFrameSize - 1);
       // CRC is zero if calculated over itself
       if (crcnew) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
     }
 
@@ -8560,7 +8933,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
     // Allocate data
     if (pev->sizeData) {
       if (nullptr == (pev->pdata = new uint8_t[pev->sizeData])) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
       // copy in data
       memcpy(pev->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pev->sizeData);
@@ -8642,7 +9015,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
 
     // The buffer must hold a frame
     if (len < calcFrameSize)
-      return false;
+      return helperLogBoolResult(__func__, false);
 
     crc crcFrame = ((uint16_t) buf[calcFrameSize - 2] << 8) + buf[calcFrameSize - 1];
 
@@ -8654,7 +9027,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
       crcnew = crcFast((unsigned char const *) buf + 1, (int) calcFrameSize - 1);
       // CRC is zero if calculated over itself
       if (crcnew) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
     }
 
@@ -8664,7 +9037,7 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
     // Allocate data
     if (pev->sizeData) {
       if (nullptr == (pev->pdata = new uint8_t[pev->sizeData])) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
       // copy in data
       memcpy(pev->pdata, buf + VSCP_BINARY_PACKET_FRAME0_POS_DATA, pev->sizeData);
@@ -8750,27 +9123,28 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
 bool
 vscp_getEventExFromFrame(vscpEventEx *pex, const uint8_t *frame, size_t len)
 {
+  helperLogEntry(__func__);
   // Check pointer
   if (nullptr == pex) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscpEvent *pev = nullptr;
-  if (!vscp_newEvent(&pev)) { return false; }
+  if (!vscp_newEvent(&pev)) { return helperLogBoolResult(__func__, false); }
   if (nullptr == pev) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   pev->pdata = nullptr;
 
   if (!vscp_getEventFromFrame(pev, frame, len)) {
     vscp_deleteEvent_v2(&pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Convert event to eventEx
   if (!vscp_convertEventToEventEx(pex, pev)) {
     vscp_deleteEvent_v2(&pev);
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   vscp_deleteEvent_v2(&pev);
@@ -8786,13 +9160,14 @@ vscp_getEventExFromFrame(vscpEventEx *pex, const uint8_t *frame, size_t len)
 int
 vscp_writeCommandToFrame(uint8_t *frame, size_t len, uint16_t command, const uint8_t *arg, size_t arg_len)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (NULL == frame) {
-    return VSCP_ERROR_PARAMETER;
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (NULL == arg && arg_len) {
-    return VSCP_ERROR_PARAMETER;
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   size_t calcSize = 1 +       // Packet type
@@ -8801,7 +9176,7 @@ vscp_writeCommandToFrame(uint8_t *frame, size_t len, uint16_t command, const uin
                     2;        // CRC
 
   if (len < calcSize) {
-    return VSCP_ERROR_BUFFER_TO_SMALL;
+    return helperLogStatusResult(__func__, VSCP_ERROR_BUFFER_TO_SMALL);
   }
 
   // Set packet type for command
@@ -8840,13 +9215,14 @@ vscp_writeReplyToFrame(uint8_t *frame,
                              const uint8_t *arg,
                              size_t arg_len)
 {
+  helperLogEntry(__func__);
   // Check pointers
   if (NULL == frame) {
-    return VSCP_ERROR_PARAMETER;
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (NULL == arg && arg_len) {
-    return VSCP_ERROR_PARAMETER;
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   size_t calcSize = 1 +       // Packet type
@@ -8856,7 +9232,7 @@ vscp_writeReplyToFrame(uint8_t *frame,
                     2;        // CRC
 
   if (len < calcSize) {
-    return VSCP_ERROR_BUFFER_TO_SMALL;
+    return helperLogStatusResult(__func__, VSCP_ERROR_BUFFER_TO_SMALL);
   }
 
   // Set packet type for reply
@@ -8892,6 +9268,7 @@ vscp_writeReplyToFrame(uint8_t *frame,
 const char *
 vscp_getBootLoaderDescription(uint8_t code)
 {
+  helperLogEntry(__func__);
   switch (code) {
     case VSCP_BOOTLOADER_VSCP:
       return "VSCP boot loader algorithm";
@@ -8951,6 +9328,7 @@ vscp_getBootLoaderDescription(uint8_t code)
 void
 vscp_setFrameEncryptionUseOpenSSL(bool bEnable)
 {
+  helperLogEntry(__func__);
   g_vscp_use_openssl_frame_crypto.store(bEnable);
 }
 
@@ -8961,6 +9339,7 @@ vscp_setFrameEncryptionUseOpenSSL(bool bEnable)
 bool
 vscp_getFrameEncryptionUseOpenSSL(void)
 {
+  helperLogEntry(__func__);
   return g_vscp_use_openssl_frame_crypto.load();
 }
 
@@ -8976,23 +9355,24 @@ vscp_encryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
+  helperLogEntry(__func__);
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
+    return helperLogSizeResult(__func__, vscp_encryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm));
   }
 
   uint8_t generated_iv[16];
 
   // Check pointers
   if (nullptr == output) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   if (nullptr == input) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   if (!len) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
@@ -9004,12 +9384,12 @@ vscp_encryptFrame(uint8_t *output,
   }
 
   if (nullptr == key || nullptr == vscp_getOpenSslCipherFromAlgorithm(nAlgorithm)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
 
   std::vector<uint8_t> plaintext;
   if (!vscp_pkcs7Pad(input + 1, len - 1, plaintext)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   size_t padlen = plaintext.size();
 
@@ -9019,7 +9399,7 @@ vscp_encryptFrame(uint8_t *output,
   // If iv is not give it should be generated
   if (nullptr == iv) {
     if (16 != getRandomIV(generated_iv, 16)) {
-      return 0;
+      return helperLogSizeResult(__func__, 0);
     }
   }
   else {
@@ -9065,7 +9445,7 @@ vscp_encryptFrame(uint8_t *output,
       break;
 
     default:
-      return 0;
+      return helperLogSizeResult(__func__, 0);
   }
 
   padlen++; // Count packet type byte
@@ -9085,8 +9465,9 @@ vscp_decryptFrame(uint8_t *output,
                   const uint8_t *iv,
                   uint8_t nAlgorithm)
 {
+  helperLogEntry(__func__);
   if (vscp_getFrameEncryptionUseOpenSSL()) {
-    return vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm);
+    return helperLogBoolResult(__func__, vscp_decryptFrameOpenSSL(output, input, len, key, iv, nAlgorithm));
   }
 
   uint8_t appended_iv[16];
@@ -9094,34 +9475,34 @@ vscp_decryptFrame(uint8_t *output,
 
   // Check pointers
   if (nullptr == output) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == input) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (!len) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
   if (VSCP_ENCRYPTION_NONE == nAlgorithm) {
     if (!vscp_validFrameCrc(input, len)) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memmove(output, input, len);
     return true;
   }
   if (nullptr == key) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // If iv is not given it should be fetched from the end of input (last 16
   // bytes)
   if (nullptr == iv) {
     if (len < 1 + 16 + 16) {
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
     memcpy(appended_iv, (input + len - 16), 16);
     real_len -= 16; // Adjust frame length accordingly
@@ -9131,7 +9512,7 @@ vscp_decryptFrame(uint8_t *output,
   }
 
   if ((real_len < 1 + 16) || ((real_len - 1) % 16)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   // Preserve packet type which always is un-encrypted
@@ -9175,22 +9556,23 @@ vscp_decryptFrame(uint8_t *output,
       break;
 
     default:
-      return false;
+      return helperLogBoolResult(__func__, false);
   }
 
-  return vscp_validateDecryptedFrame(output, real_len);
+  return helperLogBoolResult(__func__, vscp_validateDecryptedFrame(output, real_len));
 }
 
 static bool
 vscp_frameHmac(uint8_t *digest, const uint8_t *frame, size_t len, const uint8_t *key)
 {
+  helperLogEntry(__func__);
   // Reconstruct the unique version 1 prefix; its length includes the tag.
   const uint16_t word = 0x2000 | static_cast<uint16_t>(len + 16);
   std::vector<uint8_t> authenticated = {0x55, static_cast<uint8_t>(word >> 8), static_cast<uint8_t>(word)};
   authenticated.insert(authenticated.end(), frame, frame + len);
   unsigned int digest_len = 0;
-  return HMAC(EVP_sha256(), key, 32, authenticated.data(), authenticated.size(), digest, &digest_len) &&
-         digest_len == 32;
+  return helperLogBoolResult(__func__, HMAC(EVP_sha256(), key, 32, authenticated.data(), authenticated.size(), digest, &digest_len) &&
+         digest_len == 32);
 }
 
 size_t
@@ -9203,39 +9585,40 @@ vscp_encryptFrameV1(uint8_t *output,
                     const uint8_t *iv,
                     uint8_t nAlgorithm)
 {
+  helperLogEntry(__func__);
   if (!output || !input || !key || !hmacKey || len < 5 || len > 0x1fff) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   nAlgorithm = vscp_resolveFrameCryptoAlgorithm(nAlgorithm, input);
   const EVP_CIPHER *cipher = vscp_getOpenSslCipherFromAlgorithm(nAlgorithm);
   if (!cipher) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   const size_t ciphertext_len = ((len - 1) / 16 + 1) * 16;
   const size_t wire_len = 1 + ciphertext_len + 32;
   if (capacity < wire_len || wire_len > 0x1fff) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   uint8_t generated_iv[16];
   if (iv) {
     memcpy(generated_iv, iv, sizeof(generated_iv));
   }
   else if (RAND_bytes(generated_iv, sizeof(generated_iv)) != 1) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   std::vector<uint8_t> padded;
   if (!vscp_pkcs7Pad(input + 1, len - 1, padded)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   std::vector<uint8_t> frame(wire_len);
   frame[0] = (input[0] & 0xf0) | nAlgorithm;
   if (!vscp_evpEncryptBuffer(cipher, frame.data() + 1, padded.data(), padded.size(), key, generated_iv)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   memcpy(frame.data() + 1 + ciphertext_len, generated_iv, 16);
   uint8_t digest[32];
   if (!vscp_frameHmac(digest, frame.data(), wire_len - 16, hmacKey)) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   memcpy(frame.data() + wire_len - 16, digest, 16);
   memmove(output, frame.data(), wire_len);
@@ -9250,17 +9633,18 @@ vscp_decryptFrameV1(uint8_t *output,
                     const uint8_t *key,
                     const uint8_t *hmacKey)
 {
+  helperLogEntry(__func__);
   if (!output || !input || !key || !hmacKey || len < 49 || len > 0x1fff || (len - 33) % 16) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   const EVP_CIPHER *cipher = vscp_getOpenSslCipherFromAlgorithm(input[0] & 0x0f);
   if (!cipher) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   uint8_t digest[32];
   if (!vscp_frameHmac(digest, input, len - 16, hmacKey) ||
       CRYPTO_memcmp(digest, input + len - 16, 16) != 0) {
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   size_t payload_len = len - 33;
   std::vector<uint8_t> plaintext(1 + payload_len);
@@ -9269,7 +9653,7 @@ vscp_decryptFrameV1(uint8_t *output,
       !vscp_pkcs7Unpad(plaintext.data() + 1, payload_len) ||
       !vscp_validFrameCrc(plaintext.data(), payload_len + 1) || capacity < payload_len + 1) {
     OPENSSL_cleanse(plaintext.data(), plaintext.size());
-    return 0;
+    return helperLogSizeResult(__func__, 0);
   }
   memmove(output, plaintext.data(), payload_len + 1);
   OPENSSL_cleanse(plaintext.data(), plaintext.size());
@@ -9287,6 +9671,7 @@ vscp_decryptFrameV1(uint8_t *output,
 void
 vscp_md5(char *digest, const unsigned char *buf, size_t len)
 {
+  helperLogEntry(__func__);
   unsigned char hash[16];
 
   md5_state_s pms;
@@ -9307,6 +9692,7 @@ vscp_md5(char *digest, const unsigned char *buf, size_t len)
 void
 vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 {
+  helperLogEntry(__func__);
   static const char *hex = "0123456789abcdef";
 
   for (; len--; p++) {
@@ -9322,6 +9708,7 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 static uint8_t
 readHexChar(char input)
 {
+  helperLogEntry(__func__);
   if (input >= '0' && input <= '9') {
     return input - '0';
   }
@@ -9331,6 +9718,7 @@ readHexChar(char input)
   if (input >= 'a' && input <= 'f') {
     return input - 'a' + 10;
   }
+  helperLogFailure(__func__);
   throw std::invalid_argument("Invalid hex char input");
 }
 
@@ -9341,6 +9729,7 @@ readHexChar(char input)
 size_t
 vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 {
+  helperLogEntry(__func__);
   size_t cnt       = 0;
   const char *phex = hexstr;
 
@@ -9363,22 +9752,23 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
 bool
 vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string &stored_pw)
 {
+  helperLogEntry(__func__);
   std::string strSalt;
   std::string strHash;
 
   // Check pointers
   if (nullptr == pSalt) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   if (nullptr == pHash) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   std::deque<std::string> tokens;
   vscp_split(tokens, stored_pw, ";");
   if (2 != tokens.size()) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
 
   strSalt = tokens.front();
@@ -9399,8 +9789,9 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
 bool
 vscp_getSalt(uint8_t *buf, size_t len)
 {
+  helperLogEntry(__func__);
   if (!getRandomIV(buf, len)) {
-    return false;
+    return helperLogBoolResult(__func__, false);
   }
   return true;
 }
@@ -9412,11 +9803,12 @@ vscp_getSalt(uint8_t *buf, size_t len)
 bool
 vscp_getSaltHex(std::string &strSalt, size_t len)
 {
+  helperLogEntry(__func__);
   if (len) {
     uint8_t *pbuf = new uint8_t[len];
     if (len != getRandomIV(pbuf, len)) {
       delete[] pbuf;
-      return false;
+      return helperLogBoolResult(__func__, false);
     }
 
     strSalt.clear();
@@ -9437,6 +9829,7 @@ vscp_getSaltHex(std::string &strSalt, size_t len)
 std::string
 vscp_getHostFromInterface(const std::string &iface)
 {
+  helperLogEntry(__func__);
   size_t pos;
   std::string str = iface;
   vscp_trim(str);
@@ -9470,6 +9863,7 @@ typedef struct ip_address_tag {
 bool
 parse_ipv4_address(const char *input, ip_address_t *result)
 {
+  helperLogEntry(__func__);
   struct in_addr addr;
   if (inet_pton(AF_INET, input, &addr) == 1) {
     result->family             = AF_INET;
@@ -9483,6 +9877,7 @@ parse_ipv4_address(const char *input, ip_address_t *result)
 bool
 parse_ipv6_address(const char *input, ip_address_t *result)
 {
+  helperLogEntry(__func__);
   struct in6_addr addr;
   if (inet_pton(AF_INET6, input, &addr) == 1) {
     result->family = AF_INET6;
@@ -9496,6 +9891,7 @@ parse_ipv6_address(const char *input, ip_address_t *result)
 uint16_t
 parse_port_number(const char *str)
 {
+  helperLogEntry(__func__);
   char *eptr;
   unsigned long port = strtoul(str, &eptr, 10);
   if (port > 0 && *eptr == '\0' && port <= UINT16_MAX) {
@@ -9517,6 +9913,7 @@ parse_port_number(const char *str)
 bool
 parse_address(const char *input, ip_address_t *result)
 {
+  helperLogEntry(__func__);
   const char *ptr = strrchr(input, ':');
   if (ptr != nullptr && ptr > input) {
     uint16_t port = parse_port_number(ptr + 1);
@@ -9528,7 +9925,7 @@ parse_address(const char *input, ip_address_t *result)
       char *copy = strdup(input);
 #endif
       if (copy == nullptr) {
-        return false;
+        return helperLogBoolResult(__func__, false);
       }
       int index   = (int) (ptr - input);
       copy[index] = '\0';
@@ -9548,7 +9945,7 @@ parse_address(const char *input, ip_address_t *result)
       }
     }
   }
-  return parse_ipv6_address(input, result) || parse_ipv4_address(input, result);
+  return helperLogBoolResult(__func__, parse_ipv6_address(input, result) || parse_ipv4_address(input, result));
 }
 
 // Test code

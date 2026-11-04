@@ -147,13 +147,21 @@ public:
       Set connect timeout.
       @param to Timeout value in **seconds**.
    */
-  void setConnectTimeout(uint16_t to = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS) { m_connectionTimeOut = to; };
+  void setConnectTimeout(uint16_t to = TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS)
+  {
+    logDebugEntry(__func__);
+    m_connectionTimeOut = to;
+  };
 
   /*!
       Get connection timeout (in seconds)
       @return Connection timeout in **seconds**
   */
-  uint16_t getConnectTimeout(void) { return m_connectionTimeOut; };
+  uint16_t getConnectTimeout(void)
+  {
+    logDebugEntry(__func__);
+    return m_connectionTimeOut;
+  };
 
   /*!
       Set response timeout.
@@ -161,6 +169,7 @@ public:
    */
   void setResponseTimeout(uint32_t to = TCPIP_DEFAULT_RESPONSE_TIMEOUT)
   {
+    logDebugEntry(__func__);
     if (to < 100)
       to = 1000; // To be backward compatible
     if (to)
@@ -171,7 +180,11 @@ public:
       Get response timeout
       @return Response timeout in milliseconds
   */
-  uint32_t getResponseTimeout(void) { return m_responseTimeOut; };
+  uint32_t getResponseTimeout(void)
+  {
+    logDebugEntry(__func__);
+    return m_responseTimeOut;
+  };
 
   /*!
       Set after command sleep time (milliseconds)
@@ -179,6 +192,7 @@ public:
    */
   void setAfterCommandSleep(uint16_t to)
   {
+    logDebugEntry(__func__);
     TCPIP_UNUSED(to); // For backward compatibility
   }
 
@@ -186,19 +200,28 @@ public:
       Set inner response timeout
       @param to Timeout value in milliseconds. 0 = return immediately, -1 = use default value (2000 ms)
    */
-  void setInnerResponseTimeout(uint32_t to = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT) { m_innerResponseTimeout = to; };
+  void setInnerResponseTimeout(uint32_t to = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT)
+  {
+    logDebugEntry(__func__);
+    m_innerResponseTimeout = to;
+  };
 
   /*!
       Get inner response timeout
       @return Inner response timeout in milliseconds. 0 = return immediately, -1 = use default value (2000 ms)
   */
-  uint32_t getInnerResponseTimeout(void) { return m_innerResponseTimeout; };
+  uint32_t getInnerResponseTimeout(void)
+  {
+    logDebugEntry(__func__);
+    return m_innerResponseTimeout;
+  };
 
   /*!
       Set register read/write timings
    */
   void setRegisterOperationTiming(uint8_t retries, uint32_t resendto, uint32_t errorto)
   {
+    logDebugEntry(__func__);
     m_registerOpMaxRetries    = retries;
     m_registerOpResendTimeout = resendto;
     m_registerOpErrorTimeout  = errorto;
@@ -208,14 +231,22 @@ public:
       Get last response form remote node
       @return Last raw response data from remote node
    */
-  std::string &getLastResponse(void) { return m_strResponse; };
+  std::string &getLastResponse(void)
+  {
+    logDebugEntry(__func__);
+    return m_strResponse;
+  };
 
   /*!
       Get last response time
       @return Relative time in milliseconds when last valid received
           data was read.
   */
-  uint32_t getlastResponseTime(void) { return m_lastResponseTime; };
+  uint32_t getlastResponseTime(void)
+  {
+    logDebugEntry(__func__);
+    return m_lastResponseTime;
+  };
 
   /*!
       Returns TRUE if we are connected false otherwise.
@@ -270,7 +301,11 @@ public:
       Reconnect to return to text mode. Not allowed during RCVLOOP.
    */
   int doCmdBinary(void);
-  bool isBinaryMode(void) const { return m_bBinaryMode; }
+  bool isBinaryMode(void) const
+  {
+    logDebugEntry(__func__);
+    return m_bBinaryMode;
+  }
 
   /*!
       Send/receive a complete VSCP-GBP frame, excluding its two-byte
@@ -342,7 +377,11 @@ public:
       Get the Canal protocol level
       @return VSCP Level
    */
-  unsigned long doCmdGetLevel(void) { return VSCP_LEVEL2; }
+  unsigned long doCmdGetLevel(void)
+  {
+    logDebugEntry(__func__);
+    return VSCP_LEVEL2;
+  }
 
   /*!
       Send a VSCP Level II event through interface.
@@ -557,6 +596,7 @@ public:
    */
   int doCmdSetBaudrate(uint32_t baudrate)
   {
+    logDebugEntry(__func__);
     TCPIP_UNUSED(baudrate);
     return CANAL_ERROR_SUCCESS;
   };
@@ -566,6 +606,7 @@ public:
    */
   int doCmdFilter(uint32_t filter)
   {
+    logDebugEntry(__func__);
     TCPIP_UNUSED(filter);
     return CANAL_ERROR_SUCCESS;
   };
@@ -575,6 +616,7 @@ public:
    */
   int doCmdMask(uint32_t mask)
   {
+    logDebugEntry(__func__);
     TCPIP_UNUSED(mask);
     return CANAL_ERROR_SUCCESS;
   };
@@ -696,6 +738,9 @@ protected:
   uint32_t m_lastResponseTime;
 
 private:
+  static void logDebugEntry(const char *function) noexcept;
+  bool checkReturnValueForCommand(bool bClear, bool routineReceive);
+
   /// Flag for active receive loop
   bool m_bModeReceiveLoop;
   bool m_bBinaryMode;
@@ -751,12 +796,14 @@ public:
   */
   void enableTLS(bool bEnable = true)
   {
+    logDebugEntry(__func__);
     m_tlsMode = bEnable ? tls_mode::force_tls : tls_mode::force_plain;
     m_bTLS    = bEnable;
   };
 
   void setTLSAutoSelect(void)
   {
+    logDebugEntry(__func__);
     m_tlsMode = tls_mode::auto_select;
     m_bTLS    = false;
   };
@@ -766,6 +813,7 @@ public:
   */
   void setTLSMode(tls_mode mode)
   {
+    logDebugEntry(__func__);
     m_tlsMode = mode;
     if (tls_mode::force_tls == m_tlsMode) {
       m_bTLS = true;
@@ -778,7 +826,11 @@ public:
   /*!
       Get current TLS selection mode.
   */
-  tls_mode getTLSMode(void) const { return m_tlsMode; };
+  tls_mode getTLSMode(void) const
+  {
+    logDebugEntry(__func__);
+    return m_tlsMode;
+  };
 
   /*!
       Set TLS/SSL options
@@ -797,6 +849,7 @@ public:
                      const std::string &keyfile   = "",
                      const std::string &pwKeyfile = "")
   {
+    logDebugEntry(__func__);
     m_tlsMode     = tls_mode::force_tls;
     m_bTLS        = true;
     m_bVerifyPeer = bVerifyPeer;

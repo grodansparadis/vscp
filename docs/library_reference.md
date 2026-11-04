@@ -52,8 +52,10 @@ int main() {
 
 ## Helper and TCP logging
 
-`vscp_core` contains a private, synchronous logger for `vscphelper.cpp` and
-`VscpRemoteTcpIf`. Before configuration, their errors continue to use stderr.
+`vscp_util` contains the private, synchronous logger used by `vscphelper.cpp`,
+inline functions in `vscphelper.h`, and `VscpRemoteTcpIf` in `vscp_core`.
+Both libraries export the configuration API and share the same logging state.
+Before configuration, errors go to stderr and debug tracing is disabled.
 Applications can configure independent stderr and rotating-file thresholds
 through the C-compatible `vscphelperlogging.h` interface without including or
 linking spdlog themselves:
@@ -79,12 +81,24 @@ size, and 1 through 200000 archives. Failures are reported to stderr and through
 the thread-local `vscphelper_getLastLoggingError()` result. Do not unload the
 library while it is in use, or share a rotating file between processes.
 
+Debug logging traces function entry and routine receive timeouts; failures are
+logged at error level. Normal false predicate results and empty or timed-out
+receive polls are not logged as errors. In particular, the TCP `RETR` response
+`-OK - No event(s) available` is logged at debug level without changing the
+legacy receive return codes. Function traces do not include arguments,
+credentials, responses, or event payloads. Some transport errors do include
+hostnames, TLS file paths, and operating-system error codes; protect log files
+accordingly.
+
 The logger does not alter spdlog's global default or registry and passes no
-spdlog types through its C interface. Logging state belongs to each linked copy
-of VSCP, so a separate helper-library binary has its own configuration.
-Standalone builds that compile these underlying source files directly keep
-their original stderr behavior unless they define `VSCP_ENABLE_HELPER_LOGGING`
-and also compile `vscphelperlogging.cpp` with spdlog headers available.
+spdlog types through its C interface. Libraries linked to the same `vscp_util`
+share its configuration; a separately built copy has its own state. Standalone
+consumers of the inline helpers must link `vscp_util` or define
+`VSCP_DISABLE_HELPER_LOGGING` consistently in their translation units. With
+that opt-out, helper debug tracing is disabled and helper errors are reported
+to stderr. Direct builds of the TCP source must also define
+`VSCP_ENABLE_HELPER_LOGGING` and link the logger to enable its debug tracing
+and route its diagnostics through the shared logger.
 The optional `test_core_logging_host_compat` test can be enabled by setting
 `VSCP_TEST_HOST_SPDLOG_INCLUDE_DIR` to headers for a different spdlog version.
 See [Logging design](logging-design.md) for why VSCP uses this approach.

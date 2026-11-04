@@ -40,6 +40,7 @@
 #include <string>
 #include <algorithm>
 #include <cerrno>
+#include <cctype>
 #include <chrono>
 #include <climits>
 #include <condition_variable>
@@ -78,13 +79,59 @@
 #include "vscphelperlogging.h"
 #endif
 
-#include <iostream>
+namespace {
 
-// Undef to get extra debug info
-//#define DEBUG_INNER_COMMUNICATION
+class SavedErrorState {
+public:
+  SavedErrorState() noexcept
+    : errorNumber(errno)
+#ifdef WIN32
+    , windowsError(GetLastError())
+    , socketError(WSAGetLastError())
+#endif
+  {
+  }
 
-// Undef if debug messages is not wanted
-//#define DEBUG_LIB_VSCP_HELPER   1
+  ~SavedErrorState() noexcept
+  {
+#ifdef WIN32
+    WSASetLastError(socketError);
+    SetLastError(windowsError);
+#endif
+    errno = errorNumber;
+  }
+
+private:
+  int errorNumber;
+#ifdef WIN32
+  DWORD windowsError;
+  int socketError;
+#endif
+};
+
+void logTcpDebug(const char *function, const char *message) noexcept
+{
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+  SavedErrorState saved;
+  VSCPHLP_LOG_DEBUG("VSCP TCP: {}: {}", function, message);
+#else
+  (void) function;
+  (void) message;
+#endif
+}
+
+void logTcpEntry(const char *function) noexcept
+{
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+  vscphelper_logFunctionEntry("TCP", function);
+#else
+  (void) function;
+#endif
+}
+
+void transportError(const char *format, ...);
+
+} // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // win_usleep
@@ -97,6 +144,7 @@
 static void
 win_usleep(__int64 usec)
 {
+  logTcpEntry(__func__);
   HANDLE timer;
   LARGE_INTEGER ft;
 
@@ -104,9 +152,14 @@ win_usleep(__int64 usec)
                               // value indicates relative time
 
   timer = CreateWaitableTimer(NULL, TRUE, NULL);
-  SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-  WaitForSingleObject(timer, INFINITE);
-  CloseHandle(timer);
+  if (!timer)
+    transportError("cannot create waitable timer (error %lu)", GetLastError());
+  if (!SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0))
+    transportError("cannot set waitable timer (error %lu)", GetLastError());
+  if (WaitForSingleObject(timer, INFINITE) == WAIT_FAILED)
+    transportError("cannot wait for timer (error %lu)", GetLastError());
+  if (!CloseHandle(timer))
+    transportError("cannot close waitable timer (error %lu)", GetLastError());
 }
 #endif
 
@@ -133,6 +186,8 @@ const Socket invalidSocket = -1;
   
 void transportError(const char *format, ...)
 {
+  logTcpEntry(__func__);
+  SavedErrorState saved;
   va_list arguments;
   va_start(arguments, format);
 #ifdef VSCP_ENABLE_HELPER_LOGGING
@@ -145,6 +200,65 @@ void transportError(const char *format, ...)
   va_end(arguments);
 }
 
+int logTcpResult(const char *function, int result, bool routineReceive = false) noexcept
+{
+  if (result == VSCP_ERROR_SUCCESS) {
+    return result;
+  }
+
+  if (routineReceive &&
+      (result == VSCP_ERROR_TIMEOUT || result == -VSCP_ERROR_TIMEOUT ||
+       result == VSCP_ERROR_RCV_EMPTY || result == -VSCP_ERROR_RCV_EMPTY)) {
+#ifdef VSCP_ENABLE_HELPER_LOGGING
+    vscphelper_logFunctionStatus("TCP", function, result);
+#endif
+  }
+  else {
+    transportError("%s failed (error %d)", function, result);
+  }
+  return result;
+}
+
+int logTcpReadResult(const char *function, int result) noexcept
+{
+  return result < 0 ? logTcpResult(function, result, true) : result;
+}
+
+bool isReceiveCommand(const std::string &command)
+{
+  logTcpEntry(__func__);
+  size_t position = command.find_first_not_of(" \t\r\n\f\v");
+  if (position == std::string::npos || command.size() - position < 4) {
+    return false;
+  }
+  static constexpr char name[] = "RETR";
+  for (size_t i = 0; i < sizeof(name) - 1; ++i) {
+    if (std::toupper(static_cast<unsigned char>(command[position + i])) != name[i]) {
+      return false;
+    }
+  }
+  position += sizeof(name) - 1;
+  return position == command.size() || std::isspace(static_cast<unsigned char>(command[position]));
+}
+
+bool isEmptyReceiveResponse(const std::string &response)
+{
+  logTcpEntry(__func__);
+  static constexpr char emptyResponse[] = "-OK - No event(s) available";
+  size_t position = response.rfind(emptyResponse);
+  if (position == std::string::npos || (position && response[position - 1] != '\n')) {
+    return false;
+  }
+  size_t end = position + sizeof(emptyResponse) - 1;
+  return response.find_first_not_of(" \t\r\n", end) == std::string::npos;
+}
+
+bool isEmptyReceiveResponse(const std::deque<std::string> &lines)
+{
+  logTcpEntry(__func__);
+  return !lines.empty() && isEmptyReceiveResponse(lines.back());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // tlsError
 // 
@@ -154,6 +268,7 @@ void transportError(const char *format, ...)
   
 void tlsError(const char *operation)
 {
+  logTcpEntry(__func__);
   unsigned long error = ERR_peek_last_error();
   char detail[256] = {};
   if (error)
@@ -183,13 +298,15 @@ struct SocketRuntime {
 #ifdef WIN32
   SocketRuntime()
   {
+    logTcpEntry(__func__);
     WSADATA data = {};
     error = WSAStartup(MAKEWORD(2, 2), &data);
   }
   ~SocketRuntime()
   {
-    if (!error)
-      WSACleanup();
+    logTcpEntry(__func__);
+    if (!error && WSACleanup() != 0)
+      transportError("cannot clean up sockets (error %d)", WSAGetLastError());
   }
 #endif
 };
@@ -202,6 +319,7 @@ struct SocketRuntime {
 
 int socketError()
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   return WSAGetLastError();
 #else
@@ -218,6 +336,7 @@ int socketError()
 
 bool socketInterrupted(int error)
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   return error == WSAEINTR;
 #else
@@ -235,6 +354,7 @@ bool socketInterrupted(int error)
 
 bool socketWouldBlock(int error)
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   return error == WSAEWOULDBLOCK;
 #else
@@ -252,6 +372,7 @@ bool socketWouldBlock(int error)
 
 bool socketConnecting(int error)
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   return error == WSAEWOULDBLOCK || error == WSAEINPROGRESS || error == WSAEALREADY ||
          error == WSAEINTR;
@@ -270,13 +391,16 @@ bool socketConnecting(int error)
 
 void closeSocket(Socket socket)
 {
+  logTcpEntry(__func__);
   if (socket == invalidSocket)
     return;
 #ifdef WIN32
-  closesocket(socket);
+  int result = closesocket(socket);
 #else
-  close(socket);
+  int result = close(socket);
 #endif
+  if (result != 0)
+    transportError("cannot close socket (error %d)", socketError());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -289,13 +413,17 @@ void closeSocket(Socket socket)
 
 bool setNonBlocking(Socket socket)
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   u_long enabled = 1;
-  return ioctlsocket(socket, FIONBIO, &enabled) == 0;
+  bool result = ioctlsocket(socket, FIONBIO, &enabled) == 0;
 #else
   int flags = fcntl(socket, F_GETFL, 0);
-  return flags >= 0 && fcntl(socket, F_SETFL, flags | O_NONBLOCK) == 0;
+  bool result = flags >= 0 && fcntl(socket, F_SETFL, flags | O_NONBLOCK) == 0;
 #endif
+  if (!result)
+    transportError("cannot set nonblocking socket mode (error %d)", socketError());
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -309,6 +437,7 @@ bool setNonBlocking(Socket socket)
   
 int waitForSocket(Socket socket, bool write, Deadline deadline)
 {
+  logTcpEntry(__func__);
   while (true) {
     auto now = Clock::now();
     if (now >= deadline)
@@ -354,6 +483,7 @@ int waitForSocket(Socket socket, bool write, Deadline deadline)
 
 int waitForConnections(const std::vector<Socket> &sockets, Deadline deadline, std::vector<size_t> &ready)
 {
+  logTcpEntry(__func__);
 #ifndef WIN32
   std::vector<pollfd> descriptors;
   for (Socket socket : sockets)
@@ -410,6 +540,7 @@ int waitForConnections(const std::vector<Socket> &sockets, Deadline deadline, st
 struct ConnectionAttempts {
   ~ConnectionAttempts()
   {
+    logTcpEntry(__func__);
     closeAll();
   }
 
@@ -422,6 +553,7 @@ struct ConnectionAttempts {
 
   void closeAll()
   {
+    logTcpEntry(__func__);
     for (Socket socket : sockets) {
       closeSocket(socket);
     }
@@ -437,6 +569,7 @@ struct ConnectionAttempts {
   //
   Socket take(size_t index)
   {
+    logTcpEntry(__func__);
     Socket socket = sockets[index];
     sockets.erase(sockets.begin() + index);
     return socket;
@@ -460,10 +593,16 @@ struct ConnectionAttempts {
 
 int socketRead(Socket socket, char *buffer, int length)
 {
+  logTcpEntry(__func__);
   int result;
   do {
     result = static_cast<int>(recv(socket, buffer, length, 0));
   } while (result < 0 && socketInterrupted(socketError()));
+  if (result < 0) {
+    int error = socketError();
+    if (!socketWouldBlock(error))
+      transportError("socket read failed (error %d)", error);
+  }
   return result;
 }
 
@@ -480,6 +619,7 @@ int socketRead(Socket socket, char *buffer, int length)
 
 int socketWrite(Socket socket, const char *buffer, int length)
 {
+  logTcpEntry(__func__);
 #if !defined(WIN32) && defined(MSG_NOSIGNAL)
   const int flags = MSG_NOSIGNAL;
 #else
@@ -489,6 +629,11 @@ int socketWrite(Socket socket, const char *buffer, int length)
   do {
     result = static_cast<int>(send(socket, buffer, length, flags));
   } while (result < 0 && socketInterrupted(socketError()));
+  if (result < 0) {
+    int error = socketError();
+    if (!socketWouldBlock(error))
+      transportError("socket write failed (error %d)", error);
+  }
   return result;
 }
 
@@ -501,9 +646,10 @@ int socketWrite(Socket socket, const char *buffer, int length)
 // 
 
 struct AddressResult {
-  explicit AddressResult(std::shared_ptr<SocketRuntime> runtime) : runtime(std::move(runtime)) {}
+  explicit AddressResult(std::shared_ptr<SocketRuntime> runtime) : runtime(std::move(runtime)) { logTcpEntry(__func__); }
   ~AddressResult()
   {
+    logTcpEntry(__func__);
     if (addresses)
       freeaddrinfo(addresses);
   }
@@ -524,9 +670,10 @@ struct AddressResult {
 //
   
 struct ResolverTask {
-  explicit ResolverTask(std::shared_ptr<AddressResult> state) : state(std::move(state)) {}
+  explicit ResolverTask(std::shared_ptr<AddressResult> state) : state(std::move(state)) { logTcpEntry(__func__); }
   ~ResolverTask()
   {
+    logTcpEntry(__func__);
     if (worker.joinable())
       worker.join();
   }
@@ -549,6 +696,7 @@ public:
   /// @note Both methods are thread-safe and can be called from multiple threads concurrently.
   void reap()
   {
+    logTcpEntry(__func__);
     std::lock_guard<std::mutex> lock(mutex);
     auto task = tasks.begin();
     while (task != tasks.end()) {
@@ -569,6 +717,7 @@ public:
   /// @note The method is thread-safe and can be called from multiple threads concurrently.
   void keep(std::unique_ptr<ResolverTask> task)
   {
+    logTcpEntry(__func__);
     std::lock_guard<std::mutex> lock(mutex);
     tasks.push_back(std::move(task));
   }
@@ -589,6 +738,7 @@ private:
 
 ResolverTasks &resolverTasks()
 {
+  logTcpEntry(__func__);
   static ResolverTasks tasks;
   return tasks;
 }
@@ -618,6 +768,7 @@ std::shared_ptr<AddressResult> resolveAddress(const std::string &host,
                                               Deadline deadline,
                                               int &result)
 {
+  logTcpEntry(__func__);
   if (Clock::now() >= deadline) {
     result = VSCP_ERROR_TIMEOUT;
     return nullptr;
@@ -677,6 +828,7 @@ std::shared_ptr<AddressResult> resolveAddress(const std::string &host,
   
 int socketBioCreate(BIO *bio)
 {
+  logTcpEntry(__func__);
   BIO_set_init(bio, 1);
   BIO_set_data(bio, nullptr);
   BIO_set_shutdown(bio, 0);
@@ -693,6 +845,7 @@ int socketBioCreate(BIO *bio)
 
 int socketBioDestroy(BIO *bio)
 {
+  logTcpEntry(__func__);
   if (bio) {
     BIO_set_data(bio, nullptr);
     BIO_set_init(bio, 0);
@@ -713,6 +866,7 @@ int socketBioDestroy(BIO *bio)
 
 long socketBioControl(BIO *, int command, long, void *)
 {
+  logTcpEntry(__func__);
   return command == BIO_CTRL_FLUSH || command == BIO_C_SET_NBIO ? 1 : 0;
 }
 
@@ -728,6 +882,7 @@ long socketBioControl(BIO *, int command, long, void *)
   
 int socketBioRead(BIO *bio, char *buffer, int length)
 {
+  logTcpEntry(__func__);
   BIO_clear_retry_flags(bio);
   auto socket = static_cast<Socket *>(BIO_get_data(bio));
   if (!socket || !buffer || length <= 0)
@@ -752,6 +907,7 @@ int socketBioRead(BIO *bio, char *buffer, int length)
 
 int socketBioWrite(BIO *bio, const char *buffer, int length)
 {
+  logTcpEntry(__func__);
   BIO_clear_retry_flags(bio);
   auto socket = static_cast<Socket *>(BIO_get_data(bio));
   if (!socket || !buffer || length <= 0) {
@@ -774,6 +930,7 @@ int socketBioWrite(BIO *bio, const char *buffer, int length)
 
 bool isDirectory(const std::string &path)
 {
+  logTcpEntry(__func__);
 #ifdef WIN32
   DWORD attributes = GetFileAttributesA(path.c_str());
   return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
@@ -795,6 +952,7 @@ bool isDirectory(const std::string &path)
   
 bool readTlsFile(const std::string &path, std::string &contents)
 {
+  logTcpEntry(__func__);
   std::ifstream file(path, std::ios::binary);
   if (!file) {
     transportError("cannot read TLS file: %s", path.c_str());
@@ -844,6 +1002,7 @@ struct CaDirectory {
   
 void readCaEntry(const char *name, void *arg)
 {
+  logTcpEntry(__func__);
   auto &directory = *static_cast<CaDirectory *>(arg);
   if (directory.failed) {
     return;
@@ -892,6 +1051,7 @@ void readCaEntry(const char *name, void *arg)
   
 bool readCaDirectory(const std::string &path, std::string &certificates, bool allowEmpty = false)
 {
+  logTcpEntry(__func__);
   if (!isDirectory(path)) {
     transportError("invalid TLS CA directory: %s", path.c_str());
     return false;
@@ -964,6 +1124,7 @@ bool readCaDirectory(const std::string &path, std::string &certificates, bool al
 
 bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
 {
+  logTcpEntry(__func__);
   if (!client.m_cafile.empty() && !readTlsFile(client.m_cafile, ca)) {
     return false;
   }
@@ -1014,6 +1175,7 @@ bool readTrustAnchors(VscpRemoteTcpIf &client, std::string &ca)
 
 int rejectPassword(char *, int, int, void *)
 {
+  logTcpEntry(__func__);
   // Supply no PEM password when loading TLS trust anchors, avoiding prompts
   // and preventing encrypted PEM content from being unlocked. This callback
   // does not handle the remote client's login password.
@@ -1021,18 +1183,15 @@ int rejectPassword(char *, int, int, void *)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// rejectPassword
+// loadTrustAnchors
 //
-// Callback function to reject a password for TLS operations.
-// @param buffer Unused buffer for password input.
-// @param size Unused size of the buffer.
-// @param rwflag Unused read/write flag.
-// @param arg Unused argument.
-// @return Always returns 0 to indicate rejection.
+// Load the client's configured trust anchors into the TLS context.
+// Returns false if no usable anchors can be loaded.
 //
 
 bool loadTrustAnchors(SSL_CTX *context, VscpRemoteTcpIf &client)
 {
+  logTcpEntry(__func__);
   std::string ca;
   if (!readTrustAnchors(client, ca))
     return false;
@@ -1078,13 +1237,22 @@ bool loadTrustAnchors(SSL_CTX *context, VscpRemoteTcpIf &client)
 
 int tlsPassword(char *buffer, int size, int, void *arg)
 {
+  logTcpEntry(__func__);
   const auto &password = *static_cast<std::string *>(arg);
-  if (size <= 0 || password.size() > static_cast<size_t>(size))
+  if (size <= 0 || password.size() > static_cast<size_t>(size)) {
+    transportError("TLS private key password buffer is too small");
     return 0;
+  }
   return static_cast<int>(password.copy(buffer, static_cast<size_t>(size)));
 }
 
 } // namespace
+
+void
+VscpRemoteTcpIf::logDebugEntry(const char *function) noexcept
+{
+  logTcpEntry(function);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Transport
@@ -1114,6 +1282,7 @@ struct VscpRemoteTcpIf::Transport {
   ///< Destructor to clean up TLS and socket resources.
   ~Transport()
   {
+    logTcpEntry(__func__);
     SSL_free(tls);
     BIO_meth_free(bioMethod);
     SSL_CTX_free(context);
@@ -1137,6 +1306,7 @@ struct VscpRemoteTcpIf::Transport {
 bool
 VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::string &host)
 {
+  logTcpEntry(__func__);
   ERR_clear_error();
   context = SSL_CTX_new(TLS_client_method());
   if (!context) {
@@ -1189,20 +1359,21 @@ VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::str
 int
 VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &host, const std::string &port)
 {
+  logTcpEntry(__func__);
   if (runtime->error) {
     transportError("cannot initialize sockets (error %d)", runtime->error);
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (client.m_bTLS && !configureTls(client, host)) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   const auto deadline = Clock::now() + std::chrono::seconds(client.m_connectionTimeOut);
   int result = VSCP_ERROR_CONNECTION;
   auto addresses = resolveAddress(host, port, runtime, deadline, result);
   if (!addresses) {
-    return result;
+    return logTcpResult(__func__, result);
   }
   int lastError = 0;
   addrinfo *address = addresses->addresses;
@@ -1215,7 +1386,7 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
 #endif
   while (true) {
     if (Clock::now() >= deadline) {
-      return VSCP_ERROR_TIMEOUT;
+      return logTcpResult(__func__, VSCP_ERROR_TIMEOUT);
     }
     if (address && attempts.sockets.size() < maxPending &&
         (attempts.sockets.empty() || Clock::now() >= nextAttempt)) {
@@ -1258,7 +1429,7 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
     }
     if (attempts.sockets.empty() && !address) {
       transportError("cannot connect to %s:%s (error %d)", host.c_str(), port.c_str(), lastError);
-      return VSCP_ERROR_CONNECTION;
+      return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
     }
     if (attempts.sockets.empty()) {
       continue;
@@ -1269,7 +1440,7 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
     std::vector<size_t> ready;
     int waitResult = waitForConnections(attempts.sockets, waitDeadline, ready);
     if (waitResult < 0) {
-      return VSCP_ERROR_CONNECTION;
+      return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
     }
     bool failed = false;
     for (auto index = ready.rbegin(); index != ready.rend(); ++index) {
@@ -1312,12 +1483,12 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
         !BIO_meth_set_write(bioMethod, socketBioWrite) ||
         !BIO_meth_set_ctrl(bioMethod, socketBioControl)) {
       tlsError("cannot create TLS socket transport");
-      return VSCP_ERROR_CONNECTION;
+      return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
     }
     BIO *bio = BIO_new(bioMethod);
     if (!bio) {
       tlsError("cannot create TLS socket");
-      return VSCP_ERROR_CONNECTION;
+      return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
     }
     BIO_set_data(bio, &socket);
     SSL_set_bio(tls, bio, bio);
@@ -1330,11 +1501,11 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
       int error = SSL_get_error(tls, status);
       if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
         tlsError("TLS handshake failed");
-        return VSCP_ERROR_CONNECTION;
+        return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
       }
       int ready = waitForSocket(socket, error == SSL_ERROR_WANT_WRITE, deadline);
       if (ready <= 0) {
-        return ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_CONNECTION;
+        return logTcpResult(__func__, ready == 0 ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_CONNECTION);
       }
     }
   }
@@ -1384,8 +1555,9 @@ VscpRemoteTcpIf::Transport::open(VscpRemoteTcpIf &client, const std::string &hos
 int
 VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
 {
+  logTcpEntry(__func__);
   if (!connected) {
-    return -VSCP_ERROR_STOPPED;
+    return logTcpResult(__func__, -VSCP_ERROR_STOPPED, true);
   }
   if (timeout < 0) {
     timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
@@ -1406,7 +1578,7 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
           tlsError("TLS read failed");
         }
         connected = false;
-        return -VSCP_ERROR_STOPPED;
+        return logTcpResult(__func__, -VSCP_ERROR_STOPPED, true);
       }
       waitWrite = error == SSL_ERROR_WANT_WRITE;
     }
@@ -1417,7 +1589,7 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
       }
       if (!count || !socketWouldBlock(socketError())) {
         connected = false;
-        return -VSCP_ERROR_STOPPED;
+        return logTcpResult(__func__, -VSCP_ERROR_STOPPED, true);
       }
     }
     int ready = waitForSocket(socket, waitWrite, deadline);
@@ -1426,7 +1598,7 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
     }
     if (ready < 0) {
       connected = false;
-      return -VSCP_ERROR_STOPPED;
+      return logTcpResult(__func__, -VSCP_ERROR_STOPPED, true);
     }
   }
 }
@@ -1446,8 +1618,9 @@ VscpRemoteTcpIf::Transport::read(void *buffer, size_t length, int timeout)
 int
 VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t timeout)
 {
+  logTcpEntry(__func__);
   if (!connected) {
-    return -VSCP_ERROR_STOPPED;
+    return logTcpResult(__func__, -VSCP_ERROR_STOPPED);
   }
   const auto deadline = Clock::now() + std::chrono::milliseconds(timeout);
   const char *data = static_cast<const char *>(buffer);
@@ -1466,7 +1639,7 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
       if (error != SSL_ERROR_WANT_READ && error != SSL_ERROR_WANT_WRITE) {
         tlsError("TLS write failed");
         connected = false;
-        return -VSCP_ERROR_STOPPED;
+        return logTcpResult(__func__, -VSCP_ERROR_STOPPED);
       }
       waitWrite = error == SSL_ERROR_WANT_WRITE;
     }
@@ -1478,13 +1651,13 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
       }
       if (!count || !socketWouldBlock(socketError())) {
         connected = false;
-        return -VSCP_ERROR_STOPPED;
+        return logTcpResult(__func__, -VSCP_ERROR_STOPPED);
       }
     }
     int ready = waitForSocket(socket, waitWrite, deadline);
     if (ready <= 0) {
       connected = false;
-      return ready == 0 ? -VSCP_ERROR_TIMEOUT : -VSCP_ERROR_STOPPED;
+      return logTcpResult(__func__, ready == 0 ? -VSCP_ERROR_TIMEOUT : -VSCP_ERROR_STOPPED);
     }
   }
   return VSCP_ERROR_SUCCESS;
@@ -1499,6 +1672,7 @@ VscpRemoteTcpIf::Transport::write(const void *buffer, size_t length, uint32_t ti
 bool
 VscpRemoteTcpIf::isConnected(void)
 {
+  logTcpEntry(__func__);
   return m_transport && m_transport->connected;
 }
 
@@ -1510,6 +1684,7 @@ VscpRemoteTcpIf::isConnected(void)
 void
 VscpRemoteTcpIf::transportClose()
 {
+  logTcpEntry(__func__);
   m_transport.reset();
 }
 
@@ -1526,7 +1701,8 @@ VscpRemoteTcpIf::transportClose()
 int
 VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
 {
-  return m_transport ? m_transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
+  logTcpEntry(__func__);
+  return logTcpReadResult(__func__, m_transport ? m_transport->read(buffer, length, timeout) : -VSCP_ERROR_STOPPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1543,10 +1719,11 @@ VscpRemoteTcpIf::transportRead(void *buffer, size_t length, int timeout)
 int
 VscpRemoteTcpIf::transportWrite(const void *buffer, size_t length, uint32_t timeout)
 {
+  logTcpEntry(__func__);
   int result = m_transport ? m_transport->write(buffer, length, timeout) : -VSCP_ERROR_STOPPED;
   if (result != VSCP_ERROR_SUCCESS)
     transportClose();
-  return result;
+  return logTcpResult(__func__, result);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1555,6 +1732,7 @@ VscpRemoteTcpIf::transportWrite(const void *buffer, size_t length, uint32_t time
 
 VscpRemoteTcpIf::VscpRemoteTcpIf()
 {
+  logTcpEntry(__func__);
   m_lastResponseTime = 0;
 
   m_bTLS        = false;
@@ -1580,6 +1758,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
 
 VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {
+  logTcpEntry(__func__);
   doCmdClose();
 }
 
@@ -1590,7 +1769,16 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 bool
 VscpRemoteTcpIf::checkReturnValue(bool bClear)
 {
+  logTcpEntry(__func__);
+  return checkReturnValueForCommand(bClear, false);
+}
+
+bool
+VscpRemoteTcpIf::checkReturnValueForCommand(bool bClear, bool routineReceive)
+{
+  logTcpEntry(__func__);
   if (m_bBinaryMode) {
+    transportError("%s: text responses are unavailable in binary mode", __func__);
     return false;
   }
   bool rv = false;
@@ -1611,11 +1799,6 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
                                                        (std::numeric_limits<int>::max)()));
     int nRead = transportRead(buf, sizeof(buf) - 1,
                              m_innerResponseTimeout < 0 ? remaining : (std::min)(m_innerResponseTimeout, remaining));
-#ifdef DEBUG_INNER_COMMUNICATION
-    if (nRead) {
-      std::cout << "[" << buf << "]" << std::endl;
-    }
-#endif
     if (nRead < 0) {
       if (-VSCP_ERROR_TIMEOUT == nRead) {
         // VSCP_ERROR_TIMEOUT;
@@ -1632,9 +1815,6 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
     else if (nRead > 0) {
       m_lastResponseTime = vscp_getMsTimeStamp(); // Save last response time
       m_strResponse += std::string(buf, nRead);
-#ifdef DEBUG_INNER_COMMUNICATION
-      std::cout << "[ [m_strResponse]=" << m_strResponse << "]" << std::endl;
-#endif
     }
 
     // if err abort
@@ -1657,6 +1837,14 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 
   } // while
 
+  if (!rv) {
+    if (routineReceive && isEmptyReceiveResponse(m_strResponse)) {
+      logTcpDebug(__func__, "receive queue is empty");
+    }
+    else {
+      transportError("%s: no successful server response", __func__);
+    }
+  }
   return rv;
 }
 
@@ -1667,8 +1855,9 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 int
 VscpRemoteTcpIf::rcvloopRead(int timeout)
 {
+  logTcpEntry(__func__);
   if (m_bBinaryMode) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
   // bool rv = false;
   char buf[8192];
@@ -1678,19 +1867,19 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
 
   if (nRead < 0) {
     if (-VSCP_ERROR_TIMEOUT == nRead) {
-      return VSCP_ERROR_TIMEOUT;
+      return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
     }
     else if (-VSCP_ERROR_STOPPED == nRead) {
-      return VSCP_ERROR_STOPPED;
+      return logTcpResult(__func__, VSCP_ERROR_STOPPED, true);
     }
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR, true);
   }
   else if (nRead > 0) {
     m_strResponse += std::string(buf, nRead);
     addInputStringArrayFromReply();
   }
   else {
-    return VSCP_ERROR_TIMEOUT;
+    return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -1703,24 +1892,31 @@ VscpRemoteTcpIf::rcvloopRead(int timeout)
 int
 VscpRemoteTcpIf::doCommand(const char *cmd)
 {
+  logTcpEntry(__func__);
   if (nullptr == cmd) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   std::string strCmd = cmd;
-  return doCommand(strCmd);
+  int result = doCommand(strCmd);
+  if (result == VSCP_ERROR_ERROR && isReceiveCommand(strCmd) && isEmptyReceiveResponse(m_inputStrArray)) {
+    logTcpDebug(__func__, "receive queue is empty");
+    return result;
+  }
+  return logTcpResult(__func__, result);
 }
 
 int
 VscpRemoteTcpIf::doCommand(const std::string &cmd)
 {
+  logTcpEntry(__func__);
   if (m_bBinaryMode) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   std::string command = cmd;
   vscp_trim(command);
   vscp_makeUpper(command);
   if (command == "BINARY") {
-    return doCmdBinary();
+    return logTcpResult(__func__, doCmdBinary());
   }
   bool ret = false;
 
@@ -1728,18 +1924,24 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
 
   // Make sure we are connected
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (VSCP_ERROR_SUCCESS != transportWrite(cmd.data(), cmd.length(), m_responseTimeOut)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
-  ret = checkReturnValue(true);
+  bool routineReceive = isReceiveCommand(command);
+  ret = checkReturnValueForCommand(true, routineReceive);
+  bool emptyReceive = !ret && routineReceive && isEmptyReceiveResponse(m_strResponse);
   addInputStringArrayFromReply();
 
   if (!ret) {
-    return VSCP_ERROR_ERROR;
+    if (emptyReceive) {
+      logTcpDebug(__func__, "receive queue is empty");
+      return VSCP_ERROR_ERROR;
+    }
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -1748,21 +1950,22 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
 int
 VscpRemoteTcpIf::doCmdBinary(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
   if (m_bBinaryMode) {
     return VSCP_ERROR_SUCCESS;
   }
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   crcInit();
   doClrInputQueue();
   int writeResult = transportWrite("BINARY\r\n", 8, m_responseTimeOut);
   if (writeResult != VSCP_ERROR_SUCCESS) {
-    return writeResult == VSCP_ERROR_TIMEOUT ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, writeResult == VSCP_ERROR_TIMEOUT ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_ERROR);
   }
 
   // Read exactly through the response line: binary data may immediately
@@ -1774,13 +1977,13 @@ VscpRemoteTcpIf::doCmdBinary(void)
       deadline - std::chrono::steady_clock::now()).count();
     if (remaining <= 0) {
       transportClose(); // The peer may already have switched modes.
-      return VSCP_ERROR_TIMEOUT;
+      return logTcpResult(__func__, VSCP_ERROR_TIMEOUT);
     }
     char byte;
     int count = transportRead(&byte, 1, static_cast<int>((std::min<int64_t>)(remaining, INT_MAX)));
     if (count < 0) {
       transportClose();
-      return VSCP_ERROR_STOPPED;
+      return logTcpResult(__func__, VSCP_ERROR_STOPPED);
     }
     if (!count) {
       continue;
@@ -1795,24 +1998,25 @@ VscpRemoteTcpIf::doCmdBinary(void)
         return VSCP_ERROR_SUCCESS;
       }
       if (response.compare(0, 3, "-OK") == 0 || response.compare(0, 4, "+ERR") == 0) {
-        return VSCP_ERROR_ERROR;
+        return logTcpResult(__func__, VSCP_ERROR_ERROR);
       }
       transportClose();
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME);
     }
   }
   transportClose();
-  return VSCP_ERROR_INVALID_FRAME;
+  return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME);
 }
 
 int
 VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
   if (!m_bBinaryMode || frame.empty() || frame.size() > UINT16_MAX) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::vector<uint8_t> packet;
@@ -1820,17 +2024,18 @@ VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
   packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
   packet.push_back(static_cast<uint8_t>(frame.size()));
   packet.insert(packet.end(), frame.begin(), frame.end());
-  return transportWrite(packet.data(), packet.size(), m_responseTimeOut);
+  return logTcpResult(__func__, transportWrite(packet.data(), packet.size(), m_responseTimeOut));
 }
 
 int
 VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeout)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
   if (!m_bBinaryMode) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
@@ -1841,7 +2046,7 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
       if (!length) {
         transportClose();
         m_binaryInput.clear();
-        return VSCP_ERROR_INVALID_FRAME;
+        return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
       }
       needed += length;
       if (m_binaryInput.size() == needed) {
@@ -1858,14 +2063,14 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
     if (count < 0) {
       transportClose();
       m_binaryInput.clear();
-      return VSCP_ERROR_STOPPED;
+      return logTcpResult(__func__, VSCP_ERROR_STOPPED, true);
     }
     if (count > 0) {
       m_binaryInput.insert(m_binaryInput.end(), buffer, buffer + count);
       m_lastResponseTime = vscp_getMsTimeStamp();
     }
     else if (std::chrono::steady_clock::now() >= deadline) {
-      return VSCP_ERROR_TIMEOUT;
+      return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
     }
   }
 }
@@ -1873,6 +2078,7 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
 int
 VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
 {
+  logTcpEntry(__func__);
   const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
   while (true) {
     const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -1880,36 +2086,36 @@ VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
     std::vector<uint8_t> frame;
     int result = receiveBinaryFrame(frame, static_cast<uint32_t>((std::max<int64_t>)(0, remaining)));
     if (VSCP_ERROR_SUCCESS != result) {
-      return result;
+      return logTcpResult(__func__, result, true);
     }
 
     // Raw frame APIs must be used for encrypted frames and command replies.
     if ((frame[0] & 0x0f) || frame.size() < 5) {
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
     }
     const uint8_t type = frame[0] >> 4;
     if (type == 15 && frame.size() == 13 && frame[1] == 0xff && frame[2] == 0xff) {
       if (crcFast(frame.data() + 1, static_cast<int>(frame.size() - 1))) {
-        return VSCP_ERROR_INVALID_FRAME;
+        return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
       }
       const int error = (static_cast<int>(frame[3]) << 8) | frame[4];
       if (error) {
-        return error;
+        return logTcpResult(__func__, error, true);
       }
       if (std::chrono::steady_clock::now() >= deadline) {
-        return VSCP_ERROR_TIMEOUT;
+        return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
       }
       continue;
     }
     if (type > 1 || frame.size() < 38) {
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
     }
     const size_t sizeData = (static_cast<size_t>(frame[34]) << 8) | frame[35];
     if (sizeData > VSCP_MAX_DATA || frame.size() != sizeData + 38) {
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
     }
     if (!vscp_getEventFromFrame(event, frame.data(), frame.size())) {
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
     }
 
     const uint8_t argument[] = {0, 0, frame[1], frame[2], frame[frame.size() - 2], frame.back()};
@@ -1924,7 +2130,7 @@ VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
       event->pdata = nullptr;
       event->sizeData = 0;
     }
-    return result;
+    return logTcpResult(__func__, result, true);
   }
 }
 
@@ -1935,6 +2141,7 @@ VscpRemoteTcpIf::receiveBinaryEvent(vscpEvent *event, uint32_t timeout)
 size_t
 VscpRemoteTcpIf::getInputQueueCount(void)
 {
+  logTcpEntry(__func__);
   return m_inputStrArray.size();
 }
 
@@ -1945,6 +2152,7 @@ VscpRemoteTcpIf::getInputQueueCount(void)
 void
 VscpRemoteTcpIf::doClrInputQueue(void)
 {
+  logTcpEntry(__func__);
   m_strResponse.clear();
   m_inputStrArray.clear();
 }
@@ -1956,6 +2164,7 @@ VscpRemoteTcpIf::doClrInputQueue(void)
 size_t
 VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
 {
+  logTcpEntry(__func__);
   std::string tempStr;
 
   if (bClear) {
@@ -2010,16 +2219,13 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
 int
 VscpRemoteTcpIf::doCmdOpen(const std::string &strInterface, uint32_t flags)
 {
+  logTcpEntry(__func__);
   std::string str;
   std::string strUsername;
   std::string strPassword;
   std::string strHostname;
 
   TCPIP_UNUSED(flags);
-
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "strInterface = " << strInterface << std::endl;
-#endif
 
   // Interface can be given as
   //      tcp://host:port;username;password
@@ -2050,19 +2256,11 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strInterface, uint32_t flags)
     }
   }
 
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "strHostname = " << strHostname << std::endl;
-#endif
-
   // Username
   if (tokens.size()) {
     strUsername = tokens.front();
     tokens.pop_front();
   }
-
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "strUsername = " << strUsername << std::endl;
-#endif
 
   // Password
   if (tokens.size()) {
@@ -2070,11 +2268,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strInterface, uint32_t flags)
     tokens.pop_front();
   }
 
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "strPassword = " << strPassword << std::endl;
-#endif
-
-  return doCmdOpen(strHostname, strUsername, strPassword);
+  return logTcpResult(__func__, doCmdOpen(strHostname, strUsername, strPassword));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2086,14 +2280,9 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
                            const std::string &strUsername,
                            const std::string &strPassword)
 {
+  logTcpEntry(__func__);
   std::string buf;
   std::string str;
-
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "============================================================" << std::endl;
-  std::cout << "Connect in progress with server " << strHostname << std::endl;
-  std::cout << "============================================================" << std::endl;
-#endif
 
   std::string strHost = vscp_lower(strHostname);
   vscp_trim(strHost);
@@ -2121,49 +2310,37 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   // Bracketed IPv6 endpoints must not be split on every colon.
   size_t separator = strHost.rfind(':');
   if (separator == std::string::npos || separator == 0 || separator + 1 == strHost.size()) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   std::string portString = strHost.substr(separator + 1);
   if (portString.find_first_not_of("0123456789") != std::string::npos ||
       portString.size() > 5 || vscp_readStringValue(portString) == 0 ||
       vscp_readStringValue(portString) > 65535) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   std::string host = strHost.substr(0, separator);
   if (host.find_first_of("/?#@; \t\r\n") != std::string::npos)
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   if (host.front() == '[') {
     if (host.size() < 3 || host.back() != ']')
-      return VSCP_ERROR_PARAMETER;
+      return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   else if (host.find(':') != std::string::npos) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   doCmdClose();
   m_transport.reset(new Transport);
   std::string socketHost = host.front() == '[' ? host.substr(1, host.size() - 2) : host;
   int openResult = m_transport->open(*this, socketHost, portString);
   if (openResult != VSCP_ERROR_SUCCESS) {
-
-#ifdef DEBUG_LIB_VSCP_HELPER
-    std::cout << "Connection failed." << strHostname << std::endl;
-#endif
     transportClose();
-    return openResult;
+    return logTcpResult(__func__, openResult);
   }
 
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "Checking server response" << std::endl;
-#endif
-
+  logTcpDebug(__func__, "checking server greeting");
   if (!checkReturnValue(true)) {
-
-#ifdef DEBUG_LIB_VSCP_HELPER
-    std::cout << "No +OK found " << strHostname << std::endl;
-#endif
-
     transportClose();
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // Username
@@ -2174,7 +2351,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
 
   if (VSCP_ERROR_SUCCESS != doCommand(buf)) {
     transportClose();
-    return VSCP_ERROR_USER;
+    return logTcpResult(__func__, VSCP_ERROR_USER);
   }
 
   // Password
@@ -2183,7 +2360,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   buf = std::string("PASS ") + str + std::string("\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(buf)) {
     transportClose();
-    return VSCP_ERROR_PASSWORD;
+    return logTcpResult(__func__, VSCP_ERROR_PASSWORD);
   }
 
   // Get version (for internal versioning)
@@ -2203,8 +2380,9 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
                            const std::string &strUsername,
                            const std::string &strPassword)
 {
+  logTcpEntry(__func__);
   std::string strCombinedHost = strHostname + std::string(":") + vscp_str_format("%d", port);
-  return doCmdOpen(strCombinedHost, strUsername, strPassword);
+  return logTcpResult(__func__, doCmdOpen(strCombinedHost, strUsername, strPassword));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2214,6 +2392,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
 int
 VscpRemoteTcpIf::doCmdClose(void)
 {
+  logTcpEntry(__func__);
   if (isConnected() && !m_bBinaryMode) {
 
     // If receive loop active - end it
@@ -2242,16 +2421,17 @@ VscpRemoteTcpIf::doCmdClose(void)
 int
 VscpRemoteTcpIf::doCmdNOOP(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
-  return doCommand("NOOP\r\n");
+  return logTcpResult(__func__, doCommand("NOOP\r\n"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2261,16 +2441,17 @@ VscpRemoteTcpIf::doCmdNOOP(void)
 int
 VscpRemoteTcpIf::doCmdClear(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
-  return doCommand("CLRA\r\n");
+  return logTcpResult(__func__, doCommand("CLRA\r\n"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2280,42 +2461,43 @@ VscpRemoteTcpIf::doCmdClear(void)
 int
 VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (nullptr == pEvent) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strBuf, strWrk, strGUID;
 
   // Must be a valid data pointer if data
   if ((pEvent->sizeData > 0) && (NULL == pEvent->pdata)) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // Validate datasize
   if (pEvent->sizeData > VSCP_MAX_DATA) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (m_bBinaryMode) {
     std::vector<uint8_t> frame(1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + pEvent->sizeData + 2);
     if (!vscp_writeEventToFrame(frame.data(), frame.size(), VSCP_ENCRYPTION_NONE, pEvent)) {
-      return VSCP_ERROR_INVALID_FRAME;
+      return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME);
     }
-    return sendBinaryFrame(frame);
+    return logTcpResult(__func__, sendBinaryFrame(frame));
   }
 
   // send head,class,type,obid,,timestamp,GUID,data1,data2,data3....
   if (!vscp_convertEventToString(strBuf, pEvent)) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // Note that the caller must delete the event (if it should be deleted)
@@ -2323,7 +2505,7 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
   strBuf = "send " + strBuf;
   strBuf += "\r\n";
 
-  return doCommand(strBuf);
+  return logTcpResult(__func__, doCommand(strBuf));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2333,45 +2515,46 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
 int
 VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
 {
+  logTcpEntry(__func__);
   std::string strBuf, strWrk, strGUID;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (NULL == pEventEx) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // Validate datasize
   if (pEventEx->sizeData > VSCP_MAX_DATA) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (m_bBinaryMode) {
     vscpEvent event = {};
     if (!vscp_convertEventExToEvent(&event, pEventEx)) {
-      return VSCP_ERROR_PARAMETER;
+      return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
     }
     int result = doCmdSend(&event);
     delete[] event.pdata;
-    return result;
+    return logTcpResult(__func__, result);
   }
 
   // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
   if (!vscp_convertEventExToString(strBuf, pEventEx)) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   strBuf = "send " + strBuf;
   strBuf += "\r\n";
 
-  return doCommand(strBuf);
+  return logTcpResult(__func__, doCommand(strBuf));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2381,19 +2564,20 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
 int
 VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg *pCanalMsg)
 {
+  logTcpEntry(__func__);
   vscpEventEx event;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (NULL == pCanalMsg) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   event.vscp_class = (unsigned short) (0x1ff & (pCanalMsg->id >> 16));
@@ -2409,7 +2593,7 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg *pCanalMsg)
   event.sizeData = pCanalMsg->sizeData;
   memcpy(event.data, pCanalMsg->data, pCanalMsg->sizeData);
 
-  return doCmdSendEx(&event);
+  return logTcpResult(__func__, doCmdSendEx(&event));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2419,13 +2603,16 @@ VscpRemoteTcpIf::doCmdSendLevel1(const canalMsg *pCanalMsg)
 bool
 VscpRemoteTcpIf::getEventFromLine(vscpEvent *pEvent, const std::string &strLine)
 {
+  logTcpEntry(__func__);
   // Check pointer
   if (NULL == pEvent) {
+    transportError("%s: null event pointer", __func__);
     return false;
   }
 
   // Read event from string
   if (!vscp_convertStringToEvent(pEvent, strLine)) {
+    transportError("%s: invalid event data", __func__);
     return false;
   }
 
@@ -2439,33 +2626,39 @@ VscpRemoteTcpIf::getEventFromLine(vscpEvent *pEvent, const std::string &strLine)
 int
 VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
 
   if (NULL == pEvent) {
-    return VSCP_ERROR_MEMORY;
+    return logTcpResult(__func__, VSCP_ERROR_MEMORY, true);
   }
 
   if (m_bBinaryMode) {
-    return receiveBinaryEvent(pEvent, m_responseTimeOut);
+    return logTcpResult(__func__, receiveBinaryEvent(pEvent, m_responseTimeOut), true);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   if (VSCP_ERROR_SUCCESS != doCommand("RETR 1\r\n")) {
-    return VSCP_ERROR_ERROR;
+    if (isEmptyReceiveResponse(m_inputStrArray)) {
+      logTcpDebug(__func__, "receive queue is empty");
+      return VSCP_ERROR_ERROR;
+    }
+    return logTcpResult(__func__, VSCP_ERROR_ERROR, true);
   }
 
   if (!m_inputStrArray.size()) {
+    logTcpDebug(__func__, "receive queue is empty");
     return VSCP_ERROR_ERROR;
   }
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
-    return VSCP_ERROR_READ;
+    return logTcpResult(__func__, VSCP_ERROR_READ, true);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -2478,43 +2671,48 @@ VscpRemoteTcpIf::doCmdReceive(vscpEvent *pEvent)
 int
 VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
 
   if (NULL == pEventEx) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   if (m_bBinaryMode) {
-    return doCmdBlockingReceive(pEventEx, m_responseTimeOut);
+    return logTcpResult(__func__, doCmdBlockingReceive(pEventEx, m_responseTimeOut), true);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   if (VSCP_ERROR_SUCCESS != doCommand("RETR 1\r\n")) {
-    return VSCP_ERROR_ERROR;
+    if (isEmptyReceiveResponse(m_inputStrArray)) {
+      logTcpDebug(__func__, "receive queue is empty");
+      return VSCP_ERROR_ERROR;
+    }
+    return logTcpResult(__func__, VSCP_ERROR_ERROR, true);
   }
 
   if (!m_inputStrArray.size()) {
-    return VSCP_ERROR_RCV_EMPTY;
+    return logTcpResult(__func__, VSCP_ERROR_RCV_EMPTY, true);
   }
 
   vscpEvent *pEvent = new vscpEvent;
   if (NULL == pEvent) {
-    return VSCP_ERROR_MEMORY;
+    return logTcpResult(__func__, VSCP_ERROR_MEMORY, true);
   }
 
   if (!getEventFromLine(pEvent, m_inputStrArray[0])) {
-    return VSCP_ERROR_READ;
+    return logTcpResult(__func__, VSCP_ERROR_READ, true);
   }
 
   if (!vscp_convertEventToEventEx(pEventEx, pEvent)) {
     vscp_deleteEvent(pEvent);
-    return VSCP_ERROR_INVALID_FORMAT;
+    return logTcpResult(__func__, VSCP_ERROR_INVALID_FORMAT, true);
   }
 
   vscp_deleteEvent(pEvent);
@@ -2529,30 +2727,37 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx *pEventEx)
 int
 VscpRemoteTcpIf::doCmdReceiveLevel1(canalMsg *pCanalMsg)
 {
+  logTcpEntry(__func__);
   vscpEventEx event;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
 
   // Must have a valid pointer
   if (NULL == pCanalMsg) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   // If in receive loop terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   // Fetch event
-  if (VSCP_ERROR_SUCCESS != doCmdReceiveEx(&event)) {
-    return VSCP_ERROR_GENERIC;
+  int receiveResult = doCmdReceiveEx(&event);
+  if (VSCP_ERROR_SUCCESS != receiveResult) {
+    if (receiveResult == VSCP_ERROR_RCV_EMPTY || receiveResult == VSCP_ERROR_TIMEOUT ||
+        (receiveResult == VSCP_ERROR_ERROR && isEmptyReceiveResponse(m_inputStrArray))) {
+      logTcpDebug(__func__, "receive queue is empty or timed out");
+      return VSCP_ERROR_GENERIC;
+    }
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC, true);
   }
 
   // No CAN or Level I event if data is > 8
   if (event.sizeData > 8) {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC, true);
   }
 
   pCanalMsg->id = (unsigned long) ((event.head >> 5) << 20) | ((unsigned long) event.vscp_class << 16) |
@@ -2576,12 +2781,13 @@ VscpRemoteTcpIf::doCmdReceiveLevel1(canalMsg *pCanalMsg)
 int
 VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (m_bBinaryMode) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // If in receive loop terminate
@@ -2593,7 +2799,7 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
   m_lastResponseTime = vscp_getMsTimeStamp();
 
   if (VSCP_ERROR_SUCCESS != doCommand("RCVLOOP\r\n")) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   m_bModeReceiveLoop = true;
@@ -2608,12 +2814,13 @@ VscpRemoteTcpIf::doCmdEnterReceiveLoop(void)
 int
 VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (m_bBinaryMode) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // If **not** in receive loop terminate
@@ -2622,7 +2829,7 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
   }
 
   if (VSCP_ERROR_SUCCESS != doCommand("QUITLOOP\r\n")) {
-    return VSCP_ERROR_TIMEOUT;
+    return logTcpResult(__func__, VSCP_ERROR_TIMEOUT);
   }
 
   m_bModeReceiveLoop = false;
@@ -2640,26 +2847,27 @@ VscpRemoteTcpIf::doCmdQuitReceiveLoop(void)
 int
 VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 {
+  logTcpEntry(__func__);
   char buf[0xffff];
   int nRead;
 
   // Check pointer
   if (NULL == pEvent) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   // Must be connected
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
 
   if (m_bBinaryMode) {
-    return receiveBinaryEvent(pEvent, mstimeout);
+    return logTcpResult(__func__, receiveBinaryEvent(pEvent, mstimeout), true);
   }
 
   // If **not** in receive loop terminate
   if (!m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   // If array already contains lines check if one of them is an event
@@ -2675,7 +2883,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
       // This should be an event - Get it
       if (!getEventFromLine(pEvent, strItem)) {
-        return VSCP_ERROR_READ;
+        return logTcpResult(__func__, VSCP_ERROR_READ, true);
       }
 
       return VSCP_ERROR_SUCCESS;
@@ -2695,7 +2903,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
       if (-VSCP_ERROR_STOPPED == nRead) {
         transportClose();
-        return VSCP_ERROR_STOPPED;
+        return logTcpResult(__func__, VSCP_ERROR_STOPPED, true);
       }
 #ifndef WIN32
       usleep(100);
@@ -2726,7 +2934,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
         // This should be an event - Get it
         if (!getEventFromLine(pEvent, strItem)) {
-          return VSCP_ERROR_READ;
+          return logTcpResult(__func__, VSCP_ERROR_READ, true);
         }
 
         return VSCP_ERROR_SUCCESS;
@@ -2736,7 +2944,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 
   } // timeout
 
-  return VSCP_ERROR_TIMEOUT;
+  return logTcpResult(__func__, VSCP_ERROR_TIMEOUT, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2746,37 +2954,38 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t mstimeout)
 int
 VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout)
 {
+  logTcpEntry(__func__);
   int rv;
   vscpEvent e;
 
   // Check pointer
   if (NULL == pEventEx) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   // Must be connected
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION, true);
   }
 
   if (m_bBinaryMode) {
     vscpEvent event = {};
     int result = receiveBinaryEvent(&event, timeout);
     if (VSCP_ERROR_SUCCESS != result) {
-      return result;
+      return logTcpResult(__func__, result, true);
     }
     bool converted = vscp_convertEventToEventEx(pEventEx, &event);
     delete[] event.pdata;
-    return converted ? VSCP_ERROR_SUCCESS : VSCP_ERROR_INVALID_FRAME;
+    return logTcpResult(__func__, converted ? VSCP_ERROR_SUCCESS : VSCP_ERROR_INVALID_FRAME, true);
   }
 
   // If not receive loop active terminate
   if (!m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER, true);
   }
 
   if (VSCP_ERROR_SUCCESS != (rv = doCmdBlockingReceive(&e, timeout))) {
-    return rv;
+    return logTcpResult(__func__, rv, true);
   }
 
   // Get event
@@ -2795,7 +3004,7 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout)
     e.pdata = NULL;
   }
 
-  return rv;
+  return logTcpResult(__func__, rv, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2805,20 +3014,21 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout)
 int
 VscpRemoteTcpIf::doCmdDataAvailable(void)
 {
+  logTcpEntry(__func__);
   std::string strLine;
   int nMsg = 0;
 
   if (!isConnected()) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (VSCP_ERROR_SUCCESS != doCommand("CDTA\r\n")) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (!m_inputStrArray.size()) {
@@ -2837,22 +3047,23 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
 int
 VscpRemoteTcpIf::doCmdStatus(canal_status_t *pStatus)
 {
+  logTcpEntry(__func__);
   std::string strBuf;
   std::string strWrk;
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("INFO\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   std::deque<std::string> tokens;
@@ -2861,21 +3072,21 @@ VscpRemoteTcpIf::doCmdStatus(canal_status_t *pStatus)
 
   // lasterrorcode
   if (tokens.empty()) {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
   pStatus->lasterrorcode = vscp_readStringValue(tokens.front());
   tokens.pop_front();
 
   // lasterrorsubcode
   if (tokens.empty()) {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
   pStatus->lasterrorsubcode = vscp_readStringValue(tokens.front());
   tokens.pop_front();
 
   // lasterrorsubcode
   if (tokens.empty()) {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
   strWrk = tokens.front();
   tokens.pop_front();
@@ -2891,6 +3102,7 @@ VscpRemoteTcpIf::doCmdStatus(canal_status_t *pStatus)
 int
 VscpRemoteTcpIf::doCmdStatus(vscp_status_t *pStatus)
 {
+  logTcpEntry(__func__);
   canal_status_t status;
   int rv = doCmdStatus(&status);
 
@@ -2899,7 +3111,7 @@ VscpRemoteTcpIf::doCmdStatus(vscp_status_t *pStatus)
   strncpy(pStatus->lasterrorstr, status.lasterrorstr, VSCP_STATUS_ERROR_STRING_SIZE);
   pStatus->lasterrorsubcode = status.lasterrorsubcode;
 
-  return rv;
+  return logTcpResult(__func__, rv);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2909,22 +3121,23 @@ VscpRemoteTcpIf::doCmdStatus(vscp_status_t *pStatus)
 int
 VscpRemoteTcpIf::doCmdStatistics(vscp_statistics_t *pStatistics)
 {
+  logTcpEntry(__func__);
   std::string strBuf;
   std::string strWrk;
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("STAT\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   std::deque<std::string> tokens;
@@ -2985,15 +3198,16 @@ VscpRemoteTcpIf::doCmdStatistics(vscp_statistics_t *pStatistics)
 int
 VscpRemoteTcpIf::doCmdStatistics(canal_statistics_t *pStatistics)
 {
+  logTcpEntry(__func__);
   int rv;
   canal_statistics_t canalstat;
 
   if (NULL == pStatistics) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   if (VSCP_ERROR_SUCCESS != (rv = doCmdStatistics(&canalstat))) {
-    return rv;
+    return logTcpResult(__func__, rv);
   }
 
   // It may be tempting to just do a copy here but don't they
@@ -3016,15 +3230,16 @@ VscpRemoteTcpIf::doCmdStatistics(canal_statistics_t *pStatistics)
 int
 VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
 {
+  logTcpEntry(__func__);
   std::string strCmd;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // filter-priority, filter-class, filter-type, filter-GUID
@@ -3052,7 +3267,7 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
                            pFilter->filter_GUID[0]);
 
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // mask-priority, mask-class, mask-type, mask-GUID
@@ -3078,10 +3293,8 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
                            pFilter->mask_GUID[2],
                            pFilter->mask_GUID[1],
                            pFilter->mask_GUID[0]);
-  // std::cout << ( strCmd );
-
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3094,15 +3307,16 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
 int
 VscpRemoteTcpIf::doCmdFilter(const std::string &filter, const std::string &mask)
 {
+  logTcpEntry(__func__);
   std::string strCmd;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // Set filter
@@ -3110,7 +3324,7 @@ VscpRemoteTcpIf::doCmdFilter(const std::string &filter, const std::string &mask)
   strCmd += filter;
   strCmd += "\r\n";
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // Set mask
@@ -3118,7 +3332,7 @@ VscpRemoteTcpIf::doCmdFilter(const std::string &filter, const std::string &mask)
   strCmd += mask;
   strCmd += "\r\n";
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3131,20 +3345,21 @@ VscpRemoteTcpIf::doCmdFilter(const std::string &filter, const std::string &mask)
 int
 VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *pSubMinorVer)
 {
+  logTcpEntry(__func__);
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("VERS\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   std::deque<std::string> tokens;
@@ -3157,7 +3372,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
     tokens.pop_front();
   }
   else {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // Minor version
@@ -3167,7 +3382,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
     tokens.pop_front();
   }
   else {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // Sub minor version
@@ -3177,7 +3392,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
     tokens.pop_front();
   }
   else {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3190,10 +3405,11 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
 int
 VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *pSubMinorVer, uint16_t *pBuildVer)
 {
+  logTcpEntry(__func__);
   int rv;
 
   if (VSCP_ERROR_SUCCESS != (rv = doCmdVersion(pMajorVer, pMinorVer, pSubMinorVer))) {
-    return rv;
+    return logTcpResult(__func__, rv);
   }
 
   *pBuildVer = 0;
@@ -3208,6 +3424,7 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer, uint8_t *pMinorVer, uint8_t *p
 unsigned long
 VscpRemoteTcpIf::doCmdDLLVersion(void)
 {
+  logTcpEntry(__func__);
   return TCPIP_DLL_VERSION;
 }
 
@@ -3218,6 +3435,7 @@ VscpRemoteTcpIf::doCmdDLLVersion(void)
 const char *
 VscpRemoteTcpIf::doCmdVendorString(void)
 {
+  logTcpEntry(__func__);
   return TCPIP_VENDOR_STRING;
 }
 
@@ -3228,6 +3446,7 @@ VscpRemoteTcpIf::doCmdVendorString(void)
 const char *
 VscpRemoteTcpIf::doCmdGetDriverInfo(void)
 {
+  logTcpEntry(__func__);
   return DRIVER_INFO_STRING;
 }
 
@@ -3238,24 +3457,25 @@ VscpRemoteTcpIf::doCmdGetDriverInfo(void)
 int
 VscpRemoteTcpIf::doCmdGetGUID(unsigned char *pGUID)
 {
+  logTcpEntry(__func__);
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("GGID\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
   strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
@@ -3267,11 +3487,11 @@ VscpRemoteTcpIf::doCmdGetGUID(unsigned char *pGUID)
     std::string str = tokens.front();
     tokens.pop_front();
     if (!vscp_getGuidFromStringToArray(pGUID, str)) {
-      return VSCP_ERROR_GENERIC;
+      return logTcpResult(__func__, VSCP_ERROR_GENERIC);
     }
   }
   else {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3284,24 +3504,25 @@ VscpRemoteTcpIf::doCmdGetGUID(unsigned char *pGUID)
 int
 VscpRemoteTcpIf::doCmdGetGUID(cguid &ifguid)
 {
+  logTcpEntry(__func__);
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("GGID\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
   strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
@@ -3317,20 +3538,21 @@ VscpRemoteTcpIf::doCmdGetGUID(cguid &ifguid)
 int
 VscpRemoteTcpIf::doCmdSetGUID(const unsigned char *pGUID)
 {
+  logTcpEntry(__func__);
   std::string strLine;
   std::string strCmd;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   if (NULL == pGUID) {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   strCmd = vscp_str_format("SGID "
@@ -3354,7 +3576,7 @@ VscpRemoteTcpIf::doCmdSetGUID(const unsigned char *pGUID)
                            pGUID[15]);
 
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3367,9 +3589,10 @@ VscpRemoteTcpIf::doCmdSetGUID(const unsigned char *pGUID)
 int
 VscpRemoteTcpIf::doCmdSetGUID(cguid &ifguid)
 {
+  logTcpEntry(__func__);
   unsigned char GUID[16];
   memcpy(GUID, ifguid.getGUID(), 16);
-  return doCmdSetGUID(GUID);
+  return logTcpResult(__func__, doCmdSetGUID(GUID));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3379,30 +3602,31 @@ VscpRemoteTcpIf::doCmdSetGUID(cguid &ifguid)
 int
 VscpRemoteTcpIf::doCmdGetChannelInfo(vscp_channel_info_t *pChannelInfo)
 {
+  logTcpEntry(__func__);
   int rv;
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // Must have a valid pointer
   if (NULL == pChannelInfo) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   // If receive loop active terminate
   if (m_bModeReceiveLoop) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("INFO\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
   strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
@@ -3415,7 +3639,7 @@ VscpRemoteTcpIf::doCmdGetChannelInfo(vscp_channel_info_t *pChannelInfo)
     tokens.pop_front();
   }
   else {
-    return VSCP_ERROR_GENERIC;
+    return logTcpResult(__func__, VSCP_ERROR_GENERIC);
   }
 
   // Set the interface level/type
@@ -3424,7 +3648,7 @@ VscpRemoteTcpIf::doCmdGetChannelInfo(vscp_channel_info_t *pChannelInfo)
   // Get the channel GUID
   rv = doCmdGetGUID((unsigned char *) pChannelInfo->GUID);
 
-  return rv;
+  return logTcpResult(__func__, rv);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3434,24 +3658,25 @@ VscpRemoteTcpIf::doCmdGetChannelInfo(vscp_channel_info_t *pChannelInfo)
 int
 VscpRemoteTcpIf::doCmdGetChannelID(uint32_t *pChannelID)
 {
+  logTcpEntry(__func__);
   std::string strLine;
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   // Check pointer
   if (NULL == pChannelID) {
-    return VSCP_ERROR_PARAMETER;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   std::string strCmd("CHID\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
   strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
@@ -3467,17 +3692,18 @@ VscpRemoteTcpIf::doCmdGetChannelID(uint32_t *pChannelID)
 int
 VscpRemoteTcpIf::doCmdInterfaceList(std::deque<std::string> &strarray)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   std::string strCmd("INTERFACE LIST\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // Handle the data (if any)
@@ -3497,28 +3723,29 @@ VscpRemoteTcpIf::doCmdInterfaceList(std::deque<std::string> &strarray)
 int
 VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
 {
+  logTcpEntry(__func__);
   if (NULL == pwcyd) {
-    return VSCP_ERROR_INVALID_POINTER;
+    return logTcpResult(__func__, VSCP_ERROR_INVALID_POINTER);
   }
 
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   std::string strCmd("wcyd\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   if (getInputQueueCount() < 2) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   // Fetch capabilities line (aa:bb:cc:dd:ee:ff:gg:hh) eight hex chars
   std::string strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
   if (strLine.length() < 23) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   *pwcyd = 0;
@@ -3541,13 +3768,14 @@ VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
 int
 VscpRemoteTcpIf::doCmdShutDown(void)
 {
+  logTcpEntry(__func__);
   if (!isConnected()) {
-    return VSCP_ERROR_CONNECTION;
+    return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
 
   std::string strCmd("SHUTDOWN\r\n");
   if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
-    return VSCP_ERROR_ERROR;
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3569,15 +3797,18 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
                                     cguid *pdestGUID,
                                     bool bLevel2)
 {
+  logTcpEntry(__func__);
   int rv = VSCP_ERROR_SUCCESS;
   std::string strBuf;
   vscpEventEx e;
 
   // Check pointers
   if (NULL == pval) {
+    transportError("%s: null value pointer", __func__);
     return false;
   }
   if (NULL == pdestGUID) {
+    transportError("%s: null destination GUID", __func__);
     return false;
   }
 
@@ -3660,23 +3891,6 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
 
       if (VSCP_ERROR_SUCCESS == doCmdReceiveEx(&e)) { // Valid event
 
-        // Check for correct reply event
-#ifdef DEBUG_LIB_VSCP_HELPER
-        {
-          std::string str;
-          str = vscp_str_format("Received Event: class=%d type=%d size=%d index=%d "
-                                "page=%d Register=%d content=%d",
-                                e.vscp_class,
-                                e.vscp_type,
-                                e.sizeData,
-                                e.data[16],                     // frame index
-                                (e.data[17] << 8) + e.data[18], // page
-                                e.data[19],                     // register
-                                e.data[20]);                    // content
-          std::cout << (str) << std::endl;
-        }
-#endif
-
         // Level I Read reply?
         if ((VSCP_CLASS1_PROTOCOL == e.vscp_class) && (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) {
 
@@ -3755,7 +3969,7 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
 
   } // while
 
-  return rv;
+  return logTcpResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3771,6 +3985,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
                                      cguid *pdestGUID,
                                      bool bLevel2)
 {
+  logTcpEntry(__func__);
   int rv = CANAL_ERROR_SUCCESS;
   std::string strBuf;
   vscpEventEx e;
@@ -3778,15 +3993,15 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
   // Max 128 bytes can be read in one go
   if (count > 128) {
-    return CANAL_ERROR_PARAMETER;
+    return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
   }
 
   // Check pointers
   if (NULL == pval) {
-    return CANAL_ERROR_PARAMETER;
+    return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
   }
   if (NULL == pdestGUID) {
-    return CANAL_ERROR_PARAMETER;
+    return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
   }
 
   e.head      = VSCP_PRIORITY_NORMAL;
@@ -3872,19 +4087,6 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
   unsigned long resendTime = (unsigned long) m_registerOpResendTimeout * (1 + nPages);
   uint32_t startTime       = vscp_getMsTimeStamp();
 
-  /*
-  #ifdef DEBUG_LIB_VSCP_HELPER
-      std::cout << "readLevel2Registers: Start" << std::endl;
-  #endif
-
-      for ( int i=0; i<100; i++ ) {
-          doCmdNOOP();
-      }
-  #ifdef DEBUG_LIB_VSCP_HELPER
-      std::cout << "readLevel2Registers: NOOP - End" << std::endl;;
-  #endif
-  */
-
   while (allRcvValue != (receive_flags & 0xffffffff)) { // mask for systems where long is > 32 bits
 
     int n;
@@ -3894,26 +4096,6 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
         // Quit if done?
         if (allRcvValue == (receive_flags & 0xffffffff)) break;
-
-          // Check for correct reply event
-#ifdef DEBUG_LIB_VSCP_HELPER
-        {
-          std::string str;
-          str = vscp_str_format("Received Event: count=%d class=%d type=%d size=%d data=",
-                                n,
-                                e.vscp_class,
-                                e.vscp_type,
-                                e.sizeData,
-                                e.data[16],                     // frame index
-                                (e.data[17] << 8) + e.data[18], // page
-                                e.data[19],                     // register
-                                e.data[20]);                    // content
-          for (int i = 0; i < e.sizeData; i++) {
-            str += vscp_str_format("%02X ", e.data[i]);
-          }
-          std::cout << (str);
-        }
-#endif
 
         // Level I Read reply?
         if ((VSCP_CLASS1_PROTOCOL == e.vscp_class) && (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) {
@@ -3995,18 +4177,13 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
     if ((vscp_getMsTimeStamp() - startTime) > m_registerOpErrorTimeout) {
       rv = CANAL_ERROR_TIMEOUT;
-#ifdef DEBUG_LIB_VSCP_HELPER
-      std::cout << "readLevel2Registers: Timeout" << std::endl;
-#endif
       break;
     }
     else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
       // Send again
       doCmdSendEx(&e);
       resendTime += (unsigned long) m_registerOpResendTimeout * (1 + nPages);
-#ifdef DEBUG_LIB_VSCP_HELPER
-      std::cout << "readLevel2Registers: Resend " << std::endl;
-#endif
+      logTcpDebug(__func__, "retrying register read");
     }
 
 #ifndef WIN32
@@ -4017,16 +4194,12 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
   } // while
 
-#ifdef DEBUG_LIB_VSCP_HELPER
-  std::cout << "readLevel2Registers: End" << std::endl;
-#endif
-
   // Copy data on success
   if (CANAL_ERROR_SUCCESS == rv) {
     memcpy(pval, data, count);
   }
 
-  return rv;
+  return logTcpResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -4041,6 +4214,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
                                      cguid *pdestGUID,
                                      bool bLevel2)
 {
+  logTcpEntry(__func__);
   int rv          = CANAL_ERROR_SUCCESS;
   bool bInterface = false; // No specific interface set
   std::string strBuf;
@@ -4048,7 +4222,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 
   // Check pointers
   if (NULL == pval) {
-    return CANAL_ERROR_PARAMETER;
+    return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
   }
 
   if (!ifGUID.isNULL()) {
@@ -4202,7 +4376,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 
   } // while
 
-  return rv;
+  return logTcpResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -4212,6 +4386,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 bool
 VscpRemoteTcpIf::getMDFUrlFromLevel2Device(cguid &ifGUID, cguid &destGUID, std::string &strurl, bool bLevel2)
 {
+  logTcpEntry(__func__);
   char url[33];
   bool rv = true;
 
@@ -4261,8 +4436,10 @@ VscpRemoteTcpIf::getMDFUrlFromLevel2Device(cguid &ifGUID, cguid &destGUID, std::
 
 error:
 
-  if (!rv)
+  if (!rv) {
+    transportError("%s: failed to retrieve MDF URL", __func__);
     strurl.clear();
+  }
 
   return rv;
 }
@@ -4278,12 +4455,13 @@ error:
 int
 VscpRemoteTcpIf::fetchIterfaceGUID(const std::string &ifName, cguid &guid)
 {
+  logTcpEntry(__func__);
   std::string str;
   std::deque<std::string> ifarray;
   uint8_t cnt = 0;
 
   if (!isConnected()) {
-    return VSCP_ERROR_NOT_OPEN;
+    return logTcpResult(__func__, VSCP_ERROR_NOT_OPEN);
   }
 
   // Get the interface list
@@ -4346,5 +4524,5 @@ VscpRemoteTcpIf::fetchIterfaceGUID(const std::string &ifName, cguid &guid)
       break;
   }
 
-  return VSCP_ERROR_OPERATION_FAILED;
+  return logTcpResult(__func__, VSCP_ERROR_OPERATION_FAILED);
 }

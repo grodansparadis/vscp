@@ -247,17 +247,22 @@ add_library(vscp_util SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/randpassword.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/configfile.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common/vscphelper-common.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging-forward.cpp
     $<$<BOOL:WIN32>:${VSCP_WINDOWS_GETOPT_SOURCE}>
 )
 target_include_directories(vscp_util
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common>
         $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:include/vscp/util>
+        $<INSTALL_INTERFACE:include/vscp>
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common>
+        $<BUILD_INTERFACE:${VSCP_SPDLOG_INCLUDE_DIR}>
 )
 target_compile_definitions(vscp_util PUBLIC ${VSCP_OPENSSL_API_DEF})
+target_compile_definitions(vscp_util PRIVATE VSCP_HELPER_LOGGING_EXPORTS VSCP_HELPER_LOGGING_BACKEND_EXPORTS)
 target_link_libraries(vscp_util
     PUBLIC
         OpenSSL::SSL
@@ -307,7 +312,7 @@ target_link_libraries(vscp_mdf
 # All non-connection protocol sources
 set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscphelperlogging-forward.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpdatetime.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpremotetcpif.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpcanaldeviceif.cpp

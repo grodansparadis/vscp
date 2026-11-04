@@ -48,6 +48,8 @@ add_executable(unittest
     ${PROJECT_SOURCE_DIR}/../../src/common/third_party/nlohmann/json.hpp
     )
 
+target_compile_definitions(unittest PRIVATE VSCP_DISABLE_HELPER_LOGGING)
+
 target_include_directories(unittest PUBLIC 
     ${PROJECT_SOURCE_DIR}/../../src/vscp/common/
     ${PROJECT_SOURCE_DIR}/../../src/common/

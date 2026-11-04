@@ -32,9 +32,34 @@
 #include <unistd.h>
 #endif
 
+#include <cerrno>
+#include <cstdio>
 #include <stdexcept>
 
 #include <vscphelper.h>
+
+namespace {
+
+void logParseFailure(const char *function) noexcept
+{
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+  vscphelper_logFunctionFailure("helper", function, 0);
+#else
+  int savedError = errno;
+#ifdef _WIN32
+  DWORD savedWindowsError = GetLastError();
+  int savedSocketError = WSAGetLastError();
+#endif
+  std::fprintf(stderr, "VSCP helper: %s failed\n", function);
+#ifdef _WIN32
+  WSASetLastError(savedSocketError);
+  SetLastError(savedWindowsError);
+#endif
+  errno = savedError;
+#endif
+}
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_readStringValue
@@ -42,6 +67,9 @@
 int64_t
 vscp_readStringValue(const std::string &strval)
 {
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+  vscphelper_logFunctionEntry("helper", __func__);
+#endif
   int64_t val     = 0;
   std::string str = strval;
   vscp_makeLower(str);
@@ -66,9 +94,11 @@ vscp_readStringValue(const std::string &strval)
     }
   }
   catch (std::invalid_argument &) {
+    logParseFailure(__func__);
     val = 0;
   }
   catch (std::out_of_range &) {
+    logParseFailure(__func__);
     val = 0;
   }
 
@@ -82,5 +112,8 @@ vscp_readStringValue(const std::string &strval)
 bool
 vscp_fileExists(const std::string &path)
 {
+#ifndef VSCP_DISABLE_HELPER_LOGGING
+  vscphelper_logFunctionEntry("helper", __func__);
+#endif
   return access(path.c_str(), 0) == 0;
 }

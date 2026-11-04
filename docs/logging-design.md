@@ -31,19 +31,24 @@ disabling are synchronized. A slow console or file sink can delay the calling
 VSCP operation, so applications should choose an appropriate log path and
 consider the cost of synchronous output.
 
-## Why is logging opt-in in the underlying sources?
+## Sharing logging with inline helpers
 
-The helper and transport source files are also compiled directly by standalone
-tests and other consumers. Those builds may not compile the logger or provide
-spdlog headers. `VSCP_ENABLE_HELPER_LOGGING` explicitly enables calls into the
-private logging interface for the `vscp_core` build; when it is not defined,
-the affected diagnostics retain their stderr behavior and do not reference the
-logger implementation.
+The logger backend lives in `vscp_util`, which is also used by lower-level
+libraries that call inline functions in `vscphelper.h`. The public logging
+entry points are available through both `vscp_util` and `vscp_core`, but
+forward to that single backend. This avoids a dependency cycle between
+`vscp_core` and the lower-level libraries while keeping the core's existing
+logging symbols available.
 
-The logger is built into `vscp_core`. Each separately linked copy of that
-library has its own logging state. A helper-library binary that compiles its
-own copy of the VSCP sources therefore has its own logger configuration as
-well; configuring one binary does not configure another.
+Standalone builds that use these inline functions without linking `vscp_util`
+can define `VSCP_DISABLE_HELPER_LOGGING` consistently for their translation
+units. Their inline debug traces are disabled; standalone helper failures
+are reported to stderr. Direct builds of the TCP source enable
+shared logging with `VSCP_ENABLE_HELPER_LOGGING` and the logger library;
+otherwise their errors continue to use stderr.
+
+Each independently linked copy of `vscp_util` owns its own logging state, so
+configuring one copy does not configure another.
 
 ## Configuration and diagnostics
 
@@ -59,6 +64,8 @@ to control logger lifetime.
 The logger records diagnostics routed by the integrated helper and transport
 sources. It does not capture arbitrary stderr or stdout output from the
 application, external drivers, or other dependencies.
+Function traces contain names and relevant status codes, not arguments or
+event data. Transport error diagnostics can include hostnames and TLS paths.
 
 For configuration examples, level values, rotation behavior, and error
 handling, see [Helper and TCP logging](library_reference.md#helper-and-tcp-logging).

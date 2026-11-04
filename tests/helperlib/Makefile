@@ -44,7 +44,7 @@ CFLAGS = -std=c99  -g -O0 -DWITH_SYSTEMD -DWITH_WRAP -DOPENSSL_API_1_1 ${WARNING
 	-I../../third_party/mustache \
 	-I../../googletest/googletest/include
 CXXFLAGS = -std=c++17  -g -O0 ${WARNINGS}
-CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP ${WARNINGS} -fno-var-tracking-assignments -I../.. \
+CPPFLAGS =  -DWITH_SYSTEMD -DWITH_WRAP -DVSCP_DISABLE_HELPER_LOGGING ${WARNINGS} -fno-var-tracking-assignments -I../.. \
 	-I. \
 	-I../../src/common \
 	-I../../src/vscp/common \

@@ -158,6 +158,10 @@ class Handler(socketserver.BaseRequestHandler):
                             continue
                         if command == b"VERS":
                             connection.sendall(b"26,10,1\r\n+OK\r\n")
+                        elif command in (b"RETR", b"OTHER") and scenario == b"empty":
+                            connection.sendall(b"-OK - No event(s) available\r\n")
+                        elif command == b"RETR" and scenario == b"reject-retr":
+                            connection.sendall(b"-OK - No event(s) available\r\n+ERR - rejected\r\n")
                         elif command == b"RCVLOOP":
                             connection.sendall(b"+OK\r\n")
                             time.sleep(0.02)

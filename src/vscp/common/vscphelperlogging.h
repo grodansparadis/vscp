@@ -56,7 +56,7 @@ enum vscphelper_log_level {
     VSCP_HELPER_LOG_LEVEL_OFF = 6
 };
 
-/* Configuration is library-wide for this linked copy of the VSCP core.
+/* Configuration is shared by the VSCP libraries linked to the same vscp_util.
  * The console sink writes to stderr. Before configuration, errors go to
  * stderr; a failed configuration retains the previous logger.
  * Functions return VSCP error codes. The last error is thread-local and
@@ -81,6 +81,14 @@ VSCP_HELPER_LOGGING_API void
 vscphelper_logMessage(int level, const char* message, size_t length) VSCP_HELPER_LOGGING_NOEXCEPT;
 VSCP_HELPER_LOGGING_API void
 vscphelper_reportLoggingFailure(const char* message) VSCP_HELPER_LOGGING_NOEXCEPT;
+VSCP_HELPER_LOGGING_API void
+vscphelper_logFunctionEntry(const char* component, const char* function) VSCP_HELPER_LOGGING_NOEXCEPT;
+VSCP_HELPER_LOGGING_API void
+vscphelper_logFunctionStatus(const char* component, const char* function, int status)
+    VSCP_HELPER_LOGGING_NOEXCEPT;
+VSCP_HELPER_LOGGING_API void
+vscphelper_logFunctionFailure(const char* component, const char* function, int errorCode)
+    VSCP_HELPER_LOGGING_NOEXCEPT;
 
 #ifdef __cplusplus
 }
