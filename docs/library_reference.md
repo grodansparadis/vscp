@@ -461,8 +461,86 @@ and `key` contains exactly 32, 48, or 64 hexadecimal digits, respectively.
 Filter fields are optional and can be configured independently of the key.
 Invalid JSON settings are rejected without changing the existing configuration.
 
-The client classes' layouts changed and `m_bRun` is now an atomic boolean;
-C++ consumers should rebuild and should not bind that member to a `bool &`.
+### Authenticated UDP and multicast frames
+
+Both clients support opt-in AES-CBC with HMAC-SHA-256. Set `encryption` to
+`1`, `2`, or `3` for AES-128, AES-192, or AES-256, respectively, and provide
+an explicit `key` of the corresponding length. Set `hmac-key` to an independent
+32-byte key encoded as exactly 64 hexadecimal digits. For example, this UDP
+configuration uses AES-256:
+
+```json
+{
+  "ip": "udp://127.0.0.1:33333",
+  "encryption": 3,
+  "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "hmac-key": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+}
+```
+
+These are public **test keys**, not production secrets. Generate two independent
+keys with a cryptographically secure generator, for example run
+`openssl rand -hex 32` twice for AES-256, and provision identical values on
+every peer. For AES-128 or AES-192, use `openssl rand -hex 16` or
+`openssl rand -hex 24`; the HMAC key is always 32 bytes. The AES key must not
+be reused as the beginning of the HMAC key.
+
+Pass the JSON to `vscpClientUdp::initFromJson()` or
+`vscpClientMulticast::initFromJson()` before `connect()`. Multicast uses the
+same security options with its group, interface and TTL:
+
+```json
+{
+  "ip": "udp://239.255.23.158:9598",
+  "interface": "eth0",
+  "ttl": 1,
+  "encryption": 3,
+  "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "hmac-key": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+}
+```
+
+A nonempty `hmac-key` enables authentication for **both sending and receiving**.
+The AES key must have been supplied explicitly in the same or a previous
+successful configuration; the legacy default key is not used automatically.
+Invalid keys, unencrypted mode with HMAC, and an algorithm change without an
+appropriately sized AES key are rejected transactionally. Omitted options
+retain their current values. Set `"hmac-key": ""` to explicitly disable
+authentication; omitting it does not disable an already configured key.
+Disconnect and finish any concurrent receive calls before changing the
+configuration. Before enabling or disabling authentication, or changing keys
+or the AES algorithm while authentication is enabled, drain the receive queue
+or call `clear()`. Otherwise configuration fails, so queued events from a
+different security policy cannot be delivered under the new one.
+`getConfigAsJson()` includes the AES and HMAC keys: protect its output and do
+not write it to logs. Use JSON configuration rather than mutating the public
+encryption fields directly for authenticated clients.
+
+Authenticated datagrams use VSCP binary packet version 1:
+
+```text
+[0x55][version/length:2][type/encryption:1][AES-CBC ciphertext][IV:16][HMAC:16]
+```
+
+The big-endian prefix contains version `1` in its three high bits and the
+13-bit inner-frame length, including the tag. A fresh random IV is generated
+for each packet. The tag is the leftmost 128 bits of HMAC-SHA-256 over the
+prefix, type/encryption byte, ciphertext and IV. Receivers require the configured
+AES algorithm and version 1, verify the tag in constant time **before**
+decryption, then check PKCS#7 padding, event length and CRC. Event data can be
+0-512 bytes. Invalid packets are discarded before callbacks or queue delivery.
+
+With `hmac-key` omitted on a new client or explicitly empty, the existing
+unprefixed plaintext and AES datagram formats remain unchanged. Authenticated
+and legacy clients cannot exchange frames until they are configured alike;
+an authenticated client never falls back to legacy packets. HMAC does not
+provide replay protection, and AES without HMAC does not provide cryptographic
+integrity. The matching format and a deterministic test vector are described
+in [versioned binary frame helpers](vscpremotetcpif-binary.md#versioned-binary-frame-helpers).
+
+The client classes' layouts include authentication state and `m_bRun` is an
+atomic boolean; C++ consumers must rebuild and should not bind that member to a
+`bool &`.
 Real link-local and multicast integration tests and their optional isolated
 Linux network setup are described in [tests/README.md](../tests/README.md).
 

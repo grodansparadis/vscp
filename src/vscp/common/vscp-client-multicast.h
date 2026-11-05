@@ -173,13 +173,16 @@ public:
 
   /*!
       Return a JSON representation of connection
-      @return JSON representation as string
+      @return JSON representation as string, including configured secret keys.
   */
   virtual std::string getConfigAsJson(void);
 
   /*!
       Set member variables from JSON representation of connection
-      @param config JSON representation as string
+      @param config JSON representation as string. A nonempty "hmac-key"
+             enables authenticated AES frames and must be 64 hexadecimal digits.
+             An AES algorithm and its key must also be explicitly configured.
+             Set "hmac-key" to an empty string to disable authentication.
       @return True on success, false on failure.
   */
   virtual bool initFromJson(const std::string &config);
@@ -222,9 +225,9 @@ public:
 
   /*!
     Encryption key
-    16-bit for AES-128
-    24-bit for AES-192
-    32-bit for AES-256
+    16 bytes for AES-128
+    24 bytes for AES-192
+    32 bytes for AES-256
   */
   uint8_t m_key[32]; // AES-(128/192/256) key
 
@@ -258,6 +261,12 @@ public:
   vscpEventFilter m_filter;
 
 private:
+  uint8_t m_configuredKeyLength = 0;
+  bool m_hmacEnabled = false;
+  uint8_t m_hmacKey[32] = {};
+  uint8_t m_configuredEncryption = VSCP_ENCRYPTION_NONE;
+  uint8_t m_configuredKey[32] = {};
+
   /*!
     Interface to use for multicast communication.
     Default is empty string which means all interfaces.

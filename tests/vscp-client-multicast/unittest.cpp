@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "../datagram_test_helpers.h"
+#include "../datagram_authenticated_test_helpers.h"
 
 using json = nlohmann::json;
 
@@ -563,6 +564,48 @@ TEST(VscpClientMulticast, JsonOptionsAreValidatedAndTransactional)
   EXPECT_EQ(5, json::parse(client.getConfigAsJson())["ttl"]);
 }
 
+TEST(VscpClientMulticast, AuthenticatedJsonOptions)
+{
+  verifyAuthenticatedDatagramOptions<vscpClientMulticast>("239.255.23.158:40000");
+}
+
+#ifdef __linux__
+TEST(VscpClientMulticast, AuthenticatedReceiveRejectsTampering)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientMulticast client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    json config = authenticatedDatagramConfig(encryption);
+    config["ip"] = "239.255.23.158:" + std::to_string(port);
+    config["interface"] = "lo";
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    verifyAuthenticatedDatagramReceive(client, port, encryption, true);
+  }
+}
+
+TEST(VscpClientMulticast, AuthenticatedSendWireFormat)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientMulticast client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    AuthenticatedDatagramWireReceiver receiver(port, true);
+    ASSERT_TRUE(receiver.valid());
+    json config = authenticatedDatagramConfig(encryption);
+    config["ip"] = "239.255.23.158:" + std::to_string(port);
+    config["interface"] = "lo";
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+    const unsigned char loop = 1;
+    ASSERT_EQ(0, setsockopt(client.m_sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)));
+    verifyAuthenticatedDatagramSend(client, receiver, encryption);
+  }
+}
+#endif
+
 // ---------------------------------------------------------------------------
 //                        Callback setting
 // ---------------------------------------------------------------------------
@@ -845,4 +888,46 @@ TEST(VscpClientMulticast, Ipv6MulticastExchangeOnSeparateInterfaces)
   ASSERT_TRUE(waitForDatagramCount(receiver, 1));
   ASSERT_EQ(VSCP_ERROR_SUCCESS, receiver.clear());
   EXPECT_EQ(VSCP_ERROR_TIMEOUT, receiver.receiveBlocking(receivedEx, 10));
+}
+
+TEST(VscpClientMulticast, AuthenticatedIpv6ExchangeOnSeparateInterfaces)
+{
+  const char *txInterface = std::getenv("VSCP_TEST_MULTICAST_TX_INTERFACE");
+  const char *rxInterface = std::getenv("VSCP_TEST_MULTICAST_RX_INTERFACE");
+  if (!txInterface || !rxInterface) {
+    GTEST_SKIP() << "Set VSCP_TEST_MULTICAST_TX_INTERFACE and VSCP_TEST_MULTICAST_RX_INTERFACE "
+                    "to isolated IPv6 multicast-capable interfaces";
+  }
+  vscpClientMulticast sender;
+  vscpClientMulticast receiver;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  ASSERT_NE(port, 0);
+  const std::string suffix = "]:" + std::to_string(port);
+  json sendConfig = authenticatedDatagramConfig(VSCP_ENCRYPTION_AES256);
+  sendConfig["ip"] = "[ff02::114%" + std::string(txInterface) + suffix;
+  sendConfig["interface"] = txInterface;
+  json receiveConfig = authenticatedDatagramConfig(VSCP_ENCRYPTION_AES256);
+  receiveConfig["ip"] = "[ff02::114%" + std::string(rxInterface) + suffix;
+  receiveConfig["interface"] = rxInterface;
+  ASSERT_TRUE(sender.initFromJson(sendConfig.dump()));
+  ASSERT_TRUE(receiver.initFromJson(receiveConfig.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, receiver.connect());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, sender.connect());
+
+  vscpEventEx event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.timestamp_ns = 123456789;
+  event.vscp_class = 30;
+  event.vscp_type = 4;
+  event.sizeData = VSCP_LEVEL2_MAXDATA;
+  for (size_t i = 0; i < event.sizeData; ++i) {
+    event.data[i] = static_cast<uint8_t>(i);
+  }
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, sender.send(event));
+  vscpEventEx received{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, receiver.receiveBlocking(received, 3000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  EXPECT_EQ(event.vscp_type, received.vscp_type);
+  ASSERT_EQ(event.sizeData, received.sizeData);
+  EXPECT_EQ(0, std::memcmp(event.data, received.data, event.sizeData));
 }

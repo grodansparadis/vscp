@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "../datagram_test_helpers.h"
+#include "../datagram_authenticated_test_helpers.h"
 
 using json = nlohmann::json;
 
@@ -534,6 +535,71 @@ TEST(VscpClientUdp, ConfigRoundtrip)
 TEST(VscpClientUdp, JsonOptionsAreValidatedAndTransactional)
 {
   verifyDatagramJsonOptions<vscpClientUdp>("[::1]:40000");
+}
+
+TEST(VscpClientUdp, AuthenticatedJsonOptions)
+{
+  verifyAuthenticatedDatagramOptions<vscpClientUdp>("127.0.0.1:40000");
+}
+
+TEST(VscpClientUdp, AuthenticatedReceiveRejectsTampering)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientUdp client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    json config = authenticatedDatagramConfig(encryption);
+    config["ip"] = "127.0.0.1:" + std::to_string(port);
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    verifyAuthenticatedDatagramReceive(client, port, encryption, false);
+  }
+}
+
+#ifdef __linux__
+TEST(VscpClientUdp, AuthenticatedSendWireFormat)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientUdp client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    AuthenticatedDatagramWireReceiver receiver(port, false);
+    ASSERT_TRUE(receiver.valid());
+    json config = authenticatedDatagramConfig(encryption);
+    config["ip"] = "127.0.0.1:" + std::to_string(port);
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+    verifyAuthenticatedDatagramSend(client, receiver, encryption);
+  }
+}
+#endif
+
+TEST(VscpClientUdp, AuthenticatedIpv6Loopback)
+{
+  vscpClientUdp client;
+  const uint16_t port = unusedDatagramPort(AF_INET6);
+  if (!port) {
+    GTEST_SKIP() << "IPv6 loopback is not available";
+  }
+  json config = authenticatedDatagramConfig(VSCP_ENCRYPTION_AES256);
+  config["ip"] = "[::1]:" + std::to_string(port);
+  ASSERT_TRUE(client.initFromJson(config.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  vscpEventEx event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.vscp_class = 42;
+  event.vscp_type = 8;
+  event.sizeData = 2;
+  event.data[0] = 0xa5;
+  event.data[1] = 0x5a;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.send(event));
+  vscpEventEx received{};
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(received, 2000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  EXPECT_EQ(event.vscp_type, received.vscp_type);
+  ASSERT_EQ(event.sizeData, received.sizeData);
+  EXPECT_EQ(0, std::memcmp(event.data, received.data, event.sizeData));
 }
 
 // ---------------------------------------------------------------------------

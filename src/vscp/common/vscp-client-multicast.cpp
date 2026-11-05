@@ -147,6 +147,9 @@ vscpClientMulticast::~vscpClientMulticast()
 {
   disconnect();
   clear();
+  OPENSSL_cleanse(m_key, sizeof(m_key));
+  OPENSSL_cleanse(m_hmacKey, sizeof(m_hmacKey));
+  OPENSSL_cleanse(m_configuredKey, sizeof(m_configuredKey));
 
 #ifdef WIN32
   if (m_semReady) {
@@ -184,6 +187,13 @@ vscpClientMulticast::getConfigAsJson(void)
   j["ttl"]        = m_ttl;
   j["encryption"] = m_encryptType;
   j["padding"]    = "pkcs7";
+  if (m_hmacEnabled) {
+    vscp_byteArray2HexStr(buf, m_hmacKey, sizeof(m_hmacKey));
+    j["hmac-key"] = buf;
+  }
+  else {
+    j["hmac-key"] = "";
+  }
   switch (m_encryptType) {
 
     case VSCP_ENCRYPTION_NONE:
@@ -253,6 +263,10 @@ vscpClientMulticast::initFromJson(const std::string &config)
     uint8_t encryption = m_encryptType;
     uint8_t key[sizeof(m_key)];
     memcpy(key, m_key, sizeof(key));
+    uint8_t keyLength = m_configuredKeyLength;
+    bool hmacEnabled = m_hmacEnabled;
+    uint8_t hmacKey[sizeof(m_hmacKey)];
+    memcpy(hmacKey, m_hmacKey, sizeof(hmacKey));
     vscpEventFilter filter = m_filter;
     if (nextConfig.contains("interface")) {
       if (!nextConfig["interface"].is_string()) {
@@ -273,7 +287,20 @@ vscpClientMulticast::initFromJson(const std::string &config)
       return false;
     }
     if (!vscp_datagram::optionalUnsigned(nextConfig, "ttl", ttl) ||
-        !vscp_datagram::eventOptions(nextConfig, encryption, key, filter)) {
+        !vscp_datagram::eventOptions(nextConfig, encryption, key, keyLength,
+                                     hmacEnabled, hmacKey, filter)) {
+      return false;
+    }
+    if (hmacEnabled && !vscp_datagram::authenticationOptionsExplicit(nextConfig, encryption, key,
+                                                                      m_configuredEncryption, m_configuredKey)) {
+      fprintf(stderr, "Configure the authenticated multicast encryption algorithm and key through JSON\n");
+      return false;
+    }
+    if (!m_receiveQueue.empty() &&
+        vscp_datagram::authenticationChanged(m_hmacEnabled, hmacEnabled,
+                                              m_hmacEnabled ? m_configuredEncryption : m_encryptType, encryption,
+                                              m_hmacEnabled ? m_configuredKey : m_key, key, m_hmacKey, hmacKey)) {
+      fprintf(stderr, "Drain or clear the multicast receive queue before changing authentication settings\n");
       return false;
     }
     m_interface = interfaceName;
@@ -282,6 +309,15 @@ vscpClientMulticast::initFromJson(const std::string &config)
     m_ttl = ttl;
     m_encryptType = encryption;
     memcpy(m_key, key, sizeof(m_key));
+    m_configuredKeyLength = keyLength;
+    m_hmacEnabled = hmacEnabled;
+    memcpy(m_hmacKey, hmacKey, sizeof(m_hmacKey));
+    if (nextConfig.contains("encryption")) {
+      m_configuredEncryption = encryption;
+    }
+    if (nextConfig.contains("key")) {
+      memcpy(m_configuredKey, key, sizeof(m_configuredKey));
+    }
     m_filter = filter;
     m_j_config = std::move(nextConfig);
   }
@@ -336,6 +372,12 @@ vscpClientMulticast::connect(void)
     return VSCP_ERROR_CONNECTION;
   }
 #endif
+  if (m_hmacEnabled &&
+      !vscp_datagram::authenticationStateValid(m_encryptType, m_key, m_configuredKeyLength, m_hmacKey,
+                                                m_configuredEncryption, m_configuredKey)) {
+    fprintf(stderr, "Invalid authenticated multicast encryption settings\n");
+    return VSCP_ERROR_PARAMETER;
+  }
   vscp_datagram::Socket sock;
   sockaddr_storage destination{};
   int destinationLength = 0;
@@ -428,7 +470,9 @@ int
 vscpClientMulticast::send(vscpEvent &ev)
 {
   std::lock_guard<std::mutex> lifecycle(m_lifecycleMutex);
-  return vscp_datagram::sendEvent(*this, m_connected, m_destination, m_destinationLength, ev);
+  return vscp_datagram::sendEvent(*this, m_connected, m_destination, m_destinationLength, ev,
+                                  m_configuredKeyLength, m_hmacEnabled ? m_hmacKey : nullptr,
+                                  m_configuredEncryption, m_configuredKey);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -696,6 +740,9 @@ void
 workerThread(vscpClientMulticast *pClient)
 {
   if (pClient) {
-    vscp_datagram::receiveLoop(*pClient, pClient->m_connected, pClient->m_receiveCondition, pClient->m_semReady);
+    vscp_datagram::receiveLoop(*pClient, pClient->m_connected, pClient->m_receiveCondition,
+                               pClient->m_semReady, pClient->m_configuredKeyLength,
+                               pClient->m_hmacEnabled ? pClient->m_hmacKey : nullptr,
+                               pClient->m_configuredEncryption, pClient->m_configuredKey);
   }
 }

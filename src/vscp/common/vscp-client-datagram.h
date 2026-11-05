@@ -7,9 +7,11 @@
 
 #include "vscp-socket-address.h"
 #include <pthread.h>
+#include "vscp-binary-protocol.h"
 #include "vscphelper.h"
 
 #include <nlohmann/json.hpp>
+#include <openssl/crypto.h>
 
 #include <algorithm>
 #include <atomic>
@@ -141,8 +143,54 @@ optionalUnsigned(const nlohmann::json &config, const char *name, T &value)
   return true;
 }
 
+inline uint8_t
+aesKeyLength(uint8_t encryption)
+{
+  switch (encryption) {
+    case VSCP_ENCRYPTION_AES128: return 16;
+    case VSCP_ENCRYPTION_AES192: return 24;
+    case VSCP_ENCRYPTION_AES256: return 32;
+    default: return 0;
+  }
+}
+
 inline bool
-eventOptions(const nlohmann::json &config, uint8_t &encryption, uint8_t *key, vscpEventFilter &filter)
+authenticatedKeysValid(uint8_t encryption, const uint8_t *key, uint8_t keyLength, const uint8_t *hmacKey)
+{
+  const uint8_t expectedLength = aesKeyLength(encryption);
+  return expectedLength && keyLength == expectedLength &&
+         CRYPTO_memcmp(key, hmacKey, expectedLength) != 0;
+}
+
+inline bool
+authenticationStateValid(uint8_t encryption, const uint8_t *key, uint8_t keyLength, const uint8_t *hmacKey,
+                         uint8_t configuredEncryption, const uint8_t *configuredKey)
+{
+  return encryption == configuredEncryption && CRYPTO_memcmp(key, configuredKey, 32) == 0 &&
+         authenticatedKeysValid(encryption, key, keyLength, hmacKey);
+}
+
+inline bool
+authenticationOptionsExplicit(const nlohmann::json &config, uint8_t encryption, const uint8_t *key,
+                              uint8_t configuredEncryption, const uint8_t *configuredKey)
+{
+  return (config.contains("encryption") || encryption == configuredEncryption) &&
+         (config.contains("key") || CRYPTO_memcmp(key, configuredKey, 32) == 0);
+}
+
+inline bool
+authenticationChanged(bool oldEnabled, bool newEnabled, uint8_t oldEncryption, uint8_t newEncryption,
+                      const uint8_t *oldKey, const uint8_t *newKey,
+                      const uint8_t *oldHmacKey, const uint8_t *newHmacKey)
+{
+  return (oldEnabled || newEnabled) &&
+         (oldEnabled != newEnabled || oldEncryption != newEncryption ||
+          CRYPTO_memcmp(oldKey, newKey, 32) != 0 || CRYPTO_memcmp(oldHmacKey, newHmacKey, 32) != 0);
+}
+
+inline bool
+eventOptions(const nlohmann::json &config, uint8_t &encryption, uint8_t *key, uint8_t &keyLength,
+             bool &hmacEnabled, uint8_t *hmacKey, vscpEventFilter &filter)
 {
   if (config.contains("encryption")) {
     uint64_t number = 0;
@@ -165,20 +213,52 @@ eventOptions(const nlohmann::json &config, uint8_t &encryption, uint8_t *key, vs
     const std::string hex = config["key"].get<std::string>();
     if (encryption == VSCP_ENCRYPTION_NONE) {
       std::memset(key, 0, 32);
+      keyLength = 0;
     }
     else {
-      const size_t keyLength = encryption == VSCP_ENCRYPTION_AES128 ? 16 :
-                               encryption == VSCP_ENCRYPTION_AES192 ? 24 : 32;
-      if (hex.size() != keyLength * 2 ||
+      const uint8_t expectedLength = aesKeyLength(encryption);
+      if (!expectedLength || hex.size() != expectedLength * 2 ||
           !std::all_of(hex.begin(), hex.end(), [](unsigned char ch) { return std::isxdigit(ch) != 0; })) {
         std::fprintf(stderr, "Invalid datagram encryption key\n");
         return false;
       }
       std::memset(key, 0, 32);
-      if (vscp_hexStr2ByteArray(key, keyLength, hex.c_str()) != keyLength) {
+      if (vscp_hexStr2ByteArray(key, expectedLength, hex.c_str()) != expectedLength) {
         std::fprintf(stderr, "Cannot decode datagram encryption key\n");
         return false;
       }
+      keyLength = expectedLength;
+    }
+  }
+  if (config.contains("hmac-key")) {
+    if (!config["hmac-key"].is_string()) {
+      std::fprintf(stderr, "Invalid datagram HMAC key\n");
+      return false;
+    }
+    const std::string hex = config["hmac-key"].get<std::string>();
+    if (hex.empty()) {
+      hmacEnabled = false;
+      std::memset(hmacKey, 0, 32);
+    }
+    else {
+      if (hex.size() != 64 ||
+          !std::all_of(hex.begin(), hex.end(), [](unsigned char ch) { return std::isxdigit(ch) != 0; }) ||
+          vscp_hexStr2ByteArray(hmacKey, 32, hex.c_str()) != 32) {
+        std::fprintf(stderr, "Invalid datagram HMAC key\n");
+        return false;
+      }
+      hmacEnabled = true;
+    }
+  }
+  if (hmacEnabled) {
+    const uint8_t expectedLength = aesKeyLength(encryption);
+    if (!expectedLength || keyLength != expectedLength) {
+      std::fprintf(stderr, "Authenticated datagrams require an explicitly configured AES key\n");
+      return false;
+    }
+    if (CRYPTO_memcmp(key, hmacKey, expectedLength) == 0) {
+      std::fprintf(stderr, "Datagram HMAC and AES keys must be independent\n");
+      return false;
     }
   }
   if (!optionalUnsigned(config, "priority-filter", filter.filter_priority) ||
@@ -774,7 +854,8 @@ clearQueue(Client &client, bool semReady)
 template<typename Client>
 inline int
 sendEvent(Client &client, const std::atomic<bool> &connected, const sockaddr_storage &destination,
-          int destinationLength, vscpEvent &event)
+          int destinationLength, vscpEvent &event, uint8_t keyLength, const uint8_t *hmacKey,
+          uint8_t configuredEncryption, const uint8_t *configuredKey)
 {
   if (!connected.load()) {
     return VSCP_ERROR_NOT_CONNECTED;
@@ -786,13 +867,35 @@ sendEvent(Client &client, const std::atomic<bool> &connected, const sockaddr_sto
     std::fprintf(stderr, "Unsupported datagram encryption algorithm\n");
     return VSCP_ERROR_INVALID_FRAME;
   }
+  if (hmacKey && !authenticationStateValid(client.m_encryptType, client.m_key, keyLength, hmacKey,
+                                            configuredEncryption, configuredKey)) {
+    std::fprintf(stderr, "Invalid authenticated datagram encryption settings\n");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   uint8_t frame[bufferSize]{};
   size_t frameLength = vscp_getFrameSizeFromEvent(&event);
   if (frameLength > bufferSize - 32 || !vscp_writeEventToFrame(frame, sizeof(frame), 0, &event)) {
     std::fprintf(stderr, "Error writing datagram event frame\n");
     return VSCP_ERROR_INVALID_FRAME;
   }
-  if (client.m_encryptType != VSCP_ENCRYPTION_NONE) {
+  if (hmacKey) {
+    try {
+      std::vector<uint8_t> plaintext(frame, frame + frameLength);
+      std::vector<uint8_t> wire;
+      if (!vscp_binary::encode(std::move(plaintext), client.m_encryptType, client.m_key, wire,
+                               vscp_binary::authenticatedVersion, hmacKey) || wire.size() > sizeof(frame)) {
+        std::fprintf(stderr, "Error authenticating datagram event frame\n");
+        return VSCP_ERROR_INVALID_FRAME;
+      }
+      std::memcpy(frame, wire.data(), wire.size());
+      frameLength = wire.size();
+    }
+    catch (const std::bad_alloc &) {
+      std::fprintf(stderr, "Cannot allocate authenticated datagram frame\n");
+      return VSCP_ERROR_MEMORY;
+    }
+  }
+  else if (client.m_encryptType != VSCP_ENCRYPTION_NONE) {
     uint8_t encrypted[bufferSize]{};
     const size_t encryptedLength =
       vscp_encryptFrame(encrypted, frame, frameLength, client.m_key, nullptr, client.m_encryptType);
@@ -825,7 +928,9 @@ sendEvent(Client &client, const std::atomic<bool> &connected, const sockaddr_sto
 
 template<typename Client>
 inline void
-receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variable_any &condition, bool semReady)
+receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variable_any &condition,
+            bool semReady, uint8_t keyLength, const uint8_t *hmacKey,
+            uint8_t configuredEncryption, const uint8_t *configuredKey)
 {
   const Socket socket = client.m_sock;
   while (client.m_bRun.load()) {
@@ -870,7 +975,38 @@ receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variabl
       continue;
     }
     size_t frameLength = static_cast<size_t>(received);
-    if (buffer[0] & 0x0f) {
+    if (hmacKey) {
+      size_t innerLength = 0;
+      uint8_t version = 0;
+      if (!authenticationStateValid(client.m_encryptType, client.m_key, keyLength, hmacKey,
+                                    configuredEncryption, configuredKey) ||
+          frameLength < vscp_binary::headerSize + 1 ||
+          !vscp_binary::parseHeader(buffer, innerLength, version) ||
+          version != vscp_binary::authenticatedVersion ||
+          innerLength != frameLength - vscp_binary::headerSize ||
+          GET_VSCP_BINARY_PACKET_TYPE(buffer[vscp_binary::headerSize]) > VSCP_MULTICAST_TYPE_EVENT1 ||
+          (buffer[vscp_binary::headerSize] & 0x0f) != client.m_encryptType) {
+        std::fprintf(stderr, "Invalid authenticated datagram header or encryption settings\n");
+        continue;
+      }
+      uint8_t decrypted[bufferSize]{};
+      try {
+        frameLength = vscp_decryptFrameV1(decrypted, sizeof(decrypted),
+                                          buffer + vscp_binary::headerSize, innerLength,
+                                          client.m_key, hmacKey);
+      }
+      catch (const std::bad_alloc &) {
+        std::fprintf(stderr, "Cannot allocate authenticated datagram frame\n");
+        client.m_bRun.store(false);
+        break;
+      }
+      if (!frameLength) {
+        std::fprintf(stderr, "Error authenticating datagram event frame\n");
+        continue;
+      }
+      std::memcpy(buffer, decrypted, frameLength);
+    }
+    else if (buffer[0] & 0x0f) {
       if (frameLength < 1 + 16 + 16) {
         std::fprintf(stderr, "Encrypted datagram is too short\n");
         continue;
@@ -892,6 +1028,10 @@ receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variabl
                              buffer[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB];
     if (dataSize > VSCP_LEVEL2_MAXDATA) {
       std::fprintf(stderr, "Datagram event frame exceeds the maximum data size\n");
+      continue;
+    }
+    if (hmacKey && frameLength != minimumFrameSize + dataSize) {
+      std::fprintf(stderr, "Invalid authenticated datagram event length\n");
       continue;
     }
     vscpEvent event{};

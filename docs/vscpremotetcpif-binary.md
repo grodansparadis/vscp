@@ -151,11 +151,14 @@ Serialize operations on each client instance, as with the text-mode API.
 
 ## Versioned binary frame helpers
 
-The helper-only framing API in `vscp-binary-protocol.h` supports a three-byte
-prefix: `[0x55][version:3 | length:13, big-endian]`. The length excludes this
-prefix and includes the entire inner frame. This is distinct from the raw
-client transport's two-byte length prefix described above; the raw transport
-does not negotiate or automatically enable authenticated framing.
+The framing helpers in `vscp-binary-protocol.h` support a three-byte prefix:
+`[0x55][version:3 | length:13, big-endian]`. The length excludes this prefix
+and includes the entire inner frame. The UDP and multicast clients use this
+prefix for opt-in version 1 authenticated datagrams; see their
+[configuration](library_reference.md#authenticated-udp-and-multicast-frames).
+This is distinct from the raw TCP client transport's two-byte length prefix
+described above; the raw TCP transport does not negotiate or automatically
+enable authenticated framing.
 
 Packet version **0** retains the existing inner frame format and is the default.
 The existing `vscp_encryptFrame()` / `vscp_decryptFrame()` APIs are unchanged.

@@ -117,13 +117,16 @@ SocketCAN client functionality for VSCP.
 TCP/IP client functionality for VSCP.
 
 ### vscp-client-udp.cpp and vscp-client-udp.h
-UDP client functionality for VSCP.
+UDP client functionality for VSCP. See
+[authenticated UDP and multicast frames](../../../docs/library_reference.md#authenticated-udp-and-multicast-frames)
+for HMAC configuration and wire format.
 
 ### vscp-client-mqtt.cpp and vscp-client-mqtt.h and vscp-client-mqtt.md  
 MQTT client functionality for VSCP.
 
 ### vscp-client-multicast.cpp and vscp-client-multicast.h
-Multicast client functionality for VSCP.
+Multicast client functionality for VSCP, including the same optional
+[authenticated datagram frames](../../../docs/library_reference.md#authenticated-udp-and-multicast-frames).
 
 ### vscp-client-ws1.cpp and vscp-client-ws1.h
 WebSocket client functionality (version 1) for VSCP.

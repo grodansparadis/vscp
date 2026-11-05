@@ -84,6 +84,16 @@ temporary local Git repositories and can be run from the repository root:
 python3 -B tests/test_update_docs_metadata.py
 ```
 
+The UDP and multicast authenticated-frame tests cover all AES key sizes,
+configuration validation, wire format, HMAC verification, malformed packets,
+and downgrade rejection. Run them with:
+
+```sh
+cmake --build tests/build --target unittest_vscp_client_udp unittest_vscp_client_multicast
+./tests/build/vscp-client-udp/unittest_vscp_client_udp --gtest_filter='VscpClientUdp.Authenticated*'
+./tests/build/vscp-client-multicast/unittest_vscp_client_multicast --gtest_filter='VscpClientMulticast.Authenticated*'
+```
+
 ## Windows
 
 For an individual standalone test project, create a build directory inside its
@@ -136,6 +146,6 @@ unshare -nUr sh -c '
   tests/build/vscp-client-udp/unittest_vscp_client_udp \
     --gtest_filter=VscpClientUdp.Ipv6LinkLocalExchangeOnSeparateInterfaces:VscpClientUdp.Ipv6GlobalExchangeOnSeparateInterfaces
   tests/build/vscp-client-multicast/unittest_vscp_client_multicast \
-    --gtest_filter=VscpClientMulticast.Ipv6MulticastExchangeOnSeparateInterfaces
+    --gtest_filter=VscpClientMulticast.Ipv6MulticastExchangeOnSeparateInterfaces:VscpClientMulticast.AuthenticatedIpv6ExchangeOnSeparateInterfaces
 '
 ```
