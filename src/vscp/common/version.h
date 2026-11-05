@@ -36,10 +36,10 @@
 #define VSCPD_MAJOR_VERSION     26
 #define VSCPD_MINOR_VERSION     11
 #define VSCPD_REVISION_VERSION  0
-#define VSCPD_PATCH_VERSION     3948
+#define VSCPD_PATCH_VERSION     3952
 
 
-#define VSCPD_DISPLAY_VERSION   "26.11.0.3948"
+#define VSCPD_DISPLAY_VERSION   "26.11.0.3952"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \
