@@ -35,11 +35,11 @@
 // 36/37/38/39/42/44/45 I M P O T A N T ! ! !
 #define VSCPD_MAJOR_VERSION     26
 #define VSCPD_MINOR_VERSION     11
-#define VSCPD_REVISION_VERSION  0
+#define VSCPD_REVISION_VERSION  1
 #define VSCPD_PATCH_VERSION     3948
 
 
-#define VSCPD_DISPLAY_VERSION   "26.11.0.3948"
+#define VSCPD_DISPLAY_VERSION   "26.11.1.3948"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \
