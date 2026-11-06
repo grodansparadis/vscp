@@ -18,6 +18,7 @@ from datetime import datetime
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
+FIXTURE_REVISION = 7
 
 
 class UpdateMetadataTest(unittest.TestCase):
@@ -33,6 +34,14 @@ class UpdateMetadataTest(unittest.TestCase):
         self.header = self.root / "src" / "vscp" / "common" / "version.h"
         shutil.copyfile(SOURCE_ROOT / "tools" / "update_docs_metadata.py", self.script)
         shutil.copyfile(SOURCE_ROOT / "src" / "vscp" / "common" / "version.h", self.header)
+        self.header.write_text(
+            re.sub(
+                r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
+                rf"\g<1>{FIXTURE_REVISION}",
+                self.header.read_text(encoding="utf-8"),
+            ),
+            encoding="utf-8",
+        )
         self.variables.write_text(
             "<var><creation-time>old</creation-time>"
             "<document-version>old</document-version></var>\n",
@@ -73,7 +82,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
         self.assertEqual(self.git("rev-list", "--count", "HEAD"), version.split(".")[3])
-        self.assertEqual("0", version.split(".")[2])
+        self.assertEqual(str(FIXTURE_REVISION), version.split(".")[2])
 
     def test_default_preserves_git_unavailable_fallback(self):
         original_header = self.header.read_text(encoding="utf-8")
@@ -84,7 +93,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
         self.assertEqual("0", version.split(".")[3])
-        self.assertEqual("0", version.split(".")[2])
+        self.assertEqual(str(FIXTURE_REVISION), version.split(".")[2])
 
     def test_prepared_commit_versions_match_resulting_head(self):
         original_lines = self.header.read_text(encoding="utf-8").splitlines()
@@ -195,13 +204,20 @@ class UpdateMetadataTest(unittest.TestCase):
         )
         self.assertRegex(result, r"(?m)^#define VSCPD_MINOR_VERSION\s+9$")
         self.assertRegex(
-            result, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.0\.123"$'
+            result, rf'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.{FIXTURE_REVISION}\.123"$'
         )
 
     def test_revision_is_manually_set_and_limited_to_one_byte(self):
         module = runpy.run_path(str(self.script))
         header = self.header.read_text(encoding="utf-8")
-        self.assertEqual(0, module["_manual_revision"](header))
+        self.assertEqual(FIXTURE_REVISION, module["_manual_revision"](header))
+        self.assertEqual(0, module["_manual_revision"](
+            re.sub(
+                r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
+                r"\g<1>0",
+                header,
+            )
+        ))
         manual_revision = re.sub(
             r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
             r"\g<1>255",
