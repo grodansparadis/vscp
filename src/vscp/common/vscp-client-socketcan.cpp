@@ -355,8 +355,11 @@ vscpClientSocketCan::disconnect(void)
   }
 
   m_bRun = false; // terminate the thread
-  // Wait for workerthread to to terminate
-  pthread_join(m_threadWork, NULL);
+  // Wait for workerthread to to terminate (only if it was started)
+  if (m_threadWork) {
+    pthread_join(m_threadWork, NULL);
+    m_threadWork = 0;
+  }
 
   //::close(m_socket);
   m_bConnected = false;
