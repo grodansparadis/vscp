@@ -12,6 +12,7 @@
   * [Library reference](library_reference.md)
 
 * Appendix
+  * [VSCP repositories](appendix_repositories.md)
 
 
 * Other documentation
