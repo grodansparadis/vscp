@@ -395,7 +395,9 @@ vscp_getEncryptionIv(uint8_t *target, const uint8_t *iv)
 {
   helperLogEntry(__func__);
   if (nullptr == iv) {
-    return helperLogBoolResult(__func__, (16 == getRandomIV(target, 16)));
+    // OpenSSL CSPRNG. getRandomIV() falls back to a predictable pattern on
+    // Windows when rand_s fails.
+    return helperLogBoolResult(__func__, (1 == RAND_bytes(target, 16)));
   }
 
   memcpy(target, iv, 16);
@@ -1158,7 +1160,7 @@ vscp_stristr(char *str1, const char *str2)
   char *r        = *p2 == 0 ? str1 : 0;
 
   while (*p1 != 0 && *p2 != 0) {
-    if (tolower(*p1) == tolower(*p2)) {
+    if (tolower((unsigned char) *p1) == tolower((unsigned char) *p2)) {
       if (r == 0) {
         r = p1;
       }
@@ -1167,7 +1169,7 @@ vscp_stristr(char *str1, const char *str2)
     }
     else {
       p2 = str2;
-      if (tolower(*p1) == tolower(*p2)) {
+      if (tolower((unsigned char) *p1) == tolower((unsigned char) *p2)) {
         r = p1;
         p2++;
       }
@@ -1193,7 +1195,7 @@ vscp_trimWhiteSpace(char *str)
   char *end;
 
   // Trim leading space
-  while (isspace(*str)) {
+  while (isspace((unsigned char) *str)) {
     str++;
   }
 
@@ -1203,7 +1205,7 @@ vscp_trimWhiteSpace(char *str)
 
   // Trim trailing space
   end = str + strlen(str) - 1;
-  while (end > str && isspace(*end)) {
+  while (end > str && isspace((unsigned char) *end)) {
     end--;
   }
 
@@ -1228,6 +1230,10 @@ vscp_reverse(const char *const s)
 
   size_t i, len = strlen(s);
   char *r = (char *) malloc(len + 1);
+  if (nullptr == r) {
+    helperLogFailure(__func__);
+    return nullptr;
+  }
 
   for (i = 0; i < len; ++i) {
     r[i] = s[len - i - 1];
@@ -1270,20 +1276,23 @@ std::string
 vscp_str_format(std::string fstr, ...)
 {
   helperLogEntry(__func__);
-  int final_n, n = ((int) fstr.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
+  // Start with twice the format length but never with an empty buffer
+  // (an empty format gave a zero sized buffer that strcpy wrote past).
+  int final_n, n = std::max<int>(64, ((int) fstr.size()) * 2);
   std::unique_ptr<char[]> formatted;
   va_list ap;
   while (1) {
     formatted.reset(new char[n]); /* Wrap the plain char array into the unique_ptr */
-    strcpy(&formatted[0], fstr.c_str());
     va_start(ap, fstr);
     final_n = vsnprintf(&formatted[0], n, fstr.c_str(), ap);
     va_end(ap);
     if (final_n < 0) {
+      // Encoding error. Retrying would loop forever.
       helperLogFailure(__func__, errno);
+      return std::string();
     }
-    if (final_n < 0 || final_n >= n) {
-      n += abs(final_n - n + 1);
+    if (final_n >= n) {
+      n = final_n + 1; // Exact size needed including the terminator
     }
     else {
       break;
@@ -1349,7 +1358,7 @@ vscp_getTimeString(char *buf, size_t buf_len, time_t *t)
 {
   helperLogEntry(__func__);
   // Check pointers
-  if (nullptr == buf) {
+  if ((nullptr == buf) || (0 == buf_len)) {
     return helperLogBoolResult(__func__, false);
   }
 
@@ -1602,14 +1611,16 @@ vscp_safe_encode_str(const std::string &str)
   std::string retstr = "";
 
   for (auto it = str.cbegin(); it != str.cend(); ++it) {
+    // Escape backslash and quote (they were emitted unchanged) and
+    // control characters. Bytes >= 0x80 (UTF-8) pass through.
     if ('\\' == *it) {
-      retstr += "\\";
+      retstr += "\\\\";
     }
     else if ('\"' == *it) {
-      retstr += "\"";
+      retstr += "\\\"";
     }
-    else if (*it < 32) {
-      retstr += vscp_str_format("\\x%x", *it);
+    else if ((unsigned char) *it < 32) {
+      retstr += vscp_str_format("\\x%x", (unsigned int) (unsigned char) *it);
     }
     else {
       retstr += *it;
@@ -1710,7 +1721,13 @@ bool
 vscp_base64_std_encode(std::string &str)
 {
   helperLogEntry(__func__);
-  size_t bufferSize = 2 * strlen((const char *) str.c_str());
+  // Base64 needs 4 characters per started 3 input bytes + terminator.
+  // (2 * length was too small for 0, 1, 2 and 4 byte input.)
+  const size_t inLen = strlen((const char *) str.c_str());
+  if (inLen > (size_t) INT_MAX) {
+    return helperLogBoolResult(__func__, false);
+  }
+  size_t bufferSize = 4 * ((inLen + 2) / 3) + 1;
   char *pbuf        = new char[bufferSize];
 
   if (nullptr == pbuf) {
@@ -1719,9 +1736,7 @@ vscp_base64_std_encode(std::string &str)
 
   memset(pbuf, 0, bufferSize);
 
-  vscp_base64_encode((const unsigned char *) ((const char *) str.c_str()),
-                     (int) strlen((const char *) str.c_str()),
-                     pbuf);
+  vscp_base64_encode((const unsigned char *) ((const char *) str.c_str()), (int) inLen, pbuf);
 
   str = pbuf;
   delete[] pbuf;
@@ -1791,23 +1806,34 @@ int
 vscp_hostname_to_ip(char *ip, const char *hostname)
 {
   helperLogEntry(__func__);
-  struct hostent *he;
-  struct in_addr **addr_list;
 
-  if (nullptr == (he = gethostbyname(hostname))) {
-    // get the host info
+  if ((nullptr == ip) || (nullptr == hostname)) {
     return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
   }
 
-  addr_list = (struct in_addr **) he->h_addr_list;
+  // getaddrinfo/inet_ntop are thread safe (gethostbyname/inet_ntoa use
+  // static buffers). Result is an IPv4 dotted address as before, so the
+  // caller's buffer needs INET_ADDRSTRLEN (16) bytes.
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family   = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
 
-  if (nullptr != addr_list[0]) {
-    // Return the first one;
-    strcpy(ip, inet_ntoa(*addr_list[0]));
-    return VSCP_ERROR_SUCCESS;
+  struct addrinfo *result = nullptr;
+  if ((0 != getaddrinfo(hostname, nullptr, &hints, &result)) || (nullptr == result)) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
   }
 
-  return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
+  char buf[INET_ADDRSTRLEN];
+  const struct sockaddr_in *addr = (const struct sockaddr_in *) result->ai_addr;
+  const bool ok = (nullptr != inet_ntop(AF_INET, &addr->sin_addr, buf, sizeof(buf)));
+  freeaddrinfo(result);
+  if (!ok) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_ERROR);
+  }
+
+  memcpy(ip, buf, strlen(buf) + 1);
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1998,7 +2024,7 @@ vscp_getMeasurementDataCoding(const vscpEvent *pev)
     datacoding_byte = pev->pdata[0];
   }
   else if (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) {
-    if (pev->sizeData >= 16) {
+    if (pev->sizeData > 16) {
       datacoding_byte = pev->pdata[16];
     }
   }
@@ -2210,8 +2236,11 @@ vscp_getDataCodingString(const unsigned char *pCode, unsigned char length)
   str.clear();
 
   if (nullptr != pCode) {
+    // First byte is the coding byte. Copy at most what fits, zero terminated.
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pCode + 1, length - 1);
+    if (length > 1) {
+      memcpy(buf, pCode + 1, std::min<size_t>(length - 1, sizeof(buf) - 1));
+    }
     str = std::string(buf);
   }
   else {
@@ -2238,8 +2267,11 @@ vscp_getDataCodingString(std::string &strResult, const unsigned char *pCode, uns
 
   strResult.clear();
   if (nullptr != pCode) {
+    // First byte is the coding byte. Copy at most what fits, zero terminated.
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pCode + 1, dataSize - 1);
+    if (dataSize > 1) {
+      memcpy(buf, pCode + 1, std::min<size_t>(dataSize - 1, sizeof(buf) - 1));
+    }
 
     strResult = std::string(buf);
   }
@@ -2307,10 +2339,15 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
   if (VSCP_CLASS2_MEASUREMENT_STR == pev->vscp_class) {
 
+    // Index, zone, subzone, unit followed by the string
+    if (pev->sizeData < 4) {
+      return helperLogBoolResult(__func__, false);
+    }
+
     char buf[512];
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata + 4, pev->sizeData - 4);
+    memcpy(buf, pev->pdata + 4, std::min<size_t>(pev->sizeData - 4, sizeof(buf) - 1));
     strValue = std::string(buf);
   }
   else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
@@ -2323,14 +2360,12 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata + 4, 8); // Double
-
-    // Take care of byte order on little endian
-    if (vscp_isLittleEndian()) {
-      for (int i = 7; i > 0; i--) {
-        buf[i] = buf[7 - i];
-      }
-    }
+    // Double in the byte order used by vscp_makeLevel2FloatMeasurementEvent
+    // and vscp_getMeasurementAsDouble (native). The old in-place "swap"
+    // loop here produced garbage.
+    // NOTE: The VSCP specification says MSB first; encoder and decoders in
+    // this file use native order.
+    memcpy(buf, pev->pdata + 4, 8);
 
     strValue = vscp_str_format("%f", *((double *) buf));
   }
@@ -2400,17 +2435,17 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
       offset = 16;
     }
 
-    // Must be at least two data bytes
-    if (pev->sizeData - offset < 2) {
-      return helperLogBoolResult(__func__, false);
-    }
-
     // Point past index,zone,subzone
     if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
         (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
       offset += 3;
+    }
+
+    // Must be at least two data bytes (coding byte + value) after the offset
+    if (pev->sizeData < offset + 2) {
+      return helperLogBoolResult(__func__, false);
     }
 
     unsigned short type = (0x07 & (pev->pdata[0 + offset] >> 5));
@@ -2446,9 +2481,11 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
       case 2: // string
       {
+        // A Level I string holds at most seven characters. Never write
+        // past the buffer whatever size the (received) event has.
         char strData[9];
         memset(strData, 0, sizeof(strData));
-        for (i = 1; i < (pev->sizeData - offset); i++) {
+        for (i = 1; (i < (pev->sizeData - offset)) && (i < (int) sizeof(strData)); i++) {
           strData[i - 1] = pev->pdata[i + offset];
         }
 
@@ -2470,7 +2507,8 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 
       case 5: // Floating point value
       {
-        float val = vscp_getMeasurementAsFloat(pev->pdata, (uint8_t) pev->sizeData);
+        float val = vscp_getMeasurementAsFloat(pev->pdata + offset,
+                                               (uint8_t) std::min<int>(pev->sizeData - offset, 255));
         strValue  = vscp_str_format("%g", val);
       } break;
 
@@ -2539,10 +2577,12 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
 
     char buf[512];
 
-    if (0 == pev->sizeData || nullptr == pev->pdata) {
+    // Index, zone, subzone, unit followed by the string
+    if ((pev->sizeData < 4) || (nullptr == pev->pdata)) {
       return helperLogBoolResult(__func__, false);
     }
-    memcpy(buf, pev->pdata + 4, pev->sizeData - 4);
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, pev->pdata + 4, std::min<size_t>(pev->sizeData - 4, sizeof(buf) - 1));
 
     try {
       *pvalue = std::stod(std::string(buf));
@@ -2553,10 +2593,11 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
   }
   else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
 
-    char buf[8];
-
-    memcpy(buf, pev->pdata + 4, 8);
-    *pvalue = *(double *) (buf);
+    // Index, zone, subzone, unit followed by an 8 byte double
+    if ((12 != pev->sizeData) || (nullptr == pev->pdata)) {
+      return helperLogBoolResult(__func__, false);
+    }
+    memcpy(pvalue, pev->pdata + 4, 8);
   }
   else {
     return helperLogBoolResult(__func__, false);
@@ -2584,12 +2625,12 @@ vscp_getMeasurementAsDoubleEx(double *pvalue, const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementAsDouble(pvalue, pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return helperLogBoolResult(__func__, rv);
 }
@@ -2604,6 +2645,10 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
 {
   helperLogEntry(__func__);
   int offset = 0;
+
+  if ((nullptr == pev) || (nullptr == pev->pdata)) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   // If class >= 512 and class <1024 we
   // have GUID in front of data.
@@ -2627,10 +2672,14 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
 //
 
 bool
-vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strValue*/)
+vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string &strValue)
 {
   helperLogEntry(__func__);
   int offset = 0;
+
+  if ((nullptr == pev) || (nullptr == pev->pdata)) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   // If class >= 512 and class <1024 we
   // have GUID in front of data.
@@ -2643,17 +2692,22 @@ vscp_getMeasurementWithZoneAsString(const vscpEvent *pev, std::string & /*strVal
     return helperLogBoolResult(__func__, false);
   }
 
-  // We mimic a standard measurement
+  // We mimic a standard measurement: drop GUID (if any) and
+  // index, zone, subzone and decode the rest as a CLASS1.MEASUREMENT.
+  // (Before this only allocated the mimic and leaked it.)
   vscpEvent eventMimic;
   memset(&eventMimic, 0, sizeof(eventMimic));
 
-  eventMimic.pdata      = new uint8_t[pev->sizeData - offset - 3];
-  eventMimic.vscp_class = pev->vscp_class;
+  eventMimic.sizeData   = (uint16_t) (pev->sizeData - offset - 3);
+  eventMimic.pdata      = new uint8_t[eventMimic.sizeData];
+  eventMimic.vscp_class = VSCP_CLASS1_MEASUREMENT;
   eventMimic.vscp_type  = pev->vscp_type;
-  eventMimic.sizeData   = pev->sizeData;
-  memcpy(eventMimic.pdata, pev->pdata + offset + 3, pev->sizeData - offset - 3);
+  memcpy(eventMimic.pdata, pev->pdata + offset + 3, eventMimic.sizeData);
 
-  return true;
+  bool rv = vscp_getMeasurementAsString(strValue, &eventMimic);
+  vscp_deleteEvent(&eventMimic);
+
+  return helperLogBoolResult(__func__, rv);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2665,6 +2719,10 @@ vscp_getMeasurementUnit(const vscpEvent *pev)
 {
   helperLogEntry(__func__);
   int offset = 0;
+
+  if (nullptr == pev) {
+    return helperLogNegativeResult(__func__, VSCP_ERROR_ERROR);
+  }
 
   // If class >= 512 and class < 1024 we
   // have GUID in front of data.
@@ -2731,12 +2789,12 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementUnit(pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return helperLogNegativeResult(__func__, rv);
 }
@@ -2765,13 +2823,17 @@ vscp_getMeasurementSensorIndex(const vscpEvent *pev)
   if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
       (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
 
+    if (pev->sizeData < (offset + 1)) {
+      return helperLogNegativeResult(__func__, -1);
+    }
     return VSCP_DATACODING_INDEX(pev->pdata[offset + 0]);
   }
   else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
            (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
            (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 3))) {
+    // Index, zone and subzone must be present
+    if ((nullptr == pev->pdata) || (pev->sizeData < (offset + 3))) {
       return helperLogNegativeResult(__func__, -1);
     }
 
@@ -2825,12 +2887,12 @@ vscp_getMeasurementSensorIndexEx(const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementSensorIndex(pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return helperLogNegativeResult(__func__, rv);
 }
@@ -2865,7 +2927,8 @@ vscp_getMeasurementZone(const vscpEvent *pev)
            (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
            (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 3))) {
+    // Index, zone and subzone must be present
+    if ((nullptr == pev->pdata) || (pev->sizeData < (offset + 3))) {
       return 0;
     }
 
@@ -2918,12 +2981,12 @@ vscp_getMeasurementZoneEx(const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogNegativeResult(__func__, -1);
   }
 
   int rv = vscp_getMeasurementZone(pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return helperLogNegativeResult(__func__, rv);
 }
@@ -2950,15 +3013,20 @@ vscp_getMeasurementSubZone(const vscpEvent *pev)
   }
 
   if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
-      (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
+      (VSCP_CLASS2_LEVEL1_MEASUREMENT == pev->vscp_class)) {
+    return 0; // No subzone in these classes
+  }
+  else if ((VSCP_CLASS1_MEASUREZONE == pev->vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREZONE == pev->vscp_class) ||
+           (VSCP_CLASS1_SETVALUEZONE == pev->vscp_class) ||
+           (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pev->vscp_class)) {
 
-    if ((nullptr == pev->pdata) || (pev->sizeData >= (offset + 1))) {
+    // Data is index, zone, subzone, ... - subzone is the third byte.
+    // Short events give 0 like vscp_getMeasurementZone.
+    if (pev->sizeData < (offset + 3)) {
       return 0;
     }
 
-    return 0; // Always zero
+    return pev->pdata[offset + 2];
   }
   else if ((VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) ||
            (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class)) {
@@ -3007,12 +3075,12 @@ vscp_getMeasurementSubZoneEx(const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   int rv = vscp_getMeasurementSubZone(pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return helperLogNegativeResult(__func__, rv);
 }
@@ -3025,6 +3093,9 @@ bool
 vscp_isMeasurement(const vscpEvent *pev)
 {
   helperLogEntry(__func__);
+  if (nullptr == pev) {
+    return helperLogBoolResult(__func__, false);
+  }
   if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX1 == pev->vscp_class) ||
       (VSCP_CLASS1_MEASUREMENTX2 == pev->vscp_class) || (VSCP_CLASS1_MEASUREMENTX3 == pev->vscp_class) ||
       (VSCP_CLASS1_MEASUREMENTX4 == pev->vscp_class) || (VSCP_CLASS1_DATA == pev->vscp_class) ||
@@ -3085,12 +3156,12 @@ vscp_isMeasurementEx(const vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   bool rv = vscp_isMeasurement(pev);
-  vscp_deleteEvent(pev);
+  vscp_deleteEvent_v2(&pev);
 
   return rv;
 }
@@ -3256,32 +3327,29 @@ vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
                                          uint8_t /*sensoridx*/)
 {
   helperLogEntry(__func__);
-  uint8_t i;
+
+  if ((nullptr == pdata) || (nullptr == psize)) {
+    return helperLogBoolResult(__func__, false);
+  }
+
+  // Value bytes MSB first, independent of host byte order.
+  // (The old code read past val64, used the value as a pointer on big
+  // endian hosts and only ever wrote pdata[1].)
   uint8_t data[8];
-
-  uint8_t *p = (uint8_t *) &val64;
-
-  if (vscp_isLittleEndian()) {
-    for (i = 7; i > 0; i--) {
-      data[7 - i] = *(p + i);
-    }
-  }
-  else {
-    memcpy(data, (uint8_t *) val64, 8);
+  for (int i = 0; i < 8; i++) {
+    data[i] = (uint8_t) (val64 >> (8 * (7 - i)));
   }
 
-  // Count the leading zeros
-  uint8_t nZeros = 0;
-  for (i = 0; i < 8; i++) {
-    if (*(p + i))
-      break;
+  // Skip leading zero bytes but keep at least one byte
+  int nZeros = 0;
+  while ((nZeros < 7) && (0 == data[nZeros])) {
     nZeros++;
   }
 
-  *psize  = 1; // Size will be at least one byte
-  int pos = 0;
-  for (i = nZeros; i < 8; i++) {
-    pdata[pos + 1] = *(p + i + nZeros);
+  // pdata[0] is left for the caller (data coding byte)
+  *psize = 1;
+  for (int i = nZeros; i < 8; i++) {
+    pdata[*psize] = data[i];
     (*psize)++;
   }
 
@@ -3633,10 +3701,12 @@ vscp_makeFloatMeasurementEventEx(vscpEventEx *pex, float value, uint8_t unit, ui
   memcpy(pev->GUID, pex->GUID, 16);
 
   if (!vscp_makeFloatMeasurementEvent(pev, value, unit, sensoridx)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -3710,14 +3780,21 @@ vscp_makeStringMeasurementEventEx(vscpEventEx *pex, double value, uint8_t unit, 
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
+  // The builder allocates new data - free the data copied from pex
+  vscp_deleteEvent(pev);
+  pev->sizeData = 0;
+
   if (!vscp_makeStringMeasurementEvent(pev, value, unit, sensoridx)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -3794,14 +3871,21 @@ vscp_makeLevel2FloatMeasurementEventEx(vscpEventEx *pex,
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
+  // The builder allocates new data - free the data copied from pex
+  vscp_deleteEvent(pev);
+  pev->sizeData = 0;
+
   if (!vscp_makeLevel2FloatMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -3839,7 +3923,8 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
 
   pev->pdata = new uint8_t[pev->sizeData];
   if (nullptr == pev->pdata) {
-    delete pev;
+    // The event belongs to the caller - do not delete it here
+    pev->sizeData = 0;
     return helperLogBoolResult(__func__, false);
   }
 
@@ -3851,7 +3936,9 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pev,
   pev->pdata[1] = zone;
   pev->pdata[2] = subzone;
   pev->pdata[3] = unit;
-  memcpy((pev->pdata + 4), strData.c_str(), pev->sizeData);
+  // String including its terminating zero (sizeData - 4 bytes). Copying
+  // sizeData bytes here wrote four bytes past the allocation.
+  memcpy((pev->pdata + 4), strData.c_str(), pev->sizeData - 4);
 
   return true;
 }
@@ -3885,14 +3972,21 @@ vscp_makeLevel2StringMeasurementEventEx(vscpEventEx *pex,
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
+  // The data from pex is replaced below - free it first
+  vscp_deleteEvent(pev);
+  pev->sizeData = 0;
+
   if (!vscp_makeLevel2StringMeasurementEvent(pev, vscp_type, value, unit, sensoridx, zone, subzone)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -4082,12 +4176,15 @@ vscp_convertLevel1MeasurementToLevel2DoubleEx(vscpEventEx *pex)
   pev->sizeData = 0;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
   if (!vscp_convertLevel1MeasurementToLevel2Double(pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -4262,14 +4359,17 @@ vscp_convertLevel1MeasurementToLevel2StringEx(vscpEventEx *pex)
   pev->pdata = nullptr;
 
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertLevel1MeasurementToLevel2String(pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_convertEventToEventEx(pex, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
@@ -4661,15 +4761,18 @@ vscp_setEventExGuidFromString(vscpEventEx *pev, const std::string &strGUID)
     return true;
   }
   else {
+    // Same rules as vscp_setEventGuidFromString. This used to stop after
+    // the first byte, read an empty list and let exceptions escape.
     std::deque<std::string> tokens;
     vscp_split(tokens, strGUID, ":");
-    for (int i = 0; i < 16; i++) {
-      pev->GUID[i] = (uint8_t) stol(tokens.front().c_str(), nullptr, 16);
-      tokens.pop_front();
-      // If no tokens left no use to continue
-      if (tokens.size()) {
-        break;
+    for (int i = 0; (i < 16) && !tokens.empty(); i++) {
+      try {
+        pev->GUID[i] = (uint8_t) std::stol(tokens.front(), nullptr, 16);
       }
+      catch (...) {
+        pev->GUID[i] = 0;
+      }
+      tokens.pop_front();
     }
   }
 
@@ -5326,6 +5429,10 @@ vscp_copyEvent(vscpEvent *pevTo, const vscpEvent *pevFrom)
     return helperLogBoolResult(__func__, false);
   }
 
+  if (pevFrom->sizeData && (nullptr == pevFrom->pdata)) {
+    return helperLogBoolResult(__func__, false);
+  }
+
   // Copy in data from old to new and take care of new frame format
   if ((pevFrom->head & VSCP_HEADER16_FRAME_VERSION_MASK) == VSCP_HEADER16_FRAME_VERSION_UNIX_NS) {
     pevTo->year         = 0xffff;
@@ -5957,7 +6064,8 @@ vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
     }
   }
   catch (const json::parse_error &) {
-    helperLogFailure(__func__);
+    // Not valid JSON - must not be reported as a (zeroed) event
+    return helperLogBoolResult(__func__, false);
   }
   catch (...) {
     return helperLogBoolResult(__func__, false);
@@ -6323,7 +6431,9 @@ vscp_convertEventToXML(std::string &strXML, vscpEvent *pev)
 
 // ----------------------------------------------------------------------------
 
-int depth_event_parser = 0;
+// Element depth while parsing. Per thread so parsers in different threads
+// do not disturb each other. Reset at the start of every parse.
+static thread_local int depth_event_parser = 0;
 
 // Always produces frame type 1 (UNIX_NS) with nanosecond timestamp.
 // For original frame input, converts datetime + timestamp to nanoseconds.
@@ -6339,12 +6449,14 @@ startEventXMLParser(void *data, const char *name, const char **attr)
     return;
   }
 
-  // Init event with defaults
-  memset(pev, 0, sizeof(vscpEvent));
-  vscp_setEventToNow(pev);
-  pev->timestamp = vscp_makeTimeStamp();
-
   if ((0 == strcmp(name, "event")) && (0 == depth_event_parser)) {
+
+    // Init event with defaults. Free data from an earlier <event> element
+    // in the same document (the caller's event is cleared before parsing).
+    vscp_deleteEvent(pev);
+    memset(pev, 0, sizeof(vscpEvent));
+    vscp_setEventToNow(pev);
+    pev->timestamp = vscp_makeTimeStamp();
 
     // Store values for later processing
     std::string timestampStr;
@@ -6452,21 +6564,31 @@ vscp_convertXMLToEvent(vscpEvent *pev, std::string &strXML)
     return helperLogBoolResult(__func__, false);
   }
 
-  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-  XML_SetUserData(xmlParser, pev);
-  XML_SetElementHandler(xmlParser, startEventXMLParser, endEventXMLParser);
-
-  int bytes_read;
-  void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
-
-  strncpy((char *) buf, strXML.c_str(), strXML.length());
-
-  bytes_read = (int) strXML.length();
-  if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+  if (strXML.length() > INT_MAX) {
     return helperLogBoolResult(__func__, false);
   }
 
+  // Start from a cleared event (as the element handler did before)
+  memset(pev, 0, sizeof(vscpEvent));
+  vscp_setEventToNow(pev);
+  pev->timestamp = vscp_makeTimeStamp();
+
+  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+  if (nullptr == xmlParser) {
+    return helperLogBoolResult(__func__, false);
+  }
+  XML_SetUserData(xmlParser, pev);
+  XML_SetElementHandler(xmlParser, startEventXMLParser, endEventXMLParser);
+
+  // Parse the string directly. (Copying it into a fixed 64 KiB parser
+  // buffer overflowed the heap for longer input.)
+  depth_event_parser = 0;
+  const bool parsed = (XML_STATUS_OK == XML_Parse(xmlParser, strXML.data(), (int) strXML.length(), 1));
   XML_ParserFree(xmlParser);
+  depth_event_parser = 0;
+  if (!parsed) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   return true;
 }
@@ -6562,7 +6684,9 @@ vscp_convertEventExToXML(std::string &strXML, vscpEventEx *pex)
 
 // ----------------------------------------------------------------------------
 
-int depth_eventex_parser = 0;
+// Element depth while parsing. Per thread so parsers in different threads
+// do not disturb each other. Reset at the start of every parse.
+static thread_local int depth_eventex_parser = 0;
 
 // Always produces frame type 1 (UNIX_NS) with nanosecond timestamp.
 // For original frame input, converts datetime + timestamp to nanoseconds.
@@ -6578,12 +6702,12 @@ startEventExXMLParser(void *data, const char *name, const char **attr)
     return;
   }
 
-  // Init event with defaults
-  memset(pex, 0, sizeof(vscpEventEx));
-  vscp_setEventExToNow(pex);
-  pex->timestamp = vscp_makeTimeStamp();
-
   if ((0 == strcmp(name, "event")) && (0 == depth_eventex_parser)) {
+
+    // Init event with defaults
+    memset(pex, 0, sizeof(vscpEventEx));
+    vscp_setEventExToNow(pex);
+    pex->timestamp = vscp_makeTimeStamp();
 
     // Store values for later processing
     std::string timestampStr;
@@ -6689,21 +6813,31 @@ vscp_convertXMLToEventEx(vscpEventEx *pex, std::string &strXML)
     return helperLogBoolResult(__func__, false);
   }
 
-  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-  XML_SetUserData(xmlParser, pex);
-  XML_SetElementHandler(xmlParser, startEventExXMLParser, endEventExXMLParser);
-
-  int bytes_read;
-  void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
-
-  strncpy((char *) buf, strXML.c_str(), strXML.length());
-
-  bytes_read = (int) strXML.length();
-  if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+  if (strXML.length() > INT_MAX) {
     return helperLogBoolResult(__func__, false);
   }
 
+  // Start from a cleared event (as the element handler did before)
+  memset(pex, 0, sizeof(vscpEventEx));
+  vscp_setEventExToNow(pex);
+  pex->timestamp = vscp_makeTimeStamp();
+
+  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+  if (nullptr == xmlParser) {
+    return helperLogBoolResult(__func__, false);
+  }
+  XML_SetUserData(xmlParser, pex);
+  XML_SetElementHandler(xmlParser, startEventExXMLParser, endEventExXMLParser);
+
+  // Parse the string directly. (Copying it into a fixed 64 KiB parser
+  // buffer overflowed the heap for longer input.)
+  depth_eventex_parser = 0;
+  const bool parsed = (XML_STATUS_OK == XML_Parse(xmlParser, strXML.data(), (int) strXML.length(), 1));
   XML_ParserFree(xmlParser);
+  depth_eventex_parser = 0;
+  if (!parsed) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   return true;
 }
@@ -6869,7 +7003,7 @@ vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pex)
 //
 
 int
-vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, uint16_t *pVscpType)
+vscp_parse_topic(const char *topic, uint8_t *pGuid, uint16_t *pVscpClass, uint16_t *pVscpType)
 {
   helperLogEntry(__func__);
   // Check pointers
@@ -6905,7 +7039,7 @@ vscp_parse_topic(const char *topic, uint8_t *pGuid[16], uint16_t *pVscpClass, ui
 
   cguid guid;
   guid.getFromString(tokens[3]);
-  guid.writeGUID(*pGuid);
+  guid.writeGUID(pGuid); // pGuid points to 16 bytes
 
   return 0;
 }
@@ -6918,17 +7052,21 @@ int
 vscp_set_event_info_from_topic(vscpEvent *pev, const char *topic)
 {
   helperLogEntry(__func__);
-  uint8_t *pGuid[16];
+  uint8_t guid[16];
   uint16_t vscpClass;
   uint16_t vscpType;
 
-  if (vscp_parse_topic(topic, pGuid, &vscpClass, &vscpType)) {
+  if (nullptr == pev) {
+    return helperLogStatusResult(__func__, -1);
+  }
+
+  if (vscp_parse_topic(topic, guid, &vscpClass, &vscpType)) {
     return helperLogStatusResult(__func__, -1);
   }
 
   pev->vscp_class = vscpClass;
   pev->vscp_type  = vscpType;
-  memcpy(pev->GUID, pGuid, 16);
+  memcpy(pev->GUID, guid, 16);
 
   return 0;
 }
@@ -6941,17 +7079,21 @@ int
 vscp_set_eventex_info_from_topic(vscpEventEx *pex, const char *topic)
 {
   helperLogEntry(__func__);
-  uint8_t *pGuid[16];
+  uint8_t guid[16];
   uint16_t vscpClass;
   uint16_t vscpType;
 
-  if (vscp_parse_topic(topic, pGuid, &vscpClass, &vscpType)) {
+  if (nullptr == pex) {
+    return helperLogStatusResult(__func__, -1);
+  }
+
+  if (vscp_parse_topic(topic, guid, &vscpClass, &vscpType)) {
     return helperLogStatusResult(__func__, -1);
   }
 
   pex->vscp_class = vscpClass;
   pex->vscp_type  = vscpType;
-  memcpy(pex->GUID, pGuid, 16);
+  memcpy(pex->GUID, guid, 16);
 
   return 0;
 }
@@ -7567,7 +7709,9 @@ vscp_readFilterMaskFromString(vscpEventFilter *pFilter, const std::string &strFi
 // />"
 //
 
-int depth_filtermask_parser = 0;
+// Element depth while parsing. Per thread so parsers in different threads
+// do not disturb each other. Reset at the start of every parse.
+static thread_local int depth_filtermask_parser = 0;
 
 ////////////////////////////////////////////////////////////////
 // startFilterMaskXMLParser
@@ -7647,21 +7791,26 @@ vscp_readFilterMaskFromXML(vscpEventFilter *pFilter, const std::string &strFilte
     return helperLogBoolResult(__func__, false);
   }
 
-  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-  XML_SetUserData(xmlParser, pFilter);
-  XML_SetElementHandler(xmlParser, startFilterMaskXMLParser, endFilterMaskXMLParser);
-
-  int bytes_read;
-  void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
-
-  strncpy((char *) buf, strFilter.c_str(), strFilter.length());
-
-  bytes_read = (int) strFilter.length();
-  if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+  if (strFilter.length() > INT_MAX) {
     return helperLogBoolResult(__func__, false);
   }
 
+  XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+  if (nullptr == xmlParser) {
+    return helperLogBoolResult(__func__, false);
+  }
+  XML_SetUserData(xmlParser, pFilter);
+  XML_SetElementHandler(xmlParser, startFilterMaskXMLParser, endFilterMaskXMLParser);
+
+  // Parse the string directly. (Copying it into a fixed 64 KiB parser
+  // buffer overflowed the heap for longer input.)
+  depth_filtermask_parser = 0;
+  const bool parsed = (XML_STATUS_OK == XML_Parse(xmlParser, strFilter.data(), (int) strFilter.length(), 1));
   XML_ParserFree(xmlParser);
+  depth_filtermask_parser = 0;
+  if (!parsed) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   return true;
 }
@@ -7886,7 +8035,7 @@ vscp_convertCanalToEventEx(vscpEventEx *pex, const canalMsg *pcanalMsg, unsigned
 
   if (rv) {
     vscp_convertEventToEventEx(pex, pev);
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
   }
 
   return helperLogBoolResult(__func__, rv);
@@ -7927,13 +8076,15 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mo
   // Level II events with class == 512-1023 is recognized by the daemon and
   // sent to the correct interface as Level I events if the interface
   // is addressed by the client.
+  // Start of the Level I data in the event
+  size_t dataOffset = 0;
+
   if ((pev->vscp_class >= 512) && (pev->vscp_class < 1024) && (pev->sizeData >= 16)) {
 
-    // Destination guid (interface) is not needed anymore
-    sizeData = pev->sizeData - 16;
-    if (sizeData) {
-      memmove(pev->pdata, pev->pdata + 16, sizeData);
-    }
+    // Destination guid (interface) is not needed anymore. Skip it instead
+    // of moving the data inside the caller's (const) event.
+    sizeData   = pev->sizeData - 16;
+    dataOffset = 16;
 
     // Make level I class
     vscp_class = pev->vscp_class - 512;
@@ -7965,8 +8116,8 @@ vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pev, uint8_t /*mo
     pcanalMsg->id |= VSCP_CAN_ID_HARD_CODED;
   }
 
-  if (nullptr != pev->pdata) {
-    memcpy(pcanalMsg->data, pev->pdata, pcanalMsg->sizeData);
+  if ((nullptr != pev->pdata) && pcanalMsg->sizeData) {
+    memcpy(pcanalMsg->data, pev->pdata + dataOffset, pcanalMsg->sizeData);
   }
 
   return true;
@@ -8018,7 +8169,7 @@ vscp_writeDataToString(std::string &str, const vscpEvent *pev, bool bUseHtmlBrea
   std::string wrk, strBreak;
 
   // Check pointers
-  if (nullptr == pev->pdata) {
+  if ((nullptr == pev) || (nullptr == pev->pdata)) {
     return helperLogBoolResult(__func__, false);
   }
 
@@ -8984,15 +9135,18 @@ vscp_writeEventExToFrame(uint8_t *frame, size_t len, uint8_t pkttype, const vscp
 
   // Check pointer (rest is checked in vscp_convertEventExToEvent)
   if (nullptr == pex) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   // Convert eventEx to event
   if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
 
   if (!vscp_writeEventToFrame(frame, len, pkttype, pev)) {
+    vscp_deleteEvent_v2(&pev);
     return helperLogBoolResult(__func__, false);
   }
   vscp_deleteEvent_v2(&pev);
@@ -9020,6 +9174,18 @@ vscp_getEventFromFrame(vscpEvent *pev, const uint8_t *buf, size_t len)
   }
 
   // Get packet type from upper nibble
+  // The whole header (incl. the size field) and the CRC must be present
+  // before any of it is read. Received frames come from the network.
+  if (len < (size_t) (1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + 2)) {
+    return helperLogBoolResult(__func__, false);
+  }
+
+  // Never accept more data than an event can hold
+  if (((((uint16_t) buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_MSB] << 8) + buf[VSCP_BINARY_PACKET_FRAME0_POS_SIZE_LSB])) >
+      VSCP_LEVEL2_MAXDATA) {
+    return helperLogBoolResult(__func__, false);
+  }
+
   uint8_t pktType = GET_VSCP_BINARY_PACKET_TYPE(buf[0]);
 
   if (VSCP_MULTICAST_TYPE_EVENT1 == pktType) {
@@ -9535,7 +9701,8 @@ vscp_encryptFrame(uint8_t *output,
 
   // If iv is not give it should be generated
   if (nullptr == iv) {
-    if (16 != getRandomIV(generated_iv, 16)) {
+    // OpenSSL CSPRNG (see vscp_getEncryptionIv)
+    if (1 != RAND_bytes(generated_iv, 16)) {
       return helperLogSizeResult(__func__, 0);
     }
   }
@@ -9854,21 +10021,24 @@ vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len)
 ////////////////////////////////////////////////////////////////
 // readHexChar
 //
-static uint8_t
-readHexChar(char input)
+static bool
+readHexChar(char input, uint8_t &value)
 {
   helperLogEntry(__func__);
   if (input >= '0' && input <= '9') {
-    return input - '0';
+    value = input - '0';
+    return true;
   }
   if (input >= 'A' && input <= 'F') {
-    return input - 'A' + 10;
+    value = input - 'A' + 10;
+    return true;
   }
   if (input >= 'a' && input <= 'f') {
-    return input - 'a' + 10;
+    value = input - 'a' + 10;
+    return true;
   }
   helperLogFailure(__func__);
-  throw std::invalid_argument("Invalid hex char input");
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -9882,12 +10052,19 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
   size_t cnt       = 0;
   const char *phex = hexstr;
 
-  while (*(phex + 2 * cnt) && *(phex + 2 * cnt + 1) && (cnt < size)) {
-    // printf("%02X %02X %02X\n",
-    //         readHexChar(*(phex + 2*cnt))<<4,
-    //         readHexChar(*(phex + 2*cnt + 1)),
-    //         (uint8_t)(readHexChar(*(phex + 2*cnt)) << 4) + readHexChar(*(phex + 2*cnt + 1)));
-    *(array + cnt) = (uint8_t) (readHexChar(*(phex + 2 * cnt)) << 4) + readHexChar(*(phex + 2 * cnt + 1));
+  if ((nullptr == array) || (nullptr == hexstr)) {
+    return 0;
+  }
+
+  // Stops at the first non hex character (this used to throw an exception
+  // that most callers did not catch). The return value tells how many
+  // bytes were converted.
+  while ((cnt < size) && *(phex + 2 * cnt) && *(phex + 2 * cnt + 1)) {
+    uint8_t high, low;
+    if (!readHexChar(*(phex + 2 * cnt), high) || !readHexChar(*(phex + 2 * cnt + 1), low)) {
+      break;
+    }
+    *(array + cnt) = (uint8_t) ((high << 4) + low);
     cnt++;
   }
 
@@ -9922,11 +10099,17 @@ vscp_getHashPasswordComponents(uint8_t *pSalt, uint8_t *pHash, const std::string
 
   strSalt = tokens.front();
   tokens.pop_front();
-  vscp_hexStr2ByteArray(pSalt, 16, strSalt.c_str());
+  vscp_trim(strSalt);
+  if ((32 != strSalt.length()) || (16 != vscp_hexStr2ByteArray(pSalt, 16, strSalt.c_str()))) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   strHash = tokens.front();
   tokens.pop_front();
-  vscp_hexStr2ByteArray(pHash, 32, strHash.c_str());
+  vscp_trim(strHash);
+  if ((64 != strHash.length()) || (32 != vscp_hexStr2ByteArray(pHash, 32, strHash.c_str()))) {
+    return helperLogBoolResult(__func__, false);
+  }
 
   return true;
 }
@@ -9939,7 +10122,8 @@ bool
 vscp_getSalt(uint8_t *buf, size_t len)
 {
   helperLogEntry(__func__);
-  if (!getRandomIV(buf, len)) {
+  // All bytes must come from the CSPRNG (a partial read used to pass)
+  if ((nullptr == buf) || (len > (size_t) INT_MAX) || (1 != RAND_bytes(buf, (int) len))) {
     return helperLogBoolResult(__func__, false);
   }
   return true;
@@ -9955,7 +10139,7 @@ vscp_getSaltHex(std::string &strSalt, size_t len)
   helperLogEntry(__func__);
   if (len) {
     uint8_t *pbuf = new uint8_t[len];
-    if (len != getRandomIV(pbuf, len)) {
+    if ((len > (size_t) INT_MAX) || (1 != RAND_bytes(pbuf, (int) len))) {
       delete[] pbuf;
       return helperLogBoolResult(__func__, false);
     }
