@@ -167,6 +167,42 @@ public:
   */
   virtual int receiveBlocking(canalMsg &msg, long timeout = 100) = 0;
 
+  // --------------------------------------------------------------------------
+  //                       CAN FD (optional)
+  //
+  // Clients that can handle CAN FD frames override these. The default
+  // implementations return VSCP_ERROR_NOT_SUPPORTED so clients that only
+  // handle standard CAN are unaffected.
+  // --------------------------------------------------------------------------
+
+  /*!
+      Check if the client can send and receive CAN FD frames
+      @return true if CAN FD is supported, false otherwise.
+  */
+  virtual bool isFdCapable(void) { return false; };
+
+  /*!
+      Send CAN(AL) FD message to remote host.
+      @param msg CANAL FD message to send.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(canalMsgFD & /*msg*/) { return VSCP_ERROR_NOT_SUPPORTED; };
+
+  /*!
+      Receive CAN(AL) FD message from remote host
+      @param msg CANAL FD message that will get the result.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(canalMsgFD & /*msg*/) { return VSCP_ERROR_NOT_SUPPORTED; };
+
+  /*!
+      Blocking receive of CAN(AL) FD message from remote host
+      @param msg CANAL FD message that will get the result.
+      @param timeout Timeout in milliseconds. Zero is no wait. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(canalMsgFD & /*msg*/, long /*timeout*/ = 100) { return VSCP_ERROR_NOT_SUPPORTED; };
+
   /*!
       Set interface filter
       @param filter VSCP Filter to set.

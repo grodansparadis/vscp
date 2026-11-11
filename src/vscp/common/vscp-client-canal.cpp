@@ -352,11 +352,12 @@ vscpClientCanal::receive(vscpEvent &ev)
   }
   pthread_mutex_unlock(&m_mutexif);
 
-  if (VSCP_ERROR_SUCCESS != (rv = vscp_convertCanalToEvent(&ev, &canalMsg, guid))) {
-    spdlog::error("CANAL CLIENT: failed to convert ex event {}.", rv);
+  if (!vscp_convertCanalToEvent(&ev, &canalMsg, guid)) {
+    spdlog::error("CANAL CLIENT: failed to convert event.");
+    return VSCP_ERROR_ERROR;
   }
 
-  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -380,11 +381,12 @@ vscpClientCanal::receive(vscpEventEx &ex)
   }
   pthread_mutex_unlock(&m_mutexif);
 
-  if (VSCP_ERROR_SUCCESS != (rv = vscp_convertCanalToEventEx(&ex, &canalMsg, guid))) {
-    spdlog::error("CANAL CLIENT: failed to convert ex event {}.", rv);
+  if (!vscp_convertCanalToEventEx(&ex, &canalMsg, guid)) {
+    spdlog::error("CANAL CLIENT: failed to convert ex event.");
+    return VSCP_ERROR_ERROR;
   }
 
-  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -408,7 +410,7 @@ vscpClientCanal::receive(canalMsg &msg)
   }
   pthread_mutex_unlock(&m_mutexif);
 
-  return (rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -466,6 +468,68 @@ vscpClientCanal::receiveBlocking(canalMsg &msg, long timeout)
   // }
 
   return receive(msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isFdCapable
+//
+
+bool
+vscpClientCanal::isFdCapable(void)
+{
+  return m_canalif.isFdCapable();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send (FD)
+//
+
+int
+vscpClientCanal::send(canalMsgFD &msg)
+{
+  int rv;
+
+  pthread_mutex_lock(&m_mutexif);
+  rv = m_canalif.CanalSendFD(&msg);
+  pthread_mutex_unlock(&m_mutexif);
+
+  if (CANAL_ERROR_FD_SUPPORT == rv) {
+    return VSCP_ERROR_NOT_SUPPORTED;
+  }
+
+  return (CANAL_ERROR_SUCCESS == rv) ? VSCP_ERROR_SUCCESS : rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive (FD)
+//
+
+int
+vscpClientCanal::receive(canalMsgFD &msg)
+{
+  int rv;
+
+  pthread_mutex_lock(&m_mutexif);
+  rv = m_canalif.CanalReceiveFD(&msg);
+  pthread_mutex_unlock(&m_mutexif);
+
+  return (CANAL_ERROR_SUCCESS == rv) ? VSCP_ERROR_SUCCESS : rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking (FD)
+//
+
+int
+vscpClientCanal::receiveBlocking(canalMsgFD &msg, long timeout)
+{
+  int rv;
+
+  // Not locked: a blocking call would hold off senders for the full
+  // timeout. Same as the worker thread does for CanalBlockingReceive.
+  rv = m_canalif.CanalBlockingReceiveFD(&msg, (uint32_t) timeout);
+
+  return (CANAL_ERROR_SUCCESS == rv) ? VSCP_ERROR_SUCCESS : rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -677,7 +741,20 @@ workerThread(void *pObj)
 
     // while (cnt) {
 
-    if (CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalBlockingReceive(&msg, 100)) {
+    int rvrcv = pClient->m_canalif.CanalBlockingReceive(&msg, 100);
+    if (CANAL_ERROR_LIBRARY == rvrcv) {
+      // Generation 1 driver without CanalBlockingReceive: poll instead
+      rvrcv = pClient->m_canalif.CanalReceive(&msg);
+      if (CANAL_ERROR_SUCCESS != rvrcv) {
+#ifdef WIN32
+        win_usleep(10000);
+#else
+        usleep(10000);
+#endif
+      }
+    }
+
+    if (CANAL_ERROR_SUCCESS == rvrcv) {
 
       spdlog::trace("CANAL CLIENT: workthread. Event received");
 

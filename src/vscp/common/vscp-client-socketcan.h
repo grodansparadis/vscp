@@ -187,6 +187,36 @@ public:
   virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
 
   /*!
+      Check if FD mode is enabled (FLAG_FD_MODE)
+      @return true if CAN FD frames can be sent and received.
+  */
+  virtual bool isFdCapable(void);
+
+  /*!
+    Send CAN(AL) FD message to remote host. Frames with CANAL_IDFLAG_FD or
+    more than eight data bytes require FD mode (FLAG_FD_MODE).
+    @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(canalMsgFD &msg);
+
+  /*!
+      Receive CAN(AL) FD message from remote host. CANAL level: all
+      received frames (standard/extended id, standard/FD, up to 64 data
+      bytes) are returned, independent of the VSCP rules and in-filter.
+      @param msg CANAL FD message that will get the result.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(canalMsgFD &msg);
+
+  /*!
+      Receive blocking CAN(AL) FD message from remote host
+      @param msg CANAL FD message that will get the result.
+      @param timeout Timeout in milliseconds. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(canalMsgFD &msg, long timeout = 100);
+
+  /*!
       Set interface filter
       @param filter VSCP Filter to set.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -333,6 +363,15 @@ public:
   // Mutex to protect the output queue
   pthread_mutex_t m_mutexSendQueue;
   pthread_mutex_t m_mutexReceiveQueue;
+
+  /*!
+    CANAL level receive queue. Holds all received frames, standard and
+    CAN FD (up to 64 data bytes), before any VSCP filtering. Read with
+    receive(canalMsgFD&). When full the oldest frame is dropped.
+  */
+  std::list<canalMsgFD> m_receiveListFD;
+  sem_t m_semReceiveQueueFD;
+  pthread_mutex_t m_mutexReceiveQueueFD;
 
   /// Filters for input/output
   vscpEventFilter m_filterIn;

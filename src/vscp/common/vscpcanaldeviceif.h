@@ -422,6 +422,64 @@ class VscpCanalDeviceIf
     */
     bool isGenerationOne(void) { return m_bGenerationOne; };
 
+    /*!
+        Return true if the driver exports the CAN FD methods
+        (CanalSendFD, CanalReceiveFD, CanalBlockingSendFD,
+        CanalBlockingReceiveFD). Standard CANAL drivers do not.
+        @return True if the driver is CAN FD capable
+    */
+    bool isFdCapable(void) { return m_bFdCapable; };
+
+    /*!
+        CanalSendFD
+
+        Send a CAN or CAN FD frame. If the driver is not FD capable a
+        frame without CANAL_IDFLAG_FD and with sizeData <= 8 is sent
+        as a standard CANAL message.
+
+        @param pCanMsgFD Pointer to CANAL FD message to send.
+        @return CANAL_ERROR_SUCCESS on success, CANAL_ERROR_FD_SUPPORT if
+          an FD frame is sent on a driver that is not FD capable,
+          CANAL error code on failure.
+    */
+    int CanalSendFD(const PCANALMSGFD pCanMsgFD);
+
+    /*!
+        CanalBlockingSendFD
+
+        As CanalSendFD but blocking.
+
+        @param pCanMsgFD Pointer to CANAL FD message to send.
+        @param timeout Timeout in milliseconds. 0 (default) to wait forever.
+        @return CANAL_ERROR_SUCCESS on success, CANAL error code on failure
+    */
+    int CanalBlockingSendFD(const PCANALMSGFD pCanMsgFD,
+                            uint32_t timeout = CANAL_BLOCK_FOREVER);
+
+    /*!
+        CanalReceiveFD
+
+        Receive a CAN or CAN FD frame. If the driver is not FD capable
+        a standard CANAL message is received and returned as a
+        canalMsgFD.
+
+        @param pCanMsgFD Pointer to CANAL FD message that gets the frame.
+        @return CANAL_ERROR_SUCCESS on success, CANAL error code on failure
+    */
+    int CanalReceiveFD(PCANALMSGFD pCanMsgFD);
+
+    /*!
+        CanalBlockingReceiveFD
+
+        As CanalReceiveFD but blocking.
+
+        @param pCanMsgFD Pointer to CANAL FD message that gets the frame.
+        @param timeout Timeout in milliseconds. 0 (default) to wait forever.
+        @return CANAL_ERROR_SUCCESS on success, CANAL error code on failure
+    */
+    int CanalBlockingReceiveFD(PCANALMSGFD pCanMsgFD,
+                               uint32_t timeout = CANAL_BLOCK_FOREVER);
+
   private:
     // Driver DLL/DL path
     std::string m_strPath;
@@ -443,6 +501,9 @@ class VscpCanalDeviceIf
 
     // Set to true if driver is a generation one driver
     bool m_bGenerationOne;
+
+    // Set to true if driver exports the CAN FD methods
+    bool m_bFdCapable;
 
     // ------------------------------------------------------------------------
     //                     End of driver worker thread data
@@ -468,6 +529,12 @@ class VscpCanalDeviceIf
     LPFNDLL_CANALBLOCKINGSEND m_proc_CanalBlockingSend;
     LPFNDLL_CANALBLOCKINGRECEIVE m_proc_CanalBlockingReceive;
     LPFNDLL_CANALGETDRIVERINFO m_proc_CanalGetdriverInfo;
+
+    // Generation 3 - CAN FD (optional)
+    LPFNDLL_CANALSENDFD m_proc_CanalSendFD;
+    LPFNDLL_CANALBLOCKINGSENDFD m_proc_CanalBlockingSendFD;
+    LPFNDLL_CANALRECEIVEFD m_proc_CanalReceiveFD;
+    LPFNDLL_CANALBLOCKINGRECEIVEFD m_proc_CanalBlockingReceiveFD;
 };
 
 

@@ -139,6 +139,33 @@ public:
   virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
 
   /*!
+      Check if the loaded CANAL driver handles CAN FD
+      @return true if the driver exports the CANAL FD methods.
+  */
+  virtual bool isFdCapable(void);
+
+  /*!
+      Send CAN(AL) FD message to remote host. On a standard CANAL driver
+      only frames without CANAL_IDFLAG_FD and with sizeData <= 8 can be sent.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int send(canalMsgFD &msg);
+
+  /*!
+      Receive CAN(AL) FD message from remote host
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receive(canalMsgFD &msg);
+
+  /*!
+      Receive blocking CAN(AL) FD message from remote host
+      @param msg CANAL FD message that will get the result.
+      @param timeout Timeout in milliseconds. Default is 100 ms.
+      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+  */
+  virtual int receiveBlocking(canalMsgFD &msg, long timeout = 100);
+
+  /*!
       Set interface filter
       @param filter VSCP Filter to set.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.

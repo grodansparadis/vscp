@@ -141,9 +141,11 @@ vscpClientSocketCan::vscpClientSocketCan()
 
   sem_init(&m_semSendQueue, 0, 0);
   sem_init(&m_semReceiveQueue, 0, 0);
+  sem_init(&m_semReceiveQueueFD, 0, 0);
 
   pthread_mutex_init(&m_mutexSendQueue, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
+  pthread_mutex_init(&m_mutexReceiveQueueFD, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,9 +160,11 @@ vscpClientSocketCan::~vscpClientSocketCan()
 
   sem_destroy(&m_semSendQueue);
   sem_destroy(&m_semReceiveQueue);
+  sem_destroy(&m_semReceiveQueueFD);
 
   pthread_mutex_destroy(&m_mutexSendQueue);
   pthread_mutex_destroy(&m_mutexReceiveQueue);
+  pthread_mutex_destroy(&m_mutexReceiveQueueFD);
 
   // Clear the input queue (if needed)
   while (m_receiveList.size()) {
@@ -183,6 +187,7 @@ vscpClientSocketCan::init(const std::string &interface,
   m_interface = interface;
   m_guid.getFromString(guid);
   m_flags = flags;
+  m_mode  = (m_flags & FLAG_FD_MODE) ? CANFD_MTU : CAN_MTU;
   setResponseTimeout(DEAULT_RESPONSE_TIMEOUT); // Response timeout 3 ms
   return VSCP_ERROR_SUCCESS;
 }
@@ -226,6 +231,7 @@ vscpClientSocketCan::initFromJson(const std::string &config)
     // flags
     if (m_j_config.contains("flags")) {
       m_flags = m_j_config["flags"].get<uint32_t>();
+      m_mode  = (m_flags & FLAG_FD_MODE) ? CANFD_MTU : CAN_MTU;
       spdlog::debug("SOCKETCAN client: json socket init: host set to {}.", m_flags);
     }
 
@@ -399,7 +405,7 @@ vscpClientSocketCan::send(vscpEvent &ev)
   frame.can_id = canalMsg.id;
   frame.can_id |= CAN_EFF_FLAG;
   frame.len   = canalMsg.sizeData;
-  frame.flags = canalMsg.flags;
+  frame.flags = 0; // Standard CAN frame. CANAL flags are not socketcan FD flags.
   memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
   if (m_flags & FLAG_FD_MODE) {
@@ -441,7 +447,7 @@ vscpClientSocketCan::send(vscpEventEx &ex)
   frame.can_id = canalMsg.id;
   frame.can_id |= CAN_EFF_FLAG;
   frame.len   = canalMsg.sizeData;
-  frame.flags = canalMsg.flags;
+  frame.flags = 0; // Standard CAN frame. CANAL flags are not socketcan FD flags.
   memcpy(frame.data, canalMsg.data, canalMsg.sizeData);
 
   if (m_flags & FLAG_FD_MODE) {
@@ -478,7 +484,7 @@ vscpClientSocketCan::send(canalMsg &msg)
   frame.can_id = msg.id;
   frame.can_id |= CAN_EFF_FLAG;
   frame.len   = msg.sizeData;
-  frame.flags = msg.flags;
+  frame.flags = 0; // Standard CAN frame. CANAL flags are not socketcan FD flags.
   memcpy(frame.data, msg.data, msg.sizeData);
 
   if (m_flags & FLAG_FD_MODE) {
@@ -618,6 +624,127 @@ int
 vscpClientSocketCan::receiveBlocking(canalMsg &msg, long timeout)
 {
   if (-1 == vscp_sem_wait(&m_semReceiveQueue, timeout)) {
+    if (errno == ETIMEDOUT) {
+      return VSCP_ERROR_TIMEOUT;
+    }
+    else {
+      return VSCP_ERROR_ERROR;
+    }
+  }
+
+  return receive(msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isFdCapable
+//
+
+bool
+vscpClientSocketCan::isFdCapable(void)
+{
+  return (CANFD_MTU == m_mode);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// send (FD)
+//
+// A frame with CANAL_IDFLAG_FD set or with more than eight data bytes is
+// sent as a CAN FD frame. This requires FD mode (FLAG_FD_MODE). Other
+// frames are sent as standard CAN frames. FD data is zero padded up to the
+// next valid CAN FD length (12, 16, 20, 24, 32, 48, 64).
+//
+
+int
+vscpClientSocketCan::send(canalMsgFD &msg)
+{
+  if (m_socket <= 0) {
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+
+  if (msg.sizeData > CANAL_FD_MAX_DATA) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  bool bFd = (msg.flags & CANAL_IDFLAG_FD) || (msg.sizeData > CANAL_MAX_DATA);
+  if (bFd && (CANFD_MTU != m_mode)) {
+    return VSCP_ERROR_NOT_SUPPORTED;
+  }
+
+  struct canfd_frame frame;
+  memset(&frame, 0, sizeof(frame)); // Also gives zero padding
+
+  // Id
+  if (msg.flags & CANAL_IDFLAG_EXTENDED) {
+    frame.can_id = (msg.id & CAN_EFF_MASK) | CAN_EFF_FLAG;
+  }
+  else {
+    frame.can_id = msg.id & CAN_SFF_MASK;
+  }
+
+  if (bFd) {
+#ifdef CANFD_FDF
+    frame.flags |= CANFD_FDF;
+#endif
+    if (msg.flags & CANAL_IDFLAG_BRS) {
+      frame.flags |= CANFD_BRS;
+    }
+    if (msg.flags & CANAL_IDFLAG_ESI) {
+      frame.flags |= CANFD_ESI;
+    }
+    frame.len = canal_dlc2len(canal_len2dlc(msg.sizeData));
+  }
+  else {
+    // No remote frames in CAN FD
+    if (msg.flags & CANAL_IDFLAG_RTR) {
+      frame.can_id |= CAN_RTR_FLAG;
+    }
+    frame.len = msg.sizeData;
+  }
+
+  memcpy(frame.data, msg.data, msg.sizeData);
+
+  // send the frame
+  pthread_mutex_lock(&m_mutexSocket);
+  if (-1 == write(m_socket, &frame, bFd ? CANFD_MTU : CAN_MTU)) {
+    pthread_mutex_unlock(&m_mutexSocket);
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+  pthread_mutex_unlock(&m_mutexSocket);
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receive (FD)
+//
+// CANAL level receive. Returns raw frames, standard and CAN FD with up to
+// 64 data bytes, standard and extended id. Not affected by the VSCP rules
+// or the VSCP in-filter.
+//
+
+int
+vscpClientSocketCan::receive(canalMsgFD &msg)
+{
+  pthread_mutex_lock(&m_mutexReceiveQueueFD);
+  if (m_receiveListFD.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueueFD);
+    return VSCP_ERROR_FIFO_EMPTY;
+  }
+  msg = m_receiveListFD.front();
+  m_receiveListFD.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueueFD);
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking (FD)
+//
+
+int
+vscpClientSocketCan::receiveBlocking(canalMsgFD &msg, long timeout)
+{
+  if (-1 == vscp_sem_wait(&m_semReceiveQueueFD, timeout)) {
     if (errno == ETIMEDOUT) {
       return VSCP_ERROR_TIMEOUT;
     }
@@ -935,7 +1062,10 @@ workerThread(void *pData)
 
         pthread_mutex_lock(&pClient->m_mutexSocket);
 
-        ret = read(pClient->m_socket, &frame, sizeof(struct can_frame));
+        // In FD mode the socket delivers both standard (CAN_MTU)
+        // and FD (CANFD_MTU) frames.
+        memset(&frame, 0, sizeof(frame));
+        ret = read(pClient->m_socket, &frame, sizeof(struct canfd_frame));
         if (ret < 0) {
           pthread_mutex_unlock(&pClient->m_mutexSocket);
           if (ENETDOWN == errno) {
@@ -951,6 +1081,67 @@ workerThread(void *pData)
         }
 
         pthread_mutex_unlock(&pClient->m_mutexSocket);
+
+        // Must be a complete standard or FD frame
+        if ((CAN_MTU != ret) && (CANFD_MTU != ret)) {
+          continue;
+        }
+
+        // ---- CANAL level: queue the raw frame (up to 64 data bytes) ----
+        {
+          canalMsgFD msgFD;
+          memset(&msgFD, 0, sizeof(msgFD));
+
+          if (frame.can_id & CAN_EFF_FLAG) {
+            msgFD.flags |= CANAL_IDFLAG_EXTENDED;
+            msgFD.id = frame.can_id & CAN_EFF_MASK;
+          }
+          else {
+            msgFD.id = frame.can_id & CAN_SFF_MASK;
+          }
+
+          if (CANFD_MTU == ret) {
+            msgFD.flags |= CANAL_IDFLAG_FD;
+            if (frame.flags & CANFD_BRS) {
+              msgFD.flags |= CANAL_IDFLAG_BRS;
+            }
+            if (frame.flags & CANFD_ESI) {
+              msgFD.flags |= CANAL_IDFLAG_ESI;
+            }
+            msgFD.sizeData = (frame.len > CANAL_FD_MAX_DATA) ? CANAL_FD_MAX_DATA : frame.len;
+          }
+          else {
+            if (frame.can_id & CAN_RTR_FLAG) {
+              msgFD.flags |= CANAL_IDFLAG_RTR;
+            }
+            msgFD.sizeData = (frame.len > CANAL_MAX_DATA) ? CANAL_MAX_DATA : frame.len;
+          }
+          memcpy(msgFD.data, frame.data, msgFD.sizeData);
+
+          struct timeval tvfd;
+          if (0 == ioctl(pClient->m_socket, SIOCGSTAMP, &tvfd)) {
+            msgFD.timestamp = (uint32_t) (tvfd.tv_sec * 1000000L + tvfd.tv_usec);
+          }
+
+          pthread_mutex_lock(&pClient->m_mutexReceiveQueueFD);
+          if (pClient->m_receiveListFD.size() >= MAX_ITEMS_IN_QUEUE) {
+            // Full: drop the oldest frame
+            pClient->m_receiveListFD.pop_front();
+            sem_trywait(&pClient->m_semReceiveQueueFD);
+          }
+          pClient->m_receiveListFD.push_back(msgFD);
+          sem_post(&pClient->m_semReceiveQueueFD);
+          pthread_mutex_unlock(&pClient->m_mutexReceiveQueueFD);
+        }
+
+        // ---- VSCP level ----
+
+        // VSCP: The class is 9 bits in the CAN id, so only frames with
+        // at most eight data bytes are valid VSCP events. This also holds
+        // for CAN FD frames.
+        if (frame.len > CANAL_MAX_DATA) {
+          continue;
+        }
 
         // Must be extended frame
         if (!(frame.can_id & CAN_EFF_FLAG)) {
@@ -968,8 +1159,6 @@ workerThread(void *pData)
           ioctl(pClient->m_socket, SIOCGSTAMP, &tv);
           pEvent->timestamp = tv.tv_sec * 1000000L + tv.tv_usec;
 
-          // This can lead to level I frames having to
-          // much data. Later code will handel this case.
           pEvent->pdata = new uint8_t[frame.len];
           if (nullptr == pEvent->pdata) {
             delete pEvent;

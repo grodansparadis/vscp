@@ -53,6 +53,11 @@ typedef const char * ( __stdcall * LPFNDLL_CANALGETVENDORSTRING) (  void );
 typedef int ( __stdcall * LPFNDLL_CANALBLOCKINGSEND) (  long handle, const PCANALMSG pCanalMsg, unsigned long timeout );
 typedef int ( __stdcall * LPFNDLL_CANALBLOCKINGRECEIVE) ( long handle,  PCANALMSG pCanalMsg, unsigned long timeout );
 typedef const char * ( __stdcall * LPFNDLL_CANALGETDRIVERINFO) ( void );
+// Generation 3 - CAN FD (optional, only exported by FD capable drivers)
+typedef int ( __stdcall * LPFNDLL_CANALSENDFD) ( long handle, const PCANALMSGFD pCanalMsgFD );
+typedef int ( __stdcall * LPFNDLL_CANALBLOCKINGSENDFD) ( long handle, const PCANALMSGFD pCanalMsgFD, unsigned long timeout );
+typedef int ( __stdcall * LPFNDLL_CANALRECEIVEFD) ( long handle, PCANALMSGFD pCanalMsgFD );
+typedef int ( __stdcall * LPFNDLL_CANALBLOCKINGRECEIVEFD) ( long handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout );
 
 #else // UNIX
 
@@ -74,6 +79,11 @@ typedef const char *( *LPFNDLL_CANALGETVENDORSTRING ) (  void );
 typedef int ( *LPFNDLL_CANALBLOCKINGSEND ) (  long handle, const PCANALMSG pCanalMsg, unsigned long timeout );
 typedef int ( *LPFNDLL_CANALBLOCKINGRECEIVE ) ( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
 typedef const char * ( *LPFNDLL_CANALGETDRIVERINFO) ( void );
+// Generation 3 - CAN FD (optional, only exported by FD capable drivers)
+typedef int ( *LPFNDLL_CANALSENDFD ) ( long handle, const PCANALMSGFD pCanalMsgFD );
+typedef int ( *LPFNDLL_CANALBLOCKINGSENDFD ) ( long handle, const PCANALMSGFD pCanalMsgFD, unsigned long timeout );
+typedef int ( *LPFNDLL_CANALRECEIVEFD ) ( long handle, PCANALMSGFD pCanalMsgFD );
+typedef int ( *LPFNDLL_CANALBLOCKINGRECEIVEFD ) ( long handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout );
 
 #endif // WIN32
 

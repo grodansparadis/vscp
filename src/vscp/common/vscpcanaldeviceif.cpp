@@ -68,6 +68,12 @@ VscpCanalDeviceIf::VscpCanalDeviceIf()
     m_bAsync      = false;
     m_hdll        = NULL;
     m_bGenerationOne = false;   // We guess it is a generation two CANAL driver
+    m_bFdCapable     = false;
+
+    m_proc_CanalSendFD            = NULL;
+    m_proc_CanalBlockingSendFD    = NULL;
+    m_proc_CanalReceiveFD         = NULL;
+    m_proc_CanalBlockingReceiveFD = NULL;
 }
 
 VscpCanalDeviceIf::~VscpCanalDeviceIf()
@@ -374,6 +380,39 @@ VscpCanalDeviceIf::init()
 #endif               
         m_proc_CanalGetdriverInfo = NULL;
         m_bGenerationOne = true;
+    }
+
+    // ******************************
+    //   Generation 3 - CAN FD
+    // ******************************
+
+    // The FD methods are optional. A driver that does not export all
+    // of them is a standard CANAL driver and is used without FD.
+    m_proc_CanalSendFD =
+      (LPFNDLL_CANALSENDFD)dlsym(m_hdll, "CanalSendFD");
+    m_proc_CanalBlockingSendFD =
+      (LPFNDLL_CANALBLOCKINGSENDFD)dlsym(m_hdll, "CanalBlockingSendFD");
+    m_proc_CanalReceiveFD =
+      (LPFNDLL_CANALRECEIVEFD)dlsym(m_hdll, "CanalReceiveFD");
+    m_proc_CanalBlockingReceiveFD =
+      (LPFNDLL_CANALBLOCKINGRECEIVEFD)dlsym(m_hdll, "CanalBlockingReceiveFD");
+    dlerror(); // Clear any error from the optional lookups
+
+    m_bFdCapable = (NULL != m_proc_CanalSendFD) &&
+                   (NULL != m_proc_CanalBlockingSendFD) &&
+                   (NULL != m_proc_CanalReceiveFD) &&
+                   (NULL != m_proc_CanalBlockingReceiveFD);
+    if (!m_bFdCapable) {
+        m_proc_CanalSendFD            = NULL;
+        m_proc_CanalBlockingSendFD    = NULL;
+        m_proc_CanalReceiveFD         = NULL;
+        m_proc_CanalBlockingReceiveFD = NULL;
+#ifdef WIN32
+#else
+        syslog(LOG_INFO,
+               "%s: No CAN FD methods. Standard CANAL driver.",
+               m_strPath.c_str());
+#endif
     }
 
     return CANAL_ERROR_SUCCESS;
@@ -998,6 +1037,11 @@ VscpCanalDeviceIf::CanalBlockingReceive(canalMsg *pmsg, uint32_t timeout)
         return CANAL_ERROR_NOT_OPEN;
     }
 
+    // Check if generation 2
+    if (NULL == m_proc_CanalBlockingReceive) {
+        return CANAL_ERROR_LIBRARY;
+    }
+
     int rv = m_proc_CanalBlockingReceive(m_openHandle, pmsg, timeout);
     if (CANAL_ERROR_SUCCESS != rv) {
         return rv;
@@ -1021,6 +1065,11 @@ VscpCanalDeviceIf::CanalBlockingReceive(std::string &strObj,
     // Must be open
     if (0 == m_openHandle) {
         return CANAL_ERROR_NOT_OPEN;
+    }
+
+    // Check if generation 2
+    if (NULL == m_proc_CanalBlockingReceive) {
+        return CANAL_ERROR_LIBRARY;
     }
 
     int rv = m_proc_CanalBlockingReceive(m_openHandle, &CanMsg, timeout);
@@ -1321,4 +1370,208 @@ VscpCanalDeviceIf::CanalGetDriverInfo(void)
     }
 
     return m_proc_CanalGetdriverInfo();
+}
+
+
+// ----------------------------------------------------------------------------
+//                              CAN FD
+// ----------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+// fdToStandard
+//
+// Convert a canalMsgFD to a standard canalMsg. Only possible for frames
+// that are not FD frames and that have at most 8 data bytes.
+//
+
+static bool
+fdToStandard(canalMsg *pmsg, const canalMsgFD *pmsgFD)
+{
+    if ((pmsgFD->flags & CANAL_IDFLAG_FD) ||
+        (pmsgFD->sizeData > CANAL_MAX_DATA)) {
+        return false;
+    }
+
+    memset(pmsg, 0, sizeof(canalMsg));
+    pmsg->flags     = pmsgFD->flags;
+    pmsg->obid      = pmsgFD->obid;
+    pmsg->id        = pmsgFD->id;
+    pmsg->timestamp = pmsgFD->timestamp;
+    pmsg->sizeData  = pmsgFD->sizeData;
+    memcpy(pmsg->data, pmsgFD->data, pmsgFD->sizeData);
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// standardToFd
+//
+// Convert a standard canalMsg to a canalMsgFD.
+//
+
+static void
+standardToFd(canalMsgFD *pmsgFD, const canalMsg *pmsg)
+{
+    memset(pmsgFD, 0, sizeof(canalMsgFD));
+    pmsgFD->flags     = (uint32_t)pmsg->flags;
+    pmsgFD->obid      = (uint32_t)pmsg->obid;
+    pmsgFD->id        = (uint32_t)pmsg->id;
+    pmsgFD->timestamp = (uint32_t)pmsg->timestamp;
+    pmsgFD->sizeData  = (pmsg->sizeData > CANAL_MAX_DATA) ? CANAL_MAX_DATA : pmsg->sizeData;
+    memcpy(pmsgFD->data, pmsg->data, pmsgFD->sizeData);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalSendFD
+//
+
+int
+VscpCanalDeviceIf::CanalSendFD(const PCANALMSGFD pCanMsgFD)
+{
+    if (NULL == pCanMsgFD) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    if (pCanMsgFD->sizeData > CANAL_FD_MAX_DATA) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
+    // Must be open
+    if (0 == m_openHandle) {
+        return CANAL_ERROR_NOT_OPEN;
+    }
+
+    if (m_bFdCapable) {
+        return m_proc_CanalSendFD(m_openHandle, pCanMsgFD);
+    }
+
+    // Standard CANAL driver
+    canalMsg msg;
+    if (!fdToStandard(&msg, pCanMsgFD)) {
+        return CANAL_ERROR_FD_SUPPORT;
+    }
+
+    return m_proc_CanalSend(m_openHandle, &msg);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalBlockingSendFD
+//
+
+int
+VscpCanalDeviceIf::CanalBlockingSendFD(const PCANALMSGFD pCanMsgFD, uint32_t timeout)
+{
+    if (NULL == pCanMsgFD) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    if (pCanMsgFD->sizeData > CANAL_FD_MAX_DATA) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
+    // Must be open
+    if (0 == m_openHandle) {
+        return CANAL_ERROR_NOT_OPEN;
+    }
+
+    if (m_bFdCapable) {
+        return m_proc_CanalBlockingSendFD(m_openHandle, pCanMsgFD, timeout);
+    }
+
+    // Standard CANAL driver
+    if (NULL == m_proc_CanalBlockingSend) {
+        return CANAL_ERROR_LIBRARY;
+    }
+
+    canalMsg msg;
+    if (!fdToStandard(&msg, pCanMsgFD)) {
+        return CANAL_ERROR_FD_SUPPORT;
+    }
+
+    return m_proc_CanalBlockingSend(m_openHandle, &msg, timeout);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalReceiveFD
+//
+
+int
+VscpCanalDeviceIf::CanalReceiveFD(PCANALMSGFD pCanMsgFD)
+{
+    if (NULL == pCanMsgFD) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
+    // Must be open
+    if (0 == m_openHandle) {
+        return CANAL_ERROR_NOT_OPEN;
+    }
+
+    if (m_bFdCapable) {
+        return m_proc_CanalReceiveFD(m_openHandle, pCanMsgFD);
+    }
+
+    // Standard CANAL driver
+    canalMsg msg;
+    int rv = m_proc_CanalReceive(m_openHandle, &msg);
+    if (CANAL_ERROR_SUCCESS != rv) {
+        return rv;
+    }
+
+    standardToFd(pCanMsgFD, &msg);
+    return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalBlockingReceiveFD
+//
+
+int
+VscpCanalDeviceIf::CanalBlockingReceiveFD(PCANALMSGFD pCanMsgFD, uint32_t timeout)
+{
+    if (NULL == pCanMsgFD) {
+        return CANAL_ERROR_PARAMETER;
+    }
+
+    // Init must have succeded to do this call
+    if (m_hdll == nullptr) {
+        return CANAL_ERROR_INIT_MISSING;
+    }
+
+    // Must be open
+    if (0 == m_openHandle) {
+        return CANAL_ERROR_NOT_OPEN;
+    }
+
+    if (m_bFdCapable) {
+        return m_proc_CanalBlockingReceiveFD(m_openHandle, pCanMsgFD, timeout);
+    }
+
+    // Standard CANAL driver
+    if (NULL == m_proc_CanalBlockingReceive) {
+        return CANAL_ERROR_LIBRARY;
+    }
+
+    canalMsg msg;
+    int rv = m_proc_CanalBlockingReceive(m_openHandle, &msg, timeout);
+    if (CANAL_ERROR_SUCCESS != rv) {
+        return rv;
+    }
+
+    standardToFd(pCanMsgFD, &msg);
+    return CANAL_ERROR_SUCCESS;
 }

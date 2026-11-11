@@ -43,6 +43,17 @@
 
 #include <stdint.h> // Deterministic integer definitions (C11)
 
+/*
+  Calling convention for the exported CANAL functions on Windows.
+  Standard CANAL drivers export __stdcall functions and the loader
+  (canaldlldef.h) calls them as __stdcall.
+*/
+#ifdef WIN32
+#ifndef WINAPI
+#define WINAPI __stdcall
+#endif
+#endif
+
 #ifdef __linux__
 #include <linux/can.h>
 #elif defined(_WIN32)
@@ -51,6 +62,10 @@
 
 #define CAN_MAX_STANDARD_ID 0x7ff
 #define CAN_MAX_EXTENDED_ID 0x1fffffff
+
+/* Max data size for standard CAN and CAN FD frames */
+#define CANAL_MAX_DATA    8
+#define CANAL_FD_MAX_DATA 64
 
 /*
  CANAL version
@@ -120,7 +135,14 @@ typedef canalMsg *PCANALMSG;
 /*
     CanalMsgFD
 
-    This is the fd message structure
+    This is the CAN FD message structure. It is an optional extension
+    to standard CANAL. Drivers that support CAN FD export the *FD
+    functions below. Drivers that do not export them are standard
+    CANAL drivers and only handle canalMsg.
+
+    sizeData is the number of data bytes (not the DLC code), 0-64.
+    A frame without CANAL_IDFLAG_FD set is a standard CAN frame and
+    must have sizeData <= 8.
 */
 
 typedef struct structCanalMsgFD {
@@ -129,8 +151,8 @@ typedef struct structCanalMsgFD {
   uint32_t id;        /* CAN id (11-bit or 29-bit) */
   uint32_t timestamp; /* Relative time stamp for package in microseconds */
   uint8_t _reserved[7];
-  uint8_t sizeData;                             /* Data size 0-8 (fd: 0-15) */
-  uint8_t data[64] /*__attribute__((aligned(8)))*/; /* CAN Data	 */
+  uint8_t sizeData;                 /* Number of data bytes 0-64 */
+  uint8_t data[CANAL_FD_MAX_DATA];  /* CAN Data */
 } canalMsgFD;
 
 typedef canalMsgFD *PCANALMSGFD;
@@ -178,6 +200,7 @@ typedef void(__stdcall *LPFNDLL_CANAL_RECEIVE_FD_CALLBACK)(canalMsgFD *pMsg);
 
 /* CAN driver open handle */
 typedef long CANALHANDLE;
+typedef CANALHANDLE CANHANDLE; /* Name used by CANAL <= 1.0.6 */
 
 /*    * * * Prototypes * * *   */
 
@@ -190,7 +213,7 @@ typedef long CANALHANDLE;
   @return Handle of device or -1 if error.
 */
 #ifdef WIN32
-long EXPORT
+long WINAPI EXPORT
 CanalOpen(const char *pDevice, unsigned long flags);
 #else
 long
@@ -204,7 +227,7 @@ CanalOpen(const char *pDevice, unsigned long flags);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalClose(CANALHANDLE handle);
 #else
 int
@@ -217,7 +240,7 @@ CanalClose(CANALHANDLE handle);
     @return level for CANAL dll implementation. (deprecated)
 */
 #ifdef WIN32
-unsigned long EXPORT
+unsigned long WINAPI EXPORT
 CanalGetLevel(CANALHANDLE handle);
 #else
 unsigned long
@@ -235,7 +258,7 @@ CanalGetLevel(CANALHANDLE handle);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalSend(CANALHANDLE handle, const PCANALMSG pCanalMsg);
 #else
 int
@@ -253,11 +276,11 @@ CanalSend(CANALHANDLE handle, PCANALMSG pCanalMsg);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalSendFD(CANALHANDLE handle, const PCANALMSGFD pCanalMsgFD);
 #else
 int
-CanalSendFD(CANALHANDLE handle, PCANALMSG pCanalMsg);
+CanalSendFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD);
 #endif
 
 /*!
@@ -272,7 +295,7 @@ CanalSendFD(CANALHANDLE handle, PCANALMSG pCanalMsg);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalBlockingSend(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long timeout);
 #else
 int
@@ -291,11 +314,11 @@ CanalBlockingSend(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long timeout
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalBlockingSendFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout);
 #else
 int
-CanalBlockingSendFD(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long timeout);
+CanalBlockingSendFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout);
 #endif
 
 /*!
@@ -312,7 +335,7 @@ CanalBlockingSendFD(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long timeo
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalReceive(CANALHANDLE handle, PCANALMSG pCanalMsg);
 #else
 int
@@ -333,11 +356,11 @@ CanalReceive(CANALHANDLE handle, PCANALMSG pCanalMsg);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalReceiveFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD);
 #else
 int
-CanalReceiveFD(CANALHANDLE handle, PCANALMSG pCanalMsgFD);
+CanalReceiveFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD);
 #endif
 
 /*!
@@ -355,7 +378,7 @@ CanalReceiveFD(CANALHANDLE handle, PCANALMSG pCanalMsgFD);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalBlockingReceive(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long timeout);
 #else
 int
@@ -377,11 +400,11 @@ CanalBlockingReceive(CANALHANDLE handle, PCANALMSG pCanalMsg, unsigned long time
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
-CanalBlockingReceiveFD(CANALHANDLE handle, PCANALMSG pCanalMsgFD, unsigned long timeout);
+int WINAPI EXPORT
+CanalBlockingReceiveFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout);
 #else
 int
-CanalBlockingReceiveFD(CANALHANDLE handle, PCANALMSG pCanalMsgFD, unsigned long timeout);
+CanalBlockingReceiveFD(CANALHANDLE handle, PCANALMSGFD pCanalMsgFD, unsigned long timeout);
 #endif
 
 /*!
@@ -392,7 +415,7 @@ CanalBlockingReceiveFD(CANALHANDLE handle, PCANALMSG pCanalMsgFD, unsigned long 
     there are messages waiting to be received.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalDataAvailable(CANALHANDLE handle);
 #else
 int
@@ -407,7 +430,7 @@ CanalDataAvailable(CANALHANDLE handle);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalGetStatus(CANALHANDLE handle, PCANALSTATUS pCanalStatus);
 #else
 int
@@ -422,7 +445,7 @@ CanalGetStatus(CANALHANDLE handle, PCANALSTATUS pCanalStatus);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalGetStatistics(CANALHANDLE handle, PCANALSTATISTICS pCanalStatistics);
 #else
 int
@@ -437,7 +460,7 @@ CanalGetStatistics(CANALHANDLE handle, PCANALSTATISTICS pCanalStatistics);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalSetFilter(CANALHANDLE handle, unsigned long filter);
 #else
 int
@@ -452,7 +475,7 @@ CanalSetFilter(CANALHANDLE handle, unsigned long filter);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalSetMask(CANALHANDLE handle, unsigned long mask);
 #else
 int
@@ -467,7 +490,7 @@ CanalSetMask(CANALHANDLE handle, unsigned long mask);
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int EXPORT
+int WINAPI EXPORT
 CanalSetBaudrate(CANALHANDLE handle, unsigned long baudrate);
 #else
 int
@@ -480,7 +503,7 @@ CanalSetBaudrate(CANALHANDLE handle, unsigned long baudrate);
     @return version for CANAL i/f.
 */
 #ifdef WIN32
-unsigned long EXPORT
+unsigned long WINAPI EXPORT
 CanalGetVersion(void);
 #else
 unsigned long
@@ -493,7 +516,7 @@ CanalGetVersion(void);
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-unsigned long EXPORT
+unsigned long WINAPI EXPORT
 CanalGetDllVersion(void);
 #else
 unsigned long
@@ -506,7 +529,7 @@ CanalGetDllVersion(void);
     @return version for CANAL dll implementation.
 */
 #ifdef WIN32
-const char *EXPORT
+const char * WINAPI EXPORT
 CanalGetVendorString(void);
 #else
 const char *
@@ -517,7 +540,7 @@ CanalGetVendorString(void);
     Get CANAL driver properties
 */
 #ifdef WIN32
-const char *EXPORT
+const char * WINAPI EXPORT
 CanalGetDriverInfo(void);
 #else
 const char *
@@ -539,7 +562,9 @@ CanalGetDriverInfo(void);
 #define CANAL_IDFLAG_EXTENDED 0x00000001 /* Extended message id (29-bit) */
 #define CANAL_IDFLAG_RTR      0x00000002 /* RTR-Frame */
 #define CANAL_IDFLAG_STATUS   0x00000004 /* This package is a status indication (id holds error code) */
-#define CANAL_IDFLAG_FD       0x00000008 /* This is a FD frame */
+#define CANAL_IDFLAG_FD       0x00000008 /* This is a FD frame (FDF) */
+#define CANAL_IDFLAG_BRS      0x00000010 /* FD: Bit rate switch for data phase */
+#define CANAL_IDFLAG_ESI      0x00000020 /* FD: Error state indicator (transmitter error passive) */
 #define CANAL_IDFLAG_SEND     0x80000000 /* Reserved for use by application software to indicate send */
 
 /* Communication speeds */
