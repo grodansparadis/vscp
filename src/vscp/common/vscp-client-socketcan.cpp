@@ -63,6 +63,7 @@
 #include <vscphelper.h>
 
 #include <fstream>
+#include <new>
 #include <iostream>
 #include <list>
 #include <map>
@@ -130,7 +131,7 @@ vscpClientSocketCan::vscpClientSocketCan()
   m_interface  = "vcan0";
   m_guid.getFromString("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
   m_flags  = 0;
-  m_socket = 0;
+  m_socket = -1; // Not open
   m_mode   = CAN_MTU;
 
   setResponseTimeout(3); // Response timeout 3 ms
@@ -170,7 +171,7 @@ vscpClientSocketCan::~vscpClientSocketCan()
   while (m_receiveList.size()) {
     vscpEvent *pev = m_receiveList.front();
     m_receiveList.pop_front();
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
   }
 }
 
@@ -342,7 +343,8 @@ vscpClientSocketCan::connect(void)
   m_bRun = true; // Worker thread should run, run, run...
   if (pthread_create(&m_threadWork, NULL, workerThread, this)) {
     spdlog::critical("SOCKETCAN client: Failed to start worker thread");
-    return false;
+    m_bRun = false;
+    return VSCP_ERROR_ERROR;
   }
 
   return rv;
@@ -415,7 +417,7 @@ vscpClientSocketCan::send(vscpEvent &ev)
 
   // send the frame
   pthread_mutex_lock(&m_mutexSocket);
-  if (-1 == write(m_socket, &frame, sizeof(struct can_frame))) {
+  if ((m_socket <= 0) || (-1 == write(m_socket, &frame, sizeof(struct can_frame)))) {
     pthread_mutex_unlock(&m_mutexSocket);
     return VSCP_ERROR_WRITE_ERROR;
   }
@@ -457,7 +459,7 @@ vscpClientSocketCan::send(vscpEventEx &ex)
 
   // send the frame
   pthread_mutex_lock(&m_mutexSocket);
-  if (-1 == write(m_socket, &frame, sizeof(struct can_frame))) {
+  if ((m_socket <= 0) || (-1 == write(m_socket, &frame, sizeof(struct can_frame)))) {
     pthread_mutex_unlock(&m_mutexSocket);
     return VSCP_ERROR_WRITE_ERROR;
   }
@@ -494,7 +496,7 @@ vscpClientSocketCan::send(canalMsg &msg)
 
   // send the frame
   pthread_mutex_lock(&m_mutexSocket);
-  if (-1 == write(m_socket, &frame, sizeof(struct can_frame))) {
+  if ((m_socket <= 0) || (-1 == write(m_socket, &frame, sizeof(struct can_frame)))) {
     pthread_mutex_unlock(&m_mutexSocket);
     return VSCP_ERROR_WRITE_ERROR;
   }
@@ -513,20 +515,22 @@ vscpClientSocketCan::receive(vscpEvent &ev)
   int rv = VSCP_ERROR_SUCCESS;
 
   // Check if there are any events waiting
-  if (!m_receiveList.size()) {
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveList.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_FIFO_EMPTY;
   }
 
-  pthread_mutex_lock(&m_mutexReceiveQueue);
   vscpEvent *pev = m_receiveList.front();
-  if (nullptr == pev) {
-    pthread_mutex_unlock(&m_mutexReceiveQueue);
-    return VSCP_ERROR_INVALID_POINTER;
-  }
-  vscp_copyEvent(&ev, pev);
   m_receiveList.pop_front();
   pthread_mutex_unlock(&m_mutexReceiveQueue);
-  vscp_deleteEvent(pev);
+  if (nullptr == pev) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+  if (!vscp_copyEvent(&ev, pev)) {
+    rv = VSCP_ERROR_MEMORY;
+  }
+  vscp_deleteEvent_v2(&pev);
 
   return rv;
 }
@@ -539,13 +543,15 @@ int
 vscpClientSocketCan::receive(vscpEventEx &ex)
 {
   int rv;
-  vscpEvent ev;
+  vscpEvent ev = {};
 
   if (VSCP_ERROR_SUCCESS != (rv = receive(ev))) {
     return rv;
   }
 
-  return (vscp_convertEventToEventEx(&ex, &ev) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+  rv = (vscp_convertEventToEventEx(&ex, &ev) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR);
+  vscp_deleteEvent(&ev); // Free data allocated by receive
+  return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -558,22 +564,23 @@ vscpClientSocketCan::receive(canalMsg &msg)
   int rv = VSCP_ERROR_SUCCESS;
 
   // Check if there are any events waiting
-  if (!m_receiveList.size()) {
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveList.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_FIFO_EMPTY;
   }
 
-  pthread_mutex_lock(&m_mutexReceiveQueue);
   vscpEvent *pev = m_receiveList.front();
+  m_receiveList.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   if (nullptr == pev) {
-    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_INVALID_POINTER;
   }
 
-  vscp_convertEventToCanal(&msg, pev, 1);
-  m_receiveList.pop_front();
-  pthread_mutex_unlock(&m_mutexReceiveQueue);
-  vscp_deleteEvent(pev);
-  pev = nullptr;
+  if (!vscp_convertEventToCanal(&msg, pev, 1)) {
+    rv = VSCP_ERROR_INVALID_FRAME;
+  }
+  vscp_deleteEvent_v2(&pev);
 
   return rv;
 }
@@ -705,7 +712,7 @@ vscpClientSocketCan::send(canalMsgFD &msg)
 
   // send the frame
   pthread_mutex_lock(&m_mutexSocket);
-  if (-1 == write(m_socket, &frame, bFd ? CANFD_MTU : CAN_MTU)) {
+  if ((m_socket <= 0) || (-1 == write(m_socket, &frame, bFd ? CANFD_MTU : CAN_MTU))) {
     pthread_mutex_unlock(&m_mutexSocket);
     return VSCP_ERROR_WRITE_ERROR;
   }
@@ -785,7 +792,12 @@ vscpClientSocketCan::setfilter(vscpEventFilter & /*filter*/)
 int
 vscpClientSocketCan::getcount(uint16_t *pcount)
 {
-  *pcount = m_receiveList.size();
+  if (nullptr == pcount) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  *pcount = (uint16_t) m_receiveList.size();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -950,6 +962,17 @@ workerThread(void *pData)
     return NULL;
   }
 
+  // Close the socket and mark it closed so send() can not write to a
+  // stale (and possibly reused) file descriptor.
+  // Caller must hold m_mutexSocket.
+  auto closeSocketLocked = [pClient]() {
+    if (pClient->m_socket >= 0) {
+      close(pClient->m_socket);
+    }
+    pClient->m_socket = -1;
+    pClient->setConnected(false);
+  };
+
   while (pClient->m_bRun) {
 
     pthread_mutex_lock(&pClient->m_mutexSocket);
@@ -962,6 +985,8 @@ workerThread(void *pData)
         continue; // Try again
       }
 
+      pClient->m_socket = -1;
+      pthread_mutex_unlock(&pClient->m_mutexSocket);
       spdlog::error("SOCKETCAN client: wrkthread socketcan client: Error while opening socket. Terminating!");
       break;
     }
@@ -970,6 +995,7 @@ workerThread(void *pData)
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex            = if_nametoindex(ifr.ifr_name);
     if (!ifr.ifr_ifindex) {
+      closeSocketLocked();
       pthread_mutex_unlock(&pClient->m_mutexSocket);
       spdlog::error("SOCKETCAN client: Cant get socketcan index from {0}", pClient->m_interface);
       return NULL;
@@ -991,6 +1017,7 @@ workerThread(void *pData)
 
       // check if the frame fits into the CAN netdevice
       if (ioctl(pClient->m_socket, SIOCGIFMTU, &ifr) < 0) {
+        closeSocketLocked();
         pthread_mutex_unlock(&pClient->m_mutexSocket);
         spdlog::error("SOCKETCAN client: FD MTU does not fit for {0}", pClient->m_interface);
         // return VSCP_TYPE_ERROR_FIFO_SIZE;
@@ -1000,6 +1027,7 @@ workerThread(void *pData)
       mtu = ifr.ifr_mtu;
 
       if (mtu != CANFD_MTU) {
+        closeSocketLocked();
         pthread_mutex_unlock(&pClient->m_mutexSocket);
         spdlog::error("SOCKETCAN client: CAN FD mode is not supported for {0}", pClient->m_interface);
         // return VSCP_ERROR_NOT_SUPPORTED;
@@ -1008,6 +1036,7 @@ workerThread(void *pData)
 
       // interface is ok - try to switch the socket into CAN FD mode
       if (setsockopt(pClient->m_socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable_canfd, sizeof(enable_canfd))) {
+        closeSocketLocked();
         pthread_mutex_unlock(&pClient->m_mutexSocket);
         spdlog::error("SOCKETCAN client: Failed to switch socket to FD mode {0}", pClient->m_interface);
         // return VSCP_ERROR_NOT_SUPPORTED;
@@ -1027,7 +1056,9 @@ workerThread(void *pData)
 
     if (bind(pClient->m_socket, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
       spdlog::error("SOCKETCAN client: workthread socketcan client: Error in socket bind. Terminating!");
-      close(pClient->m_socket);
+      pthread_mutex_lock(&pClient->m_mutexSocket);
+      closeSocketLocked();
+      pthread_mutex_unlock(&pClient->m_mutexSocket);
       sleep(2);
       // continue;
       return NULL;
@@ -1075,7 +1106,8 @@ workerThread(void *pData)
             sleep(2);
           }
           else {
-            pClient->m_bRun = true;
+            spdlog::error("SOCKETCAN client: Read error {}. Terminating!", errno);
+            pClient->m_bRun = false;
           }
           continue;
         }
@@ -1151,16 +1183,20 @@ workerThread(void *pData)
         // Mask of control bits
         frame.can_id &= CAN_EFF_MASK;
 
-        vscpEvent *pEvent = new vscpEvent();
-        if (nullptr != pEvent) {
+        vscpEvent *pEvent = new (std::nothrow) vscpEvent();
+        if (nullptr == pEvent) {
+          spdlog::error("SOCKETCAN client: Out of memory. Event dropped.");
+        }
+        else {
 
           // Get timetstamp
-          struct timeval tv;
+          struct timeval tv = {};
           ioctl(pClient->m_socket, SIOCGSTAMP, &tv);
           pEvent->timestamp = tv.tv_sec * 1000000L + tv.tv_usec;
 
-          pEvent->pdata = new uint8_t[frame.len];
-          if (nullptr == pEvent->pdata) {
+          pEvent->pdata = frame.len ? new (std::nothrow) uint8_t[frame.len] : nullptr;
+          if (frame.len && (nullptr == pEvent->pdata)) {
+            spdlog::error("SOCKETCAN client: Out of memory. Event dropped.");
             delete pEvent;
             continue;
           }
@@ -1198,21 +1234,29 @@ workerThread(void *pData)
             // printf("Socketcan event: %X:%X\n", pEvent->vscp_class, pEvent->vscp_type);
 
             // Add to input queue only if no callback set
-            if (!pClient->isCallbackEvActive() || !pClient->isCallbackExActive()) {
-              // std::cout << "add to receive queue" << std::endl;
+            if (!pClient->isCallbackEvActive() && !pClient->isCallbackExActive()) {
               pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
-              pClient->m_receiveList.push_back(pEvent);
+              if (pClient->m_receiveList.size() < MAX_ITEMS_IN_QUEUE) {
+                pClient->m_receiveList.push_back(pEvent);
+                pEvent = nullptr;
 #ifdef WIN32
-              ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+                ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
 #else
-              sem_post(&pClient->m_semReceiveQueue);
+                sem_post(&pClient->m_semReceiveQueue);
 #endif
+              }
               pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
+              if (nullptr != pEvent) {
+                spdlog::warn("SOCKETCAN client: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                             MAX_ITEMS_IN_QUEUE,
+                             pEvent->vscp_class,
+                             pEvent->vscp_type);
+              }
             }
           }
-          else {
-            vscp_deleteEvent(pEvent);
-          }
+
+          // Free the event if it was not queued (callback used, filtered out or queue full)
+          vscp_deleteEvent_v2(&pEvent);
         }
       }
       // else {
@@ -1267,7 +1311,9 @@ workerThread(void *pData)
     } // Inner loop
 
     // Close the socket
-    close(pClient->m_socket);
+    pthread_mutex_lock(&pClient->m_mutexSocket);
+    closeSocketLocked();
+    pthread_mutex_unlock(&pClient->m_mutexSocket);
 
   } // Outer loop
 

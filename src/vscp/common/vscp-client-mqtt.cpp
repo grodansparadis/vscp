@@ -51,7 +51,9 @@
 #include <vscphelper.h>
 
 #include <deque>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include <spdlog/spdlog.h>
 
@@ -93,15 +95,33 @@ int
 password_callback(char *buf, int size, int /*rwflag*/, void *userdata)
 {
   // Check pointers
-  if ((nullptr == buf) || (nullptr == userdata)) {
+  if ((nullptr == buf) || (nullptr == userdata) || (size <= 0)) {
     return 0;
   }
 
-  vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(userdata);
+  // userdata is the calling mosquitto instance, not the client object.
+  // The client object is the mosquitto userdata set in mosquitto_new.
+  vscpClientMqtt *pClient =
+    reinterpret_cast<vscpClientMqtt *>(mosquitto_userdata(reinterpret_cast<struct mosquitto *>(userdata)));
+  if (nullptr == pClient) {
+    return 0;
+  }
+
+  // Use the key file password if set, else fall back to the login password
+  std::string password = pClient->getTlsKeyfilePassword();
+  if (password.empty()) {
+    password = pClient->getPassword();
+  }
+
+  // Password must fit with room for the terminating zero
+  if (password.length() >= (size_t) size) {
+    spdlog::error("VSCP MQTT CLIENT: TLS key file password is too long.");
+    return 0;
+  }
 
   memset(buf, 0, size);
-  strncpy(buf, pClient->getPassword().c_str(), size);
-  return (int) strlen(buf);
+  memcpy(buf, password.c_str(), password.length());
+  return (int) password.length();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -725,7 +745,7 @@ vscpClientMqtt::~vscpClientMqtt()
   while (m_receiveQueue.size()) {
     pev = m_receiveQueue.front();
     m_receiveQueue.pop_front();
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
   }
 
   // Delete subscription objects
@@ -1513,8 +1533,11 @@ bool
 vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 {
   enumMqttMsgFormat format = autofmt;
-  vscpEvent ev;
+  vscpEvent ev = {};
   vscpEventEx ex;
+
+  // The converters below allocate ev.pdata - free it on every return path
+  std::unique_ptr<vscpEvent, decltype(&vscp_deleteEvent)> evCleanup(&ev, vscp_deleteEvent);
 
   // Check pointers
   if (nullptr == pmsg) {
@@ -1567,7 +1590,7 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
     else {
       // String: send 0,20,3,,,,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35<CR><LF>
-      std::string s = (char *) pmsg->payload;
+      std::string s((const char *) pmsg->payload, pmsg->payloadlen);
       size_t n      = std::count(s.begin(), s.end(), ',');
       if (n < 6) {
         // This is not a VSCP event on string format
@@ -1620,16 +1643,23 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       }
 
       // Save event in incoming queue
+      pthread_mutex_lock(&m_mutexReceiveQueue);
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-        pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
 #else
         sem_post(&m_semReceiveQueue);
 #endif
-        pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
+      else {
+        spdlog::warn("VSCP MQTT CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                     MQTT_MAX_INQUEUE_SIZE,
+                     pEvent->vscp_class,
+                     pEvent->vscp_type);
+        vscp_deleteEvent_v2(&pEvent); // Queue full, drop event
+      }
+      pthread_mutex_unlock(&m_mutexReceiveQueue);
     }
   }
   else if (xmlfmt == format) {
@@ -1668,16 +1698,23 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       }
 
       // Save event in incoming queue
+      pthread_mutex_lock(&m_mutexReceiveQueue);
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-        pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
 #else
         sem_post(&m_semReceiveQueue);
 #endif
-        pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
+      else {
+        spdlog::warn("VSCP MQTT CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                     MQTT_MAX_INQUEUE_SIZE,
+                     pEvent->vscp_class,
+                     pEvent->vscp_type);
+        vscp_deleteEvent_v2(&pEvent); // Queue full, drop event
+      }
+      pthread_mutex_unlock(&m_mutexReceiveQueue);
     }
   }
   else if (strfmt == format) {
@@ -1716,22 +1753,29 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       }
 
       // Save event in incoming queue
+      pthread_mutex_lock(&m_mutexReceiveQueue);
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-        pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
 #else
         sem_post(&m_semReceiveQueue);
 #endif
-        pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
+      else {
+        spdlog::warn("VSCP MQTT CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                     MQTT_MAX_INQUEUE_SIZE,
+                     pEvent->vscp_class,
+                     pEvent->vscp_type);
+        vscp_deleteEvent_v2(&pEvent); // Queue full, drop event
+      }
+      pthread_mutex_unlock(&m_mutexReceiveQueue);
     }
   }
   else if (binfmt == format) {
 
     // Binary frame starts offset one in payload (after zero marker byte)
-    if (!vscp_getEventFromFrame(&ev, (const uint8_t *) pmsg->payload + 1, pmsg->payloadlen)) {
+    if (!vscp_getEventFromFrame(&ev, (const uint8_t *) pmsg->payload + 1, pmsg->payloadlen - 1)) {
       spdlog::trace("VSCP MQTT CLIENT: bin->Event conversion failed. Payload is not VSCP event.");
       return false;
     }
@@ -1767,16 +1811,23 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
       }
 
       // Save event in incoming queue
+      pthread_mutex_lock(&m_mutexReceiveQueue);
       if (m_receiveQueue.size() < MQTT_MAX_INQUEUE_SIZE) {
-        pthread_mutex_lock(&m_mutexReceiveQueue);
         m_receiveQueue.push_back(pEvent);
 #ifdef WIN32
         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
 #else
         sem_post(&m_semReceiveQueue);
 #endif
-        pthread_mutex_unlock(&m_mutexReceiveQueue);
       }
+      else {
+        spdlog::warn("VSCP MQTT CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                     MQTT_MAX_INQUEUE_SIZE,
+                     pEvent->vscp_class,
+                     pEvent->vscp_type);
+        vscp_deleteEvent_v2(&pEvent); // Queue full, drop event
+      }
+      pthread_mutex_unlock(&m_mutexReceiveQueue);
     }
   }
 
@@ -2312,7 +2363,7 @@ int
 vscpClientMqtt::send(vscpEvent &ev)
 {
   std::string str;
-  uint8_t payload[1024];
+  std::vector<uint8_t> payload;
   size_t lenPayload = 0;
   int rv;
 
@@ -2333,7 +2384,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       continue;
     }
 
-    memset(payload, 0, sizeof(payload));
+    payload.clear();
 
     // Save for mustache inserts later
     bool bMeasurement           = false;
@@ -2382,7 +2433,6 @@ vscpClientMqtt::send(vscpEvent &ev)
             j["measurement"]["subzone"] = measurement_subzone = vscp_getMeasurementSubZone(&ev);
 
             strPayload = j.dump();
-            strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
             spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
@@ -2391,7 +2441,7 @@ vscpClientMqtt::send(vscpEvent &ev)
       } // is measurement
 
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), lenPayload);
+      payload.assign(strPayload.begin(), strPayload.end());
 
     } // JSON
 
@@ -2401,7 +2451,7 @@ vscpClientMqtt::send(vscpEvent &ev)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), lenPayload);
+      payload.assign(strPayload.begin(), strPayload.end());
     }
     else if (ppublish->getFormat() == strfmt) {
       std::string strPayload;
@@ -2409,13 +2459,14 @@ vscpClientMqtt::send(vscpEvent &ev)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), lenPayload);
+      payload.assign(strPayload.begin(), strPayload.end());
     }
     else if (ppublish->getFormat() == binfmt) {
       lenPayload = vscp_getFrameSizeFromEvent(&ev) + 1;
 
       // Write event to frame
-      if (!vscp_writeEventToFrame(payload + 1, sizeof(payload), 0, &ev)) {
+      payload.assign(lenPayload, 0);
+      if (!vscp_writeEventToFrame(payload.data() + 1, payload.size() - 1, 0, &ev)) {
         return VSCP_ERROR_PARAMETER;
       }
     }
@@ -2577,7 +2628,7 @@ vscpClientMqtt::send(vscpEvent &ev)
                                                     NULL, // msg id
                                                     strTopic.c_str(),
                                                     (int) lenPayload,
-                                                    payload,
+                                                    payload.data(),
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("VSCP MQTT CLIENT: sendEvent: mosquitto_publish (ev) failed. rv={0} {1}",
@@ -2599,7 +2650,7 @@ int
 vscpClientMqtt::send(vscpEventEx &ex)
 {
   std::string str;
-  uint8_t payload[1024];
+  std::vector<uint8_t> payload;
   size_t lenPayload = 0;
   int rv;
 
@@ -2610,7 +2661,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
 
     publishTopic *ppublish = (*it);
 
-    memset(payload, 0, sizeof(payload));
+    payload.clear();
 
     if (ppublish->getFormat() == jsonfmt) {
 
@@ -2649,7 +2700,6 @@ vscpClientMqtt::send(vscpEventEx &ex)
             j["measurement"]["subzone"]     = vscp_getMeasurementSubZoneEx(&ex);
 
             strPayload = j.dump();
-            strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
           }
           catch (...) {
             spdlog::error("VSCP MQTT CLIENT: sendEvent: Failed to add measurement info to event.");
@@ -2658,7 +2708,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
       } // is measurement
 
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      payload.assign(strPayload.begin(), strPayload.end());
 
     } // JSON
     else if (ppublish->getFormat() == xmlfmt) {
@@ -2667,7 +2717,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      payload.assign(strPayload.begin(), strPayload.end());
     }
     else if (ppublish->getFormat() == strfmt) {
       std::string strPayload;
@@ -2675,13 +2725,14 @@ vscpClientMqtt::send(vscpEventEx &ex)
         return VSCP_ERROR_PARAMETER;
       }
       lenPayload = strPayload.length();
-      strncpy((char *) payload, strPayload.c_str(), sizeof(payload));
+      payload.assign(strPayload.begin(), strPayload.end());
     }
     else if (ppublish->getFormat() == binfmt) {
       lenPayload = vscp_getFrameSizeFromEventEx(&ex) + 1;
 
       // Write event to frame
-      if (!vscp_writeEventExToFrame(payload + 1, sizeof(payload), 0, &ex)) {
+      payload.assign(lenPayload, 0);
+      if (!vscp_writeEventExToFrame(payload.data() + 1, payload.size() - 1, 0, &ex)) {
         return VSCP_ERROR_PARAMETER;
       }
     }
@@ -2844,7 +2895,7 @@ vscpClientMqtt::send(vscpEventEx &ex)
                                                     NULL, // msg id
                                                     strTopic.c_str(),
                                                     (int) lenPayload,
-                                                    payload,
+                                                    payload.data(),
                                                     ppublish->getQos(),
                                                     ppublish->getRetain()))) {
       spdlog::error("VSCP MQTT CLIENT: sendEvent: mosquitto_publish (ex) failed. rv={0} {1}",
@@ -2881,27 +2932,26 @@ vscpClientMqtt::send(canalMsg &msg)
 int
 vscpClientMqtt::receive(vscpEvent &ev)
 {
-  // int rv;
   vscpEvent *pev = nullptr;
 
-  if (m_receiveQueue.size()) {
-
-    pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (nullptr == pev)
-      return VSCP_ERROR_MEMORY;
-
-    if (!vscp_copyEvent(&ev, pev)) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    vscp_deleteEvent_v2(&pev);
-  }
-  else {
+  // The queue is filled from the mosquitto network thread
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveQueue.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_FIFO_EMPTY;
   }
+  pev = m_receiveQueue.front();
+  m_receiveQueue.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
 
-  return VSCP_ERROR_SUCCESS;
+  if (nullptr == pev) {
+    return VSCP_ERROR_MEMORY;
+  }
+
+  bool bOK = vscp_copyEvent(&ev, pev);
+  vscp_deleteEvent_v2(&pev);
+
+  return bOK ? VSCP_ERROR_SUCCESS : VSCP_ERROR_MEMORY;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2913,24 +2963,24 @@ vscpClientMqtt::receive(vscpEventEx &ex)
 {
   vscpEvent *pev = nullptr;
 
-  if (m_receiveQueue.size()) {
-
-    pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (nullptr == pev)
-      return VSCP_ERROR_MEMORY;
-
-    if (!vscp_convertEventToEventEx(&ex, pev)) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    vscp_deleteEvent_v2(&pev);
-  }
-  else {
+  // The queue is filled from the mosquitto network thread
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveQueue.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_FIFO_EMPTY;
   }
+  pev = m_receiveQueue.front();
+  m_receiveQueue.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
 
-  return VSCP_ERROR_SUCCESS;
+  if (nullptr == pev) {
+    return VSCP_ERROR_MEMORY;
+  }
+
+  bool bOK = vscp_convertEventToEventEx(&ex, pev);
+  vscp_deleteEvent_v2(&pev);
+
+  return bOK ? VSCP_ERROR_SUCCESS : VSCP_ERROR_MEMORY;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2942,24 +2992,24 @@ vscpClientMqtt::receive(canalMsg &msg)
 {
   vscpEvent *pev = nullptr;
 
-  if (m_receiveQueue.size()) {
-
-    pev = m_receiveQueue.front();
-    m_receiveQueue.pop_front();
-    if (nullptr == pev)
-      return VSCP_ERROR_MEMORY;
-
-    if (!vscp_convertEventToCanal(&msg, pev)) {
-      return VSCP_ERROR_MEMORY;
-    }
-
-    vscp_deleteEvent_v2(&pev);
-  }
-  else {
+  // The queue is filled from the mosquitto network thread
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveQueue.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
     return VSCP_ERROR_FIFO_EMPTY;
   }
+  pev = m_receiveQueue.front();
+  m_receiveQueue.pop_front();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
 
-  return VSCP_ERROR_SUCCESS;
+  if (nullptr == pev) {
+    return VSCP_ERROR_MEMORY;
+  }
+
+  bool bOK = vscp_convertEventToCanal(&msg, pev);
+  vscp_deleteEvent_v2(&pev);
+
+  return bOK ? VSCP_ERROR_SUCCESS : VSCP_ERROR_MEMORY;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3040,7 +3090,9 @@ vscpClientMqtt::getcount(uint16_t *pcount)
 {
   if (nullptr == pcount)
     return VSCP_ERROR_INVALID_POINTER;
+  pthread_mutex_lock(&m_mutexReceiveQueue);
   *pcount = (uint16_t) m_receiveQueue.size();
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -3051,7 +3103,18 @@ vscpClientMqtt::getcount(uint16_t *pcount)
 int
 vscpClientMqtt::clear(void)
 {
-  m_receiveQueue.clear();
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  while (!m_receiveQueue.empty()) {
+    vscpEvent *pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+    vscp_deleteEvent_v2(&pev);
+#ifndef WIN32
+    sem_trywait(&m_semReceiveQueue);
+#else
+    WaitForSingleObject(m_semReceiveQueue, 0);
+#endif
+  }
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
   return VSCP_ERROR_SUCCESS;
 }
 

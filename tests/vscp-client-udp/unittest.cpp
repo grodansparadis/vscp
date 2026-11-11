@@ -542,6 +542,25 @@ TEST(VscpClientUdp, AuthenticatedJsonOptions)
   verifyAuthenticatedDatagramOptions<vscpClientUdp>("127.0.0.1:40000");
 }
 
+TEST(VscpClientUdp, RequireEncryptionOptions)
+{
+  verifyRequireEncryptionOptions<vscpClientUdp>("127.0.0.1:40000");
+}
+
+TEST(VscpClientUdp, RequireEncryptionReceive)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientUdp client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    json config = requireEncryptionDatagramConfig(encryption);
+    config["ip"] = "127.0.0.1:" + std::to_string(port);
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    verifyRequireEncryptionReceive(client, port, encryption, false);
+  }
+}
+
 TEST(VscpClientUdp, AuthenticatedReceiveRejectsTampering)
 {
   for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {

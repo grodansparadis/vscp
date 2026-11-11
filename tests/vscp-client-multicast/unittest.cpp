@@ -569,7 +569,27 @@ TEST(VscpClientMulticast, AuthenticatedJsonOptions)
   verifyAuthenticatedDatagramOptions<vscpClientMulticast>("239.255.23.158:40000");
 }
 
+TEST(VscpClientMulticast, RequireEncryptionOptions)
+{
+  verifyRequireEncryptionOptions<vscpClientMulticast>("239.255.23.158:40000");
+}
+
 #ifdef __linux__
+TEST(VscpClientMulticast, RequireEncryptionReceive)
+{
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    vscpClientMulticast client;
+    const uint16_t port = unusedDatagramPort(AF_INET);
+    ASSERT_NE(port, 0);
+    json config = requireEncryptionDatagramConfig(encryption);
+    config["ip"] = "239.255.23.158:" + std::to_string(port);
+    config["interface"] = "lo";
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    verifyRequireEncryptionReceive(client, port, encryption, true);
+  }
+}
+
 TEST(VscpClientMulticast, AuthenticatedReceiveRejectsTampering)
 {
   for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {

@@ -46,6 +46,10 @@
 
 #include <vscp-aes.h>
 #include <vscphelper.h>
+
+#include <algorithm>
+#include <cstring>
+#include <vector>
 // #include "civetweb.h"
 
 #include "vscp-client-ws2.h"
@@ -306,9 +310,20 @@ vscpClientWs2::connect(void)
   // Get response message
   j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
 
   // Get arguments (AUTH0,iv)
-  std::deque<std::string> args = j["args"];
+  std::deque<std::string> args;
+  try {
+    args = j["args"].get<std::deque<std::string>>();
+  }
+  catch (const json::exception &) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply arguments from server.");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
 
   if ((2 != args.size()) || ("+" != j["type"]) || ("AUTH0" != j["args"][0])) {
     printf("Mr strange\n");
@@ -338,6 +353,10 @@ vscpClientWs2::connect(void)
   // Get response message
   j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
 
   if (("+" != j["type"]) || ("AUTH" != j["command"])) {
     printf("Invalid response on AUTH\n");
@@ -364,6 +383,10 @@ vscpClientWs2::connect(void)
   // Get response message
   j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
 
   if (("+" != j["type"]) || ("OPEN" != j["command"])) {
     printf("2 Unable to open connection\n");
@@ -475,6 +498,10 @@ vscpClientWs2::send(vscpEvent &ev)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
@@ -533,6 +560,10 @@ vscpClientWs2::send(vscpEventEx &ex)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
@@ -550,7 +581,7 @@ vscpClientWs2::send(canalMsg &msg)
   vscpEventEx ex;
 
   uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+  if (!vscp_convertCanalToEventEx(&ex, &msg, guid)) {
     return VSCP_ERROR_INVALID_FRAME;
   }
 
@@ -744,6 +775,10 @@ vscpClientWs2::setfilter(vscpEventFilter &filter)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
@@ -777,7 +812,7 @@ vscpClientWs2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
     return VSCP_ERROR_NOT_CONNECTED;
 
   // Check pointers
-  if ((NULL != pmajor) || (NULL != pminor) || (NULL != prelease) || (NULL != pbuild)) {
+  if ((NULL == pmajor) || (NULL == pminor) || (NULL == prelease) || (NULL == pbuild)) {
     return VSCP_ERROR_PARAMETER;
   }
 
@@ -799,20 +834,32 @@ vscpClientWs2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
   // Version is delivered as array on form [major,minor,release,build]
 
-  std::deque<std::string> args = j["args"];
+  std::deque<std::string> args;
+  try {
+    args = j["args"].get<std::deque<std::string>>();
+  }
+  catch (const json::exception &) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply arguments from server.");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if (4 != args.size())
     return VSCP_ERROR_MISSING;
 
-  *pmajor   = j["args"][0];
-  *pminor   = j["args"][1];
-  *prelease = j["args"][2];
-  *pbuild   = j["args"][3];
+  // Arguments are strings (checked above)
+  *pmajor   = (uint8_t) vscp_readStringValue(args[0]);
+  *pminor   = (uint8_t) vscp_readStringValue(args[1]);
+  *prelease = (uint8_t) vscp_readStringValue(args[2]);
+  *pbuild   = (uint8_t) vscp_readStringValue(args[3]);
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -864,11 +911,22 @@ vscpClientWs2::getinterfaces(std::deque<std::string> &iflist)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
-  std::deque<std::string> args = j["args"];
+  std::deque<std::string> args;
+  try {
+    args = j["args"].get<std::deque<std::string>>();
+  }
+  catch (const json::exception &) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply arguments from server.");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   iflist                       = args;
 
   return VSCP_ERROR_SUCCESS;
@@ -904,16 +962,32 @@ vscpClientWs2::getwcyd(uint64_t &wcyd)
   // Check return value
   json j = m_msgReceiveQueue.front();
   m_msgReceiveQueue.pop_front();
+  if (!j.is_object()) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply from server (not a JSON object).");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if ("+" != j["type"]) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
-  std::deque<std::string> args = j["args"];
+  std::deque<std::string> args;
+  try {
+    args = j["args"].get<std::deque<std::string>>();
+  }
+  catch (const json::exception &) {
+    spdlog::error("VSCP WS2 CLIENT: Invalid reply arguments from server.");
+    return VSCP_ERROR_INVALID_FRAME;
+  }
   if (!args.size()) {
     return VSCP_ERROR_PARAMETER;
   }
 
-  wcyd = j["args"][0];
+  try {
+    wcyd = std::stoull(args[0], nullptr, 0);
+  }
+  catch (const std::exception &) {
+    return VSCP_ERROR_INVALID_FRAME;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -925,18 +999,38 @@ vscpClientWs2::encrypt_password(std::string &strout,
                                 uint8_t *vscpkey,
                                 uint8_t *iv)
 {
-  uint8_t buf[200];
+  if ((nullptr == vscpkey) || (nullptr == iv)) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
 
   std::string strCombined;
   strCombined = struser;
   strCombined += ":";
   strCombined += strpassword;
 
-  AES_CBC_encrypt_buffer(AES128, buf, (uint8_t *) strCombined.c_str(), (uint32_t) strCombined.length(), vscpkey, iv);
+  // AES works on whole 16 byte blocks. Zero pad the plain text to a block
+  // boundary so the cipher never reads past the input or writes past the
+  // output, whatever the length of the credentials.
+  const size_t len    = strCombined.length();
+  const size_t padded = ((len + 15) / 16) * 16;
+  if (padded > UINT32_MAX) {
+    return VSCP_ERROR_PARAMETER;
+  }
 
-  char out[50];
-  vscp_byteArray2HexStr(out, buf, 16);
-  strout = out;
+  std::vector<uint8_t> plain(padded, 0);
+  std::vector<uint8_t> cipher(padded, 0);
+  memcpy(plain.data(), strCombined.data(), len);
+
+  AES_CBC_encrypt_buffer(AES128, cipher.data(), plain.data(), (uint32_t) padded, vscpkey, iv);
+
+  // Hex encode the full cipher text (two characters per byte + terminator)
+  std::vector<char> out(2 * padded + 1, 0);
+  vscp_byteArray2HexStr(out.data(), cipher.data(), padded);
+  strout = out.data();
+
+  // Do not leave the clear text credentials in memory
+  std::fill(plain.begin(), plain.end(), 0);
+  std::fill(strCombined.begin(), strCombined.end(), '\0');
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -1001,6 +1095,11 @@ vscpClientWs2::waitForResponse(uint32_t timeout)
 #ifndef __APPLE__
   }
 #endif
+
+  // Callers read m_msgReceiveQueue.front() on success
+  if (m_msgReceiveQueue.empty()) {
+    return VSCP_ERROR_RCV_EMPTY;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }

@@ -40,6 +40,9 @@
 #include <utility>
 #include <vector>
 
+// Max number of events held in the worker receive queue (m_receiveList)
+#define VSCP_TCP_CLIENT_MAX_RECEIVE_QUEUE 2000
+
 class vscpClientTcp : public CVscpClient {
 
 public:
@@ -417,6 +420,14 @@ public:
   */
   void sendToCallbacks(vscpEvent *pev);
 
+  /*!
+      Fetch one event from the server on the main connection.
+      Used by the poll worker thread. Caller must hold m_mutexTcpIpObject.
+      @param ev Event that will get the received event
+      @return VSCP_ERROR_SUCCESS if an event was received, error code else.
+  */
+  int pollServerReceive(vscpEvent &ev);
+
 public:
   /// Flag for worker thread run as long it's true
   bool m_bRun;
@@ -449,6 +460,20 @@ public:
   uint32_t m_obid;
 
 private:
+  /*!
+      Take the oldest event from the worker receive queue (m_receiveList).
+      Ownership of the event data moves to ev.
+      @param ev Event that will get the queued event
+      @param bConsumeSignal True to also take one count from the receive
+          semaphore (non-blocking receive). False when the caller already
+          waited on the semaphore.
+      @return VSCP_ERROR_SUCCESS or VSCP_ERROR_RCV_EMPTY if queue is empty.
+  */
+  int popReceiveList(vscpEvent &ev, bool bConsumeSignal);
+
+  /// Free all events in the worker receive queue
+  void clearReceiveList(void);
+
   /*!
       The main interface is always opened. The receive interface is opened
       only in two-channel mode. Polling and single-channel modes use the main

@@ -35,6 +35,8 @@
 
 #include <pthread.h>
 
+#include <new>
+
 #include "vscp-client-canal.h"
 #include "vscphelper.h"
 
@@ -81,7 +83,6 @@ vscpClientCanal::vscpClientCanal()
 #endif
 
   // pthread_mutex_init(&m_mutexSendQueue, NULL);
-  pthread_mutex_init(&m_mutexReceiveQueue, NULL);
 
   spdlog::trace("CANAL CLIENT: constructor vscp_client_canal object.");
 }
@@ -107,7 +108,7 @@ vscpClientCanal::~vscpClientCanal()
   while (m_receiveQueue.size()) {
     vscpEvent *pev = m_receiveQueue.front();
     m_receiveQueue.pop_front();
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
   }
 
   spdlog::trace("CANAL CLIENT: destructor vscp_client_canal object.");
@@ -229,13 +230,23 @@ vscpClientCanal::connect(void)
   m_bRun = true;
 
   rv = m_canalif.CanalOpen();
-  if (VSCP_ERROR_SUCCESS == rv) {
-    m_bConnected = true;
+  if (VSCP_ERROR_SUCCESS != rv) {
+    // No worker thread without an open interface
+    spdlog::error("CANAL CLIENT: Failed to open interface. rv={}", rv);
+    return rv;
   }
+  m_bConnected = true;
 
-  // Start worker thread if a callback has been defined
+  // Start worker thread if a callback has been defined.
+  // disconnect() joins it when m_bConnected is set and a callback is active.
   if (isCallbackEvActive() || isCallbackExActive()) {
-    rv = pthread_create(&m_tid, NULL, workerThread, this);
+    if (0 != pthread_create(&m_tid, NULL, workerThread, this)) {
+      spdlog::error("CANAL CLIENT: Failed to start worker thread.");
+      m_bRun       = false;
+      m_bConnected = false;
+      m_canalif.CanalClose();
+      return VSCP_ERROR_ERROR;
+    }
   }
 
   spdlog::debug("CANAL CLIENT: Connect");
@@ -253,18 +264,13 @@ vscpClientCanal::disconnect(void)
   m_bRun = false;
 
   // Only wait for thread if we were connected (thread was started)
+  // The worker polls m_bRun at least every 100 ms so join is enough.
+  // m_mutexif is destroyed in the destructor only, so the client can
+  // be connected again after a disconnect.
   if (m_bConnected) {
-#ifdef WIN32
-    Sleep(1000);
-#else
-    sleep(1); // Give thread some time to die
-#endif
-
-    pthread_mutex_unlock(&m_mutexif);
     if (isCallbackEvActive() || isCallbackExActive()) {
       pthread_join(m_tid, NULL);
     }
-    pthread_mutex_destroy(&m_mutexif);
   }
 
   m_bConnected = false;
@@ -761,13 +767,14 @@ workerThread(void *pObj)
       pthread_mutex_lock(&pClient->m_mutexif);
 
       if (pClient->isCallbackEvActive()) {
-        vscpEvent ev;
+        vscpEvent ev = {};
         if (vscp_convertCanalToEvent(&ev, &msg, guid)) {
           if (vscp_doLevel2Filter(&ev, &pClient->m_filterIn)) {
             spdlog::trace("CANAL CLIENT: workthread. Event sent to ev callback");
             pClient->m_callbackev(ev, pClient->getCallbackObj());
           }
         }
+        vscp_deleteEvent(&ev); // Free data allocated by the conversion
       }
       else if (pClient->isCallbackExActive()) {
         vscpEventEx ex;
@@ -782,25 +789,22 @@ workerThread(void *pObj)
 
         // No callback defined so save event in incoming queue
 
-        vscpEvent *pev = new vscpEvent;
+        vscpEvent *pev = new (std::nothrow) vscpEvent();
         if (nullptr == pev) {
-          spdlog::critical("CANAL CLIENT: Memory problem.");
-          return NULL;
+          spdlog::error("CANAL CLIENT: Out of memory. Event dropped.");
         }
-        if (vscp_convertCanalToEvent(pev, &msg, guid)) {
-          if (vscp_doLevel2Filter(pev, &pClient->m_filterIn)) {
-            pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
-            pClient->m_receiveQueue.push_back(pev);
+        else if (vscp_convertCanalToEvent(pev, &msg, guid) && vscp_doLevel2Filter(pev, &pClient->m_filterIn)) {
+          pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
+          pClient->m_receiveQueue.push_back(pev);
 #ifdef WIN32
-            ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+          ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
 #else
-            sem_post(&pClient->m_semReceiveQueue);
+          sem_post(&pClient->m_semReceiveQueue);
 #endif
-            pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
-          }
+          pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
         }
         else {
-          vscp_deleteEvent(pev);
+          vscp_deleteEvent_v2(&pev); // Conversion failed or filtered out
         }
       }
 

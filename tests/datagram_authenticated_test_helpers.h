@@ -529,4 +529,138 @@ verifyAuthenticatedDatagramSend(Client &client, AuthenticatedDatagramWireReceive
 }
 #endif
 
+
+// ---------------------------------------------------------------------------
+//                       require-encryption (legacy mode)
+// ---------------------------------------------------------------------------
+
+inline bool
+requireEncryptionFlag(const std::string &config)
+{
+  return nlohmann::json::parse(config)["require-encryption"].get<bool>();
+}
+
+inline nlohmann::json
+requireEncryptionDatagramConfig(uint8_t encryption)
+{
+  const size_t keyLength = 16 + 8 * (encryption - VSCP_ENCRYPTION_AES128);
+  return {{"encryption", encryption},
+          {"key", std::string(testDatagramAesKey()).substr(0, keyLength * 2)},
+          {"hmac-key", ""},
+          {"require-encryption", true}};
+}
+
+template<typename Client>
+void
+verifyRequireEncryptionOptions(const std::string &address)
+{
+  // Default is off and is reported in the configuration
+  {
+    Client client;
+    nlohmann::json j = nlohmann::json::parse(client.getConfigAsJson());
+    ASSERT_TRUE(j.contains("require-encryption"));
+    EXPECT_FALSE(requireEncryptionFlag(j.dump()));
+  }
+
+  // Needs an AES algorithm
+  {
+    Client client;
+    EXPECT_FALSE(client.initFromJson(nlohmann::json{{"ip", address}, {"require-encryption", true}}.dump()));
+    EXPECT_FALSE(requireEncryptionFlag(client.getConfigAsJson()));
+  }
+
+  // Needs an explicitly configured key, the default key is not enough
+  {
+    Client client;
+    EXPECT_FALSE(client.initFromJson(
+      nlohmann::json{{"ip", address}, {"encryption", VSCP_ENCRYPTION_AES128}, {"require-encryption", true}}.dump()));
+  }
+
+  // Must be a boolean
+  {
+    Client client;
+    nlohmann::json config = requireEncryptionDatagramConfig(VSCP_ENCRYPTION_AES128);
+    config["ip"] = address;
+    config["require-encryption"] = "yes";
+    EXPECT_FALSE(client.initFromJson(config.dump()));
+  }
+
+  // Valid configuration round trips
+  for (uint8_t encryption = VSCP_ENCRYPTION_AES128; encryption <= VSCP_ENCRYPTION_AES256; ++encryption) {
+    SCOPED_TRACE(encryption);
+    Client client;
+    nlohmann::json config = requireEncryptionDatagramConfig(encryption);
+    config["ip"] = address;
+    ASSERT_TRUE(client.initFromJson(config.dump()));
+    nlohmann::json j = nlohmann::json::parse(client.getConfigAsJson());
+    EXPECT_TRUE(requireEncryptionFlag(j.dump()));
+
+    Client copy;
+    ASSERT_TRUE(copy.initFromJson(j.dump()));
+    EXPECT_TRUE(requireEncryptionFlag(copy.getConfigAsJson()));
+
+    // Switching encryption off while required is rejected and leaves the state unchanged
+    EXPECT_FALSE(client.initFromJson(R"({"encryption":0})"));
+    EXPECT_EQ(j, nlohmann::json::parse(client.getConfigAsJson()));
+
+    // Can be turned off again
+    ASSERT_TRUE(client.initFromJson(R"({"require-encryption":false})"));
+    EXPECT_FALSE(requireEncryptionFlag(client.getConfigAsJson()));
+  }
+}
+
+template<typename Client>
+void
+verifyRequireEncryptionReceive(Client &client, uint16_t port, uint8_t encryption, bool multicast)
+{
+  const auto aes = testDatagramKey(testDatagramAesKey());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  AuthenticatedDatagramSender sender(port, multicast);
+  ASSERT_TRUE(sender.valid());
+
+  uint8_t data[] = {0x12, 0x34, 0x56};
+  vscpEvent event{};
+  event.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;
+  event.timestamp_ns = 123456789;
+  event.vscp_class = 123;
+  event.vscp_type = 45;
+  event.pdata = data;
+  event.sizeData = sizeof(data);
+  std::vector<uint8_t> plain(vscp_getFrameSizeFromEvent(&event));
+  ASSERT_TRUE(vscp_writeEventToFrame(plain.data(), plain.size(), 0, &event));
+
+  auto encrypt = [&plain, &aes](uint8_t algorithm) {
+    std::vector<uint8_t> frame(plain.size() + 32);
+    const size_t length = vscp_encryptFrame(frame.data(), plain.data(), plain.size(), aes.data(), nullptr, algorithm);
+    EXPECT_NE(0u, length);
+    frame.resize(length);
+    return frame;
+  };
+  const uint8_t otherEncryption = encryption == VSCP_ENCRYPTION_AES128 ?
+                                  VSCP_ENCRYPTION_AES192 : VSCP_ENCRYPTION_AES128;
+
+  // Plain text and frames with another algorithm are dropped
+  ASSERT_TRUE(sender.send(plain));
+  ASSERT_TRUE(sender.send(encrypt(otherEncryption)));
+  vscpEventEx received{};
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, client.receiveBlocking(received, 300));
+
+  // A frame encrypted with the configured algorithm is accepted
+  ASSERT_TRUE(sender.send(encrypt(encryption)));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(received, 2000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  EXPECT_EQ(event.vscp_type, received.vscp_type);
+  ASSERT_EQ(sizeof(data), received.sizeData);
+  EXPECT_EQ(0, std::memcmp(data, received.data, sizeof(data)));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.disconnect());
+
+  // Without require-encryption plain text is accepted (legacy behaviour)
+  ASSERT_TRUE(client.initFromJson(R"({"require-encryption":false})"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  ASSERT_TRUE(sender.send(plain));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.receiveBlocking(received, 2000));
+  EXPECT_EQ(event.vscp_class, received.vscp_class);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.disconnect());
+}
+
 #endif

@@ -178,7 +178,7 @@ vscpClientTcp::~vscpClientTcp()
   while (m_receiveList.size()) {
     vscpEvent *pev = m_receiveList.front();
     m_receiveList.pop_front();
-    vscp_deleteEvent(pev);
+    vscp_deleteEvent_v2(&pev);
   }
 }
 
@@ -811,6 +811,7 @@ vscpClientTcp::disconnect(void)
     if (nullptr != m_pworkerthread) {
       m_bRun = false;
       m_pworkerthread->join();
+      delete m_pworkerthread;
       m_pworkerthread = nullptr;
     }
 
@@ -1142,6 +1143,73 @@ vscpClientTcp::receiveSingleChannel(vscpEventEx &event, long timeout, bool block
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// popReceiveList
+//
+
+int
+vscpClientTcp::popReceiveList(vscpEvent &ev, bool bConsumeSignal)
+{
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  if (m_receiveList.empty()) {
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
+    return VSCP_ERROR_RCV_EMPTY;
+  }
+  vscpEvent *pev = m_receiveList.front();
+  m_receiveList.pop_front();
+  if (bConsumeSignal) {
+    // Keep the semaphore count in step with the queue length
+#ifdef WIN32
+    WaitForSingleObject(m_semReceiveQueue, 0);
+#else
+    sem_trywait(&m_semReceiveQueue);
+#endif
+  }
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
+
+  if (nullptr == pev) {
+    return VSCP_ERROR_MEMORY;
+  }
+
+  // Hand over the data buffer to the caller
+  ev       = *pev;
+  pev->pdata    = nullptr;
+  pev->sizeData = 0;
+  vscp_deleteEvent_v2(&pev);
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clearReceiveList
+//
+
+void
+vscpClientTcp::clearReceiveList(void)
+{
+  pthread_mutex_lock(&m_mutexReceiveQueue);
+  while (!m_receiveList.empty()) {
+    vscpEvent *pev = m_receiveList.front();
+    m_receiveList.pop_front();
+    vscp_deleteEvent_v2(&pev);
+#ifdef WIN32
+    WaitForSingleObject(m_semReceiveQueue, 0);
+#else
+    sem_trywait(&m_semReceiveQueue);
+#endif
+  }
+  pthread_mutex_unlock(&m_mutexReceiveQueue);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// pollServerReceive
+//
+
+int
+vscpClientTcp::pollServerReceive(vscpEvent &ev)
+{
+  return m_tcp.doCmdReceive(&ev);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // receive
 //
 
@@ -1158,6 +1226,11 @@ vscpClientTcp::receive(vscpEvent &ev)
       tcpClientFailure(__func__, VSCP_ERROR_INVALID_FRAME);
   }
 
+  // The worker thread owns the receive connection and queues events
+  if (nullptr != m_pworkerthread) {
+    return popReceiveList(ev, true);
+  }
+
   return m_tcp.doCmdReceive(&ev);
 }
 
@@ -1170,6 +1243,17 @@ vscpClientTcp::receive(vscpEventEx &ex)
 {
   if (usesManagedReceive()) {
     return receiveSingleChannel(ex, 0, false);
+  }
+
+  // The worker thread owns the receive connection and queues events
+  if (nullptr != m_pworkerthread) {
+    vscpEvent ev = {};
+    int rv = popReceiveList(ev, true);
+    if (VSCP_ERROR_SUCCESS == rv && !vscp_convertEventToEventEx(&ex, &ev)) {
+      rv = VSCP_ERROR_INVALID_FRAME;
+    }
+    vscp_deleteEvent(&ev);
+    return rv;
   }
 
   return m_tcp.doCmdReceiveEx(&ex);
@@ -1222,6 +1306,10 @@ vscpClientTcp::receiveBlocking(vscpEvent &ev, long timeout)
     }
   }
 
+  if (nullptr != m_pworkerthread) {
+    return popReceiveList(ev, false);
+  }
+
   return receive(ev);
 }
 
@@ -1243,6 +1331,16 @@ vscpClientTcp::receiveBlocking(vscpEventEx &ex, long timeout)
     else {
       return VSCP_ERROR_ERROR;
     }
+  }
+
+  if (nullptr != m_pworkerthread) {
+    vscpEvent ev = {};
+    int rv = popReceiveList(ev, false);
+    if (VSCP_ERROR_SUCCESS == rv && !vscp_convertEventToEventEx(&ex, &ev)) {
+      rv = VSCP_ERROR_INVALID_FRAME;
+    }
+    vscp_deleteEvent(&ev);
+    return rv;
   }
 
   return receive(ex);
@@ -1274,6 +1372,16 @@ vscpClientTcp::receiveBlocking(canalMsg &msg, long timeout)
     }
   }
 
+  if (nullptr != m_pworkerthread) {
+    vscpEvent ev = {};
+    int rv = popReceiveList(ev, false);
+    if (VSCP_ERROR_SUCCESS == rv && !vscp_convertEventToCanal(&msg, &ev)) {
+      rv = VSCP_ERROR_INVALID_FRAME;
+    }
+    vscp_deleteEvent(&ev);
+    return rv;
+  }
+
   return receive(msg);
 }
 
@@ -1295,8 +1403,9 @@ vscpClientTcp::setfilter(vscpEventFilter &filter)
   }
   else {
     pthread_mutex_lock(&m_mutexTcpIpObject);
-    return m_tcpReceive.doCmdFilter(&filter);
+    int rv = m_tcpReceive.doCmdFilter(&filter);
     pthread_mutex_unlock(&m_mutexTcpIpObject);
+    return rv;
   }
 }
 
@@ -1319,6 +1428,14 @@ vscpClientTcp::getcount(uint16_t *pcount)
       return tcpClientFailure(__func__, VSCP_ERROR_OVERRUN);
     }
     *pcount = static_cast<uint16_t>(m_singleChannelEvents.size());
+    return VSCP_ERROR_SUCCESS;
+  }
+
+  if (nullptr != m_pworkerthread) {
+    pthread_mutex_lock(&m_mutexReceiveQueue);
+    size_t cnt = m_receiveList.size();
+    pthread_mutex_unlock(&m_mutexReceiveQueue);
+    *pcount = (uint16_t) ((std::min)(cnt, (size_t) (std::numeric_limits<uint16_t>::max)()));
     return VSCP_ERROR_SUCCESS;
   }
 
@@ -1358,6 +1475,7 @@ vscpClientTcp::clear(void)
     return rv;
   }
 
+  clearReceiveList();
   return m_tcp.doCmdClear();
 }
 
@@ -1844,16 +1962,44 @@ workerThread(vscpClientTcp *pClient)
           }
         }
 
-        // Add to input queue only if no callback set
-        if (!pClient->isCallbackEvActive() || !pClient->isCallbackExActive()) {
-          pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
-          pClient->m_receiveList.push_back(&ev);
+        // Add to input queue only if no callback set.
+        // Queue a heap copy - ev is reused for the next event.
+        if (!pClient->isCallbackEvActive() && !pClient->isCallbackExActive()) {
+          vscpEvent *pnew = new (std::nothrow) vscpEvent;
+          if (nullptr != pnew) {
+            pnew->sizeData = 0;
+            pnew->pdata    = nullptr;
+            if (vscp_copyEvent(pnew, &ev)) {
+              pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
+              if (pClient->m_receiveList.size() < VSCP_TCP_CLIENT_MAX_RECEIVE_QUEUE) {
+                pClient->m_receiveList.push_back(pnew);
+                pnew = nullptr;
 #ifdef WIN32
-          ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+                ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
 #else
-          sem_post(&pClient->m_semReceiveQueue);
+                sem_post(&pClient->m_semReceiveQueue);
 #endif
-          pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
+              }
+              pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
+              if (nullptr != pnew) {
+                spdlog::warn("VSCP TCP CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                             VSCP_TCP_CLIENT_MAX_RECEIVE_QUEUE,
+                             pnew->vscp_class,
+                             pnew->vscp_type);
+              }
+            }
+            else {
+              spdlog::error("VSCP TCP CLIENT: Failed to copy received event. Event dropped: class={0} type={1}",
+                            ev.vscp_class,
+                            ev.vscp_type);
+            }
+            vscp_deleteEvent_v2(&pnew); // Not queued
+          }
+          else {
+            spdlog::error("VSCP TCP CLIENT: Out of memory. Event dropped: class={0} type={1}",
+                          ev.vscp_class,
+                          ev.vscp_type);
+          }
         }
       }
       vscp_deleteEvent(&ev);
@@ -1889,7 +2035,7 @@ pollWorkerThread(vscpClientTcp *pClient)
     ev.pdata    = nullptr;
 
     pthread_mutex_lock(&pClient->m_mutexTcpIpObject);
-    int rv = pClient->receive(ev);
+    int rv = pClient->pollServerReceive(ev);
     pthread_mutex_unlock(&pClient->m_mutexTcpIpObject);
 
     if (VSCP_ERROR_SUCCESS == rv) {
@@ -1906,13 +2052,23 @@ pollWorkerThread(vscpClientTcp *pClient)
           pnew->pdata     = nullptr;
           vscp_copyEvent(pnew, &ev);
           pthread_mutex_lock(&pClient->m_mutexReceiveQueue);
-          pClient->m_receiveList.push_back(pnew);
+          if (pClient->m_receiveList.size() < VSCP_TCP_CLIENT_MAX_RECEIVE_QUEUE) {
+            pClient->m_receiveList.push_back(pnew);
+            pnew = nullptr;
 #ifdef WIN32
-          ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
+            ReleaseSemaphore(pClient->m_semReceiveQueue, 1, NULL);
 #else
-          sem_post(&pClient->m_semReceiveQueue);
+            sem_post(&pClient->m_semReceiveQueue);
 #endif
+          }
           pthread_mutex_unlock(&pClient->m_mutexReceiveQueue);
+          if (nullptr != pnew) {
+            spdlog::warn("VSCP TCP CLIENT: Receive queue full ({0} events). Event dropped: class={1} type={2}",
+                         VSCP_TCP_CLIENT_MAX_RECEIVE_QUEUE,
+                         pnew->vscp_class,
+                         pnew->vscp_type);
+            vscp_deleteEvent_v2(&pnew); // Not queued (queue full)
+          }
         }
       }
 

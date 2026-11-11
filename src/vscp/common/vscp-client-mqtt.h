@@ -591,6 +591,11 @@ public:
   std::string getPassword(void) { return m_password; };
 
   /*!
+    Getter for the password of an encrypted TLS key file
+  */
+  std::string getTlsKeyfilePassword(void) { return m_tls_pwKeyfile; };
+
+  /*!
     Getter/setter for client id
   */
   void setClientId(std::string &clientId) { m_clientid = clientId; };

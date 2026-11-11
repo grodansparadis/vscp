@@ -538,6 +538,25 @@ provide replay protection, and AES without HMAC does not provide cryptographic
 integrity. The matching format and a deterministic test vector are described
 in [versioned binary frame helpers](vscpremotetcpif-binary.md#versioned-binary-frame-helpers).
 
+In legacy (non-HMAC) mode a client accepts plaintext frames even when an AES key
+is configured, and the sender selects the AES algorithm in the frame's type
+byte. Set `"require-encryption": true` to drop every received frame that is not
+encrypted with the configured algorithm. The option needs an AES `encryption`
+value and an explicitly configured `key` of matching length (the legacy
+default key is not accepted); otherwise the configuration is rejected. It
+defaults to `false`, is reported by `getConfigAsJson()`, and affects receiving
+only. Frames are still not authenticated in this mode, so anyone who knows the
+key can inject events; use `hmac-key` for authenticated datagrams.
+
+```json
+{
+  "ip": "udp://127.0.0.1:33333",
+  "encryption": 3,
+  "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "require-encryption": true
+}
+```
+
 The client classes' layouts include authentication state and `m_bRun` is an
 atomic boolean; C++ consumers must rebuild and should not bind that member to a
 `bool &`.

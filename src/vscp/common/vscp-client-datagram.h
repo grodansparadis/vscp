@@ -54,6 +54,9 @@ const Socket invalidSocket = -1;
 constexpr size_t bufferSize = 1024;
 constexpr size_t minimumFrameSize = 1 + VSCP_BINARY_PACKET_FRAME0_HEADER_LENGTH + 2;
 
+// Max number of received events waiting in a client receive queue
+constexpr size_t maxQueuedEvents = 2000;
+
 inline void
 logSocketError(const char *operation)
 {
@@ -275,6 +278,38 @@ eventOptions(const nlohmann::json &config, uint8_t &encryption, uint8_t *key, ui
         (!config[entry.first].is_string() ||
          !vscp_parseGuid(entry.second, config[entry.first].get<std::string>()))) {
       std::fprintf(stderr, "Invalid datagram option '%s'\n", entry.first);
+      return false;
+    }
+  }
+  return true;
+}
+
+/*!
+  Parse the optional "require-encryption" setting.
+  When true a legacy (non-HMAC) client drops received frames that are not
+  encrypted with the configured algorithm. It needs an AES algorithm and an
+  explicitly configured key of matching length.
+  @param config Configuration object
+  @param encryption Encryption algorithm that will be in effect
+  @param keyLength Length of the explicitly configured key (0 if none)
+  @param requireEncryption Current value in, new value out
+  @return true on success, false if the option is invalid
+*/
+inline bool
+requireEncryptionOption(const nlohmann::json &config, uint8_t encryption, uint8_t keyLength,
+                        bool &requireEncryption)
+{
+  if (config.contains("require-encryption")) {
+    if (!config["require-encryption"].is_boolean()) {
+      std::fprintf(stderr, "Invalid datagram option 'require-encryption'\n");
+      return false;
+    }
+    requireEncryption = config["require-encryption"].get<bool>();
+  }
+  if (requireEncryption) {
+    const uint8_t expectedLength = aesKeyLength(encryption);
+    if (!expectedLength || keyLength != expectedLength) {
+      std::fprintf(stderr, "'require-encryption' needs an AES algorithm and an explicitly configured key\n");
       return false;
     }
   }
@@ -930,7 +965,8 @@ template<typename Client>
 inline void
 receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variable_any &condition,
             bool semReady, uint8_t keyLength, const uint8_t *hmacKey,
-            uint8_t configuredEncryption, const uint8_t *configuredKey)
+            uint8_t configuredEncryption, const uint8_t *configuredKey,
+            bool requireEncryption = false)
 {
   const Socket socket = client.m_sock;
   while (client.m_bRun.load()) {
@@ -1006,6 +1042,16 @@ receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variabl
       }
       std::memcpy(buffer, decrypted, frameLength);
     }
+    // Legacy (non-HMAC) mode. Security note: unless "require-encryption" is
+    // set, plain text frames are accepted even when an AES key is configured
+    // and the sender selects the algorithm in the type byte. AES-CBC frames
+    // are never authenticated in this mode. Configure "hmac-key" to get
+    // authenticated datagrams.
+    else if (requireEncryption && ((buffer[0] & 0x0f) != client.m_encryptType)) {
+      std::fprintf(stderr, "Datagram dropped: encryption %u does not match required encryption %u\n",
+                   static_cast<unsigned>(buffer[0] & 0x0f), static_cast<unsigned>(client.m_encryptType));
+      continue;
+    }
     else if (buffer[0] & 0x0f) {
       if (frameLength < 1 + 16 + 16) {
         std::fprintf(stderr, "Encrypted datagram is too short\n");
@@ -1056,6 +1102,7 @@ receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variabl
           client.m_callbackex(extended, client.getCallbackObj());
         }
       }
+      // Queue unless both callbacks consume the event (the queue is capped)
       if (!client.isCallbackEvActive() || !client.isCallbackExActive()) {
         vscpEvent *queued = new (std::nothrow) vscpEvent(event);
         if (!queued) {
@@ -1065,11 +1112,19 @@ receiveLoop(Client &client, std::atomic<bool> &connected, std::condition_variabl
           try {
             PthreadMutex mutex{&client.m_mutexReceiveQueue};
             std::lock_guard<PthreadMutex> lock(mutex);
-            client.m_receiveQueue.push_back(queued);
-            event.pdata = nullptr;
-            event.sizeData = 0;
-            postSignal(client, semReady);
-            condition.notify_one();
+            if (client.m_receiveQueue.size() >= maxQueuedEvents) {
+              std::fprintf(stderr, "Datagram receive queue full (%zu events). Event dropped: class=%u type=%u\n",
+                           maxQueuedEvents, static_cast<unsigned>(event.vscp_class),
+                           static_cast<unsigned>(event.vscp_type));
+              delete queued; // Shares pdata with event, which is freed below
+            }
+            else {
+              client.m_receiveQueue.push_back(queued);
+              event.pdata = nullptr;
+              event.sizeData = 0;
+              postSignal(client, semReady);
+              condition.notify_one();
+            }
           }
           catch (const std::bad_alloc &) {
             std::fprintf(stderr, "Cannot enqueue datagram receive event\n");

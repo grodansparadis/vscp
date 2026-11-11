@@ -184,6 +184,7 @@ vscpClientUdp::getConfigAsJson(void)
   j["ip"]         = vscp_datagram::formatEndpoint(m_udpAddr, m_udpPort);
   j["encryption"] = m_encryptType;
   j["padding"]    = "pkcs7";
+  j["require-encryption"] = m_requireEncryption;
   if (m_hmacEnabled) {
     vscp_byteArray2HexStr(buf, m_hmacKey, sizeof(m_hmacKey));
     j["hmac-key"] = buf;
@@ -261,6 +262,7 @@ vscpClientUdp::initFromJson(const std::string &config)
     memcpy(key, m_key, sizeof(key));
     uint8_t keyLength = m_configuredKeyLength;
     bool hmacEnabled = m_hmacEnabled;
+    bool requireEncryption = m_requireEncryption;
     uint8_t hmacKey[sizeof(m_hmacKey)];
     memcpy(hmacKey, m_hmacKey, sizeof(hmacKey));
     vscpEventFilter filter = m_filter;
@@ -286,6 +288,9 @@ vscpClientUdp::initFromJson(const std::string &config)
                                      hmacEnabled, hmacKey, filter)) {
       return false;
     }
+    if (!vscp_datagram::requireEncryptionOption(nextConfig, encryption, keyLength, requireEncryption)) {
+      return false;
+    }
     if (hmacEnabled && !vscp_datagram::authenticationOptionsExplicit(nextConfig, encryption, key,
                                                                       m_configuredEncryption, m_configuredKey)) {
       fprintf(stderr, "Configure the authenticated UDP encryption algorithm and key through JSON\n");
@@ -305,6 +310,7 @@ vscpClientUdp::initFromJson(const std::string &config)
     memcpy(m_key, key, sizeof(m_key));
     m_configuredKeyLength = keyLength;
     m_hmacEnabled = hmacEnabled;
+    m_requireEncryption = requireEncryption;
     memcpy(m_hmacKey, hmacKey, sizeof(m_hmacKey));
     if (nextConfig.contains("encryption")) {
       m_configuredEncryption = encryption;
@@ -737,6 +743,7 @@ workerThread(vscpClientUdp *pClient)
     vscp_datagram::receiveLoop(*pClient, pClient->m_connected, pClient->m_receiveCondition,
                                pClient->m_semReady, pClient->m_configuredKeyLength,
                                pClient->m_hmacEnabled ? pClient->m_hmacKey : nullptr,
-                               pClient->m_configuredEncryption, pClient->m_configuredKey);
+                               pClient->m_configuredEncryption, pClient->m_configuredKey,
+                               pClient->m_requireEncryption);
   }
 }

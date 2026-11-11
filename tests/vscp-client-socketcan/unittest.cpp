@@ -31,7 +31,7 @@ TEST(VscpClientSocketCan, ConstructorDefaults)
   EXPECT_FALSE(client.m_bDebug);
   EXPECT_EQ("vcan0", client.m_interface);
   EXPECT_EQ(0u, client.m_flags);
-  EXPECT_EQ(0, client.m_socket);
+  EXPECT_EQ(-1, client.m_socket); // Not open
   EXPECT_EQ(CAN_MTU, client.m_mode);
 }
 

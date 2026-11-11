@@ -46,6 +46,10 @@
 
 #include <vscp-aes.h>
 #include <vscphelper.h>
+
+#include <algorithm>
+#include <cstring>
+#include <vector>
 // #include "civetweb.h"
 
 #include "vscp-client-ws1.h"
@@ -331,7 +335,7 @@ vscpClientWs1::connect(void)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if ((args.size() >= 2) && (("+" != args.at(0)) || ("AUTH1" != args.at(1)))) {
+  if ((args.size() < 2) || ("+" != args.at(0)) || ("AUTH1" != args.at(1))) {
     printf("Invalid response on AUTH\n");
     disconnect();
     return VSCP_ERROR_TIMEOUT;
@@ -358,7 +362,7 @@ vscpClientWs1::connect(void)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if (("+" != args.at(0)) || ("OPEN" != args.at(1))) {
+  if ((args.size() < 2) || ("+" != args.at(0)) || ("OPEN" != args.at(1))) {
     printf("2 Unable to open connection\n");
     disconnect();
     return VSCP_ERROR_TIMEOUT;
@@ -439,7 +443,7 @@ vscpClientWs1::send(vscpEvent &ev)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if (("+" != args.at(0)) && ("E" != args.at(1))) {
+  if (args.empty() || (("+" != args.at(0)) && ((args.size() < 2) || ("E" != args.at(1))))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
@@ -482,7 +486,7 @@ vscpClientWs1::send(vscpEventEx &ex)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if (("+" != args.at(0)) && ("E" != args.at(1))) {
+  if (args.empty() || (("+" != args.at(0)) && ((args.size() < 2) || ("E" != args.at(1))))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
@@ -499,7 +503,7 @@ vscpClientWs1::send(canalMsg &msg)
   vscpEventEx ex;
 
   uint8_t guid[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  if (vscp_convertCanalToEventEx(&ex, &msg, guid)) {
+  if (!vscp_convertCanalToEventEx(&ex, &msg, guid)) {
     return VSCP_ERROR_INVALID_FRAME;
   }
 
@@ -691,7 +695,7 @@ vscpClientWs1::setfilter(vscpEventFilter &filter)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if (("+" != args.at(0)) && ("SETFILTER" != args.at(1))) {
+  if (args.empty() || (("+" != args.at(0)) && ((args.size() < 2) || ("SETFILTER" != args.at(1))))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
@@ -725,7 +729,7 @@ vscpClientWs1::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
     return VSCP_ERROR_NOT_CONNECTED;
 
   // Check pointers
-  if ((NULL != pmajor) || (NULL != pminor) || (NULL != prelease) || (NULL != pbuild)) {
+  if ((NULL == pmajor) || (NULL == pminor) || (NULL == prelease) || (NULL == pbuild)) {
     return VSCP_ERROR_PARAMETER;
   }
 
@@ -747,7 +751,7 @@ vscpClientWs1::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, u
   args.clear();
   vscp_split(args, reply, ";");
 
-  if ((args.size() >= 3) && ("+" != args.at(0)) && ("VERSION" != args.at(1))) {
+  if ((args.size() < 3) || ("+" != args.at(0)) || ("VERSION" != args.at(1))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
@@ -814,14 +818,13 @@ vscpClientWs1::getinterfaces(std::deque<std::string> &iflist)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if ((args.size() >= 2) && ("+" != args.at(0)) && ("INTERFACES" != args.at(1))) {
+  if ((args.size() < 2) || ("+" != args.at(0)) || ("INTERFACES" != args.at(1))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
+  // Interfaces follow the reply header
   for (size_t i = 3; i < args.size(); i++) {
-    std::string str = args.front();
-    args.pop_front();
-    iflist.push_back(str);
+    iflist.push_back(args[i]);
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -859,7 +862,7 @@ vscpClientWs1::getwcyd(uint64_t &wcyd)
   args.clear();
   vscp_split(args, reply, ";");
 
-  if ((args.size() >= 10) && ("+" != args.at(0)) && ("WCYD" != args.at(1))) {
+  if ((args.size() < 10) || ("+" != args.at(0)) || ("WCYD" != args.at(1))) {
     return VSCP_ERROR_OPERATION_FAILED;
   }
 
@@ -882,18 +885,38 @@ vscpClientWs1::encrypt_password(std::string &strout,
                                 uint8_t *vscpkey,
                                 uint8_t *iv)
 {
-  uint8_t buf[200];
+  if ((nullptr == vscpkey) || (nullptr == iv)) {
+    return VSCP_ERROR_INVALID_POINTER;
+  }
 
   std::string strCombined;
   strCombined = struser;
   strCombined += ":";
   strCombined += strpassword;
 
-  AES_CBC_encrypt_buffer(AES128, buf, (uint8_t *) strCombined.c_str(), (uint32_t) strCombined.length(), vscpkey, iv);
+  // AES works on whole 16 byte blocks. Zero pad the plain text to a block
+  // boundary so the cipher never reads past the input or writes past the
+  // output, whatever the length of the credentials.
+  const size_t len    = strCombined.length();
+  const size_t padded = ((len + 15) / 16) * 16;
+  if (padded > UINT32_MAX) {
+    return VSCP_ERROR_PARAMETER;
+  }
 
-  char out[50];
-  vscp_byteArray2HexStr(out, buf, 16);
-  strout = out;
+  std::vector<uint8_t> plain(padded, 0);
+  std::vector<uint8_t> cipher(padded, 0);
+  memcpy(plain.data(), strCombined.data(), len);
+
+  AES_CBC_encrypt_buffer(AES128, cipher.data(), plain.data(), (uint32_t) padded, vscpkey, iv);
+
+  // Hex encode the full cipher text (two characters per byte + terminator)
+  std::vector<char> out(2 * padded + 1, 0);
+  vscp_byteArray2HexStr(out.data(), cipher.data(), padded);
+  strout = out.data();
+
+  // Do not leave the clear text credentials in memory
+  std::fill(plain.begin(), plain.end(), 0);
+  std::fill(strCombined.begin(), strCombined.end(), '\0');
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -958,6 +981,11 @@ vscpClientWs1::waitForResponse(uint32_t timeout)
 #ifndef __APPLE__
   }
 #endif
+
+  // Callers read m_msgReceiveQueue.front() on success
+  if (m_msgReceiveQueue.empty()) {
+    return VSCP_ERROR_RCV_EMPTY;
+  }
 
   return VSCP_ERROR_SUCCESS;
 }

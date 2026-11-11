@@ -263,6 +263,7 @@ public:
 private:
   uint8_t m_configuredKeyLength = 0;
   bool m_hmacEnabled = false;
+  bool m_requireEncryption = false; // Drop non-encrypted frames in legacy mode
   uint8_t m_hmacKey[32] = {};
   uint8_t m_configuredEncryption = VSCP_ENCRYPTION_NONE;
   uint8_t m_configuredKey[32] = {};
