@@ -37,6 +37,7 @@
 
 #include <deque>
 #include <list>
+#include <stdexcept>
 #include <string>
 #include <algorithm>
 #include <cerrno>
@@ -58,6 +59,7 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <openssl/x509v3.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -167,6 +169,12 @@ namespace {
 
 using Clock = std::chrono::steady_clock;
 using Deadline = Clock::time_point;
+
+// Limits for data buffered from the server, so a misbehaving server can not
+// make the client use unbounded memory.
+constexpr size_t maxPartialLine         = 65536;       // Unterminated text line
+constexpr size_t maxCommandResponse     = 1024 * 1024; // Text reply to one command
+constexpr size_t maxSingleChannelEvents = 10000;       // Queued receive loop events
 
 #ifdef WIN32
 using Socket = SOCKET;
@@ -1342,9 +1350,22 @@ VscpRemoteTcpIf::Transport::configureTls(VscpRemoteTcpIf &client, const std::str
     tlsError("cannot create TLS connection");
     return false;
   }
-  if (client.m_bVerifyPeer &&
-      (SSL_set1_host(tls, host.c_str()) != 1 || SSL_set_tlsext_host_name(tls, host.c_str()) != 1)) {
-    tlsError("cannot configure TLS hostname");
+  // An IP address literal is checked against the certificate's IP
+  // addresses, a name against its DNS names. SNI is only sent for names
+  // (RFC 6066 does not allow IP addresses in SNI).
+  unsigned char address[sizeof(in6_addr)];
+  const bool isIpAddress = (1 == inet_pton(AF_INET, host.c_str(), address)) ||
+                           (1 == inet_pton(AF_INET6, host.c_str(), address));
+  if (client.m_bVerifyPeer) {
+    const int hostOk = isIpAddress ? X509_VERIFY_PARAM_set1_ip_asc(SSL_get0_param(tls), host.c_str())
+                                   : SSL_set1_host(tls, host.c_str());
+    if (hostOk != 1) {
+      tlsError("cannot configure TLS hostname");
+      return false;
+    }
+  }
+  if (!isIpAddress && SSL_set_tlsext_host_name(tls, host.c_str()) != 1) {
+    tlsError("cannot configure TLS server name");
     return false;
   }
   return true;
@@ -1890,9 +1911,19 @@ VscpRemoteTcpIf::processSingleChannelLine(const std::string &line)
   vscpEvent event{};
   if (vscp_convertStringToEvent(&event, responseLine)) {
     vscp_deleteEvent(&event);
+    bool dropped = false;
     {
       std::lock_guard<std::mutex> lock(m_singleChannelMutex);
-      m_singleChannelEventQueue.push_back(std::move(responseLine));
+      if (m_singleChannelEventQueue.size() < maxSingleChannelEvents) {
+        m_singleChannelEventQueue.push_back(std::move(responseLine));
+      }
+      else {
+        dropped = true;
+      }
+    }
+    if (dropped) {
+      transportError("%s: receive queue full (%zu events). Event dropped: %s",
+                     __func__, maxSingleChannelEvents, responseLine.c_str());
     }
     m_singleChannelCondition.notify_all();
     return;
@@ -2120,6 +2151,12 @@ VscpRemoteTcpIf::checkReturnValueForCommand(bool bClear, bool routineReceive)
     else if (nRead > 0) {
       m_lastResponseTime = vscp_getMsTimeStamp(); // Save last response time
       m_strResponse += std::string(buf, nRead);
+      if (m_strResponse.length() > maxCommandResponse) {
+        transportError("%s: oversized server response (%zu bytes)", __func__, m_strResponse.length());
+        m_strResponse.clear();
+        rv = false;
+        break;
+      }
     }
 
     // if err abort
@@ -2538,6 +2575,10 @@ VscpRemoteTcpIf::addInputStringArrayFromReply(bool bClear)
 
   // Set the readbuffer to the rest string
   m_strResponse = tempStr;
+  if (m_strResponse.length() > maxPartialLine) {
+    transportError("%s: oversized line from server discarded (%zu bytes)", __func__, m_strResponse.length());
+    m_strResponse.clear();
+  }
 
   // Parse the array string
   std::deque<std::string> tokens;
@@ -2628,6 +2669,15 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
   logTcpEntry(__func__);
   std::string buf;
   std::string str;
+
+  // Username and password are sent as single protocol lines. A line break
+  // (or NUL) would end the line early and inject further commands.
+  const char forbidden[] = {'\r', '\n', '\0'};
+  if (std::string::npos != strUsername.find_first_of(forbidden, 0, sizeof(forbidden)) ||
+      std::string::npos != strPassword.find_first_of(forbidden, 0, sizeof(forbidden))) {
+    transportError("%s: username or password contains a line break", __func__);
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
 
   std::string strHost = vscp_lower(strHostname);
   vscp_trim(strHost);
@@ -3529,7 +3579,10 @@ VscpRemoteTcpIf::doCmdStatus(canal_status_t *pStatus)
   }
   strWrk = tokens.front();
   tokens.pop_front();
-  strncpy(pStatus->lasterrorstr, strWrk.c_str(), strWrk.length());
+  // The string comes from the server. Truncate it to the buffer size and
+  // always zero terminate.
+  memset(pStatus->lasterrorstr, 0, sizeof(pStatus->lasterrorstr));
+  strWrk.copy(pStatus->lasterrorstr, sizeof(pStatus->lasterrorstr) - 1);
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -3542,12 +3595,18 @@ int
 VscpRemoteTcpIf::doCmdStatus(vscp_status_t *pStatus)
 {
   logTcpEntry(__func__);
+  if (NULL == pStatus) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
   canal_status_t status;
+  memset(&status, 0, sizeof(status)); // Defined content also when the call fails
   int rv = doCmdStatus(&status);
 
   pStatus->channel_status = status.channel_status;
   pStatus->lasterrorcode  = status.lasterrorcode;
-  strncpy(pStatus->lasterrorstr, status.lasterrorstr, VSCP_STATUS_ERROR_STRING_SIZE);
+  memset(pStatus->lasterrorstr, 0, sizeof(pStatus->lasterrorstr));
+  strncpy(pStatus->lasterrorstr, status.lasterrorstr, sizeof(pStatus->lasterrorstr) - 1);
   pStatus->lasterrorsubcode = status.lasterrorsubcode;
 
   return logTcpResult(__func__, rv);
@@ -4119,7 +4178,14 @@ VscpRemoteTcpIf::doCmdGetChannelID(uint32_t *pChannelID)
   }
   strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
-  *pChannelID = stoul(strLine);
+  // Reply comes from the server - do not let a malformed line throw
+  try {
+    *pChannelID = (uint32_t) std::stoul(strLine);
+  }
+  catch (const std::exception &) {
+    transportError("%s: invalid channel id reply", __func__);
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
+  }
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -4187,15 +4253,27 @@ VscpRemoteTcpIf::doCmdWcyd(uint64_t *pwcyd)
     return logTcpResult(__func__, VSCP_ERROR_ERROR);
   }
 
-  *pwcyd = 0;
-  size_t pos;
-  for (int i = 0; i < 8; i++) {
-    *pwcyd = *pwcyd << 8;
-    *pwcyd += std::stoul(strLine, &pos, 16);
-    if (7 != i) {
-      strLine = strLine.substr(pos + 1); // Take away first part of str "zz:"
+  // Reply comes from the server - parse "aa:bb:...:hh" strictly and do
+  // not let a malformed line throw
+  uint64_t wcyd = 0;
+  try {
+    size_t pos;
+    for (int i = 0; i < 8; i++) {
+      unsigned long value = std::stoul(strLine, &pos, 16);
+      if (value > 0xff || (7 != i && (pos >= strLine.length() || ':' != strLine[pos]))) {
+        throw std::invalid_argument("wcyd");
+      }
+      wcyd = (wcyd << 8) | value;
+      if (7 != i) {
+        strLine = strLine.substr(pos + 1); // Take away first part of str "zz:"
+      }
     }
   }
+  catch (const std::exception &) {
+    transportError("%s: invalid capabilities reply", __func__);
+    return logTcpResult(__func__, VSCP_ERROR_ERROR);
+  }
+  *pwcyd = wcyd;
 
   return VSCP_ERROR_SUCCESS;
 }
@@ -4244,11 +4322,11 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
   // Check pointers
   if (NULL == pval) {
     transportError("%s: null value pointer", __func__);
-    return false;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
   if (NULL == pdestGUID) {
     transportError("%s: null destination GUID", __func__);
-    return false;
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
   e.head      = VSCP_PRIORITY_NORMAL;
@@ -4316,9 +4394,11 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
     }
   }
 
-  // Send the event
+  // Send the event. Keep a copy of the request for resends as e is
+  // reused for received events.
   doCmdClear();
   e.timestamp = 0;
+  const vscpEventEx request = e;
   doCmdSendEx(&e);
 
   uint32_t resendTime = m_registerOpResendTimeout;
@@ -4331,7 +4411,8 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
       if (VSCP_ERROR_SUCCESS == doCmdReceiveEx(&e)) { // Valid event
 
         // Level I Read reply?
-        if ((VSCP_CLASS1_PROTOCOL == e.vscp_class) && (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) {
+        if ((VSCP_CLASS1_PROTOCOL == e.vscp_class) && (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type) &&
+            (e.sizeData >= 5)) {
 
           if ((0 == e.data[0]) && // Frame index is first?
               ((page >> 8) == e.data[1]) && ((page & 0x0ff) == e.data[2]) &&
@@ -4349,7 +4430,7 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
 
         // Level II 512 Read reply?
         else if (!ifGUID.isNULL() && !bLevel2 && (VSCP_CLASS2_LEVEL1_PROTOCOL == e.vscp_class) &&
-                 (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) {
+                 (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type) && (e.sizeData >= 21)) {
 
           if (pdestGUID->isSameGUID(e.GUID)) {
 
@@ -4367,7 +4448,7 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
         }
         // Level II Read reply?
         else if (ifGUID.isNULL() && bLevel2 && (VSCP_CLASS2_PROTOCOL == e.vscp_class) &&
-                 (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type)) {
+                 (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type) && (e.sizeData >= 5)) {
 
           // from us
           if (pdestGUID->isSameGUID(e.GUID)) {
@@ -4394,9 +4475,9 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
       break;
     }
     else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
-      // Send again
-      e.timestamp = 0;
-      doCmdSendEx(&e);
+      // Send the request again
+      vscpEventEx resend = request;
+      doCmdSendEx(&resend);
       resendTime += m_registerOpResendTimeout;
     }
 
@@ -4508,9 +4589,11 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
     }
   }
 
-  // Send the event
+  // Send the event. Keep a copy of the request for resends as e is
+  // reused for received events.
   doCmdClear();
   e.timestamp = 0;
+  const vscpEventEx request = e;
   doCmdSendEx(&e);
 
   // We should get 32 response frames back
@@ -4541,21 +4624,18 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
           if (pdestGUID->isSameGUID(e.GUID)) { // From correct node?
 
-            if (((page >> 8) == e.data[1]) && ((page & 0x0ff) == e.data[2])) { // Requested page?
+            // The frame index comes from the network. Only accept frames
+            // we asked for, carrying all the bytes for that frame.
+            const uint8_t frameIdx = e.data[0];
+            const int frameBytes   = (lastpageCnt && (nPages - 1) == frameIdx) ? lastpageCnt : 4;
+            if ((frameIdx < nPages) && (e.sizeData >= 4 + frameBytes) &&
+                ((page >> 8) == e.data[1]) && ((page & 0x0ff) == e.data[2])) { // Requested page?
 
               // Mark frame as received
-              receive_flags |= (1 << e.data[0]);
+              receive_flags |= (1UL << frameIdx);
 
-              if (lastpageCnt && (count - 1) == e.data[0]) {
-                // Last frame
-                for (int i = 0; i < lastpageCnt; i++) {
-                  data[e.data[0] * 4 + i] = e.data[4 + i];
-                }
-              }
-              else {
-                for (int i = 0; i < 4; i++) {
-                  data[e.data[0] * 4 + i] = e.data[4 + i];
-                }
+              for (int i = 0; i < frameBytes; i++) {
+                data[frameIdx * 4 + i] = e.data[4 + i];
               }
             }
 
@@ -4568,21 +4648,18 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 
           if (pdestGUID->isSameGUID(e.GUID)) {
 
-            if (((page >> 8) == e.data[17]) && ((page & 0x0ff) == e.data[18])) { // Requested register?
+            // The frame index comes from the network. Only accept frames
+            // we asked for, carrying all the bytes for that frame.
+            const uint8_t frameIdx = e.data[16];
+            const int frameBytes   = (lastpageCnt && (nPages - 1) == frameIdx) ? lastpageCnt : 4;
+            if ((frameIdx < nPages) && (e.sizeData >= 16 + 4 + frameBytes) &&
+                ((page >> 8) == e.data[17]) && ((page & 0x0ff) == e.data[18])) { // Requested register?
 
               // Mark frame as received
-              receive_flags |= (1 << e.data[16]);
+              receive_flags |= (1UL << frameIdx);
 
-              if (lastpageCnt && (count - 1) == e.data[16]) {
-                // Last frame
-                for (int i = 0; i < lastpageCnt; i++) {
-                  data[e.data[16] * 4 + i] = e.data[16 + 4 + i];
-                }
-              }
-              else {
-                for (int i = 0; i < 4; i++) {
-                  data[e.data[16] * 4 + i] = e.data[16 + 4 + i];
-                }
+              for (int i = 0; i < frameBytes; i++) {
+                data[frameIdx * 4 + i] = e.data[16 + 4 + i];
               }
             }
 
@@ -4593,19 +4670,18 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
         else if (ifGUID.isNULL() && bLevel2 && (VSCP_CLASS2_PROTOCOL == e.vscp_class) &&
                  (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type)) {
 
-          // from us
-          if (pdestGUID->isSameGUID(e.GUID)) {
+          // from us. Reply holds the start register followed by the data.
+          if (pdestGUID->isSameGUID(e.GUID) && (e.sizeData >= 4 + count)) {
 
-            uint32_t retreg = (e.data[0] << 24) + (e.data[1] << 16) + (e.data[2] << 8) + e.data[3];
+            uint32_t retreg = ((uint32_t) e.data[0] << 24) + ((uint32_t) e.data[1] << 16) +
+                              ((uint32_t) e.data[2] << 8) + e.data[3];
 
             // Reg we requested?
             if (retreg == reg) {
-
-              // OK get the data
-              if (NULL != pval) {
-                *pval = e.data[4];
-                break;
-              }
+              // All requested registers are in this reply
+              memcpy(data, e.data + 4, count);
+              receive_flags = allRcvValue;
+              break;
             }
           }
         }
@@ -4619,8 +4695,9 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
       break;
     }
     else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
-      // Send again
-      doCmdSendEx(&e);
+      // Send the request again
+      vscpEventEx resend = request;
+      doCmdSendEx(&resend);
       resendTime += (unsigned long) m_registerOpResendTimeout * (1 + nPages);
       logTcpDebug(__func__, "retrying register read");
     }
@@ -4661,6 +4738,9 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 
   // Check pointers
   if (NULL == pval) {
+    return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
+  }
+  if (NULL == pdestGUID) {
     return logTcpResult(__func__, CANAL_ERROR_PARAMETER);
   }
 
@@ -4719,7 +4799,9 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
     }
   }
 
-  // Send the event
+  // Send the event. Keep a copy of the request for resends as e is
+  // reused for received events.
+  const vscpEventEx request = e;
   doCmdSendEx(&e);
 
   unsigned long resendTime = m_registerOpResendTimeout;
@@ -4733,7 +4815,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
       if (CANAL_ERROR_SUCCESS == doCmdReceiveEx(&e)) { // Valid event
 
         if ((VSCP_CLASS1_PROTOCOL == e.vscp_class) &&
-            (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) { // Read reply?
+            (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type) && (e.sizeData >= 5)) { // Read reply?
 
           if ((0 == e.data[0]) &&                                   // Frame index is first frame
               ((page >> 8) == e.data[1]) &&                         // Page is same as requested
@@ -4753,7 +4835,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 
         // Level II 512 Read reply?
         else if (!ifGUID.isNULL() && !bLevel2 && (VSCP_CLASS2_LEVEL1_PROTOCOL == e.vscp_class) &&
-                 (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type)) {
+                 (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type) && (e.sizeData >= 21)) {
 
           if (pdestGUID->getLSB() == e.data[15]) {
 
@@ -4763,7 +4845,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
 
               // We got a rw reply from the correct node. Is
               // the written data same as we expect?
-              if (*pval != e.data[17]) {
+              if (*pval != e.data[20]) { // Value byte follows the register
                 rv = CANAL_ERROR_REGISTER;
               }
               break;
@@ -4772,7 +4854,7 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
         }
         // Level II Read reply?
         else if (!bInterface && bLevel2 && (VSCP_CLASS2_PROTOCOL == e.vscp_class) &&
-                 (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type)) {
+                 (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type) && (e.sizeData >= 5)) {
 
           // from us
           if (pdestGUID->isSameGUID(e.GUID)) {
@@ -4808,8 +4890,9 @@ VscpRemoteTcpIf::writeLevel2Register(uint32_t reg,
       break;
     }
     else if ((vscp_getMsTimeStamp() - startTime) > resendTime) {
-      // Send again
-      doCmdSendEx(&e);
+      // Send the request again
+      vscpEventEx resend = request;
+      doCmdSendEx(&resend);
       resendTime += m_registerOpResendTimeout;
     }
 
@@ -4906,11 +4989,12 @@ VscpRemoteTcpIf::fetchIterfaceGUID(const std::string &ifName, cguid &guid)
   // Get the interface list
   while (true) {
 
+    // Count every attempt so a failing or empty reply can not loop forever
+    cnt++;
+
     if (VSCP_ERROR_SUCCESS == doCmdInterfaceList(ifarray)) {
 
       if (ifarray.size()) {
-
-        cnt++;
 
         for (unsigned int i = 0; i < ifarray.size(); i++) {
 
@@ -4958,8 +5042,8 @@ VscpRemoteTcpIf::fetchIterfaceGUID(const std::string &ifName, cguid &guid)
       }
     }
 
-    // Give up after tree tries
-    if (cnt > 3)
+    // Give up after three tries
+    if (cnt >= 3)
       break;
   }
 
