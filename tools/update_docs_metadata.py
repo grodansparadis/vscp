@@ -2,7 +2,7 @@
 """Refresh docs metadata for the generated documentation site.
 
 By default this updates docs/variables.xml with the current timestamp and a
-version string in the format YY.MM.<manual-revision>.<commit-count>. With
+version string in the format YY.MM.<manual-revision>.<monthly-commit-count>. With
 --prepare-commit, it also updates version.h using the count of the metadata
 commit being prepared.
 """
@@ -39,11 +39,20 @@ def _manual_revision(header: str) -> int:
     return revision
 
 
-def _commit_count(*, strict: bool = False) -> int:
-    """Return the number of commits reachable from HEAD."""
+def _commit_count(now: datetime, *, strict: bool = False) -> int:
+    """Return the number of commits in the current month reachable from HEAD."""
+    month_start = now.strftime("%Y-%m-01")
     try:
         result = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-list", "--count", "HEAD"],
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "rev-list",
+                "--count",
+                f"--since={month_start}",
+                "HEAD",
+            ],
             check=True,
             capture_output=True,
             text=True,
@@ -98,7 +107,7 @@ def main() -> None:
 
     now = datetime.now()
     creation_time = now.strftime("%Y-%m-%d %H:%M")
-    commit_count = _commit_count(strict=args.prepare_commit)
+    commit_count = _commit_count(now, strict=args.prepare_commit)
     if args.prepare_commit:
         if commit_count < 1:
             raise ValueError("A valid Git commit count is required to prepare metadata")

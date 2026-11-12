@@ -984,7 +984,7 @@ note: This is a note <br>
   "\"filter_priority\": %d,\n"                                                                                         \
   "\"filter_class\": %d,\n"                                                                                            \
   "\"filter_type\": %d,\n"                                                                                             \
-  "\"filter_guid\": \"%s\",\n"                                                                                         \
+  "\"filter_guid\": \"%s\"\n"                                                                                          \
   "}"
 
 // MQTT message formats

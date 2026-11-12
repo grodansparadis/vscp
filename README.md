@@ -56,9 +56,11 @@ cmake --build build --target vscp_all
 See the library reference at [docs/library_reference.md](docs/library_reference.md) for a library-by-library summary and usage examples.
 
 On branch pushes, the metadata workflow updates `docs/variables.xml` and
-`src/vscp/common/version.h` to `YY.MM.<commit-count>`. The count includes the
-workflow's metadata commit, so it matches the version CMake derives from that
-revision. Commits marked `[skip ci]` do not trigger this update.
+`src/vscp/common/version.h` with a version in the format
+`YY.MM.<revision>.<monthly-commit-count>`. The patch count starts over each
+month and includes the workflow's metadata commit, so it matches the version
+CMake derives from that revision. Commits marked `[skip ci]` do not trigger
+this update.
 
 ## Tests
 

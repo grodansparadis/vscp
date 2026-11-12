@@ -48,9 +48,14 @@ class UpdateMetadataTest(unittest.TestCase):
             encoding="utf-8",
         )
         self.git("init", "-q")
-        self.commit("Initial commit")
+        month_start = datetime.now().replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        previous_month_timestamp = f"@{int(month_start.timestamp()) - 1} +0000"
+        self.commit("Previous month commit", timestamp=previous_month_timestamp)
+        self.commit("Current month commit", allow_empty=True)
 
-    def git(self, *args):
+    def git(self, *args, env=None):
         return subprocess.run(
             [
                 "git", "-c", f"core.hooksPath={self.root / 'no-hooks'}",
@@ -59,13 +64,27 @@ class UpdateMetadataTest(unittest.TestCase):
             check=True,
             capture_output=True,
             text=True,
+            env=env,
         ).stdout.strip()
 
-    def commit(self, message, *, allow_empty=False):
+    def commit(self, message, *, allow_empty=False, timestamp=None):
         self.git("add", "docs/variables.xml", "src/vscp/common/version.h")
         options = ["--allow-empty"] if allow_empty else []
+        env = os.environ.copy()
+        if timestamp is not None:
+            env["GIT_AUTHOR_DATE"] = timestamp
+            env["GIT_COMMITTER_DATE"] = timestamp
         self.git("-c", "user.name=VSCP Test", "-c", "user.email=test@example.invalid",
-                 "commit", *options, "-qm", message)
+                 "commit", *options, "-qm", message, env=env)
+
+    def commits_this_month(self, now=None):
+        now = now or datetime.now()
+        return int(self.git(
+            "rev-list", "--count", f"--since={now:%Y-%m-01}", "HEAD"
+        ))
+
+    def test_patch_count_resets_at_month_boundary(self):
+        self.assertEqual(1, self.commits_this_month())
 
     def update(self, *args, env=None):
         return subprocess.run(
@@ -81,7 +100,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
-        self.assertEqual(self.git("rev-list", "--count", "HEAD"), version.split(".")[3])
+        self.assertEqual(str(self.commits_this_month()), version.split(".")[3])
         self.assertEqual(str(FIXTURE_REVISION), version.split(".")[2])
 
     def test_default_preserves_git_unavailable_fallback(self):
@@ -107,7 +126,7 @@ class UpdateMetadataTest(unittest.TestCase):
             r"(?m)^#define VSCPD_REVISION_VERSION\s+([0-9]+)$",
             self.header.read_text(encoding="utf-8"),
         ).group(1))
-        expected_patch = int(self.git("rev-list", "--count", "HEAD")) + 1
+        expected_patch = self.commits_this_month() + 1
         self.assertEqual(
             f"{created:%y}.{created:%m}.{revision}.{expected_patch}", version
         )
@@ -135,7 +154,7 @@ class UpdateMetadataTest(unittest.TestCase):
                 self.assertEqual(original, updated)
 
         self.commit("Update version and documentation metadata")
-        self.assertEqual(expected_patch, int(self.git("rev-list", "--count", "HEAD")))
+        self.assertEqual(expected_patch, self.commits_this_month())
 
     def test_fast_forward_before_pushing_metadata(self):
         remote = self.root / "remote.git"
@@ -158,7 +177,10 @@ class UpdateMetadataTest(unittest.TestCase):
         self.commit("Update version and documentation metadata")
         self.git("push", "origin", "HEAD:refs/heads/main")
 
-        remote_count = int(self.git("--git-dir", str(remote), "rev-list", "--count", "main"))
+        remote_count = int(self.git(
+            "--git-dir", str(remote), "rev-list", "--count",
+            f"--since={datetime.now():%Y-%m-01}", "main",
+        ))
         xml = self.git("--git-dir", str(remote), "show", "main:docs/variables.xml")
         version = ET.fromstring(xml).findtext("document-version")
         header = self.git(
@@ -169,8 +191,8 @@ class UpdateMetadataTest(unittest.TestCase):
 
     def test_preseeded_metadata_still_needs_a_commit(self):
         module = runpy.run_path(str(self.script))
-        now = datetime(2026, 9, 1, 12, 0)
-        expected_patch = int(self.git("rev-list", "--count", "HEAD")) + 2
+        now = datetime.now()
+        expected_patch = self.commits_this_month(now) + 2
         revision = module["_manual_revision"](self.header.read_text(encoding="utf-8"))
         version = f"{now:%y}.{now:%m}.{revision}.{expected_patch}"
         header = module["_update_version_header"](
@@ -195,7 +217,7 @@ class UpdateMetadataTest(unittest.TestCase):
 
         self.git("diff", "--quiet", "--", "docs/variables.xml", "src/vscp/common/version.h")
         self.commit("Update version and documentation metadata", allow_empty=True)
-        self.assertEqual(expected_patch, int(self.git("rev-list", "--count", "HEAD")))
+        self.assertEqual(expected_patch, self.commits_this_month())
 
     def test_numeric_month_has_no_leading_zero(self):
         module = runpy.run_path(str(self.script))

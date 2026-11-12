@@ -9,7 +9,7 @@
 //
 // This file is part of the VSCP (https://www.vscp.org)
 //
-// Copyright:  (C)2007-2026
+// Copyright:  (C) 2007-2026
 // Ake Hedman, the VSCP project, <info@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -26,20 +26,38 @@
 #if !defined(VSCPCLIENTWS2_H__INCLUDED_)
 #define VSCPCLIENTWS2_H__INCLUDED_
 
-#include <pthread.h>
-#include <semaphore.h>
-
-#ifndef WIN32
-#else
-#include <winsock2.h>
-#endif
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <string>
+#include <thread>
 
 #include "vscp.h"
 #include "vscp-client-base.h"
-#include <nlohmann/json.hpp>
+#include "vscp-websocket.h"
 
 const uint32_t WS2_CONNECTION_TIMEOUT = 30000;
 const uint32_t WS2_RESPONSE_TIMEOUT   = 2000;
+
+/*!
+  Client for the VSCP websocket ws2 protocol (JSON based).
+
+  Protocol, as implemented by the VSCP websocket server:
+
+    server: {"type":"+","args":["AUTH0","<sid>"]}       (when opened)
+    client: {"type":"CMD","command":"AUTH",
+             "args":{"iv":"<sid>","crypto":"<crypto>"}}
+            crypto = AES128-CBC("user:password") with the shared key, iv = sid
+    server: {"type":"+","command":"AUTH","args":null}
+            or {"type":"-","command":"AUTH","errcode":n,"errstr":"..."}
+    client: {"type":"CMD","command":"OPEN","args":null}
+    client: {"type":"EVENT","event":{...}}              send an event
+    server: {"type":"+","command":"EVENT","args":null}
+    server: {"type":"EVENT","event":{...}}              received event
+    client: commands SETFILTER (args = filter/mask object), CLRQ, VERSION,
+            CLOSE and NOOP
+*/
 
 class vscpClientWs2 : public CVscpClient {
 
@@ -54,7 +72,8 @@ public:
       @param bSSL True to activate SSL/TLS.
       @param username Username credentials.
       @param password Password credentials.
-      @param vscpkey Secret key.
+      @param vscpkey Secret key (16 bytes) shared with the server.
+            nullptr uses the default key.
       @param connection_timeout Connection timeout in ms.
       @param response_timeout Response timeout in ms.
   */
@@ -100,7 +119,7 @@ public:
   /*!
     Send VSCP CAN(AL) message to remote host.
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-*/
+  */
   virtual int send(canalMsg &msg);
 
   /*!
@@ -110,12 +129,12 @@ public:
   virtual int receive(vscpEvent &ev);
 
   /*!
-      Blocking receive of VSCP event ex from remote host
-      @param ev VSCP event ex that will get the result.
+      Blocking receive of VSCP event from remote host
+      @param ev VSCP event that will get the result.
       @param timeout Timeout in milliseconds. Default is 100 ms.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100 );
+  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100);
 
   /*!
       Receive VSCP event ex from remote host
@@ -129,12 +148,12 @@ public:
       @param timeout Timeout in milliseconds. Default is 100 ms.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
-  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100 );
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100);
 
   /*!
     Receive CAN(AL) message from remote host
     @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-*/
+  */
   virtual int receive(canalMsg &msg);
 
   /*!
@@ -146,28 +165,28 @@ public:
   virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
 
   /*!
-      Set interface filter
+      Set interface filter. The filter is stored and set on the server
+      now if connected, or when the next connection is opened.
       @param filter VSCP Filter to set.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int setfilter(vscpEventFilter &filter);
 
   /*!
-      Get number of events waiting to be received on remote
-      interface
+      Get number of events waiting to be received
       @param pcount Pointer to an unsigned integer that get the count of events.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int getcount(uint16_t *pcount);
 
   /*!
-      Clear the input queue
+      Clear the input queue (local and on the server)
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
   */
   virtual int clear(void);
 
   /*!
-      Get version from interface
+      Get version of the ws2 protocol from the server
       @param pmajor Pointer to uint8_t that get major version of interface.
       @param pminor Pointer to uint8_t that get minor version of interface.
       @param prelease Pointer to uint8_t that get release version of interface.
@@ -177,15 +196,15 @@ public:
   virtual int getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild);
 
   /*!
-      Get interfaces
+      Get interfaces. Not supported by ws2.
       @param iflist Get a list of available interfaces
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+      @return VSCP_ERROR_NOT_SUPPORTED when connected.
   */
   virtual int getinterfaces(std::deque<std::string> &iflist);
 
   /*!
-      Get capabilities (wcyd) from remote interface
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+      Get capabilities (wcyd) from remote interface. Not supported by ws2.
+      @return VSCP_ERROR_NOT_SUPPORTED when connected.
   */
   virtual int getwcyd(uint64_t &wcyd);
 
@@ -196,7 +215,8 @@ public:
   virtual std::string getConfigAsJson(void);
 
   /*!
-      Set member variables from JSON representation of connection
+      Set member variables from JSON representation of connection.
+      See vscpWsSettings for the keys.
       @param config JSON representation as string
       @return True on success, false on failure.
   */
@@ -209,11 +229,16 @@ public:
   virtual uint32_t getResponseTimeout(void) { return m_timeout_response; };
 
   /*!
-      Encrypt the admin/password pair
+      @return Description of the last connection error.
+  */
+  std::string getLastError(void);
+
+  /*!
+      Encrypt the user/password pair
       @param strout Receive encrypted password
       @param struser Username
       @param strpassword Password
-      @param vscpkey 32 byte secret key known by client and server, This
+      @param vscpkey 16 byte secret key known by client and server, This
               key should be read from disk and NOT be stored in code.
       @param iv initialization vector, 16 byte seed for encryption
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
@@ -225,49 +250,82 @@ public:
                        uint8_t *iv);
 
   /*!
-      Wait for data yo arrive fromthe websocket
+      Wait for a message to arrive in the message receive queue
       @param timeout Maximum time to wait.
       @return Return VSCP_ERROR_SUCCESS of OK and error code else.
               VSC_ERROR_TIMEOUT is returned for timeout.
   */
   int waitForResponse(uint32_t timeout = WS2_RESPONSE_TIMEOUT);
 
+  /*!
+      Handle a message received from the server. Events go to the
+      callback or the event queue, everything else to the message queue.
+      Called by the receive thread.
+      @param msg Message from the server.
+  */
+  void handleMessage(const std::string &msg);
+
 public:
   // True if connected
-  bool m_bConnected;
+  std::atomic<bool> m_bConnected;
 
-  // Connection object
-  struct mg_connection *m_conn;
-
-  // Semaphore for message receive queue
-  sem_t m_sem_msg;
-
-  // JSON message receive queue
+  // Message (reply) receive queue, protected by m_mutexMsg
   std::deque<nlohmann::json> m_msgReceiveQueue;
 
-  // VSCP Event receive queue
+  // VSCP Event receive queue, protected by m_mutexEvent
   std::deque<vscpEvent *> m_eventReceiveQueue;
 
 private:
-  bool m_bSSL; // True for SSL/TSL
+  /*!
+    Send a command and wait for the reply.
+    @param cmd Command name.
+    @param args Command arguments.
+    @param reply Receives the reply.
+    @param timeout Time to wait for the reply.
+    @return VSCP_ERROR_SUCCESS for a positive reply, VSCP_ERROR_ERROR for
+            a negative reply and other error codes on failure.
+  */
+  int command(const std::string &cmd, const nlohmann::json &args, nlohmann::json &reply, uint32_t timeout);
 
-  // This is the encryption result over "username:password"
-  // using the vscpkey and iv from server for encryption
-  std::string m_credentials;
+  /*!
+    Send a message and wait for a reply (type "+" or "-").
+  */
+  int request(const nlohmann::json &msg, nlohmann::json &reply, uint32_t timeout);
 
-  // Initialization vector
-  uint8_t m_iv[16];
+  // Wait for a reply message
+  int waitForReply(nlohmann::json &reply, uint32_t timeout);
 
-  // Host to connect to (default is 8884)
-  // (default is localhost)
-  std::string m_host;
+  // Receive thread
+  void workerThread(void);
 
-  // Port on host to connect to (8884/8843  443)
-  // (default is 8884)
-  short m_port;
+  // Stop the receive thread and close the websocket
+  void closeConnection(void);
+
+  // Websocket connection
+  CVscpWebSocket m_ws;
+
+  // Settings
+  vscpWsSettings m_settings;
+
+  std::mutex m_mutexMsg;
+  std::condition_variable m_cvMsg;
+
+  std::mutex m_mutexEvent;
+  std::condition_variable m_cvEvent;
+
+  // Only one command at a time
+  std::mutex m_mutexCommand;
+
+  std::thread m_thread;
+  std::atomic<bool> m_bQuit;
+
+  // True while the receive thread has a live connection
+  std::atomic<bool> m_bLinkUp;
+
+  std::mutex m_mutexError;
+  std::string m_lastError;
 
   uint32_t m_timeout_connect;
-
   uint32_t m_timeout_response;
 };
 

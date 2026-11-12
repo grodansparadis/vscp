@@ -28,9 +28,11 @@
 
 cmake_minimum_required(VERSION 3.16...3.31)
 
-# Version format: YY.MM.<manual-revision>.<commit-count>.
-string(TIMESTAMP VSCP_VERSION_YEAR "%y")
-string(TIMESTAMP VSCP_VERSION_MONTH "%m")
+# Version format: YY.MM.<manual-revision>.<monthly-commit-count>.
+string(TIMESTAMP VSCP_VERSION_DATE "%y;%m;%Y-%m-01")
+list(GET VSCP_VERSION_DATE 0 VSCP_VERSION_YEAR)
+list(GET VSCP_VERSION_DATE 1 VSCP_VERSION_MONTH)
+list(GET VSCP_VERSION_DATE 2 VSCP_VERSION_MONTH_START)
 file(STRINGS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/version.h"
     VSCP_VERSION_REVISION_LINE
@@ -48,7 +50,8 @@ if(VSCP_VERSION_REVISION GREATER 255)
     message(FATAL_ERROR "VSCPD_REVISION_VERSION must be between 0 and 255")
 endif()
 execute_process(
-    COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-list --count HEAD
+    COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-list --count
+            "--since=${VSCP_VERSION_MONTH_START}" HEAD
     OUTPUT_VARIABLE VSCP_VERSION_PATCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET
@@ -354,9 +357,10 @@ endif()
 # Dedicated client connection libraries
 add_library(vscp_client_base SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-base.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-websocket.cpp
 )
 vscp_setup_protocol_target(vscp_client_base)
-target_link_libraries(vscp_client_base PUBLIC vscp_core)
+target_link_libraries(vscp_client_base PUBLIC vscp_core PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 add_library(vscp_client_canal SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-canal.cpp

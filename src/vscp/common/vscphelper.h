@@ -2650,12 +2650,12 @@ vscp_readFilterMaskFromJSON(vscpEventFilter *pfilter, const std::string &strFilt
   @fn vscp_writeFilterMaskToJSON
   Write filter to JSON coded string
 
-  @param strFilter String that will get JSON coded filter
   @param pfilter Pointer to VSCP filter structure
+  @param strFilter String that will get JSON coded filter
   @return True on success, false on failure.
  */
 bool
-vscp_writeFilterMaskToJSON(std::string &strFilter, vscpEventFilter *pfilter);
+vscp_writeFilterMaskToJSON(vscpEventFilter *pfilter, std::string &strFilter);
 
 /*!
   @fn vscp_convertCanalToEvent
