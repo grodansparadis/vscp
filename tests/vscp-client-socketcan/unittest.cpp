@@ -368,15 +368,46 @@ TEST(VscpClientSocketCan, InitFromJsonOutFilter)
   vscpClientSocketCan client;
   json j;
   json filt;
-  // Note: The implementation reads "in-filter" for both in and out filter (probable bug)
-  // but we test the out-mask path separately
-  filt["in-filter"] = "0,20,3,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
-  filt["out-filter"] = "0,20,3,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
+  filt["in-filter"]  = "0,20,3,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
+  filt["out-filter"] = "0,30,4,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
   filt["out-mask"]   = "0,0xffff,0xff,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
   j["filter"]        = filt;
   EXPECT_TRUE(client.initFromJson(j.dump()));
+  EXPECT_EQ(20, client.m_filterIn.filter_class);
+  EXPECT_EQ(30, client.m_filterOut.filter_class); // "out-filter", not "in-filter"
+  EXPECT_EQ(4, client.m_filterOut.filter_type);
   EXPECT_EQ(0xffff, client.m_filterOut.mask_class);
   EXPECT_EQ(0xff, client.m_filterOut.mask_type);
+}
+
+// CAN id filters as written by VSCP Works
+TEST(VscpClientSocketCan, InitFromJsonCanFilters)
+{
+  vscpClientSocketCan client;
+  json j;
+  j["device"]  = "vcan0";
+  j["filters"] = json::array({
+    { { "name", "class 10" }, { "filter", 0x000a0000 }, { "mask", 0x01ff0000 }, { "binvert", false } },
+    { { "name", "not node 2" }, { "filter", "0x02" }, { "mask", "0xff" }, { "binvert", true } },
+  });
+  EXPECT_TRUE(client.initFromJson(j.dump()));
+  ASSERT_EQ(2u, client.m_canFilters.size());
+  EXPECT_EQ(0x000a0000u, client.m_canFilters[0].first);
+  EXPECT_EQ(0x01ff0000u, client.m_canFilters[0].second);
+  EXPECT_EQ(0x02u | CAN_INV_FILTER, client.m_canFilters[1].first);
+  EXPECT_EQ(0xffu, client.m_canFilters[1].second);
+}
+
+TEST(VscpClientSocketCan, SetFilterIsUsedForEvents)
+{
+  vscpClientSocketCan client;
+  vscpEventFilter filter;
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_class = 10;
+  filter.mask_class   = 0xffff;
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.setfilter(filter));
+  EXPECT_EQ(10, client.m_filterIn.filter_class);
+  EXPECT_EQ(0xffff, client.m_filterIn.mask_class);
 }
 
 // ---------------------------------------------------------------------------
@@ -539,4 +570,141 @@ TEST(VscpClientSocketCan, DisconnectWhenNotRunning)
   client.m_bRun = false; // Already stopped
   int rv        = client.disconnect();
   EXPECT_EQ(VSCP_ERROR_SUCCESS, rv);
+}
+
+// ---------------------------------------------------------------------------
+//          Filters on a real (virtual) CAN interface, vcan0
+// ---------------------------------------------------------------------------
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+namespace {
+
+// Raw socket on vcan0 to send test frames, -1 if there is no vcan0
+int
+openVcan0(void)
+{
+  int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+  if (s < 0) {
+    return -1;
+  }
+  struct ifreq ifr = {};
+  strncpy(ifr.ifr_name, "vcan0", IFNAMSIZ - 1);
+  if (ioctl(s, SIOCGIFINDEX, &ifr) < 0) {
+    close(s);
+    return -1;
+  }
+  struct sockaddr_can addr = {};
+  addr.can_family          = AF_CAN;
+  addr.can_ifindex         = ifr.ifr_ifindex;
+  if (bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    close(s);
+    return -1;
+  }
+  return s;
+}
+
+void
+sendFrame(int s, uint16_t vscp_class, uint8_t vscp_type, uint8_t nickname, uint8_t tag)
+{
+  struct can_frame frame = {};
+  frame.can_id  = (((uint32_t) vscp_class << 16) | ((uint32_t) vscp_type << 8) | nickname) | CAN_EFF_FLAG;
+  frame.can_dlc = 1;
+  frame.data[0] = tag;
+  ASSERT_EQ((ssize_t) sizeof(frame), write(s, &frame, sizeof(frame)));
+}
+
+// Tags of the received events
+std::string
+receiveTags(vscpClientSocketCan &client)
+{
+  std::string got;
+  for (int i = 0; i < 20; i++) {
+    vscpEvent ev = {};
+    if (VSCP_ERROR_SUCCESS == client.receiveBlocking(ev, 50)) {
+      got += std::to_string(ev.sizeData ? ev.pdata[0] : 255) + " ";
+      delete[] ev.pdata;
+    }
+  }
+  return got;
+}
+
+std::string
+runOnVcan0(const json &config, const vscpEventFilter *pfilter = nullptr)
+{
+  vscpClientSocketCan client;
+  EXPECT_TRUE(client.initFromJson(config.dump()));
+  if (pfilter) {
+    vscpEventFilter f = *pfilter;
+    client.setfilter(f);
+  }
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  usleep(200000); // Worker opens and binds the socket
+
+  int s = openVcan0();
+  sendFrame(s, 10, 6, 1, 0);
+  sendFrame(s, 20, 3, 2, 1);
+  sendFrame(s, 10, 1, 3, 2);
+  close(s);
+
+  std::string got = receiveTags(client);
+  client.disconnect();
+  return got;
+}
+
+} // namespace
+
+TEST(VscpClientSocketCanVcan, NoFilterReceivesAll)
+{
+  int s = openVcan0();
+  if (s < 0) {
+    GTEST_SKIP() << "No vcan0 interface";
+  }
+  close(s);
+  json j = { { "device", "vcan0" }, { "response-timeout", 50 } };
+  EXPECT_EQ("0 1 2 ", runOnVcan0(j));
+}
+
+TEST(VscpClientSocketCanVcan, CanIdFilters)
+{
+  int s = openVcan0();
+  if (s < 0) {
+    GTEST_SKIP() << "No vcan0 interface";
+  }
+  close(s);
+
+  // Class 10 only
+  json j = { { "device", "vcan0" },
+             { "response-timeout", 50 },
+             { "filters", json::array({ { { "filter", 0x000a0000 }, { "mask", 0x01ff0000 } } }) } };
+  EXPECT_EQ("0 2 ", runOnVcan0(j));
+
+  // Everything except node 2 (inverted)
+  j["filters"] = json::array({ { { "filter", 2 }, { "mask", 0xff }, { "binvert", true } } });
+  EXPECT_EQ("0 2 ", runOnVcan0(j));
+
+  // Two filters: node 1 or node 2
+  j["filters"] = json::array({ { { "filter", 1 }, { "mask", 0xff } }, { { "filter", 2 }, { "mask", 0xff } } });
+  EXPECT_EQ("0 1 ", runOnVcan0(j));
+}
+
+TEST(VscpClientSocketCanVcan, EventFilter)
+{
+  int s = openVcan0();
+  if (s < 0) {
+    GTEST_SKIP() << "No vcan0 interface";
+  }
+  close(s);
+
+  vscpEventFilter filter;
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_type = 3;
+  filter.mask_type   = 0xff;
+  json j = { { "device", "vcan0" }, { "response-timeout", 50 } };
+  EXPECT_EQ("1 ", runOnVcan0(j, &filter));
 }

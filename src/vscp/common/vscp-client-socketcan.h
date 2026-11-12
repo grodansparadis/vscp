@@ -33,6 +33,8 @@
 
 #include <list>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -376,6 +378,13 @@ public:
   /// Filters for input/output
   vscpEventFilter m_filterIn;
   vscpEventFilter m_filterOut;
+
+  /*!
+    CAN id filters ("filters" in the JSON configuration) set on the socket
+    with CAN_RAW_FILTER. Each is (can_id, can_mask) as for struct can_filter;
+    CAN_INV_FILTER in can_id inverts it. Empty receives everything.
+  */
+  std::vector<std::pair<uint32_t, uint32_t>> m_canFilters;
 
 private:
   // JSON configuration

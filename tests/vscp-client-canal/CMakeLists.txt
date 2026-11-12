@@ -25,3 +25,13 @@ target_link_libraries(unittest_vscp_client_canal PRIVATE
     GTest::GTest
     GTest::Main
 )
+
+# Fake CANAL driver used by the filter tests
+add_library(vscp-fakecanal MODULE fakecanal.cpp)
+target_include_directories(vscp-fakecanal PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../src/vscp/common)
+add_dependencies(unittest_vscp_client_canal vscp-fakecanal)
+target_compile_definitions(unittest_vscp_client_canal PRIVATE
+    FAKE_CANAL_PATH="$<TARGET_FILE:vscp-fakecanal>")
+if(UNIX)
+  target_link_libraries(unittest_vscp_client_canal PRIVATE dl)
+endif()

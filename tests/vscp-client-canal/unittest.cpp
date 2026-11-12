@@ -317,3 +317,142 @@ TEST(VscpClientCanal, DefaultFilterAcceptsAll)
   EXPECT_EQ(0, client.m_filterIn.mask_class);
   EXPECT_EQ(0, client.m_filterIn.mask_type);
 }
+
+// ============================================================================
+//                 Filters with a (fake) CANAL driver
+// ============================================================================
+
+#ifndef WIN32
+#include <dlfcn.h>
+
+namespace {
+
+// CAN id: priority 0, class, type, nickname
+uint32_t
+canId(uint16_t vscp_class, uint8_t vscp_type, uint8_t nickname)
+{
+  return ((uint32_t) vscp_class << 16) | ((uint32_t) vscp_type << 8) | nickname;
+}
+
+std::string
+fakeConfig(const std::string &devices, const std::string &extra = "")
+{
+  return std::string("{\"name\":\"fake\",\"path\":\"") + FAKE_CANAL_PATH + "\",\"config\":\"" + devices + "\"" +
+         extra + "}";
+}
+
+std::string
+ids(std::initializer_list<uint32_t> list)
+{
+  std::string s;
+  for (uint32_t id : list) {
+    if (!s.empty()) {
+      s += ",";
+    }
+    s += std::to_string(id);
+  }
+  return s;
+}
+
+// Received events (as their data byte, the index of the frame in the driver)
+std::string
+drain(vscpClientCanal &client)
+{
+  std::string got;
+  vscpEvent ev = {};
+  while (VSCP_ERROR_SUCCESS == client.receive(ev)) {
+    got += std::to_string(ev.sizeData ? ev.pdata[0] : 255) + " ";
+    delete[] ev.pdata;
+    ev.pdata    = nullptr;
+    ev.sizeData = 0;
+  }
+  return got;
+}
+
+template<typename T>
+T
+fakeFn(const char *name)
+{
+  void *h = dlopen(FAKE_CANAL_PATH, RTLD_NOW | RTLD_NOLOAD);
+  T fn    = h ? (T) dlsym(h, name) : nullptr;
+  if (h) {
+    dlclose(h);
+  }
+  return fn;
+}
+
+} // namespace
+
+TEST(VscpClientCanal, NoFilterReceivesAll)
+{
+  vscpClientCanal client;
+  ASSERT_TRUE(client.initFromJson(fakeConfig(ids({ canId(10, 6, 1), canId(20, 3, 2), canId(10, 1, 3) }))));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  EXPECT_EQ("0 1 2 ", drain(client));
+  client.disconnect();
+}
+
+TEST(VscpClientCanal, CanIdFilterFromJson)
+{
+  // Only class 10, any type and node
+  vscpClientCanal client;
+  ASSERT_TRUE(client.initFromJson(fakeConfig(ids({ canId(10, 6, 1), canId(20, 3, 2), canId(10, 1, 3) }),
+                                             ",\"filter\":" + std::to_string(canId(10, 0, 0)) +
+                                               ",\"mask\":\"0x01ff0000\"")));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+
+  // Handed to the driver
+  auto lastFilter = fakeFn<unsigned long (*)(void)>("fake_lastFilter");
+  auto lastMask   = fakeFn<unsigned long (*)(void)>("fake_lastMask");
+  ASSERT_NE(nullptr, lastFilter);
+  ASSERT_NE(nullptr, lastMask);
+  EXPECT_EQ(canId(10, 0, 0), lastFilter());
+  EXPECT_EQ(0x01ff0000u, lastMask());
+
+  // and applied by the client even though the driver does not filter
+  EXPECT_EQ("0 2 ", drain(client));
+  client.disconnect();
+}
+
+TEST(VscpClientCanal, CanIdFilterOnNickname)
+{
+  vscpClientCanal client;
+  ASSERT_TRUE(client.initFromJson(
+    fakeConfig(ids({ canId(10, 6, 1), canId(20, 3, 2), canId(10, 1, 3) }), ",\"filter\":2,\"mask\":255")));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+  EXPECT_EQ("1 ", drain(client));
+  client.disconnect();
+}
+
+TEST(VscpClientCanal, SetfilterFiltersEventsAndSetsDriverFilterAndMask)
+{
+  vscpClientCanal client;
+  ASSERT_TRUE(client.initFromJson(fakeConfig(ids({ canId(10, 6, 1), canId(20, 3, 2), canId(10, 1, 3) }))));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, client.connect());
+
+  vscpEventFilter filter;
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_class = 10;
+  filter.mask_class   = 0xffff;
+  filter.filter_type  = 1;
+  filter.mask_type    = 0xff;
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, client.setfilter(filter));
+
+  // Both filter and mask reach the driver
+  auto setCount   = fakeFn<int (*)(void)>("fake_setCount");
+  auto lastFilter = fakeFn<unsigned long (*)(void)>("fake_lastFilter");
+  auto lastMask   = fakeFn<unsigned long (*)(void)>("fake_lastMask");
+  EXPECT_EQ(2, setCount());
+  EXPECT_EQ(vscp_getCANALidFromData(0, 10, 1), lastFilter());
+  EXPECT_EQ(vscp_getCANALidFromData(0, 0xffff, 0xff), lastMask());
+
+  EXPECT_EQ("2 ", drain(client));
+  client.disconnect();
+}
+
+TEST(VscpClientCanal, InvalidFilterTypeFails)
+{
+  vscpClientCanal client;
+  EXPECT_FALSE(client.initFromJson(fakeConfig("", ",\"filter\":true")));
+}
+#endif

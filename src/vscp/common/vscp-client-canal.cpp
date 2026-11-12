@@ -71,6 +71,8 @@ vscpClientCanal::vscpClientCanal()
   m_bRun = true;
 
   vscp_clearVSCPFilter(&m_filterIn); // Accept all events
+  m_canFilter = 0;
+  m_canMask   = 0; // Accept all CAN ids
 
   pthread_mutex_init(&m_mutexif, NULL);
   pthread_mutex_init(&m_mutexReceiveQueue, NULL);
@@ -206,6 +208,28 @@ vscpClientCanal::initFromJson(const std::string &config)
     }
     spdlog::debug("CANAL CLIENT: JSON init: datarate={}.", (int) j["datarate"]);
 
+    // CAN id filter and mask (number or string such as "0x00ff0000")
+    m_canFilter = 0;
+    m_canMask   = 0;
+    for (const char *key : { "filter", "mask" }) {
+      if (!j.contains(key)) {
+        continue;
+      }
+      uint32_t value = 0;
+      if (j[key].is_string()) {
+        value = vscp_readStringValue(j[key].get<std::string>());
+      }
+      else if (j[key].is_number()) {
+        value = j[key].get<uint32_t>();
+      }
+      else {
+        spdlog::error("CANAL CLIENT: JSON init: '{}' must be a number or a string.", key);
+        return false;
+      }
+      ('f' == key[0] ? m_canFilter : m_canMask) = value;
+    }
+    spdlog::debug("CANAL CLIENT: JSON init: filter={:08X} mask={:08X}.", m_canFilter, m_canMask);
+
     setName(j["name"]);
     return (init(j["path"], j["config"], j["flags"], j["datarate"]));
   }
@@ -236,6 +260,15 @@ vscpClientCanal::connect(void)
     return rv;
   }
   m_bConnected = true;
+
+  // Hand the CAN id filter to the driver. Frames are filtered here too, so a
+  // driver without filter support is not an error.
+  if (m_canMask) {
+    if ((CANAL_ERROR_SUCCESS != m_canalif.CanalSetFilter(m_canFilter)) ||
+        (CANAL_ERROR_SUCCESS != m_canalif.CanalSetMask(m_canMask))) {
+      spdlog::debug("CANAL CLIENT: Driver did not accept the CAN filter/mask. Filtering in the client.");
+    }
+  }
 
   // Start worker thread if a callback has been defined.
   // disconnect() joins it when m_bConnected is set and a callback is active.
@@ -348,22 +381,25 @@ vscpClientCanal::receive(vscpEvent &ev)
   canalMsg canalMsg;
   uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  spdlog::debug("CANAL CLIENT: Poll for event ex.");
+  // Skip frames and events that do not pass the filters
+  for (;;) {
+    if (CANAL_ERROR_SUCCESS != (rv = receiveFiltered(canalMsg))) {
+      return rv;
+    }
 
-  pthread_mutex_lock(&m_mutexif);
-  if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg))) {
-    pthread_mutex_unlock(&m_mutexif);
-    spdlog::error("CANAL CLIENT: failed to receive event {}.", rv);
-    return rv;
+    if (!vscp_convertCanalToEvent(&ev, &canalMsg, guid)) {
+      spdlog::error("CANAL CLIENT: failed to convert event.");
+      return VSCP_ERROR_ERROR;
+    }
+
+    if (vscp_doLevel2Filter(&ev, &m_filterIn)) {
+      return VSCP_ERROR_SUCCESS;
+    }
+
+    delete[] ev.pdata;
+    ev.pdata    = nullptr;
+    ev.sizeData = 0;
   }
-  pthread_mutex_unlock(&m_mutexif);
-
-  if (!vscp_convertCanalToEvent(&ev, &canalMsg, guid)) {
-    spdlog::error("CANAL CLIENT: failed to convert event.");
-    return VSCP_ERROR_ERROR;
-  }
-
-  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -377,22 +413,21 @@ vscpClientCanal::receive(vscpEventEx &ex)
   canalMsg canalMsg;
   uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  spdlog::debug("CANAL CLIENT: Poll for event ex.");
+  // Skip frames and events that do not pass the filters
+  for (;;) {
+    if (CANAL_ERROR_SUCCESS != (rv = receiveFiltered(canalMsg))) {
+      return rv;
+    }
 
-  pthread_mutex_lock(&m_mutexif);
-  if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&canalMsg))) {
-    pthread_mutex_unlock(&m_mutexif);
-    spdlog::error("CANAL CLIENT: failed to receive ex event {}.", rv);
-    return rv;
+    if (!vscp_convertCanalToEventEx(&ex, &canalMsg, guid)) {
+      spdlog::error("CANAL CLIENT: failed to convert ex event.");
+      return VSCP_ERROR_ERROR;
+    }
+
+    if (vscp_doLevel2FilterEx(&ex, &m_filterIn)) {
+      return VSCP_ERROR_SUCCESS;
+    }
   }
-  pthread_mutex_unlock(&m_mutexif);
-
-  if (!vscp_convertCanalToEventEx(&ex, &canalMsg, guid)) {
-    spdlog::error("CANAL CLIENT: failed to convert ex event.");
-    return VSCP_ERROR_ERROR;
-  }
-
-  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -403,20 +438,42 @@ int
 vscpClientCanal::receive(canalMsg &msg)
 {
   int rv;
-  // canalMsg canalMsg;
-  // uint8_t guid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  spdlog::debug("CANAL CLIENT: Poll for event ex.");
-
-  pthread_mutex_lock(&m_mutexif);
-  if (CANAL_ERROR_SUCCESS != (rv = m_canalif.CanalReceive(&msg))) {
-    pthread_mutex_unlock(&m_mutexif);
-    spdlog::error("CANAL CLIENT: failed to receive ex event {}.", rv);
+  if (CANAL_ERROR_SUCCESS != (rv = receiveFiltered(msg))) {
     return rv;
   }
-  pthread_mutex_unlock(&m_mutexif);
 
   return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveFiltered
+//
+// Next frame that passes the CAN id filter. Returns the CANAL error code
+// (CANAL_ERROR_FIFO_EMPTY when there is nothing more to read).
+//
+
+int
+vscpClientCanal::receiveFiltered(canalMsg &msg)
+{
+  int rv;
+
+  for (;;) {
+    pthread_mutex_lock(&m_mutexif);
+    rv = m_canalif.CanalReceive(&msg);
+    pthread_mutex_unlock(&m_mutexif);
+
+    if (CANAL_ERROR_SUCCESS != rv) {
+      if (CANAL_ERROR_FIFO_EMPTY != rv) {
+        spdlog::error("CANAL CLIENT: failed to receive frame {}.", rv);
+      }
+      return rv;
+    }
+
+    if (isCanIdAccepted(msg.id)) {
+      return CANAL_ERROR_SUCCESS;
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -515,9 +572,11 @@ vscpClientCanal::receive(canalMsgFD &msg)
 {
   int rv;
 
-  pthread_mutex_lock(&m_mutexif);
-  rv = m_canalif.CanalReceiveFD(&msg);
-  pthread_mutex_unlock(&m_mutexif);
+  do {
+    pthread_mutex_lock(&m_mutexif);
+    rv = m_canalif.CanalReceiveFD(&msg);
+    pthread_mutex_unlock(&m_mutexif);
+  } while ((CANAL_ERROR_SUCCESS == rv) && !isCanIdAccepted(msg.id));
 
   return (CANAL_ERROR_SUCCESS == rv) ? VSCP_ERROR_SUCCESS : rv;
 }
@@ -545,17 +604,33 @@ vscpClientCanal::receiveBlocking(canalMsgFD &msg, long timeout)
 int
 vscpClientCanal::setfilter(vscpEventFilter &filter)
 {
-  int rv;
+  // Events are always filtered in the client
+  m_filterIn = filter;
 
-  uint32_t _filter = ((unsigned long) filter.filter_priority << 26) | ((unsigned long) filter.filter_class << 16) |
-                     ((unsigned long) filter.filter_type << 8) | filter.filter_GUID[0];
-  if (CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
-    return rv;
+  // Also hand it to the driver as a CAN id filter. Only priority, class,
+  // type and the nickname (GUID[15]) are part of a Level I CAN id.
+  uint32_t _filter = vscp_getCANALidFromData(filter.filter_priority,
+                                             filter.filter_class,
+                                             filter.filter_type) |
+                     filter.filter_GUID[15];
+  uint32_t _mask   = vscp_getCANALidFromData(filter.mask_priority,
+                                           filter.mask_class,
+                                           filter.mask_type) |
+                   filter.mask_GUID[15];
+
+  if (m_bConnected) {
+    pthread_mutex_lock(&m_mutexif);
+    int rv = m_canalif.CanalSetFilter(_filter);
+    if (CANAL_ERROR_SUCCESS == rv) {
+      rv = m_canalif.CanalSetMask(_mask);
+    }
+    pthread_mutex_unlock(&m_mutexif);
+    if (CANAL_ERROR_SUCCESS != rv) {
+      spdlog::debug("CANAL CLIENT: Driver did not accept the filter ({}). Filtering in the client.", rv);
+    }
   }
 
-  uint32_t _mask = ((unsigned long) filter.mask_priority << 26) | ((unsigned long) filter.mask_class << 16) |
-                   ((unsigned long) filter.mask_type << 8) | filter.mask_GUID[0];
-  return m_canalif.CanalSetMask(_mask);
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -758,6 +833,10 @@ workerThread(void *pObj)
         usleep(10000);
 #endif
       }
+    }
+
+    if ((CANAL_ERROR_SUCCESS == rvrcv) && !pClient->isCanIdAccepted(msg.id)) {
+      continue; // Filtered out by the CAN id filter
     }
 
     if (CANAL_ERROR_SUCCESS == rvrcv) {
