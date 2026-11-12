@@ -34,6 +34,7 @@ add_subdirectory(tcpiptls)
 add_subdirectory(tables-remote-class)
 add_subdirectory(vscp-client-base)
 add_subdirectory(vscp-client-canal)
+add_subdirectory(vscp-client-level2)
 add_subdirectory(vscp-client-mqtt)
 add_subdirectory(vscp-client-multicast)
 add_subdirectory(vscp-client-tcp)
@@ -78,6 +79,7 @@ set(TEST_COMMANDS
             $<TARGET_FILE:unittest_tcp_transport>
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-base/unittest_vscp_client_base
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-canal/unittest_vscp_client_canal
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-level2/unittest_vscp_client_level2
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-mqtt/unittest_vscp_client_mqtt
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-multicast/unittest_vscp_client_multicast
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vscp-client-tcp/unittest_vscp_client_tcp
@@ -86,6 +88,7 @@ set(TEST_DEPENDS
     test_fetchcontent check_tables_remote_class unittest_guid unittest_datetime unittest_vscphelper unittest_mdfparser
     unittest_core_logging logging_core_c_host unittest_util_logging logging_header_standalone
     unittest_tcpiptls unittest_tcp_transport unittest_vscp_client_base unittest_vscp_client_canal
+    unittest_vscp_client_level2
     unittest_vscp_client_mqtt unittest_vscp_client_multicast
     unittest_vscp_client_tcp
 )
