@@ -756,3 +756,70 @@ TEST(VscpClientMqtt, InitFromJsonUseTopicForEventDefaults)
   EXPECT_TRUE(client.initFromJson(j.dump()));
   EXPECT_TRUE(client.isUseTopicForEventDefaults());
 }
+
+// ---------------------------------------------------------------------------
+//          Incoming filter applied to received MQTT messages
+// ---------------------------------------------------------------------------
+
+#include <mosquitto.h>
+
+namespace {
+
+// Number of events queued after handling one JSON event per class
+int
+queuedAfter(vscpClientMqtt &client, std::initializer_list<int> classes)
+{
+  for (int vscp_class : classes) {
+    std::string payload = "{\"class\":" + std::to_string(vscp_class) +
+                          ",\"type\":6,\"head\":0,\"guid\":\"00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01\","
+                          "\"data\":[1,2]}";
+    struct mosquitto_message msg = {};
+    char topic[]                 = "vscp/test";
+    msg.topic                    = topic;
+    msg.payload                  = (void *) payload.c_str();
+    msg.payloadlen               = (int) payload.size();
+    client.handleMessage(&msg);
+  }
+  uint16_t count = 0;
+  client.getcount(&count);
+  return count;
+}
+
+} // namespace
+
+TEST(VscpClientMqtt, NoFilterQueuesAllEvents)
+{
+  vscpClientMqtt client;
+  EXPECT_TRUE(client.initFromJson("{}"));
+  EXPECT_EQ(3, queuedAfter(client, { 10, 20, 10 }));
+}
+
+TEST(VscpClientMqtt, FilterKeysAsWrittenByVscpWorks)
+{
+  // VSCP Works and the other clients write the filter at the top level
+  vscpClientMqtt client;
+  json j = { { "class-filter", 10 }, { "class-mask", 65535 } };
+  EXPECT_TRUE(client.initFromJson(j.dump()));
+  EXPECT_EQ(2, queuedAfter(client, { 10, 20, 10 }));
+}
+
+TEST(VscpClientMqtt, FilterObject)
+{
+  vscpClientMqtt client;
+  json j;
+  j["filter"] = { { "class-filter", 20 }, { "class-mask", 65535 } };
+  EXPECT_TRUE(client.initFromJson(j.dump()));
+  EXPECT_EQ(1, queuedAfter(client, { 10, 20, 10 }));
+}
+
+TEST(VscpClientMqtt, SetfilterAppliesToReceivedEvents)
+{
+  vscpClientMqtt client;
+  EXPECT_TRUE(client.initFromJson("{}"));
+  vscpEventFilter filter;
+  vscp_clearVSCPFilter(&filter);
+  filter.filter_class = 20;
+  filter.mask_class   = 0xffff;
+  client.setfilter(filter);
+  EXPECT_EQ(1, queuedAfter(client, { 10, 20, 10 }));
+}

@@ -280,6 +280,25 @@ public:
   */
   vscpEventFilter m_filterIn;
 
+  /*!
+    CAN id filter and mask ("filter" and "mask" in the JSON configuration).
+    A received frame is accepted when ((id ^ filter) & mask) == 0, so a mask
+    of zero accepts everything. They are also handed to the driver with
+    CanalSetFilter/CanalSetMask, but are always checked here as well as
+    many drivers ignore them.
+  */
+  uint32_t m_canFilter;
+  uint32_t m_canMask;
+
+  /// Receive the next frame that passes the CAN id filter
+  int receiveFiltered(canalMsg &msg);
+
+  /// True if a frame with this CAN id passes the CAN id filter
+  bool isCanIdAccepted(uint32_t id) const
+  {
+    return 0 == (((id ^ m_canFilter) & m_canMask) & 0x1fffffff);
+  }
+
 private:
   /*!
       True of dll connection is open

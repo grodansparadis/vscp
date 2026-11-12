@@ -285,7 +285,7 @@ vscpClientSocketCan::initFromJson(const std::string &config)
       // OUT filter
       if (j.contains("out-filter")) {
         try {
-          std::string str = j["in-filter"].get<std::string>();
+          std::string str = j["out-filter"].get<std::string>();
           vscp_readFilterFromString(&m_filterOut, str.c_str());
         }
         catch (const std::exception &ex) {
@@ -314,6 +314,38 @@ vscpClientSocketCan::initFromJson(const std::string &config)
       }
       else {
         spdlog::debug("SOCKETCAN client:  Failed to read 'out-mask' Defaults will be used.");
+      }
+    }
+
+    // CAN id filters, as written by VSCP Works:
+    //   "filters": [ { "name": "...", "filter": id, "mask": mask, "binvert": false }, ... ]
+    m_canFilters.clear();
+    if (m_j_config.contains("filters") && m_j_config["filters"].is_array()) {
+      for (const auto &item : m_j_config["filters"]) {
+        if (!item.is_object()) {
+          continue;
+        }
+        uint32_t id   = 0;
+        uint32_t mask = 0;
+        for (const char *key : { "filter", "mask" }) {
+          if (!item.contains(key)) {
+            continue;
+          }
+          uint32_t value = 0;
+          if (item[key].is_string()) {
+            value = vscp_readStringValue(item[key].get<std::string>());
+          }
+          else if (item[key].is_number_integer()) {
+            value = static_cast<uint32_t>(item[key].get<int64_t>());
+          }
+          ('f' == key[0] ? id : mask) = value;
+        }
+        id &= CAN_EFF_MASK;
+        if (item.contains("binvert") && item["binvert"].is_boolean() && item["binvert"].get<bool>()) {
+          id |= CAN_INV_FILTER;
+        }
+        m_canFilters.emplace_back(id, mask);
+        spdlog::debug("SOCKETCAN client: CAN filter id={:08X} mask={:08X}.", id, mask);
       }
     }
   }
@@ -768,9 +800,12 @@ vscpClientSocketCan::receiveBlocking(canalMsgFD &msg, long timeout)
 //
 
 int
-vscpClientSocketCan::setfilter(vscpEventFilter & /*filter*/)
+vscpClientSocketCan::setfilter(vscpEventFilter &filter)
 {
   int rv = VSCP_ERROR_SUCCESS;
+
+  // Events are filtered in the client (worker thread)
+  m_filterIn = filter;
 
   // uint32_t _filter = ((unsigned long) filter.filter_priority << 26) | ((unsigned long) filter.filter_class << 16) |
   //                    ((unsigned long) filter.filter_type << 8) | filter.filter_GUID[0];
@@ -1048,6 +1083,24 @@ workerThread(void *pData)
     pClient->setConnected(true);
 
     pthread_mutex_unlock(&pClient->m_mutexSocket);
+
+    // CAN id filters
+    if (!pClient->m_canFilters.empty()) {
+      std::vector<struct can_filter> rfilter;
+      for (const auto &f : pClient->m_canFilters) {
+        struct can_filter cf;
+        cf.can_id   = f.first;
+        cf.can_mask = f.second;
+        rfilter.push_back(cf);
+      }
+      if (setsockopt(pClient->m_socket,
+                     SOL_CAN_RAW,
+                     CAN_RAW_FILTER,
+                     rfilter.data(),
+                     (socklen_t) (rfilter.size() * sizeof(struct can_filter)))) {
+        spdlog::error("SOCKETCAN client: Failed to set CAN filters on {0}", pClient->m_interface);
+      }
+    }
 
     struct timeval tv;
     tv.tv_sec  = 0;

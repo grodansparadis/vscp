@@ -55,6 +55,15 @@
 #include <sys/types.h> /* mode_t (MinGW) */
 #include <time.h>      /* struct timespec */
 
+/* pthreads4w declares PTHREAD_PROCESS_PRIVATE/SHARED as enumerators in
+   pthread.h. Include it first so the macros below can not break that enum
+   when this header is included before <pthread.h>. */
+#if defined(__has_include)
+#if __has_include(<pthread.h>)
+#include <pthread.h>
+#endif
+#endif
+
 #ifndef PTHREAD_PROCESS_SHARED
 #define PTHREAD_PROCESS_PRIVATE	0
 #define PTHREAD_PROCESS_SHARED	1

@@ -1005,42 +1005,49 @@ vscpClientMqtt::initFromJson(const std::string &config)
       }
     }
 
-    // Filter
-    if (j.contains("filter") && j["filter"].is_object()) {
+    // Filter. Either in a "filter" object or, as written by VSCP Works and
+    // the other clients, as "priority-filter", "class-mask", ... directly in
+    // the configuration.
+    {
+      json jj;
+      if (j.contains("filter") && j["filter"].is_object()) {
+        jj = j["filter"];
+      }
+      else {
+        jj = j;
+      }
 
-      json jj = j["filter"];
-
-      if (jj.contains("priority-filter") && j["priority-filter"].is_number_unsigned()) {
+      if (jj.contains("priority-filter") && jj["priority-filter"].is_number_unsigned()) {
         m_filter.filter_priority = jj["priority-filter"].get<uint8_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'priority-filter' set to {}.", m_filter.filter_priority);
       }
 
-      if (jj.contains("priority-mask") && j["priority-mask"].is_number_unsigned()) {
+      if (jj.contains("priority-mask") && jj["priority-mask"].is_number_unsigned()) {
         m_filter.mask_priority = jj["priority-mask"].get<uint8_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'priority-mask' set to {}.", m_filter.mask_priority);
       }
 
-      if (jj.contains("class-filter") && j["class-filter"].is_number_unsigned()) {
+      if (jj.contains("class-filter") && jj["class-filter"].is_number_unsigned()) {
         m_filter.filter_class = jj["class-filter"].get<uint16_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'class-filter' set to {}.", m_filter.filter_class);
       }
 
-      if (jj.contains("class-mask") && j["class-mask"].is_number_unsigned()) {
+      if (jj.contains("class-mask") && jj["class-mask"].is_number_unsigned()) {
         m_filter.mask_class = jj["class-mask"].get<uint16_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'class mask' set to {}.", m_filter.mask_class);
       }
 
-      if (jj.contains("type-filter") && j["type-filter"].is_number_unsigned()) {
+      if (jj.contains("type-filter") && jj["type-filter"].is_number_unsigned()) {
         m_filter.filter_type = jj["type-filter"].get<uint16_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'type-filter' set to {}.", m_filter.filter_type);
       }
 
-      if (jj.contains("type-mask") && j["type-mask"].is_number_unsigned()) {
+      if (jj.contains("type-mask") && jj["type-mask"].is_number_unsigned()) {
         m_filter.mask_type = jj["type-mask"].get<uint16_t>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'type-mask' set to {}.", m_filter.mask_type);
       }
 
-      if (jj.contains("guid-filter") && j["guid-filter"].is_string()) {
+      if (jj.contains("guid-filter") && jj["guid-filter"].is_string()) {
         std::string str = jj["guid-filter"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.filter_GUID, str);
         spdlog::debug(
@@ -1064,7 +1071,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
           m_filter.filter_GUID[15]);
       }
 
-      if (jj.contains("guid-mask") && j["guid-mask"].is_string()) {
+      if (jj.contains("guid-mask") && jj["guid-mask"].is_string()) {
         std::string str = jj["guid-mask"].get<std::string>();
         vscp_getGuidFromStringToArray(m_filter.mask_GUID, str);
         spdlog::debug(
@@ -1620,6 +1627,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
     writeEventDefaultsFromTopic(ex, pmsg->topic);
 
+    // Incoming filter
+    if (!vscp_doLevel2FilterEx(&ex, &m_filter)) {
+      return true;
+    }
+
     // If callback is defined send event
     if (isCallbackEvActive()) {
       m_callbackev(ev, getCallbackObj());
@@ -1675,6 +1687,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
 
     writeEventDefaultsFromTopic(ex, pmsg->topic);
 
+    // Incoming filter
+    if (!vscp_doLevel2FilterEx(&ex, &m_filter)) {
+      return true;
+    }
+
     // If callback is defined send event
     if (isCallbackEvActive()) {
       m_callbackev(ev, getCallbackObj());
@@ -1729,6 +1746,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     writeEventDefaultsFromTopic(ex, pmsg->topic);
+
+    // Incoming filter
+    if (!vscp_doLevel2FilterEx(&ex, &m_filter)) {
+      return true;
+    }
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
@@ -1786,6 +1808,11 @@ vscpClientMqtt::handleMessage(const struct mosquitto_message *pmsg)
     }
 
     writeEventDefaultsFromTopic(ex, pmsg->topic);
+
+    // Incoming filter
+    if (!vscp_doLevel2FilterEx(&ex, &m_filter)) {
+      return true;
+    }
 
     // If callback is defined send event
     if (isCallbackEvActive()) {
