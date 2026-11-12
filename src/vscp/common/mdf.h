@@ -4112,6 +4112,17 @@ public:
   void clearStorage(void);
 
   /*!
+    Expand a DMATRIX1 or BLOCK register (already in the register list) into
+    one register per byte of its span. The copies are named "<name> - DM n"
+    or "<name> - BLOCK n", get consecutive offsets and their own copies of
+    the bit and value definitions. The span is limited to 256.
+    @param preg Pointer to a register that has been added to the register list.
+    @param bRenameFirst If true the first register is renamed "<name> - DM 0"
+           (or " - BLOCK 0"), else it keeps its name.
+  */
+  void expandRegisterSpan(CMDF_Register *preg, bool bRenameFirst = true);
+
+  /*!
     Download MDF file from a server
     @param remoteFile remote file URL
     @param variable that will receive temporary filename for downloaded
