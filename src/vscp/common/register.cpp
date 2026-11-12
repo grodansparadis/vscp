@@ -79,6 +79,7 @@ vscp_readLevel1Register(CVscpClient &client,
 {
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex)); // No stack garbage in GUID and other fields
 
   //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
@@ -122,7 +123,7 @@ vscp_readLevel1Register(CVscpClient &client,
       }
 
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class && VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-        if ((ex.GUID[15] = nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
+        if ((ex.GUID[15] == nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
             (ex.data[1] == ((page >> 8) & 0xff)) && (ex.data[2] == (page & 0x0ff)) && (ex.data[3] == offset)) {
           value = ex.data[4];
           return VSCP_ERROR_SUCCESS;
@@ -161,6 +162,7 @@ vscp_writeLevel1Register(CVscpClient &client,
 {
   int rv = VSCP_ERROR_ERROR;
   vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex)); // No stack garbage in GUID and other fields
   //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
@@ -204,7 +206,7 @@ vscp_writeLevel1Register(CVscpClient &client,
 
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-          if ((ex.GUID[15] = nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
+          if ((ex.GUID[15] == nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
               (ex.data[1] == ((page >> 8) & 0x0ff)) && (ex.data[2] == (page & 0x0ff)) && (ex.data[3] == offset) &&
               (ex.data[4] == value)) {
             return VSCP_ERROR_SUCCESS;
@@ -248,6 +250,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
   int rv         = VSCP_ERROR_ERROR;
   uint8_t rcvcnt = 0; // Number of registers read
   vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex)); // No stack garbage in GUID and other fields
   //CVscpClient::connType conntype = client.getType();
   uint8_t nickname               = guidNode.getNickname();
   uint8_t ifoffset               = guidInterface.isNULL() ? 0 : 16;
@@ -306,7 +309,7 @@ vscp_readLevel1RegisterBlock(CVscpClient &client,
 
       if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
         if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-          if ((ex.GUID[15] = nickname) && (ex.sizeData >= 5) &&
+          if ((ex.GUID[15] == nickname) && (ex.sizeData >= 5) &&
               /* ex.data[0] is frame index */
               (ex.data[1] == ((page >> 8) & 0x0ff)) && (ex.data[2] == (page & 0x0ff))
               /*(ex.data[3] == offset + rcvcnt)*/) {
@@ -381,6 +384,7 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
   int reg                        = -99;
   int count                      = 0;
   vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex)); // No stack garbage in GUID and other fields
   //uint8_t offset_data = 0;
   std::map<uint8_t, uint8_t> startmap;
 
@@ -456,7 +460,7 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
 
           if (VSCP_CLASS1_PROTOCOL == ex.vscp_class) {
             if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == ex.vscp_type) {
-              if ((ex.GUID[15] = nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
+              if ((ex.GUID[15] == nickname) && (ex.sizeData >= 5) && (ex.data[0] == 0) &&
                   (ex.data[1] == ((page >> 8) & 0x0ff)) && (ex.data[2] == (page & 0x0ff))) {
 
                 for (int k = 4; k < ex.sizeData; k++) {
