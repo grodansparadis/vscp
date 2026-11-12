@@ -358,14 +358,14 @@ TEST(HelperLib, vscp_makeLevel2FloatMeasurementEvent)
     ASSERT_TRUE(33 == e.pdata[1]);
     ASSERT_TRUE(44 == e.pdata[2]);
     ASSERT_TRUE(1 == e.pdata[3]);
-    ASSERT_TRUE(219 == e.pdata[4]);
-    ASSERT_TRUE(249 == e.pdata[5]);
-    ASSERT_TRUE(126 == e.pdata[6]);
-    ASSERT_TRUE(106 == e.pdata[7]);
-    ASSERT_TRUE(188 == e.pdata[8]);
-    ASSERT_TRUE(116 == e.pdata[9]);
-    ASSERT_TRUE(55 == e.pdata[10]);
-    ASSERT_TRUE(64 == e.pdata[11]);
+    ASSERT_TRUE(64 == e.pdata[4]);
+    ASSERT_TRUE(55 == e.pdata[5]);
+    ASSERT_TRUE(116 == e.pdata[6]);
+    ASSERT_TRUE(188 == e.pdata[7]);
+    ASSERT_TRUE(106 == e.pdata[8]);
+    ASSERT_TRUE(126 == e.pdata[9]);
+    ASSERT_TRUE(249 == e.pdata[10]);
+    ASSERT_TRUE(219 == e.pdata[11]);
 
     vscp_deleteEvent(&e);    
 }
@@ -399,14 +399,14 @@ TEST(HelperLib, vscp_makeLevel2FloatMeasurementEventEx)
     ASSERT_TRUE(33 == ex.data[1]);
     ASSERT_TRUE(44 == ex.data[2]);
     ASSERT_TRUE(1 == ex.data[3]);
-    ASSERT_TRUE(219 == ex.data[4]);
-    ASSERT_TRUE(249 == ex.data[5]);
-    ASSERT_TRUE(126 == ex.data[6]);
-    ASSERT_TRUE(106 == ex.data[7]);
-    ASSERT_TRUE(188 == ex.data[8]);
-    ASSERT_TRUE(116 == ex.data[9]);
-    ASSERT_TRUE(55 == ex.data[10]);
-    ASSERT_TRUE(64 == ex.data[11]);
+    ASSERT_TRUE(64 == ex.data[4]);
+    ASSERT_TRUE(55 == ex.data[5]);
+    ASSERT_TRUE(116 == ex.data[6]);
+    ASSERT_TRUE(188 == ex.data[7]);
+    ASSERT_TRUE(106 == ex.data[8]);
+    ASSERT_TRUE(126 == ex.data[9]);
+    ASSERT_TRUE(249 == ex.data[10]);
+    ASSERT_TRUE(219 == ex.data[11]);
 }
 
 //-----------------------------------------------------------------------------
@@ -507,18 +507,19 @@ TEST(HelperLib, vscp_convertLevel1MeasurementToLevel2Double)
     // printf(" %d %d %d %d %d ",ex.data[0],ex.data[1],ex.data[2],ex.data[3],ex.data[4]);
     // printf(" %d %d %d %d %d ",ex.data[5],ex.data[6],ex.data[7],ex.data[8],ex.data[9]);
     // printf(" %d %d ",ex.data[10],ex.data[11]);
+    // 0x1B22 * 10^2 = 694600.0 = 0x4125329000000000 stored MSB first
     ASSERT_TRUE(0 == e.pdata[0]);
     ASSERT_TRUE(0 == e.pdata[1]);
     ASSERT_TRUE(0 == e.pdata[2]);
     ASSERT_TRUE(0 == e.pdata[3]);
-    ASSERT_TRUE(0 == e.pdata[4]);
-    ASSERT_TRUE(0 == e.pdata[5]);
-    ASSERT_TRUE(0 == e.pdata[6]);
-    ASSERT_TRUE(128 == e.pdata[7]);
-    ASSERT_TRUE(66 == e.pdata[8]);
-    ASSERT_TRUE(38 == e.pdata[9]);
-    ASSERT_TRUE(210 == e.pdata[10]);
-    ASSERT_TRUE(67 == e.pdata[11]);
+    ASSERT_TRUE(65 == e.pdata[4]);
+    ASSERT_TRUE(37 == e.pdata[5]);
+    ASSERT_TRUE(50 == e.pdata[6]);
+    ASSERT_TRUE(144 == e.pdata[7]);
+    ASSERT_TRUE(0 == e.pdata[8]);
+    ASSERT_TRUE(0 == e.pdata[9]);
+    ASSERT_TRUE(0 == e.pdata[10]);
+    ASSERT_TRUE(0 == e.pdata[11]);
 
     vscp_deleteEvent(&e);
 }
@@ -546,18 +547,19 @@ TEST(HelperLib, vscp_convertLevel1MeasurementToLevel2DoubleEx)
     // printf(" %d %d %d %d %d ",ex.data[0],ex.data[1],ex.data[2],ex.data[3],ex.data[4]);
     // printf(" %d %d %d %d %d ",ex.data[5],ex.data[6],ex.data[7],ex.data[8],ex.data[9]);
     // printf(" %d %d ",ex.data[10],ex.data[11]);
+    // 0x1B22 * 10^2 = 694600.0 = 0x4125329000000000 stored MSB first
     ASSERT_TRUE(0 == ex.data[0]);
     ASSERT_TRUE(0 == ex.data[1]);
     ASSERT_TRUE(0 == ex.data[2]);
     ASSERT_TRUE(0 == ex.data[3]);
-    ASSERT_TRUE(0 == ex.data[4]);
-    ASSERT_TRUE(0 == ex.data[5]);
-    ASSERT_TRUE(0 == ex.data[6]);
-    ASSERT_TRUE(128 == ex.data[7]);
-    ASSERT_TRUE(66 == ex.data[8]);
-    ASSERT_TRUE(38 == ex.data[9]);
-    ASSERT_TRUE(210 == ex.data[10]);
-    ASSERT_TRUE(67 == ex.data[11]);
+    ASSERT_TRUE(65 == ex.data[4]);
+    ASSERT_TRUE(37 == ex.data[5]);
+    ASSERT_TRUE(50 == ex.data[6]);
+    ASSERT_TRUE(144 == ex.data[7]);
+    ASSERT_TRUE(0 == ex.data[8]);
+    ASSERT_TRUE(0 == ex.data[9]);
+    ASSERT_TRUE(0 == ex.data[10]);
+    ASSERT_TRUE(0 == ex.data[11]);
 }
 
 //-----------------------------------------------------------------------------

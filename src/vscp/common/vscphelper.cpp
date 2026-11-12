@@ -2319,6 +2319,35 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
 //
 //
 
+//////////////////////////////////////////////////////////////////////////////
+// Double in CLASS2.MEASUREMENT_FLOAT data
+//
+// The VSCP specification stores the 64-bit double MSB first. These helpers
+// do that independent of the byte order of the host.
+//
+
+static void
+vscp_writeDoubleMsbFirst(uint8_t *p, double value)
+{
+  uint64_t bits;
+  memcpy(&bits, &value, sizeof(bits));
+  for (int i = 0; i < 8; i++) {
+    p[i] = (uint8_t) (bits >> (56 - 8 * i));
+  }
+}
+
+static double
+vscp_readDoubleMsbFirst(const uint8_t *p)
+{
+  uint64_t bits = 0;
+  for (int i = 0; i < 8; i++) {
+    bits = (bits << 8) | p[i];
+  }
+  double value;
+  memcpy(&value, &bits, sizeof(value));
+  return value;
+}
+
 bool
 vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 {
@@ -2352,22 +2381,13 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
   }
   else if (VSCP_CLASS2_MEASUREMENT_FLOAT == pev->vscp_class) {
 
-    uint8_t buf[8];
-
     // Must be correct data
     if (12 != pev->sizeData) {
       return helperLogBoolResult(__func__, false);
     }
 
-    memset(buf, 0, sizeof(buf));
-    // Double in the byte order used by vscp_makeLevel2FloatMeasurementEvent
-    // and vscp_getMeasurementAsDouble (native). The old in-place "swap"
-    // loop here produced garbage.
-    // NOTE: The VSCP specification says MSB first; encoder and decoders in
-    // this file use native order.
-    memcpy(buf, pev->pdata + 4, 8);
-
-    strValue = vscp_str_format("%f", *((double *) buf));
+    // Double, MSB first (VSCP specification)
+    strValue = vscp_str_format("%f", vscp_readDoubleMsbFirst(pev->pdata + 4));
   }
   else if (VSCP_CLASS1_MEASUREMENT32 == pev->vscp_class) {
 
@@ -2597,7 +2617,7 @@ vscp_getMeasurementAsDouble(double *pvalue, const vscpEvent *pev)
     if ((12 != pev->sizeData) || (nullptr == pev->pdata)) {
       return helperLogBoolResult(__func__, false);
     }
-    memcpy(pvalue, pev->pdata + 4, 8);
+    *pvalue = vscp_readDoubleMsbFirst(pev->pdata + 4); // MSB first (VSCP specification)
   }
   else {
     return helperLogBoolResult(__func__, false);
@@ -3830,7 +3850,8 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
   pev->sizeData = 12;
   pev->pdata    = new uint8_t[pev->sizeData];
   if (nullptr == pev->pdata) {
-    delete pev;
+    // The event belongs to the caller - do not delete it here
+    pev->sizeData = 0;
     return helperLogBoolResult(__func__, false);
   }
 
@@ -3839,7 +3860,7 @@ vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pev,
   pev->pdata[1] = zone;
   pev->pdata[2] = subzone;
   pev->pdata[3] = unit;
-  memcpy((pev->pdata + 4), (unsigned char *) &value, 8);
+  vscp_writeDoubleMsbFirst(pev->pdata + 4, value); // MSB first (VSCP specification)
 
   return true;
 }
@@ -4049,8 +4070,9 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
         p[3] = (pev->pdata[0] & VSCP_MASK_DATACODING_UNIT) >> 3;
 
         // Floating point value
-        val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
-        memcpy(p + 4, (uint8_t *) &val64, sizeof(val64));
+        // Double, MSB first (VSCP specification). The old code converted the
+        // value to an integer before swapping and stored garbage.
+        vscp_writeDoubleMsbFirst(p + 4, val64);
 
         delete[] pev->pdata;
 
@@ -4065,8 +4087,9 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
 
         // Index = 0, Unit = 0, Zone = 0, Subzone = 0
         // Floating point value
-        val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
-        memcpy(p + 4, &val64, sizeof(val64));
+        // Double, MSB first (VSCP specification). The old code converted the
+        // value to an integer before swapping and stored garbage.
+        vscp_writeDoubleMsbFirst(p + 4, val64);
 
         delete[] pev->pdata;
 
@@ -4083,8 +4106,9 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
 
         // Index = 0, Unit = 0, Zone = 0, Subzone = 0
         // Floating point value
-        val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
-        memcpy(p + 4, &val64, sizeof(val64));
+        // Double, MSB first (VSCP specification). The old code converted the
+        // value to an integer before swapping and stored garbage.
+        vscp_writeDoubleMsbFirst(p + 4, val64);
 
         delete[] pev->pdata;
 
@@ -4106,8 +4130,9 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
         // Subzone
         p[2] = pev->pdata[2];
 
-        val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
-        memcpy(p + 4, &val64, sizeof(val64));
+        // Double, MSB first (VSCP specification). The old code converted the
+        // value to an integer before swapping and stored garbage.
+        vscp_writeDoubleMsbFirst(p + 4, val64);
 
         delete[] pev->pdata;
 
@@ -4130,8 +4155,9 @@ vscp_convertLevel1MeasurementToLevel2Double(vscpEvent *pev)
         // Subzone
         p[2] = pev->pdata[2];
 
-        val64 = (double) VSCP_UINT64_SWAP_ON_LE(val64);
-        memcpy(p + 4, &val64, sizeof(val64));
+        // Double, MSB first (VSCP specification). The old code converted the
+        // value to an integer before swapping and stored garbage.
+        vscp_writeDoubleMsbFirst(p + 4, val64);
 
         delete[] pev->pdata;
 
