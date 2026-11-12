@@ -597,6 +597,17 @@ private:
 
   /// Password keyfile
   std::string m_pwKeyfile;
+
+  /*!
+    Authenticated encryption of binary mode (JSON "binary-encryption",
+    "binary-key", "binary-hmac-key"). Applied to both connections on
+    connect. See VscpRemoteTcpIf::setBinaryAuthentication.
+  */
+  bool m_bBinaryAuth           = false;
+  uint8_t m_binaryEncryption   = 0;
+  uint8_t m_binaryKey[32]      = {};
+  uint8_t m_binaryKeyLength    = 0;
+  uint8_t m_binaryHmacKey[32]  = {};
 };
 
 #endif

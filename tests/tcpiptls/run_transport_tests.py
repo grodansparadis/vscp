@@ -1,6 +1,8 @@
 """Run the TCP/TLS client against ephemeral loopback servers."""
 
 import contextlib
+import hashlib
+import hmac
 import binascii
 import os
 from pathlib import Path
@@ -13,6 +15,12 @@ import subprocess
 import sys
 import tempfile
 import threading
+
+try:
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    HAVE_AES = True
+except ImportError:  # Authenticated binary tests are skipped without it
+    HAVE_AES = False
 import time
 
 
@@ -21,6 +29,47 @@ def openssl(*args):
     if executable is None:
         raise FileNotFoundError("The openssl command is required for TLS integration tests")
     subprocess.run([str(Path(executable).resolve()), *map(str, args)], check=True, capture_output=True)
+
+
+# Authenticated binary frames (version 1, AES-CBC + HMAC-SHA-256), written
+# independently of the C++ code with the test keys from
+# docs/vscpremotetcpif-binary.md. Used by the "wrap-auth*" scenarios.
+AUTH_AES_KEY = bytes(range(32))
+AUTH_HMAC_KEY = bytes(range(0x20, 0x40))
+AUTH_ALGORITHM = 3  # AES-256
+
+
+def v1_tag(frame):
+    word = (1 << 13) | (len(frame) + 16)
+    digest = hmac.new(AUTH_HMAC_KEY, b"\x55" + word.to_bytes(2, "big") + frame, hashlib.sha256).digest()
+    return digest[:16]
+
+
+def v1_encrypt(plain):
+    body = plain[1:]
+    pad = 16 - len(body) % 16
+    body += bytes([pad]) * pad
+    iv = os.urandom(16)
+    encryptor = Cipher(algorithms.AES(AUTH_AES_KEY), modes.CBC(iv)).encryptor()
+    frame = bytes([(plain[0] & 0xf0) | AUTH_ALGORITHM]) + encryptor.update(body) + encryptor.finalize() + iv
+    return frame + v1_tag(frame)
+
+
+def v1_decrypt(inner):
+    if len(inner) < 49 or (len(inner) - 33) % 16 or (inner[0] & 0x0f) != AUTH_ALGORITHM:
+        raise ValueError("Not an authenticated frame")
+    frame, tag = inner[:-16], inner[-16:]
+    if not hmac.compare_digest(v1_tag(frame), tag):
+        raise ValueError("Bad authentication tag")
+    decryptor = Cipher(algorithms.AES(AUTH_AES_KEY), modes.CBC(frame[-16:])).decryptor()
+    body = decryptor.update(frame[1:-16]) + decryptor.finalize()
+    pad = body[-1]
+    if not 1 <= pad <= 16 or body[-pad:] != bytes([pad]) * pad:
+        raise ValueError("Bad padding")
+    plain = bytes([frame[0] & 0xf0]) + body[:-pad]
+    if binascii.crc_hqx(plain[1:], 0xffff):
+        raise ValueError("Bad CRC in authenticated frame")
+    return plain
 
 
 class Handler(socketserver.BaseRequestHandler):
@@ -51,6 +100,7 @@ class Handler(socketserver.BaseRequestHandler):
         if not isinstance(server, Server):
             raise TypeError("TCP binary handler requires a test server")
         peer = (connection, threading.Lock())
+        auth = scenario.startswith(b"wrap-auth")
         events = [self.binary_event()]
         if scenario in (b"wrap-oversized-event", b"wrap-retr-oversized"):
             event = bytearray(events[0][:36] + b"\x00" * 513 + b"\x00\x00")
@@ -59,6 +109,8 @@ class Handler(socketserver.BaseRequestHandler):
             events[0] = bytes(event)
 
         def send(peer, *frames):
+            if auth:
+                frames = [v1_encrypt(frame) for frame in frames]
             with peer[1]:
                 peer[0].sendall(b"".join(self.packet(frame) for frame in frames))
 
@@ -79,6 +131,9 @@ class Handler(socketserver.BaseRequestHandler):
                 frame, pending = pending[2:length + 2], pending[length + 2:]
                 if not frame:
                     raise ValueError("Empty binary frame received from client")
+                if auth:
+                    # Unauthenticated or forged frames end the connection
+                    frame = v1_decrypt(frame)
 
                 if frame[0] & 0x0f:
                     send(peer, frame)
@@ -466,6 +521,10 @@ def main():
                            VSCP_TEST_CA_DIR=str(ca_dir), VSCP_TEST_CERT=str(client_cert),
                            VSCP_TEST_KEY=str(encrypted_key), SSL_CERT_FILE=str(ca),
                            SSL_CERT_DIR=str(ca_dir))
+        if HAVE_AES:
+            environment["VSCP_TEST_AUTH"] = "1"
+        else:
+            environment.pop("VSCP_TEST_AUTH", None)
         if ipv6_server is not None:
             environment["VSCP_TEST_IPV6"] = ipv6_server.endpoint()
         else:

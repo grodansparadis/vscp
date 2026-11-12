@@ -57,6 +57,7 @@
 
 #include <crc.h>
 #include <openssl/pem.h>
+#include <openssl/crypto.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
@@ -1806,6 +1807,63 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {
   logTcpEntry(__func__);
   doCmdClose();
+  clearBinaryAuthentication();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setBinaryAuthentication
+//
+
+int
+VscpRemoteTcpIf::setBinaryAuthentication(uint8_t encryption,
+                                         const uint8_t *aesKey,
+                                         size_t aesKeyLength,
+                                         const uint8_t *hmacKey)
+{
+  logTcpEntry(__func__);
+  size_t expected = 0;
+  switch (encryption) {
+    case VSCP_ENCRYPTION_AES128:
+      expected = 16;
+      break;
+    case VSCP_ENCRYPTION_AES192:
+      expected = 24;
+      break;
+    case VSCP_ENCRYPTION_AES256:
+      expected = 32;
+      break;
+    default:
+      return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+  if ((nullptr == aesKey) || (nullptr == hmacKey) || (aesKeyLength != expected)) {
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+  // Never use the AES key as HMAC key
+  if (0 == CRYPTO_memcmp(aesKey, hmacKey, expected)) {
+    transportError("%s: HMAC key must differ from the AES key", __func__);
+    return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  clearBinaryAuthentication();
+  memcpy(m_binaryAesKey, aesKey, expected);
+  memcpy(m_binaryHmacKey, hmacKey, sizeof(m_binaryHmacKey));
+  m_binaryAuthAlgorithm = encryption;
+  m_bBinaryAuth         = true;
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clearBinaryAuthentication
+//
+
+void
+VscpRemoteTcpIf::clearBinaryAuthentication(void)
+{
+  logTcpEntry(__func__);
+  m_bBinaryAuth         = false;
+  m_binaryAuthAlgorithm = 0;
+  OPENSSL_cleanse(m_binaryAesKey, sizeof(m_binaryAesKey));
+  OPENSSL_cleanse(m_binaryHmacKey, sizeof(m_binaryHmacKey));
 }
 
 bool
@@ -2389,10 +2447,32 @@ VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
   }
 
   std::vector<uint8_t> packet;
-  packet.reserve(frame.size() + 2);
-  packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
-  packet.push_back(static_cast<uint8_t>(frame.size()));
-  packet.insert(packet.end(), frame.begin(), frame.end());
+
+  if (m_bBinaryAuth) {
+    // [length:2][version 1 authenticated frame]
+    packet.resize(2 + frame.size() + 48);
+    const size_t innerLen = vscp_encryptFrameV1(packet.data() + 2,
+                                                packet.size() - 2,
+                                                frame.data(),
+                                                frame.size(),
+                                                m_binaryAesKey,
+                                                m_binaryHmacKey,
+                                                nullptr, // Random IV
+                                                m_binaryAuthAlgorithm);
+    if (0 == innerLen) {
+      transportError("%s: failed to encrypt/authenticate binary frame", __func__);
+      return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
+    }
+    packet.resize(2 + innerLen);
+    packet[0] = static_cast<uint8_t>(innerLen >> 8);
+    packet[1] = static_cast<uint8_t>(innerLen);
+  }
+  else {
+    packet.reserve(frame.size() + 2);
+    packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
+    packet.push_back(static_cast<uint8_t>(frame.size()));
+    packet.insert(packet.end(), frame.begin(), frame.end());
+  }
   int result = transportWrite(packet.data(), packet.size(), m_responseTimeOut);
   return logTcpResult(__func__, result < 0 ? -result : result);
 }
@@ -2420,6 +2500,32 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
       }
       needed += length;
       if (m_binaryInput.size() == needed) {
+        if (m_bBinaryAuth) {
+          // Only authentic version 1 frames with the configured algorithm.
+          // Anything else means a wrong key/peer or tampering: close.
+          std::vector<uint8_t> plain(length);
+          size_t plainLen = 0;
+          if ((m_binaryAuthAlgorithm == (m_binaryInput[2] & 0x0f)) &&
+              (0 != (plainLen = vscp_decryptFrameV1(plain.data(),
+                                                    plain.size(),
+                                                    m_binaryInput.data() + 2,
+                                                    length,
+                                                    m_binaryAesKey,
+                                                    m_binaryHmacKey)))) {
+            plain.resize(plainLen);
+            // The frame is decrypted now: clear the encryption nibble so it
+            // is handled as the plain frame it is
+            plain[0] &= 0xf0;
+            frame.swap(plain);
+            m_binaryInput.clear();
+            return VSCP_ERROR_SUCCESS;
+          }
+          OPENSSL_cleanse(plain.data(), plain.size());
+          transportError("%s: binary frame failed authentication, closing", __func__);
+          transportClose();
+          m_binaryInput.clear();
+          return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
+        }
         frame.assign(m_binaryInput.begin() + 2, m_binaryInput.end());
         m_binaryInput.clear();
         return VSCP_ERROR_SUCCESS;

@@ -353,6 +353,39 @@ internally and a nonzero confirmation error stops the receiver. Once a raw
 API is used, subsequent confirmations are placed in the raw queue, including
 errors, for the application to inspect.
 
+#### Authenticated encryption in binary mode
+
+Binary mode can optionally encrypt and authenticate every record with
+AES-CBC and HMAC-SHA-256 (the version 1 frames of the
+[versioned binary frame helpers](vscpremotetcpif-binary.md#authenticated-binary-mode-over-tcp)).
+Both peers must be configured with the same algorithm and keys:
+
+```json
+{
+  "binary-mode": true,
+  "binary-encryption": 3,
+  "binary-key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "binary-hmac-key": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+}
+```
+
+- `binary-encryption`: `0` off (default), `1` AES-128, `2` AES-192, `3` AES-256.
+- `binary-key`: AES key in hex (32/48/64 digits for AES-128/192/256).
+- `binary-hmac-key`: independent 32 byte HMAC key in hex (64 digits). It must
+  differ from the AES key.
+- Only with `"binary-mode": true`; otherwise the configuration is rejected.
+  An invalid configuration leaves the client unchanged.
+- Both connections (two-channel mode) use it. Events, commands, replies, event
+  confirmations and raw frames are all authenticated; the raw API takes and
+  returns plain frames.
+- A record that does not authenticate, uses another algorithm, or comes from a
+  peer that is not configured for it closes the connection. There is no
+  fallback to unauthenticated frames.
+- The login (`USER`/`PASS`) before `BINARY` is text; use TLS to protect it.
+- The keys are included in `getConfigAsJson()`, like the password.
+
+The underlying API is `VscpRemoteTcpIf::setBinaryAuthentication()`.
+
 As in single-channel text mode, configure callbacks, TLS, and timeouts before
 connecting. Callbacks run on receive workers, may begin before `connect()`
 returns, and may call `send()`; callbacks are serialized in binary mode.

@@ -1,3 +1,4 @@
+#include <nlohmann/json.hpp>
 #include <gtest/gtest.h>
 #include <vscpremotetcpif.h>
 #include <vscp-client-tcp.h>
@@ -19,6 +20,8 @@
 #include <thread>
 #include <vector>
 #include <crc.h>
+
+using json = nlohmann::json;
 
 namespace {
 std::string setting(const char *name)
@@ -1241,6 +1244,152 @@ TEST_F(TcpTransport, WrapperBinaryTwoChannelsRouteFramesByConnection)
   EXPECT_TRUE(reply);
   EXPECT_TRUE(encryptedEcho);
   EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+}
+
+// ---------------------------------------------------------------------------
+// Authenticated binary mode (AES-CBC + HMAC-SHA-256 version 1 frames)
+// The test server ("wrap-auth" scenario) uses the documented test keys.
+// ---------------------------------------------------------------------------
+
+namespace {
+const char *authKey     = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+const char *authHmacKey = "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f";
+
+std::string authJson(const char *hmacKey = authHmacKey)
+{
+  return std::string(R"({"binary-mode":true,"binary-encryption":3,"binary-key":")") + authKey +
+         R"(","binary-hmac-key":")" + hmacKey + R"("})";
+}
+
+int connectAuthenticated(vscpClientTcp &client, const char *scenario, bool singleChannel,
+                         const char *hmacKey = authHmacKey)
+{
+  client.setConnectionTimeout(1000);
+  client.setResponseTimeout(500);
+  int result = client.init(setting("VSCP_TEST_PLAIN"), scenario, "secret", false);
+  if (VSCP_ERROR_SUCCESS != result) {
+    return result;
+  }
+  if (!client.initFromJson(authJson(hmacKey))) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  if (singleChannel && VSCP_ERROR_SUCCESS != (result = client.setSingleChannelReceiveLoop())) {
+    return result;
+  }
+  return client.connect();
+}
+}
+
+TEST_F(TcpTransport, WrapperBinaryAuthenticatedEventsAndCommands)
+{
+  if (nullptr == std::getenv("VSCP_TEST_AUTH")) {
+    GTEST_SKIP() << "Python 'cryptography' is not available for the authenticated test server";
+  }
+  for (bool singleChannel : {false, true}) {
+    SCOPED_TRACE(singleChannel ? "single channel" : "two channels");
+    vscpClientTcp wrapper;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, connectAuthenticated(wrapper, "wrap-auth", singleChannel));
+    ASSERT_TRUE(wrapper.getTcpReceive()->isBinaryAuthenticated());
+
+    // Event sent by the server
+    vscpEventEx event = {};
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    EXPECT_EQ(10, event.vscp_class);
+    EXPECT_EQ(6, event.vscp_type);
+    ASSERT_EQ(3, event.sizeData);
+    EXPECT_EQ(1, event.data[0]);
+
+    // Own event, distributed back by the server
+    vscpEventEx outgoing = {};
+    outgoing.vscp_class = 10;
+    outgoing.vscp_type  = 6;
+    outgoing.sizeData   = 1;
+    outgoing.data[0]    = 77;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.send(outgoing));
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    EXPECT_EQ(77, event.data[0]);
+
+    // Raw command - the reply comes back authenticated and is returned plain
+    ASSERT_EQ(VSCP_ERROR_SUCCESS,
+              wrapper.sendBinaryFrame(binaryCommand(0x1234, {1, 2, 3}), vscpClientTcp::binary_channel::send));
+    bool reply = false;
+    for (int i = 0; i < 3 && !reply; ++i) {
+      std::vector<uint8_t> frame;
+      ASSERT_EQ(VSCP_ERROR_SUCCESS, wrapper.receiveBinaryFrame(frame, 1000));
+      ASSERT_FALSE(frame.empty());
+      EXPECT_EQ(0, frame[0] & 0x0f); // Returned decrypted
+      reply = (frame.size() == 10) && (0x12 == frame[1]) && (0x34 == frame[2]);
+    }
+    EXPECT_TRUE(reply);
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, wrapper.disconnect());
+  }
+}
+
+// An authenticated client never accepts frames from a plain peer
+TEST_F(TcpTransport, WrapperBinaryAuthenticatedRejectsPlainPeer)
+{
+  vscpClientTcp wrapper;
+  int result = connectAuthenticated(wrapper, "wrap-normal", true);
+  if (VSCP_ERROR_SUCCESS == result) {
+    vscpEventEx event = {};
+    EXPECT_NE(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    wrapper.disconnect();
+  }
+}
+
+// A peer with another HMAC key is not accepted (and does not accept us)
+TEST_F(TcpTransport, WrapperBinaryAuthenticatedWrongKey)
+{
+  if (nullptr == std::getenv("VSCP_TEST_AUTH")) {
+    GTEST_SKIP() << "Python 'cryptography' is not available for the authenticated test server";
+  }
+  vscpClientTcp wrapper;
+  int result = connectAuthenticated(wrapper, "wrap-auth", true,
+                                    "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f");
+  if (VSCP_ERROR_SUCCESS == result) {
+    vscpEventEx event = {};
+    EXPECT_NE(VSCP_ERROR_SUCCESS, wrapper.receiveBlocking(event, 1000));
+    wrapper.disconnect();
+  }
+}
+
+TEST_F(TcpTransport, WrapperBinaryAuthenticatedJsonOptions)
+{
+  vscpClientTcp wrapper;
+  // Only in binary mode
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":false,"binary-encryption":3,"binary-key":")") +
+                                    authKey + R"(","binary-hmac-key":")" + authHmacKey + R"("})"));
+  // Key length must match the algorithm, HMAC key is required and 32 bytes
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":true,"binary-encryption":1,"binary-key":")") +
+                                    authKey + R"(","binary-hmac-key":")" + authHmacKey + R"("})"));
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":true,"binary-encryption":3,"binary-key":")") +
+                                    authKey + R"("})"));
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":true,"binary-encryption":3,"binary-key":")") +
+                                    authKey + R"(","binary-hmac-key":"2021"})"));
+  // AES key reused as HMAC key
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":true,"binary-encryption":3,"binary-key":")") +
+                                    authKey + R"(","binary-hmac-key":")" + authKey + R"("})"));
+  // Unknown algorithm, not hex
+  EXPECT_FALSE(wrapper.initFromJson(std::string(R"({"binary-mode":true,"binary-encryption":7,"binary-key":")") +
+                                    authKey + R"(","binary-hmac-key":")" + authHmacKey + R"("})"));
+  EXPECT_FALSE(wrapper.initFromJson(R"({"binary-mode":true,"binary-encryption":3,"binary-key":"zz",
+                                        "binary-hmac-key":"zz"})"));
+
+  // Valid configuration survives a round trip through getConfigAsJson()
+  ASSERT_TRUE(wrapper.initFromJson(authJson()));
+  json j = json::parse(wrapper.getConfigAsJson());
+  EXPECT_EQ(3, j["binary-encryption"].get<int>());
+  EXPECT_EQ(authKey, j["binary-key"].get<std::string>());
+  EXPECT_EQ(authHmacKey, j["binary-hmac-key"].get<std::string>());
+  vscpClientTcp copy;
+  ASSERT_TRUE(copy.initFromJson(j.dump()));
+  EXPECT_EQ(j.dump(), json::parse(copy.getConfigAsJson()).dump());
+
+  // Encryption 0 turns it off and clears the keys
+  ASSERT_TRUE(wrapper.initFromJson(R"({"binary-encryption":0})"));
+  j = json::parse(wrapper.getConfigAsJson());
+  EXPECT_EQ(0, j["binary-encryption"].get<int>());
+  EXPECT_EQ("", j["binary-key"].get<std::string>());
 }
 
 TEST_F(TcpTransport, WrapperBinaryEncryptedCommandsAndEventsRemainOpaque)

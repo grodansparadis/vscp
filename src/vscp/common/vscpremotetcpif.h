@@ -324,6 +324,43 @@ public:
   int receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT);
 
   /*!
+      Authenticated encryption of binary mode (optional).
+
+      When set, every binary record on this connection is sent and received
+      as a version 1 authenticated frame (AES-CBC + HMAC-SHA-256, see
+      vscp_encryptFrameV1) inside the normal two-byte length framing:
+
+        [length:2][type/encryption:1][ciphertext:N*16][IV:16][tag:16]
+
+      This covers events, commands, replies and event confirmations, also
+      frames passed to sendBinaryFrame()/receiveBinaryFrame(); those methods
+      then take and return plain frames. The peer must be configured with the
+      same algorithm and keys. A received record that does not authenticate,
+      or uses another algorithm, closes the connection (no fallback to
+      unauthenticated frames). Text commands before BINARY (USER/PASS) are
+      not covered - use TLS to protect the login.
+
+      Set before doCmdBinary(). Keys are copied.
+
+      @param encryption VSCP_ENCRYPTION_AES128, _AES192 or _AES256.
+      @param aesKey AES key, 16/24/32 bytes for AES128/192/256.
+      @param aesKeyLength Length of aesKey (must match the algorithm).
+      @param hmacKey Independent 32 byte HMAC-SHA-256 key (must differ from
+             the AES key).
+      @return VSCP_ERROR_SUCCESS or VSCP_ERROR_PARAMETER.
+   */
+  int setBinaryAuthentication(uint8_t encryption,
+                              const uint8_t *aesKey,
+                              size_t aesKeyLength,
+                              const uint8_t *hmacKey);
+
+  /// Turn authenticated binary encryption off and wipe the keys
+  void clearBinaryAuthentication(void);
+
+  /// True if authenticated binary encryption is set
+  bool isBinaryAuthenticated(void) const { return m_bBinaryAuth; }
+
+  /*!
       Decode and validate an unencrypted binary event frame. If acknowledge
       is true, send the corresponding event-confirm reply on this connection.
       Initialize event before calling and release its allocated data with
@@ -783,6 +820,12 @@ private:
   bool m_bBinaryMode;
   std::vector<uint8_t> m_binaryInput;
   std::mutex m_binaryWriteMutex;
+
+  // Authenticated binary encryption (setBinaryAuthentication)
+  bool m_bBinaryAuth = false;
+  uint8_t m_binaryAuthAlgorithm = 0;
+  uint8_t m_binaryAesKey[32] = {};
+  uint8_t m_binaryHmacKey[32] = {};
 
   std::thread m_singleChannelReaderThread;
   std::atomic<bool> m_singleChannelReaderStop;

@@ -47,6 +47,7 @@
 #include <crc.h>
 
 #include "vscp-client-tcp.h"
+#include <openssl/crypto.h>
 #include "vscphelperlogging.h"
 
 void workerThread(vscpClientTcp *pObj);
@@ -165,6 +166,9 @@ vscpClientTcp::~vscpClientTcp()
   // Just to be sure
   disconnect();
 
+  OPENSSL_cleanse(m_binaryKey, sizeof(m_binaryKey));
+  OPENSSL_cleanse(m_binaryHmacKey, sizeof(m_binaryHmacKey));
+
 #ifdef WIN32
   CloseHandle(m_semReceiveQueue);
 #else
@@ -224,6 +228,22 @@ vscpClientTcp::getConfigAsJson(void)
   j["keyfile"]     = m_keyfile;
   j["pwkeyfile"]   = m_pwKeyfile;
 
+  // Authenticated binary encryption (keys are part of the configuration,
+  // like the password)
+  j["binary-encryption"] = m_bBinaryAuth ? m_binaryEncryption : 0;
+  if (m_bBinaryAuth) {
+    char hex[65];
+    vscp_byteArray2HexStr(hex, m_binaryKey, m_binaryKeyLength);
+    j["binary-key"] = hex;
+    vscp_byteArray2HexStr(hex, m_binaryHmacKey, sizeof(m_binaryHmacKey));
+    j["binary-hmac-key"] = hex;
+    OPENSSL_cleanse(hex, sizeof(hex));
+  }
+  else {
+    j["binary-key"]      = "";
+    j["binary-hmac-key"] = "";
+  }
+
   // Filter In
 
   j["priority-filter"] = filter.filter_priority;
@@ -266,6 +286,59 @@ vscpClientTcp::initFromJson(const std::string &config)
           m_tcp.isConnected() || m_tcpReceive.isConnected()))) {
       tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
       return false;
+    }
+
+    // Authenticated binary encryption. Parsed and checked before anything
+    // is changed so an invalid configuration leaves the client as it was.
+    bool binaryAuth          = m_bBinaryAuth;
+    uint8_t binaryEncryption = m_binaryEncryption;
+    uint8_t binaryKey[32];
+    uint8_t binaryKeyLength = m_binaryKeyLength;
+    uint8_t binaryHmacKey[32];
+    memcpy(binaryKey, m_binaryKey, sizeof(binaryKey));
+    memcpy(binaryHmacKey, m_binaryHmacKey, sizeof(binaryHmacKey));
+    if (j.contains("binary-encryption") || j.contains("binary-key") || j.contains("binary-hmac-key")) {
+      binaryEncryption        = j.value("binary-encryption", binaryEncryption);
+      std::string strKey      = j.value("binary-key", std::string());
+      std::string strHmacKey  = j.value("binary-hmac-key", std::string());
+      vscp_trim(strKey);
+      vscp_trim(strHmacKey);
+
+      if (VSCP_ENCRYPTION_NONE == binaryEncryption) {
+        binaryAuth = false;
+      }
+      else {
+        size_t expected = 0;
+        switch (binaryEncryption) {
+          case VSCP_ENCRYPTION_AES128:
+            expected = 16;
+            break;
+          case VSCP_ENCRYPTION_AES192:
+            expected = 24;
+            break;
+          case VSCP_ENCRYPTION_AES256:
+            expected = 32;
+            break;
+          default:
+            break;
+        }
+        // Encryption over TCP is always authenticated: AES key and HMAC key
+        // are both required, and only in binary mode
+        if (!expected || !binary || (strKey.length() != 2 * expected) || (64 != strHmacKey.length()) ||
+            (expected != vscp_hexStr2ByteArray(binaryKey, expected, strKey.c_str())) ||
+            (32 != vscp_hexStr2ByteArray(binaryHmacKey, 32, strHmacKey.c_str())) ||
+            (0 == CRYPTO_memcmp(binaryKey, binaryHmacKey, expected))) {
+          OPENSSL_cleanse(binaryKey, sizeof(binaryKey));
+          OPENSSL_cleanse(binaryHmacKey, sizeof(binaryHmacKey));
+          tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
+          return false;
+        }
+        binaryKeyLength = static_cast<uint8_t>(expected);
+        binaryAuth      = true;
+      }
+    }
+    else if (!binary) {
+      binaryAuth = false; // Only possible in binary mode
     }
 
     if (j.contains("host")) {
@@ -387,6 +460,18 @@ vscpClientTcp::initFromJson(const std::string &config)
     m_bPolling = polling;
     m_bSingleChannelReceiveLoop = singleChannel;
     m_bBinaryMode = binary;
+
+    m_bBinaryAuth      = binaryAuth;
+    m_binaryEncryption = binaryAuth ? binaryEncryption : 0;
+    m_binaryKeyLength  = binaryAuth ? binaryKeyLength : 0;
+    memcpy(m_binaryKey, binaryKey, sizeof(m_binaryKey));
+    memcpy(m_binaryHmacKey, binaryHmacKey, sizeof(m_binaryHmacKey));
+    OPENSSL_cleanse(binaryKey, sizeof(binaryKey));
+    OPENSSL_cleanse(binaryHmacKey, sizeof(binaryHmacKey));
+    if (!binaryAuth) {
+      OPENSSL_cleanse(m_binaryKey, sizeof(m_binaryKey));
+      OPENSSL_cleanse(m_binaryHmacKey, sizeof(m_binaryHmacKey));
+    }
   }
   catch (const json::exception &) {
     tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
@@ -513,6 +598,22 @@ vscpClientTcp::connect(void)
   else {
     m_tcp.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
     m_tcpReceive.setTLSMode(VscpRemoteTcpIf::tls_mode::auto_select);
+  }
+
+  // Authenticated binary encryption on both connections
+  if (m_bBinaryMode && m_bBinaryAuth) {
+    if ((VSCP_ERROR_SUCCESS !=
+         (rv = m_tcp.setBinaryAuthentication(m_binaryEncryption, m_binaryKey, m_binaryKeyLength, m_binaryHmacKey))) ||
+        (VSCP_ERROR_SUCCESS != (rv = m_tcpReceive.setBinaryAuthentication(m_binaryEncryption,
+                                                                          m_binaryKey,
+                                                                          m_binaryKeyLength,
+                                                                          m_binaryHmacKey)))) {
+      return tcpClientFailure(__func__, rv);
+    }
+  }
+  else {
+    m_tcp.clearBinaryAuthentication();
+    m_tcpReceive.clearBinaryAuthentication();
   }
 
   if (VSCP_ERROR_SUCCESS != (rv = m_tcp.setSingleChannelReceiveLoop(!m_bBinaryMode && m_bSingleChannelReceiveLoop))) {

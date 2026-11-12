@@ -149,6 +149,41 @@ replies. Use the raw API consistently when multiplexing commands and events
 or handling encryption; route each received frame according to its type.
 Serialize operations on each client instance, as with the text-mode API.
 
+## Authenticated binary mode over TCP
+
+Optionally every binary record can be encrypted and authenticated. Call
+`setBinaryAuthentication()` before `doCmdBinary()` (or configure
+`vscpClientTcp` with `binary-encryption`, `binary-key` and `binary-hmac-key`,
+see [Binary TCP client mode](library_reference.md#binary-tcp-client-mode)):
+
+```cpp
+client.setBinaryAuthentication(VSCP_ENCRYPTION_AES256, aesKey, 32, hmacKey);
+client.doCmdBinary();
+```
+
+Each record then carries a version 1 authenticated frame (described below)
+inside the normal two-byte length framing:
+
+| Bytes | Contents |
+| --- | --- |
+| 0-1 | Length of the following inner frame, excluding the prefix |
+| 2 | Type/encryption byte (low nibble = AES algorithm) |
+| 3 onward | Ciphertext (body + CRC, PKCS#7 padded), IV (16), tag (16) |
+
+The tag is the leftmost 128 bits of HMAC-SHA-256 over the canonical version 1
+prefix (`0x55`, `(1 << 13) | inner length`), the type byte, the ciphertext and
+the IV, exactly as for authenticated UDP. The receiver checks the tag in
+constant time before decrypting, then padding and CRC, and delivers the plain
+frame with the encryption nibble cleared. A record that fails, or uses another
+algorithm, closes the connection; there is no fallback. All frames are covered:
+events, commands, replies, confirmations, and frames passed to
+`sendBinaryFrame()`/`receiveBinaryFrame()` (which then take and return plain
+frames). The text login before `BINARY` is not covered; use TLS for it. The
+tag gives no replay protection.
+
+Peers implementing this: `vscpClientTcp`/`VscpRemoteTcpIf` and the
+vscp-firmware binary protocol (`vscp-binary-protocol`).
+
 ## Versioned binary frame helpers
 
 The framing helpers in `vscp-binary-protocol.h` support a three-byte prefix:
