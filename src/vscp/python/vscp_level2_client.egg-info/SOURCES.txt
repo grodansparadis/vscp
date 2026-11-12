@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+tests/test_level2_client.py
+vscp_level2/__init__.py
+vscp_level2/client.py
+vscp_level2_client.egg-info/PKG-INFO
+vscp_level2_client.egg-info/SOURCES.txt
+vscp_level2_client.egg-info/dependency_links.txt
+vscp_level2_client.egg-info/requires.txt
+vscp_level2_client.egg-info/top_level.txt

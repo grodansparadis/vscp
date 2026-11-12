@@ -28,7 +28,8 @@
     MAJOR version with incompatible API changes,
     MINOR version with add functionality in a backwards-compatible manner,
     REVISION version manually set from 0 to 255, and
-    PATCH version with backwards-compatible bug fixes (Git commit count).
+    PATCH version with backwards-compatible bug fixes (Git commit count for
+    the current month).
 
 */
 // I M P O R T A N T ! ! ! Lines below must be located at line
