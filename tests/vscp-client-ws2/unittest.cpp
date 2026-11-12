@@ -15,6 +15,8 @@
 #include <vscphelper.h>
 #include <vscp-client-ws2.h>
 
+#include "../vscp-client-ws1/fakewsserver.h"
+
 using json = nlohmann::json;
 
 // ============================================================================
@@ -26,7 +28,6 @@ TEST(VscpClientWs2, ConstructorDefaults)
   vscpClientWs2 ws2;
   EXPECT_EQ(CVscpClient::connType::WS2, ws2.getType());
   EXPECT_FALSE(ws2.isConnected());
-  EXPECT_EQ(nullptr, ws2.m_conn);
   EXPECT_TRUE(ws2.m_eventReceiveQueue.empty());
   EXPECT_TRUE(ws2.m_msgReceiveQueue.empty());
 }
@@ -35,7 +36,6 @@ TEST(VscpClientWs2, ConstructorNotConnected)
 {
   vscpClientWs2 ws2;
   EXPECT_FALSE(ws2.m_bConnected);
-  EXPECT_EQ(nullptr, ws2.m_conn);
 }
 
 TEST(VscpClientWs2, EventReceiveQueueInitiallyEmpty)
@@ -272,31 +272,43 @@ TEST(VscpClientWs2, GetWcydNotConnected)
 //                  Disconnect
 // ============================================================================
 
-TEST(VscpClientWs2, DisconnectSetsConnNull)
+TEST(VscpClientWs2, DisconnectWhenNotConnected)
 {
   vscpClientWs2 ws2;
   EXPECT_EQ(VSCP_ERROR_SUCCESS, ws2.disconnect());
-  EXPECT_EQ(nullptr, ws2.m_conn);
+  EXPECT_FALSE(ws2.isConnected());
 }
 
 // ============================================================================
 //                  JSON config stubs
 // ============================================================================
 
-TEST(VscpClientWs2, GetConfigAsJsonReturnsEmpty)
+TEST(VscpClientWs2, GetConfigAsJsonDefaults)
 {
   vscpClientWs2 ws2;
-  std::string cfg = ws2.getConfigAsJson();
-  EXPECT_TRUE(cfg.empty());
+  json j = json::parse(ws2.getConfigAsJson());
+  EXPECT_EQ("ws://localhost:8884/ws2", j["url"].get<std::string>());
+  EXPECT_EQ(VSCP_WS_DEFAULT_KEY, j["key"].get<std::string>());
+  EXPECT_EQ(WS2_CONNECTION_TIMEOUT, j["connection-timeout"].get<uint32_t>());
+  EXPECT_EQ(WS2_RESPONSE_TIMEOUT, j["response-timeout"].get<uint32_t>());
 }
 
-TEST(VscpClientWs2, InitFromJsonAlwaysTrue)
+TEST(VscpClientWs2, InitFromJson)
 {
   vscpClientWs2 ws2;
   EXPECT_TRUE(ws2.initFromJson("{}"));
-  EXPECT_TRUE(ws2.initFromJson("{\"host\":\"example.com\"}"));
-  EXPECT_TRUE(ws2.initFromJson(""));
-  EXPECT_TRUE(ws2.initFromJson("garbage"));
+  EXPECT_FALSE(ws2.initFromJson(""));
+  EXPECT_FALSE(ws2.initFromJson("garbage"));
+  EXPECT_FALSE(ws2.initFromJson("{\"key\":\"XYZ\"}"));
+
+  EXPECT_TRUE(ws2.initFromJson("{\"url\":\"ws://example.com:9000/ws2\",\"username\":\"bob\","
+                               "\"password\":\"pw\",\"type-filter\":3,\"type-mask\":255}"));
+  json j = json::parse(ws2.getConfigAsJson());
+  EXPECT_EQ("ws://example.com:9000/ws2", j["url"].get<std::string>());
+  EXPECT_EQ("bob", j["user"].get<std::string>());
+  EXPECT_EQ("pw", j["password"].get<std::string>());
+  EXPECT_EQ(3, j["type-filter"].get<int>());
+  EXPECT_EQ(255, j["type-mask"].get<int>());
 }
 
 // ============================================================================
@@ -308,8 +320,9 @@ TEST(VscpClientWs2, InitSetsHostAndPort)
   vscpClientWs2 ws2;
   uint8_t key[32] = { 0 };
   ws2.init("192.168.1.1", 9001, true, "admin", "secret", key);
-  // init encrypts password and stores internally – we just verify
-  // it returned and didn't crash.
+  json j = json::parse(ws2.getConfigAsJson());
+  EXPECT_EQ("wss://192.168.1.1:9001/ws2", j["url"].get<std::string>());
+  EXPECT_EQ("admin", j["user"].get<std::string>());
 }
 
 TEST(VscpClientWs2, InitWithDefaultTimeouts)
@@ -581,4 +594,230 @@ TEST(VscpClientWs2, MsgReceiveQueueMultipleMessages)
   }
 
   EXPECT_TRUE(ws2.m_msgReceiveQueue.empty());
+}
+
+// ============================================================================
+//                  ws2 protocol against a fake server
+// ============================================================================
+
+namespace {
+
+std::string
+reply(const std::string &type, const std::string &cmd, json args = nullptr)
+{
+  json j;
+  j["type"]    = type;
+  j["command"] = cmd;
+  if ("-" == type) {
+    j["errcode"] = 3;
+    j["errstr"]  = "Not authorised";
+  }
+  else {
+    j["args"] = args;
+  }
+  return j.dump();
+}
+
+// Behaves like the VSCP websocket server for ws2
+struct Ws2Server {
+  std::mutex mutex;
+  json filter;
+  std::string password = "secret";
+
+  std::vector<std::string> handle(const std::string &msg)
+  {
+    json j = json::parse(msg);
+    std::string type = j["type"].get<std::string>();
+    if ("EVENT" == type) {
+      return { reply("+", "EVENT") };
+    }
+    if ("CMD" != type) {
+      return {};
+    }
+    std::string cmd = j["command"].get<std::string>();
+    if ("AUTH" == cmd) {
+      std::string iv     = j["args"]["iv"].get<std::string>();
+      std::string crypto = j["args"]["crypto"].get<std::string>();
+      if ((FakeWsServer::sid() != iv) ||
+          (("admin:" + password) != FakeWsServer::decrypt(crypto, iv, VSCP_WS_DEFAULT_KEY))) {
+        return { reply("-", "AUTH") };
+      }
+      return { reply("+", "AUTH") };
+    }
+    if ("SETFILTER" == cmd) {
+      std::lock_guard<std::mutex> lock(mutex);
+      filter = j["args"];
+      return { reply("+", "SETFILTER") };
+    }
+    if ("VERSION" == cmd) {
+      return { reply("+", "VERSION", json::parse("{\"version\":\"1.2.3-4\"}")) };
+    }
+    return { reply("+", cmd) };
+  }
+};
+
+std::string
+greeting(void)
+{
+  return std::string("{\"type\":\"+\",\"args\":[\"AUTH0\",\"") + FakeWsServer::sid() + "\"]}";
+}
+
+std::string
+ws2Event(uint16_t vscp_class, uint16_t vscp_type)
+{
+  vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex));
+  ex.vscp_class = vscp_class;
+  ex.vscp_type  = vscp_type;
+  ex.sizeData   = 3;
+  ex.data[0]    = 1;
+  ex.data[1]    = 2;
+  ex.data[2]    = 3;
+  ex.GUID[0]    = 0xff;
+  ex.year       = 2026;
+  ex.month      = 11;
+  ex.day        = 12;
+  ex.hour       = 10;
+  ex.minute     = 20;
+  ex.second     = 30;
+  std::string str;
+  vscp_convertEventExToJSON(str, &ex);
+  return "{\"type\":\"EVENT\",\"event\":" + str + "}";
+}
+
+} // namespace
+
+TEST(VscpClientWs2, ConnectSendReceiveDisconnect)
+{
+  Ws2Server logic;
+  FakeWsServer server([&logic](const std::string &msg) { return logic.handle(msg); }, { greeting() });
+
+  vscpClientWs2 ws2;
+  json cfg;
+  cfg["url"]      = server.url("/ws2");
+  cfg["user"]     = "admin";
+  cfg["password"] = "secret";
+  ASSERT_TRUE(ws2.initFromJson(cfg.dump()));
+
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.connect());
+  EXPECT_TRUE(ws2.isConnected());
+  EXPECT_NE(std::string::npos, server.m_request.find("GET /ws2 HTTP/1.1"));
+
+  std::vector<std::string> rcv = server.received();
+  ASSERT_EQ(2u, rcv.size());
+  json auth = json::parse(rcv[0]);
+  EXPECT_EQ("CMD", auth["type"]);
+  EXPECT_EQ("AUTH", auth["command"]);
+  EXPECT_EQ(FakeWsServer::sid(), auth["args"]["iv"]);
+  json open = json::parse(rcv[1]);
+  EXPECT_EQ("OPEN", open["command"]);
+
+  // Send
+  vscpEventEx ex;
+  memset(&ex, 0, sizeof(ex));
+  ex.vscp_class = 10;
+  ex.vscp_type  = 6;
+  ex.sizeData   = 2;
+  ex.data[0]    = 0x11;
+  ex.data[1]    = 0x22;
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, ws2.send(ex));
+  rcv = server.received();
+  ASSERT_EQ(3u, rcv.size());
+  json ev = json::parse(rcv[2]);
+  EXPECT_EQ("EVENT", ev["type"]);
+  vscpEventEx sent;
+  std::string strEvent = ev["event"].dump();
+  ASSERT_TRUE(vscp_convertJSONToEventEx(&sent, strEvent));
+  EXPECT_EQ(10, sent.vscp_class);
+  EXPECT_EQ(6, sent.vscp_type);
+  EXPECT_EQ(2, sent.sizeData);
+  EXPECT_EQ(0x22, sent.data[1]);
+
+  // Receive
+  server.sendText(ws2Event(20, 3));
+  vscpEventEx rex;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.receiveBlocking(rex, 2000));
+  EXPECT_EQ(20, rex.vscp_class);
+  EXPECT_EQ(3, rex.vscp_type);
+  EXPECT_EQ(3, rex.sizeData);
+  EXPECT_EQ(3, rex.data[2]);
+  EXPECT_EQ(0xff, rex.GUID[0]);
+  // JSON events carry a Unix timestamp in nanoseconds (2026-11-12T10:20:30Z)
+  EXPECT_EQ(VSCP_HEADER16_FRAME_VERSION_UNIX_NS, rex.head & VSCP_HEADER16_FRAME_VERSION_MASK);
+  EXPECT_EQ(1794478830000000000ULL, rex.timestamp_ns);
+
+  // Version
+  uint8_t major, minor, release, build;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.getversion(&major, &minor, &release, &build));
+  EXPECT_EQ(1, major);
+  EXPECT_EQ(2, minor);
+  EXPECT_EQ(3, release);
+  EXPECT_EQ(4, build);
+
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, ws2.disconnect());
+  EXPECT_FALSE(ws2.isConnected());
+  json last = json::parse(server.received().back());
+  EXPECT_EQ("CLOSE", last["command"]);
+}
+
+TEST(VscpClientWs2, WrongPassword)
+{
+  Ws2Server logic;
+  logic.password = "other";
+  FakeWsServer server([&logic](const std::string &msg) { return logic.handle(msg); }, { greeting() });
+
+  vscpClientWs2 ws2;
+  ASSERT_TRUE(ws2.initFromJson("{\"url\":\"" + server.url("/ws2") + "\",\"user\":\"admin\",\"password\":\"secret\"}"));
+  EXPECT_EQ(VSCP_ERROR_USER, ws2.connect());
+  EXPECT_FALSE(ws2.isConnected());
+}
+
+TEST(VscpClientWs2, FilterIsSentAndApplied)
+{
+  Ws2Server logic;
+  FakeWsServer server([&logic](const std::string &msg) { return logic.handle(msg); }, { greeting() });
+
+  vscpClientWs2 ws2;
+  json cfg;
+  cfg["url"]          = server.url("/ws2");
+  cfg["user"]         = "admin";
+  cfg["password"]     = "secret";
+  cfg["class-filter"] = 10;
+  cfg["class-mask"]   = 0xffff;
+  ASSERT_TRUE(ws2.initFromJson(cfg.dump()));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.connect());
+
+  {
+    // The server can read the filter it gets
+    std::lock_guard<std::mutex> lock(logic.mutex);
+    vscpEventFilter filter;
+    memset(&filter, 0, sizeof(filter));
+    ASSERT_TRUE(vscp_readFilterMaskFromJSON(&filter, logic.filter.dump()));
+    EXPECT_EQ(10, filter.filter_class);
+    EXPECT_EQ(0xffff, filter.mask_class);
+  }
+
+  server.sendText(ws2Event(20, 1));
+  server.sendText(ws2Event(10, 6));
+  vscpEventEx ex;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.receiveBlocking(ex, 2000));
+  EXPECT_EQ(10, ex.vscp_class);
+  EXPECT_EQ(VSCP_ERROR_TIMEOUT, ws2.receiveBlocking(ex, 100));
+}
+
+TEST(VscpClientWs2, ConnectionLost)
+{
+  Ws2Server logic;
+  FakeWsServer server([&logic](const std::string &msg) { return logic.handle(msg); }, { greeting() });
+
+  vscpClientWs2 ws2;
+  ASSERT_TRUE(ws2.initFromJson("{\"url\":\"" + server.url("/ws2") + "\",\"user\":\"admin\",\"password\":\"secret\"}"));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, ws2.connect());
+
+  server.closeConnection();
+  for (int i = 0; (i < 200) && ws2.isConnected(); i++) {
+    usleep(10000);
+  }
+  EXPECT_FALSE(ws2.isConnected());
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, ws2.disconnect());
 }

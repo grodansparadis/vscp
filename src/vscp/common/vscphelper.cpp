@@ -3393,7 +3393,7 @@ vscp_makeIntegerMeasurementEvent(vscpEvent *pev, int64_t value, uint8_t unit, ui
   }
 
   if (nullptr != pev->pdata) {
-    delete pev->pdata;
+    delete[] pev->pdata;
     pev->pdata    = nullptr;
     pev->sizeData = 0;
   }
@@ -8669,7 +8669,7 @@ vscp_convertEventExToString(std::string &str, const vscpEventEx *pex)
   vscp_convertEventExToEvent(&event, pex);
   vscp_convertEventToString(str, &event);
   if (nullptr != event.pdata) {
-    delete event.pdata;
+    delete[] event.pdata;
   }
 
   return true;

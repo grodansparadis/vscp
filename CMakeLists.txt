@@ -357,9 +357,10 @@ endif()
 # Dedicated client connection libraries
 add_library(vscp_client_base SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-base.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-websocket.cpp
 )
 vscp_setup_protocol_target(vscp_client_base)
-target_link_libraries(vscp_client_base PUBLIC vscp_core)
+target_link_libraries(vscp_client_base PUBLIC vscp_core PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 add_library(vscp_client_canal SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-canal.cpp
