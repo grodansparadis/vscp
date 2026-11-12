@@ -1,6 +1,13 @@
-// vscp_client_level2.cpp
+// vscp-client-level2.h
 //
-// VSCP level II driver client communication classes.
+// VSCP Level II driver client communication class.
+//
+// Loads a VSCP Level II driver (vscpl2drv-*), opens it with a
+// configuration file and exchanges events with it. The configuration
+// can be given as a path to an existing file, or embedded in the
+// client configuration. An embedded configuration is written to a
+// private temporary file when the client connects and removed when it
+// disconnects.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,209 +30,207 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(vscpClientLevel2_H__INCLUDED_)
-#define vscpClientLevel2_H__INCLUDED_
+#if !defined(VSCPCLIENTLEVEL2_H__INCLUDED_)
+#define VSCPCLIENTLEVEL2_H__INCLUDED_
 
-#ifndef WIN32
-
+#include "level2drvdef.h"
+#include "vscp-client-base.h"
 #include "vscp.h"
-#include "vscplevel2deviceif.h"
-#include <vscp_client_base.h>
 
-// ----------------------------------------------------------------------------
-
-// When a callback is set and connect is called this object is shared
-// with a workerthread that
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <shared_mutex>
+#include <string>
+#include <thread>
 
 class vscpClientLevel2 : public CVscpClient {
 
 public:
-  virtual vscpClientLevel2();
+  vscpClientLevel2();
   virtual ~vscpClientLevel2();
 
-  static const uint32_t FLAG_ENABLE_DEBUG = 0x80000000; // Debug mode
+  /// Default response timeout in milliseconds (used for VSCPWrite)
+  static const uint32_t DEFAULT_RESPONSE_TIMEOUT = 1000;
 
-  static const uint32_t DEAULT_RESPONSE_TIMEOUT = 3; // In ms
+  /// Timeout in milliseconds for each VSCPRead call in the receive thread
+  static const uint32_t READ_TIMEOUT = 100;
 
-  /*!
-      Initialize the CANAL client
-      @param interface Socketcan interface name
-      @param flags Driver configuration flags. See m_flags below.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
-  int init(const std::string &interface, unsigned long flags, uint32_t timeout = DEAULT_RESPONSE_TIMEOUT);
-
-  // Run wizard
-  int runWizard(void);
+  /// Max number of events held in the receive queue
+  static const size_t MAX_RECEIVE_QUEUE = 8192;
 
   /*!
-      Connect to remote host
-      @param bPoll If true polling is used.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    Initialize with a configuration file
+    @param pathDriver Path to the Level II driver shared library
+    @param pathConfig Path to the driver configuration file
+    @param guid GUID for the driver as a string. Empty for all zeros.
+    @return VSCP_ERROR_SUCCESS on success, error code otherwise.
   */
+  int init(const std::string &pathDriver, const std::string &pathConfig, const std::string &guid = "");
+
+  /*!
+    Initialize with an embedded configuration. The configuration is written
+    to a private temporary file that is given to the driver when the client
+    connects, and removed when it disconnects.
+    @param pathDriver Path to the Level II driver shared library
+    @param config Driver configuration (typically JSON or XML text)
+    @param guid GUID for the driver as a string. Empty for all zeros.
+    @param suffix Suffix for the temporary file (".json", ".xml", ...).
+      Empty to guess it from the content.
+    @return VSCP_ERROR_SUCCESS on success, error code otherwise.
+  */
+  int initEmbedded(const std::string &pathDriver,
+                   const std::string &config,
+                   const std::string &guid   = "",
+                   const std::string &suffix = "");
+
   virtual int connect(void);
-
-  /*!
-      Disconnect from remote host
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int disconnect(void);
-
-  /*!
-      Check if connected.
-      @return true if connected, false otherwise.
-  */
   virtual bool isConnected(void);
 
-  /*!
-      Send VSCP event to remote host.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int send(vscpEvent &ev);
-
-  /*!
-      Send VSCP event to remote host.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int send(vscpEventEx &ex);
+  virtual int send(canalMsg &msg);
 
-  /*!
-    Send VSCP event to remote host.
-    @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-*/
-  virtual int send(vscpEventEx &ex);
-
-  /*!
-      Receive VSCP event from remote host
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int receive(vscpEvent &ev);
-
-  /*!
-      Receive VSCP event ex from remote host
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int receive(vscpEventEx &ex);
-
-  /*!
-    Receive CAN(AL) message from remote host
-    @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int receive(canalMsg &msg);
 
-  /*!
-      Set interface filter
-      @param filter VSCP Filter to set.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
+  virtual int receiveBlocking(vscpEvent &ev, long timeout = 100);
+  virtual int receiveBlocking(vscpEventEx &ex, long timeout = 100);
+  virtual int receiveBlocking(canalMsg &msg, long timeout = 100);
+
   virtual int setfilter(vscpEventFilter &filter);
-
-  /*!
-      Get number of events waiting to be received on remote
-      interface
-      @param pcount Pointer to an unsigned integer that get the count of events.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int getcount(uint16_t *pcount);
-
-  /*!
-      Clear the input queue
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int clear(void);
 
   /*!
-      Get version from interface
-      @param pmajor Pointer to uint8_t that get major version of interface.
-      @param pminor Pointer to uint8_t that get minor version of interface.
-      @param prelease Pointer to uint8_t that get release version of interface.
-      @param pbuild Pointer to uint8_t that get build version of interface.
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
+    Get the driver version (from VSCPGetVersion). The client must be connected.
   */
   virtual int getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild);
 
-  /*!
-      Get interfaces
-      @param iflist Get a list of available interfaces
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
+  /// A Level II driver has no interfaces. Returns an empty list.
   virtual int getinterfaces(std::deque<std::string> &iflist);
 
-  /*!
-      Get capabilities (wcyd) from remote interface
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
   virtual int getwcyd(uint64_t &wcyd);
 
   /*!
-      Set (and enable) receive callback for events
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
-  virtual int setCallback(LPFNDLL_EV_CALLBACK m_evcallback);
-
-  /*!
-      Set (and enable) receive callback ex events
-      @return Return VSCP_ERROR_SUCCESS of OK and error code else.
-  */
-  virtual int setCallback(LPFNDLL_EX_CALLBACK m_excallback);
-
-  /*!
-      Return a JSON representation of connection
-      @return JSON representation as string
+    Return a JSON representation of the connection
+    @return JSON representation as string
   */
   virtual std::string getConfigAsJson(void);
 
   /*!
-      Set member variables from JSON representation of connection
-      @param config JSON representation as string
-      @return True on success, false on failure.
+    Set the configuration from JSON
+
+    {
+      "name": "Name of connection",
+      "path-driver": "/path/to/vscpl2drv-xxx.so",
+      "path-config": "/path/to/config.json",
+      "config": { ... } | "configuration text",
+      "config-suffix": ".json",
+      "guid": "FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00:00:00:00:00",
+      "response-timeout": 1000,
+      "priority-filter": 0, ... (standard filter options)
+    }
+
+    "config" (embedded configuration) takes precedence over "path-config"
+    when it is a non empty object, array or string. An object or array is
+    written as JSON. The configuration can not be changed while connected.
+
+    @param config JSON representation as string
+    @return True on success, false on failure. On failure nothing is changed.
   */
   virtual bool initFromJson(const std::string &config);
 
-  /*!
-      Getter/setters for connection timeout
-      Time is in milliseconds
-  */
   virtual void setConnectionTimeout(uint32_t timeout);
   virtual uint32_t getConnectionTimeout(void);
-
-  /*!
-      Getter/setters for response timeout
-      Time is in milliseconds
-  */
   virtual void setResponseTimeout(uint32_t timeout);
   virtual uint32_t getResponseTimeout(void);
 
-public:
-  // True as long as the worker thread should do it's work
-  bool m_bRun;
+  /// Path to the driver
+  std::string getDriverPath(void);
 
-  // Mutex that protect CANAL interface when callbacks are defined
-#ifndef WIN32
-  pthread_mutex_t m_mutexif;
-#endif
+  /// Path to the configuration file (empty if embedded)
+  std::string getConfigPath(void);
 
-  // Level II functionality
-  vscpLevel2DeviceIf m_l2if;
+  /// Embedded configuration (empty if a file is used)
+  std::string getEmbeddedConfig(void);
 
-  LPFNDLL_EV_CALLBACK m_evcallback; // Event callback
-  LPFNDLL_EX_CALLBACK m_excallback; // Event ex callback
+  /// True if the configuration is embedded
+  bool isConfigEmbedded(void);
 
-  /// Socketcan interface
-  std::string m_interface;
+  /*!
+    Path of the configuration file given to the driver. While connected
+    with an embedded configuration this is the temporary file.
+  */
+  std::string getActiveConfigPath(void);
+
+  /// Driver vendor string (VSCPGetVendorString) if the driver has one
+  std::string getVendorString(void);
+
+  /// Number of received events dropped because the receive queue was full
+  uint64_t getDroppedEventCount(void) { return m_droppedEvents.load(); };
 
 private:
-  /*!
-      True of dll connection is open
-  */
-  bool m_bConnected;
+  // Load the driver and resolve its entry points
+  int loadDriver(void);
 
-  // Worker thread id
-#ifndef WIN32
-  pthread_t m_tid;
-#endif
+  // Unload the driver
+  void unloadDriver(void);
+
+  // Write the embedded configuration to a private temporary file
+  int writeTempConfig(void);
+
+  // Remove the temporary configuration file if there is one
+  void removeTempConfig(void);
+
+  // Receive thread
+  void workerThread(void);
+
+  // Deliver an event received from the driver
+  void deliverEvent(vscpEvent &ev);
+
+  // Serialise connect/disconnect and configuration changes
+  std::mutex m_lifecycleMutex;
+
+  // Held shared while calling into the driver from send(), and exclusive
+  // while the driver is closed and unloaded
+  std::shared_timed_mutex m_driverMutex;
+
+  // Configuration
+  std::string m_pathDriver;
+  std::string m_pathConfig;
+  std::string m_embeddedConfig;
+  std::string m_configSuffix;
+  uint8_t m_guid[16];
+  uint32_t m_responseTimeout;
+  uint32_t m_connectionTimeout;
+
+  // Temporary configuration file (embedded configuration while connected)
+  std::string m_tempConfigPath;
+
+  // Driver
+  void *m_hdll;
+  long m_openHandle;
+  LPFNDLL_VSCPOPEN m_procOpen;
+  LPFNDLL_VSCPCLOSE m_procClose;
+  LPFNDLL_VSCPWRITE m_procWrite;
+  LPFNDLL_VSCPREAD m_procRead;
+  LPFNDLL_VSCPGETVERSION m_procGetVersion;
+  LPFNDLL_VSCPGETVENDORSTRING m_procGetVendorString;
+
+  std::atomic<bool> m_bConnected;
+  std::atomic<bool> m_bRun;
+  std::thread m_workerThread;
+
+  // Receive queue and filter
+  std::mutex m_mutexReceiveQueue;
+  std::condition_variable m_condReceiveQueue;
+  std::deque<vscpEvent *> m_receiveQueue;
+  vscpEventFilter m_filterIn;
+  std::atomic<uint64_t> m_droppedEvents;
 };
 
-#endif // WIN32
-
-#endif
+#endif // VSCPCLIENTLEVEL2_H__INCLUDED_

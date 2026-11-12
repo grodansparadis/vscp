@@ -1,6 +1,6 @@
-// vscp_client_level2.h
+// vscp-client-level2.cpp
 //
-// VSCP level II driver client communication classes.
+// VSCP Level II driver client communication class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -24,52 +24,114 @@
 //
 
 #ifdef WIN32
-#include <pch.h>
+#include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
-#ifndef WIN32
+#include <dlfcn.h>
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <syslog.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <ctype.h>
-#include <errno.h>
-#include <libgen.h>
-#include <sys/time.h>
-#include <sys/uio.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
+#include <algorithm>
+#include <chrono>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <random>
+#include <vector>
 
-#include <signal.h>
-#include <sys/types.h>
-#include <time.h>
-#include <sys/socket.h>
-
-#include <expat.h>
-
-#include <vscp.h>
-#include <vscp_class.h>
-#include <vscp_type.h>
-#include <vscphelper.h>
+#include "canal.h"
 #include "vscp-client-level2.h"
+#include "vscphelper.h"
 
-#include <string>
-#include <list>
+#include <nlohmann/json.hpp>
 
-// Forward declaration
-static void *
-workerThread(void *pObj);
+#include <spdlog/spdlog.h>
+
+using json = nlohmann::json;
+
+namespace {
+
+/*
+  Guess a file suffix for an embedded configuration from its content.
+  Drivers usually only care about the content, but some look at the
+  suffix to select a parser.
+*/
+std::string
+guessSuffix(const std::string &config)
+{
+  for (char ch : config) {
+    if (std::isspace(static_cast<unsigned char>(ch))) {
+      continue;
+    }
+    if (('{' == ch) || ('[' == ch)) {
+      return ".json";
+    }
+    if ('<' == ch) {
+      return ".xml";
+    }
+    break;
+  }
+  return ".conf";
+}
+
+// Only allow a short, plain suffix such as ".json"
+bool
+validSuffix(const std::string &suffix)
+{
+  if (suffix.empty()) {
+    return true;
+  }
+  if ((suffix.size() > 16) || ('.' != suffix[0])) {
+    return false;
+  }
+  for (size_t i = 1; i < suffix.size(); i++) {
+    if (!std::isalnum(static_cast<unsigned char>(suffix[i]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Directory for temporary files
+std::string
+tempDirectory(void)
+{
+#ifdef WIN32
+  char buf[MAX_PATH + 1];
+  DWORD len = GetTempPathA(sizeof(buf), buf);
+  if ((0 == len) || (len > MAX_PATH)) {
+    return std::string();
+  }
+  std::string dir(buf, len);
+#else
+  const char *env = getenv("TMPDIR");
+  std::string dir = ((nullptr != env) && *env) ? env : "/tmp";
+#endif
+  while ((dir.size() > 1) && (('/' == dir.back()) || ('\\' == dir.back()))) {
+    dir.pop_back();
+  }
+  return dir;
+}
+
+// Log an exception thrown out of a driver. A driver should never let an
+// exception escape its C interface, but if one does it must not take the
+// application down.
+void
+logDriverException(const char *call, const std::exception *pex)
+{
+  spdlog::error("LEVEL2 CLIENT: Exception from driver in {}: {}", call, (nullptr != pex) ? pex->what() : "unknown");
+}
+
+// Write all of a buffer to a FILE
+bool
+writeAll(FILE *fp, const std::string &data)
+{
+  return (data.size() == fwrite(data.data(), 1, data.size(), fp)) && (0 == fflush(fp));
+}
+
+} // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // C-tor
@@ -77,12 +139,25 @@ workerThread(void *pObj);
 
 vscpClientLevel2::vscpClientLevel2()
 {
-  m_bConnected = false; // Not connected
-  m_tid        = 0;
-  m_bRun       = false;
+  m_type              = CVscpClient::connType::LEVEL2;
+  m_responseTimeout   = DEFAULT_RESPONSE_TIMEOUT;
+  m_connectionTimeout = 0;
+  memset(m_guid, 0, sizeof(m_guid));
 
-  setResponseTimeout(3); // Response timeout 3 ms
-  pthread_mutex_init(&m_mutexif, NULL);
+  m_hdll                = nullptr;
+  m_openHandle          = 0;
+  m_procOpen            = nullptr;
+  m_procClose           = nullptr;
+  m_procWrite           = nullptr;
+  m_procRead            = nullptr;
+  m_procGetVersion      = nullptr;
+  m_procGetVendorString = nullptr;
+
+  m_bConnected    = false;
+  m_bRun          = false;
+  m_droppedEvents = 0;
+
+  vscp_clearVSCPFilter(&m_filterIn); // Accept all events
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,7 +167,7 @@ vscpClientLevel2::vscpClientLevel2()
 vscpClientLevel2::~vscpClientLevel2()
 {
   disconnect();
-  pthread_mutex_destroy(&m_mutexif);
+  clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,11 +175,51 @@ vscpClientLevel2::~vscpClientLevel2()
 //
 
 int
-vscpClientLevel2::init(const std::string &interface, unsigned long flags, uint32_t timeout)
+vscpClientLevel2::init(const std::string &pathDriver, const std::string &pathConfig, const std::string &guid)
 {
-  m_interface = interface;
-  m_flags     = flags;
-  setResponseTimeout(DEAULT_RESPONSE_TIMEOUT); // Response timeout 3 ms
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (m_bConnected) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  uint8_t newGuid[16] = { 0 };
+  if (!guid.empty() && !vscp_parseGuid(newGuid, guid)) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  m_pathDriver = pathDriver;
+  m_pathConfig = pathConfig;
+  m_embeddedConfig.clear();
+  m_configSuffix.clear();
+  memcpy(m_guid, newGuid, sizeof(m_guid));
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// initEmbedded
+//
+
+int
+vscpClientLevel2::initEmbedded(const std::string &pathDriver,
+                               const std::string &config,
+                               const std::string &guid,
+                               const std::string &suffix)
+{
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (m_bConnected || config.empty() || !validSuffix(suffix)) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  uint8_t newGuid[16] = { 0 };
+  if (!guid.empty() && !vscp_parseGuid(newGuid, guid)) {
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  m_pathDriver = pathDriver;
+  m_pathConfig.clear();
+  m_embeddedConfig = config;
+  m_configSuffix   = suffix;
+  memcpy(m_guid, newGuid, sizeof(m_guid));
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -115,14 +230,52 @@ vscpClientLevel2::init(const std::string &interface, unsigned long flags, uint32
 std::string
 vscpClientLevel2::getConfigAsJson(void)
 {
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
   json j;
-  std::string rv;
+  std::string str;
 
-  j["interface"]       = m_interface;
-  j["flags"]           = m_flags;
-  j["responsetimeout"] = getResponseTimeout();
+  j["type"]        = static_cast<int>(m_type);
+  j["name"]        = getName();
+  j["path-driver"] = m_pathDriver;
 
-  return rv;
+  if (!m_embeddedConfig.empty()) {
+    // Keep a JSON configuration as JSON so it stays readable
+    json embedded = json::parse(m_embeddedConfig, nullptr, false);
+    if (!embedded.is_discarded() && (embedded.is_object() || embedded.is_array())) {
+      j["config"] = embedded;
+    }
+    else {
+      j["config"] = m_embeddedConfig;
+    }
+    if (!m_configSuffix.empty()) {
+      j["config-suffix"] = m_configSuffix;
+    }
+  }
+  else {
+    j["path-config"] = m_pathConfig;
+  }
+
+  vscp_writeGuidArrayToString(str, m_guid);
+  j["guid"] = str;
+
+  j["response-timeout"]   = m_responseTimeout;
+  j["connection-timeout"] = m_connectionTimeout;
+
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    j["priority-filter"] = m_filterIn.filter_priority;
+    j["priority-mask"]   = m_filterIn.mask_priority;
+    j["class-filter"]    = m_filterIn.filter_class;
+    j["class-mask"]      = m_filterIn.mask_class;
+    j["type-filter"]     = m_filterIn.filter_type;
+    j["type-mask"]       = m_filterIn.mask_type;
+    vscp_writeGuidArrayToString(str, m_filterIn.filter_GUID);
+    j["guid-filter"] = str;
+    vscp_writeGuidArrayToString(str, m_filterIn.mask_GUID);
+    j["guid-mask"] = str;
+  }
+
+  return j.dump();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,7 +285,324 @@ vscpClientLevel2::getConfigAsJson(void)
 bool
 vscpClientLevel2::initFromJson(const std::string &config)
 {
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+
+  json j = json::parse(config, nullptr, false);
+  if (j.is_discarded() || !j.is_object()) {
+    spdlog::error("LEVEL2 CLIENT: Invalid JSON configuration");
+    return false;
+  }
+
+  if (m_bConnected) {
+    spdlog::error("LEVEL2 CLIENT: Configuration can not be changed while connected");
+    return false;
+  }
+
+  // Parse everything into locals first so a failure changes nothing
+  std::string name           = getName();
+  std::string pathDriver     = m_pathDriver;
+  std::string pathConfig     = m_pathConfig;
+  std::string embeddedConfig = m_embeddedConfig;
+  std::string configSuffix   = m_configSuffix;
+  uint32_t responseTimeout   = m_responseTimeout;
+  uint32_t connectionTimeout = m_connectionTimeout;
+  uint8_t guid[16];
+  memcpy(guid, m_guid, sizeof(guid));
+  vscpEventFilter filter;
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    filter = m_filterIn;
+  }
+
+  try {
+    if (j.contains("name")) {
+      if (!j["name"].is_string()) {
+        spdlog::error("LEVEL2 CLIENT: 'name' must be a string");
+        return false;
+      }
+      name = j["name"].get<std::string>();
+    }
+
+    if (j.contains("path-driver")) {
+      if (!j["path-driver"].is_string()) {
+        spdlog::error("LEVEL2 CLIENT: 'path-driver' must be a string");
+        return false;
+      }
+      pathDriver = j["path-driver"].get<std::string>();
+    }
+
+    bool bConfigSet = false;
+    if (j.contains("config") && !j["config"].is_null()) {
+      const json &jc = j["config"];
+      std::string text;
+      if (jc.is_object() || jc.is_array()) {
+        text = jc.dump(2);
+      }
+      else if (jc.is_string()) {
+        text = jc.get<std::string>();
+      }
+      else {
+        spdlog::error("LEVEL2 CLIENT: 'config' must be an object, an array or a string");
+        return false;
+      }
+      if (!text.empty() && !(jc.is_object() && jc.empty())) {
+        embeddedConfig = text;
+        pathConfig.clear();
+        bConfigSet = true;
+      }
+    }
+
+    if (!bConfigSet && j.contains("path-config")) {
+      if (!j["path-config"].is_string()) {
+        spdlog::error("LEVEL2 CLIENT: 'path-config' must be a string");
+        return false;
+      }
+      pathConfig = j["path-config"].get<std::string>();
+      embeddedConfig.clear();
+    }
+
+    if (j.contains("config-suffix")) {
+      if (!j["config-suffix"].is_string() || !validSuffix(j["config-suffix"].get<std::string>())) {
+        spdlog::error("LEVEL2 CLIENT: 'config-suffix' must be a short suffix like \".json\"");
+        return false;
+      }
+      configSuffix = j["config-suffix"].get<std::string>();
+    }
+
+    if (j.contains("guid")) {
+      if (!j["guid"].is_string()) {
+        spdlog::error("LEVEL2 CLIENT: 'guid' must be a string");
+        return false;
+      }
+      std::string strGuid = j["guid"].get<std::string>();
+      vscp_trim(strGuid);
+      if (strGuid.empty() || ("-" == strGuid)) {
+        memset(guid, 0, sizeof(guid));
+      }
+      else if (!vscp_parseGuid(guid, strGuid)) {
+        spdlog::error("LEVEL2 CLIENT: Invalid 'guid'");
+        return false;
+      }
+    }
+
+    if (j.contains("response-timeout")) {
+      if (!j["response-timeout"].is_number_unsigned()) {
+        spdlog::error("LEVEL2 CLIENT: 'response-timeout' must be a positive number");
+        return false;
+      }
+      responseTimeout = j["response-timeout"].get<uint32_t>();
+    }
+
+    if (j.contains("connection-timeout")) {
+      if (!j["connection-timeout"].is_number_unsigned()) {
+        spdlog::error("LEVEL2 CLIENT: 'connection-timeout' must be a positive number");
+        return false;
+      }
+      connectionTimeout = j["connection-timeout"].get<uint32_t>();
+    }
+
+    // Filter
+    if (j.contains("priority-filter")) {
+      filter.filter_priority = j["priority-filter"].get<uint8_t>();
+    }
+    if (j.contains("priority-mask")) {
+      filter.mask_priority = j["priority-mask"].get<uint8_t>();
+    }
+    if (j.contains("class-filter")) {
+      filter.filter_class = j["class-filter"].get<uint16_t>();
+    }
+    if (j.contains("class-mask")) {
+      filter.mask_class = j["class-mask"].get<uint16_t>();
+    }
+    if (j.contains("type-filter")) {
+      filter.filter_type = j["type-filter"].get<uint16_t>();
+    }
+    if (j.contains("type-mask")) {
+      filter.mask_type = j["type-mask"].get<uint16_t>();
+    }
+    if (j.contains("guid-filter")) {
+      if (!j["guid-filter"].is_string() || !vscp_parseGuid(filter.filter_GUID, j["guid-filter"].get<std::string>())) {
+        spdlog::error("LEVEL2 CLIENT: Invalid 'guid-filter'");
+        return false;
+      }
+    }
+    if (j.contains("guid-mask")) {
+      if (!j["guid-mask"].is_string() || !vscp_parseGuid(filter.mask_GUID, j["guid-mask"].get<std::string>())) {
+        spdlog::error("LEVEL2 CLIENT: Invalid 'guid-mask'");
+        return false;
+      }
+    }
+  }
+  catch (const json::exception &ex) {
+    spdlog::error("LEVEL2 CLIENT: Invalid configuration: {}", ex.what());
+    return false;
+  }
+
+  setName(name);
+  m_pathDriver        = pathDriver;
+  m_pathConfig        = pathConfig;
+  m_embeddedConfig    = embeddedConfig;
+  m_configSuffix      = configSuffix;
+  m_responseTimeout   = responseTimeout;
+  m_connectionTimeout = connectionTimeout;
+  memcpy(m_guid, guid, sizeof(m_guid));
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    m_filterIn = filter;
+  }
+
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// loadDriver
+//
+
+int
+vscpClientLevel2::loadDriver(void)
+{
+  if (m_pathDriver.empty()) {
+    spdlog::error("LEVEL2 CLIENT: No driver path set");
+    return VSCP_ERROR_INVALID_PATH;
+  }
+
+  // RTLD_NODELETE keeps the code mapped after dlclose. A driver that leaves
+  // a thread running after VSCPClose would otherwise crash the application.
+  int flags = RTLD_NOW | RTLD_LOCAL;
+#ifdef RTLD_NODELETE
+  flags |= RTLD_NODELETE;
+#endif
+
+  dlerror();
+  m_hdll = dlopen(m_pathDriver.c_str(), flags);
+  if (nullptr == m_hdll) {
+    const char *err = dlerror();
+    spdlog::error("LEVEL2 CLIENT: Unable to load driver {}: {}", m_pathDriver, (nullptr != err) ? err : "?");
+    return VSCP_ERROR_INIT_FAIL;
+  }
+
+  m_procOpen       = (LPFNDLL_VSCPOPEN) dlsym(m_hdll, "VSCPOpen");
+  m_procClose      = (LPFNDLL_VSCPCLOSE) dlsym(m_hdll, "VSCPClose");
+  m_procWrite      = (LPFNDLL_VSCPWRITE) dlsym(m_hdll, "VSCPWrite");
+  m_procRead       = (LPFNDLL_VSCPREAD) dlsym(m_hdll, "VSCPRead");
+  m_procGetVersion = (LPFNDLL_VSCPGETVERSION) dlsym(m_hdll, "VSCPGetVersion");
+
+  // Optional
+  m_procGetVendorString = (LPFNDLL_VSCPGETVENDORSTRING) dlsym(m_hdll, "VSCPGetVendorString");
+
+  if ((nullptr == m_procOpen) || (nullptr == m_procClose) || (nullptr == m_procWrite) || (nullptr == m_procRead) ||
+      (nullptr == m_procGetVersion)) {
+    spdlog::error("LEVEL2 CLIENT: {} is not a VSCP Level II driver (missing VSCPOpen, VSCPClose, VSCPWrite, "
+                  "VSCPRead or VSCPGetVersion)",
+                  m_pathDriver);
+    unloadDriver();
+    return VSCP_ERROR_INIT_FAIL;
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// unloadDriver
+//
+
+void
+vscpClientLevel2::unloadDriver(void)
+{
+  if (nullptr != m_hdll) {
+    dlclose(m_hdll);
+    m_hdll = nullptr;
+  }
+  m_procOpen            = nullptr;
+  m_procClose           = nullptr;
+  m_procWrite           = nullptr;
+  m_procRead            = nullptr;
+  m_procGetVersion      = nullptr;
+  m_procGetVendorString = nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeTempConfig
+//
+
+int
+vscpClientLevel2::writeTempConfig(void)
+{
+  const std::string suffix = m_configSuffix.empty() ? guessSuffix(m_embeddedConfig) : m_configSuffix;
+
+  const std::string dir = tempDirectory();
+  if (dir.empty()) {
+    spdlog::error("LEVEL2 CLIENT: No temporary directory");
+    return VSCP_ERROR_INVALID_PATH;
+  }
+
+#ifndef WIN32
+  // mkstemps creates the file exclusively and readable by the owner only,
+  // which matters as configurations often hold credentials and keys
+  std::string tmpl = dir + "/vscpl2drv-XXXXXX" + suffix;
+  std::vector<char> buf(tmpl.begin(), tmpl.end());
+  buf.push_back('\0');
+  int fd = mkstemps(buf.data(), static_cast<int>(suffix.size()));
+  if (-1 == fd) {
+    spdlog::error("LEVEL2 CLIENT: Unable to create temporary configuration file: {}", strerror(errno));
+    return VSCP_ERROR_INVALID_PATH;
+  }
+  std::string path(buf.data());
+  FILE *fp = fdopen(fd, "wb");
+  if (nullptr == fp) {
+    close(fd);
+    unlink(path.c_str());
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+#else
+  // The temp directory is per user on Windows. "x" creates the file
+  // exclusively so an existing file is never reused.
+  std::random_device rd;
+  std::string path;
+  FILE *fp = nullptr;
+  for (int i = 0; (i < 16) && (nullptr == fp); i++) {
+    char name[64];
+    snprintf(name, sizeof(name), "vscpl2drv-%08x%08x", rd(), rd());
+    path = dir + "\\" + name + suffix;
+    fp   = fopen(path.c_str(), "wbx");
+  }
+  if (nullptr == fp) {
+    spdlog::error("LEVEL2 CLIENT: Unable to create temporary configuration file");
+    return VSCP_ERROR_INVALID_PATH;
+  }
+#endif
+
+  bool ok = writeAll(fp, m_embeddedConfig);
+  if (0 != fclose(fp)) {
+    ok = false;
+  }
+  if (!ok) {
+    spdlog::error("LEVEL2 CLIENT: Unable to write temporary configuration file {}", path);
+    remove(path.c_str());
+    return VSCP_ERROR_WRITE_ERROR;
+  }
+
+  m_tempConfigPath = path;
+  spdlog::debug("LEVEL2 CLIENT: Embedded configuration written to {}", path);
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// removeTempConfig
+//
+
+void
+vscpClientLevel2::removeTempConfig(void)
+{
+  if (m_tempConfigPath.empty()) {
+    return;
+  }
+  if ((0 != remove(m_tempConfigPath.c_str())) && (ENOENT != errno)) {
+    spdlog::warn("LEVEL2 CLIENT: Unable to remove temporary configuration file {}: {}",
+                 m_tempConfigPath,
+                 strerror(errno));
+  }
+  m_tempConfigPath.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,8 +612,72 @@ vscpClientLevel2::initFromJson(const std::string &config)
 int
 vscpClientLevel2::connect(void)
 {
-  int rv = CANAL_ERROR_SUCCESS;
-  return rv;
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (m_bConnected) {
+    return VSCP_ERROR_SUCCESS;
+  }
+
+  if (m_embeddedConfig.empty() && m_pathConfig.empty()) {
+    spdlog::error("LEVEL2 CLIENT: No driver configuration (path-config or config) set");
+    return VSCP_ERROR_PARAMETER;
+  }
+
+  int rv = loadDriver();
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+
+  std::string configPath = m_pathConfig;
+  if (!m_embeddedConfig.empty()) {
+    if (VSCP_ERROR_SUCCESS != (rv = writeTempConfig())) {
+      unloadDriver();
+      return rv;
+    }
+    configPath = m_tempConfigPath;
+  }
+
+  try {
+    m_openHandle = m_procOpen(configPath.c_str(), m_guid);
+  }
+  catch (const std::exception &ex) {
+    logDriverException("VSCPOpen", &ex);
+    m_openHandle = 0;
+  }
+  catch (...) {
+    logDriverException("VSCPOpen", nullptr);
+    m_openHandle = 0;
+  }
+  if (0 == m_openHandle) {
+    spdlog::error("LEVEL2 CLIENT: Driver {} failed to open with configuration {}", m_pathDriver, configPath);
+    removeTempConfig();
+    unloadDriver();
+    return VSCP_ERROR_CONNECTION;
+  }
+
+  m_bRun = true;
+  try {
+    m_workerThread = std::thread(&vscpClientLevel2::workerThread, this);
+  }
+  catch (const std::system_error &ex) {
+    spdlog::error("LEVEL2 CLIENT: Unable to start receive thread: {}", ex.what());
+    m_bRun = false;
+    try {
+      m_procClose(m_openHandle);
+    }
+    catch (const std::exception &dex) {
+      logDriverException("VSCPClose", &dex);
+    }
+    catch (...) {
+      logDriverException("VSCPClose", nullptr);
+    }
+    m_openHandle = 0;
+    removeTempConfig();
+    unloadDriver();
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
+
+  m_bConnected = true;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -153,11 +687,43 @@ vscpClientLevel2::connect(void)
 int
 vscpClientLevel2::disconnect(void)
 {
-  m_bRun = false;
-  pthread_join(m_tid, NULL);
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (!m_bConnected) {
+    return VSCP_ERROR_SUCCESS;
+  }
+
+  if (m_workerThread.joinable() && (std::this_thread::get_id() == m_workerThread.get_id())) {
+    spdlog::error("LEVEL2 CLIENT: Can not disconnect from the receive callback");
+    return VSCP_ERROR_OPERATION_FAILED;
+  }
 
   m_bConnected = false;
-  return CANAL_ERROR_SUCCESS;
+  m_bRun       = false;
+  if (m_workerThread.joinable()) {
+    m_workerThread.join();
+  }
+
+  {
+    // Wait for any send() in progress before the driver goes away
+    std::unique_lock<std::shared_timed_mutex> dlock(m_driverMutex);
+    try {
+      m_procClose(m_openHandle);
+    }
+    catch (const std::exception &dex) {
+      logDriverException("VSCPClose", &dex);
+    }
+    catch (...) {
+      logDriverException("VSCPClose", nullptr);
+    }
+    m_openHandle = 0;
+    unloadDriver();
+  }
+
+  removeTempConfig();
+
+  // Wake anyone waiting for events
+  m_condReceiveQueue.notify_all();
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,14 +737,104 @@ vscpClientLevel2::isConnected(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// send
+// workerThread
 //
 
-int
-vscpClientLevel2::send(vscpEvent &ev)
+void
+vscpClientLevel2::workerThread(void)
 {
+  while (m_bRun) {
+    vscpEvent ev;
+    memset(&ev, 0, sizeof(ev));
 
-  return VSCP_ERROR_WRITE_ERROR;
+    auto start = std::chrono::steady_clock::now();
+    int rv     = VSCP_ERROR_ERROR;
+    try {
+      rv = m_procRead(m_openHandle, &ev, READ_TIMEOUT);
+    }
+    catch (const std::exception &ex) {
+      logDriverException("VSCPRead", &ex);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+    catch (...) {
+      logDriverException("VSCPRead", nullptr);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    if (CANAL_ERROR_SUCCESS == rv) {
+      if ((ev.sizeData > VSCP_LEVEL2_MAXDATA) || (ev.sizeData && (nullptr == ev.pdata))) {
+        spdlog::warn("LEVEL2 CLIENT: Driver returned an invalid event");
+      }
+      else {
+        deliverEvent(ev);
+      }
+    }
+    else if ((std::chrono::steady_clock::now() - start) < std::chrono::milliseconds(5)) {
+      // Some drivers do not block on an empty queue
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // The driver allocates the data with new[] (vscp_copyEvent)
+    vscp_deleteEvent(&ev);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deliverEvent
+//
+
+void
+vscpClientLevel2::deliverEvent(vscpEvent &ev)
+{
+  if (0 == ev.timestamp) {
+    ev.timestamp = vscp_makeTimeStamp();
+  }
+
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    if (!vscp_doLevel2Filter(&ev, &m_filterIn)) {
+      return;
+    }
+  }
+
+  if (isCallbackEvActive() && m_callbackev) {
+    m_callbackev(ev, getCallbackObj());
+  }
+
+  if (isCallbackExActive() && m_callbackex) {
+    vscpEventEx ex;
+    if (vscp_convertEventToEventEx(&ex, &ev)) {
+      m_callbackex(ex, getCallbackObj());
+    }
+  }
+
+  if (isCallbackEvActive() || isCallbackExActive()) {
+    return;
+  }
+
+  vscpEvent *pev = new (std::nothrow) vscpEvent;
+  if (nullptr == pev) {
+    m_droppedEvents++;
+    return;
+  }
+  memset(pev, 0, sizeof(vscpEvent));
+  if (!vscp_copyEvent(pev, &ev)) {
+    delete pev;
+    m_droppedEvents++;
+    return;
+  }
+
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    if (m_receiveQueue.size() >= MAX_RECEIVE_QUEUE) {
+      vscp_deleteEvent_v2(&pev);
+      m_droppedEvents++;
+      spdlog::warn("LEVEL2 CLIENT: Receive queue full, event dropped");
+      return;
+    }
+    m_receiveQueue.push_back(pev);
+  }
+  m_condReceiveQueue.notify_one();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,10 +842,53 @@ vscpClientLevel2::send(vscpEvent &ev)
 //
 
 int
+vscpClientLevel2::send(vscpEvent &ev)
+{
+  if ((ev.sizeData > VSCP_LEVEL2_MAXDATA) || (ev.sizeData && (nullptr == ev.pdata))) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  std::shared_lock<std::shared_timed_mutex> dlock(m_driverMutex);
+  if (!m_bConnected || (nullptr == m_procWrite)) {
+    return VSCP_ERROR_NOT_CONNECTED;
+  }
+  try {
+    return m_procWrite(m_openHandle, &ev, m_responseTimeout);
+  }
+  catch (const std::exception &ex) {
+    logDriverException("VSCPWrite", &ex);
+  }
+  catch (...) {
+    logDriverException("VSCPWrite", nullptr);
+  }
+  return VSCP_ERROR_WRITE_ERROR;
+}
+
+int
 vscpClientLevel2::send(vscpEventEx &ex)
 {
-  rv = VSCP_ERROR_WRITE_ERROR;
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  if (!vscp_convertEventExToEvent(&ev, &ex)) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  int rv = send(ev);
+  vscp_deleteEvent(&ev);
+  return rv;
+}
 
+int
+vscpClientLevel2::send(canalMsg &msg)
+{
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  uint8_t guid[16];
+  memcpy(guid, m_guid, sizeof(guid));
+  if (!vscp_convertCanalToEvent(&ev, &msg, guid)) {
+    vscp_deleteEvent(&ev);
+    return VSCP_ERROR_PARAMETER;
+  }
+  int rv = send(ev);
+  vscp_deleteEvent(&ev);
   return rv;
 }
 
@@ -200,21 +899,100 @@ vscpClientLevel2::send(vscpEventEx &ex)
 int
 vscpClientLevel2::receive(vscpEvent &ev)
 {
-  int rv = VSCP_ERROR_ERROR;
+  vscpEvent *pev = nullptr;
+  {
+    std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+    if (m_receiveQueue.empty()) {
+      return VSCP_ERROR_RCV_EMPTY;
+    }
+    pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+  }
 
-  return rv;
+  // The caller owns ev, and its data buffer after this call
+  bool ok = vscp_copyEvent(&ev, pev);
+  vscp_deleteEvent_v2(&pev);
+  return ok ? VSCP_ERROR_SUCCESS : VSCP_ERROR_MEMORY;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// receive
-//
 
 int
 vscpClientLevel2::receive(vscpEventEx &ex)
 {
-  int rv = VSCP_ERROR_ERROR;
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  int rv = receive(ev);
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+  bool ok = vscp_convertEventToEventEx(&ex, &ev);
+  vscp_deleteEvent(&ev);
+  return ok ? VSCP_ERROR_SUCCESS : VSCP_ERROR_PARAMETER;
+}
 
-  return rv;
+int
+vscpClientLevel2::receive(canalMsg &msg)
+{
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  int rv = receive(ev);
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+  bool ok = vscp_convertEventToCanal(&msg, &ev);
+  vscp_deleteEvent(&ev);
+  return ok ? VSCP_ERROR_SUCCESS : VSCP_ERROR_PARAMETER;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// receiveBlocking
+//
+
+int
+vscpClientLevel2::receiveBlocking(vscpEvent &ev, long timeout)
+{
+  {
+    std::unique_lock<std::mutex> qlock(m_mutexReceiveQueue);
+    if (m_receiveQueue.empty()) {
+      if (!m_bConnected) {
+        return VSCP_ERROR_NOT_CONNECTED;
+      }
+      m_condReceiveQueue.wait_for(qlock, std::chrono::milliseconds((timeout < 0) ? 0 : timeout), [this] {
+        return !m_receiveQueue.empty() || !m_bConnected;
+      });
+      if (m_receiveQueue.empty()) {
+        return m_bConnected ? VSCP_ERROR_TIMEOUT : VSCP_ERROR_NOT_CONNECTED;
+      }
+    }
+  }
+  return receive(ev);
+}
+
+int
+vscpClientLevel2::receiveBlocking(vscpEventEx &ex, long timeout)
+{
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  int rv = receiveBlocking(ev, timeout);
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+  bool ok = vscp_convertEventToEventEx(&ex, &ev);
+  vscp_deleteEvent(&ev);
+  return ok ? VSCP_ERROR_SUCCESS : VSCP_ERROR_PARAMETER;
+}
+
+int
+vscpClientLevel2::receiveBlocking(canalMsg &msg, long timeout)
+{
+  vscpEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  int rv = receiveBlocking(ev, timeout);
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+  bool ok = vscp_convertEventToCanal(&msg, &ev);
+  vscp_deleteEvent(&ev);
+  return ok ? VSCP_ERROR_SUCCESS : VSCP_ERROR_PARAMETER;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -224,17 +1002,9 @@ vscpClientLevel2::receive(vscpEventEx &ex)
 int
 vscpClientLevel2::setfilter(vscpEventFilter &filter)
 {
-  int rv;
-
-  uint32_t _filter = ((unsigned long) filter.filter_priority << 26) | ((unsigned long) filter.filter_class << 16) |
-                     ((unsigned long) filter.filter_type << 8) | filter.filter_GUID[0];
-  if (CANAL_ERROR_SUCCESS == (rv = m_canalif.CanalSetFilter(_filter))) {
-    return rv;
-  }
-
-  uint32_t _mask = ((unsigned long) filter.mask_priority << 26) | ((unsigned long) filter.mask_class << 16) |
-                   ((unsigned long) filter.mask_type << 8) | filter.mask_GUID[0];
-  return m_canalif.CanalSetMask(_mask);
+  std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+  m_filterIn = filter;
+  return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,16 +1014,27 @@ vscpClientLevel2::setfilter(vscpEventFilter &filter)
 int
 vscpClientLevel2::getcount(uint16_t *pcount)
 {
-  return m_canalif.CanalDataAvailable();
+  if (nullptr == pcount) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+  *pcount = static_cast<uint16_t>(std::min<size_t>(m_receiveQueue.size(), 0xffff));
+  return VSCP_ERROR_SUCCESS;
 }
 
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // clear
 //
 
 int
-vscpClientLevel2::clear()
+vscpClientLevel2::clear(void)
 {
+  std::lock_guard<std::mutex> qlock(m_mutexReceiveQueue);
+  while (!m_receiveQueue.empty()) {
+    vscpEvent *pev = m_receiveQueue.front();
+    m_receiveQueue.pop_front();
+    vscp_deleteEvent_v2(&pev);
+  }
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -264,8 +1045,49 @@ vscpClientLevel2::clear()
 int
 vscpClientLevel2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease, uint8_t *pbuild)
 {
+  if ((nullptr == pmajor) || (nullptr == pminor) || (nullptr == prelease) || (nullptr == pbuild)) {
+    return VSCP_ERROR_PARAMETER;
+  }
 
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (!m_bConnected || (nullptr == m_procGetVersion)) {
+    return VSCP_ERROR_NOT_CONNECTED;
+  }
+
+  unsigned long ver = 0;
+  try {
+    ver = m_procGetVersion();
+  }
+  catch (...) {
+    logDriverException("VSCPGetVersion", nullptr);
+    return VSCP_ERROR_ERROR;
+  }
+  *pmajor           = (ver >> 24) & 0xff;
+  *pminor           = (ver >> 16) & 0xff;
+  *prelease         = (ver >> 8) & 0xff;
+  *pbuild           = ver & 0xff;
   return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getVendorString
+//
+
+std::string
+vscpClientLevel2::getVendorString(void)
+{
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  if (!m_bConnected || (nullptr == m_procGetVendorString)) {
+    return std::string();
+  }
+  const char *str = nullptr;
+  try {
+    str = m_procGetVendorString();
+  }
+  catch (...) {
+    logDriverException("VSCPGetVendorString", nullptr);
+  }
+  return (nullptr != str) ? std::string(str) : std::string();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -275,7 +1097,7 @@ vscpClientLevel2::getversion(uint8_t *pmajor, uint8_t *pminor, uint8_t *prelease
 int
 vscpClientLevel2::getinterfaces(std::deque<std::string> &iflist)
 {
-  // No interfaces available
+  iflist.clear();
   return VSCP_ERROR_SUCCESS;
 }
 
@@ -286,341 +1108,73 @@ vscpClientLevel2::getinterfaces(std::deque<std::string> &iflist)
 int
 vscpClientLevel2::getwcyd(uint64_t &wcyd)
 {
-  wcyd = VSCP_SERVER_CAPABILITY_NONE; // No capabilities
+  wcyd = VSCP_SERVER_CAPABILITY_NONE;
   return VSCP_ERROR_SUCCESS;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// setConnectionTimeout
+///////////////////////////////////////////////////////////////////////////////
+// Timeouts
 //
 
 void
 vscpClientLevel2::setConnectionTimeout(uint32_t timeout)
 {
-  ;
+  m_connectionTimeout = timeout;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// getConnectionTimeout
-//
 
 uint32_t
 vscpClientLevel2::getConnectionTimeout(void)
 {
-  return 0;
+  return m_connectionTimeout;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// setResponseTimeout
-//
 
 void
 vscpClientLevel2::setResponseTimeout(uint32_t timeout)
 {
-  ;
+  m_responseTimeout = timeout;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// getResponseTimeout
-//
 
 uint32_t
 vscpClientLevel2::getResponseTimeout(void)
 {
-  return 0;
+  return m_responseTimeout;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setCallback
+// Configuration getters
 //
 
-int
-vscpClientLevel2::setCallback(LPFNDLL_EV_CALLBACK m_evcallback)
+std::string
+vscpClientLevel2::getDriverPath(void)
 {
-  // Can not be called when connected
-  if (m_bConnected)
-    return VSCP_ERROR_ERROR;
-
-  return VSCP_ERROR_SUCCESS;
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  return m_pathDriver;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// setCallback
-//
-
-int
-vscpClientLevel2::setCallback(LPFNDLL_EX_CALLBACK m_excallback)
+std::string
+vscpClientLevel2::getConfigPath(void)
 {
-  // Can not be called when connected
-  if (m_bConnected)
-    return VSCP_ERROR_ERROR;
-
-  return VSCP_ERROR_SUCCESS;
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  return m_pathConfig;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Workerthread
-//
-// This thread call the appropriate callback when events are received
-//
-
-// static void *workerThread(void *pObj)
-// {
-//     uint8_t guid[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-//     vscpClientLevel2 *pClient = (vscpClientLevel2 *)pObj;
-//     VscpCanalDeviceIf *pif = (VscpCanalDeviceIf *)&(pClient->m_canalif);
-
-//     if (NULL == pif) return NULL;
-
-//     while (pClient->m_bRun) {
-
-//         //pthread_mutex_lock(&pif->m_mutexif);
-
-//         // Check if there are events to fetch
-//         int cnt;
-//         if ((cnt = pClient->m_canalif.CanalDataAvailable())) {
-
-//             while (cnt) {
-//                 canalMsg msg;
-//                 if ( CANAL_ERROR_SUCCESS == pClient->m_canalif.CanalReceive(&msg) ) {
-//                     if ( NULL != pClient->m_evcallback ) {
-//                         vscpEvent ev;
-//                         if (vscp_convertCanalToEvent(&ev,
-//                                                         &msg,
-//                                                         guid) ) {
-//                             pClient->m_evcallback(&ev);
-//                         }
-//                     }
-//                     if ( NULL != pClient->m_excallback ) {
-//                         vscpEventEx ex;
-//                         if (vscp_convertCanalToEventEx(&ex,
-//                                                         &msg,
-//                                                         guid) ) {
-//                             pClient->m_excallback(&ex);
-//                         }
-//                     }
-//                 }
-//                 cnt--;
-//             }
-
-//         }
-
-//         //pthread_mutex_unlock(&pif->m_mutexif);
-//         usleep(200);
-//     }
-
-//     return NULL;
-// }
-
-void *
-workerThread(void *pData)
+std::string
+vscpClientLevel2::getEmbeddedConfig(void)
 {
-  int sock;
-  char devname[IFNAMSIZ + 1];
-  fd_set rdfs;
-  struct timeval tv;
-  struct sockaddr_can addr;
-  struct ifreq ifr;
-  struct cmsghdr *cmsg;
-  struct canfd_frame frame;
-  char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-  const int canfd_on = 1;
-
-  vscpClientLevel2 *pClient = (vscpClientLevel2 *) pData;
-  if (NULL == pClient) {
-    // syslog(LOG_ERR, "No object data supplied for worker thread");
-    return NULL;
-  }
-
-  strncpy(devname, pClient->m_interface.c_str(), sizeof(devname) - 1);
-
-  while (pClient->m_bRun) {
-
-    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if (sock < 0) {
-
-      if (ENETDOWN == errno) {
-        sleep(1);
-        continue; // We try again
-      }
-
-      if (pClient->m_flags & pClient->FLAG_ENABLE_DEBUG) {
-        syslog(LOG_ERR,
-               "%s",
-               (const char *) "ReadSocketCanTread: Error while "
-                              "opening socket. Terminating!");
-      }
-      break;
-    }
-
-    strcpy(ifr.ifr_name, devname);
-    ioctl(sock, SIOCGIFINDEX, &ifr);
-
-    addr.can_family  = AF_CAN;
-    addr.can_ifindex = ifr.ifr_ifindex;
-
-#ifdef DEBUG
-    printf("using interface name '%s'.\n", ifr.ifr_name);
-#endif
-
-    // try to switch the socket into CAN FD mode
-    setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_on, sizeof(canfd_on));
-
-    if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-      syslog(LOG_ERR,
-             "%s",
-             (const char *) "CReadSocketCanTread: Error in socket bind. "
-                            "Terminating!");
-      close(sock);
-      sleep(2);
-      continue;
-    }
-
-    bool bInnerLoop = true;
-    while (!pClient->m_bRun && bInnerLoop) {
-
-      FD_ZERO(&rdfs);
-      FD_SET(sock, &rdfs);
-
-      tv.tv_sec  = 0;
-      tv.tv_usec = 5000; // 5ms timeout
-
-      int ret;
-      if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
-        // Error
-        if (ENETDOWN == errno) {
-          // We try to get contact with the net
-          // again if it goes down
-          bInnerLoop = false;
-        }
-        else {
-          pClient->m_bRun = false;
-        }
-        continue;
-      }
-
-      if (ret) {
-
-        // There is data to read
-
-        ret = read(sock, &frame, sizeof(struct can_frame));
-        if (ret < 0) {
-          if (ENETDOWN == errno) {
-            // We try to get contact with the net
-            // again if it goes down
-            bInnerLoop = false;
-            sleep(2);
-          }
-          else {
-            pClient->m_bRun = false;
-          }
-          continue;
-        }
-
-        // Must be Extended
-        if (!(frame.can_id & CAN_EFF_FLAG))
-          continue;
-
-        // Mask of control bits
-        frame.can_id &= CAN_EFF_MASK;
-
-        vscpEvent *pEvent = new vscpEvent();
-        if (NULL != pEvent) {
-
-          pEvent->pdata = new uint8_t[frame.len];
-          if (NULL == pEvent->pdata) {
-            delete pEvent;
-            continue;
-          }
-
-          // GUID will be set to GUID of interface
-          // by driver interface with LSB set to nickname
-          memset(pEvent->GUID, 0, 16);
-          pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
-
-          // Set VSCP class
-          pEvent->vscp_class = vscp_getVscpClassFromCANALid(frame.can_id);
-
-          // Set VSCP type
-          pEvent->vscp_type = vscp_getVscpTypeFromCANALid(frame.can_id);
-
-          // Copy data if any
-          pEvent->sizeData = frame.len;
-          if (frame.len) {
-            memcpy(pEvent->pdata, frame.data, frame.len);
-          }
-
-          // if (vscp_doLevel2Filter(pEvent, &pClient->m_vscpfilter)) {
-          //     pthread_mutex_lock( &pClient->m_mutexReceiveQueue);
-          //     pClient->m_receiveList.push_back(pEvent);
-          //     #ifdef WIN32
-          //         ReleaseSemaphore(m_semReceiveQueue, 1, NULL);
-          // #else
-          //         sem_post(&m_semReceiveQueue);
-          // #endif
-          //     pthread_mutex_unlock( &pClient->m_mutexReceiveQueue);
-          // } else {
-          //     vscp_deleteVscpEvent(pEvent);
-          // }
-        }
-      }
-      else {
-
-        // Check if there is event(s) to send
-        // if (pClient->m_sendList.size()) {
-
-        //     // Yes there are data to send
-        //     // So send it out on the CAN bus
-
-        //     pthread_mutex_lock( &pClient->m_mutexSendQueue);
-        //     vscpEvent *pEvent = pClient->m_sendList.front();
-        //     pClient->m_sendList.pop_front();
-        //     pthread_mutex_unlock( &pClient->m_mutexSendQueue);
-
-        //     if (NULL == pEvent) continue;
-
-        //     // Class must be a Level I class or a Level II
-        //     // mirror class
-        //     if (pEvent->vscp_class < 512) {
-        //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-        //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-        //         if (0 != pEvent->sizeData) {
-        //             frame.len =
-        //               (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-        //             memcpy(frame.data, pEvent->pdata, frame.len);
-        //         }
-        //     } else if (pEvent->vscp_class < 1024) {
-        //         pEvent->vscp_class -= 512;
-        //         frame.can_id = vscp_getCANALidFromEvent(pEvent);
-        //         frame.can_id |= CAN_EFF_FLAG; // Always extended
-        //         if (0 != pEvent->sizeData) {
-        //             frame.len = ((pEvent->sizeData - 16) > 8
-        //                            ? 8
-        //                            : pEvent->sizeData - 16);
-        //             memcpy(frame.data, pEvent->pdata + 16, frame.len);
-        //         }
-        //     }
-
-        //     // Remove the event
-        //     pthread_mutex_lock( &pClient->m_mutexSendQueue);
-        //     vscp_deleteVSCPevent(pEvent);
-        //     pthread_mutex_unlock( &pClient->m_mutexSendQueue);
-
-        //     // Write the data
-        //     int nbytes = write(sock, &frame, sizeof(struct can_frame));
-
-        //} // event to send
-
-      } // No data to read
-
-    } // Inner loop
-
-    // Close the socket
-    close(sock);
-
-  } // Outer loop
-
-  return NULL;
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  return m_embeddedConfig;
 }
 
-#endif
+bool
+vscpClientLevel2::isConfigEmbedded(void)
+{
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  return !m_embeddedConfig.empty();
+}
+
+std::string
+vscpClientLevel2::getActiveConfigPath(void)
+{
+  std::lock_guard<std::mutex> lock(m_lifecycleMutex);
+  return m_tempConfigPath.empty() ? m_pathConfig : m_tempConfigPath;
+}

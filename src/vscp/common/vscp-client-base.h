@@ -70,6 +70,7 @@ public:
       - MQTT - VSCP over MQTT.
       - UDP - VSCP over UDP.
       - MULTICAST - VSCP multicast protocol.
+      - LEVEL2 - VSCP Level II driver (vscpl2drv-*).
       - REST - VSCP REST interface.
       - RAWCAN - Handle standard CAN and CANFD.
       - RAWMQTT - Handle standard MQTT.
@@ -85,6 +86,7 @@ public:
     MQTT,
     UDP,
     MULTICAST,
+    LEVEL2,
   } connType;
 
   /*!

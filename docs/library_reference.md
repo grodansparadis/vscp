@@ -38,6 +38,7 @@ int main() {
 | vscp_core | Core protocol and event helpers |
 | vscp_client_base | Common client infrastructure |
 | vscp_client_canal | CANal client support |
+| vscp_client_level2 | VSCP Level II driver (vscpl2drv-*) client support |
 | vscp_client_tcp | TCP client support |
 | vscp_client_udp | UDP client support |
 | vscp_client_ws1 | WebSocket client support (version 1) |
@@ -732,6 +733,70 @@ target_link_libraries(app PRIVATE vscp_client_canal)
 
 int main() {
     // Connect to a Canal-backed VSCP endpoint.
+    return 0;
+}
+```
+
+## vscp_client_level2
+
+Purpose: load and use any VSCP Level II driver (`vscpl2drv-*`) directly from an application, without the VSCP daemon.
+
+The client loads the driver shared library, opens it with a configuration file and a GUID, and exchanges events with it through `VSCPWrite` and `VSCPRead`. A receive thread delivers events to the callbacks or to the receive queue, after the receive filter.
+
+The driver configuration can be given in two ways:
+
+- `path-config`: the path to an existing configuration file.
+- `config`: the configuration embedded in the client configuration, as a JSON object or array, or as text (for example XML). When the client connects it is written to a new temporary file, readable by the owner only, that is given to the driver. The file is removed when the client disconnects, also when the driver fails to open. `config` takes precedence over `path-config`.
+
+```json
+{
+  "name": "Local tcp/ip server",
+  "path-driver": "/usr/lib/vscp/drivers/level2/libvscpl2drv-tcpipsrv.so",
+  "config": {
+    "interface": "tcp://localhost:9598"
+  },
+  "config-suffix": ".json",
+  "guid": "FF:FF:FF:FF:FF:FF:FF:F5:01:00:00:00:00:00:00:00",
+  "response-timeout": 1000
+}
+```
+
+| Option | Meaning |
+| --- | --- |
+| `path-driver` | Path to the driver shared library. |
+| `path-config` | Path to the driver configuration file. |
+| `config` | Embedded configuration. An object or array is written as JSON. |
+| `config-suffix` | Suffix of the temporary file (`.json`, `.xml`, ...). Guessed from the content when not set. |
+| `guid` | GUID given to `VSCPOpen`. |
+| `response-timeout` | Timeout in milliseconds for `VSCPWrite`. |
+| `priority-filter` ... `guid-mask` | Receive filter, as for the other clients. |
+
+Notes:
+
+- The configuration can not be changed while connected.
+- `getversion()` returns the driver version from `VSCPGetVersion`, and `getVendorString()` the vendor string if the driver has one.
+- The driver is loaded with `RTLD_NODELETE` where available, so a driver that leaves a thread running after `VSCPClose` does not crash the application when it is unloaded.
+
+Example:
+
+```cmake
+target_link_libraries(app PRIVATE vscp_client_level2)
+```
+
+```cpp
+#include <vscp/vscp-client-level2.h>
+
+int main() {
+    vscpClientLevel2 client;
+    client.initEmbedded("/usr/lib/vscp/drivers/level2/libvscpl2drv-tcpipsrv.so",
+                        "{ \"interface\": \"tcp://localhost:9598\" }");
+    if (VSCP_ERROR_SUCCESS == client.connect()) {
+        vscpEventEx ex;
+        if (VSCP_ERROR_SUCCESS == client.receiveBlocking(ex, 1000)) {
+            // Use the event
+        }
+        client.disconnect();
+    }
     return 0;
 }
 ```

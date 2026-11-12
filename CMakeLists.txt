@@ -364,6 +364,12 @@ add_library(vscp_client_canal SHARED
 vscp_setup_protocol_target(vscp_client_canal)
 target_link_libraries(vscp_client_canal PUBLIC vscp_client_base vscp_core)
 
+add_library(vscp_client_level2 SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-level2.cpp
+)
+vscp_setup_protocol_target(vscp_client_level2)
+target_link_libraries(vscp_client_level2 PUBLIC vscp_client_base vscp_core)
+
 add_library(vscp_client_tcp SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscp-client-tcp.cpp
 )
@@ -430,6 +436,7 @@ target_link_libraries(vscp_common
         vscp_core
         vscp_client_base
         vscp_client_canal
+        vscp_client_level2
         vscp_client_tcp
         vscp_client_udp
         vscp_client_ws1
@@ -458,6 +465,7 @@ target_link_libraries(vscp_all
         vscp_util
         vscp_client_base
         vscp_client_canal
+        vscp_client_level2
         vscp_client_tcp
         vscp_client_udp
         vscp_client_ws1
@@ -482,6 +490,7 @@ if(VSCP_INSTALL)
         vscp_mdf
         vscp_client_base
         vscp_client_canal
+        vscp_client_level2
         vscp_client_tcp
         vscp_client_udp
         vscp_client_ws1
