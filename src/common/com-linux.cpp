@@ -30,7 +30,7 @@
 Comm::Comm( void )
 {
     pthread_mutex_init( &m_mutex, NULL );
-    m_fd = 0;
+    m_fd = -1;  // Not open
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ Comm::~Comm( void )
 bool Comm::open( const char *szDevice )	
 {
     // Not allowed to open if already open
-    if ( m_fd != 0 ) return false;
+    if ( m_fd >= 0 ) return false;
 
     if ( NULL != szDevice ) {
         if ( -1 == ( m_fd = ::open( szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
@@ -74,7 +74,12 @@ bool Comm::open( const char *szDevice )
 
 void Comm::close( void ) 
 { 
-  ::close( m_fd ); m_fd = 0; 
+  // -1 marks a closed port. Using 0 made the destructor close fd 0 (stdin
+  // or whatever reused it) after an explicit close().
+  if ( m_fd >= 0 ) {
+    ::close( m_fd );
+  }
+  m_fd = -1;
 }
 
 

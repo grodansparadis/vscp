@@ -58,7 +58,7 @@ public:
         Constructor
         \param Device Open the named device
     */
-    Comm(const char *Device) { m_fd = 0; open( Device ); }
+    Comm(const char *Device) { m_fd = -1; open( Device ); }
   
     /*!
         Constructor
@@ -84,6 +84,7 @@ public:
   
     /*! 
         Get file descriptor
+        \return The descriptor, or -1 if the port is not open
     */
     int getFD( void ) { return m_fd; }
   
@@ -292,7 +293,7 @@ public:
     /// Serial device name
     char m_szDevice[64];
   
-    /// Serial device handle
+    /// Serial device handle (-1 when not open)
     int m_fd;
   
     /// Holder for error string
