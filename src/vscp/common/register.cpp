@@ -825,11 +825,11 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
   html += ".";
   html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
   html += ".";
-  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 3));
+  html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_ID + 4));
   html += "<br>";
 
   html += "</font><b>Manufacturer Device ID:</b><font color=\"#009900\"> ";
-  html += int_to_hex(stdregs.getManufacturerDeviceID()); // TODO: print as hex
+  html += int_to_hex(stdregs.getManufacturerDeviceID());
   html += " - ";
   html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANDEV_ID));
   html += ".";
@@ -841,7 +841,7 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
   html += "<br>";
 
   html += "</font><b>Manufacturer sub device ID:</b><font color=\"#009900\"> ";
-  html += int_to_hex(stdregs.getManufacturerSubDeviceID()); // TODO: print as hex
+  html += int_to_hex(stdregs.getManufacturerSubDeviceID());
   html += " - ";
   html += std::to_string(stdregs.getReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID));
   html += ".";
@@ -919,14 +919,14 @@ vscp_getDeviceInfoHtml(CMDF &mdf, CStandardRegisters &stdregs)
     html += " Startoffset=";
     html += std::to_string(pdm->getStartOffset());
     html += " (";
-    html += int_to_hex(pdm->getStartOffset()); // TODO: print as hex
+    html += int_to_hex(pdm->getStartOffset());
     html += ") Startpage=";
     html += std::to_string(pdm->getStartPage());
     html += " (";
-    html += int_to_hex(pdm->getStartPage()); // TODO: print as hex
+    html += int_to_hex(pdm->getStartPage());
     html += ") Row size=";
     html += std::to_string(pdm->getRowSize());
-    html += ")<br>";
+    html += "<br>";
   }
 
   html += "</font><br>";

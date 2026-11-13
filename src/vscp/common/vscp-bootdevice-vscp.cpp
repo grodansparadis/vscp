@@ -524,6 +524,7 @@ CBootDevice_VSCP::writeBlock(uint32_t block, const uint8_t *paddr)
     if (nullptr != m_statusCallback) {
       m_statusCallback(-1, "VSCP bootloader: NACK received for data block");
     }
+    return rv;
   }
 
   // Check that the crc is equal
@@ -531,7 +532,20 @@ CBootDevice_VSCP::writeBlock(uint32_t block, const uint8_t *paddr)
   uint16_t crc_packet   = construct_unsigned16(ex.data[0], ex.data[1]);
   uint32_t block_packet = construct_unsigned32(ex.data[2], ex.data[3], ex.data[4], ex.data[5]);
 
-  if ((crc_packet != crc_block) || (block_packet != block)) {
+  if (block_packet != block) {
+    spdlog::error("VSCP bootloader: Block number mismatch in ACK. Expected={0} Received={1}", block, block_packet);
+    if (nullptr != m_statusCallback) {
+      m_statusCallback(
+        -1,
+        vscp_str_format("VSCP bootloader: Block number mismatch in ACK. Expected=%u Received=%u",
+                        (unsigned)block,
+                        (unsigned)block_packet)
+          .c_str());
+    }
+    return VSCP_ERROR_INVALID_FRAME;
+  }
+
+  if (crc_packet != crc_block) {
     spdlog::error("VSCP bootloader: CRC error for block. CRC Packet={0:0X} CRC_Block={1:0X}", crc_packet, crc_block);
     if (nullptr != m_statusCallback) {
       m_statusCallback(
@@ -539,7 +553,7 @@ CBootDevice_VSCP::writeBlock(uint32_t block, const uint8_t *paddr)
         vscp_str_format("VSCP bootloader: CRC error for block CRC Packet=%04X CRC_Block=%04X", crc_packet, crc_block)
           .c_str());
     }
-    return VSCP_ERROR_INVALID_FRAME; // TODO: Change to CRC error
+    return VSCP_ERROR_INVALID_CHECKSUM;
   }
 
   // We have a valid block

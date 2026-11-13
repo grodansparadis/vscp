@@ -940,8 +940,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
     // Client ID
     if (j.contains("clientid") && j["clientid"].is_string()) {
       m_clientid = j["clientid"].get<std::string>();
-      // TODO
-      // {rnd} mustasch is replaces with hex random value
+      // A {{rnd}} mustache is replaced with 16 random hex characters in init()
       spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'client id' set to {}.", m_clientid);
       if (m_clientid.length() > MQTT_MAX_CLIENTID_LENGTH) {
         spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'client id' is to long {0} length={1} (Standard say max 23 "
@@ -1268,7 +1267,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x04;
 #endif
 #else
-              v5_options |= 0x04; // TODO Check if this is the right option
+              v5_options |= 0x04;  // Same value as MQTT_SUB_OPT_* in mosquitto
 #endif
             }
             /*
@@ -1286,7 +1285,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x08;
 #endif
 #else
-              v5_options |= 0x08; // TODO Check if this is the right option
+              v5_options |= 0x08;  // Same value as MQTT_SUB_OPT_* in mosquitto
 #endif
             }
             /*
@@ -1304,7 +1303,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x00;
 #endif
 #else
-              v5_options |= 0x00; // TODO Check if this is the right option
+              v5_options |= 0x00;  // Same value as MQTT_SUB_OPT_* in mosquitto
 #endif
             }
             /*
@@ -1321,7 +1320,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x10;
 #endif
 #else
-              v5_options |= 0x10; // TODO Check if this is the right option
+              v5_options |= 0x10;  // Same value as MQTT_SUB_OPT_* in mosquitto
 #endif
             }
             /*
@@ -1337,7 +1336,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
               v5_options |= 0x20;
 #endif
 #else
-              v5_options |= 0x20; // TODO Check if this is the right option
+              v5_options |= 0x20;  // Same value as MQTT_SUB_OPT_* in mosquitto
 #endif
             }
 
@@ -1875,7 +1874,7 @@ vscpClientMqtt::init(void)
   if (m_clientid.length()) {
 
     /*
-      if clientid if contains {{rd}} replace
+      if clientid contains {{rnd}} replace it
       with 16 random hex characters
     */
     {
