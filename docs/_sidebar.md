@@ -11,6 +11,9 @@
 * Library reference
   * [Library reference](library_reference.md)
 
+* Developers
+ * [Source code guide](source-code.md)
+
 * Appendix
   * [VSCP repositories](appendix_repositories.md)
 

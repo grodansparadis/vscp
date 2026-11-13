@@ -1,3 +1,6 @@
-See README in vscp root folder.
+See the [repository README](../../README.md) for the project overview and the
+[source code guide](../../docs/source-code.md) for third-party integration,
+build targets, runtime architecture, ownership rules, extension points, and a
+complete index of this source tree.
 
 Ake Hedman, <info@vscp.org>

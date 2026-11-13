@@ -32,6 +32,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <cmath>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -2305,7 +2306,11 @@ vscp_getMeasurementAsFloat(const unsigned char *pNorm, unsigned char length)
     pfloat     = (float *) p;
     value      = *pfloat;
 
-    // TODO: please insert test for (!NaN || !INF)
+    // NaN and infinity are not valid measurements
+    if (!std::isfinite(value)) {
+      helperLogFailure(__func__);
+      value = 0.0f;
+    }
   }
   else {
     helperLogFailure(__func__);

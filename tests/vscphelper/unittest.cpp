@@ -4745,6 +4745,22 @@ TEST(VscpHelper, binaryPacketVersions)
                             [](uint8_t value) { return value == 0xa5; }));
 }
 
+// NaN and infinity are not valid measurements and decode as 0
+TEST(VscpHelper, getMeasurementAsFloatRejectsNonFinite)
+{
+    uint8_t valid[5] = {0xae, 0x41, 0x83, 0x80, 0x00};
+    EXPECT_EQ(16.4375f, vscp_getMeasurementAsFloat(valid, 5));
+
+    uint8_t nan[5] = {0xae, 0x7F, 0xC0, 0x00, 0x00};
+    EXPECT_EQ(0.0f, vscp_getMeasurementAsFloat(nan, 5));
+
+    uint8_t posInf[5] = {0xae, 0x7F, 0x80, 0x00, 0x00};
+    EXPECT_EQ(0.0f, vscp_getMeasurementAsFloat(posInf, 5));
+
+    uint8_t negInf[5] = {0xae, 0xFF, 0x80, 0x00, 0x00};
+    EXPECT_EQ(0.0f, vscp_getMeasurementAsFloat(negInf, 5));
+}
+
 // Entry point for Google Test
 int main(int argc, char **argv)
 {

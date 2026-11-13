@@ -3513,6 +3513,15 @@ TEST(parseMDF, JSON_Alarm)
   }
 }
 
+TEST(parseMDF, JSON_Blink)
+{
+  std::string path;
+  CMDF mdf;
+
+  path = "json/blink.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+}
+
 //-----------------------------------------------------------------------------
 //                          CMDF Class Tests
 //-----------------------------------------------------------------------------
