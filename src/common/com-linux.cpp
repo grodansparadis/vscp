@@ -469,7 +469,7 @@ int Comm::getDCD( void )
 
 void Comm::Flush( void )
 {
-    ioctl( m_fd, TCFLSH, 2);
+    tcflush( m_fd, TCIOFLUSH );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -605,9 +605,13 @@ void Comm::RtsOff()
 
 int Comm::isTransmitterEmpty()
 {
+#ifdef TIOCSERGETLSR
     int rv;
     ioctl( m_fd, TIOCSERGETLSR, &rv );
     return rv;
+#else
+    return ( 0 == tcdrain( m_fd ) );
+#endif
 }
 
 
