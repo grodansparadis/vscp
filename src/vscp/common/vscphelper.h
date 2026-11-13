@@ -72,9 +72,10 @@
 #include "vscphelperlogging.h"
 #endif
 
-// For windows
+// Fallback for platforms without <linux/can.h> (Windows, macOS). Same
+// value as Linux: CAN_MTU is sizeof(struct can_frame), not the payload size.
 #ifndef CAN_MTU
-#define CAN_MTU 8 // TODO
+#define CAN_MTU 16
 #endif
 
 /*  byte swapping */

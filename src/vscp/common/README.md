@@ -1,5 +1,9 @@
 # Files in folder
 
+For architecture, build-target boundaries, event ownership, client lifecycle,
+threading, extension guidance, and the complete production source index, see
+the [third-party source code guide](../../../docs/source-code.md).
+
 ## README.md
 This file
 

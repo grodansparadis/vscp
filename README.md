@@ -21,6 +21,10 @@
 
 The code in this repository is mainly used as a common library for different VSCP components. It can be included in other projects to provide core functionality and facilitate communication between various VSCP modules. Typically, it is used as a Git submodule, but it can also be included directly as a library.
 
+Developers embedding or extending this repository can use the
+[source code guide](docs/source-code.md) for the build targets, public data
+model, ownership rules, runtime architecture, extension points, and a complete
+map of the production code under `src/vscp`.
 
 Clone with:
 
