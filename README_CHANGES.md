@@ -7,6 +7,13 @@ tagged, rename **Unreleased** to the version and date, and start a new
 
 ## Unreleased
 
+- MQTT client: TLS settings in the `tls` object (`cafile`, `capath`, `certfile`, `keyfile`, ...) and `mqtt-options` are read again; they were type checked against the wrong JSON object and ignored, which turned TLS off
+- MQTT client: a subscription with a `format` no longer makes the configuration fail (it read the non-existent `subscribe-format` key)
+- MQTT client: no warnings for server-only TLS without a client certificate, or for a disconnect the client asked for
+- SocketCAN client: received events get the priority and hard coded bit from the CAN id
+- `vscp_scanForDevices`: through an interface GUID the "who is there" event had the GUID over the node byte; also accepts CLASS2.LEVEL1.PROTOCOL answers
+- `CStandardRegisters::getMDF`: the 32 character MDF URL is always zero terminated
+- JSON events: `timestamp_ns` above 2^63 is parsed (it was read as a signed number and dropped)
 - Binary TCP client (`VscpRemoteTcpIf`, `vscpClientTcp`) uses the stream prefix from the specification, `[0x55][version:3 | length:13]`, instead of a two byte length, and resyncs on the sync byte. Raw binary frames are limited to 8191 bytes. Servers using the old framing must be updated
 - Make Comm build on macOS (afb70e10f)
 - Stop Comm from closing fd 0 (947b825b3)

@@ -271,7 +271,13 @@ mqtt_on_disconnect(struct mosquitto *mosq, void *pData, int rv)
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::warn("VSCP MQTT CLIENT: MQTT v3.11 disconnect (Will attempt to reconnect automatically.): rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  // rv == 0: the client asked for the disconnect, nothing to warn about
+  if (0 == rv) {
+    spdlog::debug("VSCP MQTT CLIENT: MQTT v3.11 disconnected.");
+  }
+  else {
+    spdlog::warn("VSCP MQTT CLIENT: MQTT v3.11 disconnect (Will attempt to reconnect automatically.): rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  }
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -299,7 +305,13 @@ mqtt_on_disconnect_v5(struct mosquitto *mosq, void *pData, int rv, const mosquit
   vscpClientMqtt *pClient = reinterpret_cast<vscpClientMqtt *>(pData);
   pClient->m_bConnected   = false;
 
-  spdlog::warn("VSCP MQTT CLIENT: MQTT v5 disconnect (Will attempt to reconnect automatically.): rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  // rv == 0: the client asked for the disconnect, nothing to warn about
+  if (0 == rv) {
+    spdlog::debug("VSCP MQTT CLIENT: MQTT v5 disconnected.");
+  }
+  else {
+    spdlog::warn("VSCP MQTT CLIENT: MQTT v5 disconnect (Will attempt to reconnect automatically.): rv={0:X} {1}", rv, mosquitto_strerror(rv));
+  }
 
   if (nullptr != pClient->m_parentCallbackDisconnect) {
     pClient->m_parentCallbackDisconnect(mosq, pClient->m_pParent, rv);
@@ -850,68 +862,68 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       json jj = j["mqtt-options"];
 
-      if (jj.contains("tcp-nodelay") && j["tcp-nodelay"].is_number()) {
+      if (jj.contains("tcp-nodelay") && jj["tcp-nodelay"].is_number()) {
         m_mapMqttIntOptions["tcp-nodelay"] = jj["tcp-nodelay"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tcp-nodelay set to {}.", m_mapMqttIntOptions["tcp-nodelay"]);
       }
 
-      if (jj.contains("protocol-version") && j["protocol-version"].is_number()) {
+      if (jj.contains("protocol-version") && jj["protocol-version"].is_number()) {
         m_mapMqttIntOptions["protocol-version"] = jj["protocol-version"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: protocol-version set to {}.",
                       m_mapMqttIntOptions["protocol-version"]);
       }
 
-      if (jj.contains("receive-maximum") && j["receive-maximum"].is_number()) {
+      if (jj.contains("receive-maximum") && jj["receive-maximum"].is_number()) {
         m_mapMqttIntOptions["receive-maximum"] = jj["receive-maximum"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: receive-maximum set to {}.",
                       m_mapMqttIntOptions["receive-maximum"]);
       }
 
-      if (jj.contains("send-maximum") && j["send-maximum"].is_number()) {
+      if (jj.contains("send-maximum") && jj["send-maximum"].is_number()) {
         m_mapMqttIntOptions["send-maximum"] = jj["send-maximum"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: send-maximum set to {}.", m_mapMqttIntOptions["send-maximum"]);
       }
 
-      if (jj.contains("ssl-ctx-with-defaults") && j["ssl-ctx-with-defaults"].is_number()) {
+      if (jj.contains("ssl-ctx-with-defaults") && jj["ssl-ctx-with-defaults"].is_number()) {
         m_mapMqttIntOptions["ssl-ctx-with-defaults"] = jj["ssl-ctx-with-defaults"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: ssl-ctx-with-defaults set to {}.",
                       m_mapMqttIntOptions["ssl-ctx-with-defaults"]);
       }
 
-      if (jj.contains("tls-ocsp-required") && j["tls-ocsp-required"].is_number()) {
+      if (jj.contains("tls-ocsp-required") && jj["tls-ocsp-required"].is_number()) {
         m_mapMqttIntOptions["tls-ocsp-required"] = jj["tls-ocsp-required"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-ocsp-required set to {}.",
                       m_mapMqttIntOptions["tls-ocsp-required"]);
       }
 
-      if (jj.contains("tls-use-os-certs") && j["tls-use-os-certs"].is_number()) {
+      if (jj.contains("tls-use-os-certs") && jj["tls-use-os-certs"].is_number()) {
         m_mapMqttIntOptions["tls-use-os-certs"] = jj["tls-use-os-certs"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-use-os-certs set to {}.",
                       m_mapMqttIntOptions["tls-use-os-certs"]);
       }
 
-      if (jj.contains("tls-engine") && j["tls-engine"].is_string()) {
+      if (jj.contains("tls-engine") && jj["tls-engine"].is_string()) {
         m_mapMqttStringOptions["tls-engine"] = jj["tls-engine"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-engine set to {}.", m_mapMqttIntOptions["tls-engine"]);
       }
 
-      if (jj.contains("tls-keyform") && j["tls-keyform"].is_string()) {
+      if (jj.contains("tls-keyform") && jj["tls-keyform"].is_string()) {
         m_mapMqttStringOptions["tls-keyform"] = jj["tls-keyform"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-keyform set to {}.", m_mapMqttIntOptions["tls-keyform"]);
       }
 
-      if (jj.contains("tls-kpass-sha1") && j["tls-kpass-sha1"].is_string()) {
+      if (jj.contains("tls-kpass-sha1") && jj["tls-kpass-sha1"].is_string()) {
         m_mapMqttStringOptions["tls-kpass-sha1"] = jj["tls-kpass-sha1"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-kpass-sha1 set to {}.",
                       m_mapMqttIntOptions["tls-kpass-sha1"]);
       }
 
-      if (jj.contains("tls-alpn") && j["tls-alpn"].is_string()) {
+      if (jj.contains("tls-alpn") && jj["tls-alpn"].is_string()) {
         m_mapMqttStringOptions["tls-alpn"] = jj["tls-alpn"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: tls-alpn set to {}.", m_mapMqttIntOptions["tls-alpn"]);
       }
 
-      if (jj.contains("bind-address") && j["bind-address"].is_string()) {
+      if (jj.contains("bind-address") && jj["bind-address"].is_string()) {
         m_mapMqttStringOptions["bind-address"] = jj["bind-address"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: bind-address set to {}.", m_mapMqttIntOptions["bind-address"]);
       }
@@ -987,17 +999,17 @@ vscpClientMqtt::initFromJson(const std::string &config)
 
       json jj = j["reconnect"];
 
-      if (jj.contains("delay") && j["delay"].is_number()) {
+      if (jj.contains("delay") && jj["delay"].is_number()) {
         m_reconnect_delay = jj["delay"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect delay' Set to {}.", m_reconnect_delay);
       }
 
-      if (jj.contains("delay-max") && j["delay-max"].is_number()) {
+      if (jj.contains("delay-max") && jj["delay-max"].is_number()) {
         m_reconnect_delay_max = jj["delay-max"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect delay-max' Set to {}.", m_reconnect_delay_max);
       }
 
-      if (jj.contains("exponential-backoff") && j["exponential-backoff"].is_boolean()) {
+      if (jj.contains("exponential-backoff") && jj["exponential-backoff"].is_boolean()) {
         m_reconnect_exponential_backoff = jj["exponential-backoff"].get<bool>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'reconnect exponential-backoff' Set to {}.",
                       m_reconnect_exponential_backoff);
@@ -1101,58 +1113,58 @@ vscpClientMqtt::initFromJson(const std::string &config)
       json jj = j["tls"];
       m_bTLS  = true;
 
-      if (jj.contains("cafile") && j["cafile"].is_string()) {
+      if (jj.contains("cafile") && jj["cafile"].is_string()) {
         m_tls_cafile = jj["cafile"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls cafile' Set to {}.", m_tls_cafile);
       }
 
-      if (jj.contains("capath") && j["capath"].is_string()) {
+      if (jj.contains("capath") && jj["capath"].is_string()) {
         m_tls_capath = jj["capath"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls capath' Set to {}.", m_tls_capath);
       }
 
-      if (jj.contains("certfile") && j["certfile"].is_string()) {
+      if (jj.contains("certfile") && jj["certfile"].is_string()) {
         m_tls_certfile = jj["certfile"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls certfile' Set to {}.", m_tls_certfile);
       }
 
-      if (jj.contains("keyfile") && j["keyfile"].is_string()) {
+      if (jj.contains("keyfile") && jj["keyfile"].is_string()) {
         m_tls_keyfile = jj["keyfile"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls keyfile' Set to {}.", m_tls_keyfile);
       }
 
-      if (jj.contains("pwkeyfile") && j["pwkeyfile"].is_string()) {
+      if (jj.contains("pwkeyfile") && jj["pwkeyfile"].is_string()) {
         m_tls_pwKeyfile = jj["pwkeyfile"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls pwkeyfile' Set to {}.", m_tls_pwKeyfile);
       }
 
-      if (jj.contains("no-hostname-checking") && j["no-hostname-checking"].is_boolean()) {
+      if (jj.contains("no-hostname-checking") && jj["no-hostname-checking"].is_boolean()) {
         m_tls_bNoHostNameCheck = jj["no-hostname-checking"].get<bool>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls no-hostname-checking' Set to {}.",
                       m_tls_bNoHostNameCheck);
       }
 
-      if (jj.contains("cert-reqs") && j["cert-reqs"].is_number()) {
+      if (jj.contains("cert-reqs") && jj["cert-reqs"].is_number()) {
         m_tls_cert_reqs = jj["cert-reqs"].get<int>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls cert-reqs' Set to {}.", m_tls_cert_reqs);
       }
 
-      if (jj.contains("version") && j["version"].is_string()) {
+      if (jj.contains("version") && jj["version"].is_string()) {
         m_tls_version = jj["version"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls version' Set to {}.", m_tls_version);
       }
 
-      if (jj.contains("ciphers") && j["ciphers"].is_string()) {
+      if (jj.contains("ciphers") && jj["ciphers"].is_string()) {
         m_tls_ciphers = jj["ciphers"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls ciphers' Set to {}.", m_tls_ciphers);
       }
 
-      if (jj.contains("psk") && j["psk"].is_string()) {
+      if (jj.contains("psk") && jj["psk"].is_string()) {
         m_tls_psk = jj["psk"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls psk' Set to {}.", m_tls_psk);
       }
 
-      if (jj.contains("psk-identity") && j["psk-identity"].is_string()) {
+      if (jj.contains("psk-identity") && jj["psk-identity"].is_string()) {
         m_tls_identity = jj["psk-identity"].get<std::string>();
         spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'tls psk-identity' Set to {}.", m_tls_identity);
       }
@@ -1163,22 +1175,13 @@ vscpClientMqtt::initFromJson(const std::string &config)
         m_bTLS = false;
       }
 
-      // If certfile == NULL, keyfile must also be NULL and no client certificate will be used.
-      if (!m_tls_certfile.length()) {
-        spdlog::warn(
-          "VSCP MQTT CLIENT: json mqtt init: 'TLS'  If certfile == NULL, keyfile must also be NULL and no client "
-          "certificate will be "
-          "used. keyfile set to NULL.");
-        m_tls_keyfile = "";
-      }
-
-      // If m_tls_keyfile == NULL, certfile must also be NULL and no client certificate will be used.
-      if (!m_tls_keyfile.length()) {
-        spdlog::warn(
-          "VSCP MQTT CLIENT: json mqtt init: 'TLS'  If m_tls_keyfile == NULL, certfile must also be NULL and no "
-          "client certificate "
-          "will be used. certfile set to NULL.");
+      // A client certificate needs both the certificate and its key. Without
+      // them (normal server-only TLS) no client certificate is used.
+      if (m_tls_certfile.empty() != m_tls_keyfile.empty()) {
+        spdlog::warn("VSCP MQTT CLIENT: json mqtt init: 'TLS' A client certificate needs both certfile and keyfile. "
+                     "No client certificate will be used.");
         m_tls_certfile = "";
+        m_tls_keyfile  = "";
       }
     }
 
@@ -1344,7 +1347,7 @@ vscpClientMqtt::initFromJson(const std::string &config)
           }
 
           if (subobj.contains("format") && subobj["format"].is_string()) {
-            std::string str = j["subscribe-format"].get<std::string>();
+            std::string str = subobj["format"].get<std::string>();
             vscp_makeLower(str);
             if (std::string::npos != str.find("binary")) {
               spdlog::debug("VSCP MQTT CLIENT: json mqtt init: 'subscribe obj format' Set to BINARY.");

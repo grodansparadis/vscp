@@ -1259,6 +1259,9 @@ workerThread(void *pData)
           // memcpy(pEvent->GUID, pClient->m_guid.getGUID(), 16);
           pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
+          // Priority and hard coded bit from the CAN id
+          pEvent->head = vscp_getHeadFromCANALid(frame.can_id);
+
           // Set VSCP class
           pEvent->vscp_class = vscp_getVscpClassFromCANALid(frame.can_id);
 

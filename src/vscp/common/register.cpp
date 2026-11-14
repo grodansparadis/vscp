@@ -532,7 +532,7 @@ vscp_scanForDevices(CVscpClient &client,
   ex.data[0 + offset] = 0xff; // all devices
 
   if (!guidIf.isNULL()) {
-    memcpy(ex.data + offset, guidIf.getGUID(), 16); // Use GUID of interface
+    memcpy(ex.data, guidIf.getGUID(), 16); // Interface GUID first, then the Level I data
   }
 
   // Clear input queue
@@ -556,7 +556,8 @@ vscp_scanForDevices(CVscpClient &client,
       rv = client.receive(ex);
     }
     if (VSCP_ERROR_SUCCESS == rv) {
-      if (ex.vscp_class == VSCP_CLASS1_PROTOCOL && ex.vscp_type == VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE) {
+      if (((VSCP_CLASS1_PROTOCOL == ex.vscp_class) || (VSCP_CLASS2_LEVEL1_PROTOCOL == ex.vscp_class)) &&
+          (VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE == ex.vscp_type)) {
         found.insert(ex.GUID[15] + (ex.GUID[14] << 8));
       }
     }
@@ -1391,7 +1392,7 @@ CStandardRegisters::getGUIDStr(void)
 std::string
 CStandardRegisters::getMDF(void)
 {
-  char url[33];
+  char url[33] = { 0 }; // 32 register bytes, not always zero terminated
   std::string remoteFile;
 
   for (int i = 0; i < 32; i++) {

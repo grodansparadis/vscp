@@ -5907,6 +5907,24 @@ vscp_convertEventToJSON(std::string &strJSON, const vscpEvent *pev)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+// parseTimestampNs
+//
+// Nanosecond timestamps use the full unsigned 64-bit range and are written
+// as hex strings, which vscp_readStringValue (signed) can not hold.
+//
+
+static uint64_t
+parseTimestampNs(const std::string &str)
+{
+  try {
+    return std::stoull(str, nullptr, 0); // 0x prefix -> hex, else decimal
+  }
+  catch (...) {
+    return 0;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_convertJSONToEvent
 //
 // {
@@ -5998,7 +6016,7 @@ vscp_convertJSONToEvent(vscpEvent *pev, std::string &strJSON)
       if (j["timestamp_ns"].is_string()) {
         // Parse hex string (preferred format)
         std::string tsStr    = j.at("timestamp_ns").get<std::string>();
-        pev->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
+        pev->timestamp_ns = parseTimestampNs(tsStr);
       }
       else if (j["timestamp_ns"].is_number_unsigned()) {
         pev->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
@@ -6269,7 +6287,7 @@ vscp_convertJSONToEventEx(vscpEventEx *pex, std::string &strJSON)
       if (j["timestamp_ns"].is_string()) {
         // Parse hex string (preferred format)
         std::string tsStr      = j.at("timestamp_ns").get<std::string>();
-        pex->timestamp_ns = (uint64_t) vscp_readStringValue(tsStr);
+        pex->timestamp_ns = parseTimestampNs(tsStr);
       }
       else if (j["timestamp_ns"].is_number_unsigned()) {
         pex->timestamp_ns = j.at("timestamp_ns").get<uint64_t>();
