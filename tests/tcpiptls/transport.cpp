@@ -801,7 +801,7 @@ TEST_F(TcpTransport, PeerResetBeforeSend)
 
 TEST_F(TcpTransport, BinaryWriteTimeoutClosesPartiallySentConnection)
 {
-  const std::vector<uint8_t> frame(65535, 0xaa);
+  const std::vector<uint8_t> frame(8191, 0xaa); // Largest 13-bit record
   for (const auto *endpoint : {"VSCP_TEST_PLAIN", "VSCP_TEST_TLS"}) {
     open(endpoint);
     ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCommand("SCENARIO hold\r\n"));
@@ -906,7 +906,7 @@ TEST_F(TcpTransport, BinaryRawFramesOverTls)
     ASSERT_EQ(sent, received);
   }
   ASSERT_EQ(VSCP_ERROR_PARAMETER, client.sendBinaryFrame({}));
-  ASSERT_EQ(VSCP_ERROR_PARAMETER, client.sendBinaryFrame(std::vector<uint8_t>(65536)));
+  ASSERT_EQ(VSCP_ERROR_PARAMETER, client.sendBinaryFrame(std::vector<uint8_t>(8192)));
 }
 
 TEST_F(TcpTransport, BinaryCoalescedTransitionAndFrames)
@@ -1105,7 +1105,7 @@ TEST_F(TcpTransport, BinaryMaximumFrameLength)
 {
   open("VSCP_TEST_PLAIN");
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBinary());
-  std::vector<uint8_t> sent(65535, 0xaa);
+  std::vector<uint8_t> sent(8191, 0xaa); // Largest 13-bit record
   sent[0] = 0xe0;
   std::vector<uint8_t> received;
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.sendBinaryFrame(sent));
@@ -1146,7 +1146,7 @@ TEST_F(TcpTransport, WrapperBinarySingleChannelMultiplexesEventsAndRawFrames)
   EXPECT_EQ(std::vector<uint8_t>({42}), raw);
   EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.receiveBinaryFrame(raw, -1));
   EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame({}));
-  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame(std::vector<uint8_t>(65536)));
+  EXPECT_EQ(VSCP_ERROR_PARAMETER, wrapper.sendBinaryFrame(std::vector<uint8_t>(8192)));
 
   vscpEventEx outgoing = {};
   outgoing.head = VSCP_HEADER16_FRAME_VERSION_UNIX_NS;

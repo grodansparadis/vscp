@@ -101,8 +101,8 @@ public:
   bool isBinaryModeEnabled(void) const { return m_bBinaryMode; }
 
   /*!
-      Send one complete VSCP-GBP frame (1-65535 bytes) without its TCP length
-      prefix. Binary mode adds the two-byte length prefix. In a single-connection
+      Send one complete VSCP-GBP frame (1-8191 bytes) without its TCP stream
+      prefix. Binary mode adds the [0x55][version:3 | length:13] prefix. In a single-connection
       mode both channel values refer to the send connection. Encrypted frames
       are opaque; this method does not encrypt, decrypt, or validate their CRC.
       Calling either raw API enables delivery of subsequent event confirmations

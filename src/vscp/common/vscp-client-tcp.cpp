@@ -1037,7 +1037,7 @@ vscpClientTcp::sendBinaryFrame(const std::vector<uint8_t> &frame, binary_channel
     return tcpClientFailure(__func__, VSCP_ERROR_NOT_SUPPORTED);
   }
   if ((channel != binary_channel::send && channel != binary_channel::receive) ||
-      frame.empty() || frame.size() > UINT16_MAX) {
+      frame.empty() || frame.size() > 0x1fff /* 13-bit record length */) {
     return tcpClientFailure(__func__, VSCP_ERROR_PARAMETER);
   }
 

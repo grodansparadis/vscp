@@ -78,6 +78,7 @@
 #include "vscp.h"
 #include "vscpdatetime.h"
 #include "vscpremotetcpif.h"
+#include "vscp-binary-protocol.h"
 #ifdef VSCP_ENABLE_HELPER_LOGGING
 #include "vscphelperlogging.h"
 #endif
@@ -176,6 +177,12 @@ using Deadline = Clock::time_point;
 constexpr size_t maxPartialLine         = 65536;       // Unterminated text line
 constexpr size_t maxCommandResponse     = 1024 * 1024; // Text reply to one command
 constexpr size_t maxSingleChannelEvents = 10000;       // Queued receive loop events
+
+// Binary stream framing (VSCP general binary protocol over tcp/ip):
+// [0x55][version:3 | length:13, big endian][inner frame]
+constexpr uint8_t binarySyncByte       = vscp_binary::syncByte;
+constexpr size_t binaryPrefixLength    = vscp_binary::headerSize;
+constexpr size_t binaryMaxRecordLength = 0x1fff; // 13-bit length
 
 #ifdef WIN32
 using Socket = SOCKET;
@@ -2442,33 +2449,38 @@ VscpRemoteTcpIf::sendBinaryFrame(const std::vector<uint8_t> &frame)
   if (!isConnected()) {
     return logTcpResult(__func__, VSCP_ERROR_CONNECTION);
   }
-  if (!m_bBinaryMode || frame.empty() || frame.size() > UINT16_MAX) {
+  if (!m_bBinaryMode || frame.empty() || frame.size() > binaryMaxRecordLength) {
     return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
   }
 
+  // Stream prefix: [0x55][version:3 | length:13 (big endian)][inner frame]
   std::vector<uint8_t> packet;
 
   if (m_bBinaryAuth) {
-    // [length:2][version 1 authenticated frame]
-    packet.resize(2 + frame.size() + 48);
-    const size_t innerLen = vscp_encryptFrameV1(packet.data() + 2,
-                                                packet.size() - 2,
+    // Version 1: authenticated frame, the length includes the tag
+    packet.resize(binaryPrefixLength + frame.size() + 48);
+    const size_t innerLen = vscp_encryptFrameV1(packet.data() + binaryPrefixLength,
+                                                packet.size() - binaryPrefixLength,
                                                 frame.data(),
                                                 frame.size(),
                                                 m_binaryAesKey,
                                                 m_binaryHmacKey,
                                                 nullptr, // Random IV
                                                 m_binaryAuthAlgorithm);
-    if (0 == innerLen) {
+    if ((0 == innerLen) || (innerLen > binaryMaxRecordLength)) {
       transportError("%s: failed to encrypt/authenticate binary frame", __func__);
       return logTcpResult(__func__, VSCP_ERROR_PARAMETER);
     }
-    packet.resize(2 + innerLen);
-    packet[0] = static_cast<uint8_t>(innerLen >> 8);
-    packet[1] = static_cast<uint8_t>(innerLen);
+    packet.resize(binaryPrefixLength + innerLen);
+    const uint16_t word = static_cast<uint16_t>((vscp_binary::authenticatedVersion << 13) | innerLen);
+    packet[0]           = binarySyncByte;
+    packet[1]           = static_cast<uint8_t>(word >> 8);
+    packet[2]           = static_cast<uint8_t>(word);
   }
   else {
-    packet.reserve(frame.size() + 2);
+    // Version 0: plain (or caller encrypted legacy) frame
+    packet.reserve(binaryPrefixLength + frame.size());
+    packet.push_back(binarySyncByte);
     packet.push_back(static_cast<uint8_t>(frame.size() >> 8));
     packet.push_back(static_cast<uint8_t>(frame.size()));
     packet.insert(packet.end(), frame.begin(), frame.end());
@@ -2490,10 +2502,22 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
 
   const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
   while (true) {
-    size_t needed = 2;
-    if (m_binaryInput.size() >= 2) {
-      const size_t length = (static_cast<size_t>(m_binaryInput[0]) << 8) | m_binaryInput[1];
-      if (!length) {
+    // Resync: skip anything before the 0x55 sync byte
+    if (!m_binaryInput.empty() && (binarySyncByte != m_binaryInput[0])) {
+      auto sync = std::find(m_binaryInput.begin(), m_binaryInput.end(), binarySyncByte);
+      transportError("%s: skipped %zu bytes before binary sync byte", __func__,
+                     static_cast<size_t>(sync - m_binaryInput.begin()));
+      m_binaryInput.erase(m_binaryInput.begin(), sync);
+    }
+    size_t needed = binaryPrefixLength;
+    if (m_binaryInput.size() >= binaryPrefixLength) {
+      const uint16_t word   = static_cast<uint16_t>((m_binaryInput[1] << 8) | m_binaryInput[2]);
+      const uint8_t version = static_cast<uint8_t>(word >> 13);
+      const size_t length   = word & binaryMaxRecordLength;
+      // Authenticated connections only accept version 1, plain ones version 0
+      if (!length || (version != (m_bBinaryAuth ? vscp_binary::authenticatedVersion : vscp_binary::framingVersion))) {
+        transportError("%s: invalid binary record (version %u, length %zu), closing", __func__,
+                       static_cast<unsigned>(version), length);
         transportClose();
         m_binaryInput.clear();
         return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
@@ -2505,10 +2529,10 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
           // Anything else means a wrong key/peer or tampering: close.
           std::vector<uint8_t> plain(length);
           size_t plainLen = 0;
-          if ((m_binaryAuthAlgorithm == (m_binaryInput[2] & 0x0f)) &&
+          if ((m_binaryAuthAlgorithm == (m_binaryInput[binaryPrefixLength] & 0x0f)) &&
               (0 != (plainLen = vscp_decryptFrameV1(plain.data(),
                                                     plain.size(),
-                                                    m_binaryInput.data() + 2,
+                                                    m_binaryInput.data() + binaryPrefixLength,
                                                     length,
                                                     m_binaryAesKey,
                                                     m_binaryHmacKey)))) {
@@ -2526,7 +2550,7 @@ VscpRemoteTcpIf::receiveBinaryFrame(std::vector<uint8_t> &frame, uint32_t timeou
           m_binaryInput.clear();
           return logTcpResult(__func__, VSCP_ERROR_INVALID_FRAME, true);
         }
-        frame.assign(m_binaryInput.begin() + 2, m_binaryInput.end());
+        frame.assign(m_binaryInput.begin() + binaryPrefixLength, m_binaryInput.end());
         m_binaryInput.clear();
         return VSCP_ERROR_SUCCESS;
       }

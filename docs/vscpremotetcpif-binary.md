@@ -44,21 +44,24 @@ Reconnect to return to text mode.
 
 ## TCP stream framing
 
-The linked VSCP-GBP specification describes individual frames, not a TCP
-record delimiter. This client uses the explicitly selected **two-byte
-big-endian length prefix**. The peer must implement the same convention:
+Every record starts with the three-byte stream prefix from the
+[VSCP-GBP specification](https://grodansparadis.github.io/vscp-doc-spec/#/./vscp_over_binary):
 
 | Bytes | Contents |
 | --- | --- |
-| 0-1 | Length of the following VSCP-GBP frame, excluding the prefix |
-| 2 | VSCP-GBP type/encryption byte |
-| 3 onward | Frame body, CRC, and optional encryption padding/IV |
+| 0 | Sync byte `0x55` |
+| 1-2 | Big-endian word: packet version in the three high bits, length of the following frame in the low 13 bits |
+| 3 | VSCP-GBP type/encryption byte |
+| 4 onward | Frame body, CRC, and optional encryption padding/IV (and HMAC tag for version 1) |
 
-The length covers the entire frame, including its type byte, CRC, and any
-PKCS#7 padding and appended IV. Lengths from 1 through 65535 are supported
-by the raw transport API; zero lengths are invalid and close the connection.
-Event and command formats impose their own additional size constraints.
-There is no byte stuffing or CRLF delimiter.
+The length covers the entire frame after the prefix, including its type byte,
+CRC, and any PKCS#7 padding, IV and tag. Lengths from 1 through 8191 are
+supported by the raw transport API. Plain connections send and accept packet
+version 0; authenticated connections (below) send and accept only version 1.
+A zero length or another version is invalid and closes the connection. Bytes
+before a `0x55` sync byte are skipped, so the receiver resynchronizes after
+stray data. Event and command formats impose their own additional size
+constraints. There is no byte stuffing or CRLF delimiter.
 
 Each receive reads one record, regardless of TCP packet boundaries.
 Fragmented prefixes and payloads survive receive timeouts, and multiple
@@ -161,18 +164,17 @@ client.setBinaryAuthentication(VSCP_ENCRYPTION_AES256, aesKey, 32, hmacKey);
 client.doCmdBinary();
 ```
 
-Each record then carries a version 1 authenticated frame (described below)
-inside the normal two-byte length framing:
+Each record then carries a version 1 authenticated frame (described below):
 
 | Bytes | Contents |
 | --- | --- |
-| 0-1 | Length of the following inner frame, excluding the prefix |
-| 2 | Type/encryption byte (low nibble = AES algorithm) |
-| 3 onward | Ciphertext (body + CRC, PKCS#7 padded), IV (16), tag (16) |
+| 0 | Sync byte `0x55` |
+| 1-2 | `(1 << 13) \| inner length` (big-endian), the length includes the tag |
+| 3 | Type/encryption byte (low nibble = AES algorithm) |
+| 4 onward | Ciphertext (body + CRC, PKCS#7 padded), IV (16), tag (16) |
 
-The tag is the leftmost 128 bits of HMAC-SHA-256 over the canonical version 1
-prefix (`0x55`, `(1 << 13) | inner length`), the type byte, the ciphertext and
-the IV, exactly as for authenticated UDP. The receiver checks the tag in
+The tag is the leftmost 128 bits of HMAC-SHA-256 over the prefix, the type
+byte, the ciphertext and the IV, exactly as for authenticated UDP. The receiver checks the tag in
 constant time before decrypting, then padding and CRC, and delivers the plain
 frame with the encryption nibble cleared. A record that fails, or uses another
 algorithm, closes the connection; there is no fallback. All frames are covered:
@@ -181,8 +183,9 @@ events, commands, replies, confirmations, and frames passed to
 frames). The text login before `BINARY` is not covered; use TLS for it. The
 tag gives no replay protection.
 
-Peers implementing this: `vscpClientTcp`/`VscpRemoteTcpIf` and the
-vscp-firmware binary protocol (`vscp-binary-protocol`).
+Peers implementing this: `vscpClientTcp`/`VscpRemoteTcpIf`, the
+vscp-firmware binary protocol (`vscp-binary-protocol`), the
+vscpl2drv-tcpipsrv driver and the VSCP tcp/ip daemon.
 
 ## Versioned binary frame helpers
 
@@ -191,9 +194,9 @@ The framing helpers in `vscp-binary-protocol.h` support a three-byte prefix:
 and includes the entire inner frame. The UDP and multicast clients use this
 prefix for opt-in version 1 authenticated datagrams; see their
 [configuration](library_reference.md#authenticated-udp-and-multicast-frames).
-This is distinct from the raw TCP client transport's two-byte length prefix
-described above; the raw TCP transport does not negotiate or automatically
-enable authenticated framing.
+The raw TCP client transport uses the same prefix (see
+[TCP stream framing](#tcp-stream-framing)); it does not negotiate or
+automatically enable authenticated framing.
 
 Packet version **0** retains the existing inner frame format and is the default.
 The existing `vscp_encryptFrame()` / `vscp_decryptFrame()` APIs are unchanged.

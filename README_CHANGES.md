@@ -7,6 +7,7 @@ tagged, rename **Unreleased** to the version and date, and start a new
 
 ## Unreleased
 
+- Binary TCP client (`VscpRemoteTcpIf`, `vscpClientTcp`) uses the stream prefix from the specification, `[0x55][version:3 | length:13]`, instead of a two byte length, and resyncs on the sync byte. Raw binary frames are limited to 8191 bytes. Servers using the old framing must be updated
 - Make Comm build on macOS (afb70e10f)
 - Stop Comm from closing fd 0 (947b825b3)
 - Add a source code guide for developers (a6ebb32d7)

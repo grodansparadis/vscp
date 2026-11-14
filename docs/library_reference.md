@@ -293,9 +293,9 @@ The existing connection choices also apply to binary mode:
 
 `bpoll` and `single-channel` cannot both be true. The server must support
 text login and `CHID`, the text `BINARY` transition, and binary `OPEN` or
-`RETR` as selected. It must use the **two-byte, big-endian frame-length
-prefix** described in [Binary TCP/IP client](vscpremotetcpif-binary.md#tcp-stream-framing);
-this is not the separate three-byte framing helper. Binary `OPEN` must
+`RETR` as selected. It must use the **three-byte `[0x55][version:3 | length:13]`
+stream prefix** from the VSCP-GBP specification, described in
+[Binary TCP/IP client](vscpremotetcpif-binary.md#tcp-stream-framing). Binary `OPEN` must
 receive a successful, CRC-valid response before `connect()` succeeds.
 Binary `RETR` treats `VSCP_ERROR_RCV_EMPTY` as an ordinary empty poll.
 

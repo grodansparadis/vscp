@@ -74,8 +74,28 @@ def v1_decrypt(inner):
 
 class Handler(socketserver.BaseRequestHandler):
     @staticmethod
-    def packet(frame):
-        return len(frame).to_bytes(2, "big") + frame
+    def packet(frame, version=0):
+        # [0x55][version:3 | length:13][frame], see docs/vscpremotetcpif-binary.md
+        return b"\x55" + ((version << 13) | len(frame)).to_bytes(2, "big") + frame
+
+    @staticmethod
+    def read_record(connection, pending, version=0):
+        """Read one framed record; returns (frame, pending) or (None, pending) on EOF."""
+        while len(pending) < 3:
+            data = connection.recv(8192)
+            if not data:
+                return None, pending
+            pending += data
+        word = int.from_bytes(pending[1:3], "big")
+        if pending[0] != 0x55 or word >> 13 != version:
+            raise ValueError("Invalid binary record prefix from client")
+        length = word & 0x1fff
+        while len(pending) < length + 3:
+            data = connection.recv(8192)
+            if not data:
+                return None, pending
+            pending += data
+        return pending[3:length + 3], pending[length + 3:]
 
     @staticmethod
     def binary_reply(code, error=0, payload=b""):
@@ -112,23 +132,14 @@ class Handler(socketserver.BaseRequestHandler):
             if auth:
                 frames = [v1_encrypt(frame) for frame in frames]
             with peer[1]:
-                peer[0].sendall(b"".join(self.packet(frame) for frame in frames))
+                peer[0].sendall(b"".join(self.packet(frame, 1 if auth else 0) for frame in frames))
 
         connection.sendall(b"+OK - Binary mode enabled\r\n")
         try:
             while True:
-                while len(pending) < 2:
-                    data = connection.recv(8192)
-                    if not data:
-                        return True
-                    pending += data
-                length = int.from_bytes(pending[:2], "big")
-                while len(pending) < length + 2:
-                    data = connection.recv(8192)
-                    if not data:
-                        return True
-                    pending += data
-                frame, pending = pending[2:length + 2], pending[length + 2:]
+                frame, pending = self.read_record(connection, pending, 1 if auth else 0)
+                if frame is None:
+                    return True
                 if not frame:
                     raise ValueError("Empty binary frame received from client")
                 if auth:
@@ -249,9 +260,9 @@ class Handler(socketserver.BaseRequestHandler):
         elif scenario == b"malformed-response":
             connection.sendall(b"UNKNOWN\r\n")
         elif scenario == b"zero":
-            connection.sendall(b"+OK\r\n\x00\x00")
+            connection.sendall(b"+OK\r\n\x55\x00\x00")
         elif scenario == b"truncated":
-            connection.sendall(b"+OK\r\n\x00\x08\xe0\x00")
+            connection.sendall(b"+OK\r\n\x55\x00\x08\xe0\x00")
             return True
         elif scenario == b"hold":
             connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
@@ -287,18 +298,9 @@ class Handler(socketserver.BaseRequestHandler):
             connection.sendall(b"+OK - Binary mode enabled\r\n")
 
         while True:
-            while len(pending) < 2:
-                data = connection.recv(8192)
-                if not data:
-                    return True
-                pending += data
-            length = int.from_bytes(pending[:2], "big")
-            while len(pending) < length + 2:
-                data = connection.recv(8192)
-                if not data:
-                    return True
-                pending += data
-            frame, pending = pending[2:length + 2], pending[length + 2:]
+            frame, pending = self.read_record(connection, pending)
+            if frame is None:
+                return True
             if (frame[0] & 0x0f) == 0 and frame[0] >> 4 in (0, 1):
                 if binascii.crc_hqx(frame[1:], 0xffff):
                     raise ValueError("Invalid event CRC received from client")

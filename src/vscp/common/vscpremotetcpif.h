@@ -315,8 +315,8 @@ public:
   }
 
   /*!
-      Send/receive a complete VSCP-GBP frame, excluding its two-byte
-      big-endian TCP length prefix. Raw frames include their CRC and,
+      Send/receive a complete VSCP-GBP frame, excluding its three-byte
+      TCP prefix [0x55][version:3 | length:13]. Frames can be 1-8191 bytes. Raw frames include their CRC and,
       when encrypted, their padding and IV. Receive preserves partial
       frames across timeouts. These methods do not interpret commands.
    */
@@ -328,9 +328,12 @@ public:
 
       When set, every binary record on this connection is sent and received
       as a version 1 authenticated frame (AES-CBC + HMAC-SHA-256, see
-      vscp_encryptFrameV1) inside the normal two-byte length framing:
+      vscp_encryptFrameV1) with a version 1 stream prefix:
 
-        [length:2][type/encryption:1][ciphertext:N*16][IV:16][tag:16]
+        [0x55][1:3 | length:13][type/encryption:1][ciphertext:N*16][IV:16][tag:16]
+
+      Without authentication records use version 0. A record with the
+      wrong version closes the connection.
 
       This covers events, commands, replies and event confirmations, also
       frames passed to sendBinaryFrame()/receiveBinaryFrame(); those methods
