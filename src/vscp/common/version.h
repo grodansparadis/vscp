@@ -37,9 +37,9 @@
 #define VSCPD_MINOR_VERSION     11
 #define VSCPD_REVISION_VERSION  1
 
-#define VSCPD_PATCH_VERSION     108
+#define VSCPD_PATCH_VERSION     121
 
-#define VSCPD_DISPLAY_VERSION   "26.11.1.108"
+#define VSCPD_DISPLAY_VERSION   "26.11.1.121"
 
 
 #define VSCPD_COPYRIGHT                                                     \
