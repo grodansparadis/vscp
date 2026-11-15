@@ -28,7 +28,7 @@
 
 cmake_minimum_required(VERSION 3.16...3.31)
 
-# Version format: YY.MM.<manual-revision>.<monthly-commit-count>.
+# Version format: YY.MM.DD.<monthly-commit-count>.
 string(TIMESTAMP VSCP_VERSION_DATE "%y;%m;%Y-%m-01")
 list(GET VSCP_VERSION_DATE 0 VSCP_VERSION_YEAR)
 list(GET VSCP_VERSION_DATE 1 VSCP_VERSION_MONTH)
@@ -46,8 +46,8 @@ string(REGEX REPLACE
     "\\1"
     VSCP_VERSION_REVISION
     "${VSCP_VERSION_REVISION_LINE}")
-if(VSCP_VERSION_REVISION GREATER 255)
-    message(FATAL_ERROR "VSCPD_REVISION_VERSION must be between 0 and 255")
+if(VSCP_VERSION_REVISION LESS 1 OR VSCP_VERSION_REVISION GREATER 31)
+    message(FATAL_ERROR "VSCPD_REVISION_VERSION must be a day of the month (1-31)")
 endif()
 execute_process(
     COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-list --count

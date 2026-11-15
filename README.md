@@ -15,6 +15,7 @@
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT and M2M tasks. The framework defines common methods for device discovery, configuration, interfacing with remote devices, and updating firmware on devices built on different architectures. A daemon/server is available that runs on many platforms and provides a web server, websocket, REST, driver, MQTT, and TCP/IP interface with SSL security.
 
   * Documentation for different parts of VSCP is available here: [https://docs.vscp.org](https://docs.vscp.org)
+  * The project wiki is available on [GitHub](https://github.com/grodansparadis/vscp/wiki)
   * A list of all available VSCP packages is available on the [project homepage](https://vscp.org)
   * The MQTT daemon has been separated from this package and is now available here: [https://github.com/grodansparadis/vscp-mqtt-daemon](https://github.com/grodansparadis/vscp-mqtt-daemon)
   * The TCP/IP daemon has been separated from this package and is now available here: [https://github.com/grodansparadis/vscp-tcpip-daemon](https://github.com/grodansparadis/vscp-tcpip-daemon)
@@ -61,10 +62,10 @@ See the library reference at [docs/library_reference.md](docs/library_reference.
 
 On branch pushes, the metadata workflow updates `docs/variables.xml` and
 `src/vscp/common/version.h` with a version in the format
-`YY.MM.<revision>.<monthly-commit-count>`. The patch count starts over each
-month and includes the workflow's metadata commit, so it matches the version
-CMake derives from that revision. Commits marked `[skip ci]` do not trigger
-this update.
+`YY.MM.DD.<monthly-commit-count>`, where `DD` is the current day of the month.
+The commit count starts over each month and includes the workflow's metadata
+commit, so it matches the version CMake derives from that revision. Commits
+marked `[skip ci]` do not trigger this update.
 
 ## Tests
 

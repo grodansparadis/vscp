@@ -27,7 +27,7 @@
 /*
     MAJOR version with incompatible API changes,
     MINOR version with add functionality in a backwards-compatible manner,
-    REVISION version manually set from 0 to 255, and
+    REVISION version set to the day of the month, and
     PATCH version with backwards-compatible bug fixes (Git commit count).
 
 */
@@ -35,11 +35,11 @@
 // 36/37/38/39/42/44/45 I M P O T A N T ! ! !
 #define VSCPD_MAJOR_VERSION     26
 #define VSCPD_MINOR_VERSION     11
-#define VSCPD_REVISION_VERSION  1
+#define VSCPD_REVISION_VERSION  15
 #define VSCPD_PATCH_VERSION     120
 
 
-#define VSCPD_DISPLAY_VERSION   "26.11.1.120"
+#define VSCPD_DISPLAY_VERSION   "26.11.15.120"
 
 #define VSCPD_COPYRIGHT                                                     \
     "Copyright (C) 2000-2026 Ake Hedman and contributors, the VSCP project, "                \

@@ -101,7 +101,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
         self.assertEqual(str(self.commits_this_month()), version.split(".")[3])
-        self.assertEqual(str(FIXTURE_REVISION), version.split(".")[2])
+        self.assertEqual(str(datetime.now().day), version.split(".")[2])
 
     def test_default_preserves_git_unavailable_fallback(self):
         original_header = self.header.read_text(encoding="utf-8")
@@ -112,7 +112,7 @@ class UpdateMetadataTest(unittest.TestCase):
         self.assertEqual(original_header, self.header.read_text(encoding="utf-8"))
         version = ET.parse(self.variables).getroot().findtext("document-version")
         self.assertEqual("0", version.split(".")[3])
-        self.assertEqual(str(FIXTURE_REVISION), version.split(".")[2])
+        self.assertEqual(str(datetime.now().day), version.split(".")[2])
 
     def test_prepared_commit_versions_match_resulting_head(self):
         original_lines = self.header.read_text(encoding="utf-8").splitlines()
@@ -126,6 +126,7 @@ class UpdateMetadataTest(unittest.TestCase):
             r"(?m)^#define VSCPD_REVISION_VERSION\s+([0-9]+)$",
             self.header.read_text(encoding="utf-8"),
         ).group(1))
+        self.assertEqual(created.day, revision)
         expected_patch = self.commits_this_month() + 1
         self.assertEqual(
             f"{created:%y}.{created:%m}.{revision}.{expected_patch}", version
@@ -193,7 +194,7 @@ class UpdateMetadataTest(unittest.TestCase):
         module = runpy.run_path(str(self.script))
         now = datetime.now()
         expected_patch = self.commits_this_month(now) + 2
-        revision = module["_manual_revision"](self.header.read_text(encoding="utf-8"))
+        revision = now.day
         version = f"{now:%y}.{now:%m}.{revision}.{expected_patch}"
         header = module["_update_version_header"](
             self.header.read_text(encoding="utf-8"), now, expected_patch
@@ -226,40 +227,28 @@ class UpdateMetadataTest(unittest.TestCase):
         )
         self.assertRegex(result, r"(?m)^#define VSCPD_MINOR_VERSION\s+9$")
         self.assertRegex(
-            result, rf'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.{FIXTURE_REVISION}\.123"$'
+            result, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.1\.123"$'
         )
 
-    def test_revision_is_manually_set_and_limited_to_one_byte(self):
+    def test_revision_is_generated_from_the_day_of_month(self):
         module = runpy.run_path(str(self.script))
         header = self.header.read_text(encoding="utf-8")
-        self.assertEqual(FIXTURE_REVISION, module["_manual_revision"](header))
-        self.assertEqual(0, module["_manual_revision"](
-            re.sub(
-                r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
-                r"\g<1>0",
-                header,
-            )
-        ))
-        manual_revision = re.sub(
-            r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
-            r"\g<1>255",
-            header,
-        )
-        self.assertEqual(255, module["_manual_revision"](manual_revision))
-        with self.assertRaisesRegex(ValueError, "between 0 and 255"):
-            module["_manual_revision"](
+        module["_validate_revision_day"](header)
+        with self.assertRaisesRegex(ValueError, "day of the month"):
+            module["_validate_revision_day"](
                 re.sub(
                     r"(?m)(^#define VSCPD_REVISION_VERSION\s+)\d+$",
-                    r"\g<1>256",
+                    r"\g<1>32",
                     header,
                 )
             )
         updated = module["_update_version_header"](
-            manual_revision, datetime(2026, 9, 1), 3925
+            header, datetime(2026, 9, 15), 3925
         )
+        self.assertRegex(updated, r"(?m)^#define VSCPD_REVISION_VERSION\s+15$")
         self.assertRegex(updated, r"(?m)^#define VSCPD_PATCH_VERSION\s+3925$")
         self.assertRegex(
-            updated, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.255\.3925"$'
+            updated, r'(?m)^#define VSCPD_DISPLAY_VERSION\s+"26\.09\.15\.3925"$'
         )
 
     def test_invalid_header_fails_without_writing_metadata(self):
@@ -273,7 +262,12 @@ class UpdateMetadataTest(unittest.TestCase):
             ),
             re.sub(
                 r"(?m)^#define VSCPD_REVISION_VERSION[^\n]*\n",
-                "#define VSCPD_REVISION_VERSION 256\n",
+                "#define VSCPD_REVISION_VERSION 32\n",
+                header,
+            ),
+            re.sub(
+                r"(?m)^#define VSCPD_REVISION_VERSION[^\n]*\n",
+                "#define VSCPD_REVISION_VERSION 0\n",
                 header,
             ),
             re.sub(r"(?m)^#define VSCPD_PATCH_VERSION[^\n]*\n", "", header),
