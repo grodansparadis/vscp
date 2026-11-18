@@ -18,7 +18,7 @@
                "town": "Loos",
                "postcode": "82770",
                "state": "HA",
-               "Region": "Hälsingland",
+               "region": "Hälsingland",
                "country" : "Sweden"
          },
          "telephone": [
@@ -52,7 +52,7 @@
             },
             {
                "address": "info@grodansparadis.com",
-               "<description": {
+               "description": {
             	   "en": "General email"
                }
             }
@@ -209,7 +209,7 @@
           "date":"2012-01-01",
           "version_major":"1",
           "version_minor":"0", 
-          "version_spatch":"0",
+          "version_patch":"0",
           "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
           "description" : {
             "en": "English 7."

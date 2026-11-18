@@ -3190,6 +3190,31 @@ TEST(parseMDF, JSON_SIMPLE_Remotevar)
 
 //-----------------------------------------------------------------------------
 
+TEST(parseMDF, JSON_Simple_Fixture_Keys)
+{
+  CMDF mdf;
+  std::string path = "json/simple_dm.json";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  // "region" (was "Region")
+  EXPECT_EQ("Hälsingland", mdf.getManufacturerRegionAddress());
+
+  // Third email "description" (was "<description")
+  CMDF_Item *pemail = mdf.getManufacturer()->getEmailObj(2);
+  ASSERT_NE(nullptr, pemail);
+  EXPECT_EQ("General email", pemail->getDescription("en"));
+
+  // Action 2 "param" (was "parm")
+  CMDF_DecisionMatrix *pdm = mdf.getDM();
+  ASSERT_NE(nullptr, pdm);
+  CMDF_Action *paction = pdm->getAction(2);
+  ASSERT_NE(nullptr, paction);
+  ASSERT_EQ(1, paction->getListActionParameter()->size());
+  EXPECT_EQ("parm 2", paction->getListActionParameter()->front()->getName());
+}
+
+//-----------------------------------------------------------------------------
+
 TEST(parseMDF, JSON_SIMPLE_DMatrix)
 {
   std::string path;
