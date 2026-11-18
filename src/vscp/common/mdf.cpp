@@ -4578,8 +4578,17 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               spdlog::trace("Parse-XML: Register type: dmatrix");
             }
             else {
-              gpRegisterStruct->m_type = static_cast<mdf_register_type>(vscp_readStringValue(attribute));
-              spdlog::trace("Parse-XML: Register type: {0}", (int)gpRegisterStruct->m_type);
+              // Numeric form (0 = std, 1 = dmatrix1, 2 = block)
+              long long regtype = vscp_readStringValue(attribute);
+              if ((MDF_REG_TYPE_DMATRIX1 == regtype) || (MDF_REG_TYPE_BLOCK == regtype)) {
+                gpRegisterStruct->m_type = static_cast<mdf_register_type>(regtype);
+              }
+              else {
+                if (MDF_REG_TYPE_STANDARD != regtype) {
+                  spdlog::warn("Parse-XML: Unknown register type '{}', std used.", attribute);
+                }
+                gpRegisterStruct->m_type = MDF_REG_TYPE_STANDARD;
+              }
             }
           }
           else if (0 == strcasecmp(attr[i], "fgcolor")) {
@@ -6182,7 +6191,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(4) == "events") &&
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
-        vscp_trim(gpValueStruct->m_name);
+        vscp_trim(gpBitStruct->m_name);
       }
 
       else if ((gTokenList.at(0) == "description") && 
@@ -7449,7 +7458,7 @@ mdf_jsonScalarString(const json &value)
 }
 
 static void
-mdf_normalizeJsonNode(json &node, bool bModule)
+mdf_normalizeJsonNode(json &node, bool bModule, bool bRemoteVar = false)
 {
   static const std::set<std::string> knownKeys = {
     "redirect", "module", "name", "model", "version", "changed", "description", "infourl", "buffersize",
@@ -7473,7 +7482,7 @@ mdf_normalizeJsonNode(json &node, bool bModule)
 
   if (node.is_array()) {
     for (auto &item : node) {
-      mdf_normalizeJsonNode(item, false);
+      mdf_normalizeJsonNode(item, false, bRemoteVar);
     }
     return;
   }
@@ -7534,12 +7543,44 @@ mdf_normalizeJsonNode(json &node, bool bModule)
     node["version"] = part("version_major") + "." + part("version_minor") + "." + part("version_patch");
   }
 
+  // The parser reads these keys as integers. A number with decimals or
+  // outside the 64-bit range can not be converted to an integer (undefined
+  // behaviour); it is made an integer here. Remote variable default/min/max
+  // are kept as they are (they are read as text and can be floats).
+  static const std::set<std::string> integerKeys = {
+    "level", "buffersize", "algorithm", "blocksize", "blockcount", "targetcode", "size", "version_major",
+    "version_minor", "version_patch", "page", "offset", "span", "width", "min", "max", "default", "pos",
+    "bitpos", "start-page", "start-offset", "rowcount", "rowsize", "code", "class", "type", "priority",
+    "fgcolor", "bgcolor", "evenfg", "oddfg", "evenbg", "oddbg"
+  };
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    if (!it.value().is_number_float() || !integerKeys.count(it.key())) {
+      continue;
+    }
+    if (bRemoteVar && (("default" == it.key()) || ("min" == it.key()) || ("max" == it.key()))) {
+      continue;
+    }
+    double d = it.value().get<double>();
+    if (!(d == d)) { // NaN
+      d = 0;
+    }
+    if (d < 0) {
+      it.value() = (d < -9.2e18) ? (int64_t) -9200000000000000000LL : (int64_t) d;
+    }
+    else {
+      it.value() = (d > 1.8e19) ? (uint64_t) 18000000000000000000ULL : (uint64_t) d;
+    }
+  }
+
   for (auto it = node.begin(); it != node.end(); ++it) {
     // Language keys in texts are left as they are
     if (("description" == it.key()) || ("infourl" == it.key())) {
       continue;
     }
-    mdf_normalizeJsonNode(it.value(), ("module" == it.key()));
+    // The objects in a remote variable list (bits/values below them are not
+    // remote variables)
+    bool bRvarList = bModule && (("remotevar" == it.key()) || ("remotevars" == it.key()));
+    mdf_normalizeJsonNode(it.value(), ("module" == it.key()), bRvarList);
   }
 }
 

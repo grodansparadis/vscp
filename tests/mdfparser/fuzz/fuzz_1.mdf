@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Every element and attribute of the MDF XML specification, each with its
+  own value, so a test can check that all of them are read.
+  json/spec_full.json describes the same module in JSON.
+-->
+<vscp>
+  <module>
+    <name>Spec full</name>
+    <copyright>Copyright S1</copyright>
+    <level>2</level>
+    <model>dmatrix2</model>
+    <version>Version S3</version>
+    <changed>2026-11-18</changed>
+    <buffersize>32</buffersize>
+    <description lang="en">Module description en</description>
+    <description lang="se">Modulbeskrivning se</description>
+    <infourl lang="en">https://module.en</infourl>
+    <infourl lang="se">https://module.se</infourl>
+
+    <manufacturer>
+      <name>Maker S4</name>
+      <address>
+        <street>Street S5</street>
+        <town>Town S6</town>
+        <city>City S7</city>
+        <postcode>Post S8</postcode>
+        <state>State S9</state>
+        <region>Region S10</region>
+        <country>Country S11</country>
+      </address>
+      <telephone>
+        <number>+46 1</number>
+        <description lang="en">Phone desc</description>
+        <infourl lang="en">https://phone.en</infourl>
+      </telephone>
+      <telephone>
+        <number>+46 2</number>
+      </telephone>
+      <fax>
+        <number>+46 3</number>
+        <description lang="en">Fax desc</description>
+        <infourl lang="en">https://fax.en</infourl>
+      </fax>
+      <email>
+        <address>mail@s12.com</address>
+        <description lang="en">Mail desc</description>
+cription>
+        <description lang="se">Registerbeskrivning</description>
+        <infourl lang="en">https://reg.en</infourl>
+        <valuelist>
+          <item name="Item zero" value="0x00">
+            <description lang="en">Item zero desc</description>
+            <infourl lang="en">https://item0.en</infourl>
+          </item>
+          <item name="Item one" value="0x01"/>
+        </valuelist>
+        <bit name="Low bits" pos="0" width="2" default="2" min="1" max="3" access="w">
+          <description lang="en">Low bits desc</description>
+          <infourl lang="en">https://lowbits.en</infourl>
+          <valuelist>
+            <item name="Bit item" value="3">
+              <description lang="en">Bit item desc</description>
+            </item>
+          </valuelist>
+        </bit>
+        <bit name="Flag" pos="2" default="true"/>
+      </reg>
+      <reg name="Write only" page="1" offset="3" access="w"/>
+      <reg name="Read write" page="1" offset="4" access="rw" default="UNDEF"/>
+      <reg name="Block" page="2" offset="0x10" type="block" span="3" access="r">
+        <description lang="en">Block desc</description>
+      </reg>
+      <reg name="DM" page="3" offset="0" type="dmatrix1" span="8" access="rw"/>
+    </registers>
+
+    <remotevars>
+      <remotevar name="Var int" type="uint49_t" default="1234" page="4" offset="19" access="r"
+                 min="10" max="2000" fgcolor="0x010203" bgcolor="0x040506">
+        <description lang="en">Var desc</description>
+        <infourl lang="en">https://</module>nfourl>
+        <valuelist>
+          <item name="Var item" value="0x10"/>
+        </valuelist>
+        <bit name="Var bit" pos="1" width="1"/>
+      </remotevar>
+      <remotevar name="Var string" type="string" page="4" offset="32" size="16" access="rw"/>
+      <remotevar name="Var bool" type="bool" page="4" offset="50" bitpos="3" default="true" access="w"/>
+    </remotevars>
+
+    <alarm>
+      <bit pos="0" name="Low alarm">
+        <description lang="en">Low alarm desc</description>
+        <infourl lang="en">https://alarm0.en</infourl>
+      </bit>
+      <bit pos="1" name=""type"larm"/>
+    </alarm>
+
+    <dmatrix level="1" start-page="3" start-offset="0x10" rowcnt="4" rowsize="8">
+      <action name="NOOP" code="0x0“">
+        <description lang="en">NOOP desc</description>
+        <infourl lang="en">https://noop.en</infourl>
+      </action>
+      <action name="Start counter" code="0x01">
+        <param name="Counter" offset="0" min="0" max="3">
+          <description lang="en">Counter desc</description>
+          <infourl lang="en">https://counter.en</infourl>
+          <valuelist>
+            <item name="Counter 0" value="0x00"/>
+            <item name="Counter 3" value="0x03"/>
+          </valuelist>
+          <bit name="Param bit" pos="4" width="2"/>
+        </param>
+      </action>
+    </dmatrix>
+
+    <events>
+      <event name="Counter data" class="0x00f" type="0x06" priority="4" dir="in">
+        <description lang="en">Event desc</description>
+        <infourl lang="en">https://event.en</infourl>
+        <data name="Datacoding" offset="0">
+          <description lang="en">Data desc</description>
+          <infourl lang="en">https://data.en</infourl>
+          <valuelist>
+            <item name="Data item" value="0x60"/>
+          </valuelist>
+          <bit n"Flag" pos="2" default="true"/>
+      </reg>
+      <reg name="Write only" page="1" offset="3" access="w"/>
+      <reg name="Read write" page="1" offset="4" access="rw" default="UNDEF"/>
+      <reg name="Block" page="2" offset="0x10" type="block" span="3" access="r">
+        <description lang="en">Block desc</description>
+      </reg>
+      <reg name="DM" page="3" offset="0" type="dmatrix1" span="8" access="rw"/>
+    </registers>
+
+    <remotevars>
+      <remotevar name="Var int" type="uint49_t" default="1234" page="4" offset="19" access="r"
+                 min="10" max="2000" fgcolor="0x010203" bgcolor="0x040506">
+        <description lang="en">Var desc</description>
+        <infourl lang="en">https://</module>nfourl>
+        <valuelist>
+          <item name="Var item" value="0x10"/>
+        </valuelist>
+        <bit name="Var bit" pos="1" width="1"/>
+      </remotevar>
+      <remotevar name="Var string" type="string" page="4" offset="32" size="16" access="rw"/>
+      <remotevar name="Var bool" type="bool" page="4" offset="50" bitpos="3" default="true" access="w"/>
+    </remotevars>
+
+    <alarm>
+      <bit pos="0" name="Low alarm">
+        <description lang="en">Low alarm desc</description>
+        <infourl lang="en">https://alarm0.en</infourl>
+      </bit>
+      <bit pos="1" name=""type"larm"/>
+    </alarm>
+
+    <dmatrix level="1" start-page="3" start-offset="0x10" rowcnt="4" rowsize="8">
+      <action name="NOOP" code="0x0“">
+        <description lang="en">NOOP desc</description>
+        <infourl lang="en">https://noop.en</infourl>
+      </action>
+      <action name="Start counter" code="0x01">
+        <param name="Counter" offset="0" min="0" max="3">
+          <description lang="en">Counter desc</description>
+          <infourl lang="en">https://counter.en</infourl>
+          <valuelist>
+            <item name="Counter 0" value="0x00"/>
+            <item name="Counter 3" value="0x03"/>
+          </valuelist>
+          <bit name="Param bit" pos="4" width="2"/>
+        </param>
+      </action>
+    </dmatrix>
+
+    <events>
+      <event name="Counter data" class="0x00f" type="0x06" priority="4" dir="in">
+        <description lang="en">Event desc</description>
+        <infourl lang="en">https://event.en</infourl>
+        <data name="Datacoding" offset="0">
+          <description lang="en">Data desc</description>
+          <infourl lang="en">https://data.en</infourl>
+          <valuelist>
+            <item name="Data item" value="0x60"/>
+          </valuelist>
+          <bit name="Data bit" pos="5" width="3"/>
+        </data>
+        <data name="MSB" offset="1"/>
+      </|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||event>
+      <event name="Any event" class="-" type="-" priority="7" dir="out"/>
+    </events>
+  </module>
+</vscp>

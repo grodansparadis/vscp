@@ -5028,6 +5028,24 @@ TEST(MdfSafety, UnchangedSpanGroupIsWrittenOnce)
   EXPECT_EQ(std::string::npos, xml.find("Block - BLOCK"));
 }
 
+// Inputs found by fuzzing (tests/mdfparser/fuzz, damaged MDF files) that
+// leaked memory or had undefined behaviour. They must load or fail cleanly,
+// and what loads must save and read back the same.
+TEST(MdfSafety, FuzzFindings)
+{
+  for (auto &entry : std::filesystem::directory_iterator("fuzz")) {
+    std::string path = entry.path().string();
+    CMDF mdf;
+    if (VSCP_ERROR_SUCCESS != mdf.parseMDF(path)) {
+      EXPECT_FALSE(mdf.getLastError().empty()) << path;
+      continue;
+    }
+    std::string out = tmpPath("fuzz.json");
+    EXPECT_EQ(VSCP_ERROR_SUCCESS, mdf.save(out, MDF_FORMAT_JSON)) << path << ": " << mdf.getLastError();
+    unlink(out.c_str());
+  }
+}
+
 TEST(MdfSafety, HugeSpanIsKept)
 {
   // A span too large to expand is kept as one register (it used to be cut)

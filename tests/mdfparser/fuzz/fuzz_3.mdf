@@ -1,0 +1,20 @@
+{
+  "module": {
+    "name": "Embedded",
+    "register": [
+      {
+        "name": "Temp MSB", "page": 0, "offset": 177777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777770, "access": "r", "default": "0x12",
+        "fgcolor": "0x010101", "bgcolor": "0x020202",
+        "description": { "en": "Temperature register" },
+        "remotevar": { "name": "Tempera<bit ture", "typE": "int16_t" }
+      },
+      { "nat": 0 }
+    ],
+    "event": [
+      {
+        "name": "E", "cla{s": 10, "type": 6,
+        "data": [ { "name": "a" }, { "name": "b" }, { "name": "c", "offset": 5 } ]
+      }
+    ]
+  }
+}

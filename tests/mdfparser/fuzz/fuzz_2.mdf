@@ -1,0 +1,373 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Copyright C) 2011-2020 Ake Hedman, Grodans Paradis AB -->
+<!-- <akhe@grodansparadis.com> -->
+<vscp>
+<module>
+	<name>Kelvin temperature sensor module</name>
+ 	<model>10KA</model>
+	<version>46</version>
+	<changed>2020-05-15</changed>
+	<description lang="en">
+		This module can report temperature from up to six temperature sensors. One sensor
+		is located on board and five are external to the module.
+	</description>
+  	<infourl>http://www.grodansparadis.com/kelvinntc10k/kelvin_ntc10ka.html</infourl>
+  	<buffersize>8</buffersize>
+	<manufacturer>
+		<name>Grodans Paradis AB</name>
+		<address>
+			<street>Brattbergavägen 17</street>
+			<city>Los</city>
+			<postcode>82770</postcode>
+			<country>Sweden</country>
+     	</address>
+		<telephone>
+			<number>+46 8 40011835 </number>
+			<description lang="en" >Main Reception</description>
+		</telephone>
+		<email>
+			<address>support@grodansparadis.com</address>
+			<description>Support email</description>
+		</email>
+		<email>
+			<address>sales@grodansparadis.com</address>
+			<description>Sales inquires e"pic18f2580",
+          "targetcode": 44,
+          "url": "https://xxx.yy/6.hex", 
+          "format":"intelhex16",
+          "date":"2021-11-02",
+          "version_major":"99",
+          "version_minor":"8", 
+          "version_patch":"17",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 5."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 55,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2015-03-20",
+          "version_major":"1",
+          "version_minor":"1", 
+          "version_patch":"0",
+          "md5sum":"71f920fa275127a7b60fa4d4d41432a3",
+          "description" : {
+            "en": "English 6."
+          }
+        },
+        {
+          "target": "pic18f2580",
+          "targetcode": 66,
+          "url": "https://xxx.yy/7.hex", 
+          "format":"intelhex16",
+          "date":"2012-01-01",
+          "version_major":"1",
+          "version_minor":"0", 
+          "version_patch":"0",
+          "md5sum":"43c191bf6d6c3f263a8cd0efd4a058ab",
+          "description" : {
+            "en": "English 7."
+          }
+        }
+      ],
+      "manual" : [
+        {
+          "url": "https://www.grodansparadis.com/paris/manual1.pdf",
+          "format": "pdf",
+          "lang": "en",
+          "description": {
+            "en" : "Full pdf manual English for the Paris module.",
+            "se" : "Fullständig pdf manual på Svenska för Paris modulen"
+          }
+        },
+        {
+          "url": "https://www.grodansparadis.com/paris/manual2",
+          "format": "html",
+          "lang": "xx",
+          "description": {
+            "en" : "Full web based English manual for the Paris module.",
+            "se" : "Fullständig webbaserad Svensk manual för Paris modulen."
+          }
+        }
+      ]
+    },
+    "events" : [
+      {
+        "name": "test event 1",
+        "class" : 10,
+        "type": 6,
+        "direction": "in",
+        "priority": "low",
+        "description" : {
+          "en": "English event description 3",
+          "se": "Svensk event beskrivning 3",
+          "lt": "Lietuvos event padeda 3"
+        },
+        "infourl" : {
+          "en": "English event help 3",
+          "se": "Svensk event hjälp 3",
+          "lt": "Lietuvos event padeda 3"
+        },
+        "data" : [
+          {
+            "name": "test event data 1",
+            "description" : {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "lt": "Lietuvos event data padeda 3"
+            },
+            "infourl" : {
+              "en": "English event data help 3",
+              "se": "Svensk event data hjälp 3",
+              "lt": "Lietuvos event data padeda 3"
+            },
+            "bit": [
+              {
+     register you can set functionality for the
+			measurements of temperature 0.\n 
+			Bit 0: Unit for temperature presentation (0=Kelvin, 1=Celsius, 2=Fahrenheit).\n
+			Bit 1: Unit for temperature presentation (0=Kelvin, 1=Celsius, 2=Fahrenheit).\n
+			Bit 2: Reserved.\n 
+			Bit 3: Enable low alarm if set to 1.\n 
+			Bit 4: Enable high alarm if set to 1\n 
+			Bit 5: Send TurnOn/TurnOff events instead of alarm events.\n 
+			Bit 6: Invert TurnOn/TurnOff sending.\n 
+			Bit 7: Continuous alarm events.\n 
+			</description>
+			<access>rw</access>
+			<bit pos="0" width="2" default="0" >
+				<name lang="en">Temperature unit</name>
+				<description lang="en">
+				The module can present the temperatures in different units. Default
+				is degrees Celsius but you can select Kelvin or Fahrenheit instead.\n
+				Set to 0 to set unit to Kelvin.\n
+				Set to 1 to set unit to Celsius.\n
+				Set to 2 to set unit to Fahrenheit.\n
+				</description> 
+				<valuelist>                   
+					<item value = "0x00">                   
+						<name lang="en">Kelvin</name>                     
+						<description lang="en">Temperature is presented using Kelvin as unit,</description>                     
+					</item> 
+					<item value = "0x01">                   
+						<name lang="en">Celsius</name>                     
+						<description lang="en">Temperature is presented using Celsius as unit,</description>                     
+					</item>
+					<item value = "0x02">                   
+						<name lang="en">Kelvin</name>                     
+						<description lang="en">Temperature is presented using Fahrenheit as unit,</description>                     
+					</item>					
+				</valuelist>	
+			</bit>
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Enable low alarm.</name>
+				<description lang="en">
+					Enable sending of low alarm events by setting this bit to one.
+				</description> 
+        	</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Enable high alarm.</name>
+				<description lang="en">
+					Enable sending of high alarm events by setting this bit to one.
+				</description> 
+        	</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Send TurnOn/TurnOff.</name>
+				<description lang="en">
+					Send TurnOn/TurnOff events instead of Alarm events by setting this
+					bit to one. Bit 6 control when TurnOn/TurnOff events are sent.
+				</description> 
+        	</bit>
+			<bit pos="6" default="false" >
+				<name lang="en">Controls when TurnOn/TurnOff events will be sent (if activated).</name>
+				<description lang="en">
+				0 - TurnOn event is sent when low temperature is reached as set in low temperature 
+				alarm register. TurnOff event is sent when high 
+				temperature is reached as set in high temperature alarm register.\n	
+				1 - TurnOff event is sent when low temperature is reached as set in low temperature 
+				alarm register. TurnOn event is sent when high 
+				temperature is reached as set in high temperature alarm register.\n
+				The hysteresis value will effect TurnOn/TurnOff events The temperature must go 
+				above or below the hysteresis value before a new event will be sent out. 
+				</description> 
+        	</bit>
+			<bit pos="7" default="false" >
+				<name lang="en">Continuous alarm events.</name>
+				<description lang="en">
+				If this bit is set Alarm events will be sent continuous with a one second interval 
+				until the alarm register is read or the temperature goes to a non alarm state 
+				(with hysteresis taken into account). TurnOn/TurnOff events will not be affected 
+				by a cleared alarm register and will be sent until this bit is cleared or the 
+				temperature goes to a non alarm state (with hysteresis taken into account.
+				</description> 
+        	</bit>
+		</reg>
+		
+		
+		<reg page="0" offset="3" deafult="1" bgcolor="0xCCFFCC">
+	         item<city>Los</city>
+         <postcode>82050</postcode>
+         <country>Sweden</country>
+     	</address>
+      <telephone>									
+      	<number>+46 657 413430</number>
+        	<description lang="en" >Main Reception</description>
+   	</telephone>
+      <fax>									
+      	<number>+46 657 413503</number>
+         <description lang="en">Main Fax Number</d          
+						<name lang="en">Kelvin</name>                     
+						<description lang="en">Temperature is presented using Fahrenheit as unit,</description>                     
+					</item>					
+				</valuelist>	
+			</bit>
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">This bit is reserved</description> 
+        	</bit>
+			<bit pos="3" default="false" >
+				<name lang="en">Enable low alarm.</name>
+				<pdrtiescion lang="en">
+					Enable sending of low alarm events by setting this bit to one.
+				</description> 
+        	</bit>
+			<bit pos="4" default="false" >
+				<name lang="en">Enable high alarm.</name>
+				<description lang="en">
+					Enable sending of high alarm events by setting this bit to one.
+				</description> 
+        	</bit>
+			<bit pos="5" default="false" >
+				<name lang="en">Send TurnOn/TurnOff.</name>
+				<description lang="en">
+					Send TurnOn/TurnOff events instead of Alarm events by setting this
+					bit to one. Bit 6 control when TurnOn/TurnOff events are sent.
+				</description> 
+        	</bit>
+			<bit pos="6" default="false" >
+				<name lang="en">Controls when TurnOn/TurnOff events will be sent (if activated).</name>
+				<description lang="en">
+				0 - TurnOn event is sent when low temperature is reached as set in low temperature 
+				alarm register. TurnOff event is sent when high 
+				temperature is reached as set in high temperature alarm register.\n	
+				1 - TurnOff event is sent when low temperature is reached as set in low tempdrature 
+				alarm register. TurnOn eveft is sent when high 
+				temperature is reached as set in high e>
+      	<description lang="en">Current dew point, LSB.</description>
+      	<access>r</access>
+		</reg>
+		
+		<reg page="0" offset="8" >
+			<name lang="en">Absolute high temperature</name>
+      	<description lang="en">Absolute high temperature, MSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+	
+		<reg page="0" offset="9" >
+			<name lang="en">Absolute high temperature</name>
+      	<description lang="en">Absolute high temperature, LSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="10" >
+			<name lang="en">Absolulang="en">Subzone</name>
+			<description lang="en">Subzone this module belongs to</description>
+			<access>rw</access>
+		</reg>
+		
+		
+		<reg page="0" offset="2" default="1" bgcolor="0xCCFFCC" >
+			<name lang="en">Control register for sensor 0</name>
+			<description lang="en">
+			In the sensor control register you can set functionality for the
+			measurements of temperature 0.\n 
+			Bit 0: Unit for temperature prese�ation (0=Kelvin, 1=Celsius, 2=Fahrenheit).\n
+			Bit 1: Unit for temperature presentation (0=Kelvin, 1=Celsius, 2=Fahrenheit).\n
+			Bit 2: Reserved.\n 
+			Bit 3: Enable low alarm if set to 1.\n 
+			Bit 4: Enable high alarm if set to 1\n 
+			Bit 5: Send TurnOn/TurnOff events instead of alarm events.\n 
+			Bit 6: Invert TurnOn/TurnOff sending.\n 
+			Bit 7: Continuous alarm events.\n 
+			</description>
+			<access>rw</access>
+			<bit pos="0" width="2" default="0" >
+				<name lang="en">Temperature unit</name>
+				<description lang="en">
+				The module can present the temperatures in different units. Default
+				is degrees Celsius but you can select Kelvin or Fahrenheit instead.\n
+				Set to 0 to set unit to Kelvin.\n
+				Set to 1 to set unit to Celsius.\n
+				Set to 2 to set unit to Fahrenheit.\n
+				</description> 
+				<valuelist>                   
+					<item value = "0x00">                   
+						<name lang="en">Kelvin</name>                     
+						<description lang="en">Temperature is presented using Kelvin as unit,</description>                     
+					</item> 
+					<item value = "0x01">                   
+						<name lang="en">Celsius</name>                     
+						<description lang="en">Temperature is presented using Celsius as unit,</description>                     
+					</item>
+					<item value = "0x02">                   
+						<name lang="en">Kelvin</name>                     
+						<description lang="en">Temperature is presented using Fahrenheit as unit,</description>                     
+					</item>					
+				</valuelist>	
+			</bit>
+			<bit pos="2" default="false" >
+				<name lang="en">Reserved</name>
+				<description lang="en">This bit is te low temperature</name>
+      	<description lang="en">Absolute low temperature, MSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+	
+		<reg page="0" offset="11" >
+			<name lang="en">Absolute low temperature</name>
+      	<description lang="en">Absolute low temperature, LSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="12" >
+			<name lang="en">Absolute high humidity</name>
+      	<description lang="en">Absolute high humidity, MSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+	
+	﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- Copyright C) 2012 Ake Hedman, Grodans Paradis AB -->
+<!-- <akhe@grodansparadis.com> -->
+<vscp>
+<module>
+	<name>Kelvin te	<reg page="0" offset="13" >
+			<name lang="en">Absolute high humidity</name>
+      	<descriptio~ lang="en">Absolute high humidity, LSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<access>rw</access>
+		</reg>
+		
+		<reg page="0" offset="14" >
+			<name lang="en">Absolute low humidity</name>
+      	<description lang="en">Absolute low humidity, MSB.
+      		Writing any value to this register resets absolute high temp.
+      	</description>
+      	<accessmperature>rw</access>
+		 <
