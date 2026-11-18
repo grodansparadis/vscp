@@ -811,6 +811,14 @@ public:
   uint32_t getBackgroundColorMdf(void) { return m_bgcolorMdf; };
 
   /*!
+    Position of this register in an expanded DMATRIX1/BLOCK register
+    (0 for the first one), -1 if it was not made by expansion. Used when
+    saving to write an unchanged group as one register again. Not saved.
+  */
+  int getSpanIndex(void) { return m_spanIndex; };
+  void setSpanIndex(int idx) { m_spanIndex = idx; };
+
+  /*!
     Get description map
     @return Pointer to description map
   */
@@ -870,6 +878,9 @@ private:
   */
   uint32_t m_fgcolorMdf;
   uint32_t m_bgcolorMdf;
+
+  // Position in an expanded DMATRIX1/BLOCK register, -1 if not expanded
+  int m_spanIndex;
 };
 
 // ----------------------------------------------------------------------------
@@ -986,6 +997,15 @@ public:
   void setDefault(const std::string &strDefault) { m_strDefault = strDefault; };
 
   /*!
+    Get/set minimum and maximum value (text, read according to the type).
+    Empty if not set (then the limits of the type apply).
+  */
+  std::string getMin(void) { return m_strMin; };
+  void setMin(const std::string &strMin) { m_strMin = strMin; };
+  std::string getMax(void) { return m_strMax; };
+  void setMax(const std::string &strMax) { m_strMax = strMax; };
+
+  /*!
     Get Page for remote variable
     @return Page for remote variable.
   */
@@ -1088,6 +1108,8 @@ private:
   std::map<std::string, std::string> m_mapInfoURL; // Item help text or URL
 
   std::string m_strDefault;         // default value
+  std::string m_strMin;             // Minimum value (empty = type minimum)
+  std::string m_strMax;             // Maximum value (empty = type maximum)
   vscp_remote_variable_type m_type; // One of the predefined types
 
   uint16_t m_page;          // stored on this page
@@ -1676,9 +1698,9 @@ public:
 
   /*!
     Get event class
-    @return Event class
+    @return Event class, -1 for all classes ("-" in the MDF)
   */
-  uint16_t getClass(void) { return m_class; };
+  int getClass(void) { return m_class; };
 
   /*!
     Set event class
@@ -1688,15 +1710,15 @@ public:
 
   /*!
     Get event type
-    @return Event type
+    @return Event type, -1 for all types ("-" in the MDF)
   */
   int getType(void) { return m_type; };
 
   /*!
     Set event type
-    @param vscptype Event type
+    @param vscptype Event type, -1 for all types
   */
-  void setType(uint16_t vscptype) { m_type = vscptype; };
+  void setType(int vscptype) { m_type = vscptype; };
 
   /*!
     Get event priority
@@ -2311,6 +2333,19 @@ public:
   void setDate(const std::string &isodate) { m_strDate = isodate; };
 
   /*!
+    Get version ("major.minor.subminor" when it was given as version_major,
+    version_minor and version_subminor)
+    @return Version as a string
+  */
+  std::string getVersion(void) { return m_strVersion; };
+
+  /*!
+    Set version
+    @param strVersion Version
+  */
+  void setVersion(const std::string &strVersion) { m_strVersion = strVersion; };
+
+  /*!
     Assignment
   */
   CMDF_Picture &operator=(const CMDF_Picture &other)
@@ -2323,6 +2358,7 @@ public:
     m_strURL    = other.m_strURL;
     m_strFormat = other.m_strFormat;
     m_strDate   = other.m_strDate;
+    m_strVersion = other.m_strVersion;
     return *this;
   };
 
@@ -2386,6 +2422,9 @@ private:
     Date
   */
   std::string m_strDate;
+
+  // Version
+  std::string m_strVersion;
 
   /*!
       Description of file
@@ -2464,6 +2503,19 @@ public:
   void setDate(const std::string &isodate) { m_strDate = isodate; };
 
   /*!
+    Get version ("major.minor.subminor" when it was given as version_major,
+    version_minor and version_subminor)
+    @return Version as a string
+  */
+  std::string getVersion(void) { return m_strVersion; };
+
+  /*!
+    Set version
+    @param strVersion Version
+  */
+  void setVersion(const std::string &strVersion) { m_strVersion = strVersion; };
+
+  /*!
     Assignment
   */
   CMDF_Video &operator=(const CMDF_Video &other)
@@ -2476,6 +2528,7 @@ public:
     m_strURL    = other.m_strURL;
     m_strFormat = other.m_strFormat;
     m_strDate   = other.m_strDate;
+    m_strVersion = other.m_strVersion;
     return *this;
   };
 
@@ -2547,6 +2600,9 @@ private:
     Date
   */
   std::string m_strDate;
+
+  // Version
+  std::string m_strVersion;
 
   /*!
       Description of file
@@ -3426,6 +3482,19 @@ public:
   void setDate(const std::string &isodate) { m_strDate = isodate; };
 
   /*!
+    Get version ("major.minor.subminor" when it was given as version_major,
+    version_minor and version_subminor)
+    @return Version as a string
+  */
+  std::string getVersion(void) { return m_strVersion; };
+
+  /*!
+    Set version
+    @param strVersion Version
+  */
+  void setVersion(const std::string &strVersion) { m_strVersion = strVersion; };
+
+  /*!
     Assignment
   */
   CMDF_Manual &operator=(const CMDF_Manual &other)
@@ -3438,6 +3507,7 @@ public:
     m_strURL      = other.m_strURL;
     m_strFormat   = other.m_strFormat;
     m_strDate     = other.m_strDate;
+    m_strVersion = other.m_strVersion;
     m_strLanguage = other.m_strLanguage;
     return *this;
   };
@@ -3515,6 +3585,9 @@ private:
     Object date
   */
   std::string m_strDate;
+
+  // Version
+  std::string m_strVersion;
 
   /*!
       Description of file
@@ -4118,6 +4191,8 @@ public:
 
   /*!
     Parse XML formated MDF file
+    The content is only replaced if the whole file could be parsed. On
+    failure the current content is left as it was.
     @param ifs Open input file stream for the file to parse.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
@@ -4125,6 +4200,8 @@ public:
 
   /*!
     Parse JSON formated MDF file
+    The content is only replaced if the whole file could be parsed. On
+    failure the current content is left as it was.
     @param path Path to the JSON file to parse.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
@@ -4133,10 +4210,45 @@ public:
   /*!
     Parse a MDF. The format can be XML or JSON. If the format is
     unknown, the function will try to determine it.
+    The content is only replaced if the whole file could be parsed. On
+    failure the current content is left as it was and getLastError()
+    tells what went wrong.
     @param path Path to downloaded MDF
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
   */
   int parseMDF(const std::string &path);
+
+  /*!
+    Exchange the MDF content of this object with the content of another
+    object. Settings that are not part of the MDF (locale) are kept.
+    @param other Object to exchange content with.
+  */
+  void swapContent(CMDF &other);
+
+  /*!
+    Text that describes the last load or save error. Empty if the last
+    operation was successful.
+  */
+  const std::string &getLastError(void) const { return m_strLastError; };
+
+  /*!
+    Get/set the redirect URL. If set the real MDF is found at this URL
+    (load() follows it). Written by save() as "redirect".
+  */
+  std::string getRedirectUrl(void) { return m_redirectUrl; };
+  void setRedirectUrl(const std::string &url) { m_redirectUrl = url; };
+
+  /*!
+    The MDF content as an XML document (what save() writes for MDF_FORMAT_XML).
+  */
+  std::string toXmlString(void);
+
+  /*!
+    The MDF content as a JSON document (what save() writes for
+    MDF_FORMAT_JSON). Two objects with the same content give the same text,
+    so this can also be used to compare MDF content.
+  */
+  std::string toJsonString(void);
 
   /*!
       Clear storage
@@ -4147,8 +4259,8 @@ public:
     Expand a DMATRIX1 or BLOCK register (already in the register list) into
     one register per byte of its span. The registers are named "<name> - DM n"
     or "<name> - BLOCK n" (n = 0 for the first one), get consecutive offsets
-    and their own copies of the bit and value definitions. The span is
-    limited to 256. Used by both the XML and the JSON parser so they give the
+    and their own copies of the bit and value definitions. A span larger
+    than 4096 is not expanded (the register is kept as it is). Used by both the XML and the JSON parser so they give the
     same result.
     @param preg Pointer to a register that has been added to the register list.
   */
@@ -4193,7 +4305,7 @@ public:
   writeMap_json(std::ofstream& fout, std::map<std::string, std::string> *pmap, const std::string& tag, bool bCommaAtEnd = true);
 
   /*!
-    Write MDF to a file in XML format.
+    Write MDF to a file in XML format. Same as save(path, MDF_FORMAT_XML).
     @param path  Path to external file to write to. The file will be 
       created if it does not exist.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.  
@@ -4201,7 +4313,7 @@ public:
   int save_xml(const std::string &path);
 
   /*!
-    Write MDF to a file in JSON format.
+    Write MDF to a file in JSON format. Same as save(path, MDF_FORMAT_JSON).
     @param path  Path to external file to write to. The file will be 
       created if it does not exist.
     @return returns VSCP_ERROR_SUCCESS on success, error code on failure.  
@@ -4210,12 +4322,22 @@ public:
 
   /*!
     Write MDF to a file
+
+    The file is written to a temporary file in the same folder, flushed to
+    disk, read back and compared with the content in memory (bVerify), and
+    only then renamed over path. If anything fails path is left untouched
+    (it is never truncated or half written) and getLastError() tells what
+    went wrong.
+
     @param path  Path to external file to write to. The file will be 
       created if it does not exist.
     @param format Can be either MDF_FORMAT_XML or MDF_FORMAT_JSON
-    @return returns VSCP_ERROR_SUCCESS on success, error code on failure.
+    @param bVerify Read the written file back and check that it gives the
+      same content before replacing path. Default true.
+    @return returns VSCP_ERROR_SUCCESS on success, VSCP_ERROR_VERIFY if the
+      written file did not read back the same, other error code on failure.
   */
- int save(const std::string &path, mdf_format format);
+  int save(const std::string &path, mdf_format format, bool bVerify = true);
 
 
   // --------------------------------------------------------------------------
@@ -4230,6 +4352,14 @@ private:
 
   // Redirect URL if MDF with real content is located elsewhere.
   std::string m_redirectUrl;
+
+  // Description of the last load/save error
+  std::string m_strLastError;
+
+  // Parse into this object (no transaction, used by the public parse calls)
+  int parseMDF_XML_raw(std::ifstream &ifs);
+  int parseMDF_JSON_raw(const std::string &path);
+  int parseMDF_raw(const std::string &path);
 
   // Language specific information. "en" is default, but any variant
   // if ISO two letter language code can be used. Key is always lower

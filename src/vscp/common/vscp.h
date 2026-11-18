@@ -825,6 +825,7 @@ struct vscpMyNode {
 #define VSCP_ERROR_CREDENTIALS        73 /* Invalid credentials */
 #define VSCP_ERROR_NOT_AUTHORIZED     74 /* Not authorized to do that */
 #define VSCP_ERROR_FORBIDDEN          75 /* Forbidden to do that */
+#define VSCP_ERROR_VERIFY             76 /* Written data did not verify (read back differs) */
 
 /*!
   A timestamp that is less than this value is considered to be an event that should

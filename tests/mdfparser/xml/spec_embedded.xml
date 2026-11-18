@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Remote variables embedded in registers and event data without offsets
+     (json/spec_embedded.json is the same in JSON) -->
+<vscp>
+  <module>
+    <name>Embedded</name>
+    <registers>
+      <reg name="Temp MSB" page="0" offset="10" access="r" default="0x12" fgcolor="0x010101" bgcolor="0x020202">
+        <description lang="en">Temperature register</description>
+        <remotevar name="Temperature" type="int16_t"/>
+      </reg>
+      <reg name="Plain" page="0" offset="20" access="rw">
+        <remotevar/>
+      </reg>
+    </registers>
+    <remotevars>
+      <remotevar name="Separate" type="uint32_t" page="1" offset="0"/>
+    </remotevars>
+    <events>
+      <event name="E" class="10" type="6">
+        <data name="a"/>
+        <data name="b"/>
+        <data name="c" offset="5"/>
+      </event>
+    </events>
+  </module>
+</vscp>

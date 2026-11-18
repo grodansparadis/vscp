@@ -37,7 +37,14 @@
 #include <canal.h>
 #include <mdf.h>
 #include <stdlib.h>
-#ifndef WIN32
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 #include <vscp.h>
@@ -47,7 +54,9 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <cstring>
 #include <set>
+#include <sstream>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -76,6 +85,37 @@ using namespace kainjow::mustache;
 // Register/remote variable default values are stored as written in the MDF.
 // Only the "not set" keyword is normalized (any case) to "UNDEF", which is
 // what CMDF_Register::getDefault() and applications compare against.
+// Access rights as written in an MDF. The specification uses "r", "w" and
+// "rw"; other spellings seen in MDF files ("readwrite", "read only", ...)
+// are understood too. Anything unknown gives read/write (the specification
+// default) rather than no access at all.
+static mdf_access_mode
+mdf_parseAccess(std::string str)
+{
+  vscp_trim(str);
+  vscp_makeLower(str);
+  std::string s;
+  for (char c : str) {
+    if (!isspace((unsigned char) c) && ('/' != c) && ('-' != c) && ('_' != c)) {
+      s += c;
+    }
+  }
+  if (s.empty()) {
+    return MDF_REG_ACCESS_READ_WRITE;
+  }
+  if (("r" == s) || ("ro" == s) || ("read" == s) || ("readonly" == s)) {
+    return MDF_REG_ACCESS_READ_ONLY;
+  }
+  if (("w" == s) || ("wo" == s) || ("write" == s) || ("writeonly" == s)) {
+    return MDF_REG_ACCESS_WRITE_ONLY;
+  }
+  if (("rw" == s) || ("wr" == s) || ("readwrite" == s) || ("writeread" == s) || ("rws" == s)) {
+    return MDF_REG_ACCESS_READ_WRITE;
+  }
+  spdlog::warn("MDF: Unknown access '{}', read/write used.", str);
+  return MDF_REG_ACCESS_READ_WRITE;
+}
+
 static std::string
 mdf_normalizeDefault(std::string str)
 {
@@ -205,6 +245,8 @@ void
 CMDF_RemoteVariable::clearStorage(void)
 {
   m_strDefault = "UNDEF";
+  m_strMin.clear();
+  m_strMax.clear();
   m_type       = remote_variable_type_unknown;
   m_page       = 0;
   m_offset     = 0;
@@ -454,8 +496,8 @@ CMDF_Bit::setWidth(uint8_t width)
     m_mask |= (1 << k);
   }
 
-  m_min = m_min & m_mask;
-  m_max = m_max & m_mask;
+  // m_min/m_max/m_default are values of the bit field (not shifted to its
+  // position) and are kept as they are given
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -478,7 +520,7 @@ CMDF_Bit::setPos(uint8_t pos)
 void
 CMDF_Bit::setMin(uint8_t min)
 {
-  m_min = min & m_mask;
+  m_min = min;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -488,7 +530,7 @@ CMDF_Bit::setMin(uint8_t min)
 void
 CMDF_Bit::setMax(uint8_t max)
 {
-  m_max = max & m_mask;
+  m_max = max;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -540,6 +582,7 @@ CMDF_Register::CMDF_Register()
 
   m_fgcolorMdf = m_fgcolor;
   m_bgcolorMdf = m_bgcolor;
+  m_spanIndex  = -1;
 }
 
 CMDF_Register::~CMDF_Register()
@@ -601,6 +644,7 @@ CMDF_Register::clearStorage(void)
 
   m_fgcolorMdf = m_fgcolor;
   m_bgcolorMdf = m_bgcolor;
+  m_spanIndex  = -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -659,6 +703,7 @@ CMDF_Register::operator=(const CMDF_Register &other)
 
   m_fgcolorMdf = other.m_fgcolorMdf;
   m_bgcolorMdf = other.m_bgcolorMdf;
+  m_spanIndex  = other.m_spanIndex;
 
   // Clear up bit list
   std::deque<CMDF_Bit *>::iterator iterBit;
@@ -1118,7 +1163,7 @@ CMDF_Event::CMDF_Event()
   m_name.clear();
   m_class     = 0;
   m_type      = 0;
-  m_priority  = 7;
+  m_priority  = 3; // Specification default
   m_direction = MDF_EVENT_DIR_OUT;
 }
 
@@ -1127,7 +1172,7 @@ CMDF_Event::~CMDF_Event()
   m_name.clear();
   m_class     = 0;
   m_type      = 0;
-  m_priority  = 7;
+  m_priority  = 3; // Specification default
   m_direction = MDF_EVENT_DIR_OUT;
 
   clearStorage();
@@ -1420,6 +1465,7 @@ CMDF_Picture::~CMDF_Picture() {}
 void
 CMDF_Picture::clearStorage(void)
 {
+  m_strVersion.clear();
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
@@ -1450,6 +1496,7 @@ CMDF_Video::~CMDF_Video()
 void
 CMDF_Video::clearStorage(void)
 {
+  m_strVersion.clear();
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
@@ -1605,6 +1652,7 @@ CMDF_Manual::~CMDF_Manual()
 void
 CMDF_Manual::clearStorage(void)
 {
+  m_strVersion.clear();
   m_strName.clear();
   m_strURL.clear();
   m_strFormat.clear();
@@ -1654,7 +1702,7 @@ CMDF::CMDF()
 {
   m_strLocale         = "en";
   m_vscpLevel         = VSCP_LEVEL1;
-  m_module_bufferSize = 0;
+  m_module_bufferSize = 8; // Specification default
 }
 
 CMDF::~CMDF()
@@ -1716,12 +1764,15 @@ CMDF::clearStorage(void)
 
   m_vscpLevel = VSCP_LEVEL1;
   m_name      = "";
+  m_copyright.clear();
+  m_redirectUrl.clear();
+  m_manufacturer.clearStorage();
   m_strModule_Model.clear();
   m_strModule_Version.clear();
   m_mapDescription.clear();
   m_mapInfoURL.clear();
   m_strModule_changeDate.clear();
-  m_module_bufferSize = 0;
+  m_module_bufferSize = 8; // Specification default
   m_strURL.clear();
   m_dmInfo.clearStorage();
   m_bootInfo.clearStorage();
@@ -1942,9 +1993,11 @@ CMDF::load(const std::string &file, bool bLocalFile)
 {
   std::string path = file;
   vscp_trim(path);
+  m_strLastError.clear();
 
   // Must have a path or URL
   if (path.empty()) {
+    m_strLastError = "No MDF path or URL given";
     return false;
   }
 
@@ -1966,18 +2019,44 @@ CMDF::load(const std::string &file, bool bLocalFile)
   std::string tempFile;
   if (!mdfCreateTempFile(tempFile)) {
     spdlog::error("MDF load: Failed to create temporary file");
+    m_strLastError = "Failed to create a temporary file for the download";
     return false;
   }
 
   // downLoadMDF returns CURLE_OK (0) on success
-  if (CURLE_OK != downLoadMDF(url, tempFile)) {
+  CURLcode curlrv = downLoadMDF(url, tempFile);
+  if (CURLE_OK != curlrv) {
     remove(tempFile.c_str());
+    m_strLastError = "Failed to download " + url + " (" + curl_easy_strerror(curlrv) + ")";
     return false;
   }
 
   bool rv = (VSCP_ERROR_SUCCESS == parseMDF(tempFile));
   remove(tempFile.c_str());
-  return rv;
+  if (!rv) {
+    return false;
+  }
+
+  // A redirect tells that the real MDF is somewhere else (a few hops at most
+  // so a redirect loop ends)
+  static thread_local int redirectDepth = 0;
+  if (!m_redirectUrl.empty() && (m_redirectUrl != path)) {
+    if (redirectDepth >= 5) {
+      m_strLastError = "Too many MDF redirects";
+      return false;
+    }
+    CMDF target;
+    target.m_strLocale = m_strLocale;
+    redirectDepth++;
+    bool bOk = target.load(m_redirectUrl, false);
+    redirectDepth--;
+    if (!bOk) {
+      m_strLastError = "Failed to load redirected MDF " + m_redirectUrl + ": " + target.m_strLastError;
+      return false;
+    }
+    swapContent(target);
+  }
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2016,6 +2095,17 @@ mdfXml(const std::string &str)
         break;
       case '\'':
         out += "&apos;";
+        break;
+      // Written as character references so XML attribute value
+      // normalization does not turn them into spaces
+      case '\t':
+        out += "&#9;";
+        break;
+      case '\n':
+        out += "&#10;";
+        break;
+      case '\r':
+        out += "&#13;";
         break;
       default:
         out += c;
@@ -2138,6 +2228,48 @@ mdf_remoteVarTypeKeyword(vscp_remote_variable_type type)
   }
 }
 
+// A file version string as written: "1.2.3" as version_major/version_minor/
+// version_subminor (the specification form), anything else as "version".
+static bool
+mdf_versionParts(const std::string &version, std::string &major, std::string &minor, std::string &patch)
+{
+  std::deque<std::string> parts;
+  vscp_split(parts, version, ".");
+  if (3 != parts.size()) {
+    return false;
+  }
+  for (auto &part : parts) {
+    if (part.empty() || (part.size() > 5) || (std::string::npos != part.find_first_not_of("0123456789")) ||
+        ((part.size() > 1) && ('0' == part[0])) || (std::stoul(part) > 65535)) {
+      return false;
+    }
+  }
+  major = parts[0];
+  minor = parts[1];
+  patch = parts[2];
+  return true;
+}
+
+static std::string
+mdf_xmlVersionAttrs(const std::string &version)
+{
+  std::string major, minor, patch;
+  if (version.empty()) {
+    return "";
+  }
+  if (mdf_versionParts(version, major, minor, patch)) {
+    return " version_major=\"" + major + "\" version_minor=\"" + minor + "\" version_subminor=\"" + patch + "\"";
+  }
+  return " version=\"" + mdfXml(version) + "\"";
+}
+
+// Event class/type as written in an MDF ("-" means all)
+static std::string
+mdf_classTypeToFile(int value)
+{
+  return (value < 0) ? std::string("-") : std::to_string(value);
+}
+
 static std::string
 mdf_hexColor(uint32_t color)
 {
@@ -2146,72 +2278,12 @@ mdf_hexColor(uint32_t color)
   return buf;
 }
 
-/*
-  A register to save. The parsers expand a DMATRIX1/BLOCK register with a
-  span into one register per byte ("<name> - DM 0", "<name> - DM 1", ...).
-  When saving, such a group is written as the original single register.
-*/
-struct mdf_saveRegister {
-  CMDF_Register *preg;
-  std::string name; // Name to write
-  bool bGroup;      // true for a collapsed DMATRIX1/BLOCK group
-};
-
-static std::deque<mdf_saveRegister>
-mdf_registersToSave(std::deque<CMDF_Register *> *pregs)
-{
-  std::deque<mdf_saveRegister> out;
-  std::set<CMDF_Register *> skip;
-
-  for (size_t i = 0; i < pregs->size(); i++) {
-    CMDF_Register *preg = (*pregs)[i];
-    if (skip.count(preg)) {
-      continue;
-    }
-
-    const char *label = nullptr;
-    if (MDF_REG_TYPE_DMATRIX1 == preg->getType()) {
-      label = " - DM ";
-    }
-    else if (MDF_REG_TYPE_BLOCK == preg->getType()) {
-      label = " - BLOCK ";
-    }
-
-    std::string first = std::string(label ? label : "") + "0";
-    std::string name  = preg->getName();
-    if ((nullptr != label) && (name.size() >= first.size()) &&
-        (0 == name.compare(name.size() - first.size(), first.size(), first))) {
-
-      std::string base = name.substr(0, name.size() - first.size());
-
-      // Find the expanded copies
-      for (uint32_t pos = 1; pos < preg->getSpan(); pos++) {
-        std::string copyName = base + label + std::to_string(pos);
-        for (size_t j = i + 1; j < pregs->size(); j++) {
-          CMDF_Register *pcopy = (*pregs)[j];
-          if (!skip.count(pcopy) && (pcopy->getType() == preg->getType()) && (pcopy->getPage() == preg->getPage()) &&
-              (pcopy->getOffset() == preg->getOffset() + pos) && (pcopy->getName() == copyName)) {
-            skip.insert(pcopy);
-            break;
-          }
-        }
-      }
-      out.push_back({ preg, base, true });
-    }
-    else {
-      out.push_back({ preg, name, false });
-    }
-  }
-
-  return out;
-}
-
 // ----------------------------------------------------------------------------
 //                                  XML
 // ----------------------------------------------------------------------------
 
 static void
-mdf_xmlTexts(std::ofstream &fout, CMDF_Object *pobj)
+mdf_xmlTexts(std::ostream &fout, CMDF_Object *pobj)
 {
   std::map<std::string, std::string> *pmap;
   if (nullptr != (pmap = pobj->getMapDescription())) {
@@ -2228,7 +2300,7 @@ mdf_xmlTexts(std::ofstream &fout, CMDF_Object *pobj)
 }
 
 static void
-mdf_xmlValues(std::ofstream &fout, std::deque<CMDF_Value *> *pvalues)
+mdf_xmlValues(std::ostream &fout, std::deque<CMDF_Value *> *pvalues)
 {
   if ((nullptr == pvalues) || pvalues->empty()) {
     return;
@@ -2244,7 +2316,7 @@ mdf_xmlValues(std::ofstream &fout, std::deque<CMDF_Value *> *pvalues)
 }
 
 static void
-mdf_xmlBits(std::ofstream &fout, std::deque<CMDF_Bit *> *pbits)
+mdf_xmlBits(std::ostream &fout, std::deque<CMDF_Bit *> *pbits)
 {
   if (nullptr == pbits) {
     return;
@@ -2264,7 +2336,7 @@ mdf_xmlBits(std::ofstream &fout, std::deque<CMDF_Bit *> *pbits)
 }
 
 static void
-mdf_xmlItems(std::ofstream &fout, std::deque<CMDF_Item *> *pitems, const char *tag, const char *valueTag)
+mdf_xmlItems(std::ostream &fout, std::deque<CMDF_Item *> *pitems, const char *tag, const char *valueTag)
 {
   for (CMDF_Item *pitem : *pitems) {
     fout << "<" << tag << ">" << std::endl;
@@ -2274,23 +2346,141 @@ mdf_xmlItems(std::ofstream &fout, std::deque<CMDF_Item *> *pitems, const char *t
   }
 }
 
+/*
+  A register to save. The parsers expand a DMATRIX1/BLOCK register with a
+  span into one register per byte ("<name> - DM 0", "<name> - DM 1", ...).
+  When saving, such a group is written as the original single register, but
+  only if every register of the group is still exactly what the expansion
+  made (an editor may have changed, renamed or removed one of them). If not,
+  each register is written on its own (span 1) so no change is lost.
+*/
+struct mdf_saveRegister {
+  CMDF_Register *preg;
+  std::string name; // Name to write
+  uint32_t span;    // Span to write
+  bool bGroup;      // true for a collapsed DMATRIX1/BLOCK group
+};
+
+// Everything of a register except name, offset and display colors
+static std::string
+mdf_registerSignature(CMDF_Register *preg)
+{
+  std::ostringstream ss;
+  ss << preg->getPage() << "|" << preg->getWidth() << "|" << (int) preg->getType() << "|" << preg->getAccessStr()
+     << "|" << preg->getDefault() << "|" << preg->getMin() << "|" << preg->getMax() << "|"
+     << preg->getForegroundColorEven() << "|" << preg->getForegroundColorOdd() << "|"
+     << preg->getBackgroundColorEven() << "|" << preg->getBackgroundColorOdd() << "|"
+     << preg->getForegroundColorMdf() << "|" << preg->getBackgroundColorMdf() << "|" << preg->getSpan() << "\n";
+  mdf_xmlTexts(ss, preg);
+  mdf_xmlBits(ss, preg->getListBits());
+  mdf_xmlValues(ss, preg->getListValues());
+  return ss.str();
+}
+
+// Display colors expandRegisterSpan() gives register 'pos' of a group
+static bool
+mdf_spanColorsAsExpanded(CMDF_Register *pfirst, CMDF_Register *preg, uint32_t pos)
+{
+  const bool bPyjamas = pfirst->getForegroundColorEven() || pfirst->getForegroundColorOdd() ||
+                        pfirst->getBackgroundColorEven() || pfirst->getBackgroundColorOdd();
+  uint32_t fg = pfirst->getForegroundColorMdf();
+  uint32_t bg = pfirst->getBackgroundColorMdf();
+  if (bPyjamas) {
+    fg = (pos % 2) ? pfirst->getForegroundColorOdd() : pfirst->getForegroundColorEven();
+    bg = (pos % 2) ? pfirst->getBackgroundColorOdd() : pfirst->getBackgroundColorEven();
+  }
+  return (preg->getForegroundColor() == fg) && (preg->getBackgroundColor() == bg);
+}
+
+static std::deque<mdf_saveRegister>
+mdf_registersToSave(std::deque<CMDF_Register *> *pregs)
+{
+  std::deque<mdf_saveRegister> out;
+  std::set<CMDF_Register *> skip;
+
+  for (size_t i = 0; i < pregs->size(); i++) {
+    CMDF_Register *preg = (*pregs)[i];
+    if (skip.count(preg)) {
+      continue;
+    }
+
+    // Not made by expansion: written as it is (a DMATRIX1/BLOCK register
+    // added in an editor is expanded when the file is read again)
+    if (preg->getSpanIndex() < 0) {
+      out.push_back({ preg, preg->getName(), preg->getSpan(), false });
+      continue;
+    }
+
+    const char *label = (MDF_REG_TYPE_DMATRIX1 == preg->getType()) ? " - DM " : " - BLOCK ";
+    std::string first = std::string(label) + "0";
+    std::string name  = preg->getName();
+
+    bool bIntact = (0 == preg->getSpanIndex()) && (preg->getSpan() > 1) &&
+                   ((MDF_REG_TYPE_DMATRIX1 == preg->getType()) || (MDF_REG_TYPE_BLOCK == preg->getType())) &&
+                   (name.size() >= first.size()) &&
+                   (0 == name.compare(name.size() - first.size(), first.size(), first)) &&
+                   mdf_spanColorsAsExpanded(preg, preg, 0);
+
+    std::deque<CMDF_Register *> members;
+    std::string base;
+    if (bIntact) {
+      // First register of an expanded group. The group is written as the
+      // original register only if all its registers are as expanded.
+      base            = name.substr(0, name.size() - first.size());
+      std::string sig = mdf_registerSignature(preg);
+      members.push_back(preg);
+      for (uint32_t pos = 1; (pos < preg->getSpan()) && bIntact; pos++) {
+        std::string copyName  = base + label + std::to_string(pos);
+        CMDF_Register *pfound = nullptr;
+        for (size_t j = i + 1; j < pregs->size(); j++) {
+          CMDF_Register *pcopy = (*pregs)[j];
+          if (!skip.count(pcopy) && ((int) pos == pcopy->getSpanIndex()) && (pcopy->getType() == preg->getType()) &&
+              (pcopy->getPage() == preg->getPage()) && (pcopy->getOffset() == preg->getOffset() + pos)) {
+            pfound = pcopy;
+            break;
+          }
+        }
+        if ((nullptr == pfound) || (pfound->getName() != copyName) || (mdf_registerSignature(pfound) != sig) ||
+            !mdf_spanColorsAsExpanded(preg, pfound, pos)) {
+          bIntact = false;
+        }
+        else {
+          members.push_back(pfound);
+        }
+      }
+    }
+
+    if (bIntact) {
+      for (CMDF_Register *pm : members) {
+        skip.insert(pm);
+      }
+      out.push_back({ preg, base, preg->getSpan(), true });
+    }
+    else {
+      // A register made by expansion that was changed (or whose group was
+      // changed): written on its own, one byte
+      out.push_back({ preg, name, 1, false });
+    }
+  }
+
+  return out;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-//  save_xml
+//  toXmlString
 //
 
-int
-CMDF::save_xml(const std::string &path)
+std::string
+CMDF::toXmlString(void)
 {
-  std::ofstream fout;
-
-  fout.open(path);
-  if (!fout) {
-    return VSCP_ERROR_WRITE;
-  }
+  std::ostringstream fout;
 
   fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
   fout << "<!-- MDF file created with VSCP Works + -->" << std::endl;
   fout << "<vscp>" << std::endl;
+  if (!m_redirectUrl.empty()) {
+    fout << "<redirect mdf-path=\"" << mdfXml(m_redirectUrl) << "\" />" << std::endl;
+  }
   fout << "<module>" << std::endl;
 
   fout << "<name>" << mdfXml(getModuleName()) << "</name>" << std::endl;
@@ -2335,20 +2525,22 @@ CMDF::save_xml(const std::string &path)
   fout << "<files>" << std::endl;
   for (CMDF_Picture *p : *getPictureObjList()) {
     fout << "<picture name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
-         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\">" << std::endl;
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\""
+         << mdf_xmlVersionAttrs(p->getVersion()) << ">" << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</picture>" << std::endl;
   }
   for (CMDF_Video *p : *getVideoObjList()) {
     fout << "<video name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
-         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\">" << std::endl;
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\""
+         << mdf_xmlVersionAttrs(p->getVersion()) << ">" << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</video>" << std::endl;
   }
   for (CMDF_Manual *p : *getManualObjList()) {
     fout << "<manual name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
          << mdfXml(p->getFormat()) << "\" lang=\"" << mdfXml(p->getLanguage()) << "\" date=\""
-         << mdfXml(p->getDate()) << "\">" << std::endl;
+         << mdfXml(p->getDate()) << "\"" << mdf_xmlVersionAttrs(p->getVersion()) << ">" << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</manual>" << std::endl;
   }
@@ -2356,8 +2548,8 @@ CMDF::save_xml(const std::string &path)
     fout << "<firmware name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
          << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\" target=\""
          << mdfXml(p->getTarget()) << "\" targetcode=\"" << p->getTargetCode() << "\" version_major=\""
-         << p->getVersionMajor() << "\" version_minor=\"" << p->getVersionMinor() << "\" version_patch=\""
-         << p->getVersionPatch() << "\" size=\"" << p->getSize() << "\" md5sum=\"" << mdfXml(p->getMd5())
+         << p->getVersionMajor() << "\" version_minor=\"" << p->getVersionMinor() << "\" version_subminor=\""
+         << p->getVersionPatch() << "\" size=\"" << p->getSize() << "\" md5=\"" << mdfXml(p->getMd5())
          << "\">" << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</firmware>" << std::endl;
@@ -2367,15 +2559,15 @@ CMDF::save_xml(const std::string &path)
          << mdfXml(p->getType()) << "\" architecture=\"" << mdfXml(p->getArchitecture()) << "\" os=\""
          << mdfXml(p->getOS()) << "\" osver=\"" << mdfXml(p->getOSVer()) << "\" date=\"" << mdfXml(p->getDate())
          << "\" version_major=\"" << p->getVersionMajor() << "\" version_minor=\"" << p->getVersionMinor()
-         << "\" version_patch=\"" << p->getVersionPatch() << "\" md5sum=\"" << mdfXml(p->getMd5()) << "\">"
+         << "\" version_subminor=\"" << p->getVersionPatch() << "\" md5=\"" << mdfXml(p->getMd5()) << "\">"
          << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</driver>" << std::endl;
   }
   for (CMDF_Setup *p : *getSetupObjList()) {
     fout << "<setup name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
-         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\" version=\""
-         << mdfXml(p->getVersion()) << "\">" << std::endl;
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\""
+         << mdf_xmlVersionAttrs(p->getVersion()) << ">" << std::endl;
     mdf_xmlTexts(fout, p);
     fout << "</setup>" << std::endl;
   }
@@ -2388,7 +2580,7 @@ CMDF::save_xml(const std::string &path)
     fout << "<reg name=\"" << mdfXml(sr.name) << "\" ";
     fout << "page=\"" << preg->getPage() << "\" ";
     fout << "offset=\"" << preg->getOffset() << "\" ";
-    fout << "span=\"" << preg->getSpan() << "\" ";
+    fout << "span=\"" << sr.span << "\" ";
     fout << "width=\"" << preg->getWidth() << "\" ";
     fout << "type=\"" << preg->getTypeStr() << "\" ";
     fout << "access=\"" << mdfXml(preg->getAccessStr()) << "\" ";
@@ -2420,6 +2612,12 @@ CMDF::save_xml(const std::string &path)
     fout << "offset=\"" << prvar->getOffset() << "\" ";
     fout << "bitpos=\"" << prvar->getBitPos() << "\" ";
     fout << "size=\"" << prvar->getStringSize() << "\" ";
+    if (!prvar->getMin().empty()) {
+      fout << "min=\"" << mdfXml(prvar->getMin()) << "\" ";
+    }
+    if (!prvar->getMax().empty()) {
+      fout << "max=\"" << mdfXml(prvar->getMax()) << "\" ";
+    }
     fout << "access=\"" << mdfXml(prvar->getAccessStr()) << "\" ";
     fout << "fgcolor=\"" << mdf_hexColor(prvar->getForegroundColor()) << "\" ";
     fout << "bgcolor=\"" << mdf_hexColor(prvar->getBackgroundColor()) << "\">" << std::endl;
@@ -2463,8 +2661,8 @@ CMDF::save_xml(const std::string &path)
   fout << "<events>" << std::endl;
   for (CMDF_Event *pevent : *getEventList()) {
     fout << "<event name=\"" << mdfXml(pevent->getName()) << "\" ";
-    fout << "class=\"" << pevent->getClass() << "\" ";
-    fout << "type=\"" << pevent->getType() << "\" ";
+    fout << "class=\"" << mdf_classTypeToFile(pevent->getClass()) << "\" ";
+    fout << "type=\"" << mdf_classTypeToFile(pevent->getType()) << "\" ";
     fout << "priority=\"" << (int) pevent->getPriority() << "\" ";
     fout << "direction=\"" << ((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out") << "\">" << std::endl;
     mdf_xmlTexts(fout, pevent);
@@ -2483,8 +2681,7 @@ CMDF::save_xml(const std::string &path)
   fout << "</module>" << std::endl;
   fout << "</vscp>" << std::endl;
 
-  fout.close();
-  return fout.fail() ? VSCP_ERROR_WRITE : VSCP_ERROR_SUCCESS;
+  return fout.str();
 }
 
 // ----------------------------------------------------------------------------
@@ -2508,6 +2705,23 @@ mdf_jsonTexts(ojson &j, CMDF_Object *pobj)
     for (auto &kv : *pmap) {
       j["infourl"][kv.first] = kv.second;
     }
+  }
+}
+
+static void
+mdf_jsonVersion(ojson &j, const std::string &version)
+{
+  std::string major, minor, patch;
+  if (version.empty()) {
+    return;
+  }
+  if (mdf_versionParts(version, major, minor, patch)) {
+    j["version_major"]    = std::stoul(major);
+    j["version_minor"]    = std::stoul(minor);
+    j["version_subminor"] = std::stoul(patch);
+  }
+  else {
+    j["version"] = version;
   }
 }
 
@@ -2569,11 +2783,11 @@ mdf_jsonItems(std::deque<CMDF_Item *> *pitems, const char *valueKey)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  save_json
+//  toJsonString
 //
 
-int
-CMDF::save_json(const std::string &path)
+std::string
+CMDF::toJsonString(void)
 {
   ojson jmod;
 
@@ -2620,6 +2834,7 @@ CMDF::save_json(const std::string &path)
     jf["url"]    = p->getUrl();
     jf["format"] = p->getFormat();
     jf["date"]   = p->getDate();
+    mdf_jsonVersion(jf, p->getVersion());
     mdf_jsonTexts(jf, p);
     jfiles["picture"].push_back(jf);
   }
@@ -2630,6 +2845,7 @@ CMDF::save_json(const std::string &path)
     jf["url"]    = p->getUrl();
     jf["format"] = p->getFormat();
     jf["date"]   = p->getDate();
+    mdf_jsonVersion(jf, p->getVersion());
     mdf_jsonTexts(jf, p);
     jfiles["video"].push_back(jf);
   }
@@ -2641,6 +2857,7 @@ CMDF::save_json(const std::string &path)
     jf["format"] = p->getFormat();
     jf["lang"]   = p->getLanguage();
     jf["date"]   = p->getDate();
+    mdf_jsonVersion(jf, p->getVersion());
     mdf_jsonTexts(jf, p);
     jfiles["manual"].push_back(jf);
   }
@@ -2655,9 +2872,9 @@ CMDF::save_json(const std::string &path)
     jf["date"]          = p->getDate();
     jf["version_major"] = p->getVersionMajor();
     jf["version_minor"] = p->getVersionMinor();
-    jf["version_patch"] = p->getVersionPatch();
+    jf["version_subminor"] = p->getVersionPatch();
     jf["size"]          = p->getSize();
-    jf["md5sum"]        = p->getMd5();
+    jf["md5"]           = p->getMd5();
     mdf_jsonTexts(jf, p);
     jfiles["firmware"].push_back(jf);
   }
@@ -2673,8 +2890,8 @@ CMDF::save_json(const std::string &path)
     jf["date"]          = p->getDate();
     jf["version_major"] = p->getVersionMajor();
     jf["version_minor"] = p->getVersionMinor();
-    jf["version_patch"] = p->getVersionPatch();
-    jf["md5sum"]        = p->getMd5();
+    jf["version_subminor"] = p->getVersionPatch();
+    jf["md5"]           = p->getMd5();
     mdf_jsonTexts(jf, p);
     jfiles["driver"].push_back(jf);
   }
@@ -2685,7 +2902,7 @@ CMDF::save_json(const std::string &path)
     jf["url"]     = p->getUrl();
     jf["format"]  = p->getFormat();
     jf["date"]    = p->getDate();
-    jf["version"] = p->getVersion();
+    mdf_jsonVersion(jf, p->getVersion());
     mdf_jsonTexts(jf, p);
     jfiles["setup"].push_back(jf);
   }
@@ -2699,7 +2916,7 @@ CMDF::save_json(const std::string &path)
     jr["name"]    = sr.name;
     jr["page"]    = preg->getPage();
     jr["offset"]  = preg->getOffset();
-    jr["span"]    = preg->getSpan();
+    jr["span"]    = sr.span;
     jr["width"]   = preg->getWidth();
     jr["type"]    = preg->getTypeStr();
     jr["access"]  = preg->getAccessStr();
@@ -2725,6 +2942,12 @@ CMDF::save_json(const std::string &path)
     jr["name"]    = prvar->getName();
     jr["type"]    = mdf_remoteVarTypeKeyword(prvar->getType());
     jr["default"] = prvar->getDefault();
+    if (!prvar->getMin().empty()) {
+      jr["min"] = prvar->getMin();
+    }
+    if (!prvar->getMax().empty()) {
+      jr["max"] = prvar->getMax();
+    }
     jr["page"]    = prvar->getPage();
     jr["offset"]  = prvar->getOffset();
     jr["bitpos"]  = prvar->getBitPos();
@@ -2776,8 +2999,18 @@ CMDF::save_json(const std::string &path)
   for (CMDF_Event *pevent : *getEventList()) {
     ojson je;
     je["name"]      = pevent->getName();
-    je["class"]     = pevent->getClass();
-    je["type"]      = pevent->getType();
+    if (pevent->getClass() < 0) {
+      je["class"] = "-";
+    }
+    else {
+      je["class"] = pevent->getClass();
+    }
+    if (pevent->getType() < 0) {
+      je["type"] = "-";
+    }
+    else {
+      je["type"] = pevent->getType();
+    }
     je["priority"]  = pevent->getPriority();
     je["direction"] = (MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out";
     mdf_jsonTexts(je, pevent);
@@ -2795,16 +3028,231 @@ CMDF::save_json(const std::string &path)
   }
 
   ojson jroot;
+  if (!m_redirectUrl.empty()) {
+    jroot["redirect"] = m_redirectUrl;
+  }
   jroot["module"] = jmod;
 
-  std::ofstream fout(path);
-  if (!fout) {
-    return VSCP_ERROR_WRITE;
-  }
   // Invalid UTF-8 in texts is replaced instead of throwing
-  fout << jroot.dump(2, ' ', false, ojson::error_handler_t::replace) << std::endl;
-  fout.close();
-  return fout.fail() ? VSCP_ERROR_WRITE : VSCP_ERROR_SUCCESS;
+  return jroot.dump(2, ' ', false, ojson::error_handler_t::replace) + "\n";
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  save_xml / save_json
+//
+
+int
+CMDF::save_xml(const std::string &path)
+{
+  return save(path, MDF_FORMAT_XML);
+}
+
+int
+CMDF::save_json(const std::string &path)
+{
+  return save(path, MDF_FORMAT_JSON);
+}
+
+// ----------------------------------------------------------------------------
+//                          Safe file replacement
+// ----------------------------------------------------------------------------
+
+#ifdef WIN32
+static std::wstring
+mdf_widePath(const std::string &path)
+{
+  int len = MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, nullptr, 0);
+  if (len <= 0) {
+    return std::wstring();
+  }
+  std::wstring wpath(len, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, &wpath[0], len);
+  wpath.resize(len - 1);
+  return wpath;
+}
+#endif
+
+/*
+  Write content to a new temporary file in the same folder as path (so it
+  can be renamed over path). The file is flushed to disk before it is closed.
+  On success tempPath holds its name.
+*/
+static bool
+mdf_writeTempFile(const std::string &path, const std::string &content, std::string &tempPath, std::string &err)
+{
+#ifdef WIN32
+  for (int attempt = 0; attempt < 100; attempt++) {
+    tempPath = path + ".tmp" + std::to_string(GetCurrentProcessId()) + "_" + std::to_string(GetTickCount() + attempt);
+    // CREATE_NEW: never touch an existing file
+    HANDLE h = CreateFileW(mdf_widePath(tempPath).c_str(),
+                           GENERIC_WRITE,
+                           0,
+                           nullptr,
+                           CREATE_NEW,
+                           FILE_ATTRIBUTE_NORMAL,
+                           nullptr);
+    if (INVALID_HANDLE_VALUE == h) {
+      if (ERROR_FILE_EXISTS == GetLastError()) {
+        continue;
+      }
+      err = "Unable to create temporary file " + tempPath;
+      return false;
+    }
+    const char *p = content.data();
+    size_t left   = content.size();
+    bool bOk      = true;
+    while (left > 0) {
+      DWORD chunk = (DWORD) ((left > 0x10000000) ? 0x10000000 : left);
+      DWORD written = 0;
+      if (!WriteFile(h, p, chunk, &written, nullptr) || (0 == written)) {
+        bOk = false;
+        break;
+      }
+      p += written;
+      left -= written;
+    }
+    if (bOk && !FlushFileBuffers(h)) {
+      bOk = false;
+    }
+    if (!CloseHandle(h)) {
+      bOk = false;
+    }
+    if (!bOk) {
+      DeleteFileW(mdf_widePath(tempPath).c_str());
+      err = "Unable to write temporary file " + tempPath;
+      return false;
+    }
+    return true;
+  }
+  err = "Unable to create a unique temporary file for " + path;
+  return false;
+#else
+  // Temporary file in the same folder: ".<name>.XXXXXX"
+  std::string dir;
+  std::string name = path;
+  size_t slash     = path.find_last_of('/');
+  if (std::string::npos != slash) {
+    dir  = path.substr(0, slash + 1);
+    name = path.substr(slash + 1);
+  }
+  std::string templ = dir + "." + name + ".XXXXXX";
+  std::vector<char> buf(templ.begin(), templ.end());
+  buf.push_back('\0');
+  int fd = mkstemp(buf.data());
+  if (-1 == fd) {
+    err = "Unable to create temporary file in the folder of " + path + " (" + strerror(errno) + ")";
+    return false;
+  }
+  tempPath = buf.data();
+
+  // Keep the permissions of the file that is replaced. A new file gets the
+  // permissions a normally created file would get.
+  struct stat st;
+  if (0 == stat(path.c_str(), &st)) {
+    fchmod(fd, st.st_mode & 07777);
+  }
+  else {
+    mode_t mask = umask(0);
+    umask(mask);
+    fchmod(fd, 0666 & ~mask);
+  }
+
+  const char *p = content.data();
+  size_t left   = content.size();
+  while (left > 0) {
+    ssize_t written = write(fd, p, left);
+    if (written < 0) {
+      if (EINTR == errno) {
+        continue;
+      }
+      err = "Unable to write temporary file " + tempPath + " (" + strerror(errno) + ")";
+      close(fd);
+      unlink(tempPath.c_str());
+      return false;
+    }
+    p += written;
+    left -= (size_t) written;
+  }
+
+  if (0 != fsync(fd)) {
+    err = "Unable to flush temporary file " + tempPath + " (" + strerror(errno) + ")";
+    close(fd);
+    unlink(tempPath.c_str());
+    return false;
+  }
+  if (0 != close(fd)) {
+    err = "Unable to close temporary file " + tempPath + " (" + strerror(errno) + ")";
+    unlink(tempPath.c_str());
+    return false;
+  }
+  return true;
+#endif
+}
+
+// Replace path with tempPath in one step (the old content or the new, never a
+// mix or an empty file).
+static bool
+mdf_replaceFile(const std::string &tempPath, const std::string &path, std::string &err)
+{
+#ifdef WIN32
+  if (!MoveFileExW(mdf_widePath(tempPath).c_str(),
+                   mdf_widePath(path).c_str(),
+                   MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+    err = "Unable to replace " + path + " (Windows error " + std::to_string(GetLastError()) + ")";
+    return false;
+  }
+  return true;
+#else
+  if (0 != rename(tempPath.c_str(), path.c_str())) {
+    err = "Unable to replace " + path + " (" + strerror(errno) + ")";
+    return false;
+  }
+  // Make the rename itself durable
+  std::string dir = ".";
+  size_t slash    = path.find_last_of('/');
+  if (std::string::npos != slash) {
+    dir = (0 == slash) ? "/" : path.substr(0, slash);
+  }
+  int dfd = open(dir.c_str(), O_RDONLY);
+  if (dfd >= 0) {
+    fsync(dfd);
+    close(dfd);
+  }
+  return true;
+#endif
+}
+
+static void
+mdf_removeFile(const std::string &path)
+{
+#ifdef WIN32
+  DeleteFileW(mdf_widePath(path).c_str());
+#else
+  unlink(path.c_str());
+#endif
+}
+
+// First line where two texts differ (for error messages)
+static std::string
+mdf_firstDifference(const std::string &a, const std::string &b)
+{
+  std::istringstream sa(a);
+  std::istringstream sb(b);
+  std::string la, lb;
+  int line = 0;
+  while (true) {
+    bool ba = (bool) std::getline(sa, la);
+    bool bb = (bool) std::getline(sb, lb);
+    line++;
+    if (!ba && !bb) {
+      return "";
+    }
+    if (!ba || !bb || (la != lb)) {
+      vscp_trim(la);
+      vscp_trim(lb);
+      return "line " + std::to_string(line) + ": expected '" + la + "', got '" + lb + "'";
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2812,13 +3260,77 @@ CMDF::save_json(const std::string &path)
 //
 
 int
-CMDF::save(const std::string &path, mdf_format format)
+CMDF::save(const std::string &path, mdf_format format, bool bVerify)
 {
-  if (MDF_FORMAT_XML == format) {
-    return save_xml(path);
+  m_strLastError.clear();
+
+  if (path.empty()) {
+    m_strLastError = "No file name given";
+    return VSCP_ERROR_INVALID_PATH;
   }
-  else if (MDF_FORMAT_JSON == format) {
-    return save_json(path);
+
+  std::string content;
+  try {
+    if (MDF_FORMAT_XML == format) {
+      content = toXmlString();
+    }
+    else if (MDF_FORMAT_JSON == format) {
+      content = toJsonString();
+    }
+    else {
+      m_strLastError = "Unknown MDF format";
+      return VSCP_ERROR_INVALID_SYNTAX;
+    }
+  }
+  catch (const std::exception &ex) {
+    m_strLastError = std::string("Failed to create MDF content: ") + ex.what();
+    return VSCP_ERROR_ERROR;
+  }
+
+  // The new content goes to a temporary file first. The file that is saved
+  // over is only replaced when everything has been written (and verified),
+  // so a failure never leaves it empty or half written.
+  std::string tempPath;
+  if (!mdf_writeTempFile(path, content, tempPath, m_strLastError)) {
+    spdlog::error("MDF save: {}", m_strLastError);
+    return VSCP_ERROR_WRITE;
+  }
+
+  if (bVerify) {
+    // Read the written file back. It must give exactly the content we have.
+    CMDF check;
+    int rv = check.parseMDF(tempPath);
+    std::string diff;
+    if (VSCP_ERROR_SUCCESS != rv) {
+      m_strLastError = "The saved file could not be read back (" + check.getLastError() + "). " + path +
+                       " has not been changed.";
+    }
+    else {
+      std::string expected;
+      std::string got;
+      try {
+        expected = toJsonString();
+        got      = check.toJsonString();
+      }
+      catch (const std::exception &ex) {
+        got = std::string("<error: ") + ex.what() + ">";
+      }
+      if (expected != got) {
+        m_strLastError = "The saved file does not read back the same (" + mdf_firstDifference(expected, got) +
+                         "). " + path + " has not been changed.";
+      }
+    }
+    if (!m_strLastError.empty()) {
+      spdlog::error("MDF save: {}", m_strLastError);
+      mdf_removeFile(tempPath);
+      return VSCP_ERROR_VERIFY;
+    }
+  }
+
+  if (!mdf_replaceFile(tempPath, path, m_strLastError)) {
+    spdlog::error("MDF save: {}", m_strLastError);
+    mdf_removeFile(tempPath);
+    return VSCP_ERROR_WRITE;
   }
 
   return VSCP_ERROR_SUCCESS;
@@ -3001,6 +3513,7 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
 
   pbitlist->push_back(pBits);
 
+  bool bMax = false; // max given?
   for (int i = 0; attr[i]; i += 2) {
 
     std::string attribute = attr[i + 1];
@@ -3034,26 +3547,20 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
     }
     else if (0 == strcasecmp(attr[i], "max")) {
       pBits->m_max = vscp_readStringValue(attribute);
+      bMax         = true;
     }
     else if (0 == strcasecmp(attr[i], "access")) {
       // Register access
       std::string strAccess = attribute;
       vscp_trim(strAccess);
       vscp_makeLower(strAccess);
-      pBits->m_access = MDF_REG_ACCESS_NONE;
-      if (strAccess == "w") {
-        pBits->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-        spdlog::trace("Parse-XML: Register access: Read Only");
-      }
-      else if (strAccess == "r") {
-        pBits->m_access = MDF_REG_ACCESS_READ_ONLY;
-        spdlog::trace("Parse-XML: Register access: Write Only");
-      }
-      else if (strAccess == "rw") {
-        pBits->m_access = MDF_REG_ACCESS_READ_WRITE;
-        spdlog::trace("Parse-XML: Register access: Read/Write");
-      }
+      pBits->m_access = mdf_parseAccess(strAccess);
     }
+  }
+
+  // Without a max the largest value the bit field can hold is the max
+  if (!bMax) {
+    pBits->m_max = (uint8_t) ((1u << pBits->m_width) - 1);
   }
   return true;
 }
@@ -3078,6 +3585,11 @@ static thread_local std::string gCharData;
 // Set at the <reg> start tag when the register type given by the
 // attributes is DMATRIX1 or BLOCK. The register is expanded at its end tag.
 static thread_local bool gbExpandRegister = false;
+
+// Set when <vscp> is the root element / <vscp><module> has been seen. A file
+// without them is not an MDF (an HTML error page for example).
+static thread_local bool gbSawVscpRoot = false;
+static thread_local bool gbSawModule   = false;
 
 // bool gbVscp   = false;  (gTokenList.back() == "vscp")
 // bool gbModule = false;  (gTokenList.at(gTokenList.size()-2) == "module")
@@ -3110,6 +3622,8 @@ __resetMDFParserState(void)
   gTokenList.clear();
   gCharData.clear();
   gbExpandRegister = false;
+  gbSawVscpRoot    = false;
+  gbSawModule      = false;
 
   gpItemStruct        = nullptr;
   gpBitStruct         = nullptr;
@@ -3152,16 +3666,82 @@ __flushMDFParserData(void *data)
   std::string text;
   text.swap(gCharData);
 
+  // Text spread over several lines (indented in the file) is one text: the
+  // lines are trimmed and joined with a space (they used to be joined
+  // without one, which glued the last word of a line to the first word of
+  // the next).
+  std::string joined;
   size_t start = 0;
-  while (start < text.size()) {
+  while (start <= text.size()) {
     size_t end = text.find('\n', start);
     if (std::string::npos == end) {
       end = text.size();
     }
-    if (end > start) {
-      __handleMDFParserData(data, text.data() + start, (int) (end - start));
+    std::string line = text.substr(start, end - start);
+    vscp_trim(line);
+    if (!line.empty()) {
+      if (!joined.empty()) {
+        joined += " ";
+      }
+      joined += line;
     }
     start = end + 1;
+  }
+  if (!joined.empty()) {
+    __handleMDFParserData(data, joined.data(), (int) joined.size());
+  }
+}
+
+// Defaults for a remote variable embedded in a register: everything not
+// given for the remote variable comes from the register.
+static void
+mdf_remoteVarFromRegister(CMDF_RemoteVariable *prvar, CMDF_Register *preg)
+{
+  prvar->setName(preg->getName());
+  prvar->setType(remote_variable_type_uint8_t);
+  prvar->setPage(preg->getPage());
+  prvar->setOffset(preg->getOffset());
+  prvar->setAccess(preg->getAccess());
+  prvar->setDefault(preg->getDefault());
+  prvar->setForegroundColor(preg->getForegroundColor());
+  prvar->setBackgroundColor(preg->getBackgroundColor());
+  if (nullptr != preg->getMapDescription()) {
+    *prvar->getMapDescription() = *preg->getMapDescription();
+  }
+  if (nullptr != preg->getMapInfoUrl()) {
+    *prvar->getMapInfoUrl() = *preg->getMapInfoUrl();
+  }
+}
+
+// Version of a file item: a "version" attribute, or "major.minor.subminor"
+// from version_major/version_minor/version_subminor (or version_patch).
+static void
+mdf_xmlFileVersion(const char **attr, std::string &version)
+{
+  std::string major, minor, patch;
+  bool bParts = false;
+  for (int i = 0; attr[i]; i += 2) {
+    std::string attribute = attr[i + 1];
+    vscp_trim(attribute);
+    if (0 == strcasecmp(attr[i], "version")) {
+      version = attribute;
+      return;
+    }
+    else if (0 == strcasecmp(attr[i], "version_major")) {
+      major  = std::to_string(vscp_readStringValue(attribute));
+      bParts = true;
+    }
+    else if (0 == strcasecmp(attr[i], "version_minor")) {
+      minor  = std::to_string(vscp_readStringValue(attribute));
+      bParts = true;
+    }
+    else if ((0 == strcasecmp(attr[i], "version_subminor")) || (0 == strcasecmp(attr[i], "version_patch"))) {
+      patch  = std::to_string(vscp_readStringValue(attribute));
+      bParts = true;
+    }
+  }
+  if (bParts) {
+    version = (major.empty() ? "0" : major) + "." + (minor.empty() ? "0" : minor) + "." + (patch.empty() ? "0" : patch);
   }
 }
 
@@ -3189,6 +3769,131 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
   struct DepthGuard {
     ~DepthGuard() { gdepth_xml_parser++; }
   } depthGuard;
+
+  // Attributes of a remote variable (in <remotevars> or embedded in a <reg>)
+  auto xmlRvarAttributes = [&](CMDF_RemoteVariable *prv) {
+    for (int i = 0; attr[i]; i += 2) {
+
+      std::string attribute = attr[i + 1];
+      vscp_trim(attribute);
+
+      if (0 == strcasecmp(attr[i], "name")) {
+        // Remote variable name
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable name: {0}", attribute);
+        prv->m_name = attribute;
+      }
+      else if (0 == strcasecmp(attr[i], "default")) {
+        // Remote variable default value
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable default: {0}", attribute);
+        prv->m_strDefault = mdf_normalizeDefault(attribute);
+      }
+      else if (0 == strcasecmp(attr[i], "min")) {
+        prv->m_strMin = attribute;
+      }
+      else if (0 == strcasecmp(attr[i], "max")) {
+        prv->m_strMax = attribute;
+      }
+      else if (0 == strcasecmp(attr[i], "bitpos")) {
+        // Remote variable bit position for boolean
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bitpos: {0}", attribute);
+        prv->m_bitpos = vscp_readStringValue(attribute) & 7;
+      }
+      else if (0 == strcasecmp(attr[i], "size")) {
+        // Remote variable string max size
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable string max size: {0}", attribute);
+        prv->m_size = vscp_readStringValue(attribute);
+      }
+      else if ((0 == strcasecmp(attr[i], "access")) || (0 == strcasecmp(attr[i], "acess"))) {
+        // Remote variable access ("acess" is a misspelling in the specification examples)
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable access: {0}", attribute);
+        prv->m_access = mdf_parseAccess(attribute);
+      }
+      else if (0 == strcasecmp(attr[i], "type")) {
+        // Remote variable type
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable type: {0}", attribute);
+        vscp_makeLower(attribute); // keyword compare only, not stored
+        if (attribute == "string") {
+          prv->m_type = remote_variable_type_string;
+          spdlog::trace("Parse-XML: Remote variable type set to 'string' {0}.", (int)prv->m_type);
+        }
+        else if (attribute == "bool") {
+          prv->m_type = remote_variable_type_boolean;
+          spdlog::trace("Parse-XML: Remote variable type set to 'boolena' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "int8") || (attribute == "int8_t") || (attribute == "char")) {
+          prv->m_type = remote_variable_type_int8_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'int8_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "uint8") || (attribute == "uint8_t") || (attribute == "byte")) {
+          prv->m_type = remote_variable_type_uint8_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'uint8_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
+          prv->m_type = remote_variable_type_int16_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'int16_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "uint16") || (attribute == "uint16_t")) {
+          prv->m_type = remote_variable_type_uint16_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'uint16_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
+          prv->m_type = remote_variable_type_int32_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'int32_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
+          prv->m_type = remote_variable_type_uint32_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'uint32_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
+          prv->m_type = remote_variable_type_int64_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'int64_t' {0}.", (int)prv->m_type);
+        }
+        else if ((attribute == "uint64") || (attribute == "uint64_t")) {
+          prv->m_type = remote_variable_type_uint64_t;
+          spdlog::trace("Parse-XML: Remote variable type set to 'uint64_t' {0}.", (int)prv->m_type);
+        }
+        else if (attribute == "float") {
+          prv->m_type = remote_variable_type_float;
+          spdlog::trace("Parse-XML: Remote variable type set to 'float' {0}.", (int)prv->m_type);
+        }
+        else if (attribute == "double") {
+          prv->m_type = remote_variable_type_double;
+          spdlog::trace("Parse-XML: Remote variable type set to 'double' {0}.", (int)prv->m_type);
+        }
+        else if (attribute == "date") {
+          prv->m_type = remote_variable_type_date;
+          spdlog::trace("Parse-XML: Remote variable type set to 'date' {0}.", (int)prv->m_type);
+        }
+        else if (attribute == "time") {
+          prv->m_type = remote_variable_type_time;
+          spdlog::trace("Parse-XML: Remote variable type set to 'time' {0}.", (int)prv->m_type);
+        }
+        else {
+          prv->m_type = remote_variable_type_unknown;
+        }
+      }
+      else if (0 == strcasecmp(attr[i], "page")) {
+        // Register page
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+        prv->m_page = vscp_readStringValue(attribute);
+      }
+      else if (0 == strcasecmp(attr[i], "offset")) {
+        // Register offset
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+        prv->m_offset = vscp_readStringValue(attribute);
+      }
+      else if (0 == strcasecmp(attr[i], "fgcolor")) {
+        // Register foreground color
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+        prv->m_fgcolor = vscp_readStringValue(attribute);
+      }
+      else if (0 == strcasecmp(attr[i], "bgcolor")) {
+        // Register background color
+        spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bgcolor: {0}", attribute);
+        prv->m_bgcolor = vscp_readStringValue(attribute);
+      }
+    }
+  };
 
   // Save token
   std::string currentToken = name;
@@ -3223,13 +3928,24 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
     case 0: // Root
       if (currentToken == "vscp") {
-        ;
+        gbSawVscpRoot = true;
       }
       break;
 
     case 1:
       if ((gTokenList.back() == "vscp") && (currentToken == "module")) {
-        ;
+        gbSawModule = true;
+      }
+      // <vscp><redirect mdf-path="url"/>
+      else if ((gTokenList.back() == "vscp") && (currentToken == "redirect")) {
+        for (int i = 0; attr[i]; i += 2) {
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          if ((0 == strcasecmp(attr[i], "mdf-path")) || (0 == strcasecmp(attr[i], "url")) ||
+              (0 == strcasecmp(attr[i], "path"))) {
+            pmdf->m_redirectUrl = attribute;
+          }
+        }
       }
       break;
 
@@ -3249,6 +3965,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           return;
         }
         pmdf->m_list_picture.push_back(gpPictureStruct);
+        mdf_xmlFileVersion(attr, gpPictureStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
@@ -3362,6 +4079,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         pmdf->m_list_manual.push_back(gpManualStruct);
+        mdf_xmlFileVersion(attr, gpManualStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -3412,7 +4130,30 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         // Nothing to do here
       }
       else if (currentToken == "dmatrix") {
-        // Nothing to do here
+        // Attribute form: <dmatrix level="1" start-page="3" start-offset="0"
+        //                          rowcnt="4" rowsize="8">
+        // (the child element form is handled in the data handler)
+        for (int i = 0; attr[i]; i += 2) {
+          std::string attribute = attr[i + 1];
+          vscp_trim(attribute);
+          if (0 == strcasecmp(attr[i], "level")) {
+            pmdf->m_dmInfo.m_level = vscp_readStringValue(attribute);
+          }
+          else if ((0 == strcasecmp(attr[i], "start-page")) || (0 == strcasecmp(attr[i], "startpage")) ||
+                   (0 == strcasecmp(attr[i], "page"))) {
+            pmdf->m_dmInfo.m_startPage = vscp_readStringValue(attribute);
+          }
+          else if ((0 == strcasecmp(attr[i], "start-offset")) || (0 == strcasecmp(attr[i], "startoffset")) ||
+                   (0 == strcasecmp(attr[i], "offset"))) {
+            pmdf->m_dmInfo.m_startOffset = vscp_readStringValue(attribute);
+          }
+          else if ((0 == strcasecmp(attr[i], "rowcnt")) || (0 == strcasecmp(attr[i], "rowcount"))) {
+            pmdf->m_dmInfo.m_rowCount = vscp_readStringValue(attribute);
+          }
+          else if (0 == strcasecmp(attr[i], "rowsize")) {
+            pmdf->m_dmInfo.m_rowSize = vscp_readStringValue(attribute);
+          }
+        }
       }
       else if (currentToken == "events") {
         // Nothing to do here
@@ -3426,19 +4167,12 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
       if ((currentToken == "address")) {
         ;
       }
-      else if ((currentToken == "telephone")) {
-        gpItemStruct = new CMDF_Item;
-      }
-      else if ((currentToken == "fax")) {
-        gpItemStruct = new CMDF_Item;
-      }
-      else if ((currentToken == "email")) {
-        gpItemStruct = new CMDF_Item;
-      }
-      else if ((currentToken == "web")) {
-        gpItemStruct = new CMDF_Item;
-      }
-      else if ((currentToken == "social")) {
+      else if (((currentToken == "telephone") || (currentToken == "fax") || (currentToken == "email") ||
+                (currentToken == "web") || (currentToken == "social")) &&
+               (gTokenList.at(1) == "manufacturer")) {
+        // An item that was started but never ended (damaged file) is dropped
+        // here instead of leaking
+        delete gpItemStruct;
         gpItemStruct = new CMDF_Item;
       }
       // [3] Picture (standard format)
@@ -3451,6 +4185,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         pmdf->m_list_picture.push_back(gpPictureStruct);
+        mdf_xmlFileVersion(attr, gpPictureStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
@@ -3489,6 +4224,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         pmdf->m_list_video.push_back(gpVideoStruct);
+        mdf_xmlFileVersion(attr, gpVideoStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
@@ -3677,6 +4413,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         pmdf->m_list_manual.push_back(gpManualStruct);
+        mdf_xmlFileVersion(attr, gpManualStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -3721,6 +4458,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         pmdf->m_list_setup.push_back(gpSetupStruct);
+        mdf_xmlFileVersion(attr, gpSetupStruct->m_strVersion);
 
         for (int i = 0; attr[i]; i += 2) {
           std::string attribute = attr[i + 1];
@@ -3808,19 +4546,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             std::string strAccess = attribute;
             vscp_trim(strAccess);
             vscp_makeLower(strAccess);
-            gpRegisterStruct->m_access = MDF_REG_ACCESS_NONE;
-            if (strAccess == "w") {
-              gpRegisterStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-              spdlog::trace("Parse-XML: Register access: Read Only");
-            }
-            else if (strAccess == "r") {
-              gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
-              spdlog::trace("Parse-XML: Register access: Write Only");
-            }
-            else if (strAccess == "rw") {
-              gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
-              spdlog::trace("Parse-XML: Register access: Read/Write");
-            }
+            gpRegisterStruct->m_access = mdf_parseAccess(strAccess);
           }
           else if (0 == strcasecmp(attr[i], "min")) {
             // Register min
@@ -3907,134 +4633,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         pmdf->m_list_remotevar.push_back(gpRvarStruct);
 
         // Get register attributes
-        for (int i = 0; attr[i]; i += 2) {
-
-          std::string attribute = attr[i + 1];
-          vscp_trim(attribute);
-
-          if (0 == strcasecmp(attr[i], "name")) {
-            // Remote variable name
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable name: {0}", attribute);
-            gpRvarStruct->m_name = attribute;
-          }
-          else if (0 == strcasecmp(attr[i], "default")) {
-            // Remote variable default value
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable default: {0}", attribute);
-            gpRvarStruct->m_strDefault = mdf_normalizeDefault(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "bitpos")) {
-            // Remote variable bit position for boolean
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bitpos: {0}", attribute);
-            gpRvarStruct->m_bitpos = vscp_readStringValue(attribute) & 7;
-          }
-          else if (0 == strcasecmp(attr[i], "size")) {
-            // Remote variable string max size
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable string max size: {0}", attribute);
-            gpRvarStruct->m_size = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "access")) {
-            // Remote variable access
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable access: {0}", attribute);
-            vscp_makeLower(attribute); // keyword compare only, not stored
-            gpRvarStruct->m_access = MDF_REG_ACCESS_NONE;
-            if (attribute == "w") {
-              gpRvarStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-              spdlog::trace("Parse-XML: Register access: Read Only");
-            }
-            else if (attribute == "r") {
-              gpRvarStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
-              spdlog::trace("Parse-XML: Register access: Write Only");
-            }
-            else if (attribute == "rw") {
-              gpRvarStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
-              spdlog::trace("Parse-XML: Register access: Read/Write");
-            }
-          }
-          else if (0 == strcasecmp(attr[i], "type")) {
-            // Remote variable type
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable type: {0}", attribute);
-            vscp_makeLower(attribute); // keyword compare only, not stored
-            if (attribute == "string") {
-              gpRvarStruct->m_type = remote_variable_type_string;
-              spdlog::trace("Parse-XML: Remote variable type set to 'string' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if (attribute == "bool") {
-              gpRvarStruct->m_type = remote_variable_type_boolean;
-              spdlog::trace("Parse-XML: Remote variable type set to 'boolena' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "int8") || (attribute == "int8_t") || (attribute == "char")) {
-              gpRvarStruct->m_type = remote_variable_type_int8_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'int8_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "uint8") || (attribute == "uint8_t") || (attribute == "byte")) {
-              gpRvarStruct->m_type = remote_variable_type_uint8_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'uint8_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "int16") || (attribute == "int16_t") || (attribute == "short")) {
-              gpRvarStruct->m_type = remote_variable_type_int16_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'int16_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "uint16") || (attribute == "uint16_t")) {
-              gpRvarStruct->m_type = remote_variable_type_uint16_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'uint16_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "int32") || (attribute == "int32_t") || (attribute == "long")) {
-              gpRvarStruct->m_type = remote_variable_type_int32_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'int32_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "uint32") || (attribute == "uint32_t") || (attribute == "unsigned")) {
-              gpRvarStruct->m_type = remote_variable_type_uint32_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'uint32_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "int64") || (attribute == "int64_t") || (attribute == "longlong")) {
-              gpRvarStruct->m_type = remote_variable_type_int64_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'int64_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if ((attribute == "uint64") || (attribute == "uint64_t")) {
-              gpRvarStruct->m_type = remote_variable_type_uint64_t;
-              spdlog::trace("Parse-XML: Remote variable type set to 'uint64_t' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if (attribute == "float") {
-              gpRvarStruct->m_type = remote_variable_type_float;
-              spdlog::trace("Parse-XML: Remote variable type set to 'float' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if (attribute == "double") {
-              gpRvarStruct->m_type = remote_variable_type_double;
-              spdlog::trace("Parse-XML: Remote variable type set to 'double' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if (attribute == "date") {
-              gpRvarStruct->m_type = remote_variable_type_date;
-              spdlog::trace("Parse-XML: Remote variable type set to 'date' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else if (attribute == "time") {
-              gpRvarStruct->m_type = remote_variable_type_time;
-              spdlog::trace("Parse-XML: Remote variable type set to 'time' {0}.", (int)gpRvarStruct->m_type);
-            }
-            else {
-              gpRvarStruct->m_type = remote_variable_type_unknown;
-            }
-          }
-          else if (0 == strcasecmp(attr[i], "page")) {
-            // Register page
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
-            gpRvarStruct->m_page = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "offset")) {
-            // Register offset
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
-            gpRvarStruct->m_offset = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "fgcolor")) {
-            // Register foreground color
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
-            gpRvarStruct->m_fgcolor = vscp_readStringValue(attribute);
-          }
-          else if (0 == strcasecmp(attr[i], "bgcolor")) {
-            // Register background color
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable bgcolor: {0}", attribute);
-            gpRvarStruct->m_bgcolor = vscp_readStringValue(attribute);
-          }
-        }
+        xmlRvarAttributes(gpRvarStruct);
       }
       /*
         <alarm>
@@ -4163,7 +4762,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
               gpEventStruct->m_type = vscp_readStringValue(attribute);
             }
           }
-          else if (0 == strcasecmp(attr[i], "direction")) {
+          else if ((0 == strcasecmp(attr[i], "direction")) || (0 == strcasecmp(attr[i], "dir"))) {
             spdlog::trace("Parse-XML: handleMDFParserData: event direction: {0}", attribute);
             gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
             vscp_trim(attribute);
@@ -4246,6 +4845,21 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
                (gpRegisterStruct != nullptr)) {
         // Noting to do here          
         spdlog::trace("Parse-XML: handleMDFParserData: Valuelist start");
+      }
+      /*
+        <reg name="..." page="0" offset="10">
+          <remotevar name="..." type="int16_t"/>     <------
+        </reg>
+        A remote variable embedded in a register. What is not given is taken
+        from the register (specification).
+      */
+      else if (((currentToken == "remotevar") || (currentToken == "abstraction")) &&
+               (gTokenList.at(1) == "reg") &&
+               (gpRegisterStruct != nullptr)) {
+        gpRvarStruct = new CMDF_RemoteVariable;
+        mdf_remoteVarFromRegister(gpRvarStruct, gpRegisterStruct);
+        pmdf->m_list_remotevar.push_back(gpRvarStruct);
+        xmlRvarAttributes(gpRvarStruct);
       }
 
       /*
@@ -4339,6 +4953,8 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
         }
 
         gpEventStruct->m_list_eventdata.push_back(gpEventDataStruct);
+        // Without an offset attribute the position is the offset
+        gpEventDataStruct->m_offset = (uint16_t) (gpEventStruct->m_list_eventdata.size() - 1);
 
         // Get register attributes
         for (int i = 0; attr[i]; i += 2) {
@@ -4739,6 +5355,12 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
 
   spdlog::trace("Parse-XML: XML Data: {0}", strContent);
 
+  // <vscp><redirect>url</redirect></vscp>
+  if ((2 == gTokenList.size()) && (gTokenList.at(0) == "redirect")) {
+    pmdf->m_redirectUrl = strContent;
+    return;
+  }
+
   switch (gdepth_xml_parser) {
 
     case 1: // On module level
@@ -4896,7 +5518,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: level {0}", strContent);
         pmdf->getDM()->setLevel(vscp_readStringValue(strContent));
       }
-      else if ((gTokenList.at(0) == "rowcnt") &&
+      else if (((gTokenList.at(0) == "rowcnt") || (gTokenList.at(0) == "rowcount")) &&
                (gTokenList.at(1) == "dmatrix")) {
         spdlog::trace("Parse-XML: handleMDFParserData: dmatrix: row count {0}", strContent);
         pmdf->getDM()->setRowCount(vscp_readStringValue(strContent));
@@ -4960,8 +5582,8 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         }
       }
       // [5] manufacturer/telephone
-      else if (gTokenList.at(1) == "telephone") {
-        if ((gTokenList.at(0) == "number") && (gpItemStruct != nullptr)) {
+      else if ((gTokenList.at(1) == "telephone") && (gpItemStruct != nullptr)) {
+        if (gTokenList.at(0) == "number") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
           vscp_trim(strContent);
           gpItemStruct->m_value = strContent;
@@ -4972,6 +5594,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          gpItemStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] manufacturer/fax
@@ -4986,6 +5611,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                         strContent,
                         gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          gpItemStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] manufacturer/email
@@ -5002,6 +5630,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
+        else if (gTokenList.at(0) == "infourl") {
+          gpItemStruct->m_mapInfoURL[gLastLanguage] += strContent;
+        }
       }
       // [5] manufacturer/web
       else if ((gTokenList.at(1) == "web") && (gpItemStruct != nullptr)) {
@@ -5017,6 +5648,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
         }
+        else if (gTokenList.at(0) == "infourl") {
+          gpItemStruct->m_mapInfoURL[gLastLanguage] += strContent;
+        }
       }
       // [5] manufacturer/social
       else if ((gTokenList.at(1) == "social") && (gpItemStruct != nullptr)) {
@@ -5031,6 +5665,9 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             strContent,
             gLastLanguage);
           gpItemStruct->m_mapDescription[gLastLanguage] += strContent;
+        }
+        else if (gTokenList.at(0) == "infourl") {
+          gpItemStruct->m_mapInfoURL[gLastLanguage] += strContent;
         }
       }
       // [5] Picture standard format
@@ -5190,19 +5827,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           std::string strAccess = strContent;
           vscp_trim(strAccess);
           vscp_makeLower(strAccess);
-          gpRegisterStruct->m_access = MDF_REG_ACCESS_NONE;
-          if (strAccess == "w") {
-            gpRegisterStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-            spdlog::trace("Parse-XML: Register access: Read Only");
-          }
-          else if (strAccess == "r") {
-            gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
-            spdlog::trace("Parse-XML: Register access: Write Only");
-          }
-          else if (strAccess == "rw") {
-            gpRegisterStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
-            spdlog::trace("Parse-XML: Register access: Read/Write");
-          }
+          gpRegisterStruct->m_access = mdf_parseAccess(strAccess);
         }
         else if (gTokenList.at(0) == "description") {
           gpRegisterStruct->m_mapDescription[gLastLanguage] += strContent;
@@ -5225,19 +5850,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           std::string strAccess = strContent;
           vscp_trim(strAccess);
           vscp_makeLower(strAccess);
-          gpRvarStruct->m_access = MDF_REG_ACCESS_NONE;
-          if (strAccess == "w") {
-            gpRvarStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-            spdlog::trace("Parse-XML: Register access: Read Only");
-          }
-          else if (strAccess == "r") {
-            gpRvarStruct->m_access = MDF_REG_ACCESS_READ_ONLY;
-            spdlog::trace("Parse-XML: Register access: Write Only");
-          }
-          else if (strAccess == "rw") {
-            gpRvarStruct->m_access = MDF_REG_ACCESS_READ_WRITE;
-            spdlog::trace("Parse-XML: Register access: Read/Write");
-          }
+          gpRvarStruct->m_access = mdf_parseAccess(strAccess);
         }
         else if (gTokenList.at(0) == "description") {
           gpRvarStruct->m_mapDescription[gLastLanguage] += strContent;
@@ -5287,7 +5900,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
             spdlog::trace("Parse-XML: Event priority set to {0}.", gpEventStruct->m_priority);
           }
         }
-        else if (gTokenList.at(0) == "direction") {
+        else if ((gTokenList.at(0) == "direction") || (gTokenList.at(0) == "dir")) {
           spdlog::trace("Parse-XML: handleMDFParserData: event direction: {0}", strContent);
           gpEventStruct->m_direction = MDF_EVENT_DIR_OUT;
           vscp_trim(strContent);
@@ -5844,6 +6457,12 @@ __endSetupMDFParser(void *data, const char *name)
   vscp_trim(currentToken);
   vscp_makeLower(currentToken);
 
+  // End of a remote variable embedded in a register
+  if (((currentToken == "remotevar") || (currentToken == "abstraction")) && (gTokenList.size() >= 2) &&
+      (gTokenList.at(1) == "reg")) {
+    gpRvarStruct = nullptr;
+  }
+
   switch (gdepth_xml_parser) {
 
     case 1:
@@ -6327,15 +6946,15 @@ __endSetupMDFParser(void *data, const char *name)
       if ((currentToken == "item") && 
           (gTokenList.at(1) == "valuelist") && 
           (gTokenList.at(2) == "param") &&
-          (gpItemStruct != nullptr)) {
-        gpItemStruct = nullptr;
+          (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
       }
       // bit/valuelist/item
       else if ((currentToken == "item") && 
                (gTokenList.at(1) == "valuelist") && 
                (gTokenList.at(2) == "bit") &&
-               (gpItemStruct != nullptr)) {
-        gpItemStruct = nullptr;
+               (gpValueStruct != nullptr)) {
+        gpValueStruct = nullptr;
       }
       // valuelist/item
       else if ((currentToken == "name") && 
@@ -6404,7 +7023,7 @@ __endSetupMDFParser(void *data, const char *name)
 //
 
 int
-CMDF::parseMDF_XML(std::ifstream &ifs)
+CMDF::parseMDF_XML_raw(std::ifstream &ifs)
 {
   int rv = VSCP_ERROR_SUCCESS;
 
@@ -6452,6 +7071,8 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
       spdlog::error("ParseXML: Failed parse XML file at line {0} [{1}].",
                     lineNumber,
                     XML_ErrorString(XML_GetErrorCode(xmlParser)));
+      m_strLastError = "XML error at line " + std::to_string((unsigned long long) lineNumber) + ": " +
+                       XML_ErrorString(XML_GetErrorCode(xmlParser));
       rv = VSCP_ERROR_PARSING;
       break;
     }
@@ -6464,6 +7085,18 @@ CMDF::parseMDF_XML(std::ifstream &ifs)
   if (nullptr != gpItemStruct) {
     delete gpItemStruct;
     gpItemStruct = nullptr;
+  }
+
+  // A well formed XML file that is not an MDF
+  if (VSCP_ERROR_SUCCESS == rv) {
+    if (!gbSawVscpRoot) {
+      m_strLastError = "Not an MDF file (the root element must be <vscp>)";
+      rv             = VSCP_ERROR_PARSING;
+    }
+    else if (!gbSawModule && m_redirectUrl.empty()) {
+      m_strLastError = "Not an MDF file (no <module> or <redirect> in <vscp>)";
+      rv             = VSCP_ERROR_PARSING;
+    }
   }
 
   // Do not keep pointers into this MDF after parsing
@@ -6714,7 +7347,17 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           spdlog::debug("Parse-JSON: Bitlist default: {0}", pbit->m_default);
         }
         else if (j.contains("default") && j["default"].is_string()) {
-          pbit->m_default = vscp_readStringValue(j["default"]);
+          std::string str = j["default"];
+          vscp_trim(str);
+          if (0 == strcasecmp(str.c_str(), "true")) {
+            pbit->m_default = 1;
+          }
+          else if (0 == strcasecmp(str.c_str(), "false")) {
+            pbit->m_default = 0;
+          }
+          else {
+            pbit->m_default = vscp_readStringValue(str);
+          }
           spdlog::debug("Parse-JSON: Bitlist default: {0}", pbit->m_default);
         }
 
@@ -6740,22 +7383,15 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           std::string strAccess = j["access"];
           vscp_trim(strAccess);
           vscp_makeLower(strAccess);
-          pbit->m_access = MDF_REG_ACCESS_NONE;
-          if (strAccess == "w") {
-            pbit->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-            spdlog::debug("Parse-JSON: Bitlist access: Read Only");
-          }
-          else if (strAccess == "r") {
-            pbit->m_access = MDF_REG_ACCESS_READ_ONLY;
-            spdlog::debug("Parse-JSON: Bitlist access: Write Only");
-          }
-          else if (strAccess == "rw") {
-            pbit->m_access = MDF_REG_ACCESS_READ_WRITE;
-            spdlog::debug("Parse-JSON: Bitlist access: Read/Write");
-          }
+          pbit->m_access = mdf_parseAccess(strAccess);
         }
 
         // Get description
+        // Without a max the largest value the bit field can hold is the max
+        if (!j.contains("max") || j["max"].is_null()) {
+          pbit->m_max = (uint8_t) ((1u << pbit->m_width) - 1);
+        }
+
         if (getDescriptionList(j, pbit->m_mapDescription) != VSCP_ERROR_SUCCESS) {
           spdlog::error("Parse-JSON: Failed to get register bit description.");
           return VSCP_ERROR_PARSING;
@@ -6780,11 +7416,218 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  mdf_normalizeJson
+//
+// The JSON parser reads one spelling of each key. MDF files (and the
+// specification itself) use others: keys in other letter case ("Region",
+// "Name"), "event" for "events", "rowcnt" for "rowcount", "dir" for
+// "direction", "version_subminor" for "version_patch", "md5" for "md5sum",
+// "path" for "url" and "language" for "lang". They are renamed here (only if
+// the parser's spelling is not also present) so no information is skipped.
+//
+
+// A JSON scalar as text, without losing sign or decimals
+static std::string
+mdf_jsonScalarString(const json &value)
+{
+  if (value.is_string()) {
+    return value.get<std::string>();
+  }
+  if (value.is_boolean()) {
+    return value.get<bool>() ? "true" : "false";
+  }
+  if (value.is_number_unsigned()) {
+    return std::to_string(value.get<uint64_t>());
+  }
+  if (value.is_number_integer()) {
+    return std::to_string(value.get<int64_t>());
+  }
+  if (value.is_number_float()) {
+    return value.dump();
+  }
+  return value.dump();
+}
+
+static void
+mdf_normalizeJsonNode(json &node, bool bModule)
+{
+  static const std::set<std::string> knownKeys = {
+    "redirect", "module", "name", "model", "version", "changed", "description", "infourl", "buffersize",
+    "level", "copyright", "manufacturer", "address", "street", "town", "city", "postcode", "state", "region",
+    "country", "telephone", "fax", "email", "web", "social", "number", "url", "path", "boot", "algorithm",
+    "blocksize", "blockcount", "files", "picture", "video", "firmware", "driver", "manual", "setup", "format",
+    "date", "target", "targetcode", "size", "md5", "md5sum", "version_major", "version_minor", "version_patch",
+    "version_subminor", "type", "os", "osver", "architecture", "lang", "language", "register", "registers",
+    "page", "offset", "span", "width", "min", "max", "access", "default", "fgcolor", "bgcolor", "evenfg",
+    "oddfg", "evenbg", "oddbg", "valuelist", "value", "bit", "bits", "pos", "remotevar", "remotevars",
+    "bitpos", "alarm", "alarms", "dmatrix", "start-page", "start-offset", "rowcnt", "rowcount", "rowsize",
+    "action", "code", "param", "event", "events", "class", "priority", "direction", "dir", "data", "start_page",
+    "start_offset"
+  };
+
+  static const std::map<std::string, std::string> aliases = {
+    { "dir", "direction" },   { "rowcnt", "rowcount" }, { "version_subminor", "version_patch" },
+    { "md5", "md5sum" },      { "path", "url" },        { "language", "lang" },
+    { "start_page", "start-page" }, { "start_offset", "start-offset" }
+  };
+
+  if (node.is_array()) {
+    for (auto &item : node) {
+      mdf_normalizeJsonNode(item, false);
+    }
+    return;
+  }
+
+  if (!node.is_object()) {
+    return;
+  }
+
+  // Collect renames first (the object can not be changed while iterating)
+  std::vector<std::pair<std::string, std::string>> renames;
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    std::string key   = it.key();
+    std::string lower = key;
+    vscp_makeLower(lower);
+    if (!knownKeys.count(lower)) {
+      continue;
+    }
+    std::string target = lower;
+    auto alias         = aliases.find(lower);
+    if (aliases.end() != alias) {
+      target = alias->second;
+    }
+    if (bModule && ("event" == lower)) {
+      target = "events";
+    }
+    if ((target != key) && !node.contains(target)) {
+      renames.push_back({ key, target });
+    }
+  }
+  for (auto &r : renames) {
+    if (node.contains(r.second)) {
+      continue; // Two spellings of one key: keep the first one renamed
+    }
+    node[r.second] = node[r.first];
+    node.erase(r.first);
+  }
+
+  // A version given as version_major/version_minor/version_patch (the
+  // form the specification uses for files) is also made available as a
+  // "major.minor.patch" string for the file types that store it as a string.
+  if (!bModule && !node.contains("version") &&
+      (node.contains("version_major") || node.contains("version_minor") || node.contains("version_patch"))) {
+    auto part = [&node](const char *key) -> std::string {
+      if (!node.contains(key)) {
+        return "0";
+      }
+      if (node[key].is_number_unsigned()) {
+        return std::to_string(node[key].get<uint64_t>());
+      }
+      if (node[key].is_number_integer()) {
+        return std::to_string(node[key].get<int64_t>());
+      }
+      if (node[key].is_string()) {
+        return std::to_string(vscp_readStringValue(node[key].get<std::string>()));
+      }
+      return "0";
+    };
+    node["version"] = part("version_major") + "." + part("version_minor") + "." + part("version_patch");
+  }
+
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    // Language keys in texts are left as they are
+    if (("description" == it.key()) || ("infourl" == it.key())) {
+      continue;
+    }
+    mdf_normalizeJsonNode(it.value(), ("module" == it.key()));
+  }
+}
+
+static void
+mdf_normalizeJson(json &j)
+{
+  mdf_normalizeJsonNode(j, false);
+
+  if (!(j.contains("module") && j["module"].is_object())) {
+    return;
+  }
+  json &jmod = j["module"];
+
+  // A remote variable embedded in a register ("remotevar": {...} in the
+  // register object) becomes a normal remote variable. What it does not give
+  // is taken from the register (specification). They are put first, in
+  // register order (where they are in an XML file).
+  const char *regKey = jmod.contains("register") ? "register" : (jmod.contains("registers") ? "registers" : nullptr);
+  if ((nullptr != regKey) && jmod[regKey].is_array()) {
+    json embedded = json::array();
+    for (auto &jreg : jmod[regKey]) {
+      if (!jreg.is_object() || !jreg.contains("remotevar") || !jreg["remotevar"].is_object()) {
+        continue;
+      }
+      json jrv = jreg["remotevar"];
+      for (const char *key : { "name", "page", "offset", "access", "default", "fgcolor", "bgcolor", "description",
+                               "infourl" }) {
+        if (!jrv.contains(key) && jreg.contains(key)) {
+          jrv[key] = jreg[key];
+        }
+      }
+      if (!jrv.contains("type")) {
+        jrv["type"] = "uint8_t";
+      }
+      embedded.push_back(jrv);
+      jreg.erase("remotevar");
+    }
+    if (!embedded.empty()) {
+      const char *rvKey = jmod.contains("remotevar") ? "remotevar" : (jmod.contains("remotevars") ? "remotevars" : "remotevar");
+      if (!jmod.contains(rvKey) || !jmod[rvKey].is_array()) {
+        jmod[rvKey] = json::array();
+      }
+      for (auto &jrv : jmod[rvKey]) {
+        embedded.push_back(jrv);
+      }
+      jmod[rvKey] = embedded;
+    }
+  }
+
+  // Event data without an offset: the position in the list is the offset
+  for (const char *evKey : { "events", "event" }) {
+    if (!jmod.contains(evKey) || !jmod[evKey].is_array()) {
+      continue;
+    }
+    for (auto &jev : jmod[evKey]) {
+      if (!jev.is_object() || !jev.contains("data") || !jev["data"].is_array()) {
+        continue;
+      }
+      size_t idx = 0;
+      for (auto &jdata : jev["data"]) {
+        if (jdata.is_object() && !jdata.contains("offset")) {
+          jdata["offset"] = idx;
+        }
+        idx++;
+      }
+    }
+  }
+
+  // Module name: the specification asks for a string, older files have a
+  // language object. Use English (or the first language).
+  if (j.contains("module") && j["module"].is_object() && j["module"].contains("name") &&
+      j["module"]["name"].is_object() && !j["module"]["name"].empty()) {
+    json jname = j["module"]["name"];
+    if (jname.contains("en") && jname["en"].is_string()) {
+      j["module"]["name"] = jname["en"];
+    }
+    else if (jname.begin().value().is_string()) {
+      j["module"]["name"] = jname.begin().value();
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  parseMDF_JSON
 //
 
 int
-CMDF::parseMDF_JSON(const std::string &path)
+CMDF::parseMDF_JSON_raw(const std::string &path)
 {
   int rv = VSCP_ERROR_SUCCESS;
 
@@ -6793,25 +7636,42 @@ CMDF::parseMDF_JSON(const std::string &path)
   json j;
 
   try {
-    std::ifstream ifs(path, std::ifstream::in);
+    std::ifstream ifs(path, std::ifstream::in | std::ifstream::binary);
+    if (!ifs.is_open()) {
+      m_strLastError = "Unable to open " + path;
+      return VSCP_ERROR_NOT_OPEN;
+    }
     ifs >> j;
     ifs.close();
   }
+  catch (const std::exception &ex) {
+    spdlog::error("Parse-JSON: Failed to parse JSON MDF: {}", ex.what());
+    m_strLastError = std::string("JSON error: ") + ex.what();
+    return VSCP_ERROR_PARSING;
+  }
   catch (...) {
-    spdlog::error("Parse-JSON: Failed to parse JSON configuration.");
-    // Note: 'false' here was VSCP_ERROR_SUCCESS (0)
+    spdlog::error("Parse-JSON: Failed to parse JSON MDF.");
+    m_strLastError = "JSON error";
     return VSCP_ERROR_PARSING;
   }
 
   spdlog::trace("Parse-JSON: <<{}>>", j.dump());
 
+  // Accept the spellings the specification uses (and older ones) by
+  // bringing them to the form the parser below reads.
+  mdf_normalizeJson(j);
+
   try {
 
   // REDIRECT  <-----
   if (j.contains("redirect") && j["redirect"].is_string()) {
-    spdlog::trace("Parse-JSON: REDIRECT found '{0}', parsing aborted.", m_name);
+    spdlog::trace("Parse-JSON: REDIRECT found '{0}'.", (std::string) j["redirect"]);
     m_redirectUrl = j["redirect"];
-    return VSCP_ERROR_SUCCESS;
+    // A redirect only file has nothing more to read. If there is module
+    // content too it is read as well (so it is not lost).
+    if (!(j.contains("module") && j["module"].is_object())) {
+      return VSCP_ERROR_SUCCESS;
+    }
   }
 
   // ********************************************************************************
@@ -7334,7 +8194,7 @@ CMDF::parseMDF_JSON(const std::string &path)
               spdlog::trace("Parse-JSON: Module register default: {0}", preg->m_strDefault);
             }
             else if (jreg.contains("default") && jreg["default"].is_number()) {
-              preg->m_strDefault = std::to_string((int) jreg["default"]);
+              preg->m_strDefault = mdf_jsonScalarString(jreg["default"]);
               spdlog::trace("Parse-JSON: Module register value and default set to defined default: {0}",
                             preg->m_strDefault);
             }
@@ -7348,19 +8208,7 @@ CMDF::parseMDF_JSON(const std::string &path)
               std::string strAccess = jreg["access"];
               vscp_trim(strAccess);
               vscp_makeLower(strAccess);
-              preg->m_access = MDF_REG_ACCESS_NONE;
-              if (strAccess == "rw") {
-                preg->m_access = MDF_REG_ACCESS_READ_WRITE;
-                spdlog::trace("Parse-JSON: Module register access: Read/Write");
-              }
-              else if (strAccess == "r") {
-                preg->m_access = MDF_REG_ACCESS_READ_ONLY;
-                spdlog::trace("Parse-JSON: Module register access: Read Only");
-              }
-              else if (strAccess == "w") {
-                preg->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-                spdlog::trace("Parse-JSON: Module register access: Write Only");
-              }
+              preg->m_access = mdf_parseAccess(strAccess);
             }
 
             // Register name
@@ -7571,29 +8419,17 @@ CMDF::parseMDF_JSON(const std::string &path)
 
             // Default value. Always a string. Convert to the correct type
             // when default is set.
-            if (jrvar.contains("default") && jrvar["default"].is_string()) {
-              prvar->m_strDefault = mdf_normalizeDefault(jrvar["default"]);
+            if (jrvar.contains("default") && !jrvar["default"].is_null()) {
+              prvar->m_strDefault = mdf_normalizeDefault(mdf_jsonScalarString(jrvar["default"]));
               spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
-            else if (jrvar.contains("default") && jrvar["default"].is_number()) {
-              prvar->m_strDefault = std::to_string((uint32_t) jrvar["default"]);
-              spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
+
+            // Min/max (kept as text, the type decides how they are read)
+            if (jrvar.contains("min") && !jrvar["min"].is_null()) {
+              prvar->m_strMin = mdf_jsonScalarString(jrvar["min"]);
             }
-            else if (jrvar.contains("default") && jrvar["default"].is_number_integer()) {
-              prvar->m_strDefault = std::to_string((int32_t) jrvar["default"]);
-              spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
-            }
-            else if (jrvar.contains("default") && jrvar["default"].is_number_unsigned()) {
-              prvar->m_strDefault = std::to_string((uint32_t) jrvar["default"]);
-              spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
-            }
-            else if (jrvar.contains("default") && jrvar["default"].is_number_float()) {
-              prvar->m_strDefault = std::to_string((double) jrvar["default"]);
-              spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
-            }
-            else if (jrvar.contains("default") && jrvar["default"].is_boolean()) {
-              prvar->m_strDefault = jrvar["default"] ? "true" : "false";
-              spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
+            if (jrvar.contains("max") && !jrvar["max"].is_null()) {
+              prvar->m_strMax = mdf_jsonScalarString(jrvar["max"]);
             }
 
             // Page where the remote variable is located
@@ -7643,19 +8479,7 @@ CMDF::parseMDF_JSON(const std::string &path)
               std::string strAccess = jrvar["access"];
               vscp_trim(strAccess);
               vscp_makeLower(strAccess);
-              prvar->m_access = MDF_REG_ACCESS_NONE;
-              if (strAccess == "w") {
-                spdlog::trace("Parse-JSON: Remote variable access set to write only.");
-                prvar->m_access = MDF_REG_ACCESS_WRITE_ONLY;
-              }
-              else if (strAccess == "r") {
-                spdlog::trace("Parse-JSON: Remote variable access set to read only.");
-                prvar->m_access = MDF_REG_ACCESS_READ_ONLY;
-              }
-              else if (strAccess == "rw") {
-                spdlog::trace("Parse-JSON: Remote variable access set to read/write.");
-                prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
-              }
+              prvar->m_access = mdf_parseAccess(strAccess);
             }
 
             // Foreground color (VSCP Works)
@@ -7937,11 +8761,13 @@ CMDF::parseMDF_JSON(const std::string &path)
 
             // Class
             if (jev.contains("class") && jev["class"].is_string()) {
-              if (jev["class"]) {
-                pev->m_class = -1;
+              std::string str = jev["class"];
+              vscp_trim(str);
+              if ("-" == str) {
+                pev->m_class = -1; // All
               }
               else {
-                pev->m_class = vscp_readStringValue(jev["class"]);
+                pev->m_class = vscp_readStringValue(str);
               }
               spdlog::trace("Parse-JSON: Event class set to {0}.", pev->m_class);
             }
@@ -7956,11 +8782,13 @@ CMDF::parseMDF_JSON(const std::string &path)
 
             // Type
             if (jev.contains("type") && jev["type"].is_string()) {
-              if (jev["type"]) {
-                pev->m_type = -1;
+              std::string str = jev["type"];
+              vscp_trim(str);
+              if ("-" == str) {
+                pev->m_type = -1; // All
               }
               else {
-                pev->m_type = vscp_readStringValue(jev["type"]);
+                pev->m_type = vscp_readStringValue(str);
               }
               spdlog::trace("Parse-JSON: Event type set to {0}.", pev->m_type);
             }
@@ -8248,6 +9076,10 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No picture format.");
           }
 
+          if (jpic.contains("version") && jpic["version"].is_string()) {
+            ppicture->m_strVersion = jpic["version"];
+          }
+
           if (jpic.contains("date") && jpic["date"].is_string()) {
             ppicture->m_strDate = jpic["date"];
             spdlog::trace("Parse-JSON: Picture date: {0} ", ppicture->m_strDate);
@@ -8302,6 +9134,10 @@ CMDF::parseMDF_JSON(const std::string &path)
           }
           else {
             spdlog::warn("Parse-JSON: No video format.");
+          }
+
+          if (jvideo.contains("version") && jvideo["version"].is_string()) {
+            pvideo->m_strVersion = jvideo["version"];
           }
 
           if (jvideo.contains("date") && jvideo["date"].is_string()) {
@@ -8399,6 +9235,11 @@ CMDF::parseMDF_JSON(const std::string &path)
           }
           else {
             spdlog::warn("Parse-JSON: No firmware date");
+          }
+
+          // "major.minor.patch" string form (the separate keys below win)
+          if (jfirmware.contains("version") && jfirmware["version"].is_string() && !jfirmware.contains("version_major")) {
+            pfirmware->setVersion(jfirmware["version"].get<std::string>());
           }
 
           if (jfirmware.contains("version_major") && jfirmware["version_major"].is_number()) {
@@ -8565,6 +9406,11 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No driver date");
           }
 
+          // "major.minor.patch" string form (the separate keys below win)
+          if (jdriver.contains("version") && jdriver["version"].is_string() && !jdriver.contains("version_major")) {
+            pdriver->setVersion(jdriver["version"].get<std::string>());
+          }
+
           if (jdriver.contains("version_major") && jdriver["version_major"].is_number()) {
             pdriver->m_version_major = jdriver["version_major"];
             spdlog::trace("Parse-JSON: Driver version major: {0} ", pdriver->m_version_major);
@@ -8677,6 +9523,10 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No manual language.");
           }
 
+          if (jmanual.contains("version") && jmanual["version"].is_string()) {
+            pmanual->m_strVersion = jmanual["version"];
+          }
+
           if (jmanual.contains("date") && jmanual["date"].is_string()) {
             pmanual->m_strDate = jmanual["date"];
             spdlog::trace("Parse-JSON: Manual date: {0} ", pmanual->m_strDate);
@@ -8786,7 +9636,7 @@ CMDF::parseMDF_JSON(const std::string &path)
 //
 
 int
-CMDF::parseMDF(const std::string &path)
+CMDF::parseMDF_raw(const std::string &path)
 {
   int rv = VSCP_ERROR_ERROR;
   std::ifstream ifs;
@@ -8796,6 +9646,7 @@ CMDF::parseMDF(const std::string &path)
   // Check if file exists
   if (!vscp_fileExists(path)) {
     spdlog::debug("Parse-XML: MDF file {} does not exist", path);
+    m_strLastError = "File " + path + " does not exist";
     return VSCP_ERROR_INVALID_PATH;
   }
 
@@ -8811,11 +9662,13 @@ CMDF::parseMDF(const std::string &path)
   }
   catch (...) {
     spdlog::error("Parse-XML: Failed to open file {}", path);
+    m_strLastError = "Unable to open " + path;
     return VSCP_ERROR_NOT_OPEN;
   }
 
   if (!ifs.is_open()) {
     spdlog::error("Parse-XML: Failed to open file {}", path);
+    m_strLastError = "Unable to open " + path;
     return VSCP_ERROR_NOT_OPEN;
   }
 
@@ -8844,33 +9697,170 @@ CMDF::parseMDF(const std::string &path)
     if ('{' == ch) {
       spdlog::info("Parse-XML: MDF file format is JSON");
       ifs.close();
-      rv = parseMDF_JSON(path);
+      rv = parseMDF_JSON_raw(path);
     }
     else if ('<' == ch) {
       spdlog::info("Parse-XML: MDF file format is XML");
       ifs.clear();
       ifs.seekg(0, std::ios::beg);
-      rv = parseMDF_XML(ifs);
+      rv = parseMDF_XML_raw(ifs);
       ifs.close();
     }
     else {
       rv = VSCP_ERROR_INVALID_SYNTAX;
       spdlog::error("Parse-XML: MDF file format not supported");
+      m_strLastError = "The file is neither XML nor JSON (it must start with '<' or '{')";
     }
   }  catch (const json::exception &ex) {
     spdlog::error("Parse-XML: JSON parsing exception for {}: {}", path, ex.what());
+    m_strLastError = std::string("JSON error: ") + ex.what();
     rv = VSCP_ERROR_PARSING;
   }
   catch (const std::exception &ex) {
     spdlog::error("Parse-XML: Parsing exception for {}: {}", path, ex.what());
+    m_strLastError = std::string("Parse error: ") + ex.what();
     rv = VSCP_ERROR_PARSING;
   }
   catch (...) {
     spdlog::error("Parse-XML: Unknown parsing exception for {}", path);
+    m_strLastError = "Unknown parse error";
     rv = VSCP_ERROR_PARSING;
   }
 
+  if ((VSCP_ERROR_SUCCESS != rv) && m_strLastError.empty()) {
+    m_strLastError = "Failed to parse " + path + " (error " + std::to_string(rv) + ")";
+  }
+
   return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  parseMDF / parseMDF_XML / parseMDF_JSON
+//
+// Parsing is done into a new object. The content of this object is only
+// replaced when the whole file has been parsed, so a file that fails to
+// parse never leaves half of a model (or none) behind.
+//
+
+int
+CMDF::parseMDF(const std::string &path)
+{
+  m_strLastError.clear();
+  CMDF tmp;
+  tmp.m_strLocale = m_strLocale;
+  int rv          = tmp.parseMDF_raw(path);
+  if (VSCP_ERROR_SUCCESS == rv) {
+    swapContent(tmp);
+  }
+  else {
+    m_strLastError = tmp.m_strLastError;
+  }
+  return rv;
+}
+
+int
+CMDF::parseMDF_XML(std::ifstream &ifs)
+{
+  m_strLastError.clear();
+  CMDF tmp;
+  tmp.m_strLocale = m_strLocale;
+  int rv;
+  try {
+    rv = tmp.parseMDF_XML_raw(ifs);
+  }
+  catch (const std::exception &ex) {
+    tmp.m_strLastError = std::string("Parse error: ") + ex.what();
+    rv                 = VSCP_ERROR_PARSING;
+  }
+  if (VSCP_ERROR_SUCCESS == rv) {
+    swapContent(tmp);
+  }
+  else {
+    m_strLastError = tmp.m_strLastError.empty() ? "Failed to parse XML MDF" : tmp.m_strLastError;
+  }
+  return rv;
+}
+
+int
+CMDF::parseMDF_JSON(const std::string &path)
+{
+  m_strLastError.clear();
+  CMDF tmp;
+  tmp.m_strLocale = m_strLocale;
+  int rv;
+  try {
+    rv = tmp.parseMDF_JSON_raw(path);
+  }
+  catch (const std::exception &ex) {
+    tmp.m_strLastError = std::string("Parse error: ") + ex.what();
+    rv                 = VSCP_ERROR_PARSING;
+  }
+  if (VSCP_ERROR_SUCCESS == rv) {
+    swapContent(tmp);
+  }
+  else {
+    m_strLastError = tmp.m_strLastError.empty() ? "Failed to parse JSON MDF" : tmp.m_strLastError;
+  }
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  swapContent
+//
+
+void
+CMDF::swapContent(CMDF &other)
+{
+  std::swap(m_redirectUrl, other.m_redirectUrl);
+  std::swap(m_vscpLevel, other.m_vscpLevel);
+  std::swap(m_name, other.m_name);
+  std::swap(m_copyright, other.m_copyright);
+  std::swap(m_mapDescription, other.m_mapDescription);
+  std::swap(m_mapInfoURL, other.m_mapInfoURL);
+  std::swap(m_strModule_changeDate, other.m_strModule_changeDate);
+  std::swap(m_strModule_Model, other.m_strModule_Model);
+  std::swap(m_strModule_Version, other.m_strModule_Version);
+  std::swap(m_module_bufferSize, other.m_module_bufferSize);
+
+  // Manufacturer (member by member, the lists own their items)
+  std::swap(m_manufacturer.m_strName, other.m_manufacturer.m_strName);
+  std::swap(m_manufacturer.m_address.m_strStreet, other.m_manufacturer.m_address.m_strStreet);
+  std::swap(m_manufacturer.m_address.m_strTown, other.m_manufacturer.m_address.m_strTown);
+  std::swap(m_manufacturer.m_address.m_strCity, other.m_manufacturer.m_address.m_strCity);
+  std::swap(m_manufacturer.m_address.m_strPostCode, other.m_manufacturer.m_address.m_strPostCode);
+  std::swap(m_manufacturer.m_address.m_strState, other.m_manufacturer.m_address.m_strState);
+  std::swap(m_manufacturer.m_address.m_strRegion, other.m_manufacturer.m_address.m_strRegion);
+  std::swap(m_manufacturer.m_address.m_strCountry, other.m_manufacturer.m_address.m_strCountry);
+  std::swap(m_manufacturer.m_list_Phone, other.m_manufacturer.m_list_Phone);
+  std::swap(m_manufacturer.m_list_Fax, other.m_manufacturer.m_list_Fax);
+  std::swap(m_manufacturer.m_list_Email, other.m_manufacturer.m_list_Email);
+  std::swap(m_manufacturer.m_list_Web, other.m_manufacturer.m_list_Web);
+  std::swap(m_manufacturer.m_list_Social, other.m_manufacturer.m_list_Social);
+
+  std::swap(m_list_picture, other.m_list_picture);
+  std::swap(m_list_video, other.m_list_video);
+  std::swap(m_list_firmware, other.m_list_firmware);
+  std::swap(m_list_driver, other.m_list_driver);
+  std::swap(m_list_manual, other.m_list_manual);
+  std::swap(m_list_setup, other.m_list_setup);
+
+  // Decision matrix
+  std::swap(m_dmInfo.m_level, other.m_dmInfo.m_level);
+  std::swap(m_dmInfo.m_startPage, other.m_dmInfo.m_startPage);
+  std::swap(m_dmInfo.m_startOffset, other.m_dmInfo.m_startOffset);
+  std::swap(m_dmInfo.m_rowCount, other.m_dmInfo.m_rowCount);
+  std::swap(m_dmInfo.m_rowSize, other.m_dmInfo.m_rowSize);
+  std::swap(m_dmInfo.m_list_action, other.m_dmInfo.m_list_action);
+
+  // Boot loader
+  std::swap(m_bootInfo.m_nAlgorithm, other.m_bootInfo.m_nAlgorithm);
+  std::swap(m_bootInfo.m_nBlockSize, other.m_bootInfo.m_nBlockSize);
+  std::swap(m_bootInfo.m_nBlockCount, other.m_bootInfo.m_nBlockCount);
+
+  std::swap(m_list_register, other.m_list_register);
+  std::swap(m_list_remotevar, other.m_list_remotevar);
+  std::swap(m_list_event, other.m_list_event);
+  std::swap(m_list_alarm, other.m_list_alarm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9130,8 +10120,10 @@ CMDF::deleteEvent(CMDF_Event *pEvent)
 // expandRegisterSpan
 //
 
-// Max number of registers one DMATRIX1/BLOCK register may expand to
-#define MDF_MAX_REGISTER_SPAN 256
+// Max number of registers one DMATRIX1/BLOCK register is expanded to. A
+// larger span (from a damaged or hostile file) is not expanded: the register
+// is kept as one register with its span, so nothing is changed or lost.
+#define MDF_MAX_REGISTER_SPAN 4096
 
 void
 CMDF::expandRegisterSpan(CMDF_Register *preg)
@@ -9151,13 +10143,18 @@ CMDF::expandRegisterSpan(CMDF_Register *preg)
     return; // Standard register - nothing to expand
   }
 
+  // A span of one is a single register (kept as it is, also its name)
+  if (preg->m_span <= 1) {
+    return;
+  }
+
   // The span comes from the (possibly remote) MDF file
   if (preg->m_span > MDF_MAX_REGISTER_SPAN) {
-    spdlog::warn("MDF: Register '{}' span {} is too large. Limited to {}.",
+    spdlog::warn("MDF: Register '{}' span {} is larger than {}. It is not expanded.",
                  preg->m_name,
                  preg->m_span,
                  MDF_MAX_REGISTER_SPAN);
-    preg->m_span = MDF_MAX_REGISTER_SPAN;
+    return;
   }
 
   // Apply pyjamas coloring if at least one of the pyjamas colors are set.
@@ -9173,6 +10170,7 @@ CMDF::expandRegisterSpan(CMDF_Register *preg)
   // for display, and save_xml()/save_json() write the MDF ones back.
   preg->m_fgcolorMdf = preg->m_fgcolor;
   preg->m_bgcolorMdf = preg->m_bgcolor;
+  preg->m_spanIndex  = 0;
   if (bPyjamas) {
     preg->m_fgcolor = preg->m_fgeven;
     preg->m_bgcolor = preg->m_bgeven;
@@ -9183,6 +10181,7 @@ CMDF::expandRegisterSpan(CMDF_Register *preg)
     *pregNew               = *preg; // Deep copy, includes bits and values
     pregNew->m_name        = baseName + label + std::to_string(pos);
     pregNew->m_offset      = preg->m_offset + pos;
+    pregNew->m_spanIndex   = pos;
     if (bPyjamas) {
       if (pos % 2) {
         pregNew->m_fgcolor = preg->m_fgodd;

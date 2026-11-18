@@ -1,0 +1,363 @@
+{
+  "module": {
+    "name": "Spec full",
+    "copyright": "Copyright S1",
+    "level": 2,
+    "model": "Model S2",
+    "version": "Version S3",
+    "changed": "2026-11-18",
+    "buffersize": 32,
+    "description": {
+      "en": "Module description en",
+      "se": "Modulbeskrivning se"
+    },
+    "infourl": {
+      "en": "https://module.en",
+      "se": "https://module.se"
+    },
+    "manufacturer": {
+      "name": "Maker S4",
+      "address": {
+        "street": "Street S5",
+        "town": "Town S6",
+        "city": "City S7",
+        "postcode": "Post S8",
+        "state": "State S9",
+        "region": "Region S10",
+        "country": "Country S11"
+      },
+      "telephone": [
+        {
+          "number": "+46 1",
+          "description": { "en": "Phone desc" },
+          "infourl": { "en": "https://phone.en" }
+        },
+        {
+          "number": "+46 2"
+        }
+      ],
+      "fax": [
+        {
+          "number": "+46 3",
+          "description": { "en": "Fax desc" },
+          "infourl": { "en": "https://fax.en" }
+        }
+      ],
+      "email": [
+        {
+          "address": "mail@s12.com",
+          "description": { "en": "Mail desc" },
+          "infourl": { "en": "https://mail.en" }
+        }
+      ],
+      "web": [
+        {
+          "url": "https://web.s13.com",
+          "description": { "en": "Web desc" },
+          "infourl": { "en": "https://web.en" }
+        }
+      ]
+    },
+    "boot": {
+      "algorithm": 1,
+      "blocksize": 64,
+      "blockcount": 4096
+    },
+    "files": {
+      "picture": [
+        {
+          "name": "Picture S14",
+          "url": "https://pic.s14",
+          "format": "png",
+          "date": "2026-01-14",
+          "version_major": 1,
+          "version_minor": 4,
+          "version_subminor": 14,
+          "description": { "en": "Picture desc" },
+          "infourl": { "en": "https://pic.en" }
+        }
+      ],
+      "video": [
+        {
+          "name": "Video S15",
+          "url": "https://video.s15",
+          "format": "mp4",
+          "date": "2026-01-15",
+          "description": { "en": "Video desc" },
+          "infourl": { "en": "https://video.en" }
+        }
+      ],
+      "manual": [
+        {
+          "name": "Manual S16",
+          "url": "https://manual.s16",
+          "format": "pdf",
+          "lang": "se",
+          "date": "2026-01-16",
+          "version_major": 1,
+          "version_minor": 6,
+          "version_subminor": 16,
+          "description": { "en": "Manual desc" },
+          "infourl": { "en": "https://manual.en" }
+        }
+      ],
+      "firmware": [
+        {
+          "name": "Firmware S17",
+          "target": "pic18f2580",
+          "targetcode": "0x0102",
+          "url": "https://fw.s17",
+          "format": "intelhex8",
+          "size": 12345,
+          "date": "2026-01-17",
+          "md5": "0123456789abcdef0123456789abcdef",
+          "version_major": 1,
+          "version_minor": 7,
+          "version_subminor": 17,
+          "description": { "en": "Firmware desc" },
+          "infourl": { "en": "https://fw.en" }
+        }
+      ],
+      "driver": [
+        {
+          "name": "Driver S18",
+          "url": "https://drv.s18",
+          "type": "VSCP Daemon",
+          "os": "Debian Linux",
+          "osver": "13",
+          "architecture": "amd64",
+          "date": "2026-01-18",
+          "md5": "fedcba9876543210fedcba9876543210",
+          "version_major": 1,
+          "version_minor": 8,
+          "version_subminor": 18,
+          "description": { "en": "Driver desc" },
+          "infourl": { "en": "https://drv.en" }
+        }
+      ],
+      "setup": [
+        {
+          "name": "Setup S19",
+          "url": "https://setup.s19",
+          "format": "vscpjs",
+          "date": "2026-01-19",
+          "version_major": 1,
+          "version_minor": 9,
+          "version_subminor": 19,
+          "description": { "en": "Setup desc" },
+          "infourl": { "en": "https://setup.en" }
+        }
+      ]
+    },
+    "register": [
+      {
+        "name": "Std register",
+        "page": 1,
+        "offset": 2,
+        "type": "std",
+        "width": 4,
+        "min": 1,
+        "max": 15,
+        "access": "r",
+        "default": "0x0a",
+        "fgcolor": "0x112233",
+        "bgcolor": "0x445566",
+        "description": {
+          "en": "Register desc",
+          "se": "Registerbeskrivning"
+        },
+        "infourl": { "en": "https://reg.en" },
+        "valuelist": [
+          {
+            "name": "Item zero",
+            "value": "0x00",
+            "description": { "en": "Item zero desc" },
+            "infourl": { "en": "https://item0.en" }
+          },
+          {
+            "name": "Item one",
+            "value": "0x01"
+          }
+        ],
+        "bit": [
+          {
+            "name": "Low bits",
+            "pos": 0,
+            "width": 2,
+            "default": 2,
+            "min": 1,
+            "max": 3,
+            "access": "w",
+            "description": { "en": "Low bits desc" },
+            "infourl": { "en": "https://lowbits.en" },
+            "valuelist": [
+              {
+                "name": "Bit item",
+                "value": "3",
+                "description": { "en": "Bit item desc" }
+              }
+            ]
+          },
+          {
+            "name": "Flag",
+            "pos": 2,
+            "default": true
+          }
+        ]
+      },
+      {
+        "name": "Write only",
+        "page": 1,
+        "offset": 3,
+        "access": "w"
+      },
+      {
+        "name": "Read write",
+        "page": 1,
+        "offset": 4,
+        "access": "rw",
+        "default": "UNDEF"
+      },
+      {
+        "name": "Block",
+        "page": 2,
+        "offset": "0x10",
+        "type": "block",
+        "span": 3,
+        "access": "r",
+        "description": { "en": "Block desc" }
+      },
+      {
+        "name": "DM",
+        "page": 3,
+        "offset": 0,
+        "type": "dmatrix1",
+        "span": 8,
+        "access": "rw"
+      }
+    ],
+    "remotevar": [
+      {
+        "name": "Var int",
+        "type": "uint16_t",
+        "default": "1234",
+        "page": 4,
+        "offset": 19,
+        "access": "r",
+        "min": "10",
+        "max": "2000",
+        "fgcolor": "0x010203",
+        "bgcolor": "0x040506",
+        "description": { "en": "Var desc" },
+        "infourl": { "en": "https://var.en" },
+        "valuelist": [
+          { "name": "Var item", "value": "0x10" }
+        ],
+        "bit": [
+          { "name": "Var bit", "pos": 1, "width": 1 }
+        ]
+      },
+      {
+        "name": "Var string",
+        "type": "string",
+        "page": 4,
+        "offset": 32,
+        "size": 16,
+        "access": "rw"
+      },
+      {
+        "name": "Var bool",
+        "type": "bool",
+        "page": 4,
+        "offset": 50,
+        "bitpos": 3,
+        "default": "true",
+        "access": "w"
+      }
+    ],
+    "alarm": [
+      {
+        "pos": 0,
+        "name": "Low alarm",
+        "description": { "en": "Low alarm desc" },
+        "infourl": { "en": "https://alarm0.en" }
+      },
+      {
+        "pos": 1,
+        "name": "High alarm"
+      }
+    ],
+    "dmatrix": {
+      "level": 1,
+      "start-page": 3,
+      "start-offset": "0x10",
+      "rowcnt": 4,
+      "rowsize": 8,
+      "action": [
+        {
+          "name": "NOOP",
+          "code": "0x00",
+          "description": { "en": "NOOP desc" },
+          "infourl": { "en": "https://noop.en" }
+        },
+        {
+          "name": "Start counter",
+          "code": "0x01",
+          "param": [
+            {
+              "name": "Counter",
+              "offset": 0,
+              "min": 0,
+              "max": 3,
+              "description": { "en": "Counter desc" },
+              "infourl": { "en": "https://counter.en" },
+              "valuelist": [
+                { "name": "Counter 0", "value": "0x00" },
+                { "name": "Counter 3", "value": "0x03" }
+              ],
+              "bit": [
+                { "name": "Param bit", "pos": 4, "width": 2 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "event": [
+      {
+        "name": "Counter data",
+        "class": "0x00f",
+        "type": "0x06",
+        "priority": 4,
+        "dir": "in",
+        "description": { "en": "Event desc" },
+        "infourl": { "en": "https://event.en" },
+        "data": [
+          {
+            "name": "Datacoding",
+            "offset": 0,
+            "description": { "en": "Data desc" },
+            "infourl": { "en": "https://data.en" },
+            "valuelist": [
+              { "name": "Data item", "value": "0x60" }
+            ],
+            "bit": [
+              { "name": "Data bit", "pos": 5, "width": 3 }
+            ]
+          },
+          {
+            "name": "MSB",
+            "offset": 1
+          }
+        ]
+      },
+      {
+        "name": "Any event",
+        "class": "-",
+        "type": "-",
+        "priority": 7,
+        "dir": "out"
+      }
+    ]
+  }
+}

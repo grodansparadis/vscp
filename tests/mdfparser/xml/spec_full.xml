@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Every element and attribute of the MDF XML specification, each with its
+  own value, so a test can check that all of them are read.
+  json/spec_full.json describes the same module in JSON.
+-->
+<vscp>
+  <module>
+    <name>Spec full</name>
+    <copyright>Copyright S1</copyright>
+    <level>2</level>
+    <model>Model S2</model>
+    <version>Version S3</version>
+    <changed>2026-11-18</changed>
+    <buffersize>32</buffersize>
+    <description lang="en">Module description en</description>
+    <description lang="se">Modulbeskrivning se</description>
+    <infourl lang="en">https://module.en</infourl>
+    <infourl lang="se">https://module.se</infourl>
+
+    <manufacturer>
+      <name>Maker S4</name>
+      <address>
+        <street>Street S5</street>
+        <town>Town S6</town>
+        <city>City S7</city>
+        <postcode>Post S8</postcode>
+        <state>State S9</state>
+        <region>Region S10</region>
+        <country>Country S11</country>
+      </address>
+      <telephone>
+        <number>+46 1</number>
+        <description lang="en">Phone desc</description>
+        <infourl lang="en">https://phone.en</infourl>
+      </telephone>
+      <telephone>
+        <number>+46 2</number>
+      </telephone>
+      <fax>
+        <number>+46 3</number>
+        <description lang="en">Fax desc</description>
+        <infourl lang="en">https://fax.en</infourl>
+      </fax>
+      <email>
+        <address>mail@s12.com</address>
+        <description lang="en">Mail desc</description>
+        <infourl lang="en">https://mail.en</infourl>
+      </email>
+      <web>
+        <url>https://web.s13.com</url>
+        <description lang="en">Web desc</description>
+        <infourl lang="en">https://web.en</infourl>
+      </web>
+    </manufacturer>
+
+    <boot>
+      <algorithm>1</algorithm>
+      <blocksize>64</blocksize>
+      <blockcount>4096</blockcount>
+    </boot>
+
+    <files>
+      <picture name="Picture S14" url="https://pic.s14" format="png" date="2026-01-14"
+               version_major="1" version_minor="4" version_subminor="14">
+        <description lang="en">Picture desc</description>
+        <infourl lang="en">https://pic.en</infourl>
+      </picture>
+      <video name="Video S15" url="https://video.s15" format="mp4" date="2026-01-15">
+        <description lang="en">Video desc</description>
+        <infourl lang="en">https://video.en</infourl>
+      </video>
+      <manual name="Manual S16" url="https://manual.s16" format="pdf" lang="se" date="2026-01-16"
+              version_major="1" version_minor="6" version_subminor="16">
+        <description lang="en">Manual desc</description>
+        <infourl lang="en">https://manual.en</infourl>
+      </manual>
+      <firmware name="Firmware S17" target="pic18f2580" targetcode="0x0102" url="https://fw.s17"
+                format="intelhex8" size="12345" date="2026-01-17" md5="0123456789abcdef0123456789abcdef"
+                version_major="1" version_minor="7" version_subminor="17">
+        <description lang="en">Firmware desc</description>
+        <infourl lang="en">https://fw.en</infourl>
+      </firmware>
+      <driver name="Driver S18" url="https://drv.s18" type="VSCP Daemon" os="Debian Linux" osver="13"
+              architecture="amd64" date="2026-01-18" md5="fedcba9876543210fedcba9876543210"
+              version_major="1" version_minor="8" version_subminor="18">
+        <description lang="en">Driver desc</description>
+        <infourl lang="en">https://drv.en</infourl>
+      </driver>
+      <setup name="Setup S19" url="https://setup.s19" format="vscpjs" date="2026-01-19"
+             version_major="1" version_minor="9" version_subminor="19">
+        <description lang="en">Setup desc</description>
+        <infourl lang="en">https://setup.en</infourl>
+      </setup>
+    </files>
+
+    <registers>
+      <reg name="Std register" page="1" offset="2" type="std" width="4" min="1" max="15" access="r"
+           default="0x0a" fgcolor="0x112233" bgcolor="0x445566">
+        <description lang="en">Register desc</description>
+        <description lang="se">Registerbeskrivning</description>
+        <infourl lang="en">https://reg.en</infourl>
+        <valuelist>
+          <item name="Item zero" value="0x00">
+            <description lang="en">Item zero desc</description>
+            <infourl lang="en">https://item0.en</infourl>
+          </item>
+          <item name="Item one" value="0x01"/>
+        </valuelist>
+        <bit name="Low bits" pos="0" width="2" default="2" min="1" max="3" access="w">
+          <description lang="en">Low bits desc</description>
+          <infourl lang="en">https://lowbits.en</infourl>
+          <valuelist>
+            <item name="Bit item" value="3">
+              <description lang="en">Bit item desc</description>
+            </item>
+          </valuelist>
+        </bit>
+        <bit name="Flag" pos="2" default="true"/>
+      </reg>
+      <reg name="Write only" page="1" offset="3" access="w"/>
+      <reg name="Read write" page="1" offset="4" access="rw" default="UNDEF"/>
+      <reg name="Block" page="2" offset="0x10" type="block" span="3" access="r">
+        <description lang="en">Block desc</description>
+      </reg>
+      <reg name="DM" page="3" offset="0" type="dmatrix1" span="8" access="rw"/>
+    </registers>
+
+    <remotevars>
+      <remotevar name="Var int" type="uint16_t" default="1234" page="4" offset="19" access="r"
+                 min="10" max="2000" fgcolor="0x010203" bgcolor="0x040506">
+        <description lang="en">Var desc</description>
+        <infourl lang="en">https://var.en</infourl>
+        <valuelist>
+          <item name="Var item" value="0x10"/>
+        </valuelist>
+        <bit name="Var bit" pos="1" width="1"/>
+      </remotevar>
+      <remotevar name="Var string" type="string" page="4" offset="32" size="16" access="rw"/>
+      <remotevar name="Var bool" type="bool" page="4" offset="50" bitpos="3" default="true" access="w"/>
+    </remotevars>
+
+    <alarm>
+      <bit pos="0" name="Low alarm">
+        <description lang="en">Low alarm desc</description>
+        <infourl lang="en">https://alarm0.en</infourl>
+      </bit>
+      <bit pos="1" name="High alarm"/>
+    </alarm>
+
+    <dmatrix level="1" start-page="3" start-offset="0x10" rowcnt="4" rowsize="8">
+      <action name="NOOP" code="0x00">
+        <description lang="en">NOOP desc</description>
+        <infourl lang="en">https://noop.en</infourl>
+      </action>
+      <action name="Start counter" code="0x01">
+        <param name="Counter" offset="0" min="0" max="3">
+          <description lang="en">Counter desc</description>
+          <infourl lang="en">https://counter.en</infourl>
+          <valuelist>
+            <item name="Counter 0" value="0x00"/>
+            <item name="Counter 3" value="0x03"/>
+          </valuelist>
+          <bit name="Param bit" pos="4" width="2"/>
+        </param>
+      </action>
+    </dmatrix>
+
+    <events>
+      <event name="Counter data" class="0x00f" type="0x06" priority="4" dir="in">
+        <description lang="en">Event desc</description>
+        <infourl lang="en">https://event.en</infourl>
+        <data name="Datacoding" offset="0">
+          <description lang="en">Data desc</description>
+          <infourl lang="en">https://data.en</infourl>
+          <valuelist>
+            <item name="Data item" value="0x60"/>
+          </valuelist>
+          <bit name="Data bit" pos="5" width="3"/>
+        </data>
+        <data name="MSB" offset="1"/>
+      </event>
+      <event name="Any event" class="-" type="-" priority="7" dir="out"/>
+    </events>
+  </module>
+</vscp>

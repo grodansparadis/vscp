@@ -1782,8 +1782,8 @@ TEST(parseMDF, XML_DM)
 
   ASSERT_EQ(paction->getCode(), 1);
   ASSERT_EQ(paction->getName(), "Start counter");
-  ASSERT_EQ(paction->getDescription("en"), "Set the enable bit and thereby start the counter givenby the argument which should be a value of 0-3 representingcounter0 - counter3.");
-  ASSERT_EQ(paction->getDescription("se"), "Sätt aktiveringsbiten och starta den räknare som anges avargumentet vilket skall vara ett värde 0-3 förcounter0 - counter3.");
+  ASSERT_EQ(paction->getDescription("en"), "Set the enable bit and thereby start the counter given by the argument which should be a value of 0-3 representing counter0 - counter3.");
+  ASSERT_EQ(paction->getDescription("se"), "Sätt aktiveringsbiten och starta den räknare som anges av argumentet vilket skall vara ett värde 0-3 för counter0 - counter3.");
   ASSERT_EQ(paction->getInfoURL("en"), "url1_en");
   ASSERT_EQ(paction->getInfoURL("se"), "url1_se");
 
@@ -4266,7 +4266,7 @@ TEST(parseMDF, EdgeCase_EmptyModule)
   ASSERT_EQ(0, mdf.getRemoteVariableCount());
   ASSERT_EQ(0, mdf.getEventList()->size());
   ASSERT_EQ("", mdf.getModuleName());
-  ASSERT_EQ(0, mdf.getModuleBufferSize());
+  ASSERT_EQ(8, mdf.getModuleBufferSize()); // Specification default
 }
 
 TEST(parseMDF, EdgeCase_NonExistentRegister)
@@ -4510,8 +4510,10 @@ TEST(parseMDF, AlarmBit_Access)
 //-----------------------------------------------------------------------------
 
 #include <filesystem>
+#include <fstream>
 #include <set>
 #include <sstream>
+#include <sys/stat.h>
 #include <unistd.h>
 
 static std::string
@@ -4616,11 +4618,453 @@ INSTANTIATE_TEST_SUITE_P(Fixtures,
 // Same content as XML and as JSON must load to the same model
 TEST(MdfCrossFormat, XmlAndJsonGiveSameModel)
 {
-  for (const char *base : { "address_span", "blinky0" }) {
+  for (const char *base : { "address_span", "blinky0", "spec_full", "spec_embedded" }) {
     std::string x = dumpMdfFile(std::string("xml/") + base + ".xml");
     std::string j = dumpMdfFile(std::string("json/") + base + ".json");
     EXPECT_TRUE(j == x) << base << "\n" << dumpDiff(j, x, "json", "xml ");
   }
+}
+
+//-----------------------------------------------------------------------------
+// Specification conformance
+//
+// spec_full.xml/.json use every element/attribute of the MDF specification,
+// spec_variants.xml/.json the alternative and deprecated forms. Each value
+// must end up in the model.
+//-----------------------------------------------------------------------------
+
+static void
+expectDumpLines(const std::string &path, const std::vector<std::string> &lines)
+{
+  std::string dump = dumpMdfFile(path);
+  std::set<std::string> have;
+  std::istringstream ss(dump);
+  for (std::string l; std::getline(ss, l);) {
+    have.insert(l);
+  }
+  for (auto &line : lines) {
+    EXPECT_TRUE(have.count(line)) << path << ": missing '" << line << "'";
+  }
+}
+
+TEST(MdfSpec, FullXmlAndJson)
+{
+  const std::vector<std::string> lines = {
+    "name = Spec full",
+    "copyright = Copyright S1",
+    "level = 1", // Level II
+    "buffersize = 32",
+    "module/infourl[se] = https://module.se",
+    "manufacturer/address/region = Region S10",
+    "manufacturer/telephone[0]/infourl[en] = https://phone.en",
+    "manufacturer/fax[0]/infourl[en] = https://fax.en",
+    "manufacturer/email[0]/infourl[en] = https://mail.en",
+    "manufacturer/web[0]/value = https://web.s13.com",
+    "manufacturer/web[0]/infourl[en] = https://web.en",
+    "boot/blockcount = 4096",
+    "picture[0]/version = 1.4.14",
+    "video[0]/date = 2026-01-15",
+    "manual[0]/lang = se",
+    "manual[0]/version = 1.6.16",
+    "firmware[0]/targetcode = 258",
+    "firmware[0]/version = 1.7.17",
+    "firmware[0]/size = 12345",
+    "firmware[0]/md5 = 0123456789abcdef0123456789abcdef",
+    "driver[0]/type = VSCP Daemon",
+    "driver[0]/version = 1.8.18",
+    "driver[0]/md5 = fedcba9876543210fedcba9876543210",
+    "setup[0]/version = 1.9.19",
+    "register[0]/width = 4",
+    "register[0]/min = 1",
+    "register[0]/max = 15",
+    "register[0]/access = 1",
+    "register[0]/default = 0x0a",
+    "register[0]/fgcolor = 1122867",
+    "register[0]/bit[0]/min = 1",
+    "register[0]/bit[0]/max = 3",
+    "register[0]/bit[0]/access = 2",
+    "register[0]/bit[0]/value[0]/description[en] = Bit item desc",
+    "register[0]/bit[1]/default = 1",
+    "register[0]/bit[1]/max = 1",
+    "register[1]/access = 2",
+    "register[3]/name = Block - BLOCK 0",
+    "register[5]/name = Block - BLOCK 2",
+    "register[13]/name = DM - DM 7",
+    "remotevar[0]/min = 10",
+    "remotevar[0]/max = 2000",
+    "remotevar[1]/size = 16",
+    "remotevar[2]/bitpos = 3",
+    "alarm/bit[0]/infourl[en] = https://alarm0.en",
+    "dmatrix/start-page = 3",
+    "dmatrix/start-offset = 16",
+    "dmatrix/rowcount = 4",
+    "dmatrix/action[1]/param[0]/bit[0]/max = 3",
+    "event[0]/class = 15",
+    "event[0]/priority = 4",
+    "event[0]/direction = 0", // in
+    "event[0]/data[0]/bit[0]/max = 7",
+    "event[1]/class = -1",
+    "event[1]/type = -1",
+  };
+  expectDumpLines("xml/spec_full.xml", lines);
+  expectDumpLines("json/spec_full.json", lines);
+}
+
+TEST(MdfSpec, VariantsXml)
+{
+  expectDumpLines("xml/spec_variants.xml",
+                  {
+                    "name = Variants",
+                    "buffersize = 8", // default
+                    "module/description[en] = Description without lang",
+                    "manufacturer/web[0]/value = https://web.address",
+                    "firmware[0]/url = https://fw.path",
+                    "firmware[0]/md5 = abc",
+                    "firmware[0]/version = 2.3.4",
+                    "firmware[0]/targetcode = 15", // 0o17
+                    "manual[0]/lang = de",
+                    "register[0]/name = Zone",
+                    "register[0]/access = 3", // readwrite
+                    "register[1]/name = Old form",
+                    "register[1]/offset = 2", // 0b10
+                    "register[1]/width = 4",
+                    "register[1]/access = 1", // <access>r</access>
+                    "register[2]/access = 1", // read only
+                    "register[3]/bit[0]/min = 1",
+                    "register[3]/bit[0]/max = 7",
+                    "register[3]/bit[1]/name = Lo",
+                    "register[3]/bit[1]/max = 1",
+                    "remotevar[0]/name = Old abstraction",
+                    "remotevar[0]/access = 1", // acess="r"
+                    "dmatrix/start-page = 3",
+                    "dmatrix/start-offset = 32",
+                    "dmatrix/rowcount = 8",
+                    "dmatrix/action[0]/name = Count",
+                    "dmatrix/action[0]/param[0]/name = Counter",
+                    "event[0]/name = Alarm occurred",
+                    "event[0]/priority = 0", // high
+                    "event[0]/direction = 0",
+                    "event[0]/data[0]/name = Zone",
+                    "event[1]/priority = 7", // low
+                    "event[2]/priority = 3", // normal
+                  });
+}
+
+TEST(MdfSpec, VariantsJson)
+{
+  expectDumpLines("json/spec_variants.json",
+                  {
+                    "name = Variants",
+                    "module/description[en] = Description as a string",
+                    "module/infourl[en] = https://info.en",
+                    "module/infourl[se] = https://info.se",
+                    "manufacturer/address/region = Hälsingland",
+                    "manufacturer/address/country = Sweden",
+                    "manufacturer/email[0]/infourl[en] = https://mail.info",
+                    "manufacturer/web[0]/value = https://web.address",
+                    "firmware[0]/url = https://fw.path",
+                    "firmware[0]/version = 2.3.4",
+                    "firmware[0]/targetcode = 15",
+                    "manual[0]/lang = de",
+                    "register[0]/access = 3",
+                    "register[1]/offset = 3",
+                    "register[1]/access = 1",
+                    "register[2]/bit[0]/max = 7",
+                    "register[2]/bit[1]/default = 0",
+                    "register[2]/bit[1]/max = 1",
+                    "remotevar[0]/default = -5",
+                    "remotevar[1]/default = 1.5",
+                    "remotevar[1]/min = -2.25",
+                    "remotevar[1]/max = 3.75",
+                    "dmatrix/rowcount = 8",
+                    "dmatrix/start-offset = 32",
+                    "event[0]/priority = 0",
+                    "event[0]/direction = 0",
+                    "event[1]/class = -1",
+                    "event[1]/priority = 7",
+                    "event[2]/priority = 3",
+                  });
+}
+
+TEST(MdfSpec, EmbeddedRemoteVariablesAndDataOffsets)
+{
+  const std::vector<std::string> lines = {
+    "remotevar# = 3",
+    "remotevar[0]/name = Temperature",
+    "remotevar[0]/type = 5", // int16_t
+    "remotevar[0]/offset = 10",
+    "remotevar[0]/access = 1",
+    "remotevar[0]/default = 0x12",
+    "remotevar[0]/description[en] = Temperature register",
+    "remotevar[1]/name = Plain",
+    "remotevar[1]/offset = 20",
+    "remotevar[2]/name = Separate",
+    "event[0]/data[0]/offset = 0",
+    "event[0]/data[1]/offset = 1",
+    "event[0]/data[2]/offset = 5",
+  };
+  expectDumpLines("xml/spec_embedded.xml", lines);
+  expectDumpLines("json/spec_embedded.json", lines);
+}
+
+//-----------------------------------------------------------------------------
+// Loading never loses what is already loaded
+//-----------------------------------------------------------------------------
+
+static std::string
+tmpPath(const std::string &name)
+{
+  return "/tmp/mdftest_" + std::to_string(getpid()) + "_" + name;
+}
+
+static void
+writeFile(const std::string &path, const std::string &content)
+{
+  std::ofstream f(path, std::ios::binary);
+  f << content;
+}
+
+static std::string
+readFile(const std::string &path)
+{
+  std::ifstream f(path, std::ios::binary);
+  std::stringstream ss;
+  ss << f.rdbuf();
+  return ss.str();
+}
+
+TEST(MdfSafety, FailedLoadKeepsContent)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("xml/spec_full.xml"));
+  MdfDump d;
+  const std::string before = d.dump(mdf);
+
+  const std::vector<std::pair<std::string, std::string>> bad = {
+    { "truncated.xml", "<?xml version=\"1.0\"?><vscp><module><name>x</name><registers><reg name=\"a\"" },
+    { "truncated.json", "{ \"module\": { \"name\": \"x\", \"register\": [ { \"name\": " },
+    { "html.xml", "<!DOCTYPE html><html><body>404 Not Found</body></html>" },
+    { "notmdf.xml", "<?xml version=\"1.0\"?><something><module/></something>" },
+    { "nomodule.json", "{ \"name\": \"x\" }" },
+    { "garbage.mdf", "this is not an MDF" },
+    { "empty.xml", "" },
+  };
+  for (auto &b : bad) {
+    std::string path = tmpPath(b.first);
+    writeFile(path, b.second);
+    int rv = mdf.parseMDF(path);
+    unlink(path.c_str());
+    EXPECT_NE(VSCP_ERROR_SUCCESS, rv) << b.first;
+    EXPECT_FALSE(mdf.getLastError().empty()) << b.first;
+    EXPECT_TRUE(before == d.dump(mdf)) << b.first << " changed the loaded MDF";
+  }
+
+  // Missing file
+  EXPECT_NE(VSCP_ERROR_SUCCESS, mdf.parseMDF(tmpPath("does_not_exist.xml")));
+  EXPECT_TRUE(before == d.dump(mdf));
+
+  // A good file replaces the content and clears the error
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("json/spec_variants.json"));
+  EXPECT_TRUE(mdf.getLastError().empty());
+  EXPECT_EQ("Variants", mdf.getModuleName());
+}
+
+//-----------------------------------------------------------------------------
+// Saving never destroys the file that is saved over
+//-----------------------------------------------------------------------------
+
+static bool
+tempLeftovers(const std::string &dir, const std::string &name)
+{
+  for (auto &entry : std::filesystem::directory_iterator(dir)) {
+    std::string fn = entry.path().filename().string();
+    if ((0 == fn.find("." + name + ".")) || (std::string::npos != fn.find(name + ".tmp"))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+TEST(MdfSafety, SaveFailureKeepsExistingFile)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("xml/spec_full.xml"));
+
+  // A control character can not be written to XML (it is not allowed even as
+  // a character reference). The written file does not read back the same,
+  // so the save must fail and leave the existing file as it was.
+  (*mdf.getMapDescription())["en"] = std::string("Bell \x07 in text");
+  std::string path = tmpPath("keep.xml");
+  writeFile(path, "ORIGINAL CONTENT");
+  int rv = mdf.save(path, MDF_FORMAT_XML);
+  EXPECT_NE(VSCP_ERROR_SUCCESS, rv);
+  EXPECT_FALSE(mdf.getLastError().empty());
+  EXPECT_EQ("ORIGINAL CONTENT", readFile(path));
+  EXPECT_FALSE(tempLeftovers("/tmp", "mdftest_" + std::to_string(getpid()) + "_keep.xml"));
+
+  // JSON can hold it
+  EXPECT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, MDF_FORMAT_JSON)) << mdf.getLastError();
+  CMDF again;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(path));
+  EXPECT_EQ(std::string("Bell \x07 in text"), (*again.getMapDescription())["en"]);
+  unlink(path.c_str());
+
+  // No folder: error, nothing written
+  std::string nodir = "/tmp/mdftest_no_such_dir_" + std::to_string(getpid()) + "/x.json";
+  EXPECT_NE(VSCP_ERROR_SUCCESS, mdf.save(nodir, MDF_FORMAT_JSON));
+  EXPECT_FALSE(mdf.getLastError().empty());
+
+  // Unknown format is an error (it used to report success and write nothing)
+  EXPECT_NE(VSCP_ERROR_SUCCESS, mdf.save(tmpPath("x.bin"), (mdf_format) 99));
+}
+
+TEST(MdfSafety, SaveKeepsPermissions)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("json/spec_full.json"));
+  std::string path = tmpPath("perm.json");
+  writeFile(path, "{}");
+  chmod(path.c_str(), 0640);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, MDF_FORMAT_JSON)) << mdf.getLastError();
+  struct stat st;
+  ASSERT_EQ(0, stat(path.c_str(), &st));
+  EXPECT_EQ(0640u, (unsigned) (st.st_mode & 0777));
+  unlink(path.c_str());
+}
+
+TEST(MdfSafety, SpecialCharactersRoundTrip)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("json/spec_full.json"));
+  const std::string tricky = "<tag> & \"quotes\" 'apos' ]]> \\n \\ / åäö 中文 \t tab";
+  mdf.setModuleName(tricky);
+  (*mdf.getMapDescription())["en"] = tricky;
+  (*mdf.getRegisterObjList())[0]->setName(tricky);
+  for (mdf_format fmt : { MDF_FORMAT_XML, MDF_FORMAT_JSON }) {
+    std::string path = tmpPath(MDF_FORMAT_XML == fmt ? "chars.xml" : "chars.json");
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, fmt)) << mdf.getLastError();
+    CMDF again;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(path));
+    unlink(path.c_str());
+    EXPECT_EQ(tricky, again.getModuleName());
+    EXPECT_EQ(tricky, (*again.getMapDescription())["en"]);
+    EXPECT_EQ(tricky, (*again.getRegisterObjList())[0]->getName());
+  }
+}
+
+TEST(MdfSafety, RedirectRoundTrip)
+{
+  std::string src = tmpPath("redir.xml");
+  writeFile(src, "<?xml version=\"1.0\"?><vscp><redirect mdf-path=\"https://example.com/real.xml\"/></vscp>");
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(src));
+  EXPECT_EQ("https://example.com/real.xml", mdf.getRedirectUrl());
+  for (mdf_format fmt : { MDF_FORMAT_XML, MDF_FORMAT_JSON }) {
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(src, fmt)) << mdf.getLastError();
+    CMDF again;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(src));
+    EXPECT_EQ("https://example.com/real.xml", again.getRedirectUrl());
+  }
+  unlink(src.c_str());
+}
+
+//-----------------------------------------------------------------------------
+// Edits to expanded DMATRIX1/BLOCK registers are saved
+//-----------------------------------------------------------------------------
+
+static CMDF_Register *
+findRegister(CMDF &mdf, uint16_t page, uint32_t offset)
+{
+  return mdf.getRegister(offset, page);
+}
+
+TEST(MdfSafety, EditedSpanRegistersAreSaved)
+{
+  for (mdf_format fmt : { MDF_FORMAT_XML, MDF_FORMAT_JSON }) {
+    CMDF mdf;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("json/spec_full.json"));
+    const size_t nregs = mdf.getRegisterObjList()->size();
+
+    // Change one register of the BLOCK group (page 2, offsets 16-18)
+    CMDF_Register *preg = findRegister(mdf, 2, 17);
+    ASSERT_NE(nullptr, preg);
+    (*preg->getMapDescription())["en"] = "Edited block register";
+    // Rename one register of the DM group (page 3, offsets 0-7)
+    preg = findRegister(mdf, 3, 2);
+    ASSERT_NE(nullptr, preg);
+    preg->setName("Renamed DM register");
+    // Remove another one
+    ASSERT_TRUE(mdf.deleteRegister(findRegister(mdf, 3, 5)));
+
+    MdfDump d;
+    const std::string before = d.dump(mdf);
+    std::string path         = tmpPath(MDF_FORMAT_XML == fmt ? "span.xml" : "span.json");
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, fmt)) << mdf.getLastError();
+    CMDF again;
+    ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(path));
+    unlink(path.c_str());
+
+    EXPECT_EQ(nregs - 1, again.getRegisterObjList()->size());
+    ASSERT_NE(nullptr, findRegister(again, 2, 17));
+    EXPECT_EQ("Edited block register", (*findRegister(again, 2, 17)->getMapDescription())["en"]);
+    EXPECT_EQ("Block desc", (*findRegister(again, 2, 16)->getMapDescription())["en"]);
+    ASSERT_NE(nullptr, findRegister(again, 3, 2));
+    EXPECT_EQ("Renamed DM register", findRegister(again, 3, 2)->getName());
+    EXPECT_EQ(nullptr, findRegister(again, 3, 5));
+    EXPECT_EQ("DM - DM 4", findRegister(again, 3, 4)->getName());
+    // What is saved is the same (an edited group is saved one register at a
+    // time, so their span is one after reading)
+    EXPECT_TRUE(mdf.toJsonString() == again.toJsonString())
+      << dumpDiff(mdf.toJsonString(), again.toJsonString(), "edited", "re-read");
+  }
+}
+
+TEST(MdfSafety, UnchangedSpanGroupIsWrittenOnce)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("xml/spec_full.xml"));
+  std::string xml = mdf.toXmlString();
+  EXPECT_NE(std::string::npos, xml.find("name=\"Block\" page=\"2\" offset=\"16\" span=\"3\""));
+  EXPECT_EQ(std::string::npos, xml.find("Block - BLOCK"));
+}
+
+TEST(MdfSafety, HugeSpanIsKept)
+{
+  // A span too large to expand is kept as one register (it used to be cut)
+  std::string path = tmpPath("hugespan.json");
+  writeFile(path,
+            "{ \"module\": { \"name\": \"x\", \"register\": [ "
+            "{ \"name\": \"Huge\", \"page\": 0, \"offset\": 0, \"type\": \"block\", \"span\": 5000 } ] } }");
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+  ASSERT_EQ(1u, mdf.getRegisterObjList()->size());
+  EXPECT_EQ(5000u, (*mdf.getRegisterObjList())[0]->getSpan());
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, MDF_FORMAT_XML)) << mdf.getLastError();
+  CMDF again;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(path));
+  unlink(path.c_str());
+  EXPECT_EQ(5000u, (*again.getRegisterObjList())[0]->getSpan());
+}
+
+TEST(MdfSafety, NewSpanRegisterIsExpandedOnReload)
+{
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF("json/spec_embedded.json"));
+  CMDF_Register *preg = new CMDF_Register;
+  preg->setName("New block");
+  preg->setPage(9);
+  preg->setOffset(0);
+  preg->setType(MDF_REG_TYPE_BLOCK);
+  preg->setSpan(4);
+  mdf.getRegisterObjList()->push_back(preg);
+
+  std::string path = tmpPath("newspan.json");
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.save(path, MDF_FORMAT_JSON)) << mdf.getLastError();
+  CMDF again;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, again.parseMDF(path));
+  unlink(path.c_str());
+  ASSERT_NE(nullptr, findRegister(again, 9, 3));
+  EXPECT_EQ("New block - BLOCK 3", findRegister(again, 9, 3)->getName());
 }
 
 //-----------------------------------------------------------------------------

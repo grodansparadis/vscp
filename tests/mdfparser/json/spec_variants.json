@@ -1,0 +1,83 @@
+{
+  "module": {
+    "Name": { "en": "Variants" },
+    "level": "1",
+    "description": "Description as a string",
+    "infourl": [ { "en": "https://info.en" }, { "se": "https://info.se" } ],
+    "manufacturer": {
+      "name": "Maker",
+      "address": {
+        "Region": "Hälsingland",
+        "COUNTRY": "Sweden"
+      },
+      "web": [
+        { "address": "https://web.address" }
+      ],
+      "email": [
+        { "address": "a@b.c", "infourl": "https://mail.info" }
+      ]
+    },
+    "files": [
+      {
+        "firmware": [
+          {
+            "name": "fw",
+            "path": "https://fw.path",
+            "md5sum": "abc",
+            "version_major": "2",
+            "version_minor": "3",
+            "version_patch": "4",
+            "targetcode": "0o17"
+          }
+        ]
+      },
+      {
+        "manual": [
+          { "name": "m", "url": "https://manual.path", "language": "de" }
+        ]
+      }
+    ],
+    "registers": [
+      { "name": "Zone", "page": "0", "offset": 0, "access": "readwrite", "default": "0x11" },
+      { "name": "Read only", "page": 0, "offset": "0b11", "access": "read only" },
+      {
+        "name": "Bits",
+        "page": 0,
+        "offset": 4,
+        "bit": [
+          { "pos": 3, "width": 2, "max": 7, "min": 1, "access": "r", "name": "Hi" },
+          { "pos": "0", "default": "false", "name": "Lo" }
+        ]
+      }
+    ],
+    "remotevars": [
+      { "name": "Negative", "type": "int16_t", "page": 1, "offset": 2, "default": -5 },
+      { "name": "Float", "type": "float", "page": 1, "offset": 4, "default": 1.5, "min": -2.25, "max": 3.75 }
+    ],
+    "dmatrix": {
+      "level": 1,
+      "start-page": "3",
+      "start-offset": "0x20",
+      "rowcount": 8,
+      "action": [
+        {
+          "name": "Count",
+          "code": 5,
+          "param": [ { "name": "Counter", "offset": 0, "min": 0, "max": 3 } ]
+        }
+      ]
+    },
+    "events": [
+      {
+        "name": "Alarm occurred",
+        "class": "0x001",
+        "type": "0x01",
+        "priority": "high",
+        "direction": "in",
+        "data": [ { "name": "Zone", "offset": 1 } ]
+      },
+      { "name": "Any", "class": "-", "type": "-", "priority": "low" },
+      { "name": "Normal", "class": 10, "type": 6, "priority": "normal" }
+    ]
+  }
+}

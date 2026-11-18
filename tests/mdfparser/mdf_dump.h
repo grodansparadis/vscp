@@ -88,6 +88,7 @@ private:
 
   void module(CMDF &mdf)
   {
+    v("redirect", mdf.getRedirectUrl());
     v("name", mdf.getModuleName());
     v("model", mdf.getModuleModel());
     v("version", mdf.getModuleVersion());
@@ -137,6 +138,7 @@ private:
       v(q + "/url", p->getUrl());
       v(q + "/format", p->getFormat());
       v(q + "/date", p->getDate());
+      v(q + "/version", p->getVersion());
       texts(q, p);
     }
     auto *videos = mdf.getVideoObjList();
@@ -148,6 +150,7 @@ private:
       v(q + "/url", p->getUrl());
       v(q + "/format", p->getFormat());
       v(q + "/date", p->getDate());
+      v(q + "/version", p->getVersion());
       texts(q, p);
     }
     auto *fws = mdf.getFirmwareObjList();
@@ -204,6 +207,7 @@ private:
       v(q + "/format", p->getFormat());
       v(q + "/lang", p->getLanguage());
       v(q + "/date", p->getDate());
+      v(q + "/version", p->getVersion());
       texts(q, p);
     }
   }
@@ -253,6 +257,8 @@ private:
       v(q + "/offset", pr->getOffset());
       v(q + "/bitpos", pr->getBitPos());
       v(q + "/size", pr->getStringSize());
+      v(q + "/min", pr->getMin());
+      v(q + "/max", pr->getMax());
       v(q + "/access", (int) pr->getAccess());
       v(q + "/fgcolor", pr->getForegroundColor());
       v(q + "/bgcolor", pr->getBackgroundColor());

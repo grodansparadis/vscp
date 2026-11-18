@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Alternative and deprecated forms the MDF XML specification allows (or
+  that are found in older MDF files). Each one must be read.
+-->
+<vscp>
+  <module>
+    <name lang="en">Variants</name>
+    <level>1</level>
+    <description>Description without lang</description>
+
+    <manufacturer>
+      <name>Maker</name>
+      <web>
+        <address>https://web.address</address>
+      </web>
+    </manufacturer>
+
+    <files>
+      <firmware name="fw" path="https://fw.path" md5sum="abc" version_major="2" version_minor="3"
+                version_patch="4" targetcode="0o17"/>
+      <manual name="m" path="https://manual.path" language="de"/>
+    </files>
+
+    <registers>
+      <reg page="0" offset="0" access="readwrite" default="0x11">
+        <name lang="en">Zone</name>
+      </reg>
+      <reg page="0" offset="0b10" width="0x04">
+        <name>Old form</name>
+        <access>r</access>
+        <description lang="en">Child element access</description>
+      </reg>
+      <reg name="Read only" page="0" offset="3" access="read only"/>
+      <reg name="Bits" page="0" offset="4">
+        <bit pos="3" width="2" max="7" min="1" access="r" name="Hi"/>
+        <bit pos="0" default="false">
+          <name>Lo</name>
+        </bit>
+      </reg>
+    </registers>
+
+    <abstractions>
+      <abstraction type="uint8_t" page="1" offset="2" acess="r">
+        <name>Old abstraction</name>
+      </abstraction>
+    </abstractions>
+
+    <dmatrix>
+      <level>1</level>
+      <start page="3" offset="0x20"/>
+      <rowcnt>8</rowcnt>
+      <action code="0x05">
+        <name lang="en">Count</name>
+        <param Name="Counter" offset="0" min="0" max="3"/>
+      </action>
+    </dmatrix>
+
+    <events>
+      <event Name="Alarm occurred" class="0x001" type="0x01" priority="high" direction="in">
+        <data name="" offset="1">
+          <name lang="en">Zone</name>
+        </data>
+      </event>
+      <event name="Low" class="10" type="6" priority="low"/>
+      <event name="Normal" class="10" type="6" priority="normal"/>
+    </events>
+  </module>
+</vscp>
