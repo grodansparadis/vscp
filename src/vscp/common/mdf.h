@@ -794,6 +794,23 @@ public:
   uint32_t getBackgroundColor(void) { return m_bgcolor; };
 
   /*!
+    Get the alternating ("pyjamas") colors used for the registers a
+    DMATRIX1/BLOCK register is expanded to. Zero if not set.
+  */
+  uint32_t getForegroundColorEven(void) { return m_fgeven; };
+  uint32_t getForegroundColorOdd(void) { return m_fgodd; };
+  uint32_t getBackgroundColorEven(void) { return m_bgeven; };
+  uint32_t getBackgroundColorOdd(void) { return m_bgodd; };
+
+  /*!
+    Get fgcolor/bgcolor as given in the MDF (getForegroundColor() and
+    getBackgroundColor() return the display colors, which for an expanded
+    DMATRIX1/BLOCK register with pyjamas colors are the even/odd colors).
+  */
+  uint32_t getForegroundColorMdf(void) { return m_fgcolorMdf; };
+  uint32_t getBackgroundColorMdf(void) { return m_bgcolorMdf; };
+
+  /*!
     Get description map
     @return Pointer to description map
   */
@@ -845,6 +862,14 @@ private:
   uint32_t m_fgodd;  // Foreground for odd row
   uint32_t m_bgeven; // Background for even row
   uint32_t m_bgodd;  // Background for odd row
+
+  /*
+    fgcolor/bgcolor as given in the MDF. When a DMATRIX1/BLOCK register is
+    expanded with pyjamas colors, m_fgcolor/m_bgcolor are replaced by the
+    even/odd colors; these keep the original values so they can be saved.
+  */
+  uint32_t m_fgcolorMdf;
+  uint32_t m_bgcolorMdf;
 };
 
 // ----------------------------------------------------------------------------
@@ -1007,6 +1032,12 @@ public:
     @return Page for remote variable.
   */
   uint16_t getBitPos(void) { return m_bitpos & 0x07; };
+
+  /*!
+    Get the max size for a string remote variable (0 if not set)
+    @return String size.
+  */
+  uint16_t getStringSize(void) { return m_size; };
 
   /*!
     Set bit position for boolean
@@ -2595,16 +2626,17 @@ public:
   void setTargetCode(uint16_t code) { m_targetCode = code; };
 
   /*!
-    Get hex file string format for firmware (INTELHEX is default)
+    Get hex file string format for firmware (INTELHEX is default), as
+    written in the MDF. Compare case insensitively.
     @return Hex string format
   */
-  std::string getFormat(void) { return vscp_makeUpper_copy(m_strFormat); };
+  std::string getFormat(void) { return m_strFormat; };
 
   /*!
     Set format
     @param format Format to set
   */
-  void setFormat(const std::string &format) { m_strFormat = vscp_makeUpper_copy(format); };
+  void setFormat(const std::string &format) { m_strFormat = format; };
 
   /*
     Get date for object

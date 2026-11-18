@@ -73,6 +73,40 @@ using json = nlohmann::json;
 
 using namespace kainjow::mustache;
 
+// Register/remote variable default values are stored as written in the MDF.
+// Only the "not set" keyword is normalized (any case) to "UNDEF", which is
+// what CMDF_Register::getDefault() and applications compare against.
+static std::string
+mdf_normalizeDefault(std::string str)
+{
+  vscp_trim(str);
+  if (0 == strcasecmp(str.c_str(), "undef")) {
+    return "UNDEF";
+  }
+  return str;
+}
+
+// The module level in an MDF file is 1 (Level I) or 2 (Level II); internally
+// it is VSCP_LEVEL1 (0) / VSCP_LEVEL2 (1). Anything else is taken as Level I.
+static int
+mdf_levelFromFile(int64_t level)
+{
+  if (2 == level) {
+    return VSCP_LEVEL2;
+  }
+  if (1 != level) {
+    spdlog::warn("MDF: Module level {} is not 1 or 2. Level I is used.", level);
+  }
+  return VSCP_LEVEL1;
+}
+
+// The level written to an MDF file
+static int
+mdf_levelToFile(int level)
+{
+  return (VSCP_LEVEL2 == level) ? 2 : 1;
+}
+
 // Bugger for XML parser
 #define XML_BUFF_SIZE 512000
 
@@ -333,10 +367,11 @@ std::string
 CMDF_RemoteVariable::getAccessStr(void)
 {
   std::string str = "";
-  if (getAccess() & 0x02) {
+  // MDF_REG_ACCESS_READ_ONLY = 1, MDF_REG_ACCESS_WRITE_ONLY = 2, READ_WRITE = 3
+  if (MDF_REG_ACCESS_READ_ONLY & getAccess()) {
     str += "r";
   }
-  if (getAccess() & 0x01) {
+  if (MDF_REG_ACCESS_WRITE_ONLY & getAccess()) {
     str += "w";
   }
   return str;
@@ -464,10 +499,11 @@ std::string
 CMDF_Bit::getAccessStr(void)
 {
   std::string str = "";
-  if (2 & getAccess()) {
+  // MDF_REG_ACCESS_READ_ONLY = 1, MDF_REG_ACCESS_WRITE_ONLY = 2, READ_WRITE = 3
+  if (MDF_REG_ACCESS_READ_ONLY & getAccess()) {
     str += "r";
   }
-  if (1 & getAccess()) {
+  if (MDF_REG_ACCESS_WRITE_ONLY & getAccess()) {
     str += "w";
   }
   return str;
@@ -501,6 +537,9 @@ CMDF_Register::CMDF_Register()
   m_fgodd  = 0x000000;
   m_bgeven = 0x000000;
   m_bgodd  = 0x000000;
+
+  m_fgcolorMdf = m_fgcolor;
+  m_bgcolorMdf = m_bgcolor;
 }
 
 CMDF_Register::~CMDF_Register()
@@ -559,6 +598,9 @@ CMDF_Register::clearStorage(void)
   m_fgodd  = 0x000000;
   m_bgeven = 0x000000;
   m_bgodd  = 0x000000;
+
+  m_fgcolorMdf = m_fgcolor;
+  m_bgcolorMdf = m_bgcolor;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -568,10 +610,11 @@ CMDF_Register::clearStorage(void)
 bool
 CMDF_Register::getDefault(uint8_t &default_value)
 {
-  if (m_strDefault.compare("UNDEF") == 0) {
+  if ((0 == strcasecmp(m_strDefault.c_str(), "undef")) || m_strDefault.empty()) {
     return false;
   }
-  default_value = (uint8_t) strtol(m_strDefault.c_str(), nullptr, 0);
+  // vscp_readStringValue handles decimal, 0x, 0o and 0b (strtol does not do 0b)
+  default_value = (uint8_t) vscp_readStringValue(m_strDefault);
   return true;
 };
 
@@ -613,6 +656,9 @@ CMDF_Register::operator=(const CMDF_Register &other)
   m_fgodd  = other.m_fgodd;
   m_bgeven = other.m_bgeven;
   m_bgodd  = other.m_bgodd;
+
+  m_fgcolorMdf = other.m_fgcolorMdf;
+  m_bgcolorMdf = other.m_bgcolorMdf;
 
   // Clear up bit list
   std::deque<CMDF_Bit *>::iterator iterBit;
@@ -671,10 +717,11 @@ std::string
 CMDF_Register::getAccessStr(void)
 {
   std::string str = "";
-  if (2 & getAccess()) {
+  // MDF_REG_ACCESS_READ_ONLY = 1, MDF_REG_ACCESS_WRITE_ONLY = 2, READ_WRITE = 3
+  if (MDF_REG_ACCESS_READ_ONLY & getAccess()) {
     str += "r";
   }
-  if (1 & getAccess()) {
+  if (MDF_REG_ACCESS_WRITE_ONLY & getAccess()) {
     str += "w";
   }
   return str;
@@ -2046,1509 +2093,718 @@ CMDF::writeMap_json(std::ofstream &fout,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  Helpers for save_xml / save_json
+//
+// The writers must keep everything the parsers read, so that loading a saved
+// MDF gives the same CMDF content as the one that was saved. Everything is
+// written in the forms parseMDF_XML()/parseMDF_JSON() read, in model order.
+//
+
+// Keyword for a remote variable type, as read by both parsers
+static std::string
+mdf_remoteVarTypeKeyword(vscp_remote_variable_type type)
+{
+  switch (type) {
+    case remote_variable_type_string:
+      return "string";
+    case remote_variable_type_boolean:
+      return "bool";
+    case remote_variable_type_int8_t:
+      return "int8_t";
+    case remote_variable_type_uint8_t:
+      return "uint8_t";
+    case remote_variable_type_int16_t:
+      return "int16_t";
+    case remote_variable_type_uint16_t:
+      return "uint16_t";
+    case remote_variable_type_int32_t:
+      return "int32_t";
+    case remote_variable_type_uint32_t:
+      return "uint32_t";
+    case remote_variable_type_int64_t:
+      return "int64_t";
+    case remote_variable_type_uint64_t:
+      return "uint64_t";
+    case remote_variable_type_float:
+      return "float";
+    case remote_variable_type_double:
+      return "double";
+    case remote_variable_type_date:
+      return "date";
+    case remote_variable_type_time:
+      return "time";
+    default:
+      return "unknown";
+  }
+}
+
+static std::string
+mdf_hexColor(uint32_t color)
+{
+  char buf[16];
+  snprintf(buf, sizeof(buf), "0x%06x", (unsigned) color);
+  return buf;
+}
+
+/*
+  A register to save. The parsers expand a DMATRIX1/BLOCK register with a
+  span into one register per byte ("<name> - DM 0", "<name> - DM 1", ...).
+  When saving, such a group is written as the original single register.
+*/
+struct mdf_saveRegister {
+  CMDF_Register *preg;
+  std::string name; // Name to write
+  bool bGroup;      // true for a collapsed DMATRIX1/BLOCK group
+};
+
+static std::deque<mdf_saveRegister>
+mdf_registersToSave(std::deque<CMDF_Register *> *pregs)
+{
+  std::deque<mdf_saveRegister> out;
+  std::set<CMDF_Register *> skip;
+
+  for (size_t i = 0; i < pregs->size(); i++) {
+    CMDF_Register *preg = (*pregs)[i];
+    if (skip.count(preg)) {
+      continue;
+    }
+
+    const char *label = nullptr;
+    if (MDF_REG_TYPE_DMATRIX1 == preg->getType()) {
+      label = " - DM ";
+    }
+    else if (MDF_REG_TYPE_BLOCK == preg->getType()) {
+      label = " - BLOCK ";
+    }
+
+    std::string first = std::string(label ? label : "") + "0";
+    std::string name  = preg->getName();
+    if ((nullptr != label) && (name.size() >= first.size()) &&
+        (0 == name.compare(name.size() - first.size(), first.size(), first))) {
+
+      std::string base = name.substr(0, name.size() - first.size());
+
+      // Find the expanded copies
+      for (uint32_t pos = 1; pos < preg->getSpan(); pos++) {
+        std::string copyName = base + label + std::to_string(pos);
+        for (size_t j = i + 1; j < pregs->size(); j++) {
+          CMDF_Register *pcopy = (*pregs)[j];
+          if (!skip.count(pcopy) && (pcopy->getType() == preg->getType()) && (pcopy->getPage() == preg->getPage()) &&
+              (pcopy->getOffset() == preg->getOffset() + pos) && (pcopy->getName() == copyName)) {
+            skip.insert(pcopy);
+            break;
+          }
+        }
+      }
+      out.push_back({ preg, base, true });
+    }
+    else {
+      out.push_back({ preg, name, false });
+    }
+  }
+
+  return out;
+}
+
+// ----------------------------------------------------------------------------
+//                                  XML
+// ----------------------------------------------------------------------------
+
+static void
+mdf_xmlTexts(std::ofstream &fout, CMDF_Object *pobj)
+{
+  std::map<std::string, std::string> *pmap;
+  if (nullptr != (pmap = pobj->getMapDescription())) {
+    for (auto &kv : *pmap) {
+      fout << "<description lang=\"" << mdfXml(kv.first) << "\">" << mdfXml(kv.second) << "</description>"
+           << std::endl;
+    }
+  }
+  if (nullptr != (pmap = pobj->getMapInfoUrl())) {
+    for (auto &kv : *pmap) {
+      fout << "<infourl lang=\"" << mdfXml(kv.first) << "\">" << mdfXml(kv.second) << "</infourl>" << std::endl;
+    }
+  }
+}
+
+static void
+mdf_xmlValues(std::ofstream &fout, std::deque<CMDF_Value *> *pvalues)
+{
+  if ((nullptr == pvalues) || pvalues->empty()) {
+    return;
+  }
+  fout << "<valuelist>" << std::endl;
+  for (CMDF_Value *pvalue : *pvalues) {
+    fout << "<item name=\"" << mdfXml(pvalue->getName()) << "\" value=\"" << mdfXml(pvalue->getValue()) << "\">"
+         << std::endl;
+    mdf_xmlTexts(fout, pvalue);
+    fout << "</item>" << std::endl;
+  }
+  fout << "</valuelist>" << std::endl;
+}
+
+static void
+mdf_xmlBits(std::ofstream &fout, std::deque<CMDF_Bit *> *pbits)
+{
+  if (nullptr == pbits) {
+    return;
+  }
+  for (CMDF_Bit *pbit : *pbits) {
+    fout << "<bit name=\"" << mdfXml(pbit->getName()) << "\" ";
+    fout << "pos=\"" << (int) pbit->getPos() << "\" ";
+    fout << "width=\"" << (int) pbit->getWidth() << "\" ";
+    fout << "default=\"" << (int) pbit->getDefault() << "\" ";
+    fout << "min=\"" << (int) pbit->getMin() << "\" ";
+    fout << "max=\"" << (int) pbit->getMax() << "\" ";
+    fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, pbit);
+    mdf_xmlValues(fout, pbit->getListValues());
+    fout << "</bit>" << std::endl;
+  }
+}
+
+static void
+mdf_xmlItems(std::ofstream &fout, std::deque<CMDF_Item *> *pitems, const char *tag, const char *valueTag)
+{
+  for (CMDF_Item *pitem : *pitems) {
+    fout << "<" << tag << ">" << std::endl;
+    fout << "<" << valueTag << ">" << mdfXml(pitem->getValue()) << "</" << valueTag << ">" << std::endl;
+    mdf_xmlTexts(fout, pitem);
+    fout << "</" << tag << ">" << std::endl;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  save_xml
 //
 
 int
 CMDF::save_xml(const std::string &path)
 {
-  // Creation of ofstream class object
   std::ofstream fout;
-  size_t cnt;
-  std::string str;
 
-  // open file
   fout.open(path);
   if (!fout) {
     return VSCP_ERROR_WRITE;
   }
 
-  fout << "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" << std::endl;
+  fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
   fout << "<!-- MDF file created with VSCP Works + -->" << std::endl;
   fout << "<vscp>" << std::endl;
   fout << "<module>" << std::endl;
 
-  fout << "<name>";
-  fout << mdfXml(getModuleName());
-  fout << "</name>" << std::endl;
+  fout << "<name>" << mdfXml(getModuleName()) << "</name>" << std::endl;
+  fout << "<copyright>" << mdfXml(getModuleCopyright()) << "</copyright>" << std::endl;
+  fout << "<level>" << mdf_levelToFile(getModuleLevel()) << "</level>" << std::endl;
+  fout << "<model>" << mdfXml(getModuleModel()) << "</model>" << std::endl;
+  fout << "<version>" << mdfXml(getModuleVersion()) << "</version>" << std::endl;
+  fout << "<changed>" << mdfXml(getModuleChangeDate()) << "</changed>" << std::endl;
+  fout << "<buffersize>" << getModuleBufferSize() << "</buffersize>" << std::endl;
+  mdf_xmlTexts(fout, this);
 
-  fout << "<copyright>";
-  fout << mdfXml(getModuleCopyright());
-  fout << "</copyright>" << std::endl;
+  // Manufacturer
+  CMDF_Manufacturer *pman = getManufacturer();
+  CMDF_Address *paddr     = pman->getAddressObj();
+  fout << "<manufacturer>" << std::endl;
+  fout << "<name>" << mdfXml(pman->getName()) << "</name>" << std::endl;
+  fout << "<address>" << std::endl;
+  fout << "<street>" << mdfXml(paddr->getStreet()) << "</street>" << std::endl;
+  fout << "<town>" << mdfXml(paddr->getTown()) << "</town>" << std::endl;
+  fout << "<city>" << mdfXml(paddr->getCity()) << "</city>" << std::endl;
+  fout << "<postcode>" << mdfXml(paddr->getPostCode()) << "</postcode>" << std::endl;
+  fout << "<state>" << mdfXml(paddr->getState()) << "</state>" << std::endl;
+  fout << "<region>" << mdfXml(paddr->getRegion()) << "</region>" << std::endl;
+  fout << "<country>" << mdfXml(paddr->getCountry()) << "</country>" << std::endl;
+  fout << "</address>" << std::endl;
+  mdf_xmlItems(fout, pman->getPhoneContactList(), "telephone", "number");
+  mdf_xmlItems(fout, pman->getFaxContactList(), "fax", "number");
+  mdf_xmlItems(fout, pman->getEmailContactList(), "email", "address");
+  mdf_xmlItems(fout, pman->getWebContactList(), "web", "address");
+  mdf_xmlItems(fout, pman->getSocialContactList(), "social", "address");
+  fout << "</manufacturer>" << std::endl;
 
-  fout << "<level>";
-  fout << mdfXml(getModuleLevel());
-  fout << "</level>" << std::endl;
-
-  fout << "<model>";
-  fout << mdfXml(getModuleModel());
-  fout << "</model>" << std::endl;
-
-  fout << "<version>";
-  fout << mdfXml(getModuleVersion());
-  fout << "</version>" << std::endl;
-
-  fout << "<changed>";
-  fout << mdfXml(getModuleChangeDate());
-  fout << "</changed>" << std::endl;
-
-  fout << "<buffersize>";
-  fout << mdfXml(getModuleBufferSize());
-  fout << "</buffersize>" << std::endl;
-
-  writeMap_xml(fout, getMapDescription(), "description");
-  writeMap_xml(fout, getMapInfoUrl(), "infourl");
-
-  CMDF_Manufacturer *pManufacturer = getManufacturer();
-  if (nullptr != pManufacturer) {
-    fout << "<manufacturer>" << std::endl;
-    fout << "<name>" << mdfXml(pManufacturer->getName()) << "</name>" << std::endl;
-
-    CMDF_Address *paddr = pManufacturer->getAddressObj();
-    if (nullptr != paddr) {
-      fout << "<address>" << std::endl;
-      fout << "<street>" << mdfXml(paddr->getStreet()) << "</street>" << std::endl;
-      fout << "<city>" << mdfXml(paddr->getCity()) << "</city>" << std::endl;
-      fout << "<town>" << mdfXml(paddr->getTown()) << "</town>" << std::endl;
-      fout << "<region>" << mdfXml(paddr->getRegion()) << "</region>" << std::endl;
-      fout << "<postcode>" << mdfXml(paddr->getPostCode()) << "</postcode>" << std::endl;
-      fout << "<state>" << mdfXml(paddr->getState()) << "</state>" << std::endl;
-      fout << "<country>" << mdfXml(paddr->getCountry()) << "</country>" << std::endl;
-      fout << "</address>" << std::endl;
-    }
-
-    if ((cnt = pManufacturer->getPhoneObjCount())) {
-      for (size_t i = 0; i < cnt; i++) {
-        CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
-        if (nullptr != pitem) {
-          fout << "<telephone>" << std::endl;
-          fout << "<number>" << mdfXml(pitem->getValue()) << "</number>" << std::endl;
-          writeMap_xml(fout, pitem->getMapDescription(), "description");
-          writeMap_xml(fout, pitem->getMapInfoUrl(), "infourl");
-          fout << "</telephone>" << std::endl;
-        }
-      }
-    }
-
-    if ((cnt = pManufacturer->getFaxObjCount())) {
-      for (size_t i = 0; i < cnt; i++) {
-        CMDF_Item *pitem = pManufacturer->getFaxObj(i);
-        if (nullptr != pitem) {
-          fout << "<fax>" << std::endl;
-          fout << "<number>" << mdfXml(pitem->getValue()) << "</number>" << std::endl;
-          writeMap_xml(fout, pitem->getMapDescription(), "description");
-          writeMap_xml(fout, pitem->getMapInfoUrl(), "infourl");
-          fout << "</fax>" << std::endl;
-        }
-      }
-    }
-
-    if ((cnt = pManufacturer->getEmailObjCount())) {
-      for (size_t i = 0; i < cnt; i++) {
-        CMDF_Item *pitem = pManufacturer->getEmailObj(i);
-        if (nullptr != pitem) {
-          fout << "<email>" << std::endl;
-          fout << "<address>" << mdfXml(pitem->getValue()) << "</address>" << std::endl;
-          writeMap_xml(fout, pitem->getMapDescription(), "description");
-          writeMap_xml(fout, pitem->getMapInfoUrl(), "infourl");
-          fout << "</email>" << std::endl;
-        }
-      }
-    }
-
-    if ((cnt = pManufacturer->getWebObjCount())) {
-      for (size_t i = 0; i < cnt; i++) {
-        CMDF_Item *pitem = pManufacturer->getWebObj(i);
-        if (nullptr != pitem) {
-          fout << "<web>" << std::endl;
-          fout << "<address>" << mdfXml(pitem->getValue()) << "</address>" << std::endl;
-          writeMap_xml(fout, pitem->getMapDescription(), "description");
-          writeMap_xml(fout, pitem->getMapInfoUrl(), "infourl");
-          fout << "</web>" << std::endl;
-        }
-      }
-    }
-
-    if ((cnt = pManufacturer->getSocialObjCount())) {
-      for (size_t i = 0; i < cnt; i++) {
-        CMDF_Item *pitem = pManufacturer->getSocialObj(i);
-        if (nullptr != pitem) {
-          fout << "<social>" << std::endl;
-          fout << "<address>" << mdfXml(pitem->getValue()) << "</address>" << std::endl;
-          writeMap_xml(fout, pitem->getMapDescription(), "description");
-          writeMap_xml(fout, pitem->getMapInfoUrl(), "infourl");
-          fout << "</social>" << std::endl;
-        }
-      }
-    }
-
-    fout << "</manufacturer>" << std::endl;
-  }
-
+  // Boot loader
   CMDF_BootLoaderInfo *pboot = getBootLoaderObj();
-  if (nullptr != pboot) {
-    fout << "<boot>" << std::endl;
-    fout << "<algorithm>" << mdfXml((int) pboot->getAlgorithm()) << "</algorithm>" << std::endl;
-    fout << "<blocksize>" << mdfXml(pboot->getBlockSize()) << "</blocksize>" << std::endl;
-    fout << "<blockcount>" << mdfXml(pboot->getBlockCount()) << "</blockcount>" << std::endl;
-    fout << "</boot>" << std::endl;
-  }
+  fout << "<boot>" << std::endl;
+  fout << "<algorithm>" << (int) pboot->getAlgorithm() << "</algorithm>" << std::endl;
+  fout << "<blocksize>" << pboot->getBlockSize() << "</blocksize>" << std::endl;
+  fout << "<blockcount>" << pboot->getBlockCount() << "</blockcount>" << std::endl;
+  fout << "</boot>" << std::endl;
 
+  // Files
   fout << "<files>" << std::endl;
-
-  std::deque<CMDF_Picture *> *pPictureQueue = getPictureObjList();
-  if ((nullptr != pPictureQueue) && (pPictureQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pPictureQueue->begin(); it != pPictureQueue->end(); it++) {
-      CMDF_Picture *pPicture = *it;
-      fout << "<picture name=\"" << mdfXml(pPicture->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pPicture->getUrl()) << "\" format=\"" << mdfXml(pPicture->getFormat());
-      fout << "\" date=\"" << mdfXml(pPicture->getDate()) << "\" >" << std::endl;
-      writeMap_xml(fout, pPicture->getMapDescription(), "description");
-      writeMap_xml(fout, pPicture->getMapInfoUrl(), "infourl");
-      fout << "</picture>" << std::endl;
-    }
+  for (CMDF_Picture *p : *getPictureObjList()) {
+    fout << "<picture name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</picture>" << std::endl;
   }
-
-  std::deque<CMDF_Video *> *pVideoQueue = getVideoObjList();
-  if ((nullptr != pVideoQueue) && (pVideoQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pVideoQueue->begin(); it != pVideoQueue->end(); it++) {
-      CMDF_Video *pVideo = *it;
-      fout << "<video name=\"" << mdfXml(pVideo->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pVideo->getUrl()) << "\" format=\"" << mdfXml(pVideo->getFormat());
-      fout << "\" date=\"" << mdfXml(pVideo->getDate()) << "\" >" << std::endl;
-      writeMap_xml(fout, pVideo->getMapDescription(), "description");
-      writeMap_xml(fout, pVideo->getMapInfoUrl(), "infourl");
-      fout << "</video>" << std::endl;
-    }
+  for (CMDF_Video *p : *getVideoObjList()) {
+    fout << "<video name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</video>" << std::endl;
   }
-
-  std::deque<CMDF_Manual *> *pManualQueue = getManualObjList();
-  if ((nullptr != pManualQueue) && (pManualQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pManualQueue->begin(); it != pManualQueue->end(); it++) {
-      CMDF_Manual *pManual = *it;
-      fout << "<manual name=\"" << mdfXml(pManual->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pManual->getUrl()) << "\" format=\"" << mdfXml(pManual->getFormat());
-      fout << "\" language=\"" << mdfXml(pManual->getLanguage()) << "\" date=\"";
-      fout << mdfXml(pManual->getDate()) << "\" >" << std::endl;
-      writeMap_xml(fout, pManual->getMapDescription(), "description");
-      writeMap_xml(fout, pManual->getMapInfoUrl(), "infourl");
-      fout << "</manual>" << std::endl;
-    }
+  for (CMDF_Manual *p : *getManualObjList()) {
+    fout << "<manual name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
+         << mdfXml(p->getFormat()) << "\" lang=\"" << mdfXml(p->getLanguage()) << "\" date=\""
+         << mdfXml(p->getDate()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</manual>" << std::endl;
   }
-
-  std::deque<CMDF_Firmware *> *pFirmwareQueue = getFirmwareObjList();
-  if ((nullptr != pFirmwareQueue) && (pFirmwareQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pFirmwareQueue->begin(); it != pFirmwareQueue->end(); it++) {
-      CMDF_Firmware *pFirmware = *it;
-      fout << "<firmware name=\"" << mdfXml(pFirmware->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pFirmware->getUrl()) << "\" ";
-      fout << "format=\"" << mdfXml(pFirmware->getFormat()) << "\" ";
-      fout << "date=\"" << mdfXml(pFirmware->getDate()) << "\" ";
-      fout << "target=\"" << mdfXml(pFirmware->getTarget()) << "\" ";
-      fout << "targetcode=\"" << mdfXml(pFirmware->getTargetCode()) << "\" ";
-      fout << "version_major=\"" << mdfXml(pFirmware->getVersionMajor()) << "\" ";
-      fout << "version_minor=\"" << mdfXml(pFirmware->getVersionMinor()) << "\" ";
-      fout << "version_subminor=\"" << mdfXml(pFirmware->getVersionPatch()) << "\" ";
-      fout << "size=\"" << mdfXml(pFirmware->getSize()) << "\" ";
-      fout << "md5=\"" << mdfXml(pFirmware->getMd5()) << "\" ";
-      fout << ">" << std::endl;
-      writeMap_xml(fout, pFirmware->getMapDescription(), "description");
-      writeMap_xml(fout, pFirmware->getMapInfoUrl(), "infourl");
-      fout << "</firmware>" << std::endl;
-    }
+  for (CMDF_Firmware *p : *getFirmwareObjList()) {
+    fout << "<firmware name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\" target=\""
+         << mdfXml(p->getTarget()) << "\" targetcode=\"" << p->getTargetCode() << "\" version_major=\""
+         << p->getVersionMajor() << "\" version_minor=\"" << p->getVersionMinor() << "\" version_patch=\""
+         << p->getVersionPatch() << "\" size=\"" << p->getSize() << "\" md5sum=\"" << mdfXml(p->getMd5())
+         << "\">" << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</firmware>" << std::endl;
   }
-
-  std::deque<CMDF_Driver *> *pDriverQueue = getDriverObjList();
-  if ((nullptr != pDriverQueue) && (pDriverQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pDriverQueue->begin(); it != pDriverQueue->end(); it++) {
-      CMDF_Driver *pDriver = *it;
-      fout << "<driver name=\"" << mdfXml(pDriver->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pDriver->getUrl()) << "\" ";
-      fout << "type=\"" << mdfXml(pDriver->getType()) << "\" ";
-      fout << "architecture=\"" << mdfXml(pDriver->getArchitecture()) << "\" ";
-      fout << "format=\"" << mdfXml(pDriver->getFormat()) << "\" ";
-      fout << "date=\"" << mdfXml(pDriver->getDate()) << "\" ";
-      fout << "os=\"" << mdfXml(pDriver->getOS()) << "\" ";
-      fout << "osver=\"" << mdfXml(pDriver->getOSVer()) << "\" ";
-      fout << "version_major=\"" << mdfXml(pDriver->getVersionMajor()) << "\" ";
-      fout << "version_minor=\"" << mdfXml(pDriver->getVersionMinor()) << "\" ";
-      fout << "version_subminor=\"" << mdfXml(pDriver->getVersionPatch()) << "\" ";
-      fout << "md5=\"" << mdfXml(pDriver->getMd5()) << "\" ";
-      fout << ">" << std::endl;
-      writeMap_xml(fout, pDriver->getMapDescription(), "description");
-      writeMap_xml(fout, pDriver->getMapInfoUrl(), "infourl");
-      fout << "</driver>" << std::endl;
-    }
+  for (CMDF_Driver *p : *getDriverObjList()) {
+    fout << "<driver name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" type=\""
+         << mdfXml(p->getType()) << "\" architecture=\"" << mdfXml(p->getArchitecture()) << "\" os=\""
+         << mdfXml(p->getOS()) << "\" osver=\"" << mdfXml(p->getOSVer()) << "\" date=\"" << mdfXml(p->getDate())
+         << "\" version_major=\"" << p->getVersionMajor() << "\" version_minor=\"" << p->getVersionMinor()
+         << "\" version_patch=\"" << p->getVersionPatch() << "\" md5sum=\"" << mdfXml(p->getMd5()) << "\">"
+         << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</driver>" << std::endl;
   }
-
-  std::deque<CMDF_Setup *> *pSetupQueue = getSetupObjList();
-  if ((nullptr != pSetupQueue) && (pSetupQueue->size())) {
-    //size_t pos = 0;
-    for (auto it = pSetupQueue->begin(); it != pSetupQueue->end(); it++) {
-      CMDF_Setup *pSetup = *it;
-      fout << "<setup name=\"" << mdfXml(pSetup->getName()) << "\" ";
-      fout << "path=\"" << mdfXml(pSetup->getUrl()) << "\" ";
-      fout << "format=\"" << mdfXml(pSetup->getFormat()) << "\" ";
-      fout << "date=\"" << mdfXml(pSetup->getDate()) << "\" ";
-      fout << "version=\"" << mdfXml(pSetup->getVersion()) << "\" ";
-      fout << ">" << std::endl;
-      writeMap_xml(fout, pSetup->getMapDescription(), "description");
-      writeMap_xml(fout, pSetup->getMapInfoUrl(), "infourl");
-      fout << "</setup>" << std::endl;
-    }
+  for (CMDF_Setup *p : *getSetupObjList()) {
+    fout << "<setup name=\"" << mdfXml(p->getName()) << "\" url=\"" << mdfXml(p->getUrl()) << "\" format=\""
+         << mdfXml(p->getFormat()) << "\" date=\"" << mdfXml(p->getDate()) << "\" version=\""
+         << mdfXml(p->getVersion()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, p);
+    fout << "</setup>" << std::endl;
   }
-
   fout << "</files>" << std::endl;
 
-  // --------------------------------------------------------------------------
-
+  // Registers (model order, expanded DMATRIX1/BLOCK registers collapsed)
   fout << "<registers>" << std::endl;
-
-  // get pages
-  std::set<uint16_t> pages;
-  std::deque<CMDF_Register *> *pregs = getRegisterObjList();
-  //uint32_t nPageCnt                  = getPages(pages);
-
-  // Go thru pages
-  size_t nPages = getPages(pages);
-  for (auto itr : pages) {
-
-    // Add registers for page
-    std::set<uint32_t> regset;
-    std::map<uint32_t, CMDF_Register *> regmap;
-
-    // Create set with sorted register offsets and a map
-    // to help find corresponding register pointer
-    for (auto it = pregs->cbegin(); it != pregs->cend(); ++it) {
-      if (itr == (*it)->getPage()) {
-        regset.insert((*it)->getOffset());
-        regmap[(*it)->getOffset()] = *it;
-      }
-    }
-
-    for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
-      CMDF_Register *preg = regmap[*it];
-
-      fout << "<reg ";
-      fout << "name=\"" << mdfXml(preg->getName()) << "\" ";
-      fout << "page=\"" << mdfXml(preg->getPage()) << "\" ";
-      fout << "offset=\"" << mdfXml(preg->getOffset()) << "\" ";
-      fout << "span=\"" << mdfXml(preg->getSpan()) << "\" ";
-      fout << "width=\"" << mdfXml(preg->getWidth()) << "\" ";
-      fout << "access=\"" << mdfXml(preg->getAccessStr()) << "\" ";
-      fout << "type=\"" << mdfXml(preg->getType()) << "\" ";
-      fout << "default=\"" << mdfXml(preg->getDefault()) << "\" ";
-      fout << "min=\"" << mdfXml((int) preg->getMin()) << "\" ";
-      fout << "max=\"" << mdfXml((int) preg->getMax()) << "\" ";
-      fout << mdfXml(std::hex) << "fgcolor=\"" << mdfXml(preg->getForegroundColor()) << "\" " << mdfXml(std::dec);
-      fout << mdfXml(std::hex) << "bgcolor=\"" << mdfXml(preg->getBackgroundColor()) << "\" " << mdfXml(std::dec);
-      fout << ">" << std::endl;
-
-      // bits
-      std::deque<CMDF_Bit *> *pbits = preg->getListBits();
-      if (pbits->size()) {
-        for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-          CMDF_Bit *pbit = *it;
-          fout << "<bit ";
-          fout << "name=\"" << mdfXml(pbit->getName()) << "\" ";
-          fout << "pos=\"" << mdfXml((int) pbit->getPos()) << "\" ";
-          fout << "width=\"" << mdfXml((int) pbit->getWidth()) << "\" ";
-          fout << "default=\"" << mdfXml((int) pbit->getDefault()) << "\" ";
-          fout << "min=\"" << mdfXml((int) pbit->getMin()) << "\" ";
-          fout << "max=\"" << mdfXml((int) pbit->getMax()) << "\" ";
-          fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\" > " << std::endl;
-
-          writeMap_xml(fout, pbit->getMapDescription(), "description");
-          writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
-
-          std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
-          if (pvalues->size()) {
-            fout << "<valuelist> " << std::endl;
-            for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-              CMDF_Value *pvalue = *it;
-              fout << "<item ";
-              fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-              fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-              writeMap_xml(fout, pvalue->getMapDescription(), "description");
-              writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-              fout << "</item> " << std::endl;
-            }
-            fout << "</valuelist> " << std::endl;
-          }
-
-          fout << "</bit> " << std::endl; // Bits
-        }                                // for bits
-      }                                  // pbits size
-
-      std::deque<CMDF_Value *> *pvalues = preg->getListValues();
-      if (pvalues->size()) {
-        fout << "<valuelist> " << std::endl;
-        for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-          CMDF_Value *pvalue = *it;
-          fout << "<item ";
-          fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-          fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-          writeMap_xml(fout, pvalue->getMapDescription(), "description");
-          writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-          fout << "</item> " << std::endl;
-        }
-        fout << "</valuelist> " << std::endl;
-      }
-
-      writeMap_xml(fout, preg->getMapDescription(), "description");
-      writeMap_xml(fout, preg->getMapInfoUrl(), "infourl");
-
-      fout << "</reg>" << std::endl;
-    }
+  for (auto &sr : mdf_registersToSave(getRegisterObjList())) {
+    CMDF_Register *preg = sr.preg;
+    fout << "<reg name=\"" << mdfXml(sr.name) << "\" ";
+    fout << "page=\"" << preg->getPage() << "\" ";
+    fout << "offset=\"" << preg->getOffset() << "\" ";
+    fout << "span=\"" << preg->getSpan() << "\" ";
+    fout << "width=\"" << preg->getWidth() << "\" ";
+    fout << "type=\"" << preg->getTypeStr() << "\" ";
+    fout << "access=\"" << mdfXml(preg->getAccessStr()) << "\" ";
+    fout << "default=\"" << mdfXml(preg->getDefault()) << "\" ";
+    fout << "min=\"" << (int) preg->getMin() << "\" ";
+    fout << "max=\"" << (int) preg->getMax() << "\" ";
+    fout << "fgcolor=\"" << mdf_hexColor(sr.bGroup ? preg->getForegroundColorMdf() : preg->getForegroundColor())
+         << "\" ";
+    fout << "bgcolor=\"" << mdf_hexColor(sr.bGroup ? preg->getBackgroundColorMdf() : preg->getBackgroundColor())
+         << "\" ";
+    fout << "evenfg=\"" << mdf_hexColor(preg->getForegroundColorEven()) << "\" ";
+    fout << "oddfg=\"" << mdf_hexColor(preg->getForegroundColorOdd()) << "\" ";
+    fout << "evenbg=\"" << mdf_hexColor(preg->getBackgroundColorEven()) << "\" ";
+    fout << "oddbg=\"" << mdf_hexColor(preg->getBackgroundColorOdd()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, preg);
+    mdf_xmlBits(fout, preg->getListBits());
+    mdf_xmlValues(fout, preg->getListValues());
+    fout << "</reg>" << std::endl;
   }
-
   fout << "</registers>" << std::endl;
 
-  // --------------------------------------------------------------------------
-
-  // --------------------------------------------------------------------------
-
+  // Remote variables
   fout << "<remotevars>" << std::endl;
-  std::deque<CMDF_RemoteVariable *> *premotevars = getRemoteVariableList();
-
-  for (auto it = premotevars->cbegin(); it != premotevars->cend(); ++it) {
-    CMDF_RemoteVariable *prvar = *it;
-
-    fout << "<remotevar ";
-    fout << "name=\"" << mdfXml(prvar->getName()) << "\" ";
-    fout << "type=\"" << mdfXml(prvar->getType()) << "\" ";
+  for (CMDF_RemoteVariable *prvar : *getRemoteVariableList()) {
+    fout << "<remotevar name=\"" << mdfXml(prvar->getName()) << "\" ";
+    fout << "type=\"" << mdf_remoteVarTypeKeyword(prvar->getType()) << "\" ";
     fout << "default=\"" << mdfXml(prvar->getDefault()) << "\" ";
-    fout << "page=\"" << mdfXml(prvar->getPage()) << "\" ";
-    fout << "offset=\"" << mdfXml(prvar->getOffset()) << "\" ";
+    fout << "page=\"" << prvar->getPage() << "\" ";
+    fout << "offset=\"" << prvar->getOffset() << "\" ";
+    fout << "bitpos=\"" << prvar->getBitPos() << "\" ";
+    fout << "size=\"" << prvar->getStringSize() << "\" ";
     fout << "access=\"" << mdfXml(prvar->getAccessStr()) << "\" ";
-    fout << "bitpos=\"" << mdfXml(prvar->getBitPos()) << "\" ";
-    fout << mdfXml(std::hex) << "fgcolor=\"" << mdfXml(prvar->getForegroundColor()) << "\" " << mdfXml(std::dec);
-    fout << mdfXml(std::hex) << "bgcolor=\"" << mdfXml(prvar->getBackgroundColor()) << "\" " << mdfXml(std::dec);
-    fout << ">" << std::endl;
-
-    // bits
-    std::deque<CMDF_Bit *> *pbits = prvar->getListBits();
-    if (pbits->size()) {
-      for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-        CMDF_Bit *pbit = *it;
-        fout << "<bit ";
-        fout << "name=\"" << mdfXml(pbit->getName()) << "\" ";
-        fout << "pos=\"" << mdfXml((int) pbit->getPos()) << "\" ";
-        fout << "width=\"" << mdfXml((int) pbit->getWidth()) << "\" ";
-        fout << "default=\"" << mdfXml((int) pbit->getDefault()) << "\" ";
-        fout << "min=\"" << mdfXml((int) pbit->getMin()) << "\" ";
-        fout << "max=\"" << mdfXml((int) pbit->getMax()) << "\" ";
-        fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\" >" << std::endl;
-
-        writeMap_xml(fout, pbit->getMapDescription(), "description");
-        writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
-
-        std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
-        if (pvalues->size()) {
-          fout << "<valuelist> " << std::endl;
-          for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-            CMDF_Value *pvalue = *it;
-            fout << "<item ";
-            fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-            fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-            writeMap_xml(fout, pvalue->getMapDescription(), "description");
-            writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-            fout << "</item> " << std::endl;
-          }
-          fout << "</valuelist> " << std::endl;
-        }
-
-        fout << "</bit>" << std::endl; // Bits
-      }                                // for bits
-    }                                  // pbits size
-
-    std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
-    if (pvalues->size()) {
-      fout << "<valuelist> " << std::endl;
-      for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-        CMDF_Value *pvalue = *it;
-        fout << "<item ";
-        fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-        fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-        writeMap_xml(fout, pvalue->getMapDescription(), "description");
-        writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-        fout << "</item> " << std::endl;
-      }
-      fout << "</valuelist> " << std::endl;
-    }
-
-    writeMap_xml(fout, prvar->getMapDescription(), "description");
-    writeMap_xml(fout, prvar->getMapInfoUrl(), "infourl");
-
+    fout << "fgcolor=\"" << mdf_hexColor(prvar->getForegroundColor()) << "\" ";
+    fout << "bgcolor=\"" << mdf_hexColor(prvar->getBackgroundColor()) << "\">" << std::endl;
+    mdf_xmlTexts(fout, prvar);
+    mdf_xmlBits(fout, prvar->getListBits());
+    mdf_xmlValues(fout, prvar->getListValues());
     fout << "</remotevar>" << std::endl;
   }
-
   fout << "</remotevars>" << std::endl;
 
-  // --------------------------------------------------------------------------
-
+  // Alarm bits
   fout << "<alarm>" << std::endl;
-
-  // bits
-  std::deque<CMDF_Bit *> *pbits = getAlarmList();
-  if (pbits->size()) {
-    for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-      CMDF_Bit *pbit = *it;
-      fout << "<bit ";
-      fout << "name=\"" << mdfXml(pbit->getName()) << "\" ";
-      fout << "pos=\"" << mdfXml((int) pbit->getPos()) << "\" ";
-      fout << "width=\"" << mdfXml((int) pbit->getWidth()) << "\" ";
-      fout << "default=\"" << mdfXml((int) pbit->getDefault()) << "\" ";
-      fout << "min=\"" << mdfXml((int) pbit->getMin()) << "\" ";
-      fout << "max=\"" << mdfXml((int) pbit->getMax()) << "\" ";
-      fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\" >" << std::endl;
-
-      writeMap_xml(fout, pbit->getMapDescription(), "description");
-      writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
-      fout << "</bit>" << std::endl; // Bits
-    }                                // for bits
-  }                                  // pbits size
-
+  mdf_xmlBits(fout, getAlarmList());
   fout << "</alarm>" << std::endl;
 
-  // --------------------------------------------------------------------------
-
-  CMDF_DecisionMatrix *pdm = getDM(); // Get pointer to decision matrix
-  if (nullptr != pdm) {
-
-    fout << "<dmatrix ";
-    fout << "level=\"" << mdfXml((int) pdm->getLevel()) << "\" ";
-    fout << "start-page=\"" << mdfXml(pdm->getStartPage()) << "\" ";
-    fout << "start-offset=\"" << mdfXml(pdm->getStartOffset()) << "\" ";
-    fout << "rowcnt=\"" << mdfXml(pdm->getRowCount()) << "\" ";
-    fout << "rowsize=\"" << mdfXml(pdm->getRowSize()) << "\" >" << std::endl;
-
-    std::deque<CMDF_Action *> *pactionlst = pdm->getActionList();
-    if (nullptr != pactionlst) {
-      for (auto it = pactionlst->cbegin(); it != pactionlst->cend(); ++it) {
-        CMDF_Action *paction = *it;
-        fout << "<action ";
-        fout << "name=\"" << mdfXml(paction->getName()) << "\" ";
-        fout << "code=\"" << mdfXml(paction->getCode()) << "\" >" << std::endl;
-        std::deque<CMDF_ActionParameter *> *pactionparamlst = paction->getListActionParameter();
-        if (nullptr != pactionparamlst) {
-          for (auto it = pactionparamlst->cbegin(); it != pactionparamlst->cend(); ++it) {
-            CMDF_ActionParameter *pactionparam = *it;
-            fout << "<param ";
-            fout << "name=\"" << mdfXml(pactionparam->getName()) << "\" ";
-            fout << "offset=\"" << mdfXml(pactionparam->getOffset()) << "\" ";
-            fout << "min=\"" << mdfXml((int) pactionparam->getMin()) << "\" ";
-            fout << "max=\"" << mdfXml((int) pactionparam->getMax()) << "\" >" << std::endl;
-
-            // bits
-            std::deque<CMDF_Bit *> *pbits = pactionparam->getListBits();
-            if (pbits->size()) {
-              for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-                CMDF_Bit *pbit = *it;
-                fout << "<bit ";
-                fout << "name=\"" << mdfXml(pbit->getName()) << "\" ";
-                fout << "pos=\"" << mdfXml((int) pbit->getPos()) << "\" ";
-                fout << "width=\"" << mdfXml((int) pbit->getWidth()) << "\" ";
-                fout << "default=\"" << mdfXml((int) pbit->getDefault()) << "\" ";
-                fout << "min=\"" << mdfXml((int) pbit->getMin()) << "\" ";
-                fout << "max=\"" << mdfXml((int) pbit->getMax()) << "\" ";
-                fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\" >" << std::endl;
-
-                writeMap_xml(fout, pbit->getMapDescription(), "description");
-                writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
-
-                std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
-                if (pvalues->size()) {
-                  fout << "<valuelist> " << std::endl;
-                  for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-                    CMDF_Value *pvalue = *it;
-                    fout << "<item ";
-                    fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-                    fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-                    writeMap_xml(fout, pvalue->getMapDescription(), "description");
-                    writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                    fout << "</item> " << std::endl;
-                  }
-                  fout << "</valuelist> " << std::endl;
-                }
-
-                fout << "</bit>" << std::endl; // Bits
-              }                                // for bits
-            }                                  // pbits size
-
-            std::deque<CMDF_Value *> *pvalues = pactionparam->getListValues();
-            if (pvalues->size()) {
-              fout << "<valuelist> " << std::endl;
-              for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-                CMDF_Value *pvalue = *it;
-                fout << "<item ";
-                fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-                fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-                writeMap_xml(fout, pvalue->getMapDescription(), "description");
-                writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                fout << "</item> " << std::endl;
-              }
-              fout << "</valuelist> " << std::endl;
-            }
-
-            writeMap_xml(fout, pactionparam->getMapDescription(), "description");
-            writeMap_xml(fout, pactionparam->getMapInfoUrl(), "infourl");
-
-            fout << "</param>" << std::endl;
-          }
-        }
-        fout << "</action>" << std::endl;
-      } // for pactionlst
-
-    } // pactionlst
-
-    fout << "</dmatrix>" << std::endl;
-  }
-
-  // --------------------------------------------------------------------------
-
-  std::deque<CMDF_Event *> *peventlst = getEventList(); // Get pointer to event list
-  if (nullptr != peventlst) {
-
-    fout << "<events>" << std::endl;
-    for (auto it = peventlst->cbegin(); it != peventlst->cend(); ++it) {
-      CMDF_Event *pevent = *it;
-      fout << "<event ";
-      fout << "name=\"" << mdfXml(pevent->getName()) << "\" ";
-      fout << "class=\"" << mdfXml(pevent->getClass()) << "\" ";
-      fout << "type=\"" << mdfXml(pevent->getType()) << "\" ";
-      fout << "priority=\"" << mdfXml((int) pevent->getPriority()) << "\" ";
-      fout << "dir=\"" << mdfXml(((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out")) << "\" >" << std::endl;
-
-      std::deque<CMDF_EventData *> *peventdatalst = pevent->getListEventData();
-      if (peventdatalst->size()) {
-        for (auto it = peventdatalst->cbegin(); it != peventdatalst->cend(); ++it) {
-          CMDF_EventData *pdata = *it;
-          fout << "<data ";
-          fout << "name=\"" << mdfXml(pdata->getName()) << "\" ";
-          fout << "offset=\"" << mdfXml(pdata->getOffset()) << "\" >" << std::endl;
-
-          // bits
-          std::deque<CMDF_Bit *> *pbits = pdata->getListBits();
-          if (pbits->size()) {
-            for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-              CMDF_Bit *pbit = *it;
-              fout << "<bit ";
-              fout << "name=\"" << mdfXml(pbit->getName()) << "\" ";
-              fout << "pos=\"" << mdfXml((int) pbit->getPos()) << "\" ";
-              fout << "width=\"" << mdfXml((int) pbit->getWidth()) << "\" ";
-              fout << "default=\"" << mdfXml((int) pbit->getDefault()) << "\" ";
-              fout << "min=\"" << mdfXml((int) pbit->getMin()) << "\" ";
-              fout << "max=\"" << mdfXml((int) pbit->getMax()) << "\" ";
-              fout << "access=\"" << mdfXml(pbit->getAccessStr()) << "\" >" << std::endl;
-
-              writeMap_xml(fout, pbit->getMapDescription(), "description");
-              writeMap_xml(fout, pbit->getMapInfoUrl(), "infourl");
-
-              std::deque<CMDF_Value *> *pvalues = pdata->getListValues();
-              if (pvalues->size()) {
-                fout << "<valuelist> " << std::endl;
-                for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-                  CMDF_Value *pvalue = *it;
-                  fout << "<item ";
-                  fout << "name=\"" << mdfXml(pvalue->getName()) << "\" ";
-                  fout << "value=\"" << mdfXml(pvalue->getValue()) << "\" >" << std::endl;
-                  writeMap_xml(fout, pvalue->getMapDescription(), "description");
-                  writeMap_xml(fout, pvalue->getMapInfoUrl(), "infourl");
-                  fout << "</item> " << std::endl;
-                }
-                fout << "</valuelist> " << std::endl;
-              }
-
-              fout << "</bit>" << std::endl; // Bits
-            }                                // for bits
-          }                                  // pbits size
-
-          writeMap_xml(fout, pdata->getMapDescription(), "description");
-          writeMap_xml(fout, pdata->getMapInfoUrl(), "infourl");
-          fout << "</data>" << std::endl;
-        }
-      }
-
-      fout << "</event>" << std::endl;
+  // Decision matrix
+  CMDF_DecisionMatrix *pdm = getDM();
+  fout << "<dmatrix>" << std::endl;
+  fout << "<level>" << (int) pdm->getLevel() << "</level>" << std::endl;
+  fout << "<start page=\"" << pdm->getStartPage() << "\" offset=\"" << pdm->getStartOffset() << "\" />"
+       << std::endl;
+  fout << "<rowcnt>" << pdm->getRowCount() << "</rowcnt>" << std::endl;
+  fout << "<rowsize>" << pdm->getRowSize() << "</rowsize>" << std::endl;
+  for (CMDF_Action *paction : *pdm->getActionList()) {
+    fout << "<action code=\"" << paction->getCode() << "\" name=\"" << mdfXml(paction->getName()) << "\">"
+         << std::endl;
+    mdf_xmlTexts(fout, paction);
+    for (CMDF_ActionParameter *pparam : *paction->getListActionParameter()) {
+      fout << "<param name=\"" << mdfXml(pparam->getName()) << "\" offset=\"" << pparam->getOffset() << "\" min=\""
+           << (int) pparam->getMin() << "\" max=\"" << (int) pparam->getMax() << "\">" << std::endl;
+      mdf_xmlTexts(fout, pparam);
+      mdf_xmlBits(fout, pparam->getListBits());
+      mdf_xmlValues(fout, pparam->getListValues());
+      fout << "</param>" << std::endl;
     }
-    // fout << "level=\"" << mdfXml((int) pdm->getLevel()) << "\" ";
-    fout << "</events>";
+    fout << "</action>" << std::endl;
   }
+  fout << "</dmatrix>" << std::endl;
 
-  // Write out end data
+  // Events
+  fout << "<events>" << std::endl;
+  for (CMDF_Event *pevent : *getEventList()) {
+    fout << "<event name=\"" << mdfXml(pevent->getName()) << "\" ";
+    fout << "class=\"" << pevent->getClass() << "\" ";
+    fout << "type=\"" << pevent->getType() << "\" ";
+    fout << "priority=\"" << (int) pevent->getPriority() << "\" ";
+    fout << "direction=\"" << ((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out") << "\">" << std::endl;
+    mdf_xmlTexts(fout, pevent);
+    for (CMDF_EventData *pdata : *pevent->getListEventData()) {
+      fout << "<data name=\"" << mdfXml(pdata->getName()) << "\" offset=\"" << pdata->getOffset() << "\">"
+           << std::endl;
+      mdf_xmlTexts(fout, pdata);
+      mdf_xmlBits(fout, pdata->getListBits());
+      mdf_xmlValues(fout, pdata->getListValues());
+      fout << "</data>" << std::endl;
+    }
+    fout << "</event>" << std::endl;
+  }
+  fout << "</events>" << std::endl;
+
   fout << "</module>" << std::endl;
   fout << "</vscp>" << std::endl;
 
-  // Close the File
   fout.close();
+  return fout.fail() ? VSCP_ERROR_WRITE : VSCP_ERROR_SUCCESS;
+}
 
-  return VSCP_ERROR_SUCCESS;
+// ----------------------------------------------------------------------------
+//                                  JSON
+// ----------------------------------------------------------------------------
+
+using ojson = nlohmann::ordered_json;
+
+static void
+mdf_jsonTexts(ojson &j, CMDF_Object *pobj)
+{
+  std::map<std::string, std::string> *pmap;
+  if ((nullptr != (pmap = pobj->getMapDescription())) && !pmap->empty()) {
+    j["description"] = ojson::object();
+    for (auto &kv : *pmap) {
+      j["description"][kv.first] = kv.second;
+    }
+  }
+  if ((nullptr != (pmap = pobj->getMapInfoUrl())) && !pmap->empty()) {
+    j["infourl"] = ojson::object();
+    for (auto &kv : *pmap) {
+      j["infourl"][kv.first] = kv.second;
+    }
+  }
+}
+
+static void
+mdf_jsonValues(ojson &j, std::deque<CMDF_Value *> *pvalues)
+{
+  if ((nullptr == pvalues) || pvalues->empty()) {
+    return;
+  }
+  j["valuelist"] = ojson::array();
+  for (CMDF_Value *pvalue : *pvalues) {
+    ojson jv;
+    jv["name"]  = pvalue->getName();
+    jv["value"] = pvalue->getValue();
+    mdf_jsonTexts(jv, pvalue);
+    j["valuelist"].push_back(jv);
+  }
+}
+
+static ojson
+mdf_jsonBitList(std::deque<CMDF_Bit *> *pbits)
+{
+  ojson jbits = ojson::array();
+  for (CMDF_Bit *pbit : *pbits) {
+    ojson jb;
+    jb["name"]    = pbit->getName();
+    jb["pos"]     = pbit->getPos();
+    jb["width"]   = pbit->getWidth();
+    jb["default"] = pbit->getDefault();
+    jb["min"]     = pbit->getMin();
+    jb["max"]     = pbit->getMax();
+    jb["access"]  = pbit->getAccessStr();
+    mdf_jsonTexts(jb, pbit);
+    mdf_jsonValues(jb, pbit->getListValues());
+    jbits.push_back(jb);
+  }
+  return jbits;
+}
+
+static void
+mdf_jsonBits(ojson &j, std::deque<CMDF_Bit *> *pbits)
+{
+  if ((nullptr != pbits) && !pbits->empty()) {
+    j["bit"] = mdf_jsonBitList(pbits);
+  }
+}
+
+static ojson
+mdf_jsonItems(std::deque<CMDF_Item *> *pitems, const char *valueKey)
+{
+  ojson jitems = ojson::array();
+  for (CMDF_Item *pitem : *pitems) {
+    ojson ji;
+    ji[valueKey] = pitem->getValue();
+    mdf_jsonTexts(ji, pitem);
+    jitems.push_back(ji);
+  }
+  return jitems;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  save_json
-// https://jsoneditoronline.org/#
+//
 
 int
 CMDF::save_json(const std::string &path)
 {
-  // Creation of ofstream class object
-  std::ofstream fout;
-  size_t cnt;
-  std::string str;
+  ojson jmod;
 
-  // open file
-  fout.open(path);
+  jmod["name"]       = getModuleName();
+  jmod["copyright"]  = getModuleCopyright();
+  jmod["level"]      = mdf_levelToFile(getModuleLevel());
+  jmod["model"]      = getModuleModel();
+  jmod["version"]    = getModuleVersion();
+  jmod["changed"]    = getModuleChangeDate();
+  jmod["buffersize"] = getModuleBufferSize();
+  mdf_jsonTexts(jmod, this);
+
+  // Manufacturer
+  CMDF_Manufacturer *pman = getManufacturer();
+  CMDF_Address *paddr     = pman->getAddressObj();
+  ojson jman;
+  jman["name"]                = pman->getName();
+  jman["address"]["street"]   = paddr->getStreet();
+  jman["address"]["town"]     = paddr->getTown();
+  jman["address"]["city"]     = paddr->getCity();
+  jman["address"]["postcode"] = paddr->getPostCode();
+  jman["address"]["state"]    = paddr->getState();
+  jman["address"]["region"]   = paddr->getRegion();
+  jman["address"]["country"]  = paddr->getCountry();
+  jman["telephone"]           = mdf_jsonItems(pman->getPhoneContactList(), "number");
+  jman["fax"]                 = mdf_jsonItems(pman->getFaxContactList(), "number");
+  jman["email"]               = mdf_jsonItems(pman->getEmailContactList(), "address");
+  jman["web"]                 = mdf_jsonItems(pman->getWebContactList(), "address");
+  jman["social"]              = mdf_jsonItems(pman->getSocialContactList(), "address");
+  jmod["manufacturer"]        = jman;
+
+  // Boot loader
+  CMDF_BootLoaderInfo *pboot      = getBootLoaderObj();
+  jmod["boot"]["algorithm"]       = pboot->getAlgorithm();
+  jmod["boot"]["blocksize"]       = pboot->getBlockSize();
+  jmod["boot"]["blockcount"]      = pboot->getBlockCount();
+
+  // Files
+  ojson jfiles;
+  jfiles["picture"] = ojson::array();
+  for (CMDF_Picture *p : *getPictureObjList()) {
+    ojson jf;
+    jf["name"]   = p->getName();
+    jf["url"]    = p->getUrl();
+    jf["format"] = p->getFormat();
+    jf["date"]   = p->getDate();
+    mdf_jsonTexts(jf, p);
+    jfiles["picture"].push_back(jf);
+  }
+  jfiles["video"] = ojson::array();
+  for (CMDF_Video *p : *getVideoObjList()) {
+    ojson jf;
+    jf["name"]   = p->getName();
+    jf["url"]    = p->getUrl();
+    jf["format"] = p->getFormat();
+    jf["date"]   = p->getDate();
+    mdf_jsonTexts(jf, p);
+    jfiles["video"].push_back(jf);
+  }
+  jfiles["manual"] = ojson::array();
+  for (CMDF_Manual *p : *getManualObjList()) {
+    ojson jf;
+    jf["name"]   = p->getName();
+    jf["url"]    = p->getUrl();
+    jf["format"] = p->getFormat();
+    jf["lang"]   = p->getLanguage();
+    jf["date"]   = p->getDate();
+    mdf_jsonTexts(jf, p);
+    jfiles["manual"].push_back(jf);
+  }
+  jfiles["firmware"] = ojson::array();
+  for (CMDF_Firmware *p : *getFirmwareObjList()) {
+    ojson jf;
+    jf["name"]          = p->getName();
+    jf["url"]           = p->getUrl();
+    jf["target"]        = p->getTarget();
+    jf["targetcode"]    = p->getTargetCode();
+    jf["format"]        = p->getFormat();
+    jf["date"]          = p->getDate();
+    jf["version_major"] = p->getVersionMajor();
+    jf["version_minor"] = p->getVersionMinor();
+    jf["version_patch"] = p->getVersionPatch();
+    jf["size"]          = p->getSize();
+    jf["md5sum"]        = p->getMd5();
+    mdf_jsonTexts(jf, p);
+    jfiles["firmware"].push_back(jf);
+  }
+  jfiles["driver"] = ojson::array();
+  for (CMDF_Driver *p : *getDriverObjList()) {
+    ojson jf;
+    jf["name"]          = p->getName();
+    jf["url"]           = p->getUrl();
+    jf["type"]          = p->getType();
+    jf["os"]            = p->getOS();
+    jf["osver"]         = p->getOSVer();
+    jf["architecture"]  = p->getArchitecture();
+    jf["date"]          = p->getDate();
+    jf["version_major"] = p->getVersionMajor();
+    jf["version_minor"] = p->getVersionMinor();
+    jf["version_patch"] = p->getVersionPatch();
+    jf["md5sum"]        = p->getMd5();
+    mdf_jsonTexts(jf, p);
+    jfiles["driver"].push_back(jf);
+  }
+  jfiles["setup"] = ojson::array();
+  for (CMDF_Setup *p : *getSetupObjList()) {
+    ojson jf;
+    jf["name"]    = p->getName();
+    jf["url"]     = p->getUrl();
+    jf["format"]  = p->getFormat();
+    jf["date"]    = p->getDate();
+    jf["version"] = p->getVersion();
+    mdf_jsonTexts(jf, p);
+    jfiles["setup"].push_back(jf);
+  }
+  jmod["files"] = jfiles;
+
+  // Registers (model order, expanded DMATRIX1/BLOCK registers collapsed)
+  jmod["registers"] = ojson::array();
+  for (auto &sr : mdf_registersToSave(getRegisterObjList())) {
+    CMDF_Register *preg = sr.preg;
+    ojson jr;
+    jr["name"]    = sr.name;
+    jr["page"]    = preg->getPage();
+    jr["offset"]  = preg->getOffset();
+    jr["span"]    = preg->getSpan();
+    jr["width"]   = preg->getWidth();
+    jr["type"]    = preg->getTypeStr();
+    jr["access"]  = preg->getAccessStr();
+    jr["default"] = preg->getDefault();
+    jr["min"]     = preg->getMin();
+    jr["max"]     = preg->getMax();
+    jr["fgcolor"] = mdf_hexColor(sr.bGroup ? preg->getForegroundColorMdf() : preg->getForegroundColor());
+    jr["bgcolor"] = mdf_hexColor(sr.bGroup ? preg->getBackgroundColorMdf() : preg->getBackgroundColor());
+    jr["evenfg"]  = mdf_hexColor(preg->getForegroundColorEven());
+    jr["oddfg"]   = mdf_hexColor(preg->getForegroundColorOdd());
+    jr["evenbg"]  = mdf_hexColor(preg->getBackgroundColorEven());
+    jr["oddbg"]   = mdf_hexColor(preg->getBackgroundColorOdd());
+    mdf_jsonTexts(jr, preg);
+    mdf_jsonBits(jr, preg->getListBits());
+    mdf_jsonValues(jr, preg->getListValues());
+    jmod["registers"].push_back(jr);
+  }
+
+  // Remote variables
+  jmod["remotevars"] = ojson::array();
+  for (CMDF_RemoteVariable *prvar : *getRemoteVariableList()) {
+    ojson jr;
+    jr["name"]    = prvar->getName();
+    jr["type"]    = mdf_remoteVarTypeKeyword(prvar->getType());
+    jr["default"] = prvar->getDefault();
+    jr["page"]    = prvar->getPage();
+    jr["offset"]  = prvar->getOffset();
+    jr["bitpos"]  = prvar->getBitPos();
+    jr["size"]    = prvar->getStringSize();
+    jr["access"]  = prvar->getAccessStr();
+    jr["fgcolor"] = mdf_hexColor(prvar->getForegroundColor());
+    jr["bgcolor"] = mdf_hexColor(prvar->getBackgroundColor());
+    mdf_jsonTexts(jr, prvar);
+    mdf_jsonBits(jr, prvar->getListBits());
+    mdf_jsonValues(jr, prvar->getListValues());
+    jmod["remotevars"].push_back(jr);
+  }
+
+  // Alarm bits
+  jmod["alarm"] = mdf_jsonBitList(getAlarmList());
+
+  // Decision matrix
+  CMDF_DecisionMatrix *pdm = getDM();
+  ojson jdm;
+  jdm["level"]        = pdm->getLevel();
+  jdm["start-page"]   = pdm->getStartPage();
+  jdm["start-offset"] = pdm->getStartOffset();
+  jdm["rowcount"]     = pdm->getRowCount();
+  jdm["rowsize"]      = pdm->getRowSize();
+  jdm["action"]       = ojson::array();
+  for (CMDF_Action *paction : *pdm->getActionList()) {
+    ojson ja;
+    ja["name"] = paction->getName();
+    ja["code"] = paction->getCode();
+    mdf_jsonTexts(ja, paction);
+    ja["param"] = ojson::array();
+    for (CMDF_ActionParameter *pparam : *paction->getListActionParameter()) {
+      ojson jp;
+      jp["name"]   = pparam->getName();
+      jp["offset"] = pparam->getOffset();
+      jp["min"]    = pparam->getMin();
+      jp["max"]    = pparam->getMax();
+      mdf_jsonTexts(jp, pparam);
+      mdf_jsonBits(jp, pparam->getListBits());
+      mdf_jsonValues(jp, pparam->getListValues());
+      ja["param"].push_back(jp);
+    }
+    jdm["action"].push_back(ja);
+  }
+  jmod["dmatrix"] = jdm;
+
+  // Events
+  jmod["events"] = ojson::array();
+  for (CMDF_Event *pevent : *getEventList()) {
+    ojson je;
+    je["name"]      = pevent->getName();
+    je["class"]     = pevent->getClass();
+    je["type"]      = pevent->getType();
+    je["priority"]  = pevent->getPriority();
+    je["direction"] = (MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out";
+    mdf_jsonTexts(je, pevent);
+    je["data"] = ojson::array();
+    for (CMDF_EventData *pdata : *pevent->getListEventData()) {
+      ojson jd;
+      jd["name"]   = pdata->getName();
+      jd["offset"] = pdata->getOffset();
+      mdf_jsonTexts(jd, pdata);
+      mdf_jsonBits(jd, pdata->getListBits());
+      mdf_jsonValues(jd, pdata->getListValues());
+      je["data"].push_back(jd);
+    }
+    jmod["events"].push_back(je);
+  }
+
+  ojson jroot;
+  jroot["module"] = jmod;
+
+  std::ofstream fout(path);
   if (!fout) {
     return VSCP_ERROR_WRITE;
   }
-
-  // JSON file start
-  fout << "{" << std::endl;
-
-  // Module start
-  fout << "\"module\": {" << std::endl;
-  fout << "\"name\": \"" << mdfJson(getModuleName()) << "\"," << std::endl;
-  fout << "\"copyright\": \"" << mdfJson(getModuleCopyright()) << "\"," << std::endl;
-  fout << "\"level\": " << mdfJson((int) getModuleLevel()) << "," << std::endl;
-  fout << "\"model\": \"" << mdfJson(getModuleModel()) << "\"," << std::endl;
-  fout << "\"version\": \"" << mdfJson(getModuleVersion()) << "\"," << std::endl;
-  fout << "\"changed\": \"" << mdfJson(getModuleChangeDate()) << "\"," << std::endl;
-  fout << "\"buffersize\": " << mdfJson(getModuleBufferSize()) << std::endl;
-
-  writeMap_json(fout, getMapDescription(), "description");
-  writeMap_json(fout, getMapInfoUrl(), "infourl");
-
-  CMDF_Manufacturer *pManufacturer = getManufacturer();
-  if (nullptr != pManufacturer) {
-    fout << "," << std::endl;
-    fout << "\"manufacturer\": {" << std::endl;
-    fout << "\"name\": \"" << mdfJson(pManufacturer->getName()) << "\"," << std::endl;
-
-    CMDF_Address *paddr = pManufacturer->getAddressObj();
-    if (nullptr != paddr) {
-      fout << "\"address\": {" << std::endl;
-      fout << "\"street\": \"" << mdfJson(paddr->getStreet()) << "\"," << std::endl;
-      fout << "\"city\": \"" << mdfJson(paddr->getCity()) << "\"," << std::endl;
-      fout << "\"town\": \"" << mdfJson(paddr->getTown()) << "\"," << std::endl;
-      fout << "\"region\": \"" << mdfJson(paddr->getRegion()) << "\"," << std::endl;
-      fout << "\"postcode\": \"" << mdfJson(paddr->getPostCode()) << "\"," << std::endl;
-      fout << "\"state\": \"" << mdfJson(paddr->getState()) << "\"," << std::endl;
-      fout << "\"country\": \"" << mdfJson(paddr->getCountry()) << "\"" << std::endl;
-      // Address end
-      fout << "}" << std::endl;
-    }
-
-    if ((cnt = pManufacturer->getPhoneObjCount())) {
-      fout << "," << std::endl;
-      fout << "\"telephone\": [" << std::endl;
-      size_t i = 0;
-      while (i < cnt) {
-        CMDF_Item *pitem = pManufacturer->getPhoneObj(i);
-        if (nullptr != pitem) {
-          fout << "{" << std::endl;
-          fout << "\"number\": \"" << mdfJson(pitem->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
-          fout << "}" << std::endl;
-        }
-        i++;
-        // If items left add comma
-        if (i < cnt) {
-          fout << ",";
-        }
-        fout << std::endl;
-      }
-      fout << "]";
-    }
-
-    if ((cnt = pManufacturer->getFaxObjCount())) {
-      fout << "," << std::endl;
-      fout << "\"fax\": [" << std::endl;
-      size_t i = 0;
-      while (i < cnt) {
-        CMDF_Item *pitem = pManufacturer->getFaxObj(i);
-        if (nullptr != pitem) {
-          fout << "{" << std::endl;
-          fout << "\"number\": \"" << mdfJson(pitem->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
-          fout << "}" << std::endl;
-        }
-        i++;
-        // If items left add comma
-        if (i < cnt) {
-          fout << ",";
-        }
-        fout << std::endl;
-      }
-      fout << "]";
-    }
-
-    if ((cnt = pManufacturer->getEmailObjCount())) {
-      fout << "," << std::endl;
-      fout << "\"email\": [" << std::endl;
-      size_t i = 0;
-      while (i < cnt) {
-        CMDF_Item *pitem = pManufacturer->getEmailObj(i);
-        if (nullptr != pitem) {
-          fout << "{" << std::endl;
-          fout << "\"address\": \"" << mdfJson(pitem->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
-          fout << "}" << std::endl;
-        }
-        i++;
-        // If items left add comma
-        if (i < cnt) {
-          fout << ",";
-        }
-        fout << std::endl;
-      }
-      fout << "]";
-    }
-
-    if ((cnt = pManufacturer->getWebObjCount())) {
-      fout << "," << std::endl;
-      fout << "\"web\": [" << std::endl;
-      size_t i = 0;
-      while (i < cnt) {
-        CMDF_Item *pitem = pManufacturer->getWebObj(i);
-        if (nullptr != pitem) {
-          fout << "{" << std::endl;
-          fout << "\"address\": \"" << mdfJson(pitem->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
-          fout << "}" << std::endl;
-        }
-        i++;
-        // If items left add comma
-        if (i < cnt) {
-          fout << ",";
-        }
-        fout << std::endl;
-      }
-      fout << "]";
-    }
-
-    if ((cnt = pManufacturer->getSocialObjCount())) {
-      fout << "," << std::endl;
-      fout << "\"social\": [" << std::endl;
-      size_t i = 0;
-      while (i < cnt) {
-        CMDF_Item *pitem = pManufacturer->getSocialObj(i);
-        if (nullptr != pitem) {
-          fout << "{" << std::endl;
-          fout << "\"address\": \"" << mdfJson(pitem->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pitem->getMapDescription(), "description", pitem->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pitem->getMapInfoUrl(), "infourl", false);
-          fout << "}" << std::endl;
-        }
-        i++;
-        // If items left add comma
-        if (i < cnt) {
-          fout << ",";
-        }
-        fout << std::endl;
-      }
-      fout << "]";
-    }
-
-    // Manufacturer end
-    fout << "}" << std::endl;
-  }
-
-  CMDF_BootLoaderInfo *pboot = getBootLoaderObj();
-  if (nullptr != pboot) {
-    fout << "," << std::endl;
-    fout << "\"boot\": {" << std::endl;
-    fout << "\"algorithm\": " << mdfJson((int) pboot->getAlgorithm()) << "," << std::endl;
-    fout << "\"blocksize\": " << mdfJson(pboot->getBlockSize()) << "," << std::endl;
-    fout << "\"blockcount\": " << mdfJson(pboot->getBlockCount()) << std::endl;
-    fout << "}," << std::endl;
-  }
-
-  fout << "\"files\": [" << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"picture\": [" << std::endl;
-  std::deque<CMDF_Picture *> *pPictureQueue = getPictureObjList();
-  if ((nullptr != pPictureQueue) && (pPictureQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pPictureQueue->begin(); it != pPictureQueue->end(); it++) {
-      CMDF_Picture *pPicture = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pPicture->getName()) << "\", " << std::endl;
-      fout << "\"url\": \"" << mdfJson(pPicture->getUrl()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pPicture->getFormat()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pPicture->getDate()) << "\"" << std::endl;
-      writeMap_json(fout, pPicture->getMapDescription(), "description", pPicture->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pPicture->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pPictureQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of pictures
-  fout << "]" << std::endl;
-  fout << "}," << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"video\": [" << std::endl;
-  std::deque<CMDF_Video *> *pVideoQueue = getVideoObjList();
-  if ((nullptr != pVideoQueue) && (pVideoQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pVideoQueue->begin(); it != pVideoQueue->end(); it++) {
-      CMDF_Video *pVideo = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pVideo->getName()) << "\", " << std::endl;
-      fout << "\"path\": \"" << mdfJson(pVideo->getUrl()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pVideo->getFormat()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pVideo->getDate()) << "\"" << std::endl;
-      writeMap_json(fout, pVideo->getMapDescription(), "description", pVideo->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pVideo->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pVideoQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of video
-  fout << "]" << std::endl;
-  fout << "}," << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"manual\": [" << std::endl;
-  std::deque<CMDF_Manual *> *pManualQueue = getManualObjList();
-  if ((nullptr != pManualQueue) && (pManualQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pManualQueue->begin(); it != pManualQueue->end(); it++) {
-      CMDF_Manual *pManual = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pManual->getName()) << "\", " << std::endl;
-      fout << "\"path\": \"" << mdfJson(pManual->getUrl()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pManual->getFormat()) << "\", " << std::endl;
-      fout << "\"language\": \"" << mdfJson(pManual->getLanguage()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pManual->getDate()) << "\"" << std::endl;
-      writeMap_json(fout, pManual->getMapDescription(), "description", pManual->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pManual->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pManualQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of manual
-  fout << "]" << std::endl;
-  fout << "}," << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"firmware\": [" << std::endl;
-  std::deque<CMDF_Firmware *> *pFirmwareQueue = getFirmwareObjList();
-  if ((nullptr != pFirmwareQueue) && (pFirmwareQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pFirmwareQueue->begin(); it != pFirmwareQueue->end(); it++) {
-      CMDF_Firmware *pFirmware = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pFirmware->getName()) << "\", " << std::endl;
-      fout << "\"path\": \"" << mdfJson(pFirmware->getUrl()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pFirmware->getFormat()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pFirmware->getDate()) << "\", " << std::endl;
-      fout << "\"target\": \"" << mdfJson(pFirmware->getTarget()) << "\", " << std::endl;
-      fout << "\"targetcode\": " << mdfJson(pFirmware->getTargetCode()) << ", " << std::endl;
-      fout << "\"version_major\": " << mdfJson(pFirmware->getVersionMajor()) << ", " << std::endl;
-      fout << "\"version_minor\": " << mdfJson(pFirmware->getVersionMinor()) << ", " << std::endl;
-      fout << "\"version_subminor\": " << mdfJson(pFirmware->getVersionPatch()) << ", " << std::endl;
-      fout << "\"size\": " << mdfJson(pFirmware->getSize()) << ", " << std::endl;
-      fout << "\"md5\": \"" << mdfJson(pFirmware->getMd5()) << "\"" << std::endl;
-      writeMap_json(fout, pFirmware->getMapDescription(), "description", pFirmware->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pFirmware->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pFirmwareQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of firmware
-  fout << "]" << std::endl;
-  fout << "}," << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"driver\": [" << std::endl;
-  std::deque<CMDF_Driver *> *pDriverQueue = getDriverObjList();
-  if ((nullptr != pDriverQueue) && (pDriverQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pDriverQueue->begin(); it != pDriverQueue->end(); it++) {
-      CMDF_Driver *pDriver = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pDriver->getName()) << "\", " << std::endl;
-      fout << "\"path\": \"" << mdfJson(pDriver->getUrl()) << "\", " << std::endl;
-      fout << "\"type\": \"" << mdfJson(pDriver->getType()) << "\", " << std::endl;
-      fout << "\"architecture\": \"" << mdfJson(pDriver->getArchitecture()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pDriver->getFormat()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pDriver->getDate()) << "\", " << std::endl;
-      fout << "\"os\": \"" << mdfJson(pDriver->getOS()) << "\", " << std::endl;
-      fout << "\"osver\": \"" << mdfJson(pDriver->getOSVer()) << "\", " << std::endl;
-      fout << "\"version_major\": " << mdfJson(pDriver->getVersionMajor()) << ", " << std::endl;
-      fout << "\"version_minor\": " << mdfJson(pDriver->getVersionMinor()) << ", " << std::endl;
-      fout << "\"version_subminor\": " << mdfJson(pDriver->getVersionPatch()) << ", " << std::endl;
-      fout << "\"md5\": \"" << mdfJson(pDriver->getMd5()) << "\"" << std::endl;
-      writeMap_json(fout, pDriver->getMapDescription(), "description", pDriver->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pDriver->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pDriverQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of firmware
-  fout << "]" << std::endl;
-  fout << "}," << std::endl;
-
-  fout << "{" << std::endl;
-  fout << "\"setup\": [" << std::endl;
-  std::deque<CMDF_Setup *> *pSetupQueue = getSetupObjList();
-  if ((nullptr != pSetupQueue) && (pSetupQueue->size())) {
-    size_t pos = 0;
-    for (auto it = pSetupQueue->begin(); it != pSetupQueue->end(); it++) {
-      CMDF_Setup *pSetup = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pSetup->getName()) << "\", " << std::endl;
-      fout << "\"path\": \"" << mdfJson(pSetup->getUrl()) << "\", " << std::endl;
-      fout << "\"format\": \"" << mdfJson(pSetup->getFormat()) << "\", " << std::endl;
-      fout << "\"date\": \"" << mdfJson(pSetup->getDate()) << "\", " << std::endl;
-      fout << "\"version\": \"" << mdfJson(pSetup->getVersion()) << "\"" << std::endl;
-      writeMap_json(fout, pSetup->getMapDescription(), "description", pSetup->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pSetup->getMapInfoUrl(), "infourl", false);
-      fout << "}" << std::endl;
-      pos++;
-      // If items left add comma
-      if (pos < pSetupQueue->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-    }
-  }
-  // End of setup
-  fout << "]" << std::endl;
-  fout << "}" << std::endl;
-
-  // End for files
-  fout << "]" << std::endl;
-
-  // --------------------------------------------------------------------------
-
-  if (getRegisterObjList()) {
-    std::set<uint16_t> pages;
-
-    fout << "," << std::endl;
-    fout << "\"registers\" : [" << std::endl;
-
-    size_t nPages = getPages(pages);
-    for (auto itr : pages) {
-
-      // get pages
-      std::set<uint16_t> pages;
-      std::deque<CMDF_Register *> *pregs = getRegisterObjList();
-      //uint32_t nPageCnt                  = getPages(pages);
-
-      // Go throu pages create set/map with sorted registers
-      size_t pos = 0;
-
-      // Add registers for page
-      std::set<uint32_t> regset;
-      std::map<uint32_t, CMDF_Register *> regmap;
-
-      // Create set with sorted register offsets and a map
-      // to help find corresponding register pointer
-      for (auto it = pregs->cbegin(); it != pregs->cend(); ++it) {
-        if (itr == (*it)->getPage()) {
-          regset.insert((*it)->getOffset());
-          regmap[(*it)->getOffset()] = *it;
-        }
-      }
-
-      for (auto it = regset.cbegin(); it != regset.cend(); ++it) {
-        CMDF_Register *preg = regmap[*it];
-
-        fout << "{" << std::endl;
-        fout << "\"name\": \"" << mdfJson(preg->getName()) << "\"," << std::endl;
-        fout << "\"page\": " << mdfJson(preg->getPage()) << "," << std::endl;
-        fout << "\"offset\": " << mdfJson(preg->getOffset()) << "," << std::endl;
-        fout << "\"span\": " << mdfJson(preg->getSpan()) << "," << std::endl;
-        fout << "\"width\": " << mdfJson(preg->getWidth()) << "," << std::endl;
-        fout << "\"access\": \"" << mdfJson(preg->getAccessStr()) << "\"," << std::endl;
-        fout << "\"type\": \"" << mdfJson(preg->getTypeStr()) << "\"," << std::endl;
-        fout << "\"default\": \"" << mdfJson(preg->getDefault()) << "\"," << std::endl;
-        fout << "\"min\": " << mdfJson((int) preg->getMin()) << "," << std::endl;
-        fout << "\"max\": " << mdfJson((int) preg->getMax()) << "," << std::endl;
-        fout << mdfJson(std::hex) << "\"fgcolor\": \"0x" << mdfJson(preg->getForegroundColor()) << "\"," << mdfJson(std::dec) << std::endl;
-        fout << mdfJson(std::hex) << "\"bgcolor\": \"0x" << mdfJson(preg->getBackgroundColor()) << "\"" << mdfJson(std::dec) << std::endl;
-
-        // bits
-        std::deque<CMDF_Bit *> *pbits = preg->getListBits();
-        if (pbits->size()) {
-          size_t pos = 0;
-          fout << "," << std::endl;
-          fout << "\"bit\": [" << std::endl;
-          for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-            CMDF_Bit *pbit = *it;
-            fout << "{" << std::endl;
-            fout << "\"name\": \"" << mdfJson(pbit->getName()) << "\"," << std::endl;
-            fout << "\"pos\": " << mdfJson((int) pbit->getPos()) << "," << std::endl;
-            fout << "\"width\": " << mdfJson((int) pbit->getWidth()) << "," << std::endl;
-            fout << "\"default\": " << mdfJson((int) pbit->getDefault()) << "," << std::endl;
-            fout << "\"min\" :" << mdfJson((int) pbit->getMin()) << "," << std::endl;
-            fout << "\"max\" :" << mdfJson((int) pbit->getMax()) << "," << std::endl;
-            fout << "\"access\": \"" << mdfJson(pbit->getAccessStr()) << "\"" << std::endl;
-
-            // Bit info/docs
-            writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
-            writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
-
-            std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
-            if (pvalues->size()) {
-              size_t pos = 0;
-              fout << "," << std::endl;
-              fout << "\"valuelist\": [" << std::endl;
-              for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-                CMDF_Value *pvalue = *it;
-                fout << "{" << std::endl;
-                fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-                fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-                writeMap_json(fout, pvalue->getMapDescription(), "description");
-                writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
-
-                fout << "}" << std::endl;
-
-                // If items left add comma
-                pos++;
-                if (pos < pvalues->size()) {
-                  fout << ",";
-                }
-
-                fout << std::endl;
-              }
-              fout << "]" << std::endl; // End of values
-            }
-
-            // If items left add comma
-            fout << "}" << std::endl;
-            pos++;
-            if (pos < pbits->size()) {
-              fout << ",";
-            }
-
-          } // for bits
-
-          fout << "]" << std::endl; // Ed of bits array
-
-        } // pbits size
-
-        std::deque<CMDF_Value *> *pvalues = preg->getListValues();
-        if (pvalues->size()) {
-          size_t pos = 0;
-          fout << "," << std::endl;
-          fout << "\"valuelist\": [" << std::endl;
-          for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-            CMDF_Value *pvalue = *it;
-            fout << "{" << std::endl;
-            fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-            fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-            writeMap_json(fout, pvalue->getMapDescription(), "description", true);
-            writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl", true);
-            fout << "}" << std::endl;
-            // End of valuelist - If items left add comma
-            pos++;
-            if (pos < pvalues->size()) {
-              fout << ",";
-            }
-            fout << std::endl;
-          }
-
-          fout << "]" << std::endl; // End of values
-
-        } // Values size
-
-        // Register docs/info
-        writeMap_json(fout, preg->getMapDescription(), "description", preg->getMapInfoUrl()->size() > 0);
-        writeMap_json(fout, preg->getMapInfoUrl(), "infourl", true);
-
-        // End of registers - If items left add comma
-        fout << "}";
-        pos++;
-        if (pos < regset.size()) {
-          fout << ",";
-        }
-        fout << std::endl;
-
-      } // registers for-loop
-
-      nPages--;
-      if (nPages > 0) {
-        fout << ",";
-      }
-
-    } // Pages
-
-    // End of registers
-    fout << "]" << std::endl;
-
-  } // Registers
-
-  // ----------------------------------------------------------------------------
-
-  if (getRemoteVariableList()) {
-
-    // Start of remote variables
-    fout << "," << std::endl;
-    fout << "\"remotevars\": [" << std::endl;
-
-    std::deque<CMDF_RemoteVariable *> *prvarList = getRemoteVariableList();
-
-    // Go throu pages create set/map with sorted registers
-    size_t pos = 0;
-
-    for (auto it = prvarList->cbegin(); it != prvarList->cend(); ++it) {
-      CMDF_RemoteVariable *prvar = *it;
-
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(prvar->getName()) << "\"," << std::endl;
-      fout << "\"type\": " << mdfJson(prvar->getType()) << "," << std::endl;
-      fout << "\"default\": \"" << mdfJson(prvar->getDefault()) << "\"," << std::endl;
-      fout << "\"page\": " << mdfJson(prvar->getPage()) << "," << std::endl;
-      fout << "\"offset\": " << mdfJson(prvar->getOffset()) << "," << std::endl;
-      fout << "\"access\": \"" << mdfJson(prvar->getAccessStr()) << "\"," << std::endl;
-      fout << "\"bitpos\": " << mdfJson(prvar->getBitPos()) << "," << std::endl;
-      fout << mdfJson(std::hex) << "\"fgcolor\": \"0x" << mdfJson(prvar->getForegroundColor()) << "\"," << mdfJson(std::dec) << std::endl;
-      fout << mdfJson(std::hex) << "\"bgcolor\": \"0x" << mdfJson(prvar->getBackgroundColor()) << "\"" << mdfJson(std::dec) << std::endl;
-
-      // bits
-      std::deque<CMDF_Bit *> *pbits = prvar->getListBits();
-      if (pbits->size()) {
-        size_t pos = 0;
-        fout << "," << std::endl;
-        fout << "\"bit\": [" << std::endl;
-        for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-          CMDF_Bit *pbit = *it;
-          fout << "{" << std::endl;
-          fout << "\"name\": \"" << mdfJson(pbit->getName()) << "\"," << std::endl;
-          fout << "\"pos\": " << mdfJson((int) pbit->getPos()) << "," << std::endl;
-          fout << "\"width\": " << mdfJson((int) pbit->getWidth()) << "," << std::endl;
-          fout << "\"default\": " << mdfJson((int) pbit->getDefault()) << "," << std::endl;
-          fout << "\"min\" :" << mdfJson((int) pbit->getMin()) << "," << std::endl;
-          fout << "\"max\" :" << mdfJson((int) pbit->getMax()) << "," << std::endl;
-          fout << "\"access\": \"" << mdfJson(pbit->getAccessStr()) << "\"" << std::endl;
-
-          // Bit info/docs
-          writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
-          writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
-
-          std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
-          if (pvalues->size()) {
-            size_t pos = 0;
-            fout << "," << std::endl;
-            fout << "\"valuelist\": [" << std::endl;
-            for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-              CMDF_Value *pvalue = *it;
-              fout << "{" << std::endl;
-              fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-              fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-              writeMap_json(fout, pvalue->getMapDescription(), "description");
-              writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
-
-              fout << "}" << std::endl;
-
-              // If items left add comma
-              pos++;
-              if (pos < pvalues->size()) {
-                fout << ",";
-              }
-
-              fout << std::endl;
-            }
-            fout << "]" << std::endl; // End of values
-          }
-
-          // If items left add comma
-          fout << "}" << std::endl;
-          pos++;
-          if (pos < pbits->size()) {
-            fout << ",";
-          }
-
-        } // for bits
-
-        fout << "]" << std::endl; // Ed of bits array
-
-      } // pbits size
-
-      std::deque<CMDF_Value *> *pvalues = prvar->getListValues();
-      if (pvalues->size()) {
-        size_t pos = 0;
-        fout << "," << std::endl;
-        fout << "\"valuelist\": [" << std::endl;
-        for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-          CMDF_Value *pvalue = *it;
-          fout << "{" << std::endl;
-          fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-          fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-          writeMap_json(fout, pvalue->getMapDescription(), "description");
-          writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
-          fout << "}" << std::endl;
-          // End of valuelist - If items left add comma
-          pos++;
-          if (pos < prvarList->size()) {
-            fout << ",";
-          }
-          fout << std::endl;
-        } // value
-
-        fout << "]" << std::endl; // End of values
-
-      } // Values size
-
-      // Remote variable docs/info
-      writeMap_json(fout, prvar->getMapDescription(), "description");
-      writeMap_json(fout, prvar->getMapInfoUrl(), "infourl");
-
-      // End of remote variables - If items left add comma
-      fout << "}";
-      pos++;
-      if (pos < prvarList->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-
-    } // remote variable for-loop
-
-    // End of remote variables
-    fout << "]" << std::endl;
-  }
-
-  // ----------------------------------------------------------------------------
-
-  // Start of alarm bits
-  fout << "," << std::endl;
-  fout << "\"alarm\": [" << std::endl;
-
-  // bits
-  std::deque<CMDF_Bit *> *pbits = getAlarmList();
-  if (pbits->size()) {
-    size_t pos = 0;
-    for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-      CMDF_Bit *pbit = *it;
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pbit->getName()) << "\"," << std::endl;
-      fout << "\"pos\": " << mdfJson((int) pbit->getPos()) << "," << std::endl;
-      fout << "\"width\": " << mdfJson((int) pbit->getWidth()) << "," << std::endl;
-      fout << "\"default\": " << mdfJson((int) pbit->getDefault()) << "," << std::endl;
-      fout << "\"min\" :" << mdfJson((int) pbit->getMin()) << "," << std::endl;
-      fout << "\"max\" :" << mdfJson((int) pbit->getMax()) << "," << std::endl;
-      fout << "\"access\": \"" << mdfJson(pbit->getAccessStr()) << "\"" << std::endl;
-
-      // Bit info/docs
-      writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
-      writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
-
-      // If items left add comma
-      fout << "}" << std::endl;
-      pos++;
-      if (pos < pbits->size()) {
-        fout << ",";
-      }
-
-    } // for bits
-
-    // fout << "]" << std::endl; // Ed of bits array
-
-  } // pbits size
-
-  // End of alarm
-  fout << "]" << std::endl;
-
-  // ----------------------------------------------------------------------------
-
-  std::deque<CMDF_Event *> *peventlst = getEventList(); // Get pointer to event list
-  if (nullptr != peventlst) {
-
-    // Start of events
-    fout << "," << std::endl;
-    fout << "\"events\": [" << std::endl;
-
-    size_t pos = 0;
-
-    for (auto it = peventlst->cbegin(); it != peventlst->cend(); ++it) {
-      CMDF_Event *pevent = *it;
-
-      fout << "{" << std::endl;
-      fout << "\"name\": \"" << mdfJson(pevent->getName()) << "\"," << std::endl;
-      fout << "\"class\": " << mdfJson(pevent->getClass()) << "," << std::endl;
-      fout << "\"type\": " << mdfJson(pevent->getType()) << "," << std::endl;
-      fout << "\"priority\": " << mdfJson((int) pevent->getPriority()) << "," << std::endl;
-      fout << "\"dir\": \"" << mdfJson(((MDF_EVENT_DIR_IN == pevent->getDirection()) ? "in" : "out")) << "\"," << std::endl;
-
-      std::deque<CMDF_EventData *> *peventdtalst = pevent->getListEventData(); // Get pointer to event list
-      if (nullptr != peventdtalst) {
-
-        size_t pos = 0;
-        fout << "\"data\": [" << std::endl;
-
-        for (auto it = peventdtalst->cbegin(); it != peventdtalst->cend(); ++it) {
-          CMDF_EventData *peventdata = *it;
-
-          fout << "{" << std::endl;
-          fout << "\"name\": \"" << mdfJson(peventdata->getName()) << "\"," << std::endl;
-          fout << "\"offset\": " << mdfJson(peventdata->getOffset()) << " " << std::endl;
-
-          // bits
-          std::deque<CMDF_Bit *> *pbits = peventdata->getListBits();
-          if (pbits->size()) {
-            size_t pos = 0;
-            fout << "," << std::endl;
-            fout << "\"bit\": [" << std::endl;
-            for (auto it = pbits->cbegin(); it != pbits->cend(); ++it) {
-              CMDF_Bit *pbit = *it;
-              fout << "{" << std::endl;
-              fout << "\"name\": \"" << mdfJson(pbit->getName()) << "\"," << std::endl;
-              fout << "\"pos\": " << mdfJson((int) pbit->getPos()) << "," << std::endl;
-              fout << "\"width\": " << mdfJson((int) pbit->getWidth()) << "," << std::endl;
-              fout << "\"default\": " << mdfJson((int) pbit->getDefault()) << "," << std::endl;
-              fout << "\"min\" :" << mdfJson((int) pbit->getMin()) << "," << std::endl;
-              fout << "\"max\" :" << mdfJson((int) pbit->getMax()) << "," << std::endl;
-              fout << "\"access\": \"" << mdfJson(pbit->getAccessStr()) << "\"" << std::endl;
-
-              // Bit info/docs
-              writeMap_json(fout, pbit->getMapDescription(), "description", pbit->getMapInfoUrl()->size() > 0);
-              writeMap_json(fout, pbit->getMapInfoUrl(), "infourl", pbit->getListValues()->size() > 0);
-
-              std::deque<CMDF_Value *> *pvalues = pbit->getListValues();
-              if (pvalues->size()) {
-                size_t pos = 0;
-                fout << "," << std::endl;
-                fout << "\"valuelist\": [" << std::endl;
-                for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-                  CMDF_Value *pvalue = *it;
-                  fout << "{" << std::endl;
-                  fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-                  fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-                  writeMap_json(fout, pvalue->getMapDescription(), "description");
-                  writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
-
-                  fout << "}" << std::endl;
-
-                  // If items left add comma
-                  pos++;
-                  if (pos < pvalues->size()) {
-                    fout << ",";
-                  }
-
-                  fout << std::endl;
-                }
-                fout << "]" << std::endl; // End of values
-              }
-
-              // If items left add comma
-              fout << "}" << std::endl;
-              pos++;
-              if (pos < pbits->size()) {
-                fout << ",";
-              }
-
-            } // for bits
-
-            fout << "]" << std::endl; // Ed of bits array
-
-          } // pbits size
-
-          std::deque<CMDF_Value *> *pvalues = peventdata->getListValues();
-          if (pvalues->size()) {
-            size_t pos = 0;
-            fout << "," << std::endl;
-            fout << "\"valuelist\": [" << std::endl;
-            for (auto it = pvalues->cbegin(); it != pvalues->cend(); ++it) {
-              CMDF_Value *pvalue = *it;
-              fout << "{" << std::endl;
-              fout << "\"name\": \"" << mdfJson(pvalue->getName()) << "\"," << std::endl;
-              fout << "\"value\": \"" << mdfJson(pvalue->getValue()) << "\"" << std::endl;
-              writeMap_json(fout, pvalue->getMapDescription(), "description");
-              writeMap_json(fout, pvalue->getMapInfoUrl(), "infourl");
-              fout << "}" << std::endl;
-              // End of valuelist - If items left add comma
-              pos++;
-              if (pos < pvalues->size()) {
-                fout << ",";
-              }
-              fout << std::endl;
-            } // value
-
-            fout << "]" << std::endl; // End of values
-
-          } // Values size
-
-          // Remote variable docs/info
-          writeMap_json(fout, peventdata->getMapDescription(), "description");
-          writeMap_json(fout, peventdata->getMapInfoUrl(), "infourl");
-
-          // End of event data - If items left add comma
-          fout << "}";
-          pos++;
-          if (pos < peventdtalst->size()) {
-            fout << ",";
-          }
-          fout << std::endl;
-        } // for event data
-
-        fout << "]" << std::endl; // End of event data
-
-      } // Event data is available
-
-      // End of remote variables - If items left add comma
-      fout << "}";
-      pos++;
-      if (pos < peventlst->size()) {
-        fout << ",";
-      }
-      fout << std::endl;
-
-    } // event for-loop
-
-    // End of events
-    fout << "]" << std::endl;
-  }
-
-  // ----------------------------------------------------------------------------
-  //-----------------------------------------------------------------------------
-
-  // End of module
-  fout << "}" << std::endl;
-
-  // JSON file end
-  fout << "}" << std::endl;
-
-  return VSCP_ERROR_SUCCESS;
+  // Invalid UTF-8 in texts is replaced instead of throwing
+  fout << jroot.dump(2, ' ', false, ojson::error_handler_t::replace) << std::endl;
+  fout.close();
+  return fout.fail() ? VSCP_ERROR_WRITE : VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3722,7 +2978,6 @@ __getValueAttributes(std::deque<CMDF_Value *> *pvaluelist, const char **attr)
 
     std::string attribute = attr[i + 1];
     vscp_trim(attribute);
-    vscp_makeLower(attribute);
     // std::cout << "Attribute: " << attribute << " size: " << pvaluelist->size() << std::endl;
 
     if (0 == strcasecmp(attr[i], "name")) {
@@ -3750,11 +3005,9 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
 
     std::string attribute = attr[i + 1];
     vscp_trim(attribute);
-    vscp_makeLower(attribute);
 
     if (0 == strcasecmp(attr[i], "name")) {
       vscp_trim(attribute);
-      vscp_makeLower(attribute);
       pBits->m_name = attribute;
     }
     else if (0 == strcasecmp(attr[i], "pos")) {
@@ -3766,10 +3019,10 @@ __getBitAttributes(std::deque<CMDF_Bit *> *pbitlist, const char **attr)
       pBits->setWidth(vscp_readStringValue(attribute));
     }
     else if (0 == strcasecmp(attr[i], "default")) {
-      if (attribute == "true") {
+      if (0 == strcasecmp(attribute.c_str(), "true")) {
         pBits->m_default = true;
       }
-      else if (attribute == "false") {
+      else if (0 == strcasecmp(attribute.c_str(), "false")) {
         pBits->m_default = false;
       }
       else {
@@ -3951,7 +3204,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
     for (int i = 0; attr[i]; i += 2) {
       std::string attribute = attr[i + 1];
       vscp_trim(attribute);
-      vscp_makeLower(attribute);
       if (0 == strcasecmp(attr[i], "lang")) {
         if (!attribute.empty()) {
           gLastLanguage = attribute;
@@ -4077,7 +3329,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i], "md5sum")) {
+          else if ((0 == strcasecmp(attr[i], "md5sum")) || (0 == strcasecmp(attr[i], "md5"))) {
             // MD5 for firmware
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
@@ -4127,7 +3379,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i], "lang")) {
+          else if ((0 == strcasecmp(attr[i], "lang")) || (0 == strcasecmp(attr[i], "language"))) {
             // Language for manual
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual language: {0}", attribute);
             gpManualStruct->m_strLanguage = attribute;
@@ -4316,7 +3568,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware url: {0}", attribute);
             gpFirmwareStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i], "md5sum")) {
+          else if ((0 == strcasecmp(attr[i], "md5sum")) || (0 == strcasecmp(attr[i], "md5"))) {
             // MD5 for firmware
             spdlog::trace("Parse-XML: handleMDFParserData: Module firmware md5: {0}", attribute);
             gpFirmwareStruct->m_strMd5 = attribute;
@@ -4389,7 +3641,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Driver url: {0}", attribute);
             gpDriverStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i], "md5sum")) {
+          else if ((0 == strcasecmp(attr[i], "md5sum")) || (0 == strcasecmp(attr[i], "md5"))) {
             // MD5 for driver file
             spdlog::trace("Parse-XML: handleMDFParserData: Driver md5: {0}", attribute);
             gpDriverStruct->m_strMd5 = attribute;
@@ -4442,7 +3694,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual path/url: {0}", attribute);
             gpManualStruct->m_strURL = attribute;
           }
-          else if (0 == strcasecmp(attr[i], "lang")) {
+          else if ((0 == strcasecmp(attr[i], "lang")) || (0 == strcasecmp(attr[i], "language"))) {
             // Language for manual
             spdlog::trace("Parse-XML: handleMDFParserData: Module manual language: {0}", attribute);
             gpManualStruct->m_strLanguage = attribute;
@@ -4495,6 +3747,9 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
             spdlog::trace("Parse-XML: handleMDFParserData: Module setup date: {0}", attribute);
             gpSetupStruct->m_strDate = attribute;
           }
+          else if (0 == strcasecmp(attr[i], "version")) {
+            gpSetupStruct->m_strVersion = attribute;
+          }
         }
       }
       // Boot  (standard format)
@@ -4514,7 +3769,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             // Register name
@@ -4547,7 +3801,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           else if (0 == strcasecmp(attr[i], "default")) {
             // Register default
             spdlog::trace("Parse-XML: handleMDFParserData: Register default: {0}", attribute);
-            gpRegisterStruct->m_strDefault = attribute;
+            gpRegisterStruct->m_strDefault = mdf_normalizeDefault(attribute);
           }
           else if (0 == strcasecmp(attr[i], "access")) {
             // Register access
@@ -4657,7 +3911,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {
             // Remote variable name
@@ -4667,7 +3920,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           else if (0 == strcasecmp(attr[i], "default")) {
             // Remote variable default value
             spdlog::trace("Parse-XML: handleMDFParserData: Remote variable default: {0}", attribute);
-            gpRvarStruct->m_strDefault = attribute;
+            gpRvarStruct->m_strDefault = mdf_normalizeDefault(attribute);
           }
           else if (0 == strcasecmp(attr[i], "bitpos")) {
             // Remote variable bit position for boolean
@@ -4682,7 +3935,7 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           else if (0 == strcasecmp(attr[i], "access")) {
             // Remote variable access
             spdlog::trace("Parse-XML: handleMDFParserData: Remote variable access: {0}", attribute);
-            gpRvarStruct->m_size = vscp_readStringValue(attribute);
+            vscp_makeLower(attribute); // keyword compare only, not stored
             gpRvarStruct->m_access = MDF_REG_ACCESS_NONE;
             if (attribute == "w") {
               gpRvarStruct->m_access = MDF_REG_ACCESS_WRITE_ONLY;
@@ -4699,7 +3952,8 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
           }
           else if (0 == strcasecmp(attr[i], "type")) {
             // Remote variable type
-            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable fgcolor: {0}", attribute);
+            spdlog::trace("Parse-XML: handleMDFParserData: Remote variable type: {0}", attribute);
+            vscp_makeLower(attribute); // keyword compare only, not stored
             if (attribute == "string") {
               gpRvarStruct->m_type = remote_variable_type_string;
               spdlog::trace("Parse-XML: Remote variable type set to 'string' {0}.", (int)gpRvarStruct->m_type);
@@ -4812,7 +4066,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "page")) {
             // dmatrix action code            
@@ -4851,7 +4104,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "code")) {
             // dmatrix action code            
@@ -4888,7 +4140,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {           
             spdlog::trace("Parse-XML: handleMDFParserData: event name: {0}", attribute);
@@ -5046,7 +4297,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "offset")) {
             // dmatrix action parameter offset            
@@ -5095,7 +4345,6 @@ __startSetupMDFParser(void *data, const char *name, const char **attr)
 
           std::string attribute = attr[i + 1];
           vscp_trim(attribute);
-          vscp_makeLower(attribute);
 
           if (0 == strcasecmp(attr[i], "name")) {           
             spdlog::trace("Parse-XML: handleMDFParserData: event data name: {0}", attribute);
@@ -5503,12 +4752,7 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       }
       else if (gTokenList.at(0) == "level") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
-        vscp_trim(strContent);
-        vscp_makeLower(strContent);
-        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
-        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
-          pmdf->m_vscpLevel = VSCP_LEVEL1;
-        }
+        pmdf->m_vscpLevel = mdf_levelFromFile(vscp_readStringValue(strContent));
       }
       break;
 
@@ -5523,15 +4767,11 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
       if (gTokenList.at(0) == "name") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
         vscp_trim(strContent);
-        vscp_makeLower(strContent);
         pmdf->m_name = strContent;
       }
       else if (gTokenList.at(0) == "level") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module level: {0}", strContent);
-        pmdf->m_vscpLevel = vscp_readStringValue(strContent) - 1;
-        if (pmdf->m_vscpLevel > VSCP_LEVEL2) {
-          pmdf->m_vscpLevel = VSCP_LEVEL1;
-        }
+        pmdf->m_vscpLevel = mdf_levelFromFile(vscp_readStringValue(strContent));
       }
       else if (gTokenList.at(0) == "model") {
         spdlog::trace("Parse-XML: handleMDFParserData: Module name: {0}", strContent);
@@ -5589,7 +4829,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Picture name: {0}",
                         strContent );
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpPictureStruct->m_strName = strContent;
         }
       }
@@ -5612,7 +4851,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Firmware name: {0}",
                         strContent );
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpFirmwareStruct->m_strName = strContent;
         }
       }
@@ -5635,7 +4873,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Manual name: {0}",
                         strContent );
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpManualStruct->m_strName = strContent;
         }
       }
@@ -5727,7 +4964,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if ((gTokenList.at(0) == "number") && (gpItemStruct != nullptr)) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address telephone number: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5743,7 +4979,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if (gTokenList.at(0) == "number") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address fax number: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5758,7 +4993,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if (gTokenList.at(0) == "address") {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer email address: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5774,7 +5008,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer web address: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5790,7 +5023,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if ((gTokenList.at(0) == "address") || (gTokenList.at(0) == "url")) {
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer social address: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);
           gpItemStruct->m_value = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5808,7 +5040,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture name: {0}",
                         strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpPictureStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5833,7 +5064,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module video name: {0}",
                         strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpVideoStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5858,7 +5088,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
                         strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpFirmwareStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5883,7 +5112,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
                         strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpDriverStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5909,7 +5137,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}",
                         strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpManualStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5933,7 +5160,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           // Description for picture
           spdlog::trace("Parse-XML: handleMDFParserData: Module picture description: {0}", strContent);
           vscp_trim(strContent);
-          vscp_makeLower(strContent);              
           gpSetupStruct->m_strName = strContent;
         }
         else if (gTokenList.at(0) == "description") {
@@ -5958,7 +5184,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if (gTokenList.at(0) == "name") {
           gpRegisterStruct->m_name = strContent;
           vscp_trim(gpRegisterStruct->m_name);
-          vscp_makeLower(gpRegisterStruct->m_name);
         }
         else if (gTokenList.at(0) == "access") {
           // Register access
@@ -5994,7 +5219,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if (gTokenList.at(0) == "name") {
           gpRvarStruct->m_name = strContent;
           vscp_trim(gpRvarStruct->m_name);
-          vscp_makeLower(gpRvarStruct->m_name);
         }
         else if (gTokenList.at(0) == "access") {
           // Register access
@@ -6030,7 +5254,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
         if (gTokenList.at(0) == "name") {
           gpEventStruct->m_name = strContent;
           vscp_trim(gpEventStruct->m_name);
-          vscp_makeLower(gpEventStruct->m_name);
         }
         else if (gTokenList.at(0) == "description") {
           gpEventStruct->m_mapDescription[gLastLanguage] += strContent;
@@ -6090,7 +5313,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
         vscp_trim(gpBitStruct->m_name);
-        vscp_makeLower(gpBitStruct->m_name);
       }
       // alarm/bit/description
       else if ((gTokenList.at(0) == "description") && 
@@ -6115,7 +5337,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gTokenList.at(2) == "dmatrix") &&
                (gpActionStruct != nullptr)) {
         vscp_trim(strContent);
-        vscp_makeLower(strContent);         
         gpActionStruct->m_name  = strContent;
       }
       // dmatrix/action/description
@@ -6145,7 +5366,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
         vscp_trim(gpBitStruct->m_name);
-        vscp_makeLower(gpBitStruct->m_name);
       }
       // reg/bit/description
       else if ((gTokenList.at(0) == "description") && 
@@ -6173,7 +5393,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
         vscp_trim(gpBitStruct->m_name);
-        vscp_makeLower(gpBitStruct->m_name);
       }
       // rvar/bit/description
       else if ((gTokenList.at(0) == "description") && 
@@ -6201,7 +5420,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpActionParamStruct != nullptr)) {
         gpActionParamStruct->m_name = strContent;
         vscp_trim(gpActionParamStruct->m_name);
-        vscp_makeLower(gpActionParamStruct->m_name);
       }
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "param") && 
@@ -6227,7 +5445,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpEventDataStruct != nullptr)) {
         gpEventDataStruct->m_name = strContent;
         vscp_trim(gpEventDataStruct->m_name);
-        vscp_makeLower(gpEventDataStruct->m_name);
       }
       else if ((gTokenList.at(0) == "description") && 
                (gTokenList.at(1) == "data") && 
@@ -6266,7 +5483,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
       // reg/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -6295,7 +5511,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
       // rvar/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -6325,7 +5540,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
         vscp_trim(gpBitStruct->m_name);
-        vscp_makeLower(gpBitStruct->m_name);
       }
       else if ((gTokenList.at(0) == "description") &&
                (gTokenList.at(1) == "bit") &&
@@ -6356,7 +5570,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpBitStruct != nullptr)) {
         gpBitStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
 
       else if ((gTokenList.at(0) == "description") && 
@@ -6400,7 +5613,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
       // bit/valuelist/item/description *
       else if ((gTokenList.at(0) == "description") && 
@@ -6442,7 +5654,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
       else if ((gTokenList.at(0) == "description") &&
                (gTokenList.at(1) == "item") &&
@@ -6488,7 +5699,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
 
       // event/valuelist/item/description *
@@ -6579,7 +5789,6 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
                (gpValueStruct != nullptr)) {
         gpValueStruct->m_name = strContent;
         vscp_trim(gpValueStruct->m_name);
-        vscp_makeLower(gpValueStruct->m_name);
       }
 
       else if ((gTokenList.at(0) == "description") && 
@@ -7416,12 +6625,7 @@ CMDF::getValueList(json &j, std::deque<CMDF_Value *> &list)
         if (jvalue.contains("name") && jvalue["name"].is_string()) {
           pvalue->m_name = jvalue["name"];
           vscp_trim(pvalue->m_name);
-          vscp_makeLower(pvalue->m_name);
           spdlog::debug("Parse-JSON: Value list name: {0}", pvalue->m_name);
-        }
-        else {
-          pvalue->m_name = "";
-          spdlog::error("Parse-JSON: No register valuelist name defined (defaults to empty).");
         }
 
         if (jvalue.contains("value") && jvalue["value"].is_string()) {
@@ -7476,12 +6680,7 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
         if (j.contains("name") && j["name"].is_string()) {
           pbit->m_name = j["name"];
           vscp_trim(pbit->m_name);
-          vscp_makeLower(pbit->m_name);
           spdlog::debug("Parse-JSON: Bitlist name: {0}", pbit->m_name);
-        }
-        else {
-          pbit->m_name = "";
-          spdlog::error("Parse-JSON: No register bit name defined (defaults to empty).");
         }
 
         if (j.contains("pos") && j["pos"].is_number()) {
@@ -7494,10 +6693,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           pbit->setPos(vscp_readStringValue(j["pos"]));
           spdlog::debug("Parse-JSON: Bitlist pos: {0}", pbit->m_pos);
         }
-        else {
-          pbit->m_pos = 0;
-          spdlog::error("Parse-JSON: No register bit pos defined (defaults to zero).");
-        }
 
         if (j.contains("width") && j["width"].is_number()) {
           // pbit->m_width = j["width"];
@@ -7508,10 +6703,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           // pbit->m_width = vscp_readStringValue(j["width"]);
           pbit->setWidth(vscp_readStringValue(j["width"]));
           spdlog::debug("Parse-JSON: Bitlist width: {0}", pbit->m_width);
-        }
-        else {
-          pbit->m_width = 1;
-          spdlog::trace("Parse-JSON: No register bit width defined (defaults to one).");
         }
 
         if (j.contains("default") && j["default"].is_number()) {
@@ -7526,10 +6717,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           pbit->m_default = vscp_readStringValue(j["default"]);
           spdlog::debug("Parse-JSON: Bitlist default: {0}", pbit->m_default);
         }
-        else {
-          pbit->m_default = 1;
-          spdlog::trace("Parse-JSON: No register bit default defined (defaults to zero).");
-        }
 
         if (j.contains("min") && j["min"].is_number()) {
           pbit->m_min = j["min"];
@@ -7539,10 +6726,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
           pbit->m_min = vscp_readStringValue(j["min"]);
           spdlog::debug("Parse-JSON: Bitlist min: {0}", pbit->m_min);
         }
-        else {
-          pbit->m_min = 0;
-          spdlog::trace("Parse-JSON: No register bit min defined (defaults to zero).");
-        }
 
         if (j.contains("max") && j["max"].is_number()) {
           pbit->m_max = j["max"];
@@ -7551,10 +6734,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
         else if (j.contains("max") && j["max"].is_string()) {
           pbit->m_max = vscp_readStringValue(j["max"]);
           spdlog::debug("Parse-JSON: Bitlist max: {0}", pbit->m_max);
-        }
-        else {
-          pbit->m_min = 255;
-          spdlog::trace("Parse-JSON: No register bit max defined (defaults to 255).");
         }
 
         if (j.contains("access") && j["access"].is_string()) {
@@ -7574,10 +6753,6 @@ CMDF::getBitList(json &j, std::deque<CMDF_Bit *> &list)
             pbit->m_access = MDF_REG_ACCESS_READ_WRITE;
             spdlog::debug("Parse-JSON: Bitlist access: Read/Write");
           }
-        }
-        else {
-          pbit->m_access = MDF_REG_ACCESS_READ_WRITE;
-          spdlog::info("Parse-JSON: No register access defined (defaults to 'rw').");
         }
 
         // Get description
@@ -7656,7 +6831,6 @@ CMDF::parseMDF_JSON(const std::string &path)
       if (j["module"]["name"].is_string()) {
         m_name = j["module"]["name"];
         vscp_trim(m_name);
-        vscp_makeLower(m_name);
         spdlog::trace("Parse-JSON: Module name: {0} language: 'en' ", m_name);
       }
       else {
@@ -7713,6 +6887,16 @@ CMDF::parseMDF_JSON(const std::string &path)
     }
     else {
       spdlog::trace("Parse-JSON: There is no module buffersize.");
+    }
+
+    // Module level: 1 = Level I, 2 = Level II (as for XML)
+    if (j["module"].contains("level")) {
+      if (j["module"]["level"].is_number_integer()) {
+        m_vscpLevel = mdf_levelFromFile(j["module"]["level"].get<int64_t>());
+      }
+      else if (j["module"]["level"].is_string()) {
+        m_vscpLevel = mdf_levelFromFile(vscp_readStringValue(j["module"]["level"].get<std::string>()));
+      }
     }
 
     // Module description - not mandatory
@@ -8038,10 +7222,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_page = vscp_readStringValue(jreg["page"]);
               spdlog::trace("Parse-JSON: Module register page: {0}", preg->m_page);
             }
-            else {
-              preg->m_page = 0;
-              spdlog::warn("Parse-JSON: No register page defined (defaults to zero).");
-            }
 
             // Register offset
             if (jreg.contains("offset") && jreg["offset"].is_number()) {
@@ -8051,10 +7231,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("offset") && jreg["offset"].is_string()) {
               preg->m_offset = vscp_readStringValue(jreg["offset"]);
               spdlog::trace("Parse-JSON: Module register offset: {0}", preg->m_offset);
-            }
-            else {
-              preg->m_offset = 0;
-              spdlog::error("Parse-JSON: No register offset defined (defaults to zero).");
             }
 
             // Register span
@@ -8073,10 +7249,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                 spdlog::warn("Parse-JSON: Register span is greater than eight or zero. This is not supported. "
                              "Default set (1)");
               }
-            }
-            else {
-              preg->m_span = 1;
-              spdlog::info("Parse-JSON: No register span defined (defaults to one byte).");
             }
 
             // Register size (synonym to span)
@@ -8106,10 +7278,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_width = vscp_readStringValue(jreg["width"]);
               spdlog::trace("Parse-JSON: Module register width: {0}", preg->m_width);
             }
-            else {
-              preg->m_width = 8;
-              spdlog::info("Parse-JSON: No register width defined (defaults to eight bits).");
-            }
 
             // Register width
             if (jreg.contains("width") && jreg["width"].is_number()) {
@@ -8119,10 +7287,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("width") && jreg["width"].is_string()) {
               preg->m_width = vscp_readStringValue(jreg["width"]);
               spdlog::trace("Parse-JSON: Module register width: {0}", preg->m_width);
-            }
-            else {
-              preg->m_width = 8;
-              spdlog::info("Parse-JSON: No register width defined (defaults to eight bits).");
             }
 
             // Register type
@@ -8142,15 +7306,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                 preg->m_type = MDF_REG_TYPE_BLOCK;
                 spdlog::trace("Parse-JSON: Module register type: block {0}", (int) preg->m_type);
               }
-              else {
-                spdlog::warn("Invalid block type: {0} - will be set to standard", strType);
-                preg->m_type = MDF_REG_TYPE_STANDARD;
-                spdlog::trace("Parse-JSON: Module register type: standard {0}", (int) preg->m_type);
-              }
-            }
-            else {
-              preg->m_type = MDF_REG_TYPE_STANDARD;
-              spdlog::info("Parse-JSON: No register type defined (Set to standard).");
             }
 
             // Register min
@@ -8162,10 +7317,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_min = vscp_readStringValue(jreg["min"]);
               spdlog::trace("Parse-JSON: Module register min: {0}", preg->m_min);
             }
-            else {
-              preg->m_min = 0;
-              spdlog::info("Parse-JSON: No register min defined (defaults to zero).");
-            }
 
             // Register max
             if (jreg.contains("max") && jreg["max"].is_number()) {
@@ -8176,16 +7327,10 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_max = vscp_readStringValue(jreg["max"]);
               spdlog::trace("Parse-JSON: Module register max: {0}", preg->m_max);
             }
-            else {
-              preg->m_max = 0;
-              spdlog::info("Parse-JSON: No register max defined (defaults to 255).");
-            }
 
             if (jreg.contains("default") && jreg["default"].is_string()) {
               std::string default_value = jreg["default"];
-              vscp_trim(default_value);
-              vscp_makeUpper(default_value);
-              preg->m_strDefault = default_value;
+              preg->m_strDefault = mdf_normalizeDefault(default_value);
               spdlog::trace("Parse-JSON: Module register default: {0}", preg->m_strDefault);
             }
             else if (jreg.contains("default") && jreg["default"].is_number()) {
@@ -8217,16 +7362,11 @@ CMDF::parseMDF_JSON(const std::string &path)
                 spdlog::trace("Parse-JSON: Module register access: Write Only");
               }
             }
-            else {
-              preg->m_max = 0;
-              spdlog::info("Parse-JSON: No register max defined (defaults to 255).");
-            }
 
             // Register name
             if (jreg.contains("name") && jreg["name"].is_string()) {
               preg->m_name = jreg["name"];
               vscp_trim(preg->m_name);
-              vscp_makeLower(preg->m_name);
               spdlog::info("Parse-JSON: Register name set to {0}.", preg->m_name);
             }
             else {
@@ -8242,10 +7382,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_fgcolor = jreg["fgcolor"];
               spdlog::trace("Parse-JSON: Remote variable foreground color to {}.", preg->m_fgcolor);
             }
-            else {
-              preg->m_fgcolor = 0;
-              spdlog::trace("Parse-JSON: No foreground color defined (set to 0).");
-            }
 
             // Backround color (VSCP Works)
             if (jreg.contains("bgcolor") && jreg["bgcolor"].is_string()) {
@@ -8255,10 +7391,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("bgcolor") && jreg["bgcolor"].is_number()) {
               preg->m_bgcolor = jreg["bgcolor"];
               spdlog::trace("Parse-JSON: Remote variable background color to {}.", preg->m_bgcolor);
-            }
-            else {
-              preg->m_bgcolor = 0;
-              spdlog::trace("Parse-JSON: No background color not defined (set to 0).");
             }
 
             // Even foreground color (VSCP Works)
@@ -8270,10 +7402,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_fgeven = jreg["evenfg"];
               spdlog::trace("Parse-JSON: Even foreground color to {}.", preg->m_fgeven);
             }
-            else {
-              preg->m_fgeven = 0;
-              spdlog::trace("Parse-JSON: No even foreground color defined (set to 0).");
-            }
 
             // Odd foreground color (VSCP Works)
             if (jreg.contains("oddfg") && jreg["oddfg"].is_string()) {
@@ -8283,10 +7411,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("oddfg") && jreg["oddfg"].is_number()) {
               preg->m_fgodd = jreg["oddfg"];
               spdlog::trace("Parse-JSON: Odd foreground color to {}.", preg->m_fgodd);
-            }
-            else {
-              preg->m_fgodd = 0;
-              spdlog::trace("Parse-JSON: No odd foreground color defined (set to 0).");
             }
 
             // Even background color (VSCP Works)
@@ -8298,10 +7422,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               preg->m_bgeven = jreg["evenbg"];
               spdlog::trace("Parse-JSON: Even background color to {}.", preg->m_bgeven);
             }
-            else {
-              preg->m_bgeven = 0;
-              spdlog::trace("Parse-JSON: No even background color defined (set to 0).");
-            }
 
             // Odd background color (VSCP Works)
             if (jreg.contains("oddbg") && jreg["oddbg"].is_string()) {
@@ -8311,10 +7431,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jreg.contains("oddbg") && jreg["oddbg"].is_number()) {
               preg->m_bgodd = jreg["oddbg"];
               spdlog::trace("Parse-JSON: Odd background color to {}.", preg->m_bgodd);
-            }
-            else {
-              preg->m_bgodd = 0;
-              spdlog::trace("Parse-JSON: No odd background color defined (set to 0).");
             }
 
             if (getDescriptionList(jreg, preg->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -8378,7 +7494,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             if (jrvar.contains("name") && jrvar["name"].is_string()) {
               prvar->m_name = jrvar["name"];
               vscp_trim(prvar->m_name);
-              vscp_makeLower(prvar->m_name);
               spdlog::trace("Parse-JSON: Remote variable name set to {}.", prvar->m_name);
             }
             else {
@@ -8447,9 +7562,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                 prvar->m_type = remote_variable_type_time;
                 spdlog::trace("Parse-JSON: Remote variable type set to 'time' {}.", (int) prvar->m_type);
               }
-              else {
-                prvar->m_type = remote_variable_type_unknown;
-              }
             }
             else {
               // Must be a type if a remote variable is there
@@ -8460,7 +7572,7 @@ CMDF::parseMDF_JSON(const std::string &path)
             // Default value. Always a string. Convert to the correct type
             // when default is set.
             if (jrvar.contains("default") && jrvar["default"].is_string()) {
-              prvar->m_strDefault = jrvar["default"];
+              prvar->m_strDefault = mdf_normalizeDefault(jrvar["default"]);
               spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
             else if (jrvar.contains("default") && jrvar["default"].is_number()) {
@@ -8483,10 +7595,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               prvar->m_strDefault = jrvar["default"] ? "true" : "false";
               spdlog::trace("Parse-JSON: Remote variable default set to {}.", prvar->m_strDefault);
             }
-            else {
-              prvar->m_strDefault = "UNDEF";
-              spdlog::trace("Parse-JSON: No remote variable default defined (set to empty).");
-            }
 
             // Page where the remote variable is located
             if (jrvar.contains("page") && jrvar["page"].is_string()) {
@@ -8497,10 +7605,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               prvar->m_page = jrvar["page"];
               spdlog::trace("Parse-JSON: Remote variable page set to {}.", prvar->m_page);
             }
-            else {
-              prvar->m_page = 0;
-              spdlog::warn("Parse-JSON: No remote variable page defined (set to 0).");
-            }
 
             // Offset where the remote variable is located
             if (jrvar.contains("offset") && jrvar["offset"].is_string()) {
@@ -8510,12 +7614,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jrvar.contains("offset") && jrvar["offset"].is_number()) {
               prvar->m_offset = jrvar["offset"];
               spdlog::trace("Parse-JSON: Remote variable offset set to {}.", prvar->m_offset);
-            }
-            else {
-              // Must be an offset if a remote variable is there, but we accept
-              // a default value. Flag as error because it is an error.
-              prvar->m_offset = 0;
-              spdlog::error("Parse-JSON: No remote variable offset defined (set to 0).");
             }
 
             // Bit position in byte where the boolean variable is located (0-7)
@@ -8529,10 +7627,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               prvar->m_bitpos &= 7;
               spdlog::trace("Parse-JSON: Remote variable bitpos set to {}.", prvar->m_bitpos);
             }
-            else {
-              prvar->m_bitpos = -1;
-              spdlog::trace("Parse-JSON: No remote variable bitpos defined (set to -1).");
-            }
 
             // Size for a string (ignored for all other types)
             if (jrvar.contains("size") && jrvar["size"].is_string()) {
@@ -8542,10 +7636,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jrvar.contains("size") && jrvar["size"].is_number()) {
               prvar->m_size = jrvar["size"];
               spdlog::trace("Parse-JSON: Remote variable size set to {}.", prvar->m_size);
-            }
-            else {
-              prvar->m_bitpos = 0;
-              spdlog::trace("Parse-JSON: No remote variable size defined (set to 0).");
             }
 
             // Access rights for remote variable
@@ -8567,10 +7657,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                 prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
               }
             }
-            else {
-              prvar->m_access = MDF_REG_ACCESS_READ_WRITE;
-              spdlog::trace("Parse-JSON: No remote variable access defined (defaults to 'rw').");
-            }
 
             // Foreground color (VSCP Works)
             if (jrvar.contains("fgcolor") && jrvar["fgcolor"].is_string()) {
@@ -8581,10 +7667,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               prvar->m_fgcolor = jrvar["fgcolor"];
               spdlog::trace("Parse-JSON: Remote variable fore ground color to {}.", prvar->m_fgcolor);
             }
-            else {
-              prvar->m_fgcolor = 0;
-              spdlog::trace("Parse-JSON: No remote variable size defined (set to 0).");
-            }
 
             // Backround color (VSCP Works)
             if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_string()) {
@@ -8594,10 +7676,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             else if (jrvar.contains("bgcolor") && jrvar["bgcolor"].is_number()) {
               prvar->m_bgcolor = jrvar["bgcolor"];
               spdlog::trace("Parse-JSON: Remote variable background color to {}.", prvar->m_bgcolor);
-            }
-            else {
-              prvar->m_bgcolor = 0;
-              spdlog::trace("Parse-JSON: No remote variable bgcolor not defined (set to 0).");
             }
 
             if (getDescriptionList(jrvar, prvar->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -8643,14 +7721,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             m_dmInfo.m_level = vscp_readStringValue(jdmatrix["level"]);
             spdlog::trace("Parse-JSON: DM level set to {0}.", m_dmInfo.m_level);
           }
-          else {
-            m_dmInfo.m_level = 1;
-            spdlog::warn("DM level is of strange type (not number or string). Set to default (1).");
-          }
-        }
-        else {
-          m_dmInfo.m_level = 1;
-          spdlog::warn("Parse-JSON: No DM level defined. Set to default (1).");
         }
 
         // start page
@@ -8663,14 +7733,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             m_dmInfo.m_startPage = vscp_readStringValue(jdmatrix["start-page"]);
             spdlog::trace("Parse-JSON: DM start page set to {0}.", m_dmInfo.m_startPage);
           }
-          else {
-            m_dmInfo.m_startPage = 0;
-            spdlog::warn("Parse-JSON: DM start-page is of strange type (not number or string). Set to default (0).");
-          }
-        }
-        else {
-          m_dmInfo.m_startPage = 0;
-          spdlog::warn("Parse-JSON: No DM start page defined. Set to default (0).");
         }
 
         // start offset
@@ -8683,14 +7745,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             m_dmInfo.m_startOffset = vscp_readStringValue(jdmatrix["start-offset"]);
             spdlog::trace("Parse-JSON: DM start offset set to {0}.", m_dmInfo.m_startOffset);
           }
-          else {
-            m_dmInfo.m_startOffset = 0;
-            spdlog::warn("Parse-JSON: DM start-offset is of strange type (not number or string). Set to default (0).");
-          }
-        }
-        else {
-          m_dmInfo.m_startOffset = 0;
-          spdlog::warn("Parse-JSON: No DM start offset defined. Set to default (0).");
         }
 
         // Row Count
@@ -8703,14 +7757,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             m_dmInfo.m_rowCount = vscp_readStringValue(jdmatrix["rowcount"]);
             spdlog::trace("Parse-JSON: DM row count set to {0}.", m_dmInfo.m_rowCount);
           }
-          else {
-            m_dmInfo.m_rowCount = 0;
-            spdlog::warn("DM row count is of strange type (not number or string). Set to default (0).");
-          }
-        }
-        else {
-          m_dmInfo.m_rowCount = 0;
-          spdlog::warn("Parse-JSON: No DM row count defined. Set to default (0).");
         }
 
         // Row Size
@@ -8723,14 +7769,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             m_dmInfo.m_rowSize = vscp_readStringValue(jdmatrix["rowsize"]);
             spdlog::trace("Parse-JSON: DM row size set to {0}.", m_dmInfo.m_rowSize);
           }
-          else {
-            m_dmInfo.m_rowSize = 8;
-            spdlog::warn("DM row size is of strange type (not number or string). Set to default (8).");
-          }
-        }
-        else {
-          m_dmInfo.m_rowSize = 8;
-          spdlog::warn("Parse-JSON: No DM row size defined. Set to default (8).");
         }
 
         if (jdmatrix.contains("action") && jdmatrix["action"].is_array()) {
@@ -8751,7 +7789,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               if (jaction.contains("name") && jaction["name"].is_string()) {
                 paction->m_name = jaction["name"];
                 vscp_trim(paction->m_name);
-                vscp_makeLower(paction->m_name);
                 spdlog::trace("Parse-JSON: DM action name set to {0}.", paction->m_name);
               }
               else {
@@ -8802,7 +7839,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                     if (jparam.contains("name") && jparam["name"].is_string()) {
                       pparam->m_name = jparam["name"];
                       vscp_trim(pparam->m_name);
-                      vscp_makeLower(pparam->m_name);
                       spdlog::trace("Parse-JSON: DM action parameter name set to {0}.", pparam->m_name);
                     }
                     else {
@@ -8818,10 +7854,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                       pparam->m_offset = jparam["offset"];
                       spdlog::trace("Parse-JSON: DM action parameter offset set to {0}.", pparam->m_offset);
                     }
-                    else {
-                      pparam->m_offset = 0;
-                      spdlog::warn("Parse-JSON: No DM action parameter offset defined. Set to default (0).");
-                    }
 
                     // min
                     if (jparam.contains("min") && jparam["min"].is_string()) {
@@ -8832,23 +7864,15 @@ CMDF::parseMDF_JSON(const std::string &path)
                       pparam->m_min = jparam["min"];
                       spdlog::trace("Parse-JSON: DM action parameter min set to {0}.", pparam->m_min);
                     }
-                    else {
-                      pparam->m_min = 0;
-                      spdlog::warn("Parse-JSON: No DM action parameter min defined. Set to default (0).");
-                    }
 
                     // max
                     if (jparam.contains("max") && jparam["max"].is_string()) {
                       pparam->m_max = vscp_readStringValue(jparam["max"]);
                       spdlog::trace("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max);
                     }
-                    else if (jparam.contains("max") && jparam["max"].is_string()) {
+                    else if (jparam.contains("max") && jparam["max"].is_number()) {
                       pparam->m_max = jparam["max"];
                       spdlog::trace("Parse-JSON: DM action parameter max set to {0}.", pparam->m_max);
-                    }
-                    else {
-                      pparam->m_max = 0;
-                      spdlog::warn("Parse-JSON: No DM action parameter max defined. Set to default (0).");
                     }
 
                     if (getDescriptionList(jparam, pparam->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -8908,7 +7932,6 @@ CMDF::parseMDF_JSON(const std::string &path)
             if (jev.contains("name") && jev["name"].is_string()) {
               pev->m_name = jev["name"];
               vscp_trim(pev->m_name);
-              vscp_makeLower(pev->m_name);
               spdlog::trace("Parse-JSON: Event name set to {0}.", pev->m_name);
             }
 
@@ -8965,14 +7988,6 @@ CMDF::parseMDF_JSON(const std::string &path)
                 pev->m_direction = MDF_EVENT_DIR_OUT;
                 spdlog::trace("Parse-JSON: Event direction set to out.");
               }
-              else {
-                pev->m_direction = MDF_EVENT_DIR_OUT;
-                spdlog::error("Parse-JSON: Event direction not 'in' or 'out'. Set to out.");
-              }
-            }
-            else {
-              pev->m_direction = MDF_EVENT_DIR_OUT;
-              spdlog::warn("Parse-JSON: No event direction defined. Set to out.");
             }
 
             // Priority
@@ -9007,10 +8022,6 @@ CMDF::parseMDF_JSON(const std::string &path)
               pev->m_priority = (uint8_t) jev["priority"] & 7;
               spdlog::trace("Parse-JSON: Event priority set to {0}.", pev->m_priority);
             }
-            else {
-              pev->m_priority = 3;
-              spdlog::warn("Parse-JSON: No event priority defined (set to 3.");
-            }
 
             if (getDescriptionList(jev, pev->m_mapDescription) != VSCP_ERROR_SUCCESS) {
               spdlog::warn("Parse-JSON: Failed to get event description.");
@@ -9038,8 +8049,15 @@ CMDF::parseMDF_JSON(const std::string &path)
                   if (jevdata.contains("name") && jevdata["name"].is_string()) {
                     pevdata->m_name = jevdata["name"];
                     vscp_trim(pevdata->m_name);
-                    vscp_makeLower(pevdata->m_name);
                     spdlog::trace("Parse-JSON: Event name set to {0}.", pevdata->m_name);
+                  }
+
+                  // offset
+                  if (jevdata.contains("offset") && jevdata["offset"].is_number()) {
+                    pevdata->m_offset = jevdata["offset"];
+                  }
+                  else if (jevdata.contains("offset") && jevdata["offset"].is_string()) {
+                    pevdata->m_offset = vscp_readStringValue(jevdata["offset"]);
                   }
 
                   if (getDescriptionList(jevdata, pevdata->m_mapDescription) != VSCP_ERROR_SUCCESS) {
@@ -9139,9 +8157,58 @@ CMDF::parseMDF_JSON(const std::string &path)
     ///////////////////////////////////////////////////////////////////////////
 
     // 'files' - Is always object
-    if (j["module"].contains("files") && j["module"]["files"].is_object()) {
+    // "files" is normally an object {"picture": [...], "manual": [...], ...}.
+    // A list of such objects [{"picture": [...]}, {"manual": [...]}, ...] is
+    // also accepted (older files and earlier save_json() output used it);
+    // it is merged into the object form.
+    json jfiles;
+    if (j["module"].contains("files") && j["module"]["files"].is_array()) {
+      jfiles = json::object();
+      for (auto &group : j["module"]["files"]) {
+        if (!group.is_object()) {
+          continue;
+        }
+        for (auto &kv : group.items()) {
+          if (!jfiles.contains(kv.key())) {
+            jfiles[kv.key()] = json::array();
+          }
+          if (kv.value().is_array()) {
+            for (auto &entry : kv.value()) {
+              jfiles[kv.key()].push_back(entry);
+            }
+          }
+        }
+      }
+    }
+    else if (j["module"].contains("files")) {
+      jfiles = j["module"]["files"];
+    }
 
-      json jsub = j["module"]["files"];
+    // Accept the alternative key names used by older files and the XML form:
+    // "path" for "url", "md5" for "md5sum", "language" for "lang"
+    if (jfiles.is_object()) {
+      for (auto &kv : jfiles.items()) {
+        if (!kv.value().is_array()) {
+          continue;
+        }
+        for (auto &entry : kv.value()) {
+          if (!entry.is_object()) {
+            continue;
+          }
+          for (auto alias : { std::make_pair("path", "url"),
+                              std::make_pair("md5", "md5sum"),
+                              std::make_pair("language", "lang") }) {
+            if (entry.contains(alias.first) && !entry.contains(alias.second)) {
+              entry[alias.second] = entry[alias.first];
+            }
+          }
+        }
+      }
+    }
+
+    if (jfiles.is_object()) {
+
+      json jsub = jfiles;
 
       // * * * Pictures * * *
       if (jsub.contains("picture") && jsub["picture"].is_array()) {
@@ -9674,6 +8741,10 @@ CMDF::parseMDF_JSON(const std::string &path)
             spdlog::warn("Parse-JSON: No setup date");
           }
 
+          if (jsetup.contains("version") && jsetup["version"].is_string()) {
+            psetup->m_strVersion = jsetup["version"];
+          }
+
           if (getDescriptionList(jsetup, psetup->m_mapDescription) != VSCP_ERROR_SUCCESS) {
             spdlog::warn("Parse-JSON: Failed to get setup description.");
           }
@@ -10098,6 +9169,10 @@ CMDF::expandRegisterSpan(CMDF_Register *preg)
   // unnamed by index.)
   const std::string baseName = preg->m_name;
   preg->m_name               = baseName + label + "0";
+  // Keep the colors given in the MDF; the pyjamas colors below replace them
+  // for display, and save_xml()/save_json() write the MDF ones back.
+  preg->m_fgcolorMdf = preg->m_fgcolor;
+  preg->m_bgcolorMdf = preg->m_bgcolor;
   if (bPyjamas) {
     preg->m_fgcolor = preg->m_fgeven;
     preg->m_bgcolor = preg->m_bgeven;

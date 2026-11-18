@@ -1,0 +1,1792 @@
+{
+  "module": {
+    "name": "VSCP Blink",
+    "copyright": "Grodans Paradis AB",
+    "level": 1,
+    "model": "A",
+    "version": "0.0.1",
+    "changed": "2026-11-18",
+    "buffersize": 8,
+    "description": {
+      "en": "This is the simplest possible demo of a VSCP node. It can do one thing, light a led, blink a led, turn a led off. The blink frequency can be set.  It has a decsion matrix with some actions like turn on/off led is defined.",
+      "se": "Detta är det enklaste möjliga demo av en VSCP nod. Den kan göra en sak, tända en led, blinka en led, släcka en led. Blinkfrekvensen kan ställas in. Den har en beslutsmatris med några åtgärder som att tända/släcka led definierade.",
+      "no": "Dette er den enkleste mulige demoen av en VSCP-node. Den kan gjøre en ting, lyse en led, blinke en led, slå av en led. Blinkfrekvensen kan settes. Den har en beslutningsmatrise med noen handlinger som å slå på/av led definert.",
+      "dk": "Dette er den enkleste mulige demo af en VSCP-node. Den kan gøre en ting, lyse en led, blinke en led, slukke en led. Blinkfrekvensen kan indstilles. Den har en beslutningsmatrix med nogle handlinger som at tænde/slukke led defineret.",
+      "de": "Dies ist die einfachste mögliche Demo eines VSCP-Knotens. Es kann eine Sache tun, eine LED einschalten, eine LED blinken lassen, eine LED ausschalten. Die Blinkfrequenz kann eingestellt werden. Es hat eine Entscheidungsmatrix mit einigen Aktionen wie Ein-/Ausschalten der LED definiert.",
+      "fr": "Ceci est la démonstration la plus simple d'un nœud VSCP. Il peut faire une chose, allumer une LED, faire clignoter une LED, éteindre une LED. La fréquence de clignotement peut être réglée. Il a une matrice de décision avec certaines actions comme allumer/éteindre la LED définie.",
+      "es": "Esta es la demostración más simple de un nodo VSCP. Puede hacer una cosa, encender un LED, hacer parpadear un LED, apagar un LED. La frecuencia de parpadeo se puede configurar. Tiene una matriz de decisión con algunas acciones como encender/apagar el LED definida.",
+      "it": "Questa è la dimostrazione più semplice di un nodo VSCP. Può fare una cosa, accendere un LED, far lampeggiare un LED, spegnere un LED. La frequenza di lampeggio può essere impostata. Ha una matrice decisionale con alcune azioni come accendere/spegnere il LED definita.",
+      "ru": "Это самая простая демонстрация узла VSCP. Он может делать одну вещь, включать светодиод, заставлять светодиод мигать, выключать светодиод. Частота мигания может быть настроена. У него есть матрица решений с некоторыми действиями, такими как включение/выключение светодиода.",
+      "fi": "Tämä on yksinkertaisin mahdollinen demo VSCP-solmusta. Se voi tehdä yhden asian, sytyttää ledin, saada ledin vilkkumaan, sammuttaa ledin. Vilkkumisnopeus voidaan asettaa. Siinä on päätösmatriisi, jossa on määritetty joitain toimintoja, kuten ledin päälle/pois.",
+      "zh-CN": "这是一个VSCP节点的最简单演示。它可以做一件事，点亮一个LED，让一个LED闪烁，关闭一个LED。闪烁频率可以设置。它有一个决策矩阵，其中定义了一些操作，如打开/关闭LED。",
+      "ja-JP": "これはVSCPノードの最も簡単なデモです。1つのことができます。LEDを点灯させ、LEDを点滅させ、LEDを消灯させることができます。点滅の頻度は設定できます。いくつかのアクションが定義された意思決定マトリックスがあります。",
+      "pt": "Esta é a demonstração mais simples de um nó VSCP. Ele pode fazer uma coisa, acender um LED, fazer um LED piscar, apagar um LED. A frequência de piscar pode ser configurada. Ele tem uma matriz de decisão com algumas ações como ligar/desligar o LED definida.",
+      "ar": "هذه أبسط عرض ممكن لعقدة VSCP. يمكنه القيام بشيء واحد ، وهو إضاءة LED ، وجعل LED يومض ، وإيقاف تشغيل LED. يمكن ضبط تردد الوميض. لديه مصفوفة قرار مع بعض الإجراءات مثل تشغيل / إيقاف تشغيل LED المحددة.",
+      "sk": "Toto je nejjednodušší možná ukázka uzlu VSCP. Může dělat jednu věc, rozsvítit LED, nechat LED blikat, vypnout LED. Frekvence blikání může být nastavena. Má rozhodovací matici s některými akcemi, jako je zapnutí/vypnutí LED definováno.",
+      "hu": "Ez a legegyszerűbb lehetséges bemutató egy VSCP csomópontnak. Egy dolgot tud csinálni, egy LED-et világít, egy LED-et villogtat, egy LED-et kikapcsol. A villogás gyakorisága beállítható. Van egy döntési mátrixa néhány olyan művelettel, mint a LED bekapcsolása/kikapcsolása definiálva.",
+      "kr": "이것은 VSCP 노드의 가장 간단한 데모입니다. 하나의 작업을 수행할 수 있습니다. LED를 켜고, LED를 깜박이고, LED를 끌 수 있습니다. 깜박이는 빈도는 설정할 수 있습니다. LED 켜기/끄기와 같은 몇 가지 작업이 정의된 의사 결정 매트릭스가 있습니다.",
+      "zh": "这是一个VSCP节点的最简单演示。它可以做一件事，点亮一个LED，让一个LED闪烁，关闭一个LED。闪烁频率可以设置。它有一个决策矩阵，其中定义了一些操作，如打开/关闭LED。",
+      "ja": "これはVSCPノードの最も簡単なデモです。1つのことができます。LEDを点灯させ、LEDを点滅させ、LEDを消灯させることができます。点滅の頻度は設定できます。いくつかのアクションが定義された意思決定マトリックスがあります。"
+    },
+    "manufacturer": {
+      "name": "Grodans Paradis AB",
+      "address": {
+        "street": "Brattbergavägen 17",
+        "city": "LOS",
+        "town": "LOS",
+        "region": "Hälsingland",
+        "postcode": "82770",
+        "state": "HA",
+        "country": "Sweden"
+      }
+    },
+    "boot": {
+      "algorithm": 0,
+      "blocksize": 0,
+      "blockcount": 0
+    },
+    "files": {
+      "picture": [],
+      "video": [],
+      "manual": [
+        {
+          "name": "Blinky Documentation",
+          "url": "https://github.com/grodansparadis/vscp/wiki/Blinky-Documentation",
+          "format": "html",
+          "description": {
+            "en": "English documentaion for the VSCP Blinky demo node."
+          }
+        }
+      ],
+      "firmware": [],
+      "driver": [],
+      "setup": []
+    },
+    "registers": [
+      {
+        "name": "Zone",
+        "page": 0,
+        "offset": 0,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": 0,
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Zone for the node. This is a way to distinguish between different nodes.",
+          "se": "Zon för noden. Detta är ett sätt att skilja mellan olika noder.",
+          "no": "Sone for noden. Dette er en måte å skille mellom forskjellige noder.",
+          "dk": "Zone for noden. Dette er en måde at skelne mellem forskellige noder.",
+          "de": "Zone für den Knoten. Dies ist eine Möglichkeit, zwischen verschiedenen Knoten zu unterscheiden.",
+          "fr": "Zone pour le nœud. C'est un moyen de distinguer les différents nœuds.",
+          "es": "Zona para el nodo. Esta es una forma de distinguir entre diferentes nodos.",
+          "it": "Zona per il nodo. Questo è un modo per distinguere tra diversi nodi.",
+          "ru": "Зона для узла. Это способ отличить разные узлы.",
+          "fi": "Alue solmulle. Tämä on tapa erottaa eri solmut toisistaan.",
+          "zh": "节点的区域。这是区分不同节点的一种方式。",
+          "ja": "ノードのゾーン。これは、異なるノードを区別する方法です。",
+          "pt": "Zona para o nó. Esta é uma forma de distinguir entre diferentes nós.",
+          "ar": "المنطقة للعقدة. هذه طريقة لتمييز بين العقد المختلفة.",
+          "sk": "Zóna pro uzel. Toto je způsob, jak rozlišit různé uzly.",
+          "hu": "Zóna a csomópont számára. Ez egy módja annak, hogy megkülönböztesse a különböző csomópontokat.",
+          "kr": "노드의 영역입니다. 이것은 서로 다른 노드를 구별하는 방법입니다."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-0"
+        }
+      },
+      {
+        "name": "Subzone",
+        "page": 0,
+        "offset": 1,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": 0,
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Subzone for the node. This is a way to distinguish between different nodes within the same zone.",
+          "se": "Subzon för noden. Detta är ett sätt att skilja mellan olika noder inom samma zon.",
+          "no": "Subzone for noden. Dette er en måte å skille mellom forskjellige noder innenfor samme sone.",
+          "dk": "Subzone for noden. Dette er en måde at skelne mellem forskellige noder inden for samme zone.",
+          "de": "Subzone für den Knoten. Dies ist eine Möglichkeit, zwischen verschiedenen Knoten innerhalb derselben Zone zu unterscheiden.",
+          "fr": "Sous-zone pour le nœud. C'est un moyen de distinguer les différents nœuds au sein de la même zone.",
+          "es": "Subzona para el nodo. Esta es una forma de distinguir entre diferentes nodos dentro de la misma zona.",
+          "it": "Sottozona per il nodo. Questo è un modo per distinguere tra diversi nodi all'interno della stessa zona.",
+          "ru": "Подзона для узла. Это способ отличить разные узлы в одной и той же зоне.",
+          "zh": "节点的子区域。这是区分同一区域内不同节点的一种方式。",
+          "ja": "ノードのサブゾーン。これは、同じゾーン内の異なるノードを区別する方法です。",
+          "pt": "Subzona para o nó. Esta é uma forma de distinguir entre diferentes nós dentro da mesma zona.",
+          "ar": "المنطقة الفرعية للعقدة. هذه طريقة لتمييز بين العقد المختلفة داخل نفس المنطقة.",
+          "sk": "Subzóna pro uzel. Toto je způsob, jak rozlišit různé uzly v rámci stejné zóny.",
+          "hu": "Alzóna a csomópont számára. Ez egy módja annak, hogy megkülönböztesse a különböző csomópontokat ugyanazon zónán belül.",
+          "kr": "노드의 하위 영역입니다. 이것은 동일한 영역 내에서 서로 다른 노드를 구별하는 방법입니다.",
+          "fi": "Alialue solmulle. Tämä on tapa erottaa eri solmut toisistaan samassa alueessa."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-1"
+        }
+      },
+      {
+        "name": "Status",
+        "page": 0,
+        "offset": 2,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Status of the node. This indicates the current state of the LED, 0=ON, 1=OFF.",
+          "se": "Status för noden. Detta indikerar det aktuella tillståndet för LED, 0=ON, 1=OFF.",
+          "no": "Status for noden. Dette indikerer den nåværende tilstanden til LED, 0=ON, 1=OFF.",
+          "dk": "Status for noden. Dette indikerer den aktuelle tilstand for LED, 0=ON, 1=OFF.",
+          "de": "Status des Knotens. Dies zeigt den aktuellen Zustand der LED an, 0=ON, 1=OFF.",
+          "fr": "Statut du nœud. Cela indique l'état actuel de la LED, 0=ON, 1=OFF.",
+          "es": "Estado del nodo. Esto indica el estado actual del LED, 0=ON, 1=OFF.",
+          "it": "Stato del nodo. Questo indica lo stato attuale del LED, 0=ON, 1=OFF.",
+          "ru": "Статус узла. Это указывает текущее состояние светодиода, 0=ВКЛ, 1=ВЫКЛ.",
+          "fi": "Solmun tila. Tämä osoittaa LEDin nykyisen tilan, 0=ON, 1=OFF.",
+          "zh": "节点的状态。这表示LED的当前状态，0 = ON，1 = OFF。",
+          "ja": "ノードのステータス。これはLEDの現在の状態を示します。0 = ON、1 = OFF。",
+          "pt": "Status do nó. Isso indica o estado atual do LED, 0 = ON, 1 = OFF.",
+          "ar": "حالة العقدة. هذا يشير إلى الحالة الحالية للLED، 0 = ON، 1 = OFF.",
+          "sk": "Stav uzlu. To ukazuje aktuální stav LED, 0 = ON, 1 = OFF.",
+          "hu": "A csomópont állapota. Ez jelzi a LED aktuális állapotát, 0=ON, 1=OFF.",
+          "kr": "노드의 상태입니다. 이것은 LED의 현재 상태를 나타냅니다. 0=ON, 1=OFF."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-2"
+        },
+        "bit": [
+          {
+            "name": "LED active",
+            "pos": 1,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Status bit telling that the LED is active. 0=LED is off, 1=LED is on. If written to, the LED will be turned on or off depending on the value written. If the LED is enabled in the control register, the LED will be turned on or off depending on the value written.",
+              "se": "Statusbit som anger att LED är aktiv. 0=LED är av, 1=LED är på. Om den skrivs till, kommer LED att tändas eller slockna beroende på det skrivna värdet. Om LED är aktiverad i kontrollregistret, kommer LED att tändas eller slockna beroende på det skrivna värdet.",
+              "no": "Statusbit som indikerer at LED er aktiv. 0=LED er av, 1=LED er på. Hvis det skrives til, vil LED slås på eller av avhengig av verdien som skrives. Hvis LED er aktivert i kontrollregisteret, vil LED slås på eller av avhengig av verdien som skrives.",
+              "dk": "Statusbit, der angiver, at LED er aktiv. 0=LED er slukket, 1=LED er tændt. Hvis der skrives til den, vil LED'en blive tændt eller slukket afhængigt af den skrevne værdi. Hvis LED er aktiveret i kontrolregisteret, vil LED'en blive tændt eller slukket afhængigt af den skrevne værdi.",
+              "de": "Statusbit, das angibt, dass die LED aktiv ist. 0=LED ist aus, 1=LED ist an. Wenn darauf geschrieben wird, wird die LED je nach geschriebenem Wert ein- oder ausgeschaltet. Wenn die LED im Steuerregister aktiviert ist, wird die LED je nach geschriebenem Wert ein- oder ausgeschaltet.",
+              "fr": "Bit d'état indiquant que la LED est active. 0=LED éteinte, 1=LED allumée. En cas d'écriture, la LED sera allumée ou éteinte selon la valeur écrite. Si la LED est activée dans le registre de contrôle, elle sera allumée ou éteinte selon la valeur écrite.",
+              "es": "Bit de estado que indica que el LED está activo. 0=LED apagado, 1=LED encendido. Si se escribe, el LED se encenderá o apagará según el valor escrito. Si el LED está habilitado en el registro de control, el LED se encenderá o apagará según el valor escrito.",
+              "it": "Bit di stato che indica che il LED è attivo. 0=LED spento, 1=LED acceso. Se scritto, il LED sarà acceso o spento a seconda del valore scritto. Se il LED è abilitato nel registro di controllo, il LED sarà acceso o spento a seconda del valore scritto.",
+              "ru": "Бит состояния, указывающий, что светодиод активен. 0=LED выключен, 1=LED включен. При записи светодиод будет включён или выключён в зависимости от записанного значения. Если светодиод включён в регистре управления, он будет включён или выключён в зависимости от записанного значения.",
+              "fi": "Tilabitti, joka kertoo, että LED on aktiivinen. 0=LED pois päältä, 1=LED päällä. Jos siihen kirjoitetaan, LED sytytetään tai sammutetaan kirjoitetun arvon mukaan. Jos LED on käytössä ohjausrekisterissä, LED sytytetään tai sammutetaan kirjoitetun arvon mukaan.",
+              "zh": "状态位，指示LED是否处于活动状态。0=LED关闭，1=LED开启。写入时，LED将根据写入的值打开或关闭。如果控制寄存器中启用了LED，则LED将根据写入的值打开或关闭。",
+              "ja": "LEDがアクティブであることを示すステータスビット。0=LEDオフ、1=LEDオン。書き込まれると、書き込まれた値に応じてLEDがオンまたはオフになります。制御レジスタでLEDが有効な場合、書き込まれた値に応じてLEDがオンまたはオフになります。",
+              "pt": "Bit de status indicando que o LED está ativo. 0=LED desligado, 1=LED ligado. Se escrito, o LED será ligado ou desligado dependendo do valor escrito. Se o LED estiver habilitado no registrador de controle, o LED será ligado ou desligado dependendo do valor escrito.",
+              "ar": "بت الحالة الذي يشير إلى أن LED نشط. 0=LED مغلق، 1=LED مفتوح. عند الكتابة إليه، سيتم تشغيل أو إيقاف تشغيل LED بناءً على القيمة المكتوبة. إذا كان LED ممكّناً في سجل التحكم، فسيتم تشغيل أو إيقاف تشغيل LED بناءً على القيمة المكتوبة.",
+              "sk": "Stavový bit, ktorý indikuje, že LED je aktívny. 0=LED vypnutý, 1=LED zapnutý. Ak sa doň zapisuje, LED sa zapne alebo vypne v závislosti od zapísanej hodnoty. Ak je LED povolený v riadiacom registri, LED sa zapne alebo vypne v závislosti od zapísanej hodnoty.",
+              "hu": "Állapotbit, amely jelzi, hogy a LED aktív. 0=LED ki, 1=LED be. Ha írják, a LED be- vagy kikapcsol az írt értéktől függően. Ha a LED engedélyezve van a vezérlőregiszterben, a LED be- vagy kikapcsol az írt értéktől függően.",
+              "kr": "상태 비트로 LED가 활성 상태인지 나타냅니다. 0=LED 꺼짐, 1=LED 켜짐. 쓰여지면 쓰여진 값에 따라 LED가 켜지거나 꺼집니다. LED가 제어 레지스터에서 활성화된 경우, 쓰여진 값에 따라 LED가 켜지거나 꺼집니다."
+            }
+          },
+          {
+            "name": "Button active",
+            "pos": 0,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Status bit that tell that button is active. 0=Button is not active, 1=Button is active.",
+              "se": "Statusbit som anger att knappen är aktiv. 0=Knappen är inte aktiv, 1=Knappen är aktiv.",
+              "no": "Statusbit som indikerer at knappen er aktiv. 0=Knappen er ikke aktiv, 1=Knappen er aktiv.",
+              "dk": "Statusbit, der angiver, at knappen er aktiv. 0=Knappen er ikke aktiv, 1=Knappen er aktiv.",
+              "de": "Statusbit, das angibt, dass die Taste aktiv ist. 0=Taste ist nicht aktiv, 1=Taste ist aktiv.",
+              "fr": "Bit d'état indiquant que le bouton est actif. 0=Le bouton n'est pas actif, 1=Le bouton est actif.",
+              "es": "Bit de estado que indica que el botón está activo. 0=El botón no está activo, 1=El botón está activo.",
+              "it": "Bit di stato che indica che il pulsante è attivo. 0=Il pulsante non è attivo, 1=Il pulsante è attivo.",
+              "ru": "Бит состояния, указывающий, что кнопка активна. 0=Кнопка не активна, 1=Кнопка активна.",
+              "fi": "Tilabitti, joka kertoo, että painike on aktiivinen. 0=Painike ei ole aktiivinen, 1=Painike on aktiivinen.",
+              "zh": "状态位，指示按钮是否处于活动状态。0=按钮未激活，1=按钮已激活。",
+              "ja": "ボタンがアクティブであることを示すステータスビット。0=ボタンはアクティブではない、1=ボタンはアクティブです。",
+              "pt": "Bit de status que indica que o botão está ativo. 0=O botão não está ativo, 1=O botão está ativo.",
+              "ar": "بت الحالة الذي يشير إلى أن الزر نشط. 0=الزر غير نشط، 1=الزر نشط.",
+              "sk": "Stavový bit, ktorý indikuje, že tlačidlo je aktívne. 0=Tlačidlo nie je aktívne, 1=Tlačidlo je aktívne.",
+              "hu": "Állapotbit, amely jelzi, hogy a gomb aktív. 0=A gomb nem aktív, 1=A gomb aktív.",
+              "kr": "상태 비트로 버튼이 활성 상태인지 나타냅니다. 0=버튼 비활성, 1=버튼 활성"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Control",
+        "page": 0,
+        "offset": 3,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0b11001110",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "bit": [
+          {
+            "name": "Enable LED",
+            "pos": 7,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to enable control of the LED. Clear bit to disable control of the LED.",
+              "se": "Sätt bit för att aktivera kontroll av LED. Rensa bit för att inaktivera kontroll av LED.",
+              "no": "Sett bit for å aktivere kontroll av LED. Rens bit for å deaktivere kontroll av LED.",
+              "dk": "Sæt bit for at aktivere kontrol af LED. Rens bit for at deaktivere kontrol af LED.",
+              "de": "Setzen Sie das Bit, um die Steuerung der LED zu aktivieren. Löschen Sie das Bit, um die Steuerung der LED zu deaktivieren.",
+              "fr": "Définissez le bit pour activer le contrôle de la LED. Effacez le bit pour désactiver le contrôle de la LED.",
+              "es": "Establezca el bit para habilitar el control del LED. Borre el bit para deshabilitar el control del LED.",
+              "it": "Imposta il bit per abilitare il controllo del LED. Cancella il bit per disabilitare il controllo del LED.",
+              "ru": "Установите бит для включения управления светодиодом. Очистите бит для отключения управления светодиодом.",
+              "fi": "Aseta bitti, jotta voit ohjata LEDiä. Tyhjennä bitti, jotta et voi ohjata LEDiä.",
+              "zh": "设置位以启用LED的控制。清除位以禁用LED的控制。",
+              "ja": "LEDの制御を有効にするにはビットを設定します。LEDの制御を無効にするにはビットをクリアします。",
+              "pt": "Defina o bit para habilitar o controle do LED. Limpe o bit para desabilitar o controle do LED.",
+              "ar": "قم بتعيين البت لتمكين التحكم في LED. امسح البت لتعطيل التحكم في LED.",
+              "sk": "Nastavte bit pro povolení ovládání LED. Vymažte bit pro zakázání ovládání LED.",
+              "hu": "Állítsa be a bitet az LED vezérlésének engedélyezéséhez. Törölje a bitet az LED vezérlésének letiltásához.",
+              "kr": "비트를 설정하여 LED 제어를 활성화합니다. 비트를 지워 LED 제어를 비활성화합니다."
+            },
+            "infourl": {
+              "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-3"
+            }
+          },
+          {
+            "name": "Enable Button",
+            "pos": 6,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Enable button, will send turn-on/turn-off events when button is pressed.",
+              "se": "Aktivera brytare, kommer att skicka på/av händelser när knappen trycks.",
+              "es": "Habilitar el botón, enviará eventos de encendido/apagado cuando se presione el botón.",
+              "ru": "Включить кнопку, будет отправлять события включения/выключения при нажатии кнопки.",
+              "fi": "Ota painike käyttöön, lähettää päälle/pois -tapahtumia, kun painiketta painetaan.",
+              "zh": "启用按钮，当按钮被按下时将发送开/关事件。",
+              "ja": "ボタンを有効にすると、ボタンが押されたときにオン/オフイベントが送信されます。",
+              "pt": "Habilitar botão, enviará eventos de ligar/desligar quando o botão for pressionado.",
+              "ar": "تمكين الزر، سيرسل أحداث التشغيل/الإيقاف عند الضغط على الزر.",
+              "sk": "Povoliť tlačidlo, bude odosielať udalosti zapnutia/vypnutia, keď sa tlačidlo stlačí.",
+              "no": "Aktiver knapp, vil sende på/av hendelser når knappen trykkes.",
+              "dk": "Aktiver knap, vil sende tænd/sluk begivenheder, når knappen trykkes.",
+              "de": "Aktivieren Sie die Taste, es werden Ein/Aus-Ereignisse gesendet, wenn die Taste gedrückt wird.",
+              "fr": "Activer le bouton, enverra des événements on/off lorsque le bouton est pressé.",
+              "it": "Abilitare il pulsante, invierà eventi on/off quando il pulsante viene premuto.",
+              "hu": "Engedélyezze a gombot, be/ki kapcsoló eseményeket küld, amikor a gombot megnyomják.",
+              "kr": "버튼을 활성화하면 버튼을 누를 때 켜기/끄기 이벤트가 전송됩니다."
+            }
+          },
+          {
+            "name": "Send Turn-ON event when button is pressed",
+            "pos": 3,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to send turn-on event when button is pressed.",
+              "se": "Sätt bit för att skicka på-händelse när knapp trycks ner.",
+              "no": "Sett bit for å sende påslåingshendelse når knappen trykkes.",
+              "dk": "Sæt bit for at sende til-hændelse, når knappen trykkes.",
+              "de": "Setzen Sie das Bit, um ein Einschaltereignis zu senden, wenn die Taste gedrückt wird.",
+              "fr": "Définissez le bit pour envoyer un événement d'activation lorsque le bouton est pressé.",
+              "es": "Establezca el bit para enviar el evento de encendido cuando se presione el botón.",
+              "it": "Imposta il bit per inviare l'evento di accensione quando si preme il pulsante.",
+              "ru": "Установите бит для отправки события включения при нажатии кнопки.",
+              "fi": "Aseta bitti lähettääksesi käynnistystapahtuman, kun painiketta painetaan.",
+              "zh": "设置位以在按下按钮时发送开启事件。",
+              "ja": "ボタンが押されたときにオン・イベントを送信するためにビットを設定します。",
+              "pt": "Defina o bit para enviar o evento de ativação quando o botão for pressionado.",
+              "ar": "قم بتعيين البت لإرسال حدث التشغيل عند الضغط على الزر.",
+              "sk": "Nastavte bit pre odoslanie udalosti zapnutia, keď sa tlačidlo stlačí.",
+              "hu": "Állítsa be a bitet a bekapcsolási esemény küldéséhez, amikor a gombot megnyomják.",
+              "kr": "버튼을 누를 때 켜기 이벤트를 보내려면 비트를 설정합니다."
+            }
+          },
+          {
+            "name": "Send START event when button is pressed",
+            "pos": 2,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to send START event when button is pressed.",
+              "se": "Sätt bit för att skicka START event när knapp trycks ner.",
+              "no": "Sett bit for å sende START-hendelse når knappen trykkes.",
+              "dk": "Sæt bit for at sende START-hændelse, når knappen trykkes.",
+              "de": "Setzen Sie das Bit, um ein START-Ereignis zu senden, wenn die Taste gedrückt wird.",
+              "fr": "Définissez le bit pour envoyer un événement START lorsque le bouton est pressé.",
+              "es": "Establezca el bit para enviar el evento START cuando se presione el botón.",
+              "it": "Imposta il bit per inviare l'evento START quando si preme il pulsante.",
+              "ru": "Установите бит для отправки события СТАРТ при нажатии кнопки.",
+              "fi": "Aseta bitti lähettääksesi START-tapahtuman, kun painiketta painetaan.",
+              "zh": "设置位以在按下按钮时发送START事件。",
+              "ja": "ボタンが押されたときにSTARTイベントを送信するためにビットを設定します。",
+              "pt": "Defina o bit para enviar o evento START quando o botão for pressionado.",
+              "ar": "قم بتعيين البت لإرسال حدث START عند الضغط على الزر.",
+              "sk": "Nastavte bit pre odoslanie udalosti START, keď sa tlačidlo stlačí.",
+              "hu": "Állítsa be a bitet a START esemény küldéséhez, amikor a gombot megnyomják.",
+              "kr": "버튼을 누를 때 START 이벤트를 보내려면 비트를 설정합니다."
+            }
+          },
+          {
+            "name": "Send STOP event when button is released",
+            "pos": 1,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to send STOP event when button is released.",
+              "se": "Sätt bit för att skicka STOP event när knapp släpps.",
+              "no": "Sett bit for å sende STOP-hendelse når knappen slippes.",
+              "dk": "Sæt bit for at sende STOP-hændelse, når knappen slippes.",
+              "de": "Setzen Sie das Bit, um ein STOP-Ereignis zu senden, wenn die Taste losgelassen wird.",
+              "fr": "Définissez le bit pour envoyer un événement STOP lorsque le bouton est relâché.",
+              "es": "Establezca el bit para enviar el evento STOP cuando se suelte el botón.",
+              "it": "Imposta il bit per inviare l'evento STOP quando il pulsante viene rilasciato.",
+              "ru": "Установите бит для отправки события СТОП при отпускании кнопки.",
+              "fi": "Aseta bitti lähettääksesi STOP-tapahtuman, kun painike vapautetaan.",
+              "zh": "设置位以在释放按钮时发送STOP事件。",
+              "ja": "ボタンが離されたときにSTOPイベントを送信するためにビットを設定します。",
+              "pt": "Defina o bit para enviar o evento STOP quando o botão for liberado.",
+              "ar": "قم بتعيين البت لإرسال حدث STOP عند تحرير الزر.",
+              "sk": "Nastavte bit pre odoslanie udalosti STOP, keď sa tlačidlo uvoľní.",
+              "hu": "Állítsa be a bitet a STOP esemény küldéséhez, amikor a gombot elengedik.",
+              "kr": "버튼을 놓을 때 STOP 이벤트를 보내려면 비트를 설정합니다."
+            }
+          },
+          {
+            "name": "Enable Millisecond counter",
+            "pos": 0,
+            "width": 1,
+            "default": 1,
+            "access": "rw",
+            "description": {
+              "en": "Set bit to enable millisecond counter.",
+              "se": "Sätt bit för att aktivera millisekundräknaren.",
+              "no": "Sett bit for å aktivere millisekundteller.",
+              "dk": "Sæt bit for at aktivere millisekundtæller.",
+              "de": "Setzen Sie das Bit, um den Millisekundenzähler zu aktivieren.",
+              "fr": "Définissez le bit pour activer le compteur de millisecondes.",
+              "es": "Establezca el bit para activar el contador de milisegundos.",
+              "it": "Imposta il bit per attivare il contatore dei millisecondi.",
+              "ru": "Установите бит для активации счетчика миллисекунд.",
+              "fi": "Aseta bitti aktivoidaksesi millisekuntien laskurin.",
+              "zh": "设置位以启用毫秒计数器。",
+              "ja": "ミリ秒カウンタを有効にするためにビットを設定します。",
+              "pt": "Defina o bit para ativar o contador de milissegundos.",
+              "ar": "قم بتعيين البت لتمكين عداد المللي ثانية.",
+              "sk": "Nastavte bit pre aktiváciu milisekundového čítača.",
+              "hu": "Állítsa be a bitet a milliszekundum számláló engedélyezéséhez.",
+              "kr": "밀리초 카운터를 활성화하려면 비트를 설정합니다."
+            }
+          }
+        ]
+      },
+      {
+        "name": "Blink interval (milliseconds) MSB",
+        "page": 0,
+        "offset": 4,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0x01",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Most significant byte of the blink interval.",
+          "se": "Mest signifikant byte av blinkintervallet.",
+          "no": "Mest signifikante byte av blinkintervallet.",
+          "dk": "Mest signifikante byte af blinkintervallet.",
+          "de": "Höchstwertiges Byte des Blinkintervalls.",
+          "fr": "Octet le plus significatif de l'intervalle de clignotement.",
+          "es": "Byte más significativo del intervalo de parpadeo.",
+          "it": "Byte più significativo dell'intervallo di lampeggio.",
+          "ru": "Старший байт интервала мигания.",
+          "fi": "Vilkkuintervaalin merkittävin tavu.",
+          "zh": "闪烁间隔的最高有效字节。",
+          "ja": "点滅間隔の最上位バイト。",
+          "pt": "Byte mais significativo do intervalo de piscar.",
+          "ar": "البايت الأكثر أهمية لفاصل الوميض.",
+          "sk": "Najvýznamnejší bajt intervalu blikania.",
+          "hu": "A villogási intervallum legjelentősebb bájtja.",
+          "kr": "깜박임 간격의 최상위 바이트."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-4"
+        }
+      },
+      {
+        "name": "Blink interval (milliseconds) LSB",
+        "page": 0,
+        "offset": 5,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "0xf4",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Least significant byte of the blink interval.",
+          "se": "Minst signifikant byte av blinkintervallet.",
+          "no": "Minst signifikante byte av blinkintervallet.",
+          "dk": "Mindst signifikante byte af blinkintervallet.",
+          "de": "Niedrigstwertiges Byte des Blinkintervalls.",
+          "fr": "Octet le moins significatif de l'intervalle de clignotement.",
+          "es": "Byte menos significativo del intervalo de parpadeo.",
+          "it": "Byte meno significativo dell'intervallo di lampeggio.",
+          "ru": "Младший байт интервала мигания.",
+          "fi": "Vilkkuintervaalin vähiten merkittävä tavu.",
+          "zh": "闪烁间隔的最低有效字节。",
+          "ja": "点滅間隔の最下位バイト。",
+          "pt": "Byte menos significativo do intervalo de piscar.",
+          "ar": "البايت الأقل أهمية لفاصل الوميض.",
+          "sk": "Najmenej významný bajt intervalu blikania.",
+          "hu": "A villogási intervallum legkevésbé jelentős bájtja.",
+          "kr": "깜박임 간격의 최하위 바이트."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-4"
+        }
+      },
+      {
+        "name": "Millisecond counter MSB",
+        "page": 0,
+        "offset": 6,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Most significant byte of the millisecond counter.",
+          "se": "Mest signifikant byte av millisekunderräknaren.",
+          "no": "Mest signifikante byte av millisekunderstelleren.",
+          "dk": "Mest signifikante byte af millisekundertælleren.",
+          "de": "Höchstwertiges Byte des Millisekundenzählers.",
+          "fr": "Octet le plus significatif du compteur de millisecondes.",
+          "es": "Byte más significativo del contador de milisegundos.",
+          "it": "Byte più significativo del contatore dei millisecondi.",
+          "ru": "Старший байт счётчика миллисекунд.",
+          "fi": "Millisekuntilaskurin merkittävin tavu.",
+          "zh": "毫秒计数器的最高有效字节。",
+          "ja": "ミリ秒カウンタの最上位バイト。",
+          "pt": "Byte mais significativo do contador de milissegundos.",
+          "ar": "البايت الأكثر أهمية لعداد المللي ثانية.",
+          "sk": "Najvýznamnejší bajt čítača milisekúnd.",
+          "hu": "A milliszekundum-számláló legjelentősebb bájtja.",
+          "kr": "밀리초 카운터의 최상위 바이트."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-6"
+        }
+      },
+      {
+        "name": "Millisecond counter byte 2",
+        "page": 0,
+        "offset": 7,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Second most significant byte of the millisecond counter.",
+          "se": "Näst mest signifikant byte av millisekunderräknaren.",
+          "no": "Nest mest signifikante byte av millisekunderstelleren.",
+          "dk": "Næst mest signifikante byte af millisekundertælleren.",
+          "de": "Zweithöchstes Byte des Millisekundenzählers.",
+          "fr": "Deuxième octet le plus significatif du compteur de millisecondes.",
+          "es": "Segundo byte más significativo del contador de milisegundos.",
+          "it": "Secondo byte più significativo del contatore dei millisecondi.",
+          "ru": "Второй старший байт счётчика миллисекунд.",
+          "fi": "Toiseksi merkittävin tavu millisekuntilaskurista.",
+          "zh": "毫秒计数器的第二高有效字节。",
+          "ja": "ミリ秒カウンタの第2上位バイト。",
+          "pt": "Segundo byte mais significativo do contador de milissegundos.",
+          "ar": "البايت الثاني الأكثر أهمية لعداد المللي ثانية.",
+          "sk": "Druhý najvýznamnejší bajt čítača milisekúnd.",
+          "hu": "A milliszekundum-számláló második legjelentősebb bájtja.",
+          "kr": "밀리초 카운터의 두 번째 최상위 바이트."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-6"
+        }
+      },
+      {
+        "name": "Millisecond counter byte 1",
+        "page": 0,
+        "offset": 8,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Second least significant byte of the millisecond counter.",
+          "se": "Näst minst signifikant byte av millisekunderräknaren.",
+          "no": "Nest minst signifikante byte av millisekunderstelleren.",
+          "dk": "Næst mindst signifikante byte af millisekundertælleren.",
+          "de": "Zweitniedrigstes Byte des Millisekundenzählers.",
+          "fr": "Deuxième octet le moins significatif du compteur de millisecondes.",
+          "es": "Segundo byte menos significativo del contador de milisegundos.",
+          "it": "Secondo byte meno significativo del contatore dei millisecondi.",
+          "ru": "Второй младший байт счётчика миллисекунд.",
+          "fi": "Toiseksi vähiten merkittävä tavu millisekuntilaskurista.",
+          "zh": "毫秒计数器的第二低有效字节。",
+          "ja": "ミリ秒カウンタの第2下位バイト。",
+          "pt": "Segundo byte menos significativo do contador de milissegundos.",
+          "ar": "البايت الثاني الأقل أهمية لعداد المللي ثانية.",
+          "sk": "Druhý najmenej významný bajt čítača milisekúnd.",
+          "hu": "A milliszekundum-számláló második legkevésbé jelentős bájtja.",
+          "kr": "밀리초 카운터의 두 번째 최하위 바이트."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-6"
+        }
+      },
+      {
+        "name": "Millisecond counter LSB",
+        "page": 0,
+        "offset": 9,
+        "span": 1,
+        "width": 8,
+        "access": "rw",
+        "type": "std",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Least significant byte of the millisecond counter.",
+          "se": "Least significant byte of the millisecond counter.",
+          "no": "Least significant byte of the millisecond counter.",
+          "dk": "Least significant byte of the millisecond counter.",
+          "de": "Least significant byte of the millisecond counter.",
+          "fr": "Least significant byte of the millisecond counter.",
+          "es": "Least significant byte of the millisecond counter.",
+          "it": "Least significant byte of the millisecond counter.",
+          "ru": "Least significant byte of the millisecond counter.",
+          "fi": "Least significant byte of the millisecond counter.",
+          "zh": "Least significant byte of the millisecond counter.",
+          "ja": "Least significant byte of the millisecond counter.",
+          "pt": "Least significant byte of the millisecond counter.",
+          "ar": "Least significant byte of the millisecond counter.",
+          "sk": "Least significant byte of the millisecond counter.",
+          "hu": "Least significant byte of the millisecond counter.",
+          "kr": "Least significant byte of the millisecond counter."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-6"
+        }
+      },
+      {
+        "name": "Optional byte zero value for button",
+        "page": 0,
+        "offset": 10,
+        "width": 1,
+        "default": 1,
+        "access": "rw",
+        "description": {
+          "en": "Byte 0 for events sent when button is pressed.",
+          "se": "Byte 0 för events sända när knapp trycks ner.",
+          "no": "Byte 0 for hendelser sendt når knappen trykkes.",
+          "dk": "Byte 0 for hændelser sendt, når knappen trykkes.",
+          "de": "Byte 0 für Ereignisse, die gesendet werden, wenn die Taste gedrückt wird.",
+          "fr": "Octet 0 pour les événements envoyés lorsque le bouton est enfoncé.",
+          "es": "Byte 0 para eventos enviados cuando se presiona el botón.",
+          "it": "Byte 0 per eventi inviati quando il pulsante è premuto.",
+          "ru": "Байт 0 для событий, отправляемых при нажатии кнопки.",
+          "fi": "Tavu 0 tapahtumia varten, kun painiketta painetaan.",
+          "zh": "按下按钮时发送事件的字节0。",
+          "ja": "ボタンが押されたときに送信されるイベントのバイト0。",
+          "pt": "Byte 0 para eventos enviados quando o botão é pressionado.",
+          "ar": "البايت 0 للأحداث المرسلة عند الضغط على الزر.",
+          "sk": "Bajt 0 pre udalosti odoslané pri stlačení tlačidla.",
+          "hu": "0. bájt az eseményekhez, amikor a gombot megnyomják.",
+          "kr": "버튼을 누를 때 보내는 이벤트의 바이트 0."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-10"
+        }
+      },
+      {
+        "name": "Zone value for button",
+        "page": 0,
+        "offset": 11,
+        "width": 1,
+        "default": 1,
+        "access": "rw",
+        "description": {
+          "en": "Byte 1, zone, for events sent when button is pressed.",
+          "se": "Byte 1, zone, för events sända när knapp trycks ner.",
+          "no": "Byte 1, sone, for hendelser sendt når knappen trykkes.",
+          "dk": "Byte 1, zone, for hændelser sendt, når knappen trykkes.",
+          "de": "Byte 1, Zone, für Ereignisse, die gesendet werden, wenn die Taste gedrückt wird.",
+          "fr": "Octet 1, zone, pour les événements envoyés lorsque le bouton est enfoncé.",
+          "es": "Byte 1, zona, para eventos enviados cuando se presiona el botón.",
+          "it": "Byte 1, zona, per eventi inviati quando il pulsante è premuto.",
+          "ru": "Байт 1, зона, для событий, отправляемых при нажатии кнопки.",
+          "fi": "Tavu 1, alue, tapahtumia varten, kun painiketta painetaan.",
+          "zh": "按下按钮时发送事件的字节1，区域。",
+          "ja": "ボタンが押されたときに送信されるイベントのバイト1、ゾーン。",
+          "pt": "Byte 1, zona, para eventos enviados quando o botão é pressionado.",
+          "ar": "البايت 1، المنطقة، للأحداث المرسلة عند الضغط على الزر.",
+          "sk": "Bajt 1, zóna, pre udalosti odoslané pri stlačení tlačidla.",
+          "hu": "1. bájt, zóna, az eseményekhez, amikor a gombot megnyomják.",
+          "kr": "버튼을 누를 때 보내는 이벤트의 바이트 1, 영역."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-11"
+        }
+      },
+      {
+        "name": "Subzone value for button",
+        "page": 0,
+        "offset": 12,
+        "width": 1,
+        "default": 1,
+        "access": "rw",
+        "description": {
+          "en": "Byte 2, subzone, for events sent when button is pressed.",
+          "se": "Byte 2, subzone, för events sända när knapp trycks ner.",
+          "no": "Byte 2, undersone, for hendelser sendt når knappen trykkes.",
+          "dk": "Byte 2, subzone, for hændelser sendt, når knappen trykkes.",
+          "de": "Byte 2, Unterzone, für Ereignisse, die gesendet werden, wenn die Taste gedrückt wird.",
+          "fr": "Octet 2, sous-zone, pour les événements envoyés lorsque le bouton est enfoncé.",
+          "es": "Byte 2, subzona, para eventos enviados cuando se presiona el botón.",
+          "it": "Byte 2, sottozona, per eventi inviati quando il pulsante è premuto.",
+          "ru": "Байт 2, подзона, для событий, отправляемых при нажатии кнопки.",
+          "fi": "Tavu 2, alialue, tapahtumia varten, kun painiketta painetaan.",
+          "zh": "按下按钮时发送事件的字节2，子区域。",
+          "ja": "ボタンが押されたときに送信されるイベントのバイト2、サブゾーン。",
+          "pt": "Byte 2, subzona, para eventos enviados quando o botão é pressionado.",
+          "ar": "البايت 2، المنطقة الفرعية، للأحداث المرسلة عند الضغط على الزر.",
+          "sk": "Bajt 2, subzóna, pre udalosti odoslané pri stlačení tlačidla.",
+          "hu": "2. bájt, alzóna, az eseményekhez, amikor a gombot megnyomják.",
+          "kr": "버튼을 누를 때 보내는 이벤트의 바이트 2, 하위 영역."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-register-12"
+        }
+      },
+      {
+        "name": "Decision Matrix",
+        "page": 0,
+        "offset": "0x60",
+        "span": 32,
+        "width": 8,
+        "access": "rw",
+        "type": "dmatrix1",
+        "default": "UNDEF",
+        "min": 0,
+        "max": 255,
+        "fgcolor": "0x0",
+        "bgcolor": "0xffffff",
+        "description": {
+          "en": "Decision matrix. This defines the storage location for the decision matrix.",
+          "se": "Beslutsmatris. Definierar lagringsplatsen för beslutsmatrisen.",
+          "no": "Beslutningsmatrise. Dette definerer lagringsplasseringen for beslutningsmatrisen.",
+          "dk": "Beslutningsmatrix. Dette definerer lagerplaceringen for beslutningsmatrixen.",
+          "de": "Entscheidungsmatrix. Dies definiert den Speicherort für die Entscheidungsmatrix.",
+          "fr": "Matrice de décision. Ceci définit l'emplacement de stockage de la matrice de décision.",
+          "es": "Matriz de decisión. Esto define la ubicación de almacenamiento de la matriz de decisión.",
+          "it": "Matrice decisionale. Questo definisce la posizione di archiviazione per la matrice decisionale.",
+          "ru": "Матрица решений. Определяет место хранения матрицы решений.",
+          "fi": "Päätösmatriisi. Tässä määritellään päätösmatriisin tallennuspaikka.",
+          "zh": "决策矩阵。这定义了决策矩阵的存储位置。",
+          "ja": "デシジョンマトリックス。デシジョンマトリックスの保存場所を定義します。",
+          "pt": "Matriz de decisão. Isso define o local de armazenamento da matriz de decisão.",
+          "ar": "مصفوفة القرار. هذا يحدد موقع تخزين مصفوفة القرار.",
+          "sk": "Rozhodovacia matica. Toto definuje umiestnenie úložiska pre rozhodovaciu maticu.",
+          "hu": "Döntési mátrix. Ez meghatározza a döntési mátrix tárolási helyét.",
+          "kr": "결정 행렬입니다. 결정 행렬의 저장 위치를 정의합니다."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-dmatrix"
+        }
+      }
+    ],
+    "remotevars": [
+      {
+        "name": "Blink interval",
+        "type": "uint16_t",
+        "default": 500,
+        "page": 0,
+        "offset": 4,
+        "access": "rw",
+        "fgcolor": "0x112233",
+        "bgcolor": "0xE0E0FF",
+        "description": {
+          "en": "Interval in milliseconds for blinking. 0 means no blinking.",
+          "se": "Intervall i millisekunder för blinkning. 0 betyder ingen blinkning.",
+          "no": "Intervall i millisekunder for blinking. 0 betyr ingen blinking.",
+          "dk": "Interval i millisekunder for blinkning. 0 betyder ingen blinkning.",
+          "de": "Intervall in Millisekunden für das Blinken. 0 bedeutet kein Blinken.",
+          "fr": "Intervalle en millisecondes pour le clignotement. 0 signifie pas de clignotement.",
+          "es": "Intervalo en milisegundos para el parpadeo. 0 significa sin parpadeo.",
+          "it": "Intervallo in millisecondi per il lampeggio. 0 significa nessun lampeggio.",
+          "ru": "Интервал в миллисекундах для мигания. 0 означает отсутствие мигания.",
+          "fi": "Intervalli millisekunteina vilkkumiselle. 0 tarkoittaa ei vilkkumista.",
+          "zh-CN": "点亮的毫秒间隔。0表示不闪烁。",
+          "ja-JP": "点滅のミリ秒単位の間隔。0は点滅なしを意味します。",
+          "pt": "Intervalo em milissegundos para piscar. 0 significa sem piscar.",
+          "ar": "فاصل بالمللي ثانية للوميض. 0 يعني لا وميض.",
+          "sk": "Interval v milisekundách pro blikání. 0 znamená žádné blikání.",
+          "hu": "Intervallum milliszekundumban a villogáshoz. 0 azt jelenti, hogy nincs villogás.",
+          "kr": "점멸의 밀리초 단위 간격입니다. 0은 점멸이 없음을 의미합니다.",
+          "zh": "点亮的毫秒间隔。0表示不闪烁。",
+          "ja": "点滅のミリ秒単位の間隔。0は点滅なしを意味します。"
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-remotevar-interval"
+        }
+      },
+      {
+        "name": "Millisecond counter",
+        "type": "uint32_t",
+        "default": "UNDEF",
+        "page": 0,
+        "offset": 6,
+        "access": "rw",
+        "fgcolor": "0x112233",
+        "bgcolor": "0xE0E0FF",
+        "description": {
+          "en": "Millisecond counter value. Write zero to any of the counter registers to reset the counter.",
+          "se": "Räknarvärde för millisekunder. Skriv noll till någon av räknarregistren för att återställa räknaren.",
+          "no": "Millisekundtellerverdi. Skriv null til noen av telleregistrene for å tilbakestille telleren.",
+          "dk": "Millisekundtæller værdi. Skriv nul til nogen af tællerregistrene for at nulstille tælleren.",
+          "de": "Millisekunden-Zählerwert. Schreiben Sie null in eines der Zählerregister, um den Zähler zurückzusetzen.",
+          "fr": "Valeur du compteur de millisecondes. Écrivez zéro dans l'un des registres du compteur pour réinitialiser le compteur.",
+          "es": "Valor del contador de milisegundos. Escriba cero en cualquiera de los registros del contador para restablecer el contador.",
+          "it": "Valore del contatore dei millisecondi. Scrivere zero in uno qualsiasi dei registri del contatore per azzerare il contatore.",
+          "ru": "Значение счетчика миллисекунд. Запишите ноль в любой из регистров счетчика, чтобы сбросить счетчик.",
+          "fi": "Millisekunnin laskurin arvo. Kirjoita nolla mihin tahansa laskurin rekisteriin nollataksesi laskurin.",
+          "zh": "毫秒计数器的值。将任意计数器寄存器写入零以重置计数器。",
+          "ja": "ミリ秒カウンタの値。カウンタをリセットするには、任意のカウンタレジスタにゼロを書き込みます。",
+          "pt": "Valor do contador de milissegundos. Escreva zero em qualquer um dos registradores do contador para redefinir o contador.",
+          "ar": "قيمة عداد المللي ثانية. اكتب صفرًا في أي من سجلات العداد لإعادة تعيين العداد.",
+          "sk": "Hodnota čítača milisekúnd. Zapíšte nulu do ktoréhokoľvek z registrov čítača na resetovanie čítača.",
+          "hu": "Milliszekundum számláló értéke. Írjon nullát bármelyik számláló regiszterbe a számláló visszaállításához.",
+          "kr": "밀리초 카운터 값. 카운터를 재설정하려면 카운터 레지스터 중 하나에 0을 쓰십시오."
+        },
+        "infourl": {
+          "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-remotevar-counter"
+        }
+      }
+    ],
+    "alarm": [
+      {
+        "pos": 7,
+        "name": "Counter limit reached",
+        "description": [
+          {
+            "en": "Counter limit reached",
+            "se": "Räknargräns nådd",
+            "no": "Tellergrense nådd",
+            "dk": "Tællergrænse nået",
+            "de": "Zählergrenze erreicht",
+            "fr": "Limite du compteur atteinte",
+            "es": "Límite del contador alcanzado",
+            "it": "Limite del contatore raggiunto",
+            "ru": "Достигнут предел счетчика",
+            "fi": "Laskurin raja saavutettu",
+            "zh": "计数器达到上限",
+            "ja": "カウンターの上限に達しました",
+            "pt": "Limite do contador atingido",
+            "ar": "تم الوصول إلى حد العداد",
+            "sk": "Dosiahnutá hranica čítača",
+            "hu": "Elérte a számláló határát",
+            "kr": "카운터 한도에 도달했습니다."
+          }
+        ],
+        "infourl": [
+          {
+            "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-alarm7"
+          }
+        ]
+      },
+      {
+        "pos": "0x06",
+        "name": "test event data 1",
+        "description": [
+          {
+            "en": "test"
+          }
+        ],
+        "infourl": [
+          {
+            "en": "https://github.com/grodansparadis/vscp/wiki/blinky-info-url-alarm6"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "Level I heartbeat Event",
+        "class": 20,
+        "type": 9,
+        "direction": "out",
+        "priority": "NORMAL",
+        "description": {
+          "en": "Heartbeat Event sent every X seconds if device is level I device.",
+          "se": "Heartbeat Event skickas varje X sekund om enheten är nivå I enhet.",
+          "no": "Heartbeat-hendelse sendes hvert X sekund hvis enheten er nivå I-enhet.",
+          "dk": "Heartbeat-begivenhed sendes hvert X sekund, hvis enheden er niveau I-enhed.",
+          "de": "Heartbeat-Ereignis wird alle X Sekunden gesendet, wenn das Gerät ein Level-I-Gerät ist.",
+          "fr": "Événement de battement de cœur envoyé toutes les X secondes si l'appareil est de niveau I.",
+          "es": "Evento de latido enviado cada X segundos si el dispositivo es de nivel I.",
+          "it": "Evento di battito cardiaco inviato ogni X secondi se il dispositivo è di livello I.",
+          "ru": "Событие сердцебиения отправляется каждые X секунд, если устройство является устройством уровня I.",
+          "fi": "Heartbeat-tapahtuma lähetetään joka X sekunti, jos laite on tason I laite.",
+          "zh": "如果设备是一级设备，则每X秒发送一次心跳事件。",
+          "ja": "デバイスがレベルIデバイスの場合、X秒ごとにハートビートイベントが送信されます。",
+          "pt": "Evento de batimento cardíaco enviado a cada X segundos se o dispositivo for de nível I.",
+          "ar": "يتم إرسال حدث نبض القلب كل X ثانية إذا كان الجهاز جهازًا من المستوى الأول.",
+          "sk": "Udalosť srdcového tepu sa odosiela každých X sekúnd, ak je zariadenie úrovne I.",
+          "hu": "Szívverés esemény küldése minden X másodpercben, ha az eszköz I. szintű eszköz.",
+          "kr": "장치가 레벨 I 장치인 경우 X초마다 하트비트 이벤트가 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Level II Node Heartbeat",
+        "class": 1026,
+        "type": 2,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "Level II Node Heartbeat Event sent every X seconds if device is level II device.",
+          "se": "Level II Node Heartbeat Event skickas varje X sekund om enheten är nivå II enhet.",
+          "no": "Level II Node Heartbeat Event sendes hvert X sekund hvis enheten er nivå II-enhet.",
+          "dk": "Level II Node Heartbeat Event sendes hvert X sekund, hvis enheden er niveau II-enhed.",
+          "de": "Level II Node Heartbeat Event wird alle X Sekunden gesendet, wenn das Gerät ein Level-II-Gerät ist.",
+          "fr": "Événement de battement de cœur du nœud de niveau II envoyé toutes les X secondes si l'appareil est un appareil de niveau II.",
+          "es": "Evento de latido del nodo de nivel II enviado cada X segundos si el dispositivo es un dispositivo de nivel II.",
+          "it": "Evento di battito cardiaco del nodo di livello II inviato ogni X secondi se il dispositivo è un dispositivo di livello II.",
+          "ru": "Событие сердцебиения узла уровня II отправляется каждые X секунд, если устройство является устройством уровня II.",
+          "fi": "Level II Node Heartbeat Event lähetetään joka X sekunti, jos laite on taso II -laite.",
+          "zh": "如果设备是二级设备，则每X秒发送一次二级节点心跳事件。",
+          "ja": "デバイスがレベルIIデバイスの場合、X秒ごとにレベルIIノードハートビートイベントが送信されます。",
+          "pt": "Evento de batimento cardíaco do nó de nível II enviado a cada X segundos se o dispositivo for um dispositivo de nível II.",
+          "ar": "يتم إرسال حدث نبض العقدة من المستوى الثاني كل X ثانية إذا كان الجهاز جهازًا من المستوى الثاني.",
+          "sk": "Level II Node Heartbeat Event odosielané každých X sekúnd, ak je zariadenie úrovne II.",
+          "hu": "Level II Node Heartbeat Event küldése minden X másodpercben, ha az eszköz II. szintű.",
+          "kr": "Level II Node Heartbeat Event는 장치가 레벨 II 장치인 경우 X초마다 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "Devicename",
+            "description": {
+              "en": "The name of the device sending the event (0-63 bytes).",
+              "se": "Namnet på enheten som skickar händelsen (0-63 tecken).",
+              "no": "Navnet på enheten som sender hendelsen (0-63 byte).",
+              "dk": "Navnet på enheten der sender begivenheden (0-63 byte).",
+              "de": "Der Name des Geräts, das das Ereignis sendet (0-63 Byte).",
+              "fr": "Le nom du dispositif envoyant l'événement (0-63 octets).",
+              "es": "El nombre del dispositivo que envía el evento (0-63 bytes).",
+              "it": "Il nome del dispositivo che invia l'evento (0-63 byte).",
+              "ru": "Имя устройства, отправляющего событие (0-63 байта).",
+              "fi": "Tapahtuman lähettävän laitteen nimi (0-63 tavua).",
+              "zh": "发送事件的设备名称（0-63字节）。",
+              "ja": "イベントを送信するデバイスの名前（0〜63バイト）。",
+              "pt": "O nome do dispositivo que envia o evento (0-63 bytes).",
+              "ar": "اسم الجهاز الذي يرسل الحدث (0-63 بايت).",
+              "sk": "Názov zariadenia odosielajúceho udalosť (0-63 bajtov).",
+              "hu": "Az eseményt küldő eszköz neve (0-63 bájt).",
+              "kr": "이벤트를 보내는 장치의 이름(0-63바이트)."
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Level II High end server/service capabilities",
+        "class": 1024,
+        "type": 20,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "Level II High end server/service capabilities Event sent every X seconds if device is level II device.",
+          "se": "Level II High end server/service capabilities Event skickas varje X sekund om enheten är nivå II enhet.",
+          "lt": "Level II High end server/service capabilities Event siunčiamas kas X sekundžių, jei įrenginys yra II lygio įrenginys.",
+          "no": "Level II High end server/service capabilities Event sendes hvert X sekund hvis enheten er nivå II-enhet.",
+          "dk": "Level II High end server/service capabilities Event sendes hvert X sekund, hvis enheden er niveau II-enhed.",
+          "de": "Level II High end server/service capabilities Event wird alle X Sekunden gesendet, wenn das Gerät ein Level-II-Gerät ist.",
+          "fr": "Événement Level II High end server/service capabilities envoyé toutes les X secondes si l'appareil est un appareil de niveau II.",
+          "es": "Evento Level II High end server/service capabilities enviado cada X segundos si el dispositivo es un dispositivo de nivel II.",
+          "it": "Evento Level II High end server/service capabilities inviato ogni X secondi se il dispositivo è un dispositivo di livello II.",
+          "ru": "Событие Level II High end server/service capabilities отправляется каждые X секунд, если устройство является устройством уровня II.",
+          "fi": "Level II High end server/service capabilities Event lähetetään joka X sekunti, jos laite on taso II -laite.",
+          "zh": "如果设备是二级设备，则每X秒发送一次Level II高端服务器/服务功能事件。",
+          "ja": "デバイスがレベルIIデバイスの場合、X秒ごとにLevel IIハイエンドサーバー/サービス機能イベントが送信されます。",
+          "pt": "Evento Level II High end server/service capabilities enviado a cada X segundos se o dispositivo for um dispositivo de nível II.",
+          "ar": "يتم إرسال حدث Level II High end server/service capabilities كل X ثانية إذا كان الجهاز جهازًا من المستوى الثاني.",
+          "sk": "Level II High end server/service capabilities Event odosielané každých X sekúnd, ak je zariadenie úrovne II.",
+          "hu": "Level II High end server/service capabilities Event küldése minden X másodpercben, ha az eszköz II. szintű.",
+          "kr": "Level II High end server/service capabilities Event는 장치가 레벨 II 장치인 경우 X초마다 전송됩니다."
+        },
+        "infourl": {
+          "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+        },
+        "data": [
+          {
+            "name": "Capability code",
+            "description": {
+              "en": "Capability code (8 bytes).",
+              "se": "Kapabilitetskod (8 byte).",
+              "no": "Evnekode (8 byte).",
+              "dk": "Evnekode (8 byte).",
+              "de": "Fähigkeitscode (8 Byte).",
+              "fr": "Code de capacité (8 octets).",
+              "es": "Código de capacidad (8 bytes).",
+              "it": "Codice di capacità (8 byte).",
+              "ru": "Код возможностей (8 байт).",
+              "fi": "Kykykoodi (8 tavua).",
+              "zh": "功能代码（8字节）。",
+              "ja": "機能コード（8バイト）。",
+              "pt": "Código de capacidade (8 bytes).",
+              "ar": "رمز القدرة (8 بايت).",
+              "sk": "Kód schopností (8 bajtov).",
+              "hu": "Képesség kód (8 bájt).",
+              "kr": "기능 코드(8바이트)."
+            },
+            "infourl": {
+              "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+            }
+          },
+          {
+            "name": "Server GUID",
+            "description": {
+              "en": "Server GUID (16 bytes).",
+              "se": "Server GUID (16 byte).",
+              "no": "Server GUID (16 byte).",
+              "dk": "Server GUID (16 byte).",
+              "de": "Server-GUID (16 Byte).",
+              "fr": "GUID du serveur (16 octets).",
+              "es": "GUID del servidor (16 bytes).",
+              "it": "GUID del server (16 byte).",
+              "ru": "GUID сервера (16 байт).",
+              "fi": "Palvelimen GUID (16 tavua).",
+              "zh": "服务器GUID（16字节）。",
+              "ja": "サーバーGUID（16バイト）。",
+              "pt": "GUID do servidor (16 bytes).",
+              "ar": "GUID الخادم (16 بايت).",
+              "sk": "Server GUID (16 bajtov).",
+              "hu": "Szerver GUID (16 bájt).",
+              "kr": "서버 GUID(16바이트)."
+            },
+            "infourl": {
+              "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+            }
+          },
+          {
+            "name": "Node IP address",
+            "description": {
+              "en": "Node IP address (16 bytes).",
+              "se": "Nodens IP-adress (16 byte).",
+              "no": "Nodens IP-adresse (16 byte).",
+              "dk": "Nodens IP-adresse (16 byte).",
+              "de": "IP-Adresse des Knotens (16 Byte).",
+              "fr": "Adresse IP du nœud (16 octets).",
+              "es": "Dirección IP del nodo (16 bytes).",
+              "it": "Indirizzo IP del nodo (16 byte).",
+              "ru": "IP-адрес узла (16 байт).",
+              "fi": "Solmun IP-osoite (16 tavua).",
+              "zh": "节点IP地址（16字节）。",
+              "ja": "ノードIPアドレス（16バイト）。",
+              "pt": "Endereço IP do nó (16 bytes).",
+              "ar": "عنوان IP للعقدة (16 بايت).",
+              "sk": "IP adresa uzla (16 bajtov).",
+              "hu": "Csomópont IP-cím (16 bájt).",
+              "kr": "노드 IP 주소(16바이트)."
+            },
+            "infourl": {
+              "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+            }
+          },
+          {
+            "name": "Node name",
+            "description": {
+              "en": "Node name (64 bytes).",
+              "se": "Nodens namn (64 byte).",
+              "no": "Nodenavn (64 byte).",
+              "dk": "Nodenavn (64 byte).",
+              "de": "Knotenname (64 Byte).",
+              "fr": "Nom du nœud (64 octets).",
+              "es": "Nombre del nodo (64 bytes).",
+              "it": "Nome del nodo (64 byte).",
+              "ru": "Имя узла (64 байта).",
+              "fi": "Solmun nimi (64 tavua).",
+              "zh": "节点名称（64字节）。",
+              "ja": "ノード名（64バイト）。",
+              "pt": "Nome do nó (64 bytes).",
+              "ar": "اسم العقدة (64 بايت).",
+              "sk": "Názov uzla (64 bajtov).",
+              "hu": "Csomópont neve (64 bájt).",
+              "kr": "노드 이름(64바이트)."
+            },
+            "infourl": {
+              "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+            }
+          },
+          {
+            "name": "None standard ports",
+            "description": {
+              "en": "None standard ports (n bytes).",
+              "se": "Icke standard portar (n byte).",
+              "no": "Ikke-standard porter (n byte).",
+              "dk": "Ikke-standard porte (n byte).",
+              "de": "Nicht-Standard-Ports (n Byte).",
+              "fr": "Ports non standard (n octets).",
+              "es": "Puertos no estándar (n bytes).",
+              "it": "Porte non standard (n byte).",
+              "ru": "Нестандартные порты (n байт).",
+              "fi": "Ei-standardit portit (n tavua).",
+              "zh": "非标准端口（n字节）。",
+              "ja": "非標準ポート（nバイト）。",
+              "pt": "Portas não padrão (n bytes).",
+              "ar": "منافذ غير قياسية (n بايت).",
+              "sk": "Neštandardné porty (n bajtov).",
+              "hu": "Nem szabványos portok (n bájt).",
+              "kr": "비표준 포트(n바이트)."
+            },
+            "infourl": {
+              "en": "https://grodansparadis.github.io/vscp-doc-spec/#/./class2.protocol?id=type20"
+            }
+          }
+        ]
+      },
+      {
+        "name": "ON Event",
+        "class": 20,
+        "type": 3,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "ON Event sent when LED is turned on.",
+          "se": "ON Event skickas när LED slås på.",
+          "no": "ON Event sendes når LED slås på.",
+          "dk": "ON Event sendes, når LED tændes.",
+          "de": "ON-Ereignis wird gesendet, wenn die LED eingeschaltet wird.",
+          "fr": "Événement ON envoyé lorsque la LED est allumée.",
+          "es": "Evento ON enviado cuando el LED se enciende.",
+          "it": "Evento ON inviato quando il LED viene acceso.",
+          "ru": "Событие ON отправляется при включении светодиода.",
+          "fi": "ON-tapahtuma lähetetään, kun LED sytytetään.",
+          "zh": "当LED打开时发送ON事件。",
+          "ja": "LEDが点灯したときにONイベントが送信されます。",
+          "pt": "Evento ON enviado quando o LED é aceso.",
+          "ar": "يتم إرسال حدث ON عند تشغيل LED.",
+          "sk": "Udalosť ON odoslaná, keď je LED zapnutá.",
+          "hu": "ON esemény elküldve, amikor a LED bekapcsol.",
+          "kr": "LED가 켜질 때 ON 이벤트가 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "OFF Event",
+        "class": 20,
+        "type": 4,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "OFF Event sent when LED is turned off.",
+          "se": "OFF Event skickas när LED stängs av.",
+          "no": "OFF Event sendes når LED slås av.",
+          "dk": "OFF Event sendes, når LED slukkes.",
+          "de": "OFF-Ereignis wird gesendet, wenn die LED ausgeschaltet wird.",
+          "fr": "Événement OFF envoyé lorsque la LED est éteinte.",
+          "es": "Evento OFF enviado cuando el LED se apaga.",
+          "it": "Evento OFF inviato quando il LED viene spento.",
+          "ru": "Событие OFF отправляется при выключении светодиода.",
+          "fi": "OFF-tapahtuma lähetetään, kun LED sammutetaan.",
+          "zh": "当LED关闭时发送OFF事件。",
+          "ja": "LEDが消灯したときにOFFイベントが送信されます。",
+          "pt": "Evento OFF enviado quando o LED é apagado.",
+          "ar": "يتم إرسال حدث OFF عند إيقاف تشغيل LED.",
+          "sk": "Udalosť OFF odoslaná, keď je LED vypnutá.",
+          "hu": "OFF esemény elküldve, amikor a LED kikapcsol.",
+          "kr": "LED가 꺼질 때 OFF 이벤트가 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Turn ON Event",
+        "class": 30,
+        "type": 5,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "Turn ON Event sent when button is pressed.",
+          "se": "Turn ON Event skickas när knappen trycks ner.",
+          "no": "Turn ON Event sendes når knappen trykkes.",
+          "dk": "Turn ON Event sendes, når knappen trykkes.",
+          "de": "Turn ON Event wird gesendet, wenn die Taste gedrückt wird.",
+          "fr": "Événement Turn ON envoyé lorsque le bouton est pressé.",
+          "es": "Evento Turn ON enviado cuando se presiona el botón.",
+          "it": "Evento Turn ON inviato quando il pulsante viene premuto.",
+          "ru": "Событие Turn ON отправляется при нажатии кнопки.",
+          "fi": "Turn ON -tapahtuma lähetetään, kun painiketta painetaan.",
+          "zh": "按下按钮时发送Turn ON事件。",
+          "ja": "ボタンが押されたときにTurn ONイベントが送信されます。",
+          "pt": "Evento Turn ON enviado quando o botão é pressionado.",
+          "ar": "يتم إرسال حدث Turn ON عند الضغط على الزر.",
+          "sk": "Udalosť Turn ON odoslaná, keď sa tlačidlo stlačí.",
+          "hu": "Turn ON esemény elküldve, amikor a gombot megnyomják.",
+          "kr": "버튼을 누를 때 Turn ON 이벤트가 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Turn OFF Event",
+        "class": 30,
+        "type": 6,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "Turn OFF Event sent when button is released (if enabled).",
+          "se": "Turn OFF Event skickas när knappen släpps (om aktiverad).",
+          "no": "Turn OFF Event sendes når knappen slippes (hvis aktivert).",
+          "dk": "Turn OFF Event sendes, når knappen slippes (hvis aktiveret).",
+          "de": "Turn OFF Event wird gesendet, wenn die Taste losgelassen wird (wenn aktiviert).",
+          "fr": "Événement Turn OFF envoyé lorsque le bouton est relâché (si activé).",
+          "es": "Evento Turn OFF enviado cuando se suelta el botón (si está habilitado).",
+          "it": "Evento Turn OFF inviato quando il pulsante viene rilasciato (se abilitato).",
+          "ru": "Событие Turn OFF отправляется при отпускании кнопки (если включено).",
+          "fi": "Turn OFF -tapahtuma lähetetään, kun painike vapautetaan (jos käytössä).",
+          "zh": "释放按钮时发送Turn OFF事件（如果启用）。",
+          "ja": "ボタンが離されたときにTurn OFFイベントが送信されます（有効な場合）。",
+          "pt": "Evento Turn OFF enviado quando o botão é liberado (se habilitado).",
+          "ar": "يتم إرسال حدث Turn OFF عند تحرير الزر (إذا كان مفعلاً).",
+          "sk": "Udalosť Turn OFF odoslaná, keď sa tlačidlo uvoľní (ak je povolené).",
+          "hu": "Turn OFF esemény elküldve, amikor a gombot elengedik (ha engedélyezve).",
+          "kr": "버튼을 놓을 때 Turn OFF 이벤트가 전송됩니다 (활성화된 경우)."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Start Event",
+        "class": 30,
+        "type": 7,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "START Event sent when button is pressed.",
+          "se": "START Event skickas när knappen trycks ner.",
+          "no": "START Event sendes når knappen trykkes.",
+          "dk": "START Event sendes, når knappen trykkes.",
+          "de": "START-Ereignis wird gesendet, wenn die Taste gedrückt wird.",
+          "fr": "Événement START envoyé lorsque le bouton est pressé.",
+          "es": "Evento START enviado cuando se presiona el botón.",
+          "it": "Evento START inviato quando il pulsante viene premuto.",
+          "ru": "Событие START отправляется при нажатии кнопки.",
+          "fi": "START-tapahtuma lähetetään, kun painiketta painetaan.",
+          "zh": "按下按钮时发送START事件。",
+          "ja": "ボタンが押されたときにSTARTイベントが送信されます。",
+          "pt": "Evento START enviado quando o botão é pressionado.",
+          "ar": "يتم إرسال حدث START عند الضغط على الزر.",
+          "sk": "Udalosť START odoslaná, keď sa tlačidlo stlačí.",
+          "hu": "START esemény elküldve, amikor a gombot megnyomják.",
+          "kr": "버튼을 누를 때 START 이벤트가 전송됩니다."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Stop Event",
+        "class": 30,
+        "type": 8,
+        "direction": "out",
+        "priority": "low",
+        "description": {
+          "en": "STOP Event sent when button is released (if enabled).",
+          "se": "STOP Event skickas när knappen släpps (om aktiverad).",
+          "no": "STOP Event sendes når knappen slippes (hvis aktivert).",
+          "dk": "STOP Event sendes, når knappen slippes (hvis aktiveret).",
+          "de": "STOP-Ereignis wird gesendet, wenn die Taste losgelassen wird (wenn aktiviert).",
+          "fr": "Événement STOP envoyé lorsque le bouton est relâché (si activé).",
+          "es": "Evento STOP enviado cuando se suelta el botón (si está habilitado).",
+          "it": "Evento STOP inviato quando il pulsante viene rilasciato (se abilitato).",
+          "ru": "Событие STOP отправляется при отпускании кнопки (если включено).",
+          "fi": "STOP-tapahtuma lähetetään, kun painike vapautetaan (jos käytössä).",
+          "zh": "释放按钮时发送STOP事件（如果启用）。",
+          "ja": "ボタンが離されたときにSTOPイベントが送信されます（有効な場合）。",
+          "pt": "Evento STOP enviado quando o botão é liberado (se habilitado).",
+          "ar": "يتم إرسال حدث STOP عند تحرير الزر (إذا كان مفعلاً).",
+          "sk": "Udalosť STOP odoslaná, keď sa tlačidlo uvoľní (ak je povolené).",
+          "hu": "STOP esemény elküldve, amikor a gombot elengedik (ha engedélyezve).",
+          "kr": "버튼을 놓을 때 STOP 이벤트가 전송됩니다 (활성화된 경우)."
+        },
+        "infourl": {
+          "en": "English event help 3"
+        },
+        "data": [
+          {
+            "name": "test event data 1",
+            "description": {
+              "en": "English event data description 3",
+              "se": "Svensk event data beskrivning 3",
+              "es": "Descripción de los datos del evento en español 3",
+              "no": "Norsk event data beskrivelse 3",
+              "dk": "Dansk event data beskrivelse 3",
+              "de": "Deutscher Ereignisdatenbeschreibung 3",
+              "fr": "Description des données d'événement en français 3",
+              "it": "Descrizione dei dati dell'evento in italiano 3",
+              "ru": "Описание данных события на русском языке 3",
+              "fi": "Tapahtumatietojen kuvaus suomeksi 3",
+              "zh": "事件数据描述中文 3",
+              "ja": "イベントデータの説明日本語 3",
+              "pt": "Descrição dos dados do evento em português 3",
+              "ar": "وصف بيانات الحدث باللغة العربية 3",
+              "sk": "Popis údajov o udalosti v slovenčine 3",
+              "hu": "Eseményadatok leírása magyarul 3",
+              "kr": "이벤트 데이터 설명 한국어 3"
+            },
+            "infourl": {
+              "en": "English event data help 3"
+            }
+          }
+        ]
+      }
+    ],
+    "dmatrix": {
+      "level": 1,
+      "start-page": "0",
+      "start-offset": "0x60",
+      "rowcount": 4,
+      "rowsize": 8,
+      "action": [
+        {
+          "name": "NOOP",
+          "code": 0,
+          "description": {
+            "en": "No Operation, does nothing",
+            "se": "Ingen åtgärd, gör ingenting",
+            "no": "Ingen operasjon, gjør ingenting",
+            "dk": "Ingen operation, gør ingenting",
+            "de": "Keine Operation, macht nichts",
+            "fr": "Aucune opération, ne fait rien",
+            "es": "Sin operación, no hace nada",
+            "it": "Nessuna operazione, non fa nulla",
+            "ru": "Нет операции, ничего не делает",
+            "fi": "Ei toimintoa, ei tee mitään",
+            "zh": "无操作，不做任何事情",
+            "ja": "操作なし、何もしません",
+            "pt": "Sem operação, não faz nada",
+            "ar": "لا عملية، لا يفعل شيئاً",
+            "sk": "Žiadna operácia, nerobí nič",
+            "hu": "Nincs művelet, nem csinál semmit",
+            "kr": "작업 없음, 아무것도 하지 않습니다"
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_noop.html"
+          }
+        },
+        {
+          "name": "Turn on/off led.",
+          "code": "0x01",
+          "description": {
+            "en": "Turn on/off led. Argument tells state.",
+            "se": "Tänd/släck LED. Argument anger tillstånd.",
+            "no": "Slå LED på/av. Argument angir tilstand.",
+            "dk": "Tænd/sluk LED. Argument angiver tilstand.",
+            "de": "LED ein-/ausschalten. Argument gibt den Zustand an.",
+            "fr": "Allumer/éteindre la LED. L'argument indique l'état.",
+            "es": "Encender/apagar LED. El argumento indica el estado.",
+            "it": "Accendere/spegnere il LED. L'argomento indica lo stato.",
+            "ru": "Включить/выключить светодиод. Аргумент указывает состояние.",
+            "fi": "Sytytä/sammuta LED. Argumentti kertoo tilan.",
+            "zh": "开/关LED。参数指示状态。",
+            "ja": "LEDのオン/オフ。引数が状態を示します。",
+            "pt": "Ligar/desligar LED. O argumento indica o estado.",
+            "ar": "تشغيل/إيقاف تشغيل LED. يشير الوسيط إلى الحالة.",
+            "sk": "Zapnúť/vypnúť LED. Argument udáva stav.",
+            "hu": "LED bekapcsolása/kikapcsolása. Az argumentum megadja az állapotot.",
+            "kr": "LED 켜기/끄기. 인수가 상태를 나타냅니다."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_turn_on_off_led.html"
+          },
+          "param": [
+            {
+              "name": "control",
+              "description": {
+                "en": "Argument tells state. 0 = off, 1 = on, 2 = toggle",
+                "se": "Argument anger tillstånd. 0 = av, 1 = på, 2 = växla",
+                "no": "Argument angir tilstand. 0 = av, 1 = på, 2 = veksle",
+                "dk": "Argument angiver tilstand. 0 = sluk, 1 = tænd, 2 = skift",
+                "de": "Argument gibt den Zustand an. 0 = aus, 1 = ein, 2 = umschalten",
+                "fr": "L'argument indique l'état. 0 = éteint, 1 = allumé, 2 = basculer",
+                "es": "El argumento indica el estado. 0 = apagado, 1 = encendido, 2 = alternar",
+                "it": "L'argomento indica lo stato. 0 = spento, 1 = acceso, 2 = commutare",
+                "ru": "Аргумент указывает состояние. 0 = выкл, 1 = вкл, 2 = переключить",
+                "fi": "Argumentti kertoo tilan. 0 = pois, 1 = päällä, 2 = vaihda",
+                "zh": "参数指示状态。0 = 关，1 = 开，2 = 切换",
+                "ja": "引数が状態を示します。0 = オフ、1 = オン、2 = 切り替え",
+                "pt": "O argumento indica o estado. 0 = desligado, 1 = ligado, 2 = alternar",
+                "ar": "يشير الوسيط إلى الحالة. 0 = إيقاف، 1 = تشغيل، 2 = تبديل",
+                "sk": "Argument udáva stav. 0 = vypnuté, 1 = zapnuté, 2 = prepnúť",
+                "hu": "Az argumentum megadja az állapotot. 0 = ki, 1 = be, 2 = váltás",
+                "kr": "인수가 상태를 나타냅니다. 0 = 끄기, 1 = 켜기, 2 = 전환"
+              },
+              "infourl": {
+                "en": "blinky-info-url-dmatrix-action-1-arg-0.html"
+              },
+              "valuelist": [
+                {
+                  "value": "0x00",
+                  "name": "Off",
+                  "description": {
+                    "en": "Turn off the LED",
+                    "se": "Stäng av LED",
+                    "no": "Slå av LED",
+                    "dk": "Sluk LED",
+                    "de": "LED ausschalten",
+                    "fr": "Éteindre la LED",
+                    "es": "Apagar el LED",
+                    "it": "Spegnere il LED",
+                    "ru": "Выключить светодиод",
+                    "fi": "Sammuta LED",
+                    "zh": "关闭LED",
+                    "ja": "LEDをオフにする",
+                    "pt": "Desligar o LED",
+                    "ar": "إيقاف تشغيل LED",
+                    "sk": "Vypnúť LED",
+                    "hu": "LED kikapcsolása",
+                    "kr": "LED 끄기"
+                  },
+                  "infourl": {
+                    "en": "blinky-info-url-dmatrix-action-1-arg-0-value-0.html"
+                  }
+                },
+                {
+                  "value": "0x01",
+                  "name": "On",
+                  "description": {
+                    "en": "Turn on the LED",
+                    "se": "Tänd LED",
+                    "no": "Slå på LED",
+                    "dk": "Tænd LED",
+                    "de": "LED einschalten",
+                    "fr": "Allumer la LED",
+                    "es": "Encender el LED",
+                    "it": "Accendere il LED",
+                    "ru": "Включить светодиод",
+                    "fi": "Sytytä LED",
+                    "zh": "打开LED",
+                    "ja": "LEDをオンにする",
+                    "pt": "Ligar o LED",
+                    "ar": "تشغيل LED",
+                    "sk": "Zapnúť LED",
+                    "hu": "LED bekapcsolása",
+                    "kr": "LED 켜기"
+                  },
+                  "infourl": {
+                    "en": "blinky-info-url-dmatrix-action-1-arg-0-value-1.html"
+                  }
+                },
+                {
+                  "value": "0x02",
+                  "name": "Toggle",
+                  "description": {
+                    "en": "Toggle the LED",
+                    "se": "Växla LED",
+                    "no": "Veksle LED",
+                    "dk": "Skift LED",
+                    "de": "LED umschalten",
+                    "fr": "Basculer la LED",
+                    "es": "Alternar el LED",
+                    "it": "Commutare il LED",
+                    "ru": "Переключить светодиод",
+                    "fi": "Vaihda LED:n tila",
+                    "zh": "切换LED",
+                    "ja": "LEDを切り替える",
+                    "pt": "Alternar o LED",
+                    "ar": "تبديل LED",
+                    "sk": "Prepnúť LED",
+                    "hu": "LED váltása",
+                    "kr": "LED 토글"
+                  },
+                  "infourl": {
+                    "en": "blinky-info-url-dmatrix-action-1-arg-0-value-2.html"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Turn on led.",
+          "code": "0x02",
+          "description": {
+            "en": "Turn on led.",
+            "se": "Tänd LED.",
+            "no": "Slå LED på.",
+            "dk": "Tænd LED.",
+            "de": "LED einschalten.",
+            "fr": "Allumer la LED.",
+            "es": "Encender LED.",
+            "it": "Accendere il LED.",
+            "ru": "Включить светодиод.",
+            "fi": "Sytytä LED.",
+            "zh": "打开LED。",
+            "ja": "LEDをオンにする。",
+            "pt": "Ligar LED.",
+            "ar": "تشغيل LED.",
+            "sk": "Zapnúť LED.",
+            "hu": "LED bekapcsolása.",
+            "kr": "LED 켜기."
+          },
+          "infourl": {
+            "en": "blinky-info-url-dmatrix-action-1-arg-2.html"
+          }
+        },
+        {
+          "name": "Turn off led.",
+          "code": "0x03",
+          "description": {
+            "en": "Turn off led.",
+            "se": "Släck LED.",
+            "no": "Slå LED av.",
+            "dk": "Sluk LED.",
+            "de": "LED ausschalten.",
+            "fr": "Éteindre la LED.",
+            "es": "Apagar LED.",
+            "it": "Spegnere il LED.",
+            "ru": "Выключить светодиод.",
+            "fi": "Sammuta LED.",
+            "zh": "关闭LED。",
+            "ja": "LEDをオフにする。",
+            "pt": "Desligar LED.",
+            "ar": "إيقاف تشغيل LED.",
+            "sk": "Vypnúť LED.",
+            "hu": "LED kikapcsolása.",
+            "kr": "LED 끄기."
+          },
+          "infourl": {
+            "en": "blinky-info-url-dmatrix-action-1-arg-3.html"
+          }
+        },
+        {
+          "name": "Toggle led.",
+          "code": "0x04",
+          "description": {
+            "en": "Toggle led.",
+            "se": "Växla LED.",
+            "no": "Veksle LED.",
+            "dk": "Skift LED.",
+            "de": "LED umschalten.",
+            "fr": "Basculer la LED.",
+            "es": "Alternar LED.",
+            "it": "Commutare il LED.",
+            "ru": "Переключить светодиод.",
+            "fi": "Vaihda LED:n tila.",
+            "zh": "切换LED。",
+            "ja": "LEDを切り替える。",
+            "pt": "Alternar LED.",
+            "ar": "تبديل LED.",
+            "sk": "Prepnúť LED.",
+            "hu": "LED váltása.",
+            "kr": "LED 토글."
+          },
+          "infourl": {
+            "en": "blinky-info-url-dmatrix-action-1-arg-4.html"
+          }
+        },
+        {
+          "name": "Start blink.",
+          "code": "0x05",
+          "description": {
+            "en": "Start blink.",
+            "se": "Starta blinkning.",
+            "no": "Start blink.",
+            "dk": "Start blink.",
+            "de": "Blinken starten.",
+            "fr": "Démarrer le clignotement.",
+            "es": "Iniciar parpadeo.",
+            "it": "Avviare il lampeggio.",
+            "ru": "Начать мигание.",
+            "fi": "Käynnistä vilkutus.",
+            "zh": "开始闪烁。",
+            "ja": "点滅を開始する。",
+            "pt": "Iniciar piscar.",
+            "ar": "بدء الوميض.",
+            "sk": "Spustiť blikanie.",
+            "hu": "Villogás indítása.",
+            "kr": "깜박임 시작."
+          },
+          "infourl": {
+            "en": "blinky-info-url-dmatrix-action-1-arg-5.html"
+          }
+        },
+        {
+          "name": "Stop blink.",
+          "code": "0x06",
+          "description": {
+            "en": "Stop blink.",
+            "se": "Stoppa blinkning.",
+            "no": "Stopp blink.",
+            "dk": "Stop blink.",
+            "de": "Blinken stoppen.",
+            "fr": "Arrêter le clignotement.",
+            "es": "Detener parpadeo.",
+            "it": "Fermare il lampeggio.",
+            "ru": "Остановить мигание.",
+            "fi": "Pysäytä vilkutus.",
+            "zh": "停止闪烁。",
+            "ja": "点滅を停止する。",
+            "pt": "Parar piscar.",
+            "ar": "إيقاف الوميض.",
+            "sk": "Zastaviť blikanie.",
+            "hu": "Villogás leállítása.",
+            "kr": "깜박임 중지."
+          },
+          "infourl": {
+            "en": "blinky-info-url-dmatrix-action-1-arg-6.html"
+          }
+        },
+        {
+          "name": "Clear millisecond counter.",
+          "code": "0x07",
+          "description": {
+            "en": "Clear millisecond counter.",
+            "se": "Nollställ millisekundräknaren.",
+            "no": "Nullstill millisekundteller.",
+            "dk": "Nulstil millisekundtæller.",
+            "de": "Millisekunden-Zähler zurücksetzen.",
+            "fr": "Réinitialiser le compteur de millisecondes.",
+            "es": "Reiniciar contador de milisegundos.",
+            "it": "Azzerare il contatore dei millisecondi.",
+            "ru": "Сбросить счётчик миллисекунд.",
+            "fi": "Nollaa millisekuntien laskuri.",
+            "zh": "清除毫秒计数器。",
+            "ja": "ミリ秒カウンターをクリアする。",
+            "pt": "Limpar contador de milissegundos.",
+            "ar": "مسح عداد المللي ثانية.",
+            "sk": "Vymazať počítadlo milisekúnd.",
+            "hu": "Milliszekundum számláló törlése.",
+            "kr": "밀리초 카운터 초기화."
+          },
+          "infourl": {
+            "en": "http://www.vscp.org/docs/dm_action_clear_counter.html"
+          }
+        }
+      ]
+    }
+  }
+}
