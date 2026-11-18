@@ -5717,6 +5717,10 @@ __handleMDFParserData(void *data, const XML_Char *content, int length)
           spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address region: {0}", strContent);
           pmdf->m_manufacturer.m_address.m_strRegion = strContent;
         }
+        else if (gTokenList.at(0) == "state") {
+          spdlog::trace("Parse-XML: handleMDFParserData: Module manufacturer address state: {0}", strContent);
+          pmdf->m_manufacturer.m_address.m_strState = strContent;
+        }
       }
       // [5] manufacturer/telephone
       else if (gTokenList.at(1) == "telephone") {
@@ -6739,7 +6743,7 @@ __endSetupMDFParser(void *data, const char *name)
                (gpRegisterStruct != nullptr)) {
         // Register is complete - expand DMATRIX1/BLOCK registers
         if (gbExpandRegister) {
-          pmdf->expandRegisterSpan(gpRegisterStruct, false);
+          pmdf->expandRegisterSpan(gpRegisterStruct);
         }
         gbExpandRegister = false;
         gpRegisterStruct = nullptr;
@@ -8334,7 +8338,7 @@ CMDF::parseMDF_JSON(const std::string &path)
             // Store and expand DMATRIX1/BLOCK registers to one register per
             // byte of the span
             m_list_register.push_back(preg);
-            expandRegisterSpan(preg, true);
+            expandRegisterSpan(preg);
           }
         }
       }
@@ -10059,7 +10063,7 @@ CMDF::deleteEvent(CMDF_Event *pEvent)
 #define MDF_MAX_REGISTER_SPAN 256
 
 void
-CMDF::expandRegisterSpan(CMDF_Register *preg, bool bRenameFirst)
+CMDF::expandRegisterSpan(CMDF_Register *preg)
 {
   if (nullptr == preg) {
     return;
@@ -10088,14 +10092,12 @@ CMDF::expandRegisterSpan(CMDF_Register *preg, bool bRenameFirst)
   // Apply pyjamas coloring if at least one of the pyjamas colors are set.
   const bool bPyjamas = preg->m_fgeven || preg->m_fgodd || preg->m_bgeven || preg->m_bgodd;
 
-  // Copies are named "<name> - DM 1", "<name> - DM 2", ... for both XML
-  // and JSON. (JSON copies used to be named "<name> - DM 0 - DM 1" and XML
-  // copies had no base name.) The first register is renamed
-  // "<name> - DM 0" only if asked for (JSON does, XML keeps the name).
+  // Registers are named "<name> - DM 0", "<name> - DM 1", ... for both XML
+  // and JSON. (JSON copies used to be named "<name> - DM 0 - DM 1", XML
+  // copies had no base name and the XML parser left the first register
+  // unnamed by index.)
   const std::string baseName = preg->m_name;
-  if (bRenameFirst) {
-    preg->m_name = baseName + label + "0";
-  }
+  preg->m_name               = baseName + label + "0";
   if (bPyjamas) {
     preg->m_fgcolor = preg->m_fgeven;
     preg->m_bgcolor = preg->m_bgeven;

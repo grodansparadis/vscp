@@ -4113,14 +4113,14 @@ public:
 
   /*!
     Expand a DMATRIX1 or BLOCK register (already in the register list) into
-    one register per byte of its span. The copies are named "<name> - DM n"
-    or "<name> - BLOCK n", get consecutive offsets and their own copies of
-    the bit and value definitions. The span is limited to 256.
+    one register per byte of its span. The registers are named "<name> - DM n"
+    or "<name> - BLOCK n" (n = 0 for the first one), get consecutive offsets
+    and their own copies of the bit and value definitions. The span is
+    limited to 256. Used by both the XML and the JSON parser so they give the
+    same result.
     @param preg Pointer to a register that has been added to the register list.
-    @param bRenameFirst If true the first register is renamed "<name> - DM 0"
-           (or " - BLOCK 0"), else it keeps its name.
   */
-  void expandRegisterSpan(CMDF_Register *preg, bool bRenameFirst = true);
+  void expandRegisterSpan(CMDF_Register *preg);
 
   /*!
     Download MDF file from a server

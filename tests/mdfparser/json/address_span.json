@@ -1,0 +1,27 @@
+{
+  "_comment": "Same content as xml/address_span.xml. The XML and JSON parsers must give the same manufacturer address and the same expanded registers.",
+  "module": {
+    "name": "Address and span test",
+    "model": "A",
+    "version": "1",
+    "changed": "2026-11-18",
+    "buffersize": 8,
+    "manufacturer": {
+      "name": "Grodans Paradis AB",
+      "address": {
+        "street": "Brattbergavägen 17",
+        "town": "Los",
+        "city": "Los",
+        "postcode": "82770",
+        "state": "HA",
+        "region": "Hälsingland",
+        "country": "Sweden"
+      }
+    },
+    "registers": [
+      { "name": "Zone", "page": 0, "offset": 0, "span": 1, "type": "std", "access": "rw", "default": 0 },
+      { "name": "Decision Matrix", "page": 0, "offset": "0x60", "span": 4, "type": "dmatrix1", "access": "rw" },
+      { "name": "Data block", "page": 1, "offset": 0, "span": 3, "type": "block", "access": "rw" }
+    ]
+  }
+}

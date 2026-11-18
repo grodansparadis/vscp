@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Same content as json/address_span.json. The XML and JSON parsers must
+     give the same manufacturer address and the same expanded registers. -->
+<vscp>
+<module>
+    <name>Address and span test</name>
+    <model>A</model>
+    <version>1</version>
+    <changed>2026-11-18</changed>
+    <buffersize>8</buffersize>
+    <manufacturer>
+        <name>Grodans Paradis AB</name>
+        <address>
+            <street>Brattbergavägen 17</street>
+            <town>Los</town>
+            <city>Los</city>
+            <postcode>82770</postcode>
+            <state>HA</state>
+            <region>Hälsingland</region>
+            <country>Sweden</country>
+        </address>
+    </manufacturer>
+    <registers>
+        <reg name="Zone" page="0" offset="0" span="1" type="std" access="rw" default="0" />
+        <reg name="Decision Matrix" page="0" offset="0x60" span="4" type="dmatrix1" access="rw" />
+        <reg name="Data block" page="1" offset="0" span="3" type="block" access="rw" />
+    </registers>
+</module>
+</vscp>

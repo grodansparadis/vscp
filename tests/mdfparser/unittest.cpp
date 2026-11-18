@@ -681,7 +681,7 @@ TEST(parseMDF, XML_REGISTERS)
   preg = mdf.getRegister(14, 0);
   ASSERT_NE(preg, nullptr);
 
-  ASSERT_EQ(preg->getName(), "module control");
+  ASSERT_EQ(preg->getName(), "module control - BLOCK 0"); // expanded BLOCK register
   ASSERT_EQ(preg->getPage(), 0);
   ASSERT_EQ(preg->getOffset(), 14);
   ASSERT_EQ(preg->getSize(), 8);  // getSize returns span
@@ -813,11 +813,66 @@ TEST(parseMDF, XML_REGISTERS)
   preg = mdf.getRegister(0, 2);
   ASSERT_NE(preg, nullptr);
 
-  ASSERT_EQ(preg->getName(), "decision matrix");
+  // Expanded DM registers are named "<name> - DM n", as for JSON MDF files
+  ASSERT_EQ(preg->getName(), "decision matrix - DM 0");
   ASSERT_EQ(preg->getPage(), 2);
   ASSERT_EQ(preg->getOffset(), 0);
   ASSERT_EQ(preg->getSpan(), 32);
-  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_DMATRIX1);  
+  ASSERT_EQ(preg->getType(), MDF_REG_TYPE_DMATRIX1);
+
+  preg = mdf.getRegister(31, 2);
+  ASSERT_NE(preg, nullptr);
+  ASSERT_EQ(preg->getName(), "decision matrix - DM 31");
+}
+
+//-----------------------------------------------------------------------------
+// The XML and JSON parsers must give the same result for the same content:
+// manufacturer address (including state) and expanded DMATRIX1/BLOCK
+// register names.
+
+static void
+checkAddressSpanMdf(const std::string &path)
+{
+  SCOPED_TRACE(path);
+  CMDF mdf;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, mdf.parseMDF(path));
+
+  CMDF_Address *paddr = mdf.getManufacturer()->getAddressObj();
+  ASSERT_EQ(paddr->getStreet(), "Brattbergavägen 17");
+  ASSERT_EQ(paddr->getTown(), "Los");
+  ASSERT_EQ(paddr->getCity(), "Los");
+  ASSERT_EQ(paddr->getPostCode(), "82770");
+  ASSERT_EQ(paddr->getState(), "HA");
+  ASSERT_EQ(paddr->getRegion(), "Hälsingland");
+  ASSERT_EQ(paddr->getCountry(), "Sweden");
+
+  // 1 standard + 4 DM + 3 block registers
+  ASSERT_EQ(8, mdf.getRegisterCount());
+
+  CMDF_Register *preg = mdf.getRegister(0, 0);
+  ASSERT_NE(preg, nullptr);
+  ASSERT_EQ(preg->getName(), "zone");
+
+  for (int i = 0; i < 4; i++) {
+    preg = mdf.getRegister(0x60 + i, 0);
+    ASSERT_NE(preg, nullptr) << i;
+    ASSERT_EQ(preg->getName(), "decision matrix - DM " + std::to_string(i));
+    ASSERT_EQ(preg->getType(), MDF_REG_TYPE_DMATRIX1);
+  }
+  ASSERT_EQ(mdf.getRegister(0x64, 0), nullptr);
+
+  for (int i = 0; i < 3; i++) {
+    preg = mdf.getRegister(i, 1);
+    ASSERT_NE(preg, nullptr) << i;
+    ASSERT_EQ(preg->getName(), "data block - BLOCK " + std::to_string(i));
+    ASSERT_EQ(preg->getType(), MDF_REG_TYPE_BLOCK);
+  }
+}
+
+TEST(parseMDF, XML_JSON_Address_And_Span_Names_Match)
+{
+  checkAddressSpanMdf("xml/address_span.xml");
+  checkAddressSpanMdf("json/address_span.json");
 }
 
 
