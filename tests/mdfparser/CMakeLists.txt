@@ -13,6 +13,13 @@ message(STATUS "Build dir: " ${PROJECT_SOURCE_DIR})
 
 find_package(GTest REQUIRED)
 
+# Standalone build (cd tests/mdfparser && mkdir build && cd build && cmake ..):
+# build the VSCP library targets (vscp_common provides mdf.h from
+# src/vscp/common and its include paths) when no parent project did.
+if(NOT TARGET vscp_common)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. ${CMAKE_CURRENT_BINARY_DIR}/vscp)
+endif()
+
 # add the executable
 add_executable(unittest_mdfparser unittest.cpp)
 
