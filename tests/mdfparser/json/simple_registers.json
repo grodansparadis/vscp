@@ -247,7 +247,6 @@
         "max" : 128,
         "access" : "rw",
         "default": 99,
-        "rowpos" : 11,
         "bgcolor" : "0xfff3d4",
         "fgcolor" : "0x001200",        
         "name" : "Register example 1",
@@ -270,7 +269,6 @@
         "max" : "0x000f",
         "access" : "r",
         "default": "0xfd",
-        "rowpos" : "0xaa",
         "bgcolor" : "0x00f3d4",
         "fgcolor" : "0x100000",
         "name" : "Register example 2",
@@ -336,7 +334,6 @@
         "min" : 0,
         "max" : 255,
         "access" : "w",
-        "rowpos" : "200",
         "bgcolor" : "0xfffff3d4",
         "fgcolor" : "0xffffffff",        
         "description" : {

@@ -17,6 +17,7 @@ tagged, rename **Unreleased** to the version and date, and start a new
 - MDF: `getAccessStr()` returned `w` for read only and `r` for write only (registers, bits, remote variables); `getDefault()` reads `0b...` values; `CMDF_Firmware::getFormat()` returns the format as written instead of uppercased
 - tests/mdfparser: builds standalone (`mkdir build && cd build && cmake ..`)
 - tests/mdfparser: typos in the simple_*.json fixtures fixed (`Region`, `<description`, `version_spatch`, `parm`), so those values are read and tested
+- tests/mdfparser: the obsolete `rowpos`, decision matrix `indexed`, `<reg index=>` and `<abstraction id=>` attributes are removed from the fixtures; they are not part of the MDF format and were never read
 
 ## V26.11.15.122 - 26-11-15
 

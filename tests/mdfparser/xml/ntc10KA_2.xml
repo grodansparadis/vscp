@@ -1680,7 +1680,7 @@
 			<access>rw</access>
 		</reg>
 
-		<reg page="0" offset="116" index="0..11" >
+		<reg page="0" offset="116" >
 			<name lang="en">Index into calibration values.</name>
 			<description lang="en">
 				Index into array of calibration values. The index can have a value 
@@ -2472,7 +2472,7 @@
 	
 	<abstractions>
 
-		<abstraction id="temp0" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "8" >
 			<name lang="en">Temperature sensor 0</name>
 			<description lang="en">
@@ -2483,7 +2483,7 @@
 			<access>r</access>
 		</abstraction>
 
-		<abstraction id="temp1" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "10" >
 			<name lang="en">Temperature sensor 1</name>
 			<description lang="en">
@@ -2494,7 +2494,7 @@
 			<access>r</access>
 		</abstraction>
 
-		<abstraction id="temp2" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "12" >
 			<name lang="en">Temperature sensor 2</name>
 			<description lang="en">
@@ -2505,7 +2505,7 @@
 			<access>r</access>
 		</abstraction>
 
-		<abstraction id="temp3" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "14" >
 			<name lang="en">Temperature sensor 3</name>
 			<description lang="en">
@@ -2516,7 +2516,7 @@
 			<access>r</access>
 		</abstraction>
 
-		<abstraction id="temp4" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "16" >
 			<name lang="en">Temperature sensor 4</name>
 			<description lang="en">
@@ -2527,7 +2527,7 @@
 			<access>r</access>
 		</abstraction>
 
-		<abstraction id="temp5" type="int16_t" 
+		<abstraction type="int16_t" 
 							page = "0" offset = "18" >
 			<name lang="en">Temperature sensor 5</name>
 			<description lang="en">
@@ -2538,7 +2538,7 @@
 			<access>r</access>
 		</abstraction>	
 
-		<abstraction id="bconst0" type="int16_t" default="0"
+		<abstraction type="int16_t" default="0"
 							page = "0" offset = "38" >
 			<name lang="en">B constant for sensor 0</name>
 			<description lang="en">
@@ -2547,7 +2547,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="bconst1" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "40" >
 			<name lang="en">B constant for sensor 1</name>
 			<description lang="en">
@@ -2556,7 +2556,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="bconst2" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "42" >
 			<name lang="en">B constant for sensor 2</name>
 			<description lang="en">
@@ -2565,7 +2565,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="bconst3" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "44" >
 			<name lang="en">B constant for sensor 3</name>
 			<description lang="en">
@@ -2574,7 +2574,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="bconst4" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "46" >
 			<name lang="en">B constant for sensor 4</name>
 			<description lang="en">
@@ -2583,7 +2583,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="bconst5" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "48" >
 			<name lang="en">B constant for sensor 5</name>
 			<description lang="en">
@@ -2592,7 +2592,7 @@
 			<access>rw</access>
 		</abstraction>	
 
-		<abstraction id="lowalarm0" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "50" >
 			<name lang="en">Low alarm for sensor 0</name>
 			<description lang="en">
@@ -2601,7 +2601,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="lowalarm1" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "52" >
 			<name lang="en">Low alarm for sensor 1</name>
 			<description lang="en">
@@ -2610,7 +2610,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="lowalarm2" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "54" >
 			<name lang="en">Low alarm for sensor 2</name>
 			<description lang="en">
@@ -2619,7 +2619,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="lowalarm3" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "56" >
 			<name lang="en">Low alarm for sensor 3</name>
 			<description lang="en">
@@ -2628,7 +2628,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="lowalarm4" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "58" >
 			<name lang="en">Low alarm for sensor 4</name>
 			<description lang="en">
@@ -2637,7 +2637,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="lowalarm5" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "60" >
 			<name lang="en">Low alarm for sensor 5</name>
 			<description lang="en">
@@ -2646,7 +2646,7 @@
 			<access>rw</access>
 		</abstraction>	
 
-		<abstraction id="highalarm0" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "62" >
 			<name lang="en">High alarm for sensor 0</name>
 			<description lang="en">
@@ -2655,7 +2655,7 @@
 			<access>rw</access>
 		</abstraction>	
 
-		<abstraction id="highalarm1" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "64" >
 			<name lang="en">High alarm for sensor 1</name>
 			<description lang="en">
@@ -2664,7 +2664,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="highalarm2" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "66" >
 			<name lang="en">High alarm for sensor 2</name>
 			<description lang="en">
@@ -2673,7 +2673,7 @@
 			<access>rw</access>
 		</abstraction>		
 		
-		<abstraction id="highalarm3" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "68" >
 			<name lang="en">High alarm for sensor 3</name>
 			<description lang="en">
@@ -2682,7 +2682,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="highalarm4" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "70" >
 			<name lang="en">High alarm for sensor 4</name>
 			<description lang="en">
@@ -2691,7 +2691,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="highalarm5" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "72" >
 			<name lang="en">High alarm for sensor 5</name>
 			<description lang="en">
@@ -2700,7 +2700,7 @@
 			<access>rw</access>
 		</abstraction>	
 
-		<abstraction id="Abslow0" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "86" >
 			<name lang="en">Absolut high temperatur for sensor 0</name>
 			<description lang="en">
@@ -2711,7 +2711,7 @@
 			<access>rw</access>
 		</abstraction>	
 		
-		<abstraction id="Abslow1" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "88" >
 			<name lang="en">Absolut high temperatur for sensor 1</name>
 			<description lang="en">
@@ -2722,7 +2722,7 @@
 			<access>rw</access>
 		</abstraction>		
 
-		<abstraction id="Abslow2" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "90" >
 			<name lang="en">Absolut high temperatur for sensor 2</name>
 			<description lang="en">
@@ -2733,7 +2733,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abslow3" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "92" >
 			<name lang="en">Absolut high temperatur for sensor 3</name>
 			<description lang="en">
@@ -2744,7 +2744,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abslow4" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "94" >
 			<name lang="en">Absolut high temperatur for sensor 4</name>
 			<description lang="en">
@@ -2755,7 +2755,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abslow5" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "96" >
 			<name lang="en">Absolut high temperatur for sensor 5</name>
 			<description lang="en">
@@ -2766,7 +2766,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="Abshigh0" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "98" >
 			<name lang="en">Absolut high temperatur for sensor 0</name>
 			<description lang="en">
@@ -2777,7 +2777,7 @@
 			<access>rw</access>
 		</abstraction>			
 
-		<abstraction id="Abshigh1" type="int16_t" default="0" 
+		<abstraction type="int16_t" default="0" 
 							page = "0" offset = "100" >
 			<name lang="en">Absolut high temperatur for sensor 1</name>
 			<description lang="en">
@@ -2788,7 +2788,7 @@
 			<access>rw</access>
 		</abstraction>	
 
-		<abstraction id="Abshigh2" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "102" >
 			<name lang="en">Absolut high temperatur for sensor 2</name>
 			<description lang="en">
@@ -2799,7 +2799,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abshigh3" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "104" >
 			<name lang="en">Absolut high temperatur for sensor 3</name>
 			<description lang="en">
@@ -2810,7 +2810,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abshigh4" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "106" >
 			<name lang="en">Absolut high temperatur for sensor 4</name>
 			<description lang="en">
@@ -2821,7 +2821,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="Abshigh5" type="int16_t"  default="0"
+		<abstraction type="int16_t"  default="0"
 							page = "0" offset = "108" >
 			<name lang="en">Absolut high temperatur for sensor 5</name>
 			<description lang="en">
@@ -2832,7 +2832,7 @@
 			<access>rw</access>
 		</abstraction>	
 		
-		<abstraction id="Calibrations" type="index8_int16_t"  default="0"
+		<abstraction type="index8_int16_t"  default="0"
 							page = "0" offset = "116" size="6" >
 			<name lang="en">Calibration values for sensors</name>
 			<description lang="en">
@@ -2843,7 +2843,7 @@
 			<access>rw</access>
 		</abstraction>
 
-		<abstraction id="CalibratedVoltage" type="uint32_t"  default="0"
+		<abstraction type="uint32_t"  default="0"
 							page = "0" offset = "118" >
 			<name lang="en">Calibration voltage value</name>
 			<description lang="en">
@@ -2854,7 +2854,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff0_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "0" >
 			<name lang="en">Coefficient a for sensor 0</name>
 			<description lang="en">
@@ -2863,7 +2863,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff0_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "4" >
 			<name lang="en">Coefficient b for sensor 0</name>
 			<description lang="en">
@@ -2872,7 +2872,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff0_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "8" >
 			<name lang="en">Coefficient c for sensor 0</name>
 			<description lang="en">
@@ -2881,7 +2881,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff1_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "12" >
 			<name lang="en">Coefficient a for sensor 1</name>
 			<description lang="en">
@@ -2890,7 +2890,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff1_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "16" >
 			<name lang="en">Coefficient b for sensor 1</name>
 			<description lang="en">
@@ -2899,7 +2899,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff1_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "20" >
 			<name lang="en">Coefficient c for sensor 1</name>
 			<description lang="en">
@@ -2908,7 +2908,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff2_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "24" >
 			<name lang="en">Coefficient a for sensor 2</name>
 			<description lang="en">
@@ -2917,7 +2917,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff2_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "28" >
 			<name lang="en">Coefficient b for sensor 2</name>
 			<description lang="en">
@@ -2926,7 +2926,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff2_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "32" >
 			<name lang="en">Coefficient c for sensor 2</name>
 			<description lang="en">
@@ -2935,7 +2935,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff3_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "36" >
 			<name lang="en">Coefficient a for sensor 3</name>
 			<description lang="en">
@@ -2944,7 +2944,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff3_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "40" >
 			<name lang="en">Coefficient b for sensor 3</name>
 			<description lang="en">
@@ -2953,7 +2953,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff3_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "44" >
 			<name lang="en">Coefficient c for sensor 3</name>
 			<description lang="en">
@@ -2962,7 +2962,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff4_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "48" >
 			<name lang="en">Coefficient a for sensor 4</name>
 			<description lang="en">
@@ -2971,7 +2971,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff4_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "52" >
 			<name lang="en">Coefficient b for sensor 4</name>
 			<description lang="en">
@@ -2980,7 +2980,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff4_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "56" >
 			<name lang="en">Coefficient c for sensor 4</name>
 			<description lang="en">
@@ -2989,7 +2989,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff5_a" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "60" >
 			<name lang="en">Coefficient a for sensor 5</name>
 			<description lang="en">
@@ -2998,7 +2998,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff5_b" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "64" >
 			<name lang="en">Coefficient b for sensor 5</name>
 			<description lang="en">
@@ -3007,7 +3007,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="shCoeff5_c" type="float"  default="0"
+		<abstraction type="float"  default="0"
 							page = "1" offset = "68" >
 			<name lang="en">Coefficient c for sensor 5</name>
 			<description lang="en">
@@ -3016,7 +3016,7 @@
 			<access>rw</access>
 		</abstraction>
 		
-		<abstraction id="rawadc0" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "72" >
 			<name lang="en">Raw ADC value for sensor 0</name>
 			<description lang="en">
@@ -3025,7 +3025,7 @@
 			<access>r</access>
 		</abstraction>
 		
-		<abstraction id="rawadc1" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "74" >
 			<name lang="en">Raw ADC value for sensor 1</name>
 			<description lang="en">
@@ -3034,7 +3034,7 @@
 			<access>r</access>
 		</abstraction>
 		
-		<abstraction id="rawadc2" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "76" >
 			<name lang="en">Raw ADC value for sensor 2</name>
 			<description lang="en">
@@ -3043,7 +3043,7 @@
 			<access>r</access>
 		</abstraction>
 		
-		<abstraction id="rawadc3" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "78" >
 			<name lang="en">Raw ADC value for sensor 3</name>
 			<description lang="en">
@@ -3052,7 +3052,7 @@
 			<access>r</access>
 		</abstraction>
 		
-		<abstraction id="rawadc4" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "80" >
 			<name lang="en">Raw ADC value for sensor 4</name>
 			<description lang="en">
@@ -3061,7 +3061,7 @@
 			<access>r</access>
 		</abstraction>
 		
-		<abstraction id="rawadc5" type="uint16_t" 
+		<abstraction type="uint16_t" 
 							page = "1" offset = "82" >
 			<name lang="en">Raw ADC value for sensor 5</name>
 			<description lang="en">

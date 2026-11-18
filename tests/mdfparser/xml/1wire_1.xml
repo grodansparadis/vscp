@@ -3363,7 +3363,7 @@
         
         <!-- Temperature -->
 
-        <abstraction id="temp0" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "0" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor0</name>
             <description lang="en">
@@ -3372,7 +3372,7 @@
             <access>r</access>
         </abstraction>
 
-        <abstraction id="temp1" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "4" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor1</name>
             <description lang="en">
@@ -3381,7 +3381,7 @@
             <access>r</access>
         </abstraction>
 
-        <abstraction id="temp2" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "8" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor2</name>
             <description lang="en">
@@ -3390,7 +3390,7 @@
             <access>r</access>
         </abstraction>
 
-        <abstraction id="temp3" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "12" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor3</name>
             <description lang="en">
@@ -3399,7 +3399,7 @@
             <access>r</access>
         </abstraction>
 
-        <abstraction id="temp4" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "16" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor4</name>
             <description lang="en">
@@ -3408,7 +3408,7 @@
             <access>r</access>
         </abstraction>
 
-        <abstraction id="temp5" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "20" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor5</name>
             <description lang="en">
@@ -3417,7 +3417,7 @@
             <access>r</access>
         </abstraction>	
         
-        <abstraction id="temp6" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "24" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor6</name>
             <description lang="en">
@@ -3426,7 +3426,7 @@
             <access>r</access>
         </abstraction>	
         
-        <abstraction id="temp7" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "28" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor7</name>
             <description lang="en">
@@ -3435,7 +3435,7 @@
             <access>r</access>
         </abstraction>	
         
-        <abstraction id="temp8" type="float" 
+        <abstraction type="float" 
                             page = "1" offset = "32" bgcolor="0xFFFFCC">
             <name lang="en">TemperatureSensor8</name>
             <description lang="en">
@@ -3446,7 +3446,7 @@
         
         <!-- B Constant -->
 
-        <abstraction id="bconst0" type="uint16_t" default="0x0f68"
+        <abstraction type="uint16_t" default="0x0f68"
                             page = "0" offset = "42" bgcolor="0xE5FFCC">
             <name lang="en">BConstantSensor8</name>
             <description lang="en">
@@ -3457,7 +3457,7 @@
         
         <!-- Low alarm -->
 
-        <abstraction id="lowalarm0" type="int16_t" default="0x80ff" 
+        <abstraction type="int16_t" default="0x80ff" 
                             page = "2" offset = "0" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor0</name>
             <description lang="en">
@@ -3466,7 +3466,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="lowalarm1" type="int16_t"  default="0x80ff"
+        <abstraction type="int16_t"  default="0x80ff"
                             page = "2" offset = "2" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor1</name>
             <description lang="en">
@@ -3475,7 +3475,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="lowalarm2" type="int16_t" default="0x80ff" 
+        <abstraction type="int16_t" default="0x80ff" 
                             page = "2" offset = "4" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor2</name>
             <description lang="en">
@@ -3484,7 +3484,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="lowalarm3" type="int16_t" default="0x80ff" 
+        <abstraction type="int16_t" default="0x80ff" 
                             page = "2" offset = "6" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor3</name>
             <description lang="en">
@@ -3493,7 +3493,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="lowalarm4" type="int16_t"  default="0x80ff"
+        <abstraction type="int16_t"  default="0x80ff"
                             page = "2" offset = "8" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor4</name>
             <description lang="en">
@@ -3502,7 +3502,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="lowalarm5" type="int16_t"  default="0x80ff"
+        <abstraction type="int16_t"  default="0x80ff"
                             page = "2" offset = "10" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor5</name>
             <description lang="en">
@@ -3511,7 +3511,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="lowalarm6" type="int16_t"  default="0x80ff"
+        <abstraction type="int16_t"  default="0x80ff"
                             page = "2" offset = "12" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor6</name>
             <description lang="en">
@@ -3520,7 +3520,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="lowalarm7" type="int16_t"  default="0x80ff"
+        <abstraction type="int16_t"  default="0x80ff"
                             page = "2" offset = "14" bgcolor="0xCCFFE5">
             <name lang="en">LowAlarmSensor7</name>
             <description lang="en">
@@ -3533,7 +3533,7 @@
         <!-- High alarm -->
 
 
-        <abstraction id="highalarm0" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "16" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor0</name>
             <description lang="en">
@@ -3542,7 +3542,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="highalarm1" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "18" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor1</name>
             <description lang="en">
@@ -3551,7 +3551,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="highalarm2" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "20" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor2</name>
             <description lang="en">
@@ -3560,7 +3560,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="highalarm3" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "22" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor3</name>
             <description lang="en">
@@ -3569,7 +3569,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="highalarm4" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "24" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor4</name>
             <description lang="en">
@@ -3578,7 +3578,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="highalarm5" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "26" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor5</name>
             <description lang="en">
@@ -3587,7 +3587,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="highalarm6" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "28" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor6</name>
             <description lang="en">
@@ -3596,7 +3596,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="highalarm7" type="int16_t"  default="0x7fff"
+        <abstraction type="int16_t"  default="0x7fff"
                             page = "2" offset = "30" bgcolor="0xCCFFCC">
             <name lang="en">HighAlarmSensor7</name>
             <description lang="en">
@@ -3609,7 +3609,7 @@
         <!-- Absolute low -->
         
 
-        <abstraction id="abslow0" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "32" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor0</name>
             <description lang="en">
@@ -3620,7 +3620,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="abslow1" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "34" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor1</name>
             <description lang="en">
@@ -3631,7 +3631,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abslow2" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "36" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor2</name>
             <description lang="en">
@@ -3642,7 +3642,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abslow3" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "38" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor3</name>
             <description lang="en">
@@ -3653,7 +3653,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abslow4" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "40" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor4</name>
             <description lang="en">
@@ -3664,7 +3664,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abslow5" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "42" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor5</name>
             <description lang="en">
@@ -3675,7 +3675,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="abslow6" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "44" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor6</name>
             <description lang="en">
@@ -3686,7 +3686,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="abslow7" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "46" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteLowTemperatureSensor7</name>
             <description lang="en">
@@ -3701,7 +3701,7 @@
         <!-- Absolute high -->
         
         
-        <abstraction id="abshigh0" type="int16_t" default="0" 
+        <abstraction type="int16_t" default="0" 
                             page = "2" offset = "48" bgcolor="0xFFCCCC" >
             <name lang="en">AbsoluteHighTemperatureSensor0</name>
             <description lang="en">
@@ -3712,7 +3712,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abshigh1" type="int16_t" default="0" 
+        <abstraction type="int16_t" default="0" 
                             page = "2" offset = "50" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor1</name>
             <description lang="en">
@@ -3723,7 +3723,7 @@
             <access>rw</access>
         </abstraction>	
 
-        <abstraction id="abshigh2" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "52" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor2</name>
             <description lang="en">
@@ -3734,7 +3734,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abshigh3" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "54" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor3</name>
             <description lang="en">
@@ -3745,7 +3745,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abshigh4" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "56" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor4</name>
             <description lang="en">
@@ -3756,7 +3756,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="abshigh5" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "58" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor5</name>
             <description lang="en">
@@ -3767,7 +3767,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="abshigh6" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "60" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor6</name>
             <description lang="en">
@@ -3778,7 +3778,7 @@
             <access>rw</access>
         </abstraction>	
         
-        <abstraction id="abshigh7" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "62" bgcolor="0xFFCCCC">
             <name lang="en">AbsoluteHighTemperatureSensor7</name>
             <description lang="en">
@@ -3795,7 +3795,7 @@
         
         
      
-        <abstraction id="calibration0" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "72" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors0</name>
             <description lang="en">
@@ -3806,7 +3806,7 @@
             <access>rw</access>
         </abstraction>
 
-        <abstraction id="calibration1" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "74" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors1</name>
             <description lang="en">
@@ -3817,7 +3817,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration2" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "76" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors2</name>
             <description lang="en">
@@ -3828,7 +3828,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration3" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "78" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors3</name>
             <description lang="en">
@@ -3839,7 +3839,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration4" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "80" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors4</name>
             <description lang="en">
@@ -3850,7 +3850,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration5" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "82" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors5</name>
             <description lang="en">
@@ -3861,7 +3861,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration6" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "84" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors6</name>
             <description lang="en">
@@ -3872,7 +3872,7 @@
             <access>rw</access>
         </abstraction>
         
-        <abstraction id="calibration7" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "86" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors7</name>
             <description lang="en">
@@ -3883,7 +3883,7 @@
             <access>rw</access>
         </abstraction>
        
-        <abstraction id="calibration8" type="int16_t"  default="0"
+        <abstraction type="int16_t"  default="0"
                             page = "2" offset = "88" bgcolor="0xCCE5FF">
             <name lang="en">CalibrationValueSensors8</name>
             <description lang="en">

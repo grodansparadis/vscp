@@ -1438,7 +1438,7 @@
 	<dmatrix>
   
 		<level>1</level>					
-		<start page="0" offset="64" indexed="false"/> 	
+		<start page="0" offset="64"/> 	
 		<rowcnt>8</rowcnt>			 
 
 		<action code="0x00">				

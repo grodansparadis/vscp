@@ -241,7 +241,6 @@
       "level" : 1,
       "start-page" : "0x10",
       "start-offset": 88,
-      "indexed": false,
       "rowcount" : 10,
       "rowsize" : 8,
       "action": [

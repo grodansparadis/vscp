@@ -245,7 +245,6 @@
         "access": "rw",
         "page" :"2",
         "offset" :18,
-        "rowpos": 99,
         "bgcolor" :"0xCCFFFF",
         "fgcolor" :"0x123456",
         
@@ -267,7 +266,6 @@
         "access": "r",
         "page" : "0x11",
         "offset" :"12",
-        "rowpos": "0x04",
         "bgcolor" :"0x777777",
         "fgcolor" :"0x888888",        
         "description" : {
@@ -330,7 +328,6 @@
         "access": "rw",
         "page" :"9",
         "offset" :98,
-        "rowpos": "0x44",
         "bgcolor" :"0x999999",
         "fgcolor" :"0xAAAAAA",
         
