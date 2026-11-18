@@ -7,6 +7,18 @@ tagged, rename **Unreleased** to the version and date, and start a new
 
 ## Unreleased
 
+- MDF: loading and saving no longer loses data. `save_xml()` and `save_json()` are rewritten and write everything the parsers read; an MDF saved in either format and loaded again gives the same model (new round-trip tests cover every test fixture)
+- MDF: spanned decision matrix and block registers are saved once with their span instead of once per expanded register; their alternating colours, action and event descriptions, event data value lists and string sizes are saved too. Colours are written as `0x...` (bare hex was read back as 0)
+- MDF: the XML parser reads `<state>`, and expanded registers are named `<name> - DM n` / `<name> - BLOCK n` by both parsers (the XML parser left the first one with its plain name)
+- MDF: the XML parser no longer lowercases names, defaults and other values; values keep the case they have in the file. `undef` in any case is read as `UNDEF`, which `getDefault()` and VSCP Works test for
+- MDF: when an attribute is missing, the JSON parser uses the same defaults as the XML parser (it set its own, and wrote 255 into a bit's `min` when `max` was missing). For JSON files this changes register `max` to 255, bit `default` to 0 and event `priority` to 7
+- MDF: the JSON parser reads `files` written as a list, the `path`/`md5`/`language` aliases, the module `level`, event data `offset`, setup `version` and numeric action parameter `max`; the XML parser reads setup `version` and the `md5`/`language` aliases
+- MDF: module level is 1 or 2 in both XML and JSON files, as in the specification
+- MDF: `getAccessStr()` returned `w` for read only and `r` for write only (registers, bits, remote variables); `getDefault()` reads `0b...` values; `CMDF_Firmware::getFormat()` returns the format as written instead of uppercased
+- tests/mdfparser: builds standalone (`mkdir build && cd build && cmake ..`)
+
+## V26.11.15.122 - 26-11-15
+
 - MQTT client: TLS settings in the `tls` object (`cafile`, `capath`, `certfile`, `keyfile`, ...) and `mqtt-options` are read again; they were type checked against the wrong JSON object and ignored, which turned TLS off
 - MQTT client: a subscription with a `format` no longer makes the configuration fail (it read the non-existent `subscribe-format` key)
 - MQTT client: no warnings for server-only TLS without a client certificate, or for a disconnect the client asked for
