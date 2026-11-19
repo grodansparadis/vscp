@@ -723,10 +723,16 @@ TEST_F(TcpTransport, ReceiveTimeoutIsDebugAndDoesNotExposeData)
   vscpEvent legacyEvent{};
   vscpEventEx event{};
   canalMsg canalEvent{};
+  const auto emptyStart = std::chrono::steady_clock::now();
   EXPECT_EQ(VSCP_ERROR_ERROR, client.doCmdReceive(&legacyEvent));
   EXPECT_EQ(VSCP_ERROR_ERROR, client.doCmdReceiveEx(&event));
   EXPECT_EQ(VSCP_ERROR_GENERIC, client.doCmdReceiveLevel1(&canalEvent));
   EXPECT_EQ(VSCP_ERROR_ERROR, client.doCommand(std::string("retr 1\r\n")));
+  // The "-OK - No event(s) available" reply must end each call at once, not
+  // after the response timeout (polling an empty queue was ~2 s per call).
+  EXPECT_LT(std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::steady_clock::now() - emptyStart).count(),
+            1000);
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdEnterReceiveLoop());
   ASSERT_EQ(VSCP_ERROR_SUCCESS, client.doCmdBlockingReceive(&event, 500));
   ASSERT_EQ(VSCP_ERROR_TIMEOUT, client.doCmdBlockingReceive(&event, 100));

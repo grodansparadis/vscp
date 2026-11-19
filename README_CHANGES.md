@@ -7,6 +7,7 @@ tagged, rename **Unreleased** to the version and date, and start a new
 
 ## Unreleased
 
+- TCP/IP client: polling an empty receive queue (`RETR`) returned at once instead of after the response timeout. The server answers `-OK - No event(s) available`, which is neither `+OK` nor `+ERR`, so every poll of an empty queue waited the full timeout (2 s) while holding the connection, and polling clients such as VSCP Works got about one poll per 2 s; now one poll takes a round trip (6 ms on a local node). The TCP transport test checks the time
 - MDF: loading and saving no longer loses data. `save_xml()` and `save_json()` are rewritten and write everything the parsers read; an MDF saved in either format and loaded again gives the same model (new round-trip tests cover every test fixture)
 - MDF: spanned decision matrix and block registers are saved once with their span instead of once per expanded register; their alternating colours, action and event descriptions, event data value lists and string sizes are saved too. Colours are written as `0x...` (bare hex was read back as 0)
 - MDF: the XML parser reads `<state>`, and expanded registers are named `<name> - DM n` / `<name> - BLOCK n` by both parsers (the XML parser left the first one with its plain name)

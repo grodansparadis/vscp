@@ -2229,6 +2229,13 @@ VscpRemoteTcpIf::checkReturnValueForCommand(bool bClear, bool routineReceive)
       break;
     }
 
+    // An empty receive queue is answered with "-OK - No event(s) available",
+    // which is neither "+OK" nor "+ERR". Stop here instead of waiting for the
+    // full response timeout on every poll of an empty queue.
+    if (routineReceive && (nullptr != strstr(buf, "\n")) && isEmptyReceiveResponse(m_strResponse)) {
+      break;
+    }
+
     // Check if we are done
     // A line with "+OK bla bla bla bla bla bla bla bla \r\n"
     // It can be hacked up.
