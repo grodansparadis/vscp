@@ -102,6 +102,7 @@ clock_gettime(int, struct timespec *ts)
 #include <vscp.h>
 #include <vscp-socket-address.h>
 #include <vscphelper.h>
+#include "vscp-units.h"
 #ifdef VSCP_ENABLE_HELPER_LOGGING
 #include "vscphelperlogging.h"
 #endif
@@ -2353,6 +2354,29 @@ vscp_readDoubleMsbFirst(const uint8_t *p)
   return value;
 }
 
+// 32-bit float, MSB first (VSCP specification: all numbers are big endian)
+static void
+vscp_writeFloatMsbFirst(uint8_t *p, float value)
+{
+  uint32_t bits;
+  memcpy(&bits, &value, sizeof(bits));
+  for (int i = 0; i < 4; i++) {
+    p[i] = (uint8_t) (bits >> (24 - 8 * i));
+  }
+}
+
+static float
+vscp_readFloatMsbFirst(const uint8_t *p)
+{
+  uint32_t bits = 0;
+  for (int i = 0; i < 4; i++) {
+    bits = (bits << 8) | p[i];
+  }
+  float value;
+  memcpy(&value, &bits, sizeof(value));
+  return value;
+}
+
 bool
 vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
 {
@@ -2403,9 +2427,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
       return helperLogBoolResult(__func__, false);
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata, 4); // float
+    memcpy(buf, pev->pdata, 4); // float, MSB first (VSCP specification)
 
-    strValue = vscp_str_format("%f", *((float *) buf));
+    strValue = vscp_str_format("%f", vscp_readFloatMsbFirst(buf));
   }
   else if (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pev->vscp_class) {
     uint8_t buf[4];
@@ -2416,9 +2440,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata + 16, 4); // float
+    memcpy(buf, pev->pdata + 16, 4); // float, MSB first (VSCP specification)
 
-    strValue = vscp_str_format("%f", *((float *) buf));
+    strValue = vscp_str_format("%f", vscp_readFloatMsbFirst(buf));
   }
   else if (VSCP_CLASS1_MEASUREMENT64 == pev->vscp_class) {
     uint8_t buf[8];
@@ -2429,9 +2453,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata, 8); // Double
+    memcpy(buf, pev->pdata, 8); // Double, MSB first (VSCP specification)
 
-    strValue = vscp_str_format("%f", *((double *) buf));
+    strValue = vscp_str_format("%f", vscp_readDoubleMsbFirst(buf));
   }
   else if (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pev->vscp_class) {
 
@@ -2443,9 +2467,9 @@ vscp_getMeasurementAsString(std::string &strValue, const vscpEvent *pev)
     }
 
     memset(buf, 0, sizeof(buf));
-    memcpy(buf, pev->pdata + 16, 8); // Double
+    memcpy(buf, pev->pdata + 16, 8); // Double, MSB first (VSCP specification)
 
-    strValue = vscp_str_format("%f", *((double *) buf));
+    strValue = vscp_str_format("%f", vscp_readDoubleMsbFirst(buf));
   }
 
   else if ((VSCP_CLASS1_MEASUREMENT == pev->vscp_class) || (VSCP_CLASS1_MEASUREZONE == pev->vscp_class) ||
@@ -2685,8 +2709,7 @@ vscp_getMeasurementFloat64AsString(std::string &strValue, const vscpEvent *pev)
     return helperLogBoolResult(__func__, false);
   }
 
-  double *pfloat = (double *) (pev->pdata + offset);
-  strValue       = vscp_str_format("%lf", *pfloat);
+  strValue = vscp_str_format("%lf", vscp_readDoubleMsbFirst(pev->pdata + offset)); // MSB first (VSCP specification)
 
   return true;
 }
@@ -2822,6 +2845,190 @@ vscp_getMeasurementUnitEx(const vscpEventEx *pex)
   vscp_deleteEvent_v2(&pev);
 
   return helperLogNegativeResult(__func__, rv);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Measurement unit conversion
+//
+
+static const vscp_unit_def_t *
+findMeasurementUnit(uint16_t vscp_type, uint8_t unit)
+{
+  // The table is sorted on type and unit
+  size_t lo = 0;
+  size_t hi = VSCP_UNIT_TABLE_SIZE;
+  const uint32_t key = (static_cast<uint32_t>(vscp_type) << 8) | unit;
+  while (lo < hi) {
+    size_t mid       = lo + (hi - lo) / 2;
+    const uint32_t k = (static_cast<uint32_t>(vscp_unit_table[mid].vscp_type) << 8) | vscp_unit_table[mid].unit;
+    if (k == key) {
+      return &vscp_unit_table[mid];
+    }
+    if (k < key) {
+      lo = mid + 1;
+    }
+    else {
+      hi = mid;
+    }
+  }
+  return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getMeasurementUnitInfo
+//
+
+int
+vscp_getMeasurementUnitInfo(uint16_t vscp_type,
+                            uint8_t unit,
+                            std::string &name,
+                            std::string &symbol_ascii,
+                            std::string &symbol_utf8,
+                            bool *pconvertible)
+{
+  helperLogEntry(__func__);
+  const vscp_unit_def_t *pdef = findMeasurementUnit(vscp_type, unit);
+  if (nullptr == pdef) {
+    return VSCP_ERROR_UNKNOWN_ITEM; // An answer, not a failure
+  }
+  name         = pdef->name;
+  symbol_ascii = pdef->symbol_ascii;
+  symbol_utf8  = pdef->symbol_utf8;
+  if (nullptr != pconvertible) {
+    *pconvertible = (0 != pdef->convertible);
+  }
+  return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertMeasurementUnit
+//
+
+int
+vscp_convertMeasurementUnit(double *presult, uint16_t vscp_type, uint8_t from_unit, uint8_t to_unit, double value)
+{
+  helperLogEntry(__func__);
+  if (nullptr == presult) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_POINTER);
+  }
+  const vscp_unit_def_t *pfrom = findMeasurementUnit(vscp_type, from_unit);
+  const vscp_unit_def_t *pto   = findMeasurementUnit(vscp_type, to_unit);
+  if ((nullptr == pfrom) || (nullptr == pto)) {
+    return VSCP_ERROR_UNKNOWN_ITEM; // An answer, not a failure
+  }
+  if (from_unit == to_unit) {
+    *presult = value;
+    return VSCP_ERROR_SUCCESS;
+  }
+  if (!pfrom->convertible || !pto->convertible) {
+    return VSCP_ERROR_NOT_SUPPORTED; // An answer, not a failure
+  }
+  // Through unit 0: value0 = value * scale + offset
+  const double value0 = value * pfrom->scale + pfrom->offset;
+  *presult            = (value0 - pto->offset) / pto->scale;
+  return VSCP_ERROR_SUCCESS;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// measurementBaseClass
+//
+// X1-X4 classes have the same types and units as their base class; the
+// existing value and unit decoders know the base classes.
+//
+
+static uint16_t
+measurementBaseClass(uint16_t vscp_class)
+{
+  static const uint16_t bases[] = { VSCP_CLASS1_MEASUREMENT,          VSCP_CLASS1_MEASUREMENT64,
+                                    VSCP_CLASS1_MEASUREZONE,          VSCP_CLASS1_MEASUREMENT32,
+                                    VSCP_CLASS1_SETVALUEZONE,         VSCP_CLASS2_LEVEL1_MEASUREMENT,
+                                    VSCP_CLASS2_LEVEL1_MEASUREMENT64, VSCP_CLASS2_LEVEL1_MEASUREZONE,
+                                    VSCP_CLASS2_LEVEL1_MEASUREMENT32, VSCP_CLASS2_LEVEL1_SETVALUEZONE };
+  for (uint16_t base : bases) {
+    if ((vscp_class > base) && (vscp_class <= base + 4)) {
+      return base;
+    }
+  }
+  return vscp_class;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertMeasurement
+//
+
+int
+vscp_convertMeasurement(double *presult, const vscpEvent *pev, uint8_t to_unit)
+{
+  helperLogEntry(__func__);
+  if ((nullptr == presult) || (nullptr == pev)) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_POINTER);
+  }
+  if (!vscp_isMeasurement(pev) || (VSCP_CLASS1_DATA == pev->vscp_class)) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+
+  // Same event with the base class (the data is only read)
+  vscpEvent ev  = *pev;
+  ev.vscp_class = measurementBaseClass(pev->vscp_class);
+
+  int unit = vscp_getMeasurementUnit(&ev);
+  if (unit < 0) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_FORMAT);
+  }
+
+  double value = 0;
+  const int guid = (ev.vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && (ev.vscp_class < VSCP_CLASS2_PROTOCOL) ? 16 : 0;
+  if ((VSCP_CLASS1_MEASUREMENT32 == ev.vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == ev.vscp_class)) {
+    if ((nullptr == ev.pdata) || (ev.sizeData != guid + 4)) {
+      return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_FORMAT);
+    }
+    value = vscp_readFloatMsbFirst(ev.pdata + guid);
+  }
+  else if ((VSCP_CLASS1_MEASUREMENT64 == ev.vscp_class) || (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == ev.vscp_class)) {
+    if ((nullptr == ev.pdata) || (ev.sizeData != guid + 8)) {
+      return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_FORMAT);
+    }
+    value = vscp_readDoubleMsbFirst(ev.pdata + guid);
+  }
+  else if (!vscp_getMeasurementAsDouble(&value, &ev)) {
+    // Classes the double reader does not handle (MEASUREMENT32, Level II
+    // variants) are read through the string form
+    std::string str;
+    if (!vscp_getMeasurementAsString(str, &ev)) {
+      return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_FORMAT);
+    }
+    std::istringstream iss(str);
+    iss.imbue(std::locale::classic());
+    if (!(iss >> value)) {
+      return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_FORMAT);
+    }
+  }
+
+  return vscp_convertMeasurementUnit(presult, ev.vscp_type, static_cast<uint8_t>(unit), to_unit, value);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertMeasurementEx
+//
+
+int
+vscp_convertMeasurementEx(double *presult, const vscpEventEx *pex, uint8_t to_unit)
+{
+  helperLogEntry(__func__);
+  if ((nullptr == presult) || (nullptr == pex)) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_INVALID_POINTER);
+  }
+  vscpEvent *pev = nullptr;
+  if (!vscp_newEvent(&pev) || (nullptr == pev)) {
+    return helperLogStatusResult(__func__, VSCP_ERROR_MEMORY);
+  }
+  if (!vscp_convertEventExToEvent(pev, pex)) {
+    vscp_deleteEvent_v2(&pev);
+    return helperLogStatusResult(__func__, VSCP_ERROR_PARAMETER);
+  }
+  int rv = vscp_convertMeasurement(presult, pev, to_unit);
+  vscp_deleteEvent_v2(&pev);
+  return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -3327,15 +3534,9 @@ vscp_convertFloatToFloatEventData(uint8_t *pdata, uint16_t *psize, float value, 
     return helperLogBoolResult(__func__, false);
   }
 
-  void *p = (void *) &value;
-  // uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t*)p));
-  // float f    = *((float*)((uint8_t*)&n));
-  // UNUSED(f);
-  p = (void *) &value;
-
   *psize   = 5;
   pdata[0] = VSCP_DATACODING_SINGLE + (unit << 3) + sensoridx; // float + unit + sensor index
-  memcpy(pdata + 1, p, 4);
+  vscp_writeFloatMsbFirst(pdata + 1, value);                   // MSB first (VSCP specification)
 
   return true;
 }

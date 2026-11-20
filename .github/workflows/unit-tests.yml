@@ -57,6 +57,8 @@ jobs:
         ./vscpdatetime/unittest_datetime
         echo "Running VscpHelper tests..."
         ./vscphelper/unittest_vscphelper
+        echo "Running VSCP unit conversion tests..."
+        ./vscpunits/unittest_vscpunits
         echo "Running MDF Parser tests..."
         cd ${{github.workspace}}/tests/mdfparser && ${{github.workspace}}/tests/build/mdfparser/unittest_mdfparser
         echo "Running TcpipTls tests..."
@@ -121,6 +123,8 @@ jobs:
         ./vscpdatetime/unittest_datetime
         echo "Running VscpHelper tests..."
         ./vscphelper/unittest_vscphelper
+        echo "Running VSCP unit conversion tests..."
+        ./vscpunits/unittest_vscpunits
         echo "Running MDF Parser tests..."
         cd ${{github.workspace}}/tests/mdfparser && ${{github.workspace}}/tests/build/mdfparser/unittest_mdfparser
         echo "Running TcpipTls tests..."

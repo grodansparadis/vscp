@@ -323,6 +323,7 @@ set(VSCP_CORE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/register.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/hlo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpunit.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vscp/common/vscpunitexpr.cpp
 )
 
 add_library(vscp_core SHARED ${VSCP_CORE_SOURCES})

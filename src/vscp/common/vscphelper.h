@@ -1201,6 +1201,76 @@ vscp_getMeasurementUnit(const vscpEvent *pev);
 int
 vscp_getMeasurementUnitEx(const vscpEventEx *pex);
 
+/*
+  Measurement unit conversion
+
+  All measurement classes (CLASS1.MEASUREMENT, X1-X4, MEASUREMENT32/64,
+  MEASUREZONE, SETVALUEZONE, their Level II variants, MEASUREMENT_STR and
+  MEASUREMENT_FLOAT) use the types and units of CLASS1.MEASUREMENT. A value
+  is converted from one unit to another through the default unit (unit 0).
+  The unit table vscp-units.h is generated from vscp-classes.
+*/
+
+/*!
+  @fn vscp_getMeasurementUnitInfo
+  Get name, symbols and convertibility of a measurement unit.
+  @param vscp_type Measurement type (CLASS1.MEASUREMENT type).
+  @param unit Unit 0-255.
+  @param name Set to the name of the unit.
+  @param symbol_ascii Set to the ASCII symbol of the unit.
+  @param symbol_utf8 Set to the UTF-8 symbol of the unit.
+  @param pconvertible If not NULL, set to true if the unit can be converted
+    to and from the other units of the type.
+  @return VSCP_ERROR_SUCCESS, or VSCP_ERROR_UNKNOWN_ITEM if the type or
+    unit is not defined.
+ */
+int
+vscp_getMeasurementUnitInfo(uint16_t vscp_type,
+                            uint8_t unit,
+                            std::string &name,
+                            std::string &symbol_ascii,
+                            std::string &symbol_utf8,
+                            bool *pconvertible = nullptr);
+
+/*!
+  @fn vscp_convertMeasurementUnit
+  Convert a measurement value from one unit to another.
+  @param presult Set to the converted value.
+  @param vscp_type Measurement type (CLASS1.MEASUREMENT type).
+  @param from_unit Unit of value.
+  @param to_unit Unit to convert to.
+  @param value Value to convert.
+  @return VSCP_ERROR_SUCCESS, VSCP_ERROR_INVALID_POINTER if presult is
+    NULL, VSCP_ERROR_UNKNOWN_ITEM if the type or a unit is not defined, or
+    VSCP_ERROR_NOT_SUPPORTED if a unit can not be converted (for example
+    latitude/longitude). Converting to the same unit always succeeds for a
+    defined unit.
+ */
+int
+vscp_convertMeasurementUnit(double *presult, uint16_t vscp_type, uint8_t from_unit, uint8_t to_unit, double value);
+
+/*!
+  @fn vscp_convertMeasurement
+  Convert the value of a measurement event to another unit. The value and
+  its unit are read from the event.
+  @param presult Set to the converted value.
+  @param pev Measurement event.
+  @param to_unit Unit to convert to.
+  @return VSCP_ERROR_SUCCESS, VSCP_ERROR_INVALID_POINTER, VSCP_ERROR_PARAMETER
+    if the event is not a measurement event (or CLASS1.DATA), VSCP_ERROR_INVALID_FORMAT
+    if the value or unit can not be read, or an error from
+    vscp_convertMeasurementUnit().
+ */
+int
+vscp_convertMeasurement(double *presult, const vscpEvent *pev, uint8_t to_unit);
+
+/*!
+  @fn vscp_convertMeasurementEx
+  As vscp_convertMeasurement() for a vscpEventEx.
+ */
+int
+vscp_convertMeasurementEx(double *presult, const vscpEventEx *pex, uint8_t to_unit);
+
 /*!
   @fn vscp_getMeasurementSensorIndex
   Get measurement sensor index for any of the valid measurement events.
