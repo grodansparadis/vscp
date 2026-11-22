@@ -1541,9 +1541,12 @@ CUserRegisters::putReg(uint32_t reg, uint32_t page, uint8_t value)
     return false; // Level is wrong
   }
 
-  // A new page will automatically be created
-  // if thew page does not exist
+  // A new page is created if the page does not exist
   CRegisterPage *pPage = m_registerPageMap[page];
+  if (nullptr == pPage) {
+    pPage = new CRegisterPage(m_level, page);
+    m_registerPageMap[page] = pPage;
+  }
   pPage->putReg(reg, value); // Assign value
 
   m_pages.insert(page); // Add page to list of pages
@@ -1647,6 +1650,45 @@ CUserRegisters::clearHistory(void)
   for (auto const &page : m_registerPageMap) {
     page.second->clearHistory();
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// parseDateTimeParts
+//
+// Three decimal numbers separated by sep ("dd-mm-yyyy", "hh:mm:ss").
+// Leading zeros are decimal, not octal.
+//
+
+static bool
+parseDateTimeParts(const std::string &str, char sep, unsigned &a, unsigned &b, unsigned &c)
+{
+  unsigned *parts[3] = { &a, &b, &c };
+  const char *p      = str.c_str();
+  while (isspace((unsigned char) *p)) {
+    p++;
+  }
+  for (int i = 0; i < 3; i++) {
+    if (!isdigit((unsigned char) *p)) {
+      return false;
+    }
+    char *end;
+    unsigned long v = strtoul(p, &end, 10);
+    if (v > 0xffff) {
+      return false;
+    }
+    *parts[i] = (unsigned) v;
+    p         = end;
+    if (i < 2) {
+      if (*p != sep) {
+        return false;
+      }
+      p++;
+    }
+  }
+  while (isspace((unsigned char) *p)) {
+    p++;
+  }
+  return ('\0' == *p);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1840,30 +1882,20 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
       }
     } break;
 
+    // Registers "yy yy mm dd" (16-bit year, MSB first) -> "dd-mm-yyyy"
     case remote_variable_type_date: {
-      uint8_t *buf;
-      buf = (uint8_t *) malloc(remoteVar.getTypeByteCount());
-      if (NULL != buf) {
-        for (int i = 0; i < remoteVar.getTypeByteCount(); i++) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
-        strValue =
-          vscp_str_format("%02d-%02d-%02d", *((uint8_t *) buf), *((uint8_t *) (buf + 2)), *((uint8_t *) (buf + 4)));
-        free(buf);
-      }
+      unsigned year  = (ppage->getReg(remoteVar.getOffset()) << 8) + ppage->getReg(remoteVar.getOffset() + 1);
+      unsigned month = ppage->getReg(remoteVar.getOffset() + 2);
+      unsigned day   = ppage->getReg(remoteVar.getOffset() + 3);
+      strValue       = vscp_str_format("%02u-%02u-%04u", day, month, year);
     } break;
 
+    // Registers "hh mm ss" -> "hh:mm:ss"
     case remote_variable_type_time: {
-      uint8_t *buf;
-      buf = (uint8_t *) malloc(remoteVar.getTypeByteCount());
-      if (NULL != buf) {
-        for (int i = 0; i < remoteVar.getTypeByteCount(); i++) {
-          buf[i] = ppage->getReg(remoteVar.getOffset() + i);
-        }
-        strValue =
-          vscp_str_format("%02d:%02d:%02d", *((uint8_t *) buf), *((uint8_t *) (buf + 2)), *((uint8_t *) (buf + 4)));
-        free(buf);
-      }
+      unsigned hour   = ppage->getReg(remoteVar.getOffset());
+      unsigned minute = ppage->getReg(remoteVar.getOffset() + 1);
+      unsigned second = ppage->getReg(remoteVar.getOffset() + 2);
+      strValue        = vscp_str_format("%02u:%02u:%02u", hour, minute, second);
     } break;
 
     case remote_variable_type_unknown:
@@ -1882,7 +1914,7 @@ CUserRegisters::remoteVarFromRegToString(CMDF_RemoteVariable &remoteVar, std::st
 int
 CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable &remoteVar, std::string &strValue)
 {
-  bool rv              = VSCP_ERROR_SUCCESS;
+  int rv               = VSCP_ERROR_SUCCESS;
   CRegisterPage *ppage = getRegisterPage(remoteVar.getPage());
   if (nullptr == ppage)
     return VSCP_ERROR_ERROR;
@@ -2003,32 +2035,28 @@ CUserRegisters::remoteVarFromStringToReg(CMDF_RemoteVariable &remoteVar, std::st
       ppage->putReg(remoteVar.getOffset() + 7, *(p + 7));
     } break;
 
-    // YY:MM:DD
+    // "dd-mm-yyyy" -> registers "yy yy mm dd" (16-bit year, MSB first)
     case remote_variable_type_date: {
-      std::deque<std::string> vec;
-      vscp_split(vec, strValue, ":");
-      if (vec.size() == 3) {
-        uint8_t val = vscp_readStringValue(vec[0]);
-        ppage->putReg(remoteVar.getOffset(), val);
-        val = vscp_readStringValue(vec[1]);
-        ppage->putReg(remoteVar.getOffset() + 1, val);
-        val = vscp_readStringValue(vec[2]);
-        ppage->putReg(remoteVar.getOffset() + 2, val);
+      unsigned day, month, year;
+      if (!parseDateTimeParts(strValue, '-', day, month, year) || (day < 1) || (day > 31) || (month < 1) ||
+          (month > 12) || (year > 0xffff)) {
+        return VSCP_ERROR_PARAMETER;
       }
+      ppage->putReg(remoteVar.getOffset(), (year >> 8) & 0xff);
+      ppage->putReg(remoteVar.getOffset() + 1, year & 0xff);
+      ppage->putReg(remoteVar.getOffset() + 2, month);
+      ppage->putReg(remoteVar.getOffset() + 3, day);
     } break;
 
-    // HH:MM:SS
+    // "hh:mm:ss" (24 hour clock) -> registers "hh mm ss"
     case remote_variable_type_time: {
-      std::deque<std::string> vec;
-      vscp_split(vec, strValue, ":");
-      if (vec.size() == 3) {
-        uint8_t val = vscp_readStringValue(vec[0]);
-        ppage->putReg(remoteVar.getOffset(), val);
-        val = vscp_readStringValue(vec[1]);
-        ppage->putReg(remoteVar.getOffset() + 1, val);
-        val = vscp_readStringValue(vec[2]);
-        ppage->putReg(remoteVar.getOffset() + 2, val);
+      unsigned hour, minute, second;
+      if (!parseDateTimeParts(strValue, ':', hour, minute, second) || (hour > 23) || (minute > 59) || (second > 59)) {
+        return VSCP_ERROR_PARAMETER;
       }
+      ppage->putReg(remoteVar.getOffset(), hour);
+      ppage->putReg(remoteVar.getOffset() + 1, minute);
+      ppage->putReg(remoteVar.getOffset() + 2, second);
     } break;
 
     case remote_variable_type_unknown:

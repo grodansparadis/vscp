@@ -105,7 +105,7 @@ optional index for array element
 #define VSCP_REMOTE_VARIABLE_CODE_STRING     (1) // String value
 #define VSCP_REMOTE_VARIABLE_CODE_BOOLEAN    (2) // Boolean value
 
-#define VSCP_REMOTE_VARIABLE_CODE_DATE (3) // Date in three bytes YY,MM,DD
+#define VSCP_REMOTE_VARIABLE_CODE_DATE (3) // Date in four bytes YY,YY,MM,DD (16-bit year, MSB first)
 #define VSCP_REMOTE_VARIABLE_CODE_TIME (4) // Time in three bytes HH,MM,SS
 
 #define VSCP_REMOTE_VARIABLE_CODE_INT8   (5)

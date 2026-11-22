@@ -384,11 +384,11 @@ CMDF_RemoteVariable::getTypeByteCount(void)
       break;
 
     case remote_variable_type_date:
-      size = 3; // YYMMDD
+      size = 4; // YY YY MM DD (16-bit year), see the register abstraction model
       break;
 
     case remote_variable_type_time:
-      size = 3; // HHMMSS
+      size = 3; // HH MM SS
       break;
 
     case remote_variable_type_unknown:

@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <math.h>
 #include <mdf.h>
+#include <register.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5086,6 +5087,105 @@ TEST(MdfSafety, NewSpanRegisterIsExpandedOnReload)
 }
 
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Remote variables of type date and time (issue #331)
+//
+// The register abstraction model: date is passed as dd-mm-yyyy and stored as
+// "yy yy mm dd" (four bytes, 16-bit year MSB first); time is passed as
+// hh:mm:ss and stored as "hh mm ss" (three bytes).
+//-----------------------------------------------------------------------------
+
+static CMDF_RemoteVariable
+makeRemoteVar(vscp_remote_variable_type type, uint32_t offset)
+{
+  CMDF_RemoteVariable rvar;
+  rvar.setType(type);
+  rvar.setPage(0);
+  rvar.setOffset(offset);
+  return rvar;
+}
+
+TEST(RemoteVariable, DateTime_Size)
+{
+  CMDF_RemoteVariable date = makeRemoteVar(remote_variable_type_date, 0);
+  CMDF_RemoteVariable time = makeRemoteVar(remote_variable_type_time, 0);
+  ASSERT_EQ(4, date.getTypeByteCount());
+  ASSERT_EQ(3, time.getTypeByteCount());
+}
+
+TEST(RemoteVariable, Date_Write_Read)
+{
+  CUserRegisters regs(VSCP_LEVEL1);
+  ASSERT_TRUE(regs.putReg(0x10, 0, 0)); // Creates page 0
+  CMDF_RemoteVariable rvar = makeRemoteVar(remote_variable_type_date, 0x10);
+
+  std::string str = "20-11-2026";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromStringToReg(rvar, str));
+  ASSERT_EQ(0x07, regs.getReg(0x10)); // 2026 = 0x07EA, MSB first
+  ASSERT_EQ(0xEA, regs.getReg(0x11));
+  ASSERT_EQ(11, regs.getReg(0x12));
+  ASSERT_EQ(20, regs.getReg(0x13));
+  ASSERT_EQ(-1, regs.getReg(0x14)); // Nothing written after the four bytes
+
+  std::string out;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromRegToString(rvar, out));
+  ASSERT_EQ("20-11-2026", out);
+
+  // What is read can be written back
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromStringToReg(rvar, out));
+  ASSERT_EQ(20, regs.getReg(0x13));
+
+  // Leading zeros are decimal (not octal)
+  str = "08-09-0099";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromStringToReg(rvar, str));
+  ASSERT_EQ(0, regs.getReg(0x10));
+  ASSERT_EQ(99, regs.getReg(0x11));
+  ASSERT_EQ(9, regs.getReg(0x12));
+  ASSERT_EQ(8, regs.getReg(0x13));
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromRegToString(rvar, out));
+  ASSERT_EQ("08-09-0099", out);
+}
+
+TEST(RemoteVariable, Date_Invalid)
+{
+  CUserRegisters regs(VSCP_LEVEL1);
+  ASSERT_TRUE(regs.putReg(0x10, 0, 0));
+  CMDF_RemoteVariable rvar = makeRemoteVar(remote_variable_type_date, 0x10);
+
+  for (const char *bad : { "2026:11:20", "20:11:2026", "32-01-2026", "00-01-2026", "01-13-2026", "01-00-2026",
+                           "01-01-65536", "01-01", "1-1-2026-1", "aa-bb-cccc", "", "01-01-2026x" }) {
+    std::string str = bad;
+    ASSERT_EQ(VSCP_ERROR_PARAMETER, regs.remoteVarFromStringToReg(rvar, str)) << bad;
+  }
+  ASSERT_EQ(0, regs.getReg(0x10)); // Unchanged
+  ASSERT_EQ(-1, regs.getReg(0x13));
+}
+
+TEST(RemoteVariable, Time_Write_Read)
+{
+  CUserRegisters regs(VSCP_LEVEL1);
+  ASSERT_TRUE(regs.putReg(0x20, 0, 0));
+  CMDF_RemoteVariable rvar = makeRemoteVar(remote_variable_type_time, 0x20);
+
+  std::string str = "23:59:07";
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromStringToReg(rvar, str));
+  ASSERT_EQ(23, regs.getReg(0x20));
+  ASSERT_EQ(59, regs.getReg(0x21));
+  ASSERT_EQ(7, regs.getReg(0x22));
+  ASSERT_EQ(-1, regs.getReg(0x23)); // Three bytes
+
+  std::string out;
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromRegToString(rvar, out));
+  ASSERT_EQ("23:59:07", out);
+  ASSERT_EQ(VSCP_ERROR_SUCCESS, regs.remoteVarFromStringToReg(rvar, out));
+
+  for (const char *bad : { "24:00:00", "12:60:00", "12:00:60", "12-00-00", "12:00", "x" }) {
+    std::string s = bad;
+    ASSERT_EQ(VSCP_ERROR_PARAMETER, regs.remoteVarFromStringToReg(rvar, s)) << bad;
+  }
+  ASSERT_EQ(23, regs.getReg(0x20)); // Unchanged
+}
 
 int
 main(int argc, char **argv)
