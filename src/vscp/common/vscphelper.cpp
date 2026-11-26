@@ -8670,7 +8670,10 @@ vscp_getMsTimeStamp(void)
   }
 
   s  = spec.tv_sec;
-  ms = round(s * 1000 + spec.tv_nsec / 1.0e6); // Convert to milliseconds
+  // Wrap modulo 2^32 in integer math; converting the out of range double
+  // to uint32_t is undefined and saturates on arm64 (macOS), which froze
+  // the clock and made every timeout loop spin forever.
+  ms = (uint32_t) ((uint64_t) s * 1000u + (uint64_t) spec.tv_nsec / 1000000u);
   return ms;
 #endif
 }
