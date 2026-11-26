@@ -31,12 +31,15 @@
 #include <unistd.h>
 #endif
 
+#include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <mdf.h>
 #include <register.h>
@@ -506,6 +509,254 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
   } // startmap
 
   return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  Level II registers (CLASS2.PROTOCOL)
+//
+
+// Wait for something to arrive
+static void
+level2_pause(void)
+{
+#ifdef WIN32
+  win_usleep(2000);
+#else
+  usleep(2000);
+#endif
+}
+
+// Is ex a Read Write Response from the node? Then return its start register
+static bool
+level2_is_response(const vscpEventEx &ex, cguid &guidNode, uint32_t &start)
+{
+  if ((VSCP_CLASS2_PROTOCOL != ex.vscp_class) || (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE != ex.vscp_type) ||
+      (ex.sizeData < 4) || (0 != memcmp(ex.GUID, guidNode.getGUID(), 16))) {
+    return false;
+  }
+  start = ((uint32_t) ex.data[0] << 24) | ((uint32_t) ex.data[1] << 16) | ((uint32_t) ex.data[2] << 8) | ex.data[3];
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_readLevel2RegisterBlock
+//
+
+int
+vscp_readLevel2RegisterBlock(CVscpClient &client,
+                             cguid &guidNode,
+                             uint32_t startreg,
+                             uint32_t count,
+                             std::map<uint32_t, uint8_t> &values,
+                             std::function<void(int)> statusCallback,
+                             uint32_t timeout,
+                             uint16_t maxPerRead)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+
+  if (!count || ((uint64_t) startreg + count > 0x100000000ULL)) {
+    return VSCP_ERROR_PARAMETER;
+  }
+  if (!maxPerRead || (maxPerRead > (VSCP_MAX_DATA - 4))) {
+    maxPerRead = VSCP_MAX_DATA - 4;
+  }
+
+  uint64_t done = 0;
+  while (done < count) {
+
+    const uint32_t start = startreg + (uint32_t) done;
+    const uint16_t n     = (uint16_t) std::min<uint64_t>(maxPerRead, count - done);
+
+    vscpEventEx ex;
+    memset(&ex, 0, sizeof(ex));
+    ex.head       = VSCP_PRIORITY_NORMAL;
+    ex.vscp_class = VSCP_CLASS2_PROTOCOL;
+    ex.vscp_type  = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+    ex.sizeData   = 22;
+    memcpy(ex.data, guidNode.getGUID(), 16);
+    ex.data[16] = (start >> 24) & 0xff;
+    ex.data[17] = (start >> 16) & 0xff;
+    ex.data[18] = (start >> 8) & 0xff;
+    ex.data[19] = start & 0xff;
+    ex.data[20] = (n >> 8) & 0xff;
+    ex.data[21] = n & 0xff;
+
+    if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+      return rv;
+    }
+    if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
+      return rv;
+    }
+
+    // The node may answer with more than one response
+    std::vector<bool> got(n, false);
+    uint16_t left      = n;
+    uint32_t startTime = vscp_getMsTimeStamp();
+
+    while (left) {
+      uint16_t cnt = 0;
+      if ((VSCP_ERROR_SUCCESS == client.getcount(&cnt)) && cnt) {
+        if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+          return rv;
+        }
+        uint32_t rstart;
+        if (level2_is_response(ex, guidNode, rstart)) {
+          for (uint16_t i = 0; i < (ex.sizeData - 4); i++) {
+            const uint64_t pos = (uint64_t) rstart + i - start;
+            if ((uint64_t) rstart + i < start || pos >= n) {
+              continue; // Not in this request
+            }
+            values[start + (uint32_t) pos] = ex.data[4 + i];
+            if (!got[pos]) {
+              got[pos] = true;
+              left--;
+            }
+          }
+        }
+        continue;
+      }
+
+      if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
+        return VSCP_ERROR_TIMEOUT;
+      }
+      level2_pause();
+    }
+
+    done += n;
+    if (nullptr != statusCallback) {
+      statusCallback((int) ((100 * done) / count));
+    }
+  }
+
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_writeLevel2RegisterBlock
+//
+
+int
+vscp_writeLevel2RegisterBlock(CVscpClient &client,
+                              cguid &guidNode,
+                              std::map<uint32_t, uint8_t> &regvalues,
+                              std::function<void(int)> statusCallback,
+                              uint32_t timeout,
+                              uint16_t maxPerWrite)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+
+  if (!maxPerWrite || (maxPerWrite > (VSCP_MAX_DATA - 20))) {
+    maxPerWrite = VSCP_MAX_DATA - 20;
+  }
+
+  // Requests: start register -> values (registers next to each other)
+  std::vector<std::pair<uint32_t, std::vector<uint8_t>>> requests;
+  for (auto const &item : regvalues) {
+    if (requests.empty() || (requests.back().second.size() >= maxPerWrite) ||
+        ((uint64_t) requests.back().first + requests.back().second.size() != item.first)) {
+      requests.push_back(std::make_pair(item.first, std::vector<uint8_t>()));
+    }
+    requests.back().second.push_back(item.second);
+  }
+
+  bool bMismatch = false;
+  size_t nreq    = 0;
+  for (auto const &req : requests) {
+
+    const uint32_t start = req.first;
+    const uint16_t n     = (uint16_t) req.second.size();
+
+    vscpEventEx ex;
+    memset(&ex, 0, sizeof(ex));
+    ex.head       = VSCP_PRIORITY_NORMAL;
+    ex.vscp_class = VSCP_CLASS2_PROTOCOL;
+    ex.vscp_type  = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
+    ex.sizeData   = 20 + n;
+    memcpy(ex.data, guidNode.getGUID(), 16);
+    ex.data[16] = (start >> 24) & 0xff;
+    ex.data[17] = (start >> 16) & 0xff;
+    ex.data[18] = (start >> 8) & 0xff;
+    ex.data[19] = start & 0xff;
+    memcpy(ex.data + 20, req.second.data(), n);
+
+    if (VSCP_ERROR_SUCCESS != (rv = client.clear())) {
+      return rv;
+    }
+    if (VSCP_ERROR_SUCCESS != (rv = client.send(ex))) {
+      return rv;
+    }
+
+    // The registers are read back in one or more responses
+    std::vector<bool> got(n, false);
+    uint16_t left      = n;
+    uint32_t startTime = vscp_getMsTimeStamp();
+
+    while (left) {
+      uint16_t cnt = 0;
+      if ((VSCP_ERROR_SUCCESS == client.getcount(&cnt)) && cnt) {
+        if (VSCP_ERROR_SUCCESS != (rv = client.receive(ex))) {
+          return rv;
+        }
+        uint32_t rstart;
+        if (level2_is_response(ex, guidNode, rstart)) {
+          for (uint16_t i = 0; i < (ex.sizeData - 4); i++) {
+            const uint64_t pos = (uint64_t) rstart + i - start;
+            if ((uint64_t) rstart + i < start || pos >= n || got[pos]) {
+              continue; // Not in this request
+            }
+            got[pos] = true;
+            left--;
+            if (ex.data[4 + i] == req.second[pos]) {
+              regvalues.erase(start + (uint32_t) pos);
+            }
+            else {
+              bMismatch = true;
+            }
+          }
+        }
+        continue;
+      }
+
+      if (timeout && ((vscp_getMsTimeStamp() - startTime) > timeout)) {
+        return VSCP_ERROR_TIMEOUT;
+      }
+      level2_pause();
+    }
+
+    nreq++;
+    if (nullptr != statusCallback) {
+      statusCallback((int) ((100 * nreq) / requests.size()));
+    }
+  }
+
+  return bMismatch ? VSCP_ERROR_WRITE_ERROR : VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_readLevel2Register
+//
+
+int
+vscp_readLevel2Register(CVscpClient &client, cguid &guidNode, uint32_t reg, uint8_t &value, uint32_t timeout)
+{
+  std::map<uint32_t, uint8_t> values;
+  int rv = vscp_readLevel2RegisterBlock(client, guidNode, reg, 1, values, nullptr, timeout);
+  if (VSCP_ERROR_SUCCESS == rv) {
+    value = values[reg];
+  }
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  vscp_writeLevel2Register
+//
+
+int
+vscp_writeLevel2Register(CVscpClient &client, cguid &guidNode, uint32_t reg, uint8_t value, uint32_t timeout)
+{
+  std::map<uint32_t, uint8_t> values;
+  values[reg] = value;
+  return vscp_writeLevel2RegisterBlock(client, guidNode, values, nullptr, timeout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1311,6 +1562,37 @@ CStandardRegisters::init(CVscpClient &client,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  initLevel2
+//
+
+int
+CStandardRegisters::initLevel2(CVscpClient &client,
+                               cguid &guidNode,
+                               std::function<void(int)> statusCallback,
+                               uint32_t timeout)
+{
+  int rv;
+  std::map<uint32_t, uint8_t> values;
+  m_regs.clear();
+  m_change.clear();
+  rv = vscp_readLevel2RegisterBlock(client,
+                                    guidNode,
+                                    VSCP_LEVEL2_STDREG_OFFSET + 0x80,
+                                    128,
+                                    values,
+                                    statusCallback,
+                                    timeout);
+  if (VSCP_ERROR_SUCCESS != rv) {
+    return rv;
+  }
+  for (auto const &item : values) {
+    m_regs[(uint8_t) (item.first & 0xff)] = item.second;
+  }
+  m_level = VSCP_LEVEL2;
+  return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getFirmwareVersionString.
 //
 
@@ -1469,6 +1751,83 @@ CUserRegisters::init(CVscpClient &client,
     m_pages.insert(page);
     std::cout << "Page " << std::hex << page << " size " << registers.size() << std::endl;
   }
+  return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  initLevel2
+//
+
+int
+CUserRegisters::initLevel2(CVscpClient &client,
+                           cguid &guidNode,
+                           CMDF &mdf,
+                           std::function<void(int)> statusCallback,
+                           uint32_t timeout)
+{
+  int rv = VSCP_ERROR_SUCCESS;
+
+  // The registers the MDF uses, per page
+  std::map<uint16_t, std::set<uint32_t>> regs;
+  auto add = [&regs](uint16_t page, uint32_t offset, uint32_t span) {
+    for (uint64_t i = 0; i < span && ((uint64_t) offset + i) < VSCP_LEVEL2_STDREG_OFFSET + 0x80; i++) {
+      regs[page].insert(offset + (uint32_t) i);
+    }
+  };
+
+  for (auto const preg : *mdf.getRegisterObjList()) {
+    add((uint16_t) preg->getPage(), preg->getOffset(), preg->getSpan() ? preg->getSpan() : 1);
+  }
+
+  CMDF_DecisionMatrix *pdm = mdf.getDM();
+  if ((nullptr != pdm) && pdm->getRowCount() && pdm->getRowSize()) {
+    add(pdm->getStartPage(), pdm->getStartOffset(), (uint32_t) pdm->getRowCount() * pdm->getRowSize());
+  }
+
+  for (auto const pvar : *mdf.getRemoteVariableList()) {
+    uint16_t size = pvar->getTypeByteCount();
+    add(pvar->getPage(), pvar->getOffset(), size ? size : 1);
+  }
+
+  m_level = VSCP_LEVEL2;
+  m_pages.clear();
+
+  // Total for the status callback
+  size_t total = 0, done = 0;
+  for (auto const &page : regs) {
+    total += page.second.size();
+  }
+
+  for (auto const &page : regs) {
+
+    m_registerPageMap[page.first] = new CRegisterPage(VSCP_LEVEL2, page.first);
+
+    // Read registers next to each other with one block read
+    std::map<uint32_t, uint8_t> values;
+    auto it = page.second.begin();
+    while (it != page.second.end()) {
+      uint32_t start = *it, count = 1;
+      while ((++it != page.second.end()) && (*it == start + count)) {
+        count++;
+      }
+      rv = vscp_readLevel2RegisterBlock(client, guidNode, start, count, values, nullptr, timeout);
+      if (VSCP_ERROR_SUCCESS != rv) {
+        return rv;
+      }
+      done += count;
+      if (nullptr != statusCallback) {
+        statusCallback((int) ((100 * done) / total));
+      }
+    }
+
+    for (auto const &item : values) {
+      m_registerPageMap[page.first]->putReg(item.first, item.second);
+    }
+    m_registerPageMap[page.first]->clearChanges();
+    m_registerPageMap[page.first]->clearHistory();
+    m_pages.insert(page.first);
+  }
+
   return rv;
 }
 

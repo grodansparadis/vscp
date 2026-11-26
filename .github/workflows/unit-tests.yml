@@ -63,6 +63,8 @@ jobs:
         cd ${{github.workspace}}/tests/mdfparser && ${{github.workspace}}/tests/build/mdfparser/unittest_mdfparser
         echo "Running TcpipTls tests..."
         ${{github.workspace}}/tests/build/tcpiptls/unittest_tcpiptls
+        echo "Running Level II register tests..."
+        ${{github.workspace}}/tests/build/register-level2/unittest_register_level2
         echo "Running VSCP Client Base tests..."
         ${{github.workspace}}/tests/build/vscp-client-base/unittest_vscp_client_base
         echo "Running VSCP Client Canal tests..."
@@ -129,6 +131,8 @@ jobs:
         cd ${{github.workspace}}/tests/mdfparser && ${{github.workspace}}/tests/build/mdfparser/unittest_mdfparser
         echo "Running TcpipTls tests..."
         ${{github.workspace}}/tests/build/tcpiptls/unittest_tcpiptls
+        echo "Running Level II register tests..."
+        ${{github.workspace}}/tests/build/register-level2/unittest_register_level2
         echo "Running VSCP Client Base tests..."
         ${{github.workspace}}/tests/build/vscp-client-base/unittest_vscp_client_base
         echo "Running VSCP Client Canal tests..."

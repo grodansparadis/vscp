@@ -152,6 +152,103 @@ vscp_writeLevel1RegisterBlock(CVscpClient &client,
                               std::function<void(int)> statusCallback = nullptr,
                               uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
+// ----------------------------------------------------------------------------
+//                      Level II registers (CLASS2.PROTOCOL)
+// ----------------------------------------------------------------------------
+
+/*
+  A Level II node has a 32-bit register space. The user registers are at the
+  MDF offset (the page is not used), the Level I standard registers are at
+  0xffffff80 - 0xffffffff (VSCP_LEVEL2_STDREG_OFFSET + Level I register).
+  The node is addressed with its full GUID; the response is a
+  CLASS2.PROTOCOL Read Write Response (1024/3) from that GUID.
+*/
+
+#define VSCP_LEVEL2_STDREG_OFFSET      0xffffff00 // + 0x80 - 0xff
+#define VSCP_LEVEL2_REGISTER_MAX_READ  128        // Registers in one read request (protocol max 508)
+#define VSCP_LEVEL2_REGISTER_MAX_WRITE 100        // Registers in one write request (protocol max 492)
+
+/*!
+  Read Level II register
+  @param client VSCP client over which the communication is carried out.
+  @param guidNode Full GUID of the node.
+  @param reg Register (32-bit) to read.
+  @param value Value read from register.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int
+vscp_readLevel2Register(CVscpClient &client,
+                        cguid &guidNode,
+                        uint32_t reg,
+                        uint8_t &value,
+                        uint32_t timeout = REGISTER_DEFAULT_TIMEOUT);
+
+/*!
+  Write Level II register
+  @param client VSCP client over which the communication is carried out.
+  @param guidNode Full GUID of the node.
+  @param reg Register (32-bit) to write.
+  @param value Value to write.
+  @param timeout Timeout in milliseconds. Zero means no timeout i.e. wait forever.
+  @return VSCP_ERROR_SUCCESS on success, VSCP_ERROR_WRITE_ERROR if the
+          register reads back with another value.
+*/
+int
+vscp_writeLevel2Register(CVscpClient &client,
+                         cguid &guidNode,
+                         uint32_t reg,
+                         uint8_t value,
+                         uint32_t timeout = REGISTER_DEFAULT_TIMEOUT);
+
+/*!
+  Read Level II register block.
+  Read with requests of at most maxPerRead registers. A node may answer a
+  request with several responses; they are collected until every register
+  of the request is read.
+  @param client VSCP client over which the communication is carried out.
+  @param guidNode Full GUID of the node.
+  @param startreg First register to read.
+  @param count Number of registers to read (not past 0xffffffff).
+  @param values Map that gets register -> value for the registers read.
+  @param statusCallback Optional callback that gets progress in percent.
+  @param timeout Timeout in milliseconds for each request. Zero means wait forever.
+  @param maxPerRead Registers in one request (1 - 508).
+  @return VSCP_ERROR_SUCCESS on success.
+*/
+int
+vscp_readLevel2RegisterBlock(CVscpClient &client,
+                             cguid &guidNode,
+                             uint32_t startreg,
+                             uint32_t count,
+                             std::map<uint32_t, uint8_t> &values,
+                             std::function<void(int)> statusCallback = nullptr,
+                             uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
+                             uint16_t maxPerRead                     = VSCP_LEVEL2_REGISTER_MAX_READ);
+
+/*!
+  Write Level II register block.
+  Registers next to each other are written with one request (at most
+  maxPerWrite registers). The node answers with the registers read back.
+  @param client VSCP client over which the communication is carried out.
+  @param guidNode Full GUID of the node.
+  @param regvalues Map with register -> value to write. Registers that read
+                back with the written value are removed from the map, so the
+                registers left are the ones that could not be written.
+  @param statusCallback Optional callback that gets progress in percent.
+  @param timeout Timeout in milliseconds for each request. Zero means wait forever.
+  @param maxPerWrite Registers in one request (1 - 492).
+  @return VSCP_ERROR_SUCCESS on success, VSCP_ERROR_WRITE_ERROR if a
+          register reads back with another value.
+*/
+int
+vscp_writeLevel2RegisterBlock(CVscpClient &client,
+                              cguid &guidNode,
+                              std::map<uint32_t, uint8_t> &regvalues,
+                              std::function<void(int)> statusCallback = nullptr,
+                              uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT,
+                              uint16_t maxPerWrite                    = VSCP_LEVEL2_REGISTER_MAX_WRITE);
+
 /*!
   Do a fast register scan using who is there protocol functionality
   @param client VSCP client derived from the client  over
@@ -454,6 +551,24 @@ public:
            std::set<uint16_t> &pages,
            std::function<void(int)> statusCallback = nullptr,
            uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+
+  /*!
+      Read the user registers of a Level II node (CLASS2.PROTOCOL).
+      The registers read are the ones the MDF uses: registers (offset and
+      span), the decision matrix and the remote variables. A register is
+      read at its MDF offset (Level II has no pages) and kept on its MDF page.
+      @param client The communication interface to use
+      @param guidNode Full GUID of the node.
+      @param mdf The MDF of the node.
+      @param statusCallback Optional callback that gets progress in percent.
+      @param timeout Timeout in milliseconds for each request.
+      @return VSCP_ERROR_SUCCESS on success.
+    */
+  int initLevel2(CVscpClient &client,
+                 cguid &guidNode,
+                 CMDF &mdf,
+                 std::function<void(int)> statusCallback = nullptr,
+                 uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
       Set value for register
@@ -848,6 +963,21 @@ public:
            cguid &guidInterface,
            std::function<void(int)> statusCallback = nullptr,
            uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
+
+  /*!
+    Read the standard registers of a Level II node (CLASS2.PROTOCOL,
+    registers 0xffffff80 - 0xffffffff). They are kept as 0x80 - 0xff, as
+    for a Level I node.
+    @param client The communication interface to use
+    @param guidNode Full GUID of the node.
+    @param statusCallback Optional callback that gets progress in percent.
+    @param timeout Timeout in milliseconds.
+    @return VSCP_ERROR_SUCCESS on success.
+  */
+  int initLevel2(CVscpClient &client,
+                 cguid &guidNode,
+                 std::function<void(int)> statusCallback = nullptr,
+                 uint32_t timeout                        = REGISTER_DEFAULT_TIMEOUT);
 
   /*!
     Initialization with already read standard registers
